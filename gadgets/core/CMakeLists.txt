@@ -5,9 +5,7 @@ include_directories(
 add_library(gadgetron_core SHARED
     Channel.cpp
     Context.cpp
-    Gadget.cpp
     Stream.cpp
-    Node.cpp
     MergeNode.cpp
     BranchNode.cpp)
 

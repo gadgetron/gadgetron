@@ -14,14 +14,35 @@ namespace Gadgetron::Core {
             const boost::filesystem::path working_folder;
         };
 
-        struct Config {
 
+        struct Config {
+            std::vector<std::function<Reader*(void)>> reader_factories;
+            std::vector<std::function<Writer*(void)>> writer_factories;
+            std::function<std::shared_ptr<Node>(const Header&)> stream_factory;
         };
 
         struct Header {
 
         };
     };
+
+
+
+    //Should maybe not be here? No worries, cleanups are always fun
+
+
+    struct GadgetContext {
+        std::string name;
+        std::string dll;
+        std::string classname;
+
+        std::unordered_map<std::string,std::string> properties;
+
+    };
+
+
+
+
 }
 
 

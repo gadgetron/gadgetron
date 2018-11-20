@@ -3,73 +3,76 @@
 #include "Channel.h"
 #include <thread>
 #include <memory>
+#include <future>
 #include "log.h"
+#include <ismrmrd/xml.h>
 
-namespace Gadgetron {
-    namespace Core {
+namespace Gadgetron::Core {
 
-        class Node {
-        public:
-            virtual ~Node(){};
+    class Node {
+    public:
+        virtual ~Node() {};
 
-        };
+    };
 
-        class UnaryNode : public Node, public std::enable_shared_from_this<UnaryNode> {
-            public:
+    class UnaryNode : public Node, public std::enable_shared_from_this<UnaryNode> {
+    public:
 
-            UnaryNode(std::shared_future<std::shared_ptr<OutputChannel>> output_future ): queue(std::make_shared<MessageChannel>()) {
-                auto self = shared_from_this();
-                std::thread([self,output_future]()
-                    {self->start(output_future);}
-                    ).detach();
-            }
-            virtual ~UnaryNode(){};
+        UnaryNode(std::shared_future<std::shared_ptr<OutputChannel>> output_future) : queue(
+                std::make_shared<MessageChannel>()) {
+            auto self = shared_from_this();
+            std::thread([self, output_future]() { self->start(output_future); }
+            ).detach();
+        }
 
-        protected:
+        virtual ~UnaryNode() {};
 
-            virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
+    protected:
 
-        private:
-            void start(std::shared_future<std::shared_ptr<OutputChannel>> output_future){
+        virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
 
-                try {
-                    auto output_channel = output_future.get();
-                    this->process(queue,output_channel)
+    private:
+        void start(std::shared_future<std::shared_ptr<OutputChannel>> output_future) {
 
-                }
-                catch (const ChannelClosedError& e){
-
-                }
-                catch (const std::exception& e){
-                    GERROR(e.what());
-                }
-
+            try {
+                auto output_channel = output_future.get();
+                this->process(queue, output_channel);
 
             }
-
-            std::shared_ptr<MessageChannel> queue;
-        };
-
-        template<class T> class GadgetNode : public  UnaryNode {
-            GadgetNode(const ISMRMRD::IsmrmrdHeader& header ){
+            catch (const ChannelClosedError &e) {
 
             }
-
-            virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out){
-                auto typed_input = InputMessageChannel<T>(in,out);
-                this->process(typed_input,*out);
+            catch (const std::exception &e) {
+                GERROR(e.what());
             }
 
 
-            virtual void process(InputChannel<T>& in, OutputChannel& out) = 0;
+        }
 
-        };
+        std::shared_ptr<MessageChannel> queue;
+    };
+
+    template<class T>
+    class GadgetNode : public UnaryNode {
+        GadgetNode(const ISMRMRD::IsmrmrdHeader &header) {
+
+        }
+
+        virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) {
+            auto typed_input = InputMessageChannel<T>(in, out);
+            this->process(typed_input, *out);
+        }
 
 
-        class LegacyGadgetNode : public UnaryNode {
+        virtual void process(InputChannel<T> &in, OutputChannel &out) = 0;
 
-        };
-    }
+    };
+
+
+    class LegacyGadgetNode : public UnaryNode {
+
+    };
 }
+
 
 

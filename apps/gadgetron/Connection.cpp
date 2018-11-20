@@ -158,8 +158,8 @@ void Connection::process_input() {
     struct {
         std::map<message_id, Reader> readers;
         std::map<std::type_index, Writer> writers;
-        Gadgetron::Core::Channel input;
-        Gadgetron::Core::Channel output;
+        InputChannel<Message> input;
+        OutputChannel output;
     } stuff = build_streams_and_stuff(config, header);
 
     while(true) {
@@ -173,7 +173,7 @@ void Connection::process_input() {
 
 std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket) {
 
-    auto connection = std::shared_ptr<Connection>(new Connection(paths, socket));
+    auto connection = std::make_shared<Connection>(paths, socket);
     connection->start();
 
     return connection;

@@ -1,7 +1,8 @@
 #ifndef GADGETRON_STREAM_H
 #define GADGETRON_STREAM_H
 
-
+#include <memory>
+#include "Message.h"
 namespace Gadgetron::Core {
 
     class Stream {
@@ -15,7 +16,7 @@ namespace Gadgetron::Core {
 
     class Writer {
     public:
-        virtual void write(std::ostream &stream, std::unique_ptr<Message> message);
+        virtual void write(std::ostream &stream, std::unique_ptr<Message>&& message);
     };
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
-namespace Gadgetron {
-    namespace Core {
+namespace Gadgetron::Core {
     template<class T>
     class InputChannel<T>::Iterator {
     public:
@@ -14,7 +13,7 @@ namespace Gadgetron {
         Iterator &operator++() {
             try {
                 element = channel->pop();
-            } catch(ChannelClosedError err) {
+            } catch (ChannelClosedError err) {
                 channel = nullptr;
             }
             return *this;
@@ -92,19 +91,22 @@ namespace Gadgetron {
         return OutputChannel::Iterator(&channel);
     }
 
-    template<class T> void  OutputChannel::push(std::unique_ptr<T>&& ptr) {
+    template<class T>
+    void OutputChannel::push(std::unique_ptr <T> &&ptr) {
         this->push_message(std::unique_ptr<Message>(new TypedMessage<T>(ptr)));
 
     }
 
 
-    template<class T> InputMessageChannel<T>::InputMessageChannel(std::shared_ptr<InputChannel<Message>> input,
-                                             std::shared_ptr<Gadgetron::Core::OutputChannel> output):
-                                             in(input), out(output){}
+    template<class T>
+    InputMessageChannel<T>::InputMessageChannel(std::shared_ptr <InputChannel<Message>> input,
+                                                std::shared_ptr <Gadgetron::Core::OutputChannel> output):
+            in(input), out(output) {}
 
-    template<class T> std::unique_ptr<T> InputMessageChannel<T>::pop() {
+    template<class T>
+    std::unique_ptr <T> InputMessageChannel<T>::pop() {
 
-        std::unique_ptr<Message> message = in->pop();
+        std::unique_ptr <Message> message = in->pop();
 
         while (typeid(*message) != typeid(T)) {
             out->push(std::move(message));
@@ -114,4 +116,4 @@ namespace Gadgetron {
         return message;
     }
 
-}}
+}
