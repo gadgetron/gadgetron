@@ -39,12 +39,6 @@ namespace Gadgetron {
         global_gadget_parameters_ = globalGadgetPara;
     }
 
-    const GadgetronXML::GadgetStreamConfiguration& GadgetStreamInterface::get_stream_configuration()
-    {
-        return stream_configuration_;
-    }
-
-
     GadgetModule *GadgetStreamInterface::create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
     {
 

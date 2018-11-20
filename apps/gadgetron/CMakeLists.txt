@@ -7,6 +7,7 @@ endif()
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
+  ${CMAKE_SOURCE_DIR}/gadgets/core
   ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
   ${CMAKE_SOURCE_DIR}/toolboxes/rest
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
@@ -35,14 +36,17 @@ add_executable(gadgetron
   GadgetMessageInterface.h
   GadgetronExport.h 
   gadgetron_xml.h
-  )
+        Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h)
 
-target_link_libraries(gadgetron 
+target_link_libraries(gadgetron
+  gadgetron_core
   gadgetron_gadgetbase
   gadgetron_toolbox_log
   gadgetron_toolbox_rest
-  gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+  gadgetron_toolbox_gadgettools
+  gadgetron_toolbox_cloudbus
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  pugixml
  )
 
 if (BUILD_PYTHON_SUPPORT)
@@ -58,7 +62,8 @@ add_executable(gadgetron_info
 target_link_libraries(gadgetron_info 
   gadgetron_toolbox_log
   gadgetron_gadgetbase
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  pugixml
  )
 
 if (CUDA_FOUND)
@@ -75,8 +80,7 @@ add_library(gadgetron_gadgetbase SHARED
   gadgetron_xml.cpp
   gadgetron_home.h
   gadgetron_home.cpp
-  pugixml.cpp  
-  GadgetStreamInterface.h 
+        GadgetStreamInterface.h
   GadgetStreamInterface.cpp 
   EndGadget.h
   EndGadget.cpp

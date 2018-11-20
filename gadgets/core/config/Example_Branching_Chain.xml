@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <version>2</version>
+
+    <readers>
+        <reader>
+            <dll>gadgetron_mricore</dll>
+            <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_mricore</dll>
+            <classname>GadgetIsmrmrdWaveformMessageReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_mricore</dll>
+            <classname>MRIImageWriter</classname>
+        </writer>
+    </writers>
+
+    <stream>
+        <gadget>
+            <name>NoiseAdjust</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>NoiseAdjustGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>AsymmetricEcho</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>AsymmetricEchoAdjustROGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>RemoveROOversampling</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>RemoveROOversamplingGadget</classname>
+        </gadget>
+
+        <parallel>
+            <BranchNode>
+                <name>FanoutNode</name>
+                <dll>gadgetron_core</dll>
+                <classname>FanoutDisperseNode</classname>
+            </BranchNode>
+            <MergeNode>
+                <name>MergeNode</name>
+                <dll>image_compare</dll>
+                <classname>ImageConvergeNode</classname>
+            </MergeNode>
+
+            <stream key="sense-spirit">
+                <gadget>
+                    <name>AccTrig</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>AcquisitionAccumulateTriggerGadget</classname>
+                </gadget>
+
+                <gadget>
+                    <name>BucketToBuffer</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>BucketToBufferGadget</classname>
+                    <property><name>N_dimension</name><value>contrast</value></property>
+                    <property><name>S_dimension</name><value>average</value></property>
+                    <property><name>split_slices</name><value>false</value></property>
+                    <property><name>ignore_segment</name><value>true</value></property>
+                </gadget>
+
+
+                <gadget>
+                    <name>PrepRef</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconCartesianReferencePrepGadget</classname>
+                    <property><name>average_all_ref_N</name><value>true</value></property>
+                    <property><name>average_all_ref_S</name><value>true</value></property>
+                    <property><name>prepare_ref_always</name><value>true</value></property>
+                </gadget>
+
+                <gadget>
+                    <name>CoilCompression</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconEigenChannelGadget</classname>
+                    <property><name>average_all_ref_N</name><value>true</value></property>
+                    <property><name>average_all_ref_S</name><value>true</value></property>
+                </gadget>
+
+                <gadget>
+                    <name>Recon</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconCartesianSpiritGadget</classname>
+
+                    <property><name>image_series</name><value>0</value></property>
+                    <property><name>coil_map_algorithm</name><value>Inati</value></property>
+                    <property><name>spirit_print_iter</name><value>true</value></property>
+                </gadget>
+
+                <gadget>
+                    <name>PartialFourierHandling</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
+                    <property><name>partial_fourier_filter_RO_width</name><value>0.15</value></property>
+                    <property><name>partial_fourier_filter_E1_width</name><value>0.15</value></property>
+                    <property><name>partial_fourier_filter_E2_width</name><value>0.15</value></property>
+                    <property><name>partial_fourier_filter_densityComp</name><value>false</value></property>
+                </gadget>
+            </stream>
+
+            <stream key="grappa-recon">
+                <gadget>
+                    <name>AccTrig</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>AcquisitionAccumulateTriggerGadget</classname>
+                </gadget>
+
+                <gadget>
+                    <name>BucketToBuffer</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>BucketToBufferGadget</classname>
+                    <property><name>N_dimension</name><value>contrast</value></property>
+                    <property><name>S_dimension</name><value>average</value></property>
+                    <property><name>split_slices</name><value>false</value></property>
+                    <property><name>ignore_segment</name><value>true</value></property>
+                </gadget>
+
+                <gadget>
+                    <name>PrepRef</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconCartesianReferencePrepGadget</classname>
+                    <property><name>average_all_ref_N</name><value>true</value></property>
+                    <property><name>average_all_ref_S</name><value>true</value></property>
+                    <property><name>prepare_ref_always</name><value>true</value></property>
+                </gadget>
+
+                <gadget>
+                    <name>CoilCompression</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconEigenChannelGadget</classname>
+                    <property><name>average_all_ref_N</name><value>true</value></property>
+                    <property><name>average_all_ref_S</name><value>true</value></property>
+                </gadget>
+
+                <gadget>
+                    <name>Recon</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconCartesianGrappaGadget</classname>
+                </gadget>
+
+                <gadget>
+                    <name>PartialFourierHandling</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
+                    <property><name>partial_fourier_filter_RO_width</name><value>0.15</value></property>
+                    <property><name>partial_fourier_filter_E1_width</name><value>0.15</value></property>
+                    <property><name>partial_fourier_filter_E2_width</name><value>0.15</value></property>
+                    <property><name>partial_fourier_filter_densityComp</name><value>false</value></property>
+                </gadget>
+            </stream>
+        </parallel>
+
+        <gadget>
+            <name>FOVAdjustment</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>Scaling</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>GenericReconImageArrayScalingGadget</classname>
+            <property><name>min_intensity_value</name><value>0</value></property>
+            <property><name>max_intensity_value</name><value>4095</value></property>
+            <property><name>scalingFactor</name><value>10.0</value></property>
+            <property><name>use_constant_scalingFactor</name><value>true</value></property>
+            <property><name>auto_scaling_only_once</name><value>true</value></property>
+            <property><name>scalingFactor_dedicated</name><value>100.0</value></property>
+        </gadget>
+
+        <gadget>
+            <name>ImageArraySplit</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>ImageArraySplitGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>ImageFinish</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>ImageFinishGadget</classname>
+        </gadget>
+    </stream>
+</configuration>

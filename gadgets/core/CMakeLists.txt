@@ -1,15 +1,29 @@
 include_directories(
     ${ISMRMRD_INCLUDE_DIR}
 )
-set(core_header_files
-    Channel.h
-    Channel.hpp
-    Message.h
-    Gadget.h)
 
-set(core_source_files
-    Channel.cpp)
+add_library(gadgetron_core SHARED
+    Channel.cpp
+    Context.cpp
+    Gadget.cpp
+    Stream.cpp
+    Node.cpp
+    MergeNode.cpp
+    BranchNode.cpp)
 
-install(FILES ${core_header_files} DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}/core COMPONENT main)
+install(FILES
+	Channel.h
+        Channel.hpp
+        Message.h
+        Gadget.h
+        Context.h
+        Gadget.h
+        Stream.h
+        Node.h
+        MergeNode.h
+        BranchNode.h
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-add_library(core ${core_header_files} ${core_source_files} )
+install(FILES
+        config/Example_Branching_Chain.xml
+        DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
