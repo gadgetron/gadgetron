@@ -31,14 +31,7 @@ namespace Gadgetron::Core {
     //Should maybe not be here? No worries, cleanups are always fun
 
 
-    struct GadgetContext {
-        std::string name;
-        std::string dll;
-        std::string classname;
 
-        std::unordered_map<std::string,std::string> properties;
-
-    };
 
 
 

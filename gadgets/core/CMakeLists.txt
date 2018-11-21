@@ -20,6 +20,7 @@ install(FILES
         Node.h
         MergeNode.h
         BranchNode.h
+		PropteryMixin.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES
