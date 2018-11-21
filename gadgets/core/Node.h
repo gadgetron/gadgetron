@@ -72,6 +72,23 @@ namespace Gadgetron::Core {
     class LegacyGadgetNode : public UnaryNode {
 
     };
+
+
+    class MergeNode : public Node {
+
+    public:
+
+        MergeNode(std::shared_future<std::shared_ptr<OutputChannel>> output_future, const std::vector<std::string>& channel_names ){
+            for (auto& name : channel_names){
+                input_channels.emplace({name, boost::make_shared<MessageChannel>()});
+            }
+        }
+
+
+    private:
+        std::map<std::string,std::shared_ptr<MessageChannel>>  input_channels;
+
+    };
 }
 
 
