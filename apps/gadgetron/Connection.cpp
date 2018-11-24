@@ -156,19 +156,23 @@ void Connection::process_input() {
     Context::Header header = read_header(stream_);
 
     struct {
-        std::map<message_id, Reader> readers;
-        std::map<std::type_index, Writer> writers;
-        InputChannel<Message> input;
-        OutputChannel output;
+        std::map<message_id, std::unique_ptr<Reader>> readers;
+        std::shared_ptr<MessageChannel> input;
     } stuff = build_streams_and_stuff(config, header);
 
-    while(true) {
-        message_id mid;
-        read_into(stream_, mid);
+    try {
+        while (true) {
+            message_id mid;
+            read_into(stream_, mid);
 
-        Reader &reader = stuff.readers.at(mid);
-        stuff.input.put(reader.read(stream_));
+            Reader &reader = *stuff.readers.at(mid);
+            stuff.input->put(reader.read(stream_));
+        }
+    } catch (...) {
+        stuff.input->close();
     }
+
+
 }
 
 std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket) {

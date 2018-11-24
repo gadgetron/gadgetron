@@ -26,7 +26,8 @@ endif()
 add_executable(gadgetron 
   main.cpp 
   GadgetServerAcceptor.h
-  GadgetServerAcceptor.cpp 
+  GadgetServerAcceptor.cpp
+  ConfigParsers.cpp
   GadgetStreamController.h
   # EndGadget.h
   # EndGadget.cpp

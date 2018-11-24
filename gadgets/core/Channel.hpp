@@ -99,17 +99,17 @@ namespace Gadgetron::Core {
 
 
     template<class T>
-    InputMessageChannel<T>::InputMessageChannel(std::shared_ptr <InputChannel<Message>> input,
+    TypedInputChannel<T>::TypedInputChannel(std::shared_ptr <InputChannel<Message>> input,
                                                 std::shared_ptr <Gadgetron::Core::OutputChannel> output):
-            in(input), out(output) {}
+            in(input), bypass(output) {}
 
     template<class T>
-    std::unique_ptr <T> InputMessageChannel<T>::pop() {
+    std::unique_ptr <T> TypedInputChannel<T>::pop() {
 
         std::unique_ptr <Message> message = in->pop();
 
         while (typeid(*message) != typeid(T)) {
-            out->push(std::move(message));
+            bypas->push(std::move(message));
             message = in->pop();
         }
 

@@ -3,6 +3,7 @@ include_directories(
 )
 
 add_library(gadgetron_core SHARED
+	ChainBuilder.cpp
     Channel.cpp
     Context.cpp
     Stream.cpp
@@ -21,7 +22,8 @@ install(FILES
         MergeNode.h
         BranchNode.h
 		PropteryMixin.h
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+		Channel.h
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}/core COMPONENT main)
 
 install(FILES
         config/Example_Branching_Chain.xml

@@ -32,6 +32,8 @@ namespace Gadgetron::Core {
         template<class T>
         void push(std::unique_ptr<T> &&);
 
+        virtual void close() = 0;
+
     protected:
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
 
@@ -48,7 +50,7 @@ namespace Gadgetron::Core {
     public:
         virtual std::unique_ptr<Message> pop() override;
 
-        void close();
+        virtual void close() override;
 
     protected:
         virtual void push_message(std::unique_ptr<Message> &&) override;
@@ -62,15 +64,15 @@ namespace Gadgetron::Core {
     };
 
     template<class T>
-    class InputMessageChannel : public InputChannel<T> {
+    class TypedInputChannel : public InputChannel<T> {
     public:
-        InputMessageChannel(std::shared_ptr<InputChannel<Message>> input, std::shared_ptr<OutputChannel> output);
+        TypedInputChannel(std::shared_ptr<InputChannel<Message>> input, std::shared_ptr<OutputChannel> bypass);
 
         virtual std::unique_ptr<T> pop();
 
     private:
         std::shared_ptr<InputChannel<Message>> in;
-        std::shared_ptr<OutputChannel> out;
+        std::shared_ptr<OutputChannel> bypass;
     };
 
 
