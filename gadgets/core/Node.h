@@ -10,26 +10,21 @@
 
 namespace Gadgetron::Core {
 
-    class Node {
-    public:
-        virtual ~Node() {};
-
-    };
 
 
-    class GadgetNode : public Node, public std::enable_shared_from_this<GadgetNode>, public PropertyMixin {
+    class Node : public std::enable_shared_from_this<Node>{
     public:
         using Input = std::shared_ptr<InputChannel<Message>>;
         using Output = std::shared_ptr<OutputChannel>;
 
-        GadgetNode(std::tuple<Input, Output> channels) : input_channel(std::get<0>(channels),
+        Node(std::tuple<Input, Output> channels) : input_channel(std::get<0>(channels)),
                                                                        output_channel(std::get<1>(channels)) {
             auto self = shared_from_this();
             std::thread([self]() { self->start(); }
             ).detach();
         }
 
-        virtual ~GadgetNode() {};
+        virtual ~Node() {};
 
 
     protected:
@@ -57,13 +52,19 @@ namespace Gadgetron::Core {
 
     };
 
+
+    class GadgetNode : public Node {
+    public:
+            virtual ~GadgetNode(){};
+    };
+
     template<class T>
     class TypedGadgetNode : public GadgetNode {
         TypedGadgetNode(const ISMRMRD::IsmrmrdHeader &header) {
 
         }
 
-        virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) {
+        virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) override final  {
             auto typed_input = TypedInputChannel<T>(in, out);
             this->process(typed_input, *out);
         }
@@ -78,7 +79,7 @@ namespace Gadgetron::Core {
 
     };
 
-
+/*
     class MergeNode : public Node {
 
     public:
@@ -95,6 +96,7 @@ namespace Gadgetron::Core {
         std::map<std::string, std::shared_ptr<MessageChannel>> input_channels;
 
     };
+    */
 }
 
 

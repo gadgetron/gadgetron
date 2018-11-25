@@ -7,7 +7,7 @@ endif()
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
-  ${CMAKE_SOURCE_DIR}/gadgets/core
+  ${CMAKE_SOURCE_DIR}/gadgets
   ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
   ${CMAKE_SOURCE_DIR}/toolboxes/rest
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
@@ -28,11 +28,7 @@ add_executable(gadgetron
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp
   ConfigParsers.cpp
-  GadgetStreamController.h
-  # EndGadget.h
-  # EndGadget.cpp
-  # GadgetStreamInterface.cpp
-  Gadget.h 
+  Gadget.h
   GadgetContainerMessage.h 
   GadgetMessageInterface.h
   GadgetronExport.h 
@@ -56,8 +52,7 @@ endif()
 
 add_executable(gadgetron_info
   gadgetron_info.cpp
-  EndGadget.cpp
-  GadgetStreamInterface.cpp
+        GadgetStreamInterface.cpp
 )
 
 target_link_libraries(gadgetron_info 
@@ -75,17 +70,13 @@ endif()
 add_library(gadgetron_gadgetbase SHARED
   Gadget.h
   Gadget.cpp
-  GadgetStreamController.h
-  GadgetStreamController.cpp
-  gadgetron_xml.h
+        gadgetron_xml.h
   gadgetron_xml.cpp
   gadgetron_home.h
   gadgetron_home.cpp
         GadgetStreamInterface.h
-  GadgetStreamInterface.cpp 
-  EndGadget.h
-  EndGadget.cpp
-)
+  GadgetStreamInterface.cpp
+        )
 
 target_link_libraries(gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}

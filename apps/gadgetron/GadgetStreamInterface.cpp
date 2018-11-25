@@ -7,12 +7,11 @@
 #include "gadgetron_home.h"
 #include "gadgetron_xml.h"
 #include "Gadget.h"
-#include "EndGadget.h"
 
 #include "GadgetStreamInterface.h"
 
 namespace Gadgetron {
-
+/*
     GadgetStreamInterface::GadgetStreamInterface()
             : stream_configured_(false)
             , stream_(nullptr, nullptr, default_end_module())
@@ -69,5 +68,6 @@ namespace Gadgetron {
 
         return end_module;
     }
+    */
 }
 

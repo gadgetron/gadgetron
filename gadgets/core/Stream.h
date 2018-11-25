@@ -8,12 +8,12 @@
 
 namespace Gadgetron::Core {
 
-    class Stream : public Node {
+    class Stream {
     public:
         Stream(const std::string &stream_name, std::shared_ptr<InputChannel<Message>> channel) : name(stream_name),
                                                                                                  output(channel) {}
 
-        virtual std::shared_ptr<InputChannel<Message>> output_channel() override { return output;}
+        virtual std::shared_ptr<InputChannel<Message>> output_channel() { return output;}
     protected:
         std::string name;
         std::shared_ptr<InputChannel<Message>> output;

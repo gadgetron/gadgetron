@@ -104,16 +104,16 @@ namespace Gadgetron::Core {
             in(input), bypass(output) {}
 
     template<class T>
-    std::unique_ptr <T> TypedInputChannel<T>::pop() {
+    std::unique_ptr<T> TypedInputChannel<T>::pop() {
 
-        std::unique_ptr <Message> message = in->pop();
+        std::unique_ptr<Message> message = in->pop();
 
         while (typeid(*message) != typeid(T)) {
-            bypas->push(std::move(message));
+            bypass->push(std::move(message));
             message = in->pop();
         }
 
-        return message;
+        return std::unique_ptr<T>(static_cast<T*>(message.release()));
     }
 
 }

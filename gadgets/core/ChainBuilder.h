@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AST.h"
+#include "Stream.h"
 
 namespace Gadgetron::Core {
 

@@ -4,7 +4,6 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
-#include "GadgetStreamController.h"
 #include "gadgetron_interventional_mri_export.h"
 
 #include <ismrmrd/ismrmrd.h>

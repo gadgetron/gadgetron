@@ -53,6 +53,7 @@ namespace {
         return writers;
     }
 
+
     std::unordered_map<std::string, std::string>
     parse_properties(const pugi::xml_node &root) {
 

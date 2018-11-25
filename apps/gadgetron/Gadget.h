@@ -1,14 +1,5 @@
-#ifndef GADGET_H
-#define GADGET_H
 #pragma once
 
-#include <ace/OS_NS_stdlib.h>
-#include <ace/Task.h>
-#include <ace/Stream.h>
-#include <ace/Module.h>
-#include <ace/OS_Memory.h>
-#include <ace/Svc_Handler.h>
-#include <ace/SOCK_Stream.h>
 
 #include <map>
 #include <string>
@@ -20,11 +11,15 @@
 #include "gadgetron_config.h"
 #include "log.h"
 #include <initializer_list>
-
+#include <mutex>
+#include "core/Channel.h"
 #include <stdexcept>
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
+
+
+struct ACE_Message_Block;
 
 namespace Gadgetron{
 
@@ -90,26 +85,25 @@ namespace Gadgetron{
     std::string reference_property_;
   };
 
-  //Forward declarations
-  class GadgetStreamInterface;
+  class EXPORTGADGETBASE ChannelAdaptor {
+  public:
+      int putq(ACE_Message_Block* msg){
+        throw std::runtime_error("Not implemented yet");
 
-  class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
+      };
+  private:
+      std::shared_ptr<Core::OutputChannel> channel;
+  };
+
+  class EXPORTGADGETBASE Gadget
   {
 
   public:
-    typedef ACE_Task<ACE_MT_SYNCH> inherited;
 
-    enum
-    {
-      GADGET_MESSAGE_CONFIG = (ACE_Message_Block::USER_FLAGS << 1)
-    };
 
-    Gadget()
-    : inherited()
-    , desired_threads_(1)
-    , pass_on_undesired_data_(false)
-    , controller_(0)
-    , parameter_mutex_("GadgetParameterMutex")
+
+    Gadget() :
+     pass_on_undesired_data_(false)
     {
 
       gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") +
@@ -119,36 +113,9 @@ namespace Gadgetron{
 
     virtual ~Gadget()
     {
-      if (this->module()) {
-        GDEBUG("Shutting down Gadget (%s)\n", this->module()->name());
-      }
+        GDEBUG("Shutting down Gadget (%s)\n", this->name.c_str());
     }
 
-
-    virtual int init(void)
-    {
-      return 0;
-    }
-
-    virtual int open(void* = 0)
-    {
-      return this->activate( THR_NEW_LWP | THR_JOINABLE, this->desired_threads() );
-    }
-
-    int put(ACE_Message_Block *m, ACE_Time_Value* timeout = 0)
-    {
-      return this->putq(m, timeout);
-    }
-
-    virtual unsigned int desired_threads()
-    {
-      return desired_threads_;
-    }
-
-    virtual void desired_threads(unsigned int t)
-    {
-      desired_threads_ = t;
-    }
 
     virtual bool pass_on_undesired_data()
     {
@@ -160,111 +127,10 @@ namespace Gadgetron{
       pass_on_undesired_data_ = d;
     }
 
-    virtual void set_controller(GadgetStreamInterface* controller) {
-      controller_ = controller;
-    }
 
-    virtual GadgetStreamInterface* get_controller()
-    {
-      return controller_;
-    }
-
-    virtual int close(unsigned long flags)
-    {
-      GDEBUG("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
-      int rval = 0;
-      if (flags == 1) {
-        ACE_Message_Block *hangup = new ACE_Message_Block();
-        hangup->msg_type( ACE_Message_Block::MB_HANGUP );
-        if (this->putq(hangup) == -1) {
-          hangup->release();
-          GDEBUG("Gadget (%s) failed to put hang up message on queue\n", this->module()->name());
-          return GADGET_FAIL;
-        }
-        GDEBUG("Gadget (%s) waiting for thread to finish\n", this->module()->name());
-        rval = this->wait();
-        GDEBUG("Gadget (%s) thread finished\n", this->module()->name());
-        controller_ = 0;
-      }
-      return rval;
-    }
-
-    virtual int svc(void)
-    {
-      for (ACE_Message_Block *m = 0; ;) {
-
-        //GDEBUG("Waiting for message in Gadget (%s)\n", this->module()->name());
-        if (this->getq(m) == -1) {
-          GDEBUG("Gadget (%s) failed to get message from queue\n", this->module()->name());
-          return GADGET_FAIL;
-        }
-        //GDEBUG("Message Received in Gadget (%s)\n", this->module()->name());
-
-        //If this is a hangup message, we are done, put the message back on the queue before breaking
-        if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
-          //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
-          if (this->putq(m) == -1) {
-            GDEBUG("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
-            return GADGET_FAIL;
-          }
-          //GDEBUG("Gadget (%s) breaking loop\n", this->module()->name());
-          break;
-        }
-
-
-        //Is this config info, if so call appropriate process function
-        if (m->flags() & GADGET_MESSAGE_CONFIG) {
-
-          int success;
-          try{ success = this->process_config(m); }
-          catch (std::runtime_error& err){
-            GEXCEPTION(err,"Gadget::process_config() failed\n");
-            success = -1;
-          }
-
-          if (success == -1) {
-            m->release();
-            this->flush();
-            GDEBUG("Gadget (%s) process config failed\n", this->module()->name());
-            return GADGET_FAIL;
-
-          }
-
-          //Push this onto next gadgets queue, other gadgets may need this configuration information
-          if (this->next()) {
-            if (this->next()->putq(m) == -1) {
-              m->release();
-              GDEBUG("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
-              return GADGET_FAIL;
-            }
-          }
-          continue;
-        }
-
-        int success;
-#ifdef NDEBUG //We actually want a full stack trace in debug mode, so only catch in release.
-        try{ success = this->process(m); }
-        catch (std::runtime_error& err){
-          GEXCEPTION(err,"Gadget::process() failed\n");
-          success = -1;
-        }
-#else
-        success = this->process(m);
-#endif
-        if (success == -1){
-          m->release();
-          this->flush();
-          GERROR("Gadget (%s) process failed\n", this->module()->name());
-          return GADGET_FAIL;
-        }
-
-
-      }
-      return 0;
-    }
 
     virtual int set_parameter(const char* name, const char* val, bool trigger = true) {
-      boost::shared_ptr<std::string> old_value = get_string_value(name);
+      std::string old_value = get_string_value(name);
       GadgetPropertyBase* p = this->find_property(name);
 
       if (p) {
@@ -273,32 +139,19 @@ namespace Gadgetron{
         throw std::runtime_error("Attempting to set non-registered property");
       }
 
-      parameter_mutex_.acquire();
+      std::lock_guard<std::mutex> guard(parameter_mutex_);
       parameters_[std::string(name)] = std::string(val);
-      parameter_mutex_.release();
 
       if (trigger) {
-        return parameter_changed(std::string(name), std::string(val), *old_value);
+        return parameter_changed(std::string(name), std::string(val), old_value);
       }
 
       return 0;
     }
 
-    /*
-    virtual int get_bool_value(const char* name) {
-    return (0 == ACE_OS::strcmp(get_string_value(name)->c_str(), "true"));
-    }
 
-    virtual int get_int_value(const char* name) {
-      return ACE_OS::atoi(get_string_value(name)->c_str());
-    }
 
-    virtual double get_double_value(const char* name) {
-      return ACE_OS::atof(get_string_value(name)->c_str());
-    }
-    */
-
-    boost::shared_ptr<std::string> get_string_value(const char* name, unsigned int recursive = 0);
+    std::string get_string_value(const char* name);
 
     /**
     *  This trigger function is called whenever set_parameter is called with the trigger = true;
@@ -332,21 +185,19 @@ namespace Gadgetron{
     GadgetPropertyBase* find_property(const char* name)
     {
       GadgetPropertyBase* p = 0;
-      parameter_mutex_.acquire();
+      std::lock_guard<std::mutex> guard(parameter_mutex_);
       for (std::vector<GadgetPropertyBase*>::iterator it = properties_.begin(); it != properties_.end(); it++) {
         if (std::string(name) == std::string((*it)->name())) {
           p = *it;
           break;
         }
       }
-      parameter_mutex_.release();
       return p;
     }
     void register_property(GadgetPropertyBase* p)
     {
-      parameter_mutex_.acquire();
+      std::lock_guard<std::mutex> guard(parameter_mutex_);
       properties_.push_back(p);
-      parameter_mutex_.release();
     }
 
     const char* get_gadgetron_version() {
@@ -354,24 +205,17 @@ namespace Gadgetron{
     }
 
   protected:
+
     std::vector<GadgetPropertyBase*> properties_;
-
-    virtual int next_step(ACE_Message_Block *m)
-    {
-      return this->put_next(m);//next()->putq(m);
-    }
-
     virtual int process(ACE_Message_Block * m) = 0;
 
     virtual int process_config(ACE_Message_Block * m) {
       return 0;
     }
 
-    unsigned int desired_threads_;
-    unsigned int threads_;
+    std::string name;
     bool pass_on_undesired_data_;
-    GadgetStreamInterface* controller_;
-    ACE_Thread_Mutex parameter_mutex_;
+    std::mutex parameter_mutex_;
   private:
     std::map<std::string, std::string> parameters_;
     std::string gadgetron_version_;
@@ -501,8 +345,8 @@ namespace Gadgetron{
       T value() const
       {
         if (is_reference_) {
-          boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
-          std::stringstream(*val) >> std::boolalpha >> value_;
+          std::string val = this->g_->get_string_value(this->name());
+          std::stringstream(val) >> std::boolalpha >> value_;
         }
         return value_;
       }
@@ -636,7 +480,6 @@ namespace Gadgetron{
         BasicPropertyGadget()
         : Gadget()
         {
-          desired_threads_ = threads.value();
           pass_on_undesired_data_ = pass_on_undesired_data.value();
         }
 
@@ -645,7 +488,7 @@ namespace Gadgetron{
       protected:
         GADGET_PROPERTY(using_cloudbus,bool,"Indicates whether the cloudbus is in use and available", false);
         GADGET_PROPERTY(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", true);
-        GADGET_PROPERTY(threads,int, "Number of threads to run in this Gadget", 1);
+        GADGET_PROPERTY(threads,int, "Number of threads to run in this Gadget (ignored)", 1);
         #ifdef _WIN32
         GADGET_PROPERTY(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");
         #else
@@ -684,7 +527,7 @@ namespace Gadgetron{
       protected:
         int process(ACE_Message_Block* mb)
         {
-
+/*
           GadgetContainerMessage<P1>* m1 = AsContainerMessage<P1>(mb);
 
           GadgetContainerMessage<P2>* m2 = 0;
@@ -711,7 +554,9 @@ namespace Gadgetron{
             }
           }
 
+
           return this->process(m1,m2);
+          */
         }
 
         virtual int process(GadgetContainerMessage<P1>* m1, GadgetContainerMessage<P2>* m2) = 0;
@@ -770,6 +615,7 @@ namespace Gadgetron{
       protected:
           int process(ACE_Message_Block* mb)
           {
+            /*
               GadgetContainerMessage<P1>* m1 = nullptr;
               GadgetContainerMessage<P2>* m2 = nullptr;
 
@@ -801,6 +647,9 @@ namespace Gadgetron{
                   }
               }
 
+                  */
+          throw std::runtime_error("Not implemented yet");
+
           }
 
           virtual int process(GadgetContainerMessage<P1>* m1) = 0;
@@ -808,12 +657,9 @@ namespace Gadgetron{
       };
 
       /* Macros for handling dyamic linking */
-      // #define GADGET_DECLARE(GADGET) GADGETRON_LOADABLE_DECLARE(GADGET)
-      // #define GADGET_FACTORY_DECLARE(GADGET) GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
 
       #define GADGET_DECLARE(GADGET)
       #define GADGET_FACTORY_DECLARE(GADGET) GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
 
     }
 
-    #endif //GADGET_H

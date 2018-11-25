@@ -38,7 +38,7 @@ namespace Gadgetron::Core {
             auto creator = library.get<factory_type>("make_" + gadget_ast.classname);
             libraries.push_back(library);
 
-            return creator(channels, header, gadget_ast.properties;
+            return creator(channels, header, gadget_ast.properties);
         }
 
         std::shared_ptr<Stream> make_node(const AST::Stream &stream_ast,
@@ -49,7 +49,7 @@ namespace Gadgetron::Core {
 
             for (auto &node_ast : stream_ast.nodes) {
                 auto node = boost::apply_visitor(
-                        [this](const auto &ast, auto in, auto out) { return this->make_node(ast, {in,out}); },
+                        [this](const auto &ast, auto in, auto out) { return this->make_node(ast, Channels{in,out}); },
                         node_ast, input_channel,output_channel);
                 input_channel = output_channel;
                 output_channel = std::make_shared<MessageChannel>();

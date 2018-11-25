@@ -30,7 +30,7 @@ namespace Gadgetron{ namespace Core {
         virtual ~TypedMessage(){};
 
 
-    private:
+    protected:
         std::unique_ptr<T> data;
 
     };

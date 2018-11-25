@@ -15,26 +15,7 @@ namespace Gadgetron::Core {
         };
 
 
-        struct Config {
-            std::vector<std::function<Reader*(void)>> reader_factories;
-            std::vector<std::function<Writer*(void)>> writer_factories;
-            std::function<std::shared_ptr<Node>(const Header&)> stream_factory;
-        };
-
-        struct Header {
-
-        };
     };
-
-
-
-    //Should maybe not be here? No worries, cleanups are always fun
-
-
-
-
-
-
 
 }
 
