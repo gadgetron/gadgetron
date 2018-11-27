@@ -6,11 +6,6 @@ if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories( 
-  ${CUDA_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-)
 
 cuda_add_library(gadgetron_toolbox_gpucore SHARED 
     check_CUDA.h
@@ -57,6 +52,15 @@ target_link_libraries(gadgetron_toolbox_gpucore
   ${CUDA_CUSPARSE_LIBRARIES}
   ${MKL_LIBRARIES}
   )
+
+
+target_include_directories(
+        gadgetron_toolbox_gpucore
+        PUBLIC
+  ${CUDA_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+)
 
 install(TARGETS gadgetron_toolbox_gpucore DESTINATION lib COMPONENT main)
 

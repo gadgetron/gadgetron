@@ -1,15 +1,22 @@
-include_directories(
-    ${ISMRMRD_INCLUDE_DIR}
-)
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_SPIRAL__)
+endif ()
 
 add_library(gadgetron_core SHARED
-	ChainBuilder.cpp
+	Channel.h
+	Channel.hpp
     Channel.cpp
     Context.cpp
     Stream.cpp
     MergeNode.cpp
     BranchNode.cpp)
 
+target_include_directories(
+		gadgetron_core
+		PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}
+    ${ISMRMRD_INCLUDE_DIR}
+)
 install(FILES
 	Channel.h
         Channel.hpp
@@ -23,7 +30,9 @@ install(FILES
         BranchNode.h
 		PropteryMixin.h
 		Channel.h
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}/core COMPONENT main)
+		gadgetcore_export.h
+		GadgetronExport.h
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES
         config/Example_Branching_Chain.xml

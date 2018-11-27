@@ -2,15 +2,6 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_EPI__)
 endif ()
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-  ${CMAKE_SOURCE_DIR}/toolboxes/mri/epi
-  ${ARMADILLO_INCLUDE_DIRS}
-)
 
 add_library(gadgetron_epi SHARED 
   EPIReconXGadget.h EPIReconXGadget.cpp
@@ -27,7 +18,8 @@ set_target_properties(gadgetron_epi PROPERTIES VERSION ${GADGETRON_VERSION_STRIN
 
 target_link_libraries(
   gadgetron_epi
-  gadgetron_gadgetbase
+  gadgetron_core
+  gadgetron_mricore
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore_math
@@ -36,7 +28,8 @@ target_link_libraries(
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
 )
 
-install(FILES 
+
+install(FILES
   EPIReconXGadget.h
   EPICorrGadget.h
   EPIPackNavigatorGadget.h

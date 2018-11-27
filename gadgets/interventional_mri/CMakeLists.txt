@@ -2,27 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_INTERVENTIONAL_MRI__)
 endif ()
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-    ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-    ${HDF5_INCLUDE_DIR}
-    ${HDF5_INCLUDE_DIR}/cpp
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${MKL_INCLUDE_DIR}
-    ${ISMRMRD_INCLUDE_DIR}
-)
 
 
 add_library(gadgetron_interventional_mri SHARED 
@@ -40,6 +19,32 @@ target_link_libraries(gadgetron_interventional_mri
     gadgetron_toolbox_gadgettools
     ${ISMRMRD_LIBRARIES} 
     ${ACE_LIBRARIES}
+)
+
+target_include_directories(
+    gadgetron_interventional_mri
+        PUBLIC
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+    ${CMAKE_SOURCE_DIR}/gadgets/mri_core
+    ${CMAKE_SOURCE_DIR}/gadgets/core
+        PRIVATE
+    ${HDF5_INCLUDE_DIR}
+    ${HDF5_INCLUDE_DIR}/cpp
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${MKL_INCLUDE_DIR}
+    ${ISMRMRD_INCLUDE_DIR}
 )
 
 install(FILES 

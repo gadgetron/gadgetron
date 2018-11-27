@@ -5,7 +5,7 @@
 #include <memory>
 #include <pugixml.hpp>
 #include <boost/optional.hpp>
-#include <boost/range.hpp>
+#include <boost/range/algorithm/transform.hpp>
 #include <log.h>
 #include <boost/parameter/name.hpp>
 
@@ -90,7 +90,8 @@ namespace {
 
         AST::Stream parse_stream(const pugi::xml_node& stream_node){
             std::vector<AST::Node> nodes;
-            boost::transform([](auto& a){return a;},parse_gadgets(stream_node),std::back_inserter(nodes));
+            boost::transform(parse_gadgets(stream_node),std::back_inserter(nodes),
+                    [](auto gadget){return AST::Node(gadget);});
 
             return AST::Stream{"main",nodes};
         }

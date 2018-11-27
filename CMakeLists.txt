@@ -1,17 +1,27 @@
-cmake_minimum_required(VERSION 2.8.7) #Currently targeting to TRAVIS CI cmake version from 2011
+cmake_minimum_required(VERSION 3.2...3.12 FATAL_ERROR)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else()
+    cmake_policy(VERSION 3.12)
+endif()
+
 foreach(p
-    CMP0025 # CMake 3.0 Compiler id for Apple Clang is now ``AppleClang``.
-    CMP0042 # CMake 3.0 ``MACOSX_RPATH`` is enabled by default.
-    CMP0046 # CMake 3.0 Error on non-existent dependency in add_dependencies.
-    CMP0054 # CMake 3.1 Only interpret ``if()`` arguments as variables or keywords when unquoted.
-    CMP0056 # CMake 3.2 Honor link flags in ``try_compile()`` source-file signature.
-    CMP0058 # CMake 3.3 Ninja requires custom command byproducts to be explicit.
-    )
+  CMP0025 # CMake 3.0 Compiler id for Apple Clang is now ``AppleClang``.
+  CMP0042 # CMake 3.0 ``MACOSX_RPATH`` is enabled by default.
+  CMP0046 # CMake 3.0 Error on non-existent dependency in add_dependencies.
+  CMP0054 # CMake 3.1 Only interpret ``if()`` arguments as variables or keywords when unquoted.
+  CMP0056 # CMake 3.2 Honor link flags in ``try_compile()`` source-file signature.
+  CMP0058 # CMake 3.3 Ninja requires custom command byproducts to be explicit.
+  )
   if(POLICY ${p})
     cmake_policy(SET ${p} NEW)
   endif()
 endforeach()
-project(GADGETRON)
+
+project(GADGETRON
+        DESCRIPTION "The Gadgetron image reconstruction framework"
+        LANGUAGES CXX C)
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
@@ -258,7 +268,9 @@ else()
   find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED)
 endif()
 
-find_package(ACE REQUIRED)
+
+add_library(boost INTERFACE IMPORTED)
+set_property(TARGET boost PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 
 option(USE_CUDA "Build with CUDA support" On)
 
@@ -327,6 +339,9 @@ if(ARMADILLO_FOUND)
     endif ()
     unset(_armadillo_blas_long_long)
   endif()
+
+  add_library(armadillo INTERFACE IMPORTED)
+  set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
 
 endif()
 
@@ -426,10 +441,10 @@ find_package(PLplot)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 
-if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
+if (ISMRMRD_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
   add_subdirectory(gadgets)
 else()
-  message("Required dependencies for gadget compilation not found (ACE, ISMRMRD, FFTW3, HDF5).")
+  message("Required dependencies for gadget compilation not found ( ISMRMRD, FFTW3, HDF5).")
 endif()
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)

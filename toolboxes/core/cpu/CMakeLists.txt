@@ -2,17 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUCORE__)
 endif ()
 
-include_directories(
-    ${FFTW3_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/apps/gadgetron
-)
+
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
@@ -69,6 +59,20 @@ add_library(gadgetron_toolbox_cpucore SHARED
                     ${header_files} 
                     ${image_files}  
                     ${algorithm_files} )
+target_include_directories(
+        gadgetron_toolbox_cpucore
+    PUBLIC
+    ${FFTW3_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_BINARY_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron
+)
 
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

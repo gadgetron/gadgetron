@@ -49,8 +49,9 @@ namespace Gadgetron::Core {
 
             for (auto &node_ast : stream_ast.nodes) {
                 auto node = boost::apply_visitor(
-                        [this](const auto &ast, auto in, auto out) { return this->make_node(ast, Channels{in,out}); },
-                        node_ast, input_channel,output_channel);
+                        [this,&input_channel,&output_channel](auto &ast) {
+                            return this->make_node(ast, Channels{input_channel,output_channel}); },
+                        node_ast);
                 input_channel = output_channel;
                 output_channel = std::make_shared<MessageChannel>();
             }

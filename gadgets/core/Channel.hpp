@@ -1,4 +1,4 @@
-#pragma once
+    #pragma once
 
 namespace Gadgetron::Core {
     template<class T>
@@ -87,12 +87,12 @@ namespace Gadgetron::Core {
 
     };
 
-    OutputChannel::Iterator begin(OutputChannel &channel) {
+    inline OutputChannel::Iterator begin(OutputChannel &channel) {
         return OutputChannel::Iterator(&channel);
     }
 
     template<class T>
-    void OutputChannel::push(std::unique_ptr <T> &&ptr) {
+    inline void OutputChannel::push(std::unique_ptr <T> &&ptr) {
         this->push_message(std::unique_ptr<Message>(new TypedMessage<T>(ptr)));
 
     }

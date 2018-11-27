@@ -3,75 +3,17 @@ if (WIN32)
 endif ()
 
 find_package(ZFP)
-if (ZFP_FOUND)
-    message("ZFP Found")
-    add_definitions(-DGADGETRON_COMPRESSION_ZFP)
-    include_directories(${ZFP_INCLUDE_DIR})
-else ()
-    message("ZFP NOT Found")
-endif ()
 
 
-if (MKL_FOUND)
-    # This is a fix for the bug in SVD when MKL is multi-threaded
-    message("MKL Found, enabling MKL for mri_core gadgets.")
-    add_definitions(-DHAVE_MKL)
-    # These are needed to get the linking to work properly when
-    # MKL is installed, but Armadillo is NOT using it.
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    include_directories( ${MKL_INCLUDE_DIR} )
-    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif ()
 
-find_package(HDF5 1.8 REQUIRED COMPONENTS C)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/log
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/operators
-    ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/solvers 
-    ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
-    ${CMAKE_SOURCE_DIR}/toolboxes/image_io
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
-    ${CMAKE_SOURCE_DIR}/toolboxes/denoise
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${MKL_INCLUDE_DIR}
-    ${ISMRMRD_INCLUDE_DIR}
-    ${HDF5_C_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-)   
 
 if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
     list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
     list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
     list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
-    list(APPEND OPTIMIZED_GADGET_LIBS gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES})
+    list(APPEND OPTIMIZED_GADGET_LIBS gadgetron_toolbox_cpucore_math armadillo)
 elseif (ARMADILLO_FOUND)
     message("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif ()
@@ -233,7 +175,7 @@ add_library(gadgetron_mricore SHARED
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_mricore 
-    gadgetron_gadgetbase
+    gadgetron_core
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
@@ -242,9 +184,8 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_hostutils
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
-    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
     ${OPTIMIZED_GADGET_LIBS}
-    ${Boost_LIBRARIES}
+    boost
 )
 if(ARMADILLO_FOUND)
    target_link_libraries(gadgetron_mricore
@@ -254,8 +195,39 @@ if(ARMADILLO_FOUND)
 )
 endif()
 
+target_include_directories(
+        gadgetron_mricore
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 if (ZFP_FOUND)
-   target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
+    message("ZFP Found")
+    add_definitions(-DGADGETRON_COMPRESSION_ZFP)
+    target_include_directories(
+            gadgetron_mricore
+            PUBLIC
+            ${ZFP_INCLUDE_DIR})
+
+    target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
+else ()
+    message("ZFP NOT Found")
+endif ()
+
+
+
+if (MKL_FOUND)
+    # This is a fix for the bug in SVD when MKL is multi-threaded
+    message("MKL Found, enabling MKL for mri_core gadgets.")
+    add_definitions(-DHAVE_MKL)
+    # These are needed to get the linking to work properly when
+    # MKL is installed, but Armadillo is NOT using it.
+    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+    list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+    target_include_directories(gadgetron_mricore
+            PUBLIC
+            ${MKL_INCLUDE_DIR} )
+    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 endif ()
 
 install(FILES 

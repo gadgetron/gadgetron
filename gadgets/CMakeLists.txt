@@ -7,30 +7,15 @@ endif ()
 find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
 
-include_directories(
-  ${CMAKE_BINARY_DIR}/apps/gadgetron
-  ${ACE_INCLUDE_DIR} 
-  ${Boost_INCLUDE_DIR}
-  ${FFTW3_INCLUDE_DIR}
-  ${ISMRMRD_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core/
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-  )
+
 
 add_subdirectory(core)
 add_subdirectory(mri_core)
-
 add_subdirectory(interventional_mri)
-if (ARMADILLO_FOUND)
   add_subdirectory(cmr)
-endif()
 
+add_subdirectory(epi)
+add_subdirectory(fatwater)
 
 if(BART_FOUND)
   add_subdirectory(bart)
@@ -39,12 +24,6 @@ else()
 endif()
 
 
-if (ARMADILLO_FOUND)
-  add_subdirectory(epi)
-  add_subdirectory(fatwater)
-elseif (ARMADILLO_FOUND)
-  message("Armadillo not found, NOT compiling EPI or Fat/water Gadgets")
-endif ()
 
 
 if (CUDA_FOUND)
@@ -60,40 +39,40 @@ endif()
 
 add_subdirectory(spiral)
 add_subdirectory(grappa)
-add_subdirectory(distributed)
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB gadgets")
   add_subdirectory(matlab)
 endif()
+#
+#if (BUILD_PYTHON_SUPPORT)
+#  if(BUILD_WITH_PYTHON3)
+#    find_package(Boost COMPONENTS python3 system thread)
+#    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
+#  else()
+#    find_package(Boost COMPONENTS python system thread)
+#    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
+#  endif()
+#
+#  # Note: main CMakeLists.txt already finds PythonLibs and NumPy
+#
+#  if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+#    message(STATUS "PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
+#    message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
+#    message(STATUS "NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
+#    message(STATUS "Compiling Python Gadgets")
+#    add_subdirectory(python)
+#    add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
+#  else ()
+#    if(NOT Boost_PYTHON_FOUND)
+#        message(STATUS "Boost Python NOT found, NOT compiling Python Gadgets")
+#    endif()
+#    set(BUILD_PYTHON_SUPPORT OFF)
+#  endif ()
+#endif () # BUILD_PYTHON_SUPPORT
 
-if (BUILD_PYTHON_SUPPORT)
-  if(BUILD_WITH_PYTHON3)
-    find_package(Boost COMPONENTS python3 system thread)
-    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
-  else()
-    find_package(Boost COMPONENTS python system thread)
-    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
-  endif()
-
-  # Note: main CMakeLists.txt already finds PythonLibs and NumPy
-
-  if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
-    message(STATUS "PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
-    message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
-    message(STATUS "NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
-    message(STATUS "Compiling Python Gadgets")
-    add_subdirectory(python)   
-    add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
-  else ()
-    if(NOT Boost_PYTHON_FOUND)
-        message(STATUS "Boost Python NOT found, NOT compiling Python Gadgets")
-    endif()
-    set(BUILD_PYTHON_SUPPORT OFF)
-  endif ()
-endif () # BUILD_PYTHON_SUPPORT
-
-add_subdirectory(util)
+#add_subdirectory(distributed)
+#add_subdirectory(util)
 
 find_package(DCMTK)
 if(DCMTK_FOUND)

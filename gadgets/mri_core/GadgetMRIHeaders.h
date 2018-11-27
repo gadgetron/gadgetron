@@ -1,7 +1,6 @@
 #ifndef GADGETMRIHEADERS_H
 #define GADGETMRIHEADERS_H
 
-#include <ace/Basic_Types.h>
 
 //Data flags
 /*

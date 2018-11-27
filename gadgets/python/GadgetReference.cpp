@@ -22,8 +22,7 @@ namespace Gadgetron {
     int GadgetReference::return_recondata(boost::python::object rec) {
         auto m1 = new GadgetContainerMessage<IsmrmrdReconData>(boost::python::extract<IsmrmrdReconData>(rec)());
         if (gadget_) {
-            ACE_Time_Value nowait(ACE_OS::gettimeofday());
-            if (gadget_->next()->putq(m1, &nowait) == -1) {
+            if (gadget_->next()->putq(m1 ) == -1) {
                 m1->release();
                 return GADGET_FAIL;
             }
@@ -42,8 +41,7 @@ namespace Gadgetron {
         auto m1 = new GadgetContainerMessage<IsmrmrdImageArray>(boost::python::extract<IsmrmrdImageArray>(rec)());
         if (gadget_)
         {
-            ACE_Time_Value nowait(ACE_OS::gettimeofday());
-            if (gadget_->next()->putq(m1, &nowait) == -1)
+            if (gadget_->next()->putq(m1 ) == -1)
             {
                 m1->release();
                 return GADGET_FAIL;
@@ -81,10 +79,8 @@ namespace Gadgetron {
         }
 
         if (gadget_) {
-            //ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,1000); //1ms from now
-            ACE_Time_Value nowait(ACE_OS::gettimeofday());
             //GDEBUG("Returning data (%s)\n", gadget_->module()->name());
-            if (gadget_->next()->putq(m1, &nowait) == -1) {
+            if (gadget_->next()->putq(m1) == -1) {
                 m1->release();
                 //if (gadget_->next()->putq(m1) == -1) {
                 /*

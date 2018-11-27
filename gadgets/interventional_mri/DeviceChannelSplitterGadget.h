@@ -1,5 +1,4 @@
-#ifndef DEVICECHANNELSPLITTERGADGET_H
-#define DEVICECHANNELSPLITTERGADGET_H
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
@@ -20,7 +19,7 @@ namespace Gadgetron{
   };
   
   class EXPORTGADGETSINTERVENTIONAL_MRI DeviceChannelSplitterGadgetUSHORT :
-  public DeviceChannelSplitterGadget<ACE_UINT16>
+  public DeviceChannelSplitterGadget<uint16_t>
   {
   public:
     GADGET_DECLARE(DeviceChannelSplitterGadgetUSHORT);
@@ -41,4 +40,3 @@ namespace Gadgetron{
   };
 }
 
-#endif //DEVICECHANNELSPLITTERGADGET_H

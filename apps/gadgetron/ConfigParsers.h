@@ -5,7 +5,7 @@
 #include "AST.h"
 
 namespace Gadgetron {
-    GadgetronXML::GadgetStreamConfiguration parse_stream_configuration(std::istream &stream);
+    AST::Chain parse_stream_configuration(std::istream &stream);
 }
 
 #endif //GADGETRON_CONFIGPARSERS_H

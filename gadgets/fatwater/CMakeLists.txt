@@ -2,15 +2,6 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETS_FATWATER__)
 endif ()
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-  ${CMAKE_SOURCE_DIR}/toolboxes/fatwater
-)
 
 add_library(gadgetron_fatwater SHARED 
   FatWaterGadget.h FatWaterGadget.cpp
@@ -20,7 +11,8 @@ set_target_properties(gadgetron_fatwater PROPERTIES VERSION ${GADGETRON_VERSION_
 
 target_link_libraries(
   gadgetron_fatwater
-  gadgetron_gadgetbase
+  gadgetron_core
+  gadgetron_mricore
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore_math

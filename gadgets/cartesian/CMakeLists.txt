@@ -2,9 +2,6 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_CARTESIAN__)
 endif ()
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  )
 
 add_library(gadgetron_cartesian SHARED 
   gadgetron_cartesian_export.h
@@ -15,10 +12,10 @@ add_library(gadgetron_cartesian SHARED
 set_target_properties(gadgetron_cartesian PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore 
-  gadgetron_gadgetbase
+  gadgetron_core
   gadgetron_toolbox_log
+  gadgetron_mricore
   ${ISMRMRD_LIBRARIES}
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
 if(ARMADILLO_FOUND)

@@ -101,8 +101,8 @@
                 gadgetron_toolbox_log
                 gadgetron_toolbox_cpucore_math 
                 gadgetron_toolbox_image_analyze_io
-                ${ARMADILLO_LIBRARIES}
-                optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
+               armadillo
+               )
 
     else ()
         message("cpureg library will not be built ... ")

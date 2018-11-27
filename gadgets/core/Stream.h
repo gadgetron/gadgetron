@@ -1,6 +1,4 @@
-#ifndef GADGETRON_STREAM_H
-#define GADGETRON_STREAM_H
-
+#pragma once
 #include <memory>
 #include "Message.h"
 #include "Channel.h"
@@ -10,7 +8,7 @@ namespace Gadgetron::Core {
 
     class Stream {
     public:
-        Stream(const std::string &stream_name, std::shared_ptr<InputChannel<Message>> channel) : name(stream_name),
+        Stream(const std::string &stream_name, const std::shared_ptr<InputChannel<Message>>& channel) : name(stream_name),
                                                                                                  output(channel) {}
 
         virtual std::shared_ptr<InputChannel<Message>> output_channel() { return output;}
@@ -35,4 +33,3 @@ namespace Gadgetron::Core {
 }
 
 
-#endif //GADGETRON_STREAM_H

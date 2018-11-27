@@ -28,8 +28,7 @@ target_link_libraries(
     gadgetron_toolbox_cpucore_math
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
-    optimized ${ACE_LIBRARIES}
-    debug ${ACE_DEBUG_LIBRARY}
+
 )
 
 if (UNIX AND CUDA_FOUND)
