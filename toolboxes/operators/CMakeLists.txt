@@ -1,9 +1,4 @@
-include_directories(
-  ${Boost_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  )
+
 
 set(operator_header_files 
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/generalOperator.h
@@ -28,9 +23,7 @@ set(operator_header_files
 install(FILES ${operator_header_files}
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-if (ARMADILLO_FOUND)
-  add_subdirectory(cpu)
-endif ()
+add_subdirectory(cpu)
 
 if (CUDA_FOUND)
   add_subdirectory(gpu)

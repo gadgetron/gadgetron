@@ -2,11 +2,7 @@ if (WIN32)
 add_definitions(-D__BUILD_GADGETRON_GPUREG__)
 endif ()
 
-include_directories(   
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
-  ${CUDA_INCLUDE_DIRS}
-)
+
 
 cuda_add_library(gadgetron_toolbox_gpureg SHARED 
   cuOpticalFlowSolver.cu 
@@ -17,6 +13,9 @@ cuda_add_library(gadgetron_toolbox_gpureg SHARED
 #  cuRegistration_utils.cu
   )
 
+target_include_directories(gadgetron_toolbox_gpureg
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(gadgetron_toolbox_gpureg PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_toolbox_gpureg 

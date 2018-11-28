@@ -233,7 +233,6 @@ else ()
   endif()
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/toolboxes/log)
 
 # whether to suppress compilation warnings
 option(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
@@ -357,7 +356,11 @@ endif()
 
 option(USE_MKL OFF)
 if (USE_MKL)
-  find_package(MKL)
+  find_package(MKL REQUIRED)
+  add_library(mkl INTERFACE IMPORTED)
+  set_property(TARGET mkl PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
+  set_property(TARGET mkl PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
+  set_property(TARGET mkl PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
 endif()
 
 if (MKL_FOUND)

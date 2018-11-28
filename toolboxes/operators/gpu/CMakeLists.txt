@@ -2,18 +2,7 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_GPUOPERATORS__)
 endif ()
 
-if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
-include_directories(
-  ${CUDA_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CUDA_INCLUDE_DIRS}
-  )
 
 cuda_add_library(gadgetron_toolbox_gpuoperators SHARED 
   ../generalOperator.h
@@ -39,6 +28,11 @@ target_link_libraries(gadgetron_toolbox_gpuoperators
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
+
+
+target_include_directories(gadgetron_toolbox_gpuoperators
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 install(TARGETS gadgetron_toolbox_gpuoperators DESTINATION lib COMPONENT main)
 

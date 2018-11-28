@@ -1,15 +1,4 @@
-include_directories(
-    ${CMAKE_BINARY_DIR}/apps/gadgetron
-    ${CMAKE_BINARY_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${ISMRMRD_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${PYTHON_INCLUDE_PATH}
-    ${NUMPY_INCLUDE_DIRS}
-    ${ACE_INCLUDE_DIR})
+
 
 set(gadgetron_toolbox_python_header_files python_converters.h
                                         python_export.h
@@ -40,6 +29,9 @@ target_link_libraries(gadgetron_toolbox_python
     ${ACE_LIBRARIES}
     gadgetron_toolbox_log)
 
+target_include_directories(gadgetron_toolbox_python
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(gadgetron_toolbox_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 if (WIN32)
     # only add this definition to the library, not the example binaries

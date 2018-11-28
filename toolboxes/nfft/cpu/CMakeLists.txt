@@ -7,17 +7,7 @@ if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories( 
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_BINARY_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/operators
-    ${Boost_INCLUDE_DIR}
-    ${FFTW3_INCLUDE_DIR}
-  )
+
 
 add_library(gadgetron_toolbox_cpunfft SHARED 
     hoNFFT.h
@@ -27,6 +17,9 @@ add_library(gadgetron_toolbox_cpunfft SHARED
 
 set_target_properties(gadgetron_toolbox_cpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
+target_include_directories(gadgetron_toolbox_cpunfft
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(gadgetron_toolbox_cpunfft 
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpucore
