@@ -1,0 +1,10 @@
+#ifndef GADGETRON_WAVEFORMREADER_H
+#define GADGETRON_WAVEFORMREADER_H
+
+
+class WaveformReader {
+
+};
+
+
+#endif //GADGETRON_WAVEFORMREADER_H

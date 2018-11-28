@@ -23,14 +23,15 @@ namespace Gadgetron::Core {
     class Reader {
     public:
         virtual std::unique_ptr<Message> read(std::istream &stream) = 0;
-
         virtual uint16_t port() = 0;
+        virtual ~Reader() {};
     };
 
     class Writer {
     public:
         virtual void write(std::ostream &stream, std::unique_ptr<Message> &&message) = 0;
         virtual std::vector<std::type_index> supported_types() const = 0;
+        virtual ~Writer() {};
     };
 }
 

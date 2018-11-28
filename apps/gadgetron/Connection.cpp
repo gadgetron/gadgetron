@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <boost/dll/shared_library.hpp>
 
 #include "log.h"
 #include "gadgetron_config.h"
@@ -17,27 +18,6 @@ namespace {
 
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Server;
-
-    enum class message_id : uint16_t {
-        FILENAME = 1,
-        CONFIG   = 2,
-        HEADER   = 3,
-        CLOSE    = 4,
-        TEXT     = 5,
-        QUERY    = 6
-    };
-
-    class unexpected_message_type : public std::runtime_error {
-    public:
-        unexpected_message_type(uint16_t mid) : std::runtime_error(message(mid)) {}
-
-    private:
-        static std::string message(uint16_t mid) {
-            std::stringstream message;
-            message << "Unexpected message id: " << mid;
-            return message.str();
-        }
-    };
 
     template <class T>
     void read_into(std::istream &stream, T &t) {
@@ -133,11 +113,26 @@ namespace {
 
     struct Chain {
         // Gadgetron::Core::Stream stream;
-        std::map<message_id, std::shared_ptr<Reader>> readers;
+        std::map<uint16_t, std::shared_ptr<Reader>> readers;
     };
 
-    std::map<message_id, std::shared_ptr<Reader>> build_reader_map(const Config &config) {
-        return std::map<message_id, std::shared_ptr<Reader>>();
+    std::map<uint16_t, std::shared_ptr<Reader>> build_reader_map(const Config &config, const Context &context) {
+
+        boost::filesystem::path path = context.paths.gadgetron_home / "lib" / "libgadgetron_core_readers.so";
+
+        auto library = boost::dll::shared_library(
+                path,
+                boost::dll::load_mode::append_decorations
+        );
+        auto creator = library.get<std::function<std::shared_ptr<Reader>()>>("reader_factory");
+
+        auto reader = creator();
+
+        std::map<uint16_t, std::shared_ptr<Reader>> readers = {
+                {1008, reader}
+        };
+
+        return readers;
     }
 
     Chain build_processing_chain(std::future<Config> future_config,
@@ -152,13 +147,13 @@ namespace {
 
         GINFO("All right, I have what I need. Building things.\n");
 
-        std::map<message_id, std::shared_ptr<Reader>> readers = build_reader_map(config);
+        std::map<uint16_t, std::shared_ptr<Reader>> readers = build_reader_map(config, context);
         return Chain{readers};
     }
 
-    void add_reader_to_handlers(std::map<message_id, std::function<void(std::iostream&)>> &map, message_id id, std::future<Chain> &chain) {
+    void add_reader_to_handlers(std::map<uint16_t, std::function<void(std::iostream&)>> &map, uint16_t id, std::future<Chain> &chain) {
 
-        GDEBUG_STREAM("Adding reader for message id: " << static_cast<int>(id) << std::endl);
+        GDEBUG_STREAM("Adding reader for message id: " << id << std::endl);
 
         auto reader = chain.get().readers.at(id);
 
@@ -204,16 +199,18 @@ void Connection::process_input() {
             paths_
     );
 
-    std::map<message_id, std::function<void(std::iostream&)>> handlers = {
-        {message_id::FILENAME, ConfigFileHandler(config_promise, paths_)},
-        {message_id::CONFIG, ConfigHandler(config_promise)},
-        {message_id::HEADER, HeaderHandler(header_promise)},
-        {message_id::CLOSE, CloseHandler()},
-        {message_id::QUERY, QueryHandler()}
+
+
+    std::map<uint16_t, std::function<void(std::iostream&)>> handlers = {
+        {1 /* message_id::FILENAME */, ConfigFileHandler(config_promise, paths_)},
+        {2 /* message_id::CONFIG */, ConfigHandler(config_promise)},
+        {3 /* message_id::HEADER */, HeaderHandler(header_promise)},
+        {4 /* message_id::CLOSE */, CloseHandler()},
+        {6 /* message_id::QUERY */, QueryHandler()}
     };
 
     while (true) {
-        message_id id = read_t<message_id>(stream_);
+        uint16_t id = read_t<uint16_t>(stream_);
 
         GDEBUG_STREAM("Handling message with id: " << static_cast<int>(id) << std::endl);
 

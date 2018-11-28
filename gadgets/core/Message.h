@@ -16,7 +16,7 @@ namespace Gadgetron{ namespace Core {
 
         }
 
-        TypedMessage(std::unique_ptr<T>&& input_ptr) : data(input_ptr) {
+        TypedMessage(std::unique_ptr<T>&& input_ptr) : data(std::move(input_ptr)) {
 
         }
 
