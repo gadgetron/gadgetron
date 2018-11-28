@@ -2,10 +2,4 @@
 
 namespace Gadgetron::Core
 {
-    class MergeNode {
-
-
-
-
-    };
 }

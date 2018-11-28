@@ -2,24 +2,29 @@
 #include <typeindex>
 #include <iostream>
 #include <sstream>
-#include "Connection.h"
+#include <string>
 
 #include "log.h"
 #include "gadgetron_config.h"
 
+#include "Connection.h"
+
 #include "Stream.h"
 #include "Server.h"
+#include "Config.h"
 
 namespace {
 
     using namespace Gadgetron::Core;
+    using namespace Gadgetron::Server;
 
     enum class message_id : uint16_t {
         FILENAME = 1,
         CONFIG   = 2,
         HEADER   = 3,
         CLOSE    = 4,
-        TEXT     = 5
+        TEXT     = 5,
+        QUERY    = 6
     };
 
     class unexpected_message_type : public std::runtime_error {
@@ -62,122 +67,171 @@ namespace {
         return std::string(buffer.get());
     }
 
-    std::string read_config_string(std::istream &stream, Context::Paths &paths) {
+    class ConfigFileHandler {
+    public:
+        ConfigFileHandler(std::promise<Gadgetron::Server::Config> &config_promise, const Context::Paths &paths)
+                : promise_(config_promise), paths_(paths) {}
 
-        auto mid = read_t<message_id>(stream);
+        void operator()(std::iostream &stream) {
+            boost::filesystem::path filename = paths_.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
+            std::ifstream config_stream(filename.string());
 
-        if (mid == message_id::FILENAME) {
+            GDEBUG_STREAM("Reading config file: " << filename << std::endl);
+
+            promise_.set_value(parse_config(config_stream));
         }
 
-        if (mid == message_id::CONFIG) {
-            return read_string_from_stream(stream);
+    private:
+        std::promise<Config> &promise_;
+        const Context::Paths &paths_;
+    };
+
+    class ConfigHandler {
+    public:
+        ConfigHandler(std::promise<Config> &config_promise) : promise_(config_promise){}
+
+        void operator()(std::iostream &stream) {
+            std::stringstream config_stream(read_string_from_stream(stream));
+
+            promise_.set_value(parse_config(config_stream));
         }
 
-        throw unexpected_message_type(static_cast<uint16_t>(mid));
+    private:
+        std::promise<Config> &promise_;
+    };
+
+    class HeaderHandler {
+    public:
+        HeaderHandler(std::promise<Context::Header> &header_promise) : promise_(header_promise) {}
+
+        void operator()(std::iostream &stream) {
+            std::string raw_header(read_string_from_stream(stream));
+
+            ISMRMRD::IsmrmrdHeader header;
+            ISMRMRD::deserialize(raw_header.c_str(), header);
+
+            promise_.set_value(header);
+        }
+
+    private:
+        std::promise<Context::Header> &promise_;
+    };
+
+    class CloseHandler {
+    public:
+        void operator()(std::iostream &stream) {
+            throw std::runtime_error("Someone closed a thing.");
+        }
+    };
+
+    class QueryHandler {
+    public:
+        void operator()(std::iostream &stream) {
+
+        }
+    };
+
+    struct Chain {
+        // Gadgetron::Core::Stream stream;
+        std::map<message_id, std::shared_ptr<Reader>> readers;
+    };
+
+    Chain build_processing_chain(std::future<Config> config,
+            std::future<Context::Header> header,
+            const Context::Paths paths) {
+
+        GINFO("Hello, I'm building a processing chain.\n");
+
+        config.get();
+
+        GINFO("Nice - a config! Thank you!\n");
+
+        header.get();
+
+        GINFO("Nice - a header! I can do things now!\n");
+
+        return Chain();
     }
 
-    std::string read_params_string(std::istream &stream) {
+    void add_reader_to_handlers(std::map<message_id, std::function<void(std::iostream&)>> &map, message_id id, std::future<Chain> &chain) {
 
-        auto mid = read_t<message_id>(stream);
+        GDEBUG_STREAM("Adding reader for message id: " << static_cast<int>(id) << std::endl);
 
-        if (mid == message_id::HEADER) {
-            return read_string_from_stream(stream);
-        }
+        auto reader = chain.get().readers.at(id);
 
-        throw unexpected_message_type(static_cast<uint16_t>(mid));
+        map[id] = [=](std::iostream &stream) {
+            auto message = reader->read(stream);
+        };
     }
 }
 
-class ConfigFileHandler {
-public:
-    ConfigFileHandler(std::promise<Context::Config> &config_promise, const Context::Paths &paths) : paths_(paths) {}
 
-    void operator()(std::iostream &stream) {
-        boost::filesystem::path filename = paths_.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
 
-        std::ifstream config_stream(filename.string());
-
-        std::string config((std::istream_iterator<char>(config_stream)),
-                            std::istream_iterator<char>());
-
-        GINFO_STREAM(config);
-    }
-
-private:
-    const Context::Paths &paths_;
-};
-
-class ConfigHandler {
-public:
-    ConfigHandler(std::promise<Context::Config> &config_promise) {}
-
-    void operator()(std::iostream &stream) {
-
-    }
-};
-
-class HeaderHandler {
-public:
-    HeaderHandler(std::promise<Context::Header> &header_promise) {}
-
-    void operator()(std::iostream &stream) {
-
-    }
-};
-
-class CloseHandler {
-public:
-    CloseHandler(std::promise<Context::Header> &header_promise) {}
-
-    void operator()(std::iostream &stream) {
-
-    }
-};
-
-Connection::Connection(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket)
+Connection::Connection(Context::Paths &paths, tcp::socket &socket)
     : stream_(std::move(socket)), paths_(paths) {}
 
 void Connection::start() {
 
     auto self = shared_from_this();
 
-    std::thread connection_thread([=]() {
+    std::thread input_thread([=]() {
         self->process_input();
     });
 
-    connection_thread.detach();
+    std::thread output_thread([=]() {
+        self->process_output();
+    });
+
+    input_thread.detach();
+    output_thread.detach();
 }
 
 void Connection::process_input() {
 
-    GDEBUG_STREAM("Connection thread running.");
+    GDEBUG_STREAM("Input thread running.");
 
-    Context::Config config = read_config(stream_);
-    Context::Header header = read_header(stream_);
+    std::promise<Config> config_promise;
+    std::promise<Context::Header> header_promise;
 
-    struct {
-        std::map<message_id, std::unique_ptr<Reader>> readers;
-        std::shared_ptr<MessageChannel> input;
-    } stuff = build_streams_and_stuff(config, header);
+    std::future<Chain> chain = std::async(
+            build_processing_chain,
+            config_promise.get_future(),
+            header_promise.get_future(),
+            paths_
+    );
 
-    try {
-        while (true) {
-            message_id mid;
-            read_into(stream_, mid);
+    std::map<message_id, std::function<void(std::iostream&)>> handlers = {
+        {message_id::FILENAME, ConfigFileHandler(config_promise, paths_)},
+        {message_id::CONFIG, ConfigHandler(config_promise)},
+        {message_id::HEADER, HeaderHandler(header_promise)},
+        {message_id::CLOSE, CloseHandler()},
+        {message_id::QUERY, QueryHandler()}
+    };
 
-            Reader &reader = *stuff.readers.at(mid);
-            stuff.input->put(reader.read(stream_));
+    while (true) {
+        message_id id = read_t<message_id>(stream_);
+
+        GDEBUG_STREAM("Handling message with id: " << static_cast<int>(id) << std::endl);
+
+        if (!handlers.count(id)) {
+            add_reader_to_handlers(handlers, id, chain);
         }
-    } catch (...) {
-        stuff.input->close();
+
+        auto handler = handlers.at(id);
+        handler(stream_);
     }
+}
+
+void Connection::process_output() {
+
+    GDEBUG_STREAM("Output thread running.");
 
 
 }
 
 std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket) {
 
-    auto connection = std::make_shared<Connection>(paths, socket);
+    auto connection = std::shared_ptr<Connection>(new Connection(paths, socket));
     connection->start();
 
     return connection;

@@ -8,21 +8,26 @@
 
 #include "log.h"
 
-class Connection : public std::enable_shared_from_this<Connection> {
+namespace Gadgetron::Server {
 
-    using tcp = boost::asio::ip::tcp;
+    class Connection : public std::enable_shared_from_this<Connection> {
 
-public:
-    static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket);
+        using tcp = boost::asio::ip::tcp;
 
-private:
-    Connection(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket);
+    public:
+        static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket);
 
-    void start();
-    void process_input();
+    private:
+        Connection(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket);
 
-    tcp::iostream stream_;
-    Gadgetron::Core::Context::Paths paths_;
-};
+        void start();
+        void process_input();
+        void process_output();
+
+        tcp::iostream stream_;
+        Gadgetron::Core::Context::Paths paths_;
+    };
+}
+
 
 #endif //GADGETRON_CONNECTION_H

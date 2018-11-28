@@ -7,23 +7,18 @@ endif ()
 
 add_executable(gadgetron
         main.cpp
-        ChainBuilder.h
-        ChainBuilder.cpp
-        ConfigParsers.cpp
-#        GadgetMessageInterface.h
         GadgetronExport.h
         gadgetron_xml.h
-        Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h)
+        Config.cpp Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h)
 
 target_link_libraries(gadgetron
         gadgetron_core
         gadgetron_gadgetbase
         gadgetron_toolbox_log
-        gadgetron_toolbox_rest
         gadgetron_toolbox_gadgettools
-        gadgetron_toolbox_cloudbus
         pugixml
-        )
+        ${ISMRMRD_LIBRARIES})
+
 target_include_directories(gadgetron
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}

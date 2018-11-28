@@ -11,6 +11,7 @@
 #include "Connection.h"
 
 using namespace boost::filesystem;
+using namespace Gadgetron::Server;
 
 Server::Server(boost::asio::io_service &io_service, const boost::program_options::variables_map &args)
     : args_(args) , acceptor_(io_service, tcp::endpoint(tcp::v4(), args["port"].as<unsigned short>())) {

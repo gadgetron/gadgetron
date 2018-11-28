@@ -215,6 +215,9 @@ def ensure_gadgetron_instance(args, config):
 
 def ensure_instance_satisfies_requirements(args, config):
 
+    if args.force:
+        return
+
     def action(cont, *, gadgetron, **state):
         info = subprocess.check_output(["gadgetron_ismrmrd_client",
                                         "-a", gadgetron.host,
@@ -464,6 +467,9 @@ def main():
     parser.add_argument('-t', '--test-folder',
                         type=str, default='test',
                         help="Save Gadgetron and Client output and logs to specified folder")
+
+    parser.add_argument('--force', action='store_true', default=False,
+                        help="Do not query Gadgetron capabilities; just run the test.")
 
     parser.add_argument('test', help="Test case file")
 

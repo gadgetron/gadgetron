@@ -18,10 +18,8 @@ namespace Gadgetron::Core {
                           // and calling Gadgets with unloaded dlls will yield undefined behaviour (demon bats out of your nose variety)
     private:
         using factory_type = std::shared_ptr<Node>(
-                std::tuple<std::shared_ptr<InputChannel<Message>>,
-                std::shared_ptr<OutputChannel>>,
-        const ISMRMRD::IsmrmrdHeader header,
-        const std::unordered_map<std::string, std::string>& parameters );
+
+        );
 
         using Channels = std::tuple<std::shared_ptr<InputChannel<Message>>, std::shared_ptr<OutputChannel>>;
 

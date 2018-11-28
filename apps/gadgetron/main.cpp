@@ -20,8 +20,9 @@
 
 using namespace boost::filesystem;
 using namespace boost::program_options;
+using namespace Gadgetron::Server;
 
-int ACE_TMAIN(int argc, ACE_TCHAR *argv[]) {
+int main(int argc, char *argv[]) {
 
     options_description desc("Allowed options:");
     desc.add_options()
