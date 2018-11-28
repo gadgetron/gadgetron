@@ -2,29 +2,6 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_HYPER__)
 endif ()
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-  ${CMAKE_SOURCE_DIR}/toolboxes/mri/hyper
-  ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/dwt/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  ${CMAKE_SOURCE_DIR}/gadgets/pmri
-  ${HDF5_INCLUDE_DIR}
-  ${HDF5_INCLUDE_DIR}/cpp
-  ${ARMADILLO_INCLUDE_DIRS}
-)
 
 add_library(gadgetron_hyper SHARED 
   NFFT2DGadget.h NFFT2DGadget.cpp
@@ -51,7 +28,6 @@ target_link_libraries(gadgetron_hyper
   gadgetron_toolbox_hyper
   ${ISMRMRD_LIBRARIES}  
   ${FFTW3_LIBRARIES} 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   ${BOOST_LIBRARIES}
   )
 
