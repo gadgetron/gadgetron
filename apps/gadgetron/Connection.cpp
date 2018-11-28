@@ -136,21 +136,24 @@ namespace {
         std::map<message_id, std::shared_ptr<Reader>> readers;
     };
 
-    Chain build_processing_chain(std::future<Config> config,
-            std::future<Context::Header> header,
+    std::map<message_id, std::shared_ptr<Reader>> build_reader_map(const Config &config) {
+        return std::map<message_id, std::shared_ptr<Reader>>();
+    }
+
+    Chain build_processing_chain(std::future<Config> future_config,
+            std::future<Context::Header> future_header,
             const Context::Paths paths) {
 
-        GINFO("Hello, I'm building a processing chain.\n");
+        Config config = future_config.get();
+        Context context{
+            future_header.get(),
+            paths
+        };
 
-        config.get();
+        GINFO("All right, I have what I need. Building things.\n");
 
-        GINFO("Nice - a config! Thank you!\n");
-
-        header.get();
-
-        GINFO("Nice - a header! I can do things now!\n");
-
-        return Chain();
+        std::map<message_id, std::shared_ptr<Reader>> readers = build_reader_map(config);
+        return Chain{readers};
     }
 
     void add_reader_to_handlers(std::map<message_id, std::function<void(std::iostream&)>> &map, message_id id, std::future<Chain> &chain) {
@@ -161,6 +164,7 @@ namespace {
 
         map[id] = [=](std::iostream &stream) {
             auto message = reader->read(stream);
+            // Stick a message in a queue.
         };
     }
 }

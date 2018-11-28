@@ -25,7 +25,10 @@ namespace Gadgetron::Server {
         void process_output();
 
         tcp::iostream stream_;
+
         Gadgetron::Core::Context::Paths paths_;
+
+
     };
 }
 

@@ -19,6 +19,9 @@ namespace Gadgetron::Core {
             const boost::filesystem::path gadgetron_home;
             const boost::filesystem::path working_folder;
         };
+
+        Header header;
+        Paths  paths;
     };
 }
 
