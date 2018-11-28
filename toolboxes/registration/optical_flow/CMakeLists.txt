@@ -1,5 +1,3 @@
-
-
 install(FILES
   registrationSolver.h
   multiresRegistrationSolver.h

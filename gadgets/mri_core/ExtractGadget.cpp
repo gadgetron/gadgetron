@@ -8,7 +8,6 @@
 #include <bitset>
 #include <unordered_map>
 #include <cpu/math/hoNDArray_math.h>
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ExtractGadget.h"
 
 #include <boost/math/constants/constants.hpp>

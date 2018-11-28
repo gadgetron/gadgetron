@@ -280,18 +280,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericReconPartialFourierHandlingGadget::close(unsigned long flags)
-    {
-        GDEBUG_CONDITION_STREAM(true, "GenericReconPartialFourierHandlingGadget - close(flags) : " << flags);
 
-        if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
-
-        if ( flags != 0 )
-        {
-        }
-
-        return GADGET_OK;
-    }
 
     // ----------------------------------------------------------------------------------------
 }

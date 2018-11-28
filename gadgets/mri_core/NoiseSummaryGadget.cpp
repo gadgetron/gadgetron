@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "NoiseSummaryGadget.h"
 
 #include <boost/filesystem.hpp>

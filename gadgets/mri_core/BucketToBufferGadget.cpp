@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "BucketToBufferGadget.h"
 #include "mri_core_data.h"
 #include "hoNDArray_elemwise.h"
@@ -269,14 +268,6 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int BucketToBufferGadget::close(unsigned long flags)
-    {
-
-        int ret = Gadget::close(flags);
-        GDEBUG("BucketToBufferGadget::close\n");
-
-        return ret;
-    }
 
     size_t BucketToBufferGadget::getSlice(ISMRMRD::ISMRMRD_EncodingCounters idx)
     {

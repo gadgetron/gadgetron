@@ -33,8 +33,7 @@ namespace Gadgetron{
       BucketToBufferGadget();
       virtual ~BucketToBufferGadget();
 
-      int close(unsigned long flags);
-      
+
     protected:
       GADGET_PROPERTY_LIMITS(N_dimension, std::string, "N-Dimensions", "", 
                  GadgetPropertyLimitsEnumeration,

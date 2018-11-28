@@ -48,7 +48,6 @@ namespace Gadgetron {
 
         virtual int process_config( ACE_Message_Block* mb );
         virtual int process( GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1 );
-        virtual int close(unsigned long flags);
 
         std::string generate_coil_sen_dependency_filename( const std::string& measurement_id );
         bool save_coil_sen_dependency();

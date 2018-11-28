@@ -9,36 +9,34 @@ find_package(ZFP)
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         NoiseAdjustGadget.h
-        PCACoilGadget.h
+#        PCACoilGadget.h
         RateLimitGadget.h
         AcquisitionPassthroughGadget.h
-        AcquisitionFinishGadget.h
         AccumulatorGadget.h
         FFTGadget.h
         CombineGadget.h
         CropAndCombineGadget.h
         CoilSenMapGadget.h
-        DependencyDataSenderGadget.h
-        ImageWriterGadget.h
-        MRIImageWriter.h
-        MRIImageReader.h
+#        ImageWriterGadget.h
+#        MRIImageWriter.h
+#        MRIImageReader.h
         NoiseAdjustGadget_unoptimized.h
         ExtractGadget.h
         FloatToFixPointGadget.h
         RemoveROOversamplingGadget.h
         CoilReductionGadget.h
         AutoScaleGadget.h
-        FlowPhaseSubtractionGadget.h
-        GadgetIsmrmrdReadWrite.h
-        PhysioInterpolationGadget.h
+#        FlowPhaseSubtractionGadget.h
+#        GadgetIsmrmrdReadWrite.h
+#        PhysioInterpolationGadget.h
         IsmrmrdDumpGadget.h
         AsymmetricEchoAdjustROGadget.h
         MaxwellCorrectionGadget.h
-        CplxDumpGadget.h
-        DependencyQueryGadget.h
-        DependencyQueryWriter.h
-        ComplexToFloatGadget.h
-        AcquisitionAccumulateTriggerGadget.h
+#        CplxDumpGadget.h
+#        DependencyQueryGadget.h
+#        DependencyQueryWriter.h
+#        ComplexToFloatGadget.h
+#        AcquisitionAccumulateTriggerGadget.h
         BucketToBufferGadget.h
         ImageArraySplitGadget.h
         PseudoReplicatorGadget.h
@@ -59,11 +57,11 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericReconImageArrayScalingGadget.h
         GenericReconEigenChannelGadget.h
         GenericReconNoiseStdMapComputingGadget.h
-        GenericImageReconGadget.h
+#        GenericImageReconGadget.h
         GenericReconAccumulateImageTriggerGadget.h
         GenericImageReconArrayToImageGadget.h
         WhiteNoiseInjectorGadget.h
-        NoiseSummaryGadget.h
+#        NoiseSummaryGadget.h
         NHLBICompression.h
         ImageAccumulatorGadget.h
         DenoiseGadget.h)
@@ -71,34 +69,32 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
 set(gadgetron_mricore_src_files
         AcquisitionPassthroughGadget.cpp
         NoiseAdjustGadget.cpp
-        PCACoilGadget.cpp
-        AcquisitionFinishGadget.cpp
+#        PCACoilGadget.cpp
         AccumulatorGadget.cpp
         FFTGadget.cpp
         CombineGadget.cpp
         CropAndCombineGadget.cpp
         CoilSenMapGadget.cpp
-        DependencyDataSenderGadget.cpp
-        ImageWriterGadget.cpp
-        MRIImageWriter.cpp
-        MRIImageReader.cpp
+#        ImageWriterGadget.cpp
+#        MRIImageWriter.cpp
+#        MRIImageReader.cpp
         NoiseAdjustGadget_unoptimized.cpp
         ExtractGadget.cpp
         FloatToFixPointGadget.cpp
         RemoveROOversamplingGadget.cpp
         CoilReductionGadget.cpp
         AutoScaleGadget.cpp
-        FlowPhaseSubtractionGadget.cpp
-        GadgetIsmrmrdReadWrite.cpp
-        PhysioInterpolationGadget.cpp
+#        FlowPhaseSubtractionGadget.cpp
+#        GadgetIsmrmrdReadWrite.cpp
+#        PhysioInterpolationGadget.cpp
         IsmrmrdDumpGadget.cpp
         AsymmetricEchoAdjustROGadget.cpp
         MaxwellCorrectionGadget.cpp
-        CplxDumpGadget.cpp
-        DependencyQueryGadget.cpp
-        DependencyQueryWriter.cpp
-        ComplexToFloatGadget.cpp
-        AcquisitionAccumulateTriggerGadget.cpp
+#        CplxDumpGadget.cpp
+#        DependencyQueryGadget.cpp
+#        DependencyQueryWriter.cpp
+#        ComplexToFloatGadget.cpp
+#        AcquisitionAccumulateTriggerGadget.cpp
         BucketToBufferGadget.cpp
         ImageArraySplitGadget.cpp
         PseudoReplicatorGadget.cpp
@@ -119,12 +115,12 @@ set(gadgetron_mricore_src_files
         GenericReconImageArrayScalingGadget.cpp
         GenericReconEigenChannelGadget.cpp
         GenericReconNoiseStdMapComputingGadget.cpp
-        GenericImageReconGadget.cpp
+#        GenericImageReconGadget.cpp
         GenericReconAccumulateImageTriggerGadget.cpp
         GenericImageReconArrayToImageGadget.cpp
         WhiteNoiseInjectorGadget.cpp
         RateLimitGadget.cpp
-        NoiseSummaryGadget.cpp
+#        NoiseSummaryGadget.cpp
         ImageAccumulatorGadget.cpp
         DenoiseGadget.cpp)
 

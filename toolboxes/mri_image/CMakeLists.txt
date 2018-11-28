@@ -19,6 +19,9 @@ target_link_libraries(gadgetron_toolbox_mri_image
                     gadgetron_toolbox_cpucore
                     gadgetron_toolbox_cpucore_math
                      )
+target_include_directories(gadgetron_toolbox_mri_image
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 # install(TARGETS gadgetron_toolbox_mri_image DESTINATION lib COMPONENT main)
 

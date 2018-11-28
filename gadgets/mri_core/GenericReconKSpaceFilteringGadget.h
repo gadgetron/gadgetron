@@ -92,8 +92,6 @@ namespace Gadgetron {
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1);
 
-        // close call
-        int close(unsigned long flags);
 
         // find kspace sampled range
         void find_kspace_sampled_range(size_t min, size_t max, size_t len, size_t& r);

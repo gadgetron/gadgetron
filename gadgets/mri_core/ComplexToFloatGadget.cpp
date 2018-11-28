@@ -3,7 +3,6 @@
 *       Author: Hui Xue
 */
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ComplexToFloatGadget.h"
 #include "hoNDArray_elemwise.h"
 

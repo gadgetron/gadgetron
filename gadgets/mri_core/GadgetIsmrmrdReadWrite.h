@@ -1,7 +1,6 @@
 #pragma  once
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
-#include "GadgetMessageInterface.h"
 #include "hoNDArray.h"
 #include "url_encode.h"
 #include "gadgetron_mricore_export.h"

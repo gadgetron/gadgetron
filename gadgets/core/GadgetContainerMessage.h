@@ -68,6 +68,11 @@ namespace Gadgetron {
         void  cont(GadgetContainerMessageBase* ptr){cont_element = ptr;}
 
 
+        GadgetContainerMessage<T>* duplicate() {
+            return new GadgetContainerMessage<T>(*this->data);
+        }
+
+
     private:
 
         GadgetContainerMessageBase* cont_element = nullptr;

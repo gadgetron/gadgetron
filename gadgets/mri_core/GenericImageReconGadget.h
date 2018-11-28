@@ -15,7 +15,6 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-#include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDImageContainer2D.h"
 #include "hoNDArray_utils.h"
@@ -27,7 +26,6 @@
 #include "mri_core_data.h"
 #include "mri_core_utility.h"
 #include "ImageIOAnalyze.h"
-#include "GadgetStreamController.h"
 #include "GadgetronTimer.h"
 
 #ifdef USE_OMP

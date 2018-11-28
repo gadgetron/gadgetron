@@ -9,7 +9,6 @@
 #include <ctime>
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd/meta.h"
-#include "GadgetStreamController.h"
 
 namespace Gadgetron
 {

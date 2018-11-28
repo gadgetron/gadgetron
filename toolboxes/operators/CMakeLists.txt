@@ -23,6 +23,11 @@ set(operator_header_files
 install(FILES ${operator_header_files}
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
+add_library(gadgetron_toolbox_operator INTERFACE)
+target_include_directories(gadgetron_toolbox_operator
+        INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory(cpu)
 
 if (CUDA_FOUND)
