@@ -1,24 +1,12 @@
 
-include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core 
-${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math 
-${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image 
-${CMAKE_SOURCE_DIR}/toolboxes/core/
-${CMAKE_BINARY_DIR}/toolboxes/core/
-${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-${CMAKE_SOURCE_DIR}/toolboxes/core/gpu 
-${CMAKE_SOURCE_DIR}/toolboxes/operators
-${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu 
-${ISMRMRD_INCLUDE_DIR}
-${Boost_INCLUDE_DIR}
-${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/ )
-
-
-
 add_library(gadgetron_toolbox_matlab SHARED  matlab_export.h MatlabUtils.h MatlabUtils.cpp )
 
 
 set_target_properties(gadgetron_toolbox_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-
+target_include_directories(gadgetron_toolbox_matlab
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${MATLAB_INCLUDE_DIR})
 
 
 target_link_libraries(
@@ -31,9 +19,6 @@ target_link_libraries(
 
 )
 
-if (UNIX AND CUDA_FOUND)
-#add_subdirectory(@gadgetron)
-endif()
 
 install(TARGETS gadgetron_toolbox_matlab DESTINATION lib COMPONENT main)
 

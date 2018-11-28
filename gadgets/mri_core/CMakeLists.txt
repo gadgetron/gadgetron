@@ -7,199 +7,179 @@ find_package(ZFP)
 
 
 
+set(gadgetron_mricore_header_files GadgetMRIHeaders.h
+        NoiseAdjustGadget.h
+        PCACoilGadget.h
+        RateLimitGadget.h
+        AcquisitionPassthroughGadget.h
+        AcquisitionFinishGadget.h
+        AccumulatorGadget.h
+        FFTGadget.h
+        CombineGadget.h
+        CropAndCombineGadget.h
+        CoilSenMapGadget.h
+        DependencyDataSenderGadget.h
+        ImageWriterGadget.h
+        MRIImageWriter.h
+        MRIImageReader.h
+        NoiseAdjustGadget_unoptimized.h
+        ExtractGadget.h
+        FloatToFixPointGadget.h
+        RemoveROOversamplingGadget.h
+        CoilReductionGadget.h
+        AutoScaleGadget.h
+        FlowPhaseSubtractionGadget.h
+        GadgetIsmrmrdReadWrite.h
+        PhysioInterpolationGadget.h
+        IsmrmrdDumpGadget.h
+        AsymmetricEchoAdjustROGadget.h
+        MaxwellCorrectionGadget.h
+        CplxDumpGadget.h
+        DependencyQueryGadget.h
+        DependencyQueryWriter.h
+        ComplexToFloatGadget.h
+        AcquisitionAccumulateTriggerGadget.h
+        BucketToBufferGadget.h
+        ImageArraySplitGadget.h
+        PseudoReplicatorGadget.h
+        SimpleReconGadget.h
+        ImageSortGadget.h
+        GenericReconBase.h
+        GenericReconGadget.h
+        GenericReconCartesianFFTGadget.h
+        GenericReconCartesianGrappaGadget.h
+        GenericReconCartesianSpiritGadget.h
+        GenericReconCartesianNonLinearSpirit2DTGadget.h
+        GenericReconCartesianReferencePrepGadget.h
+        GenericReconPartialFourierHandlingGadget.h
+        GenericReconPartialFourierHandlingFilterGadget.h
+        GenericReconPartialFourierHandlingPOCSGadget.h
+        GenericReconKSpaceFilteringGadget.h
+        GenericReconFieldOfViewAdjustmentGadget.h
+        GenericReconImageArrayScalingGadget.h
+        GenericReconEigenChannelGadget.h
+        GenericReconNoiseStdMapComputingGadget.h
+        GenericImageReconGadget.h
+        GenericReconAccumulateImageTriggerGadget.h
+        GenericImageReconArrayToImageGadget.h
+        WhiteNoiseInjectorGadget.h
+        NoiseSummaryGadget.h
+        NHLBICompression.h
+        ImageAccumulatorGadget.h
+        DenoiseGadget.h)
 
-if (ARMADILLO_FOUND)
-    list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
-    list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
-    list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
-    list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
-    list(APPEND OPTIMIZED_GADGET_LIBS gadgetron_toolbox_cpucore_math armadillo)
-elseif (ARMADILLO_FOUND)
-    message("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
-endif ()
+set(gadgetron_mricore_src_files
+        AcquisitionPassthroughGadget.cpp
+        NoiseAdjustGadget.cpp
+        PCACoilGadget.cpp
+        AcquisitionFinishGadget.cpp
+        AccumulatorGadget.cpp
+        FFTGadget.cpp
+        CombineGadget.cpp
+        CropAndCombineGadget.cpp
+        CoilSenMapGadget.cpp
+        DependencyDataSenderGadget.cpp
+        ImageWriterGadget.cpp
+        MRIImageWriter.cpp
+        MRIImageReader.cpp
+        NoiseAdjustGadget_unoptimized.cpp
+        ExtractGadget.cpp
+        FloatToFixPointGadget.cpp
+        RemoveROOversamplingGadget.cpp
+        CoilReductionGadget.cpp
+        AutoScaleGadget.cpp
+        FlowPhaseSubtractionGadget.cpp
+        GadgetIsmrmrdReadWrite.cpp
+        PhysioInterpolationGadget.cpp
+        IsmrmrdDumpGadget.cpp
+        AsymmetricEchoAdjustROGadget.cpp
+        MaxwellCorrectionGadget.cpp
+        CplxDumpGadget.cpp
+        DependencyQueryGadget.cpp
+        DependencyQueryWriter.cpp
+        ComplexToFloatGadget.cpp
+        AcquisitionAccumulateTriggerGadget.cpp
+        BucketToBufferGadget.cpp
+        ImageArraySplitGadget.cpp
+        PseudoReplicatorGadget.cpp
+        SimpleReconGadget.cpp
+        ImageSortGadget.cpp
+        GenericReconBase.cpp
+        GenericReconGadget.cpp
+        GenericReconCartesianFFTGadget.cpp
+        GenericReconCartesianGrappaGadget.cpp
+        GenericReconCartesianSpiritGadget.cpp
+        GenericReconCartesianNonLinearSpirit2DTGadget.cpp
+        GenericReconCartesianReferencePrepGadget.cpp
+        GenericReconPartialFourierHandlingGadget.cpp
+        GenericReconPartialFourierHandlingFilterGadget.cpp
+        GenericReconPartialFourierHandlingPOCSGadget.cpp
+        GenericReconKSpaceFilteringGadget.cpp
+        GenericReconFieldOfViewAdjustmentGadget.cpp
+        GenericReconImageArrayScalingGadget.cpp
+        GenericReconEigenChannelGadget.cpp
+        GenericReconNoiseStdMapComputingGadget.cpp
+        GenericImageReconGadget.cpp
+        GenericReconAccumulateImageTriggerGadget.cpp
+        GenericImageReconArrayToImageGadget.cpp
+        WhiteNoiseInjectorGadget.cpp
+        RateLimitGadget.cpp
+        NoiseSummaryGadget.cpp
+        ImageAccumulatorGadget.cpp
+        DenoiseGadget.cpp)
 
-set( gadgetron_mricore_header_files GadgetMRIHeaders.h
-                                    RateLimitGadget.h
-                                    AcquisitionPassthroughGadget.h 
-                                    AcquisitionFinishGadget.h 
-                                    AccumulatorGadget.h 
-                                    FFTGadget.h 
-                                    ImageFinishGadget.h 
-                                    CombineGadget.h
-                                    CropAndCombineGadget.h 
-                                    CoilSenMapGadget.h
-                                    DependencyDataSenderGadget.h
-                                    ImageWriterGadget.h 
-                                    MRIImageWriter.h
-                                    MRIImageReader.h
-                                    NoiseAdjustGadget_unoptimized.h 
-                                    ExtractGadget.h 
-                                    FloatToFixPointGadget.h 
-                                    RemoveROOversamplingGadget.h 
-                                    CoilReductionGadget.h 
-                                    AutoScaleGadget.h 
-                                    FlowPhaseSubtractionGadget.h 
-                                    GadgetIsmrmrdReadWrite.h 
-                                    PhysioInterpolationGadget.h 
-                                    IsmrmrdDumpGadget.h 
-                                    AsymmetricEchoAdjustROGadget.h 
-                                    MaxwellCorrectionGadget.h 
-                                    CplxDumpGadget.h 
-                                    DependencyQueryGadget.h 
-                                    DependencyQueryWriter.h 
-                                    ComplexToFloatGadget.h 
-                                    AcquisitionAccumulateTriggerGadget.h 
-                                    BucketToBufferGadget.h 
-                                    ImageArraySplitGadget.h 
-                                    PseudoReplicatorGadget.h 
-                                    SimpleReconGadget.h 
-                                    ImageSortGadget.h 
-                                    GenericReconBase.h 
-                                    GenericReconGadget.h 
-                                    GenericReconCartesianFFTGadget.h
-                                    GenericReconCartesianGrappaGadget.h 
-                                    GenericReconCartesianSpiritGadget.h 
-                                    GenericReconCartesianNonLinearSpirit2DTGadget.h 
-                                    GenericReconCartesianReferencePrepGadget.h 
-                                    GenericReconPartialFourierHandlingGadget.h 
-                                    GenericReconPartialFourierHandlingFilterGadget.h 
-                                    GenericReconPartialFourierHandlingPOCSGadget.h 
-                                    GenericReconKSpaceFilteringGadget.h 
-                                    GenericReconFieldOfViewAdjustmentGadget.h 
-                                    GenericReconImageArrayScalingGadget.h 
-                                    GenericReconEigenChannelGadget.h 
-                                    GenericReconNoiseStdMapComputingGadget.h 
-                                    GenericImageReconGadget.h 
-                                    GenericReconAccumulateImageTriggerGadget.h 
-                                    GenericImageReconArrayToImageGadget.h 
-                                    WhiteNoiseInjectorGadget.h
-                                    NoiseSummaryGadget.h 
-                                    NHLBICompression.h
-                                    ImageAccumulatorGadget.h)
-
-set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
-                                AcquisitionFinishGadget.cpp 
-                                AccumulatorGadget.cpp 
-                                FFTGadget.cpp 
-                                ImageFinishGadget.cpp 
-                                CombineGadget.cpp 
-                                CropAndCombineGadget.cpp 
-                                CoilSenMapGadget.cpp 
-                                DependencyDataSenderGadget.cpp 
-                                ImageWriterGadget.cpp 
-                                MRIImageWriter.cpp
-                                MRIImageReader.cpp
-                                NoiseAdjustGadget_unoptimized.cpp 
-                                ExtractGadget.cpp 
-                                FloatToFixPointGadget.cpp 
-                                RemoveROOversamplingGadget.cpp
-                                CoilReductionGadget.cpp
-                                AutoScaleGadget.cpp
-                                FlowPhaseSubtractionGadget.cpp
-                                GadgetIsmrmrdReadWrite.cpp
-                                PhysioInterpolationGadget.cpp
-                                IsmrmrdDumpGadget.cpp
-                                AsymmetricEchoAdjustROGadget.cpp
-                                MaxwellCorrectionGadget.cpp
-                                CplxDumpGadget.cpp 
-                                DependencyQueryGadget.cpp 
-                                DependencyQueryWriter.cpp 
-                                ComplexToFloatGadget.cpp 
-                                AcquisitionAccumulateTriggerGadget.cpp
-                                BucketToBufferGadget.cpp
-                                ImageArraySplitGadget.cpp
-                                PseudoReplicatorGadget.cpp
-                                SimpleReconGadget.cpp
-                                ImageSortGadget.cpp
-                                GenericReconBase.cpp 
-                                GenericReconGadget.cpp 
-                                GenericReconCartesianFFTGadget.cpp
-                                GenericReconCartesianGrappaGadget.cpp 
-                                GenericReconCartesianSpiritGadget.cpp 
-                                GenericReconCartesianNonLinearSpirit2DTGadget.cpp 
-                                GenericReconCartesianReferencePrepGadget.cpp 
-                                GenericReconPartialFourierHandlingGadget.cpp 
-                                GenericReconPartialFourierHandlingFilterGadget.cpp 
-                                GenericReconPartialFourierHandlingPOCSGadget.cpp 
-                                GenericReconKSpaceFilteringGadget.cpp 
-                                GenericReconFieldOfViewAdjustmentGadget.cpp 
-                                GenericReconImageArrayScalingGadget.cpp 
-                                GenericReconEigenChannelGadget.cpp 
-                                GenericReconNoiseStdMapComputingGadget.cpp 
-                                GenericImageReconGadget.cpp 
-                                GenericReconAccumulateImageTriggerGadget.cpp 
-                                GenericImageReconArrayToImageGadget.cpp 
-                                WhiteNoiseInjectorGadget.cpp
-                                RateLimitGadget.cpp
-                                NoiseSummaryGadget.cpp
-                                ImageAccumulatorGadget.cpp )
-
-set( gadgetron_mricore_config_files
-    config/default.xml
-    config/default_short.xml
-    config/default_optimized.xml
-    config/default_measurement_dependencies.xml
-    config/default_measurement_dependencies_ismrmrd_storage.xml
-    config/default_measurement_dependencies_Noise_CoilSen_SCC.xml
-    config/isalive.xml
-    config/gtquery.xml
-    config/Generic_Cartesian_FFT.xml
-    config/Generic_Cartesian_Grappa.xml
-    config/Generic_Cartesian_Grappa_SNR.xml
-    config/Generic_Cartesian_Grappa_T2W.xml
+set(gadgetron_mricore_config_files
+        config/default.xml
+        config/default_short.xml
+        config/default_optimized.xml
+        config/default_measurement_dependencies.xml
+        config/default_measurement_dependencies_ismrmrd_storage.xml
+        config/default_measurement_dependencies_Noise_CoilSen_SCC.xml
+        config/isalive.xml
+        config/gtquery.xml
+        config/Generic_Cartesian_FFT.xml
+        config/Generic_Cartesian_Grappa.xml
+        config/Generic_Cartesian_Grappa_SNR.xml
+        config/Generic_Cartesian_Grappa_T2W.xml
         config/Generic_Cartesian_Grappa_RealTimeCine.xml
-    config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
-    config/Generic_Cartesian_Grappa_EPI.xml
-    config/Generic_Cartesian_Grappa_EPI_AVE.xml
-    config/Generic_Cartesian_Spirit.xml
-    config/Generic_Cartesian_Spirit_RealTimeCine.xml
-    config/Generic_Cartesian_Spirit_SASHA.xml
-    config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
-    config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
-    config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
-    config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
-    config/NoiseSummary.xml
-    config/ismrmrd_dump.xml
-)
+        config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
+        config/Generic_Cartesian_Grappa_EPI.xml
+        config/Generic_Cartesian_Grappa_EPI_AVE.xml
+        config/Generic_Cartesian_Spirit.xml
+        config/Generic_Cartesian_Spirit_RealTimeCine.xml
+        config/Generic_Cartesian_Spirit_SASHA.xml
+        config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+        config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
+        config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
+        config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
+        config/NoiseSummary.xml
+        config/ismrmrd_dump.xml
+        )
 
-add_library(gadgetron_mricore SHARED 
-    gadgetron_mricore_export.h 
-    ${gadgetron_mricore_header_files} 
-    ${gadgetron_mricore_src_files}
-    ${gadgetron_mricore_config_files}
-    ${OPTIMIZED_GADGETS}
-    ${OPTIMIZED_GADGET_HEADERS}
-        DenoiseGadget.cpp DenoiseGadget.h)
-# Above: Whitespace misaligned, and one file on each line please.
+add_library(gadgetron_mricore SHARED
+        gadgetron_mricore_export.h
+        ${gadgetron_mricore_header_files}
+        ${gadgetron_mricore_src_files}
+        ${gadgetron_mricore_config_files})
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_mricore 
-    gadgetron_core
-    gadgetron_toolbox_log
-    gadgetron_toolbox_cpucore
-    gadgetron_toolbox_cpufft
-    gadgetron_toolbox_image_analyze_io
-    gadgetron_toolbox_denoise
-    gadgetron_toolbox_hostutils
-    ${ISMRMRD_LIBRARIES} 
-    ${FFTW3_LIBRARIES} 
-    ${OPTIMIZED_GADGET_LIBS}
-    boost
-)
-if(ARMADILLO_FOUND)
-   target_link_libraries(gadgetron_mricore
-    gadgetron_toolbox_cpuoperator
-    gadgetron_toolbox_cpuklt
-    gadgetron_toolbox_mri_core
-)
-endif()
+target_link_libraries(gadgetron_mricore
+        gadgetron_core
+        gadgetron_toolbox_log
+        gadgetron_toolbox_cpucore
+        gadgetron_toolbox_cpufft
+        gadgetron_toolbox_image_analyze_io
+        gadgetron_toolbox_denoise
+        gadgetron_toolbox_hostutils
+        gadgetron_toolbox_cpuoperator
+        gadgetron_toolbox_cpuklt
+        gadgetron_toolbox_mri_core
+        ${ISMRMRD_LIBRARIES}
+        ${FFTW3_LIBRARIES}
+        boost
+        )
 
-target_include_directories(
-        gadgetron_mricore
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
 if (ZFP_FOUND)
     message("ZFP Found")
@@ -215,7 +195,6 @@ else ()
 endif ()
 
 
-
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
     message("MKL Found, enabling MKL for mri_core gadgets.")
@@ -226,15 +205,15 @@ if (MKL_FOUND)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
     target_include_directories(gadgetron_mricore
             PUBLIC
-            ${MKL_INCLUDE_DIR} )
-    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+            ${MKL_INCLUDE_DIR})
+    link_directories(${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR})
 endif ()
 
-install(FILES 
-    gadgetron_mricore_export.h
-    ${gadgetron_mricore_header_files}
-    ${OPTIMIZED_GADGET_HEADERS}
-    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+install(FILES
+        gadgetron_mricore_export.h
+        ${gadgetron_mricore_header_files}
+        ${OPTIMIZED_GADGET_HEADERS}
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 if (ARMADILLO_FOUND)
     install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

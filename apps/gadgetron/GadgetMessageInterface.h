@@ -24,7 +24,7 @@ enum GadgetronMessageID {
 
 struct GadgetMessageIdentifier
 {
-  ACE_UINT16 id;
+  uint16_t id;
 };
 
 struct GadgetMessageConfigurationFile

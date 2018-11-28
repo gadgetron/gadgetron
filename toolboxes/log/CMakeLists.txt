@@ -3,6 +3,10 @@ if (WIN32)
 endif ()
 
 add_library(gadgetron_toolbox_log SHARED log.cpp)
+target_include_directories(gadgetron_toolbox_log
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 set_target_properties(gadgetron_toolbox_log PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 install(TARGETS gadgetron_toolbox_log DESTINATION lib COMPONENT main)

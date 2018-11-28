@@ -7,19 +7,16 @@ if(WIN32)
 endif()
 
 
-include_directories( 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-)
 
 cuda_add_library(gadgetron_toolbox_gpudwt SHARED 
     cuNDDWT.h
     cuNDDWT.cu
   )
+
+
+target_include_directories(gadgetron_toolbox_gpudwt
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(gadgetron_toolbox_gpudwt PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

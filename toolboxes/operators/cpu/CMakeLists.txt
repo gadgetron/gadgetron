@@ -2,28 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUOPERATORS__)
 endif ()
 
-include_directories(
-    ${ISMRMRD_INCLUDE_DIR}
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${FFTW3_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/operators
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
-    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
-    ${CMAKE_SOURCE_DIR}/toolboxes/image_io
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
-  )
+
 
 set(cpu_operator_header_files 
     cpuOperatorExport.h 
@@ -68,6 +47,10 @@ add_library(gadgetron_toolbox_cpuoperator SHARED ${operator_header_files} ${cpu_
 
 set_target_properties(gadgetron_toolbox_cpuoperator PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
+target_include_directories(gadgetron_toolbox_cpuoperator
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
+        ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(gadgetron_toolbox_cpuoperator 
                     gadgetron_toolbox_cpucore
                     gadgetron_toolbox_log

@@ -3,20 +3,7 @@ if (WIN32)
   add_definitions(-D_USE_MATH_DEFINES)
 endif ()
 
-if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
-include_directories( 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-  )
 
 cuda_add_library(gadgetron_toolbox_gpunfft SHARED 
     cuNFFT.h
@@ -25,6 +12,10 @@ cuda_add_library(gadgetron_toolbox_gpunfft SHARED
     cuNFFT.cu 
     cuNFFTOperator.cu
   )
+
+target_include_directories(gadgetron_toolbox_gpunfft
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(gadgetron_toolbox_gpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

@@ -2,22 +2,6 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_TOOLBOX_HYPER__)
 endif ()
 
-if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
-include_directories(
-  ${CUDA_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-  )
 
 cuda_add_library(gadgetron_toolbox_hyper SHARED 
     CSIOperator.cpp
@@ -28,7 +12,9 @@ cuda_add_library(gadgetron_toolbox_hyper SHARED
   )
 
 set_target_properties(gadgetron_toolbox_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-
+target_include_directories(gadgetron_toolbox_hyper
+		PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(gadgetron_toolbox_hyper 
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft

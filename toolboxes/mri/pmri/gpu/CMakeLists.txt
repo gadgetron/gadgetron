@@ -7,21 +7,6 @@ if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories(  
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-  ${ARMADILLO_INCLUDE_DIRS} 
-  )
 
 cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED 
     b1_map.h
@@ -69,6 +54,11 @@ target_link_libraries(gadgetron_toolbox_gpuparallelmri
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 
   )
+
+
+target_include_directories(gadgetron_toolbox_gpuparallelmri
+		PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR})
 
 install(TARGETS gadgetron_toolbox_gpuparallelmri DESTINATION lib COMPONENT main)
 

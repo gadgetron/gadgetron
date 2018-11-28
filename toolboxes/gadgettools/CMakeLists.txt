@@ -12,8 +12,7 @@ include_directories(
                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
                     ${CMAKE_SOURCE_DIR}/apps/gadgetron
                     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-                    ${ACE_INCLUDE_DIR} 
-                    ${Boost_INCLUDE_DIR} 
+                    ${Boost_INCLUDE_DIR}
  )
 
 

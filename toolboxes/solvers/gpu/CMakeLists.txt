@@ -6,13 +6,6 @@ if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories(
-  ${CUDA_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-  )
 
 cuda_add_library(gadgetron_toolbox_gpusolvers SHARED 
     gpusolvers_export.h
@@ -28,6 +21,11 @@ target_link_libraries(gadgetron_toolbox_gpusolvers
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
+
+
+target_include_directories(gadgetron_toolbox_gpusolvers
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 install(TARGETS gadgetron_toolbox_gpusolvers DESTINATION lib COMPONENT main)
 

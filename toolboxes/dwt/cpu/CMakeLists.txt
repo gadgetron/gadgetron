@@ -2,14 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUDWT__)
 endif ()
 
-include_directories(
-    ${Boost_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_BINARY_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    )
+
 
 add_library(gadgetron_toolbox_cpudwt SHARED 
     cpudwt_export.h 
@@ -20,6 +13,9 @@ add_library(gadgetron_toolbox_cpudwt SHARED
     hoNDRedundantWavelet.h
     hoNDRedundantWavelet.cpp
     )
+target_include_directories(gadgetron_toolbox_cpudwt
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(gadgetron_toolbox_cpudwt PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

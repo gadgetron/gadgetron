@@ -12,7 +12,19 @@
 namespace Gadgetron 
 {
 
-    /** 
+
+    struct Acquisition {
+        ISMRMRD::AcquisitionHeader header;
+        hoNDArray<std::complex<float>> data;
+        boost::optional<hoNDArray<float>> trajectory;
+    };
+
+    struct Waveform {
+        ISMRMRD::WaveformHeader header;
+        hoNDArray<uint32_t> data;
+    };
+
+    /**
       This is a list of lables of the coordinates described in the ISMRMRD acquisition header.
 
       It is useful for accumulators and triggers and for labeling the storage used in

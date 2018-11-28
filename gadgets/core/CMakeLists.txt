@@ -11,6 +11,9 @@ add_library(gadgetron_core SHARED
     MergeNode.cpp
     BranchNode.cpp)
 
+target_link_libraries(gadgetron_core
+		gadgetron_toolbox_cpucore)
+
 target_include_directories(
 		gadgetron_core
 		PUBLIC
