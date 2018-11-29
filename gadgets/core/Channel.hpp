@@ -91,10 +91,9 @@ namespace Gadgetron::Core {
         return OutputChannel::Iterator(&channel);
     }
 
-    template<class T>
+    template<class T,class U>
     inline void OutputChannel::push(std::unique_ptr <T> &&ptr) {
         this->push_message(std::unique_ptr<Message>(new TypedMessage<T>(ptr)));
-
     }
 
 

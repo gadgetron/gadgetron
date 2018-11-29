@@ -24,13 +24,7 @@ namespace Gadgetron {
             return this->process(m1);
         }
 
-
-        if (pass_on_undesired_data_) {
             return this->next()->putq(mb);
-        } else {
-            GERROR("Denoise Gadget received wrong input data type\n"); // Newline?
-            return -1;
-        }
     }
 
 

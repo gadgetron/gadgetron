@@ -86,7 +86,7 @@ namespace Gadgetron{
   class EXPORTGADGETCORE ChannelAdaptor {
   public:
       int putq(ACE_Message_Block* msg){
-        throw std::runtime_error("Not implemented yet");
+
 
       };
   private:
@@ -403,8 +403,8 @@ namespace Gadgetron{
         std::vector<T> value() const
         {
           if (is_reference_) {
-            boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
-            std::stringstream ss(*val);
+            std::string val = this->g_->get_string_value(this->name());
+            std::stringstream ss(val);
             T chunk;
             values_ = std::vector<T>();
             while (ss >> std::boolalpha >> chunk)

@@ -22,7 +22,8 @@ cuda_add_library(gadgetron_toolbox_gpuoperators SHARED
 
 set_target_properties(gadgetron_toolbox_gpuoperators PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_gpuoperators 
+target_link_libraries(gadgetron_toolbox_gpuoperators
+        gadgetron_toolbox_operator
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft
   ${CUDA_LIBRARIES}

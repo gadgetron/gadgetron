@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "DependencyQueryGadget.h"
 
 #include <boost/version.hpp>

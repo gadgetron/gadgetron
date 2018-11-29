@@ -35,7 +35,7 @@ namespace Gadgetron{
     return GADGET_FAIL;
   }
   
-  buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[sets_]); 
+  buffer_ = std::vector<std::vector<float>>(sets_);
   
   size_t bsize = sizeof(GadgetContainerMessage< GadgetContainerMessage<ISMRMRD::ImageHeader> >)*10000;
   

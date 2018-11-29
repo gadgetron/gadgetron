@@ -136,6 +136,5 @@ namespace Gadgetron {
         // compute snr map
         virtual void compute_snr_map(ReconObjType& recon_obj, hoNDArray< std::complex<float> >& snr_map);
 
-        virtual int close(unsigned long flags);
     };
 }

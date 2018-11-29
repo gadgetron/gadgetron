@@ -20,7 +20,6 @@ target_link_libraries(gadgetron_spiral
   gadgetron_toolbox_cpucore 
   ${ISMRMRD_LIBRARIES} 
   ${FFTW3_LIBRARIES} 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
 if (CUDA_FOUND)

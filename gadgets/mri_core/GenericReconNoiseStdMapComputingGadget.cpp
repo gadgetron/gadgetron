@@ -215,21 +215,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericReconNoiseStdMapComputingGadget::close(unsigned long flags)
-    {
-        GDEBUG_CONDITION_STREAM(true, "GenericReconNoiseStdMapComputingGadget - close(flags) : " << flags);
 
-        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
-
-        if (flags != 0)
-        {
-            GDEBUG_STREAM("* ======================================================================================================= *");
-            GDEBUG_STREAM("---> GenericReconNoiseStdMapComputingGadget, close ... <---");
-            GDEBUG_STREAM("* ======================================================================================================= *");
-        }
-
-        return GADGET_OK;
-    }
 
     // ----------------------------------------------------------------------------------------
 

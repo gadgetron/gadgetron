@@ -36,13 +36,7 @@ namespace Gadgetron {
 
     };
 
-/**
-   The purpose of this case is to provide a type indepent interface to all ContainerMessages
 
-   This interface is able to set a magic number for each type which is later on used
-   instead of RTTI to "safely" cast to the right GadgetContainerMessage type
-
- */
 
     template<class T>
     class GadgetContainerMessage : public GadgetContainerMessageBase, private Core::TypedMessage<T> {
@@ -66,6 +60,11 @@ namespace Gadgetron {
 
         GadgetContainerMessageBase* cont(){return cont_element;}
         void  cont(GadgetContainerMessageBase* ptr){cont_element = ptr;}
+
+
+        GadgetContainerMessage<T>* duplicate() {
+            return new GadgetContainerMessage<T>(*this->data);
+        }
 
 
     private:

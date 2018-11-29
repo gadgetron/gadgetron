@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "IsmrmrdDumpGadget.h"
 #include <iomanip>
 #include <boost/filesystem.hpp>

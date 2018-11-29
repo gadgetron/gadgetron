@@ -29,8 +29,10 @@ namespace Gadgetron::Core {
 
     class OutputChannel {
     public:
-        template<class T>
+        template<class T, class U = std::enable_if<!std::is_same_v<T,Message>>>
         void push(std::unique_ptr<T> &&);
+
+        void push(std::unique_ptr<Message>&&);
 
         virtual void close() = 0;
 

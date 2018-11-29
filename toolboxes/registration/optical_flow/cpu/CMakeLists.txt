@@ -12,10 +12,11 @@
             hoCKOpticalFlowSolver.h
             hoHSOpticalFlowSolver.cpp
             hoHSOpticalFlowSolver.h
+            hoOpticalFlowSolver.cpp
+            hoOpticalFlowSolver.h
             hoLinearResampleOperator.cpp
             hoLinearResampleOperator.h
-            hoOpticalFlowSolver.cpp
-            hoOpticalFlowSolver.h)
+            )
 
     set(transformation_files transformation/hoImageRegTransformation.h
             transformation/hoImageRegParametricTransformation.h
@@ -66,7 +67,10 @@
 
 
         target_link_libraries(gadgetron_toolbox_cpureg
+                gadgetron_toolbox_operator
+                gadgetron_toolbox_mri_image
                 gadgetron_toolbox_cpucore
+                gadgetron_toolbox_cpu_solver
                 gadgetron_toolbox_log
                 gadgetron_toolbox_cpucore_math
                 gadgetron_toolbox_image_analyze_io
@@ -75,12 +79,13 @@
         target_include_directories(gadgetron_toolbox_cpureg
                 PUBLIC
                 ${CMAKE_CURRENT_SOURCE_DIR}
+                ${CMAKE_CURRENT_SOURCE_DIR}/transformation
+                ${CMAKE_CURRENT_SOURCE_DIR}/..
                 ${CMAKE_CURRENT_SOURCE_DIR}/application
                 ${CMAKE_CURRENT_SOURCE_DIR}/dissimilarity
-                ${CMAKE_CURRENT_SOURCE_DIR}}/register
-                ${CMAKE_CURRENT_SOURCE_DIR}}/solver
-                ${CMAKE_CURRENT_SOURCE_DIR}}/transformation
-                ${CMAKE_CURRENT_SOURCE_DIR}}/warper
+                ${CMAKE_CURRENT_SOURCE_DIR}/register
+                ${CMAKE_CURRENT_SOURCE_DIR}/solver
+                ${CMAKE_CURRENT_SOURCE_DIR}/warper
                 )
 
     else ()

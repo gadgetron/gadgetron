@@ -4,7 +4,6 @@ if (WIN32)
 endif ()
 
 # These dependencies should have been found already to even get in here, but we play safe
-find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
 
 

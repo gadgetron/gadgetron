@@ -576,17 +576,7 @@ namespace Gadgetron {
 
     }
 
-    int NoiseAdjustGadget::close(unsigned long flags)
-    {
-        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
 
-        if (!noiseCovarianceLoaded_ && !saved_) {
-            saveNoiseCovariance();
-            saved_ = true;
-        }
-
-        return GADGET_OK;
-    }
 
     void NoiseAdjustGadget::print_coil_label(const std::vector<ISMRMRD::CoilLabel>& coils)
     {
