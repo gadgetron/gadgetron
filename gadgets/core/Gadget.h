@@ -86,7 +86,7 @@ namespace Gadgetron{
   class EXPORTGADGETCORE ChannelAdaptor {
   public:
       int putq(ACE_Message_Block* msg){
-        throw std::runtime_error("Not implemented yet");
+
 
       };
   private:
