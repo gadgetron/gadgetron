@@ -9,15 +9,14 @@ namespace Gadgetron::Core {
 
     class Stream {
     public:
-        Stream(const std::string &stream_name, const std::shared_ptr<InputChannel<Message>>& channel) : name(stream_name),
-                                                                                                 output(channel) {}
+        Stream(const std::string &stream_name, const std::shared_ptr<InputChannel<Message>>& channel)
+        : name(stream_name)
+        , output(channel) {}
 
         virtual std::shared_ptr<InputChannel<Message>> output_channel() { return output;}
     protected:
         std::string name;
         std::shared_ptr<InputChannel<Message>> output;
-
-
     };
 
     class Reader {
@@ -34,5 +33,15 @@ namespace Gadgetron::Core {
         virtual ~Writer() {};
     };
 }
+
+#define GADGETRON_READER_EXPORT(ReaderClass)                        \
+std::unique_ptr<ReaderClass> reader_factory_ ## ReaderClass() {     \
+    return std::make_unique<ReaderClass>();                         \
+}                                                                   \
+                                                                    \
+BOOST_DLL_ALIAS(                                                    \
+        reader_factory_ ## ReaderClass,                             \
+        reader_factory_ ## ReaderClass                              \
+);                                                                  \
 
 

@@ -34,12 +34,7 @@ namespace Gadgetron::Core::Readers {
         return 1008;
     }
 
-    std::shared_ptr<AcquisitionReader> reader_factory() {
-        return std::make_shared<AcquisitionReader>();
-    }
+    GADGETRON_READER_EXPORT(AcquisitionReader)
 }
 
-BOOST_DLL_ALIAS(
-    Gadgetron::Core::Readers::reader_factory,
-    reader_factory
-);
+

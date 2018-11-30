@@ -38,5 +38,5 @@ void Server::connection_handler(const boost::system::error_code &error, tcp::soc
     GINFO_STREAM("Accepting connection from: " << socket.remote_endpoint().address());
 
     auto paths = Gadgetron::Core::Context::Paths(args_["home"].as<path>(), args_["dir"].as<path>());
-    auto connection = Connection::create(paths, socket);
+    Connection::create(paths, socket);
 }
