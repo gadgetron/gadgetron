@@ -75,7 +75,6 @@ if(CUDA_FOUND)
       gadgetron_gadgetbase
       gadgetron_toolbox_cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
       ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}
-      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
       )
 
     install (TARGETS gadgetron_moco DESTINATION lib COMPONENT main)

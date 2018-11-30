@@ -1,10 +1,10 @@
-    #pragma once
+#pragma once
 
 namespace Gadgetron::Core {
-    template<class T>
-    class InputChannel<T>::Iterator {
+    template<class ...ARGS>
+    class InputChannel<ARGS...>::Iterator {
     public:
-        Iterator(InputChannel<T> *c) : channel(*c) {
+        Iterator(InputChannel<ARGS...> *c) : channel(*c) {
             this->operator*();
         }
 
@@ -28,24 +28,24 @@ namespace Gadgetron::Core {
             return this->channel != other.channel;
         }
 
-        std::unique_ptr <T> operator*() {
+        auto operator*() {
             return std::move(element);
         }
 
     private:
         InputChannel *channel;
-        std::unique_ptr <T> element;
+        decltype(channel->pop()) element;
     };
 
 
-    template<class T>
-    typename InputChannel<T>::Iterator begin(InputChannel<T> &channel) {
-        return InputChannel<T>::Iterator(&channel);
+    template<class ...ARGS>
+    typename InputChannel<ARGS...>::Iterator begin(InputChannel<ARGS...> &channel) {
+        return InputChannel<ARGS...>::Iterator(&channel);
     }
 
-    template<class T>
-    typename InputChannel<T>::Iterator end(InputChannel<T> &) {
-        return InputChannel<T>::Iterator();
+    template<class ...ARGS>
+    typename InputChannel<ARGS...>::Iterator end(InputChannel<ARGS...> &) {
+        return InputChannel<ARGS...>::Iterator();
     }
 
     class OutputChannel::Iterator {
@@ -60,7 +60,7 @@ namespace Gadgetron::Core {
         }
 
         template<class T>
-        void operator=(std::unique_ptr <T> &&ptr) {
+        void operator=(std::unique_ptr<T> &&ptr) {
             channel->push(ptr);
         }
 
@@ -91,28 +91,118 @@ namespace Gadgetron::Core {
         return OutputChannel::Iterator(&channel);
     }
 
-    template<class T,class U>
-    inline void OutputChannel::push(std::unique_ptr <T> &&ptr) {
-        this->push_message(std::unique_ptr<Message>(new TypedMessage<T>(ptr)));
+    template<class T, class U>
+    inline void OutputChannel::push(std::unique_ptr<T> &&ptr) {
+        this->push_message(std::make_unique<TypedMessage<T>>(std::move(ptr));
     }
 
-
     template<class T>
-    TypedInputChannel<T>::TypedInputChannel(std::shared_ptr <InputChannel<Message>> input,
-                                                std::shared_ptr <Gadgetron::Core::OutputChannel> output):
-            in(input), bypass(output) {}
+    inline void OutputChannel::push(std::unique_ptr<TypedMessage < T>>
 
-    template<class T>
-    std::unique_ptr<T> TypedInputChannel<T>::pop() {
+    && ptr) {
+    this->
 
-        std::unique_ptr<Message> message = in->pop();
+    push_message (std::move(ptr));
+}
 
-        while (typeid(*message) != typeid(T)) {
-            bypass->push(std::move(message));
-            message = in->pop();
+
+template<class ...ARGS>
+TypedInputChannel<ARGS...>::TypedInputChannel(
+        std::shared_ptr<InputChannel < Message>>  input,
+        std::shared_ptr<Gadgetron::Core::OutputChannel> output ):
+in (input), bypass(output) {
+
+    }
+
+template<class T>
+std::unique_ptr<T> TypedInputChannel<T>::pop() {
+
+    std::unique_ptr<Message> message = in->pop();
+
+    while (typeid(*message) != typeid(T)) {
+        bypass->push(std::move(message));
+        message = in->pop();
+    }
+
+    return std::unique_ptr<T>(static_cast<T *>(message.release()));
+}
+
+namespace {
+
+    //Used for indices trick;
+    template<int ...>
+    struct seq {
+    };
+    template<int N, int ...S>
+    struct gens : gens<N - 1, N - 1, S...> {
+    };
+    template<int ...S>
+    struct gens<0, S...> {
+        typedef seq<S...> type;
+    };
+
+    template<unsigned int I, class T, class ...REST>
+    bool convertible_to_tuple(MessageTuple *messagetuple) {
+        if (typeid(*messagetuple->messages()[I]) == typeid(TypedMessage < T > )) {
+            return convertible_to_tuple<I + 1, REST...>(messagetuple);
+        } else {
+            return false;
         }
-
-        return std::unique_ptr<T>(static_cast<T*>(message.release()));
     }
 
+    template<unsigned int I, class T>
+    bool convertible_to_tuple(MessageTuple *messagetuple) {
+        if (typeid(*messagetuple->messages()[I]) == typeid(TypedMessage < T > )) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    template<class T>
+    std::unique_ptr<T> reinterpret_message(std::unique_ptr<Message> &&message) {
+        return reinterpret_cast<TypedMessage <T> *>(message.get())->take_data();
+    }
+
+    template<class ...ARGS>
+    struct tuple_maker {
+        template<int ...S>
+        auto from_messages(std::vector<std::unique_ptr<Message>> &messages, seq<S...>) {
+            return std::make_tuple(reinterpret_message<ARGS>(messages[S])...);
+        }
+    };
+
+    template<class ...ARGS>
+    std::tuple<std::unique_ptr<ARGS>...> messageTuple_to_tuple(MessageTuple *messageTuple) {
+        auto messages = messageTuple->take_messages();
+        return tuple_maker<ARGS...>::make_tuple_from_messages(messages, typename gens<sizeof...(ARGS)>::type());
+    }
+
+    template<class ...ARGS>
+    std::tuple<std::unique_ptr<ARGS>...> unpack(std::unique_ptr<Message> &message) {
+
+        if (typeid(*message) == typeid(MessageTuple)) {
+            auto *messagetuple = reinterpret_cast<MessageTuple *>(message.get());
+            if (convertible_to_tuple<0, ARGS...>(messagetuple)) {
+                message.release();
+                return messageTuple_to_tuple(messagetuple);
+            }
+        }
+        return std::tuple<std::unique_ptr<ARGS>...>();
+    }
+}
+
+
+template<class ...ARGS>
+std::tuple<std::unique_ptr<ARGS>...> TypedInputChannel<ARGS...>::pop() {
+
+    while (true) {
+        std::unique_ptr<Message> message = in->pop();
+        auto result = unpack<ARGS...>(message);
+        if (std::get<0>(result)) {
+            return std::move(result);
+        }
+        bypass->push(std::move(message));
+    }
+}
 }
