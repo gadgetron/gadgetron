@@ -1,11 +1,8 @@
-#include <io/readers.h>
-#include <boost/dll.hpp>
 
-#include "hoNDArray.h"
+#include "io/readers.h"
 #include "mri_core_data.h"
 
 #include "AcquisitionReader.h"
-
 
 namespace Gadgetron::Core::Readers {
 

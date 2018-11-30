@@ -7,8 +7,8 @@ namespace Gadgetron::Core::Readers {
 
     class AcquisitionReader : public Gadgetron::Core::Reader {
     public:
-        virtual std::unique_ptr<Message> read(std::istream &stream);
-        virtual uint16_t port();
+        virtual std::unique_ptr<Message> read(std::istream &stream) override;
+        virtual uint16_t port() override;
     };
 }
 

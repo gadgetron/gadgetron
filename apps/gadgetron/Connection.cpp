@@ -162,7 +162,6 @@ namespace {
                 , paths(paths) {}
 
         void start();
-        void close();
         void process_input();
         void process_output();
 
@@ -170,6 +169,7 @@ namespace {
 
         void initialize_readers(const Config &config);
         void initialize_writers(const Config &config);
+        void initialize_stream(const Config::Stream &config, const Context &context);
 
         std::unique_ptr<ReaderHandler> load_reader(const Config::Reader &reader_config);
 
@@ -235,7 +235,6 @@ namespace {
             GDEBUG_STREAM("Handling message with id: " << id << std::endl);
 
             if (!handlers.count(id)) {
-                GDEBUG_STREAM("Unknown message id: " << id << " - waiting for readers.");
                 handlers.merge(reader_future.get());
             }
 
@@ -248,31 +247,42 @@ namespace {
     }
 
     void ConnectionImpl::build_stream(std::future<Config> config_future, std::future<Header> header_future) {
-        GDEBUG_STREAM("Building stream; waiting for config.");
 
         Config config = config_future.get();
         this->initialize_readers(config);
-        // this->initialize_writers(config);
-
-        GDEBUG_STREAM("Config received; emitting readers and writers, waiting for ISMRMRD header.")
+        this->initialize_writers(config);
 
         Context::Header header = header_future.get();
+        Context context{header, paths};
 
-        GDEBUG_STREAM("ISMRMRD Header received, building stream.")
-
-        // TODO: Work
+        this->initialize_stream(config.stream, context);
     }
 
     void ConnectionImpl::initialize_readers(const Config &config) {
 
-        // std::map<uint16_t, std::unique_ptr<ReaderHandler>> handlers;
+        std::map<uint16_t, std::unique_ptr<Handler>> handlers;
 
-        std::vector<std::unique_ptr<ReaderHandler>> handlers(config.readers.size());
-        std::transform(config.readers.begin(), config.readers.end(), handlers.begin(),
-                [&](const Config::Reader &reader_config) {
-                    return this->load_reader(reader_config);
-                }
+        std::for_each(config.readers.begin(), config.readers.end(),
+            [&](const Config::Reader &reader_config) {
+                auto reader_handler = this->load_reader(reader_config);
+
+                uint16_t port = reader_config.port.value_or(reader_handler->reader->port());
+
+                handlers[port] = std::move(reader_handler);
+            }
         );
+
+        this->promises.readers.set_value(std::move(handlers));
+    }
+
+    void ConnectionImpl::initialize_writers(const Config &config) {
+        GDEBUG_STREAM("Initializing writers: IMPLEMENTATION PENDING" << std::endl);
+    }
+
+    void ConnectionImpl::initialize_stream(const Config::Stream &config, const Context &context) {
+
+
+
     }
 
     std::unique_ptr<ReaderHandler>
@@ -286,12 +296,10 @@ namespace {
                 boost::dll::load_mode::append_decorations
         );
 
-        GDEBUG_STREAM("We're good - call returned no problem at least." << std::endl);
-
-        auto factory = library.get_alias<std::unique_ptr<Reader>(void)>("reader_factory_" + reader_config.classname);
+        auto factory = library.get_alias<std::unique_ptr<Reader>(void)>("reader_factory_export_" + reader_config.classname);
         auto reader = factory();
 
-        return std::unique_ptr<ReaderHandler>(nullptr);
+        return std::make_unique<ReaderHandler>(std::move(reader), this->channels.input, library);
     }
 
 };
