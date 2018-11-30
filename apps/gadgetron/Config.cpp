@@ -93,7 +93,7 @@ namespace {
                 throw std::runtime_error("gadgetronStreamConfiguration element not found in configuration file");
             }
 
-            return Config{parse_readers(root),parse_writers(root),parse_stream(root)};
+            return Config{parse_readers(root), parse_writers(root), parse_stream(root)};
         }
     }
 
@@ -104,26 +104,26 @@ namespace {
         //NOTE: Branchnode, mergenode and gadget are all kind of the same. Should it be the same code?
         // Conceptually they're very different.
 
-        Config::MergeNode parse_mergenode(const pugi::xml_node& merge_node){
-            return Config::MergeNode{merge_node.child_value("name"), merge_node.child_value("dll"),
-                                     merge_node.child_value("classname"), parse_properties(merge_node)};
+        Config::Merge parse_mergenode(const pugi::xml_node& merge_node){
+            return Config::Merge{merge_node.child_value("name"), merge_node.child_value("dll"),
+                                 merge_node.child_value("classname"), parse_properties(merge_node)};
         }
 
-        Config::BranchNode parse_branchnode(const pugi::xml_node& branch_node){
-            return Config::BranchNode{branch_node.child_value("name"), branch_node.child_value("dll"),
-                                      branch_node.child_value("classname"), parse_properties(branch_node)};
+        Config::Branch parse_branchnode(const pugi::xml_node& branch_node){
+            return Config::Branch{branch_node.child_value("name"), branch_node.child_value("dll"),
+                                  branch_node.child_value("classname"), parse_properties(branch_node)};
         }
 
         Config::Parallel parse_parallel(const pugi::xml_node& parallel_node){
 
-            auto branchnode = parse_branchnode(parallel_node.child("branchnode"));
-            auto mergenode = parse_mergenode(parallel_node.child("mergenode"));
+            auto branch = parse_branchnode(parallel_node.child("branch"));
+            auto merge = parse_mergenode(parallel_node.child("merge"));
 
             std::vector<Config::Stream> streams;
             for (const auto& stream_node : parallel_node.children("stream")){
                 streams.push_back(parse_stream(stream_node));
             }
-            return Config::Parallel{branchnode,mergenode,streams};
+            return Config::Parallel{branch, merge, streams};
         }
 
         static const std::unordered_map<std::string,std::function<Config::Node(const pugi::xml_node&)>>

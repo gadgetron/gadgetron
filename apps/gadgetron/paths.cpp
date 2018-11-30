@@ -4,9 +4,6 @@
 #include "log.h"
 #include "paths.h"
 
-void create_directory(const boost::filesystem::path &path) {
-}
-
 #ifdef _WIN32
 const boost::filesystem::path default_working_folder() {
     return "c:/temp/gadgetron/";

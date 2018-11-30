@@ -9,14 +9,15 @@ add_executable(gadgetron
         main.cpp
         GadgetronExport.h
         gadgetron_xml.h
-        Config.cpp Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h)
+        gadgetron_home.h
+        gadgetron_home.cpp
+        Config.cpp Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h Builders.cpp Builders.h)
 
 target_link_libraries(gadgetron
         gadgetron_core
-        gadgetron_gadgetbase
         gadgetron_toolbox_log
-        gadgetron_toolbox_gadgettools
         pugixml
+        boost
         ${ISMRMRD_LIBRARIES})
 
 target_include_directories(gadgetron

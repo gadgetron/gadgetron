@@ -69,7 +69,7 @@ namespace {
         ConfigFileHandler(std::promise<Gadgetron::Server::Config> &config_promise, const Context::Paths &paths)
                 : promise(config_promise), paths(paths) {}
 
-        void handle(std::iostream &stream) {
+        void handle(std::iostream &stream) override {
             boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
             std::ifstream config_stream(filename.string());
 
@@ -87,7 +87,7 @@ namespace {
     public:
         ConfigHandler(std::promise<Config> &config_promise) : promise(config_promise){}
 
-        void handle(std::iostream &stream) {
+        void handle(std::iostream &stream) override {
             std::stringstream config_stream(read_string_from_stream(stream));
 
             promise.set_value(parse_config(config_stream));
@@ -101,7 +101,7 @@ namespace {
     public:
         HeaderHandler(std::promise<Header> &header_promise) : promise(header_promise) {}
 
-        void handle(std::iostream &stream) {
+        void handle(std::iostream &stream) override {
             std::string raw_header(read_string_from_stream(stream));
 
             ISMRMRD::IsmrmrdHeader header;
@@ -118,7 +118,7 @@ namespace {
     public:
         CloseHandler(bool &closed) : closed(closed) {}
 
-        void handle(std::iostream &stream) {
+        void handle(std::iostream &stream) override {
             closed = true;
         }
     private:
@@ -127,30 +127,50 @@ namespace {
 
     class QueryHandler : public Handler {
     public:
-        void handle(std::iostream &stream) {
+        void handle(std::iostream &stream) override {
 
         }
     };
 
     class ReaderHandler : public Handler {
     public:
-        ReaderHandler(std::unique_ptr<Reader> &&reader, MessageChannel &channel, boost::dll::shared_library &library)
+        ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel, boost::dll::shared_library &library)
             : reader(std::move(reader))
-            , channel(channel)
+            , channel(std::move(channel))
             , library(library) {}
 
-        void handle(std::iostream &stream) {
-            channel.push(reader->read(stream));
+        void handle(std::iostream &stream) override {
+            channel->push(reader->read(stream));
         }
 
-        MessageChannel &channel;
         std::unique_ptr<Reader> reader;
+        std::shared_ptr<MessageChannel> channel;
         boost::dll::shared_library library;
     };
 
     // --------------------------------------------------------------------- //
 
     // --------------------------------------------------------------------- //
+
+    class Stream {
+    public:
+        struct entry {
+            std::thread thread;
+            std::unique_ptr<Node> node;
+            boost::dll::shared_library library;
+        };
+
+        void join();
+
+    private:
+        std::vector<entry> entries;
+    };
+
+    void Stream::join() {
+        for(auto &entry : this->entries) {
+            entry.thread.join();
+        }
+    }
 
     class ConnectionImpl : public Connection, public std::enable_shared_from_this<ConnectionImpl> {
     public:
@@ -169,19 +189,25 @@ namespace {
 
         void initialize_readers(const Config &config);
         void initialize_writers(const Config &config);
-        void initialize_stream(const Config::Stream &config, const Context &context);
+        void initialize_stream(const Config &config, const Context &context);
 
         std::unique_ptr<ReaderHandler> load_reader(const Config::Reader &reader_config);
+        std::unique_ptr<Stream> load_stream(
+                const Config::Stream &stream_config,
+                const Context &context,
+                std::shared_ptr<MessageChannel> input,
+                std::shared_ptr<MessageChannel> output
+        );
 
         tcp::iostream stream;
         Gadgetron::Core::Context::Paths paths;
 
         struct {
-            Gadgetron::Core::MessageChannel input, output, error;
+            std::shared_ptr<MessageChannel> input, output, error;
         } channels;
 
         struct {
-            std::promise<Stream> stream;
+            std::promise<std::unique_ptr<Stream>> stream;
 
             std::promise<Config> config;
             std::promise<Header> header;
@@ -255,34 +281,31 @@ namespace {
         Context::Header header = header_future.get();
         Context context{header, paths};
 
-        this->initialize_stream(config.stream, context);
+        this->initialize_stream(config, context);
     }
 
     void ConnectionImpl::initialize_readers(const Config &config) {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers;
 
-        std::for_each(config.readers.begin(), config.readers.end(),
-            [&](const Config::Reader &reader_config) {
-                auto reader_handler = this->load_reader(reader_config);
+        for(auto &reader_config : config.readers) {
+            auto reader_handler = this->load_reader(reader_config);
 
-                uint16_t port = reader_config.port.value_or(reader_handler->reader->port());
-
-                handlers[port] = std::move(reader_handler);
-            }
-        );
+            uint16_t port = reader_config.port.value_or(reader_handler->reader->port());
+            handlers[port] = std::move(reader_handler);
+        }
 
         this->promises.readers.set_value(std::move(handlers));
     }
 
     void ConnectionImpl::initialize_writers(const Config &config) {
-        GDEBUG_STREAM("Initializing writers: IMPLEMENTATION PENDING" << std::endl);
+
+        // TODO: Writers
     }
 
-    void ConnectionImpl::initialize_stream(const Config::Stream &config, const Context &context) {
-
-
-
+    void ConnectionImpl::initialize_stream(const Config &config, const Context &context) {
+        auto stream = this->load_stream(config.stream, context, this->channels.input, this->channels.output);
+        this->promises.stream.set_value(std::move(stream));
     }
 
     std::unique_ptr<ReaderHandler>
@@ -302,6 +325,15 @@ namespace {
         return std::make_unique<ReaderHandler>(std::move(reader), this->channels.input, library);
     }
 
+    std::unique_ptr<Stream>
+    ConnectionImpl::load_stream(
+            const Config::Stream &stream_config,
+            const Context &context,
+            std::shared_ptr<MessageChannel> input,
+            std::shared_ptr<MessageChannel> output
+    ) {
+        return std::make_unique<Stream>();
+    }
 };
 
 std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket) {

@@ -10,14 +10,9 @@ namespace Gadgetron::Server {
     struct Config {
 
         struct Gadget;
-        struct Stream;
         struct Parallel;
-        using Node = boost::variant<Gadget, Parallel>;
-
-        struct Gadget {
-            std::string name, dll, classname;
-            std::unordered_map<std::string, std::string> properties;
-        };
+        struct Distributed;
+        using Node = boost::variant<Gadget, Parallel, Distributed>;
 
         struct Reader {
             std::string dll, classname;
@@ -33,18 +28,25 @@ namespace Gadgetron::Server {
             std::vector<Node> nodes;
         };
 
-        struct BranchNode : Gadget {
-
+        struct Gadget {
+            std::string name, dll, classname;
+            std::unordered_map<std::string, std::string> properties;
         };
 
-        struct MergeNode : Gadget {
-
-        };
+        struct Branch : Gadget {};
+        struct Merge : Gadget {};
 
         struct Parallel {
-            BranchNode branch;
-            MergeNode merge;
+            Branch branch;
+            Merge merge;
             std::vector<Stream> streams;
+        };
+
+        struct Discovery {};
+
+        struct Distributed {
+            Discovery discovery;
+            Stream stream;
         };
 
         std::vector<Reader> readers;

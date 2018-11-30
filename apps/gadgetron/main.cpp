@@ -1,13 +1,4 @@
 
-#include <ace/Log_Msg.h>
-#include <ace/Service_Config.h>
-#include <ace/Reactor.h>
-#include <ace/Get_Opt.h>
-#include <ace/OS_NS_string.h>
-#include <ace/INET_Addr.h>
-#include <ace/SOCK_Acceptor.h>
-#include <ace/Acceptor.h>
-
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 

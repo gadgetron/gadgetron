@@ -40,16 +40,16 @@
         </gadget>
 
         <parallel>
-            <branchnode>
-                <name>FanoutNode</name>
+            <branch>
+                <name>Fanout</name>
                 <dll>gadgetron_core</dll>
                 <classname>FanoutDisperseNode</classname>
-            </branchnode>
-            <mergenode>
-                <name>MergeNode</name>
+            </branch>
+            <merge>
+                <name>Merge</name>
                 <dll>image_compare</dll>
                 <classname>ImageConvergeNode</classname>
-            </mergenode>
+            </merge>
 
             <stream key="sense-spirit">
                 <gadget>
