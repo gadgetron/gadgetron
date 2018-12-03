@@ -9,6 +9,7 @@ add_library(gadgetron_core SHARED
     Context.cpp
     Stream.cpp
     MergeNode.cpp
+	LegacyACE.cpp
     BranchNode.cpp)
 
 target_link_libraries(gadgetron_core
@@ -33,6 +34,7 @@ install(FILES
         BranchNode.h
 		PropteryMixin.h
 		Channel.h
+		LegacyACE.h
 		gadgetcore_export.h
 		GadgetronExport.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

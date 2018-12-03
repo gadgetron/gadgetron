@@ -14,6 +14,7 @@
 #include "Channel.h"
 #include <stdexcept>
 #include <ismrmrd/xml.h>
+#include "LegacyACE.h"
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
@@ -116,7 +117,7 @@ namespace Gadgetron{
         auto* current_message = message;
         while(current_message){
           messages.emplace_back(current_message->take_message());
-          current_message = current_message->cont();
+          current_message = dynamic_cast<GadgetContainerMessageBase*>(current_message->cont());
         }
         return std::make_unique<Core::MessageTuple>(std::move(messages));
       }
@@ -160,6 +161,14 @@ namespace Gadgetron{
 
       return 0;
     }
+
+    int putq(ACE_Message_Block* msg){
+      return this->next_channel->putq(msg);
+    }
+    int putq(GadgetContainerMessageBase* msg){
+      return this->next_channel->putq(msg);
+    }
+    virtual int close(unsigned long flags){ return 0;}
 
 
 
@@ -245,6 +254,8 @@ namespace Gadgetron{
 
     std::string name;
     std::mutex parameter_mutex_;
+
+    static constexpr bool pass_on_undesired_data_ = true;
   private:
     std::map<std::string, std::string> parameters_;
     std::string gadgetron_version_;

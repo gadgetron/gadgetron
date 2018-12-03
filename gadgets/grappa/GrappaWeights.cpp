@@ -1,4 +1,3 @@
-#include "../mri_core/GadgetIsmrmrdReadWrite.h"
 #include "GrappaWeights.h"
 #include "hoNDArray_fileio.h"
 

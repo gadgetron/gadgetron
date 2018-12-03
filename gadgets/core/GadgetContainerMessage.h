@@ -17,12 +17,23 @@ namespace Gadgetron {
         [[deprecated]]
         const char *rd_ptr() { return buffer.c_str(); };
 
-        virtual ~ACE_Message_Block() {};
+        virtual ~ACE_Message_Block() {
+            if (cont_element){
+                cont_element->release();
+            }
+        };
 
         virtual void *release() {
             delete (this); // Seppuku
             return nullptr;
         }
+
+        ACE_Message_Block* cont(){return cont_element;}
+        void  cont(ACE_Message_Block* ptr){cont_element = ptr;}
+
+
+        private:
+        ACE_Message_Block* cont_element;
 
     private:
         std::string buffer;
@@ -35,19 +46,7 @@ namespace Gadgetron {
 
         virtual std::unique_ptr<Core::Message> take_message() = 0;
 
-        virtual ~GadgetContainerMessageBase() {
-            if (cont_element){
-                cont_element->release();
-            }
-        };
-
-        GadgetContainerMessageBase* cont(){return cont_element;}
-        void  cont(GadgetContainerMessageBase* ptr){cont_element = ptr;}
-
-
-        private:
-        GadgetContainerMessageBase* cont_element;
-
+        virtual ~GadgetContainerMessageBase(){};
     };
 
 
@@ -78,12 +77,11 @@ namespace Gadgetron {
             return data.get();
         }
 
-        virtual GadgetContainerMessage<T>* duplicate() {
+        GadgetContainerMessage<T>* duplicate() {
             return new GadgetContainerMessage<T>(*this->data);
         }
 
-
-
+    private:
 
         std::unique_ptr<T> data;
     };
