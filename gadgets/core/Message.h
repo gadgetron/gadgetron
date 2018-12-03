@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 namespace Gadgetron {
     namespace Core {
@@ -19,11 +20,11 @@ namespace Gadgetron {
 
             }
 
-            TypedMessage(T&& input) : data(std::make_unique<T>(input)) {
+            TypedMessage(T&& input) : data{std::make_unique<T>(input)} {
 
             }
 
-            TypedMessage(std::unique_ptr<T> &&input_ptr) : data(input_ptr) {
+            TypedMessage(std::unique_ptr<T> &&input_ptr) : data(std::move(input_ptr)) {
 
             }
 
@@ -48,7 +49,12 @@ namespace Gadgetron {
         class MessageTuple : public Message {
         public:
             template<class ...ARGS>
-            MessageTuple(ARGS &&...  args) : Message(), messages_{make_message(std::forward(args))...} {
+            explicit MessageTuple(ARGS &&...  args) : Message(), messages_{std::move(make_message(std::move(args)))...} {
+
+            }
+
+            template<>
+            explicit MessageTuple(std::vector<std::unique_ptr<Message>>&& message_vector) : messages_(std::move(message_vector)){
 
             }
 
@@ -62,8 +68,8 @@ namespace Gadgetron {
 
         private:
 
-            template<class T> std::unique_ptr<Message> make_message(T input){
-                return std::make_unique<TypedMessage<T>>(std::forward(input));
+            template<class T> std::unique_ptr<Message> make_message(T&& input){
+                return std::make_unique<TypedMessage<T>>(std::move(input));
             }
 
             std::vector<std::unique_ptr<Message>> messages_;

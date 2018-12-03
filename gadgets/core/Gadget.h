@@ -13,6 +13,7 @@
 #include <mutex>
 #include "Channel.h"
 #include <stdexcept>
+#include <ismrmrd/xml.h>
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
@@ -85,11 +86,40 @@ namespace Gadgetron{
 
   class EXPORTGADGETCORE ChannelAdaptor {
   public:
-      int putq(ACE_Message_Block* msg){
+      int putq(ACE_Message_Block *msg) {
+        auto *msg_ptr = dynamic_cast<GadgetContainerMessageBase *>(msg);
+        if (msg_ptr) {
+          return this->putq(msg_ptr);
+        } else {
+          msg->release();
+          throw std::runtime_error(
+                  "Attempted to put ACE_Message_Block not of type GadgetContainerMessage into a queue");
+        }
 
+      }
 
-      };
+      int putq(GadgetContainerMessageBase* msg){
+        if (msg->cont()){
+          channel->push(to_message_tuple(msg));
+
+        } else {
+          channel->push(msg->take_message());
+        }
+        msg->release();
+
+        return 0;
+
+    }
   private:
+      static std::unique_ptr<Core::MessageTuple> to_message_tuple(GadgetContainerMessageBase* message){
+        std::vector<std::unique_ptr<Core::Message>> messages;
+        auto* current_message = message;
+        while(current_message){
+          messages.emplace_back(current_message->take_message());
+          current_message = current_message->cont();
+        }
+        return std::make_unique<Core::MessageTuple>(std::move(messages));
+      }
       std::shared_ptr<Core::OutputChannel> channel;
   };
 
@@ -198,6 +228,16 @@ namespace Gadgetron{
 
     std::vector<GadgetPropertyBase*> properties_;
     virtual int process(ACE_Message_Block * m) = 0;
+
+
+    virtual int process_config(const ISMRMRD::IsmrmrdHeader& header){
+      std::stringstream stream;
+      ISMRMRD::serialize(header,stream);
+
+      ACE_Message_Block block(stream.str());
+      return this->process_config(&block);
+    }
+
 
     virtual int process_config(ACE_Message_Block * m) {
       return 0;

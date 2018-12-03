@@ -93,17 +93,14 @@ namespace Gadgetron::Core {
 
     template<class T, class U>
     inline void OutputChannel::push(std::unique_ptr<T> &&ptr) {
-        this->push_message(std::make_unique<TypedMessage<T>>(std::move(ptr));
+        this->push_message(std::move(std::make_unique<TypedMessage<T>>(std::move(ptr))));
+
     }
 
     template<class T>
-    inline void OutputChannel::push(std::unique_ptr<TypedMessage < T>>
-
-    && ptr) {
-    this->
-
-    push_message (std::move(ptr));
-}
+    inline void OutputChannel::push(std::unique_ptr<TypedMessage < T>> && ptr) {
+        this->push_message(std::move(ptr));
+    }
 
 
 template<class ...ARGS>
@@ -118,8 +115,8 @@ template<class T>
 std::unique_ptr<T> TypedInputChannel<T>::pop() {
 
     std::unique_ptr<Message> message = in->pop();
-
-    while (typeid(*message) != typeid(T)) {
+    auto* msg_ptr = message.get();
+    while (typeid(msg_ptr) != typeid(T*)) {
         bypass->push(std::move(message));
         message = in->pop();
     }
@@ -141,9 +138,13 @@ namespace {
         typedef seq<S...> type;
     };
 
+
+
+
     template<unsigned int I, class T, class ...REST>
     bool convertible_to_tuple(MessageTuple *messagetuple) {
-        if (typeid(*messagetuple->messages()[I]) == typeid(TypedMessage < T > )) {
+        auto* ptr = messagetuple->messages()[I].get();
+        if (typeid(ptr) == typeid(TypedMessage<T>*)) {
             return convertible_to_tuple<I + 1, REST...>(messagetuple);
         } else {
             return false;
@@ -152,8 +153,19 @@ namespace {
 
     template<unsigned int I, class T>
     bool convertible_to_tuple(MessageTuple *messagetuple) {
-        if (typeid(*messagetuple->messages()[I]) == typeid(TypedMessage < T > )) {
+
+        auto* ptr = messagetuple->messages()[I].get();
+        if (typeid(ptr) == typeid(TypedMessage<T>* )) {
             return true;
+        } else {
+            return false;
+        }
+    }
+
+   template<class ...REST>
+    bool convertible_to_typle(MessageTuple *messageTuple){
+        if (sizeof...(REST) <= messageTuple->messages().size()){
+            return convertible_to_tuple<0,REST...>(messageTuple);
         } else {
             return false;
         }
@@ -175,15 +187,15 @@ namespace {
     template<class ...ARGS>
     std::tuple<std::unique_ptr<ARGS>...> messageTuple_to_tuple(MessageTuple *messageTuple) {
         auto messages = messageTuple->take_messages();
-        return tuple_maker<ARGS...>::make_tuple_from_messages(messages, typename gens<sizeof...(ARGS)>::type());
+        return tuple_maker<ARGS...>::from_messages(messages, typename gens<sizeof...(ARGS)>::type());
     }
 
     template<class ...ARGS>
     std::tuple<std::unique_ptr<ARGS>...> unpack(std::unique_ptr<Message> &message) {
-
-        if (typeid(*message) == typeid(MessageTuple)) {
+        auto* msg_ptr = message.get();
+        if (typeid(msg_ptr) == typeid(MessageTuple*)) {
             auto *messagetuple = reinterpret_cast<MessageTuple *>(message.get());
-            if (convertible_to_tuple<0, ARGS...>(messagetuple)) {
+            if (convertible_to_tuple<ARGS...>(messagetuple)) {
                 message.release();
                 return messageTuple_to_tuple(messagetuple);
             }

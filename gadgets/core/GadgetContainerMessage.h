@@ -14,9 +14,16 @@ namespace Gadgetron {
 
         }
 
+        [[deprecated]]
         const char *rd_ptr() { return buffer.c_str(); };
 
         virtual ~ACE_Message_Block() {};
+
+        virtual void *release() {
+            delete (this); // Seppuku
+            return nullptr;
+        }
+
     private:
         std::string buffer;
     };
@@ -24,55 +31,61 @@ namespace Gadgetron {
 
     class GadgetContainerMessageBase : public ACE_Message_Block {
     public:
-        GadgetContainerMessageBase(){};
 
-        virtual ~GadgetContainerMessageBase() {};
 
-        virtual void *release() {
-            delete (this); // Seppuku
-            return nullptr;
-        }
+        virtual std::unique_ptr<Core::Message> take_message() = 0;
 
+        virtual ~GadgetContainerMessageBase() {
+            if (cont_element){
+                cont_element->release();
+            }
+        };
+
+        GadgetContainerMessageBase* cont(){return cont_element;}
+        void  cont(GadgetContainerMessageBase* ptr){cont_element = ptr;}
+
+
+        private:
+        GadgetContainerMessageBase* cont_element;
 
     };
 
 
 
     template<class T>
-    class GadgetContainerMessage : public GadgetContainerMessageBase, private Core::TypedMessage<T> {
+    class GadgetContainerMessage : public GadgetContainerMessageBase {
 
     public:
         /**
          *  Constructor, passing on input arguments to the contained class.
          * @param xs Variadic arguments to the contained class
          */
+
         template<typename... X>
-        GadgetContainerMessage(X... xs) : Core::TypedMessage<T>(T(xs...)) {
+        GadgetContainerMessage(X&&... xs) : data(std::make_unique<T>(std::move(xs)...))  {
 
         }
 
         virtual ~GadgetContainerMessage() {
+
+        }
+
+        virtual std::unique_ptr<Core::Message> take_message() override {
+            return std::make_unique<Core::TypedMessage<T>>(std::move(data));
         }
 
         T *getObjectPtr() {
-            return this->data.get();
+            return data.get();
         }
 
-        GadgetContainerMessageBase* cont(){return cont_element;}
-        void  cont(GadgetContainerMessageBase* ptr){cont_element = ptr;}
-
-
-        GadgetContainerMessage<T>* duplicate() {
+        virtual GadgetContainerMessage<T>* duplicate() {
             return new GadgetContainerMessage<T>(*this->data);
         }
 
 
-    private:
-
-        GadgetContainerMessageBase* cont_element = nullptr;
 
 
-
+        std::unique_ptr<T> data;
     };
 
 
