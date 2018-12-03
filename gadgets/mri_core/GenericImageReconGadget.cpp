@@ -1203,6 +1203,7 @@ namespace Gadgetron {
     {
         GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 2> > >* m1 = nullptr;
         GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
+        GadgetContainerMessage< ISMRMRD::ImageHeader >* m3 = nullptr;
 
         if (m1 = AsContainerMessage<Image2DBufferType>(mb))
         {
@@ -1211,6 +1212,10 @@ namespace Gadgetron {
         else if (m2 = AsContainerMessage<Image3DBufferType>(mb))
         {
             return this->process3D(m2);
+        }
+        else if (m3 = AsContainerMessage<ISMRMRD::ImageHeader>(mb))
+        {
+            return this->process_image(m3);
         }
         else if (pass_on_undesired_data_)
         {
@@ -1221,6 +1226,11 @@ namespace Gadgetron {
             GERROR("GenericImageReconGadget Gadget received wrong input data type");
             return -1;
         }
+    }
+
+    int GenericImageReconGadget::process_image(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1)
+    {
+        return this->next()->putq(m1);
     }
 
     int GenericImageReconGadget::process2D(GadgetContainerMessage<Image2DBufferType>* m1)
