@@ -16,7 +16,7 @@ namespace Gadgetron {
 
         class Message {
         public:
-            virtual ~Message() = 0;
+            virtual ~Message(){};
 
             virtual std::type_index type() = 0;
 
@@ -55,9 +55,7 @@ namespace Gadgetron {
                 return std::move(data);
             }
 
-            virtual GadgetContainerMessageBase* to_container_message() override {
-                return new GadgetContainerMessage<T>(this->take_data());
-            }
+            virtual GadgetContainerMessageBase* to_container_message() override;
 
             virtual ~TypedMessage() {};
 
@@ -111,3 +109,5 @@ namespace Gadgetron {
         };
     }
 }
+
+#include "Message.hpp"
