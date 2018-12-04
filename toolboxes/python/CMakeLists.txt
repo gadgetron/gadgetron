@@ -23,10 +23,7 @@ message("Boost_LIBRARIES is ${Boost_LIBRARIES}")
 target_link_libraries(gadgetron_toolbox_python
     gadgetron_core
     gadgetron_toolbox_cpucore
-    ${ISMRMRD_LIBRARIES}
     ${PYTHON_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${ACE_LIBRARIES}
     gadgetron_toolbox_log)
 
 target_include_directories(gadgetron_toolbox_python

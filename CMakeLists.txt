@@ -452,7 +452,7 @@ if (BUILD_WITH_GPERFTOOLS_PROFILER)
   find_package(Gperftools REQUIRED)
 endif()
 
-add_subdirectory(test)
+#add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
 add_subdirectory(chroot)
