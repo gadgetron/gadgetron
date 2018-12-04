@@ -33,19 +33,20 @@ namespace Gadgetron::Core {
             virtual ~GadgetNode(){};
     };
 
-    template<class T>
+
+    template<class ...ARGS >
     class TypedGadgetNode : public GadgetNode {
         TypedGadgetNode(const ISMRMRD::IsmrmrdHeader &header) {
 
         }
 
         virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) override final  {
-            auto typed_input = TypedInputChannel<T>(in, out);
+            auto typed_input = TypedInputChannel<ARGS...>(in, out);
             this->process(typed_input, *out);
         }
 
 
-        virtual void process(InputChannel<T> &in, OutputChannel &out) = 0;
+        virtual void process(InputChannel<ARGS...> &in, OutputChannel &out) = 0;
 
     };
 
