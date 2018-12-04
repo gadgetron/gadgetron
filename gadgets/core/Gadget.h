@@ -635,25 +635,7 @@ namespace Gadgetron{
               else if ( (m2 = AsContainerMessage<P2>(mb))){
                       return this->process(m2);
               } else {
-                  if (!pass_on_undesired_data_)
-                  {
-                      GERROR("%s -> %s, (%s, %s, %p, %p), (%s, %s, %p, %p)\n",
-                          this->module()->name(),
-                          "Gadget1Of2::process, Conversion of Message Block Failed, must be one of two types",
-                          typeid(GadgetContainerMessage<P1>*).name(),
-                          typeid(m1).name(),
-                          mb,
-                          m1,
-                          typeid(GadgetContainerMessage<P2>*).name(),
-                          typeid(m2).name(),
-                          mb->cont(),
-                          m2);
-                      return -1;
-                  }
-                  else
-                  {
-                      return (this->next()->putq(mb));
-                  }
+                    return (this->next()->putq(mb));
               }
 
 

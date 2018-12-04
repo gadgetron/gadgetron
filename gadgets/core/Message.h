@@ -32,6 +32,7 @@ namespace Gadgetron {
         class TypedMessage : public Message {
         public:
 
+
             TypedMessage(const T& input) : data(std::make_unique<T>(input)) {
 
             }
