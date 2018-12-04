@@ -1,7 +1,7 @@
 #ifndef GADGETRON_WAVEFORMREADER_H
 #define GADGETRON_WAVEFORMREADER_H
 
-#include "Stream.h"
+#include "Reader.h"
 
 namespace Gadgetron::Core::Readers {
 

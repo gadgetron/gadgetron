@@ -14,17 +14,13 @@ namespace Gadgetron::Server::Builders {
     boost::dll::shared_library Builder::load_library(const std::string &shared_library_name) {
         return boost::dll::shared_library(
                 this->make_library_path(shared_library_name),
-                boost::dll::load_mode::default_mode |
+                boost::dll::load_mode::search_system_folders |
                 boost::dll::load_mode::append_decorations
         );
     }
 
     boost::filesystem::path Builder::make_library_path(const std::string &shared_library_name) {
-        auto path = paths.gadgetron_home / "lib" / shared_library_name;
-
-        GDEBUG_STREAM("Library path: " << path << std::endl);
-
-        return path;
+        return paths.gadgetron_home / "lib" / shared_library_name;
     }
 
     ReaderBuilder::ReaderBuilder(const Config &config, const Context::Paths &paths) : Builder(config, paths) {}

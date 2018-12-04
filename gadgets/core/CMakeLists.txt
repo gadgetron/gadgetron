@@ -4,15 +4,15 @@ endif ()
 
 add_subdirectory(readers)
 add_subdirectory(writers)
+add_subdirectory(gadgets)
 
 add_library(gadgetron_core SHARED
     Channel.h
     Channel.hpp
     Channel.cpp
     Context.cpp
-    Stream.cpp
-    MergeNode.cpp
-    BranchNode.cpp)
+    Reader.h
+    Writer.h)
 
 target_link_libraries(gadgetron_core
     gadgetron_toolbox_cpucore)
@@ -30,10 +30,9 @@ install(FILES
     Gadget.h
     Context.h
     Gadget.h
-    Stream.h
+    Reader.h
+    Writer.h
     Node.h
-    MergeNode.h
-    BranchNode.h
     PropteryMixin.h
     Channel.h
     gadgetcore_export.h

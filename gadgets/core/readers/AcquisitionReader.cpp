@@ -6,6 +6,8 @@
 
 namespace Gadgetron::Core::Readers {
 
+
+
      std::unique_ptr<Core::Message> AcquisitionReader::read(std::istream& stream) {
 
         using namespace Core;

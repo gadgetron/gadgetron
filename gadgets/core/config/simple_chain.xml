@@ -23,13 +23,13 @@
     <stream>
         <gadget>
             <name>RemoveROOversampling</name>
-            <dll>gadgetron_mricore</dll>
+            <dll>gadgetron_core_gadgets</dll>
             <classname>RemoveROOversamplingGadget</classname>
         </gadget>
 
         <gadget>
             <name>AccTrig</name>
-            <dll>gadgetron_mricore</dll>
+            <dll>gadgetron_core_gadgets</dll>
             <classname>AcquisitionAccumulateTriggerGadget</classname>
             <property>
                 <name>trigger_dimension</name>
@@ -43,7 +43,7 @@
 
         <gadget>
             <name>Buff</name>
-            <dll>gadgetron_mricore</dll>
+            <dll>gadgetron_core_gadgets</dll>
             <classname>BucketToBufferGadget</classname>
             <property>
                 <name>N_dimension</name>
@@ -61,19 +61,19 @@
 
         <gadget>
             <name>SimpleRecon</name>
-            <dll>gadgetron_mricore</dll>
+            <dll>gadgetron_core_gadgets</dll>
             <classname>SimpleReconGadget</classname>
         </gadget>
 
         <gadget>
             <name>ImageArraySplit</name>
-            <dll>gadgetron_mricore</dll>
+            <dll>gadgetron_core_gadgets</dll>
             <classname>ImageArraySplitGadget</classname>
         </gadget>
 
         <gadget>
             <name>Extract</name>
-            <dll>gadgetron_mricore</dll>
+            <dll>gadgetron_core_gadgets</dll>
             <classname>ExtractGadget</classname>
         </gadget>
     </stream>

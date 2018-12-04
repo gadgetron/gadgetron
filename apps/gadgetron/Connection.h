@@ -4,11 +4,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/asio.hpp>
 
-#include "Stream.h"
 #include "Context.h"
-#include "Channel.h"
-
-#include "Config.h"
 
 #include "log.h"
 

@@ -7,7 +7,8 @@
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/waveform.h>
 #include <complex>
-#include "Stream.h"
+#include "Reader.h"
+#include "Writer.h"
 #include "mri_core_data.h"
 #include "io/readers.h"
 #include "io/writers.h"

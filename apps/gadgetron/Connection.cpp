@@ -12,7 +12,8 @@
 #include "Connection.h"
 
 #include "Builders.h"
-#include "Stream.h"
+#include "Reader.h"
+#include "Writer.h"
 #include "Server.h"
 #include "Config.h"
 
@@ -63,6 +64,7 @@ namespace {
     class Handler {
     public:
         virtual void handle(std::iostream &stream) = 0;
+        virtual ~Handler() = default;
     };
 
     class ConfigFileHandler : public Handler {

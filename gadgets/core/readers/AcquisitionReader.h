@@ -1,7 +1,7 @@
 #ifndef GADGETRON_ACQUISITIONREADER_H
 #define GADGETRON_ACQUISITIONREADER_H
 
-#include "Stream.h"
+#include "Reader.h"
 
 namespace Gadgetron::Core::Readers {
 

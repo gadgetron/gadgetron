@@ -2,9 +2,10 @@
 #define GADGETRON_BUILDERS_H
 
 #include <memory>
-#include <Node.h>
 
-#include "Stream.h"
+#include "Node.h"
+#include "Reader.h"
+#include "Writer.h"
 #include "Config.h"
 #include "Context.h"
 #include "Channel.h"
