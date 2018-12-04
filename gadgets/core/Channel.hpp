@@ -91,9 +91,30 @@ namespace Gadgetron::Core {
         return OutputChannel::Iterator(&channel);
     }
 
-    template<class T, class U>
-    inline void OutputChannel::push(std::unique_ptr<T> &&ptr) {
-        this->push_message(std::move(std::make_unique<TypedMessage<T>>(std::move(ptr))));
+
+    namespace {
+        namespace gadgetron_detail{
+
+            template<class T>
+            std::unique_ptr<TypedMessage<T>> make_message(std::unique_ptr<T>&& ptr){
+                return std::make_unique<TypedMessage<T>>(std::move(ptr));
+            }
+
+            template<class ...ARGS>
+            std::enable_if_t<(sizeof...(ARGS) > 1),std::unique_ptr<MessageTuple>> make_message(std::unique_ptr<ARGS>&&... ptrs  ){
+                return std::make_unique<MessageTuple>(ptrs...);
+
+            }
+
+
+
+
+        }
+    }
+
+    template<class ...ARGS>
+    inline void OutputChannel::push(std::unique_ptr<ARGS>&&... ptr) {
+        this->push_message(gadgetron_detail::make_message<ARGS...>(std::move(ptr)...));
 
     }
 

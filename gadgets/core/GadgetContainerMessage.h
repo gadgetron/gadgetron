@@ -37,6 +37,12 @@ namespace Gadgetron {
          * @param xs Variadic arguments to the contained class
          */
 
+        GadgetContainerMessage(){
+            data = new T();
+            message = std::make_unique<Core::TypedMessage<T>>(std::unique_ptr<T>(data));
+        }
+
+
         template<typename... X>
         GadgetContainerMessage(X &&... xs)  {
             data= new T(std::move(xs)...);
@@ -60,7 +66,7 @@ namespace Gadgetron {
 
         virtual std::unique_ptr<Core::Message> take_message() override {
             data = nullptr;
-            return std::unique_ptr<Core::TypedMessage<T>>(std::move(message));
+            return std::make_unique<Core::TypedMessage<T>>(std::move(message));
         }
 
         T *getObjectPtr() {

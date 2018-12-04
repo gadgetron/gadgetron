@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <typeindex>
+#include <numeric>
 
 namespace Gadgetron {
 
@@ -11,6 +12,7 @@ namespace Gadgetron {
     class LegacyGadgetNode;
 
     namespace Core {
+        class MessageTuple;
 
         class Message {
         public:
@@ -22,6 +24,7 @@ namespace Gadgetron {
 
             virtual GadgetContainerMessageBase* to_container_message() = 0;
             friend LegacyGadgetNode;
+            friend MessageTuple;
         };
 
 
@@ -52,7 +55,7 @@ namespace Gadgetron {
             }
 
             virtual GadgetContainerMessageBase* to_container_message() override {
-                return GadgetContainerMessage<T>(this->take_data());
+                return new GadgetContainerMessage<T>(this->take_data());
             }
 
             virtual ~TypedMessage() {};
@@ -74,7 +77,6 @@ namespace Gadgetron {
 
             }
 
-            template<>
             explicit MessageTuple(std::vector<std::unique_ptr<Message>>&& message_vector) : messages_(std::move(message_vector)){
 
             }
@@ -87,9 +89,11 @@ namespace Gadgetron {
                 return std::move(messages_);
             }
 
-            virtual std::type_index types(){
+            virtual std::type_index type() override {
                 return std::type_index(typeid(messages_));
             }
+
+            virtual GadgetContainerMessageBase* to_container_message() override;
 
         private:
 

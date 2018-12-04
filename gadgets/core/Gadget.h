@@ -106,10 +106,10 @@ namespace Gadgetron{
 
       int putq(GadgetContainerMessageBase* msg){
         if (msg->cont()){
-          channel->push(to_message_tuple(msg));
+          channel->push_message(to_message_tuple(msg));
 
         } else {
-          channel->push(msg->take_message());
+          channel->push_message(msg->take_message());
         }
         msg->release();
 

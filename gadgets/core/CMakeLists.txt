@@ -10,6 +10,7 @@ add_library(gadgetron_core SHARED
     Stream.cpp
     MergeNode.cpp
 	LegacyACE.cpp
+	Message.cpp
     BranchNode.cpp)
 
 target_link_libraries(gadgetron_core
