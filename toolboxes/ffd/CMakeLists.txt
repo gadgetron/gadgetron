@@ -17,6 +17,13 @@ set(ffd_src_files )
 source_group(Base FILES FFDBase.h)
 source_group(BSpline FILES ${ffd_header_bspline_files})
 source_group(MLFFD FILES MLFFD.h)
+
+
+add_library(gadgetron_toolbox_cpuffd INTERFACE)
+
+target_include_directories(gadgetron_toolbox_cpuffd
+        INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR})
 #
 #add_library(gadgetron_toolbox_cpuffd SHARED ${ffd_header_files} ${ffd_src_files} )
 #

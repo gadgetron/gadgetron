@@ -70,7 +70,6 @@ target_link_libraries(gadgetron_mri_noncartesian
     gadgetron_toolbox_gpuparallelmri
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
-    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
     ${OPTIMIZED_GADGET_LIBS}
     ${Boost_LIBRARIES}
 

@@ -31,11 +31,5 @@ namespace Gadgetron {
             cv.notify_all();
         }
 
-
-        void OutputChannel::push(std::unique_ptr<Gadgetron::Core::Message> && message) {
-            this->push_message(std::move(message));
-        }
-
-
     }
 }

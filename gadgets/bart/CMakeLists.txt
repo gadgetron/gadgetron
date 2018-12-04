@@ -65,7 +65,6 @@ target_link_libraries(gadgetron_bart gadgetron_gadgetbase
   gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpuklt  
   ${ISMRMRD_LIBRARIES}
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}   
   ${Boost_LIBRARIES}
   )
 

@@ -9,7 +9,7 @@ find_package(ZFP)
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         NoiseAdjustGadget.h
-#        PCACoilGadget.h
+        PCACoilGadget.h
         RateLimitGadget.h
         AcquisitionPassthroughGadget.h
         AccumulatorGadget.h
@@ -26,17 +26,17 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         RemoveROOversamplingGadget.h
         CoilReductionGadget.h
         AutoScaleGadget.h
-#        FlowPhaseSubtractionGadget.h
-#        GadgetIsmrmrdReadWrite.h
-#        PhysioInterpolationGadget.h
+       FlowPhaseSubtractionGadget.h
+        GadgetIsmrmrdReadWrite.h
+        PhysioInterpolationGadget.h
         IsmrmrdDumpGadget.h
         AsymmetricEchoAdjustROGadget.h
         MaxwellCorrectionGadget.h
 #        CplxDumpGadget.h
 #        DependencyQueryGadget.h
 #        DependencyQueryWriter.h
-#        ComplexToFloatGadget.h
-#        AcquisitionAccumulateTriggerGadget.h
+        ComplexToFloatGadget.h
+        AcquisitionAccumulateTriggerGadget.h
         BucketToBufferGadget.h
         ImageArraySplitGadget.h
         PseudoReplicatorGadget.h
@@ -57,7 +57,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericReconImageArrayScalingGadget.h
         GenericReconEigenChannelGadget.h
         GenericReconNoiseStdMapComputingGadget.h
-#        GenericImageReconGadget.h
+        GenericImageReconGadget.h
         GenericReconAccumulateImageTriggerGadget.h
         GenericImageReconArrayToImageGadget.h
         WhiteNoiseInjectorGadget.h
@@ -69,7 +69,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
 set(gadgetron_mricore_src_files
         AcquisitionPassthroughGadget.cpp
         NoiseAdjustGadget.cpp
-#        PCACoilGadget.cpp
+        PCACoilGadget.cpp
         AccumulatorGadget.cpp
         FFTGadget.cpp
         CombineGadget.cpp
@@ -84,17 +84,17 @@ set(gadgetron_mricore_src_files
         RemoveROOversamplingGadget.cpp
         CoilReductionGadget.cpp
         AutoScaleGadget.cpp
-#        FlowPhaseSubtractionGadget.cpp
+        FlowPhaseSubtractionGadget.cpp
 #        GadgetIsmrmrdReadWrite.cpp
-#        PhysioInterpolationGadget.cpp
+        PhysioInterpolationGadget.cpp
         IsmrmrdDumpGadget.cpp
         AsymmetricEchoAdjustROGadget.cpp
         MaxwellCorrectionGadget.cpp
 #        CplxDumpGadget.cpp
 #        DependencyQueryGadget.cpp
 #        DependencyQueryWriter.cpp
-#        ComplexToFloatGadget.cpp
-#        AcquisitionAccumulateTriggerGadget.cpp
+        ComplexToFloatGadget.cpp
+        AcquisitionAccumulateTriggerGadget.cpp
         BucketToBufferGadget.cpp
         ImageArraySplitGadget.cpp
         PseudoReplicatorGadget.cpp
@@ -115,7 +115,7 @@ set(gadgetron_mricore_src_files
         GenericReconImageArrayScalingGadget.cpp
         GenericReconEigenChannelGadget.cpp
         GenericReconNoiseStdMapComputingGadget.cpp
-#        GenericImageReconGadget.cpp
+        GenericImageReconGadget.cpp
         GenericReconAccumulateImageTriggerGadget.cpp
         GenericImageReconArrayToImageGadget.cpp
         WhiteNoiseInjectorGadget.cpp
@@ -176,6 +176,9 @@ target_link_libraries(gadgetron_mricore
         boost
         )
 
+target_include_directories(gadgetron_mricore
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (ZFP_FOUND)
     message("ZFP Found")

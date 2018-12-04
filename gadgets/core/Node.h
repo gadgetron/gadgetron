@@ -12,49 +12,24 @@ namespace Gadgetron::Core {
 
 
 
-    class Node : public std::enable_shared_from_this<Node>{
+    class Node {
     public:
-        using Input = std::shared_ptr<InputChannel<Message>>;
-        using Output = std::shared_ptr<OutputChannel>;
-
-        Node(std::tuple<Input, Output> channels) : input_channel(std::get<0>(channels)),
-                                                                       output_channel(std::get<1>(channels)) {
-            auto self = shared_from_this();
-            std::thread([self]() { self->start(); }
-            ).detach();
-        }
 
         virtual ~Node() {};
-
 
     protected:
 
         virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
 
-    private:
-        void start() {
 
-            try {
-                this->process(input_channel, output_channel);
-
-            }
-            catch (const ChannelClosedError &e) {
-                output_channel->close();
-            }
-            catch (const std::exception &e) {
-                GERROR(e.what());
-            }
-        }
-
-        Input input_channel;
-        Output output_channel;
 
 
     };
 
 
-    class GadgetNode : public Node {
+    class GadgetNode : public Node, public PropertyMixin {
     public:
+            GadgetNode(const ISMRMRD::IsmrmrdHeader& header, const std::unordered_map<std::string,std::string>& properties) : PropertyMixin(properties){};
             virtual ~GadgetNode(){};
     };
 
@@ -74,10 +49,6 @@ namespace Gadgetron::Core {
 
     };
 
-
-    class LegacyGadgetNode : public GadgetNode {
-
-    };
 
 /*
     class MergeNode : public Node {

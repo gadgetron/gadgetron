@@ -13,6 +13,9 @@
 
     target_link_libraries(gadgetron_toolbox_epi gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math gadgetron_toolbox_log boost)
 
+    target_include_directories(gadgetron_toolbox_epi
+            PUBLIC
+            ${CMAKE_CURRENT_SOURCE_DIR})
 
     install(FILES
             EPIExport.h

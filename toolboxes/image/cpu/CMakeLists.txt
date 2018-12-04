@@ -1,6 +1,6 @@
 
 set(image_header_fiels 
-        ../image_export.h 
+        image_export.h
         morphology.h )
 
 set(image_src_fiels morphology.cpp )

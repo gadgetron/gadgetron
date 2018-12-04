@@ -1,5 +1,5 @@
 if (WIN32)
-    add_definitions(-D__BUILD_GADGETRON_SPIRAL__)
+  add_definitions(-D__BUILD_GADGETRON_CORE__)
 endif ()
 
 add_subdirectory(readers)
@@ -7,15 +7,17 @@ add_subdirectory(writers)
 add_subdirectory(gadgets)
 
 add_library(gadgetron_core SHARED
-    Channel.h
-    Channel.hpp
+	Channel.h
+	Channel.hpp
     Channel.cpp
     Context.cpp
     Reader.h
-    Writer.h)
+    Writer.h
+	LegacyACE.cpp
+	Message.cpp)
 
 target_link_libraries(gadgetron_core
-    gadgetron_toolbox_cpucore)
+		gadgetron_toolbox_cpucore)
 
 target_include_directories(
     gadgetron_core
@@ -33,6 +35,7 @@ install(FILES
     Reader.h
     Writer.h
     Node.h
+    LegacyACE.h
     PropteryMixin.h
     Channel.h
     gadgetcore_export.h

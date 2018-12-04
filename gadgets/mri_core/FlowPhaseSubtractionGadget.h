@@ -31,10 +31,7 @@ namespace Gadgetron{
 
     private:
         unsigned int sets_;
-
-        std::vector<std::vector<float> buffer_;
-
-
+	boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
     };
 }
 

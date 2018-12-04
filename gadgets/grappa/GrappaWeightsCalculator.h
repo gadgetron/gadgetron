@@ -3,7 +3,6 @@
 #include "gadgetron_grappa_export.h"
 #include "GrappaWeights.h"
 
-#include <ace/Task.h>
 #include <list>
 
 namespace Gadgetron{

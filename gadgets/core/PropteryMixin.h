@@ -33,4 +33,4 @@ namespace Gadgetron::Core {
     };
 }
 
-#define GADGET_PROPERTY(TYPE, NAME, DEFAULT, DESCRIPTION) const TYPE NAME = this->get_property<TYPE>(NAME,DEFAULT,DESCRIPTION)
+#define NODE_PROPERTY(TYPE, NAME, DEFAULT, DESCRIPTION) const TYPE NAME = this->get_property<TYPE>(NAME,DEFAULT,DESCRIPTION)

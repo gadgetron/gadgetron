@@ -9,9 +9,16 @@
 
 namespace Gadgetron::Core {
 
+    template<class ...ARGS> class InputChannel {
+    public:
+        virtual std::tuple<std::unique_ptr<ARGS>...> pop() = 0;
+
+    public:
+        class Iterator;
+    };
 
     template<class T>
-    class InputChannel {
+    class InputChannel<T> {
     public:
         virtual std::unique_ptr<T> pop() = 0;
 
@@ -20,24 +27,22 @@ namespace Gadgetron::Core {
         class Iterator;
     };
 
-    template<class T>
-    typename InputChannel<T>::Iterator begin(InputChannel<T> &);
+    template<class ...ARGS>
+    typename InputChannel<ARGS...>::Iterator begin(InputChannel<ARGS...> &);
 
-    template<class T>
-    typename InputChannel<T>::Iterator end(InputChannel<T> &);
+    template<class ...ARGS>
+    typename InputChannel<ARGS...>::Iterator end(InputChannel<ARGS...> &);
 
 
     class OutputChannel {
     public:
-        template<class T, class U = std::enable_if<!std::is_same_v<T,Message>>>
-        void push(std::unique_ptr<T> &&);
+        template<class ...ARGS>
+        void push(std::unique_ptr<ARGS>&&... ptrs);
 
-        void push(std::unique_ptr<Message>&&);
 
-        virtual void close() = 0;
 
-    protected:
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
+        virtual void close() = 0;
 
     public:
         class Iterator;
@@ -65,12 +70,26 @@ namespace Gadgetron::Core {
 
     };
 
-    template<class T>
-    class TypedInputChannel : public InputChannel<T> {
+
+
+    template<class ...ARGS>
+    class TypedInputChannel : public InputChannel<ARGS...> {
     public:
         TypedInputChannel(std::shared_ptr<InputChannel<Message>> input, std::shared_ptr<OutputChannel> bypass);
 
-        virtual std::unique_ptr<T> pop();
+        virtual std::tuple<std::unique_ptr<ARGS>...> pop() override;
+
+    private:
+        std::shared_ptr<InputChannel<Message>> in;
+        std::shared_ptr<OutputChannel> bypass;
+    };
+
+    template<class T>
+    class TypedInputChannel<T> : public InputChannel<T> {
+    public:
+        TypedInputChannel(std::shared_ptr<InputChannel<Message>> input, std::shared_ptr<OutputChannel> bypass);
+
+        virtual std::unique_ptr<T> pop() override;
 
     private:
         std::shared_ptr<InputChannel<Message>> in;

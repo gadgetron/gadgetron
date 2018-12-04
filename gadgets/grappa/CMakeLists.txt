@@ -5,15 +5,15 @@ endif ()
 
 add_library(gadgetron_grappa SHARED
         gadgetron_grappa_export.h
-        GrappaCalibrationBuffer.h
-        GrappaGadget.h
+#        GrappaCalibrationBuffer.h
+#        GrappaGadget.h
         GrappaUnmixingGadget.h
-        GrappaWeights.h
-        GrappaWeightsCalculator.h
-        GrappaGadget.cpp
-        GrappaCalibrationBuffer.cpp
-        GrappaWeights.cpp
-        GrappaWeightsCalculator.cpp
+#        GrappaWeights.h
+#        GrappaWeightsCalculator.h
+#        GrappaGadget.cpp
+#        GrappaCalibrationBuffer.cpp
+#        GrappaWeights.cpp
+#        GrappaWeightsCalculator.cpp
         GrappaUnmixingGadget.cpp
         )
 
