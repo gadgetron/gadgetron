@@ -2,6 +2,7 @@
 #define GADGETRON_BUILDERS_H
 
 #include <memory>
+#include <Node.h>
 
 #include "Stream.h"
 #include "Config.h"
@@ -10,29 +11,48 @@
 
 namespace Gadgetron::Server::Builders {
 
-    class ReaderBuilder {
+    class Builder {
     public:
-        ReaderBuilder(const Gadgetron::Server::Config &config);
-        void process(std::function<void(std::unique_ptr<Gadgetron::Core::Reader>, boost::dll::shared_library)> on_reader);
-    private:
+        explicit Builder(const Gadgetron::Server::Config &config, const Gadgetron::Core::Context::Paths &paths);
+        boost::dll::shared_library load_library(const std::string &shared_library_name);
+        boost::filesystem::path make_library_path(const std::string &shared_library_name);
+    protected:
         const Gadgetron::Server::Config &config;
+        const Gadgetron::Core::Context::Paths &paths;
     };
 
-    class WriterBuilder {
+    class ReaderBuilder : public Builder {
+        using reader_callback = std::function<void(uint16_t, std::unique_ptr<Gadgetron::Core::Reader>, boost::dll::shared_library)>;
     public:
-        WriterBuilder(const Gadgetron::Server::Config &config);
+        explicit ReaderBuilder(const Gadgetron::Server::Config &config, const Gadgetron::Core::Context::Paths &paths);
+        void process(reader_callback on_reader);
+    };
+
+    class WriterBuilder : public Builder {
+    public:
+        explicit WriterBuilder(const Gadgetron::Server::Config &config, const Gadgetron::Core::Context::Paths &paths);
         void process(std::function<void(std::unique_ptr<Gadgetron::Core::Writer>, boost::dll::shared_library)> on_writer);
-    private:
-        const Gadgetron::Server::Config &config;
     };
 
-    class StreamBuilder {
+    class StreamBuilder : public Builder {
+        using node_callback = std::function<void(std::unique_ptr<Gadgetron::Core::Node>, boost::dll::shared_library)>;
+
     public:
-        StreamBuilder(const Gadgetron::Server::Config &config, const Gadgetron::Core::Context &context);
-        void process(std::function<void(std::unique_ptr<Gadgetron::Core::Node>, boost::dll::shared_library)> on_node);
+        explicit StreamBuilder(
+                const Gadgetron::Server::Config &config,
+                const Gadgetron::Core::Context &context,
+                std::shared_ptr<Gadgetron::Core::MessageChannel> input,
+                std::shared_ptr<Gadgetron::Core::MessageChannel> output
+        );
+        void process(node_callback on_node);
+
+        void load_node(const Gadgetron::Server::Config::Gadget &gadget_config, node_callback on_node);
+        void load_node(const Gadgetron::Server::Config::Parallel &parallel_config, node_callback on_node);
+        void load_node(const Gadgetron::Server::Config::Distributed &distributed_config, node_callback on_node);
+
     private:
-        const Gadgetron::Server::Config &config;
         const Gadgetron::Core::Context &context;
+        std::shared_ptr<Gadgetron::Core::MessageChannel> input, output;
     };
 }
 
