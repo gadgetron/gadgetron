@@ -2,13 +2,26 @@
 
 #include <memory>
 #include <vector>
+#include <typeindex>
 
 namespace Gadgetron {
+
+    class GadgetContainerMessageBase;
+    template<class T> class GadgetContainerMessage;
+    class LegacyGadgetNode;
+
     namespace Core {
 
         class Message {
         public:
             virtual ~Message() = 0;
+
+            virtual std::type_index type() = 0;
+
+        protected:
+
+            virtual GadgetContainerMessageBase* to_container_message() = 0;
+            friend LegacyGadgetNode;
         };
 
 
@@ -38,7 +51,15 @@ namespace Gadgetron {
                 return std::move(data);
             }
 
+            virtual GadgetContainerMessageBase* to_container_message() override {
+                return GadgetContainerMessage<T>(this->take_data());
+            }
+
             virtual ~TypedMessage() {};
+
+            virtual std::type_index type() override final {
+                return std::type_index(typeid(T));
+            }
 
 
         protected:
@@ -66,6 +87,10 @@ namespace Gadgetron {
                 return std::move(messages_);
             }
 
+            virtual std::type_index types(){
+                return std::type_index(typeid(messages_));
+            }
+
         private:
 
             template<class T> std::unique_ptr<Message> make_message(T&& input){
@@ -73,6 +98,7 @@ namespace Gadgetron {
             }
 
             std::vector<std::unique_ptr<Message>> messages_;
+
 
 
 

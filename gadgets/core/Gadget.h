@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <ismrmrd/xml.h>
 #include "LegacyACE.h"
+#include "Node.h"
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
@@ -87,6 +88,10 @@ namespace Gadgetron{
 
   class EXPORTGADGETCORE ChannelAdaptor {
   public:
+
+      ChannelAdaptor(std::shared_ptr<Core::OutputChannel> out) : channel(out){
+
+      }
       int putq(ACE_Message_Block *msg) {
         auto *msg_ptr = dynamic_cast<GadgetContainerMessageBase *>(msg);
         if (msg_ptr) {
@@ -225,7 +230,7 @@ namespace Gadgetron{
       return gadgetron_version_.c_str();
     }
 
-    void next(std::shared_ptr<ChannelAdaptor>& n){
+    void next(std::shared_ptr<ChannelAdaptor> n){
       next_channel = n;
     }
 
@@ -233,7 +238,6 @@ namespace Gadgetron{
       return next_channel;
     }
 
-  protected:
 
     std::vector<GadgetPropertyBase*> properties_;
     virtual int process(ACE_Message_Block * m) = 0;
@@ -251,6 +255,7 @@ namespace Gadgetron{
     virtual int process_config(ACE_Message_Block * m) {
       return 0;
     }
+  protected:
 
     std::string name;
     std::mutex parameter_mutex_;
@@ -619,7 +624,7 @@ namespace Gadgetron{
       protected:
           int process(ACE_Message_Block* mb)
           {
-            /*
+
               GadgetContainerMessage<P1>* m1 = nullptr;
               GadgetContainerMessage<P2>* m2 = nullptr;
 
@@ -651,13 +656,40 @@ namespace Gadgetron{
                   }
               }
 
-                  */
+
           throw std::runtime_error("Not implemented yet");
 
           }
 
           virtual int process(GadgetContainerMessage<P1>* m1) = 0;
           virtual int process(GadgetContainerMessage<P2>* m1) = 0;
+      };
+
+
+
+      class LegacyGadgetNode : public Core::Node {
+
+          LegacyGadgetNode(std::unique_ptr<Gadget>&& gadget_ptr, const ISMRMRD::IsmrmrdHeader& header ) : gadget(std::move(gadget_ptr)) {
+            gadget->process_config(header);
+          }
+
+
+          virtual void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,std::shared_ptr<Core::OutputChannel> out  ) override {
+
+            gadget->next(std::make_shared<ChannelAdaptor>(out));
+
+            auto message = in->pop();
+
+            gadget->process(message->to_container_message());
+
+          }
+
+
+      private:
+
+          std::unique_ptr<Gadget> gadget;
+
+
       };
 
       /* Macros for handling dyamic linking */

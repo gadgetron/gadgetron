@@ -1,9 +1,48 @@
 #pragma once
 
-#include "GadgetContainerMessage.h"
 #include <list>
+#include <memory>
 
 namespace Gadgetron {
+
+    class ACE_Message_Block {
+
+    public:
+        ACE_Message_Block() {};
+
+        ACE_Message_Block(const std::string &s) : buffer(s) {
+
+        }
+
+        [[deprecated]]
+        const char *rd_ptr() { return buffer.c_str(); };
+
+        virtual ~ACE_Message_Block() {
+            if (cont_element) {
+                cont_element->release();
+            }
+        };
+
+        virtual void *release() {
+            delete (this); // Seppuku
+            return nullptr;
+        }
+
+        ACE_Message_Block *cont() { return cont_element; }
+
+        void cont(ACE_Message_Block *ptr) { cont_element = ptr; }
+
+
+    private:
+        ACE_Message_Block *cont_element;
+
+    private:
+        std::string buffer;
+    };
+
+
+
+
     struct ACE_MT_SYNCH {
     };
 

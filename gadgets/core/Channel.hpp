@@ -97,11 +97,6 @@ namespace Gadgetron::Core {
 
     }
 
-    template<class T>
-    inline void OutputChannel::push(std::unique_ptr<TypedMessage < T>> && ptr) {
-        this->push_message(std::move(ptr));
-    }
-
 
 template<class ...ARGS>
 TypedInputChannel<ARGS...>::TypedInputChannel(
@@ -115,8 +110,7 @@ template<class T>
 std::unique_ptr<T> TypedInputChannel<T>::pop() {
 
     std::unique_ptr<Message> message = in->pop();
-    auto* msg_ptr = message.get();
-    while (typeid(msg_ptr) != typeid(T*)) {
+    while (message->type() != std::type_index(typeid(T))) {
         bypass->push(std::move(message));
         message = in->pop();
     }
@@ -143,8 +137,8 @@ namespace {
 
     template<unsigned int I, class T, class ...REST>
     bool convertible_to_tuple(MessageTuple *messagetuple) {
-        auto* ptr = messagetuple->messages()[I].get();
-        if (typeid(ptr) == typeid(TypedMessage<T>*)) {
+        auto& ptr = messagetuple->messages()[I];
+        if (ptr->type() == std::type_index(typeid(T))) {
             return convertible_to_tuple<I + 1, REST...>(messagetuple);
         } else {
             return false;
@@ -154,8 +148,8 @@ namespace {
     template<unsigned int I, class T>
     bool convertible_to_tuple(MessageTuple *messagetuple) {
 
-        auto* ptr = messagetuple->messages()[I].get();
-        if (typeid(ptr) == typeid(TypedMessage<T>* )) {
+        auto& ptr = messagetuple->messages()[I];
+        if (ptr->type() == std::type_index(typeid(T))) {
             return true;
         } else {
             return false;

@@ -39,10 +39,6 @@ namespace Gadgetron::Core {
         template<class T, class U = std::enable_if<!std::is_same_v<T,Message>>>
         void push(std::unique_ptr<T> &&);
 
-
-        template<class T>
-        void push(std::unique_ptr<TypedMessage<T>>&&);
-
         void push(std::unique_ptr<Message>&&);
 
         virtual void close() = 0;
