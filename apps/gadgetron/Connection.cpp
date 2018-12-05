@@ -64,7 +64,7 @@ namespace {
     class Handler {
     public:
         virtual void handle(std::iostream &stream) = 0;
-        virtual ~Handler() = default;
+        virtual ~Handler(){};
     };
 
     class ConfigFileHandler : public Handler {
@@ -80,6 +80,7 @@ namespace {
 
             promise.set_value(parse_config(config_stream));
         }
+
 
     private:
         std::promise<Config> &promise;
@@ -146,6 +147,7 @@ namespace {
             channel->push(reader->read(stream));
         }
 
+        virtual ~ReaderHandler(){};
         std::unique_ptr<Reader> reader;
         std::shared_ptr<MessageChannel> channel;
         boost::dll::shared_library library;

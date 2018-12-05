@@ -5,6 +5,8 @@
 
 namespace Gadgetron::Core {
 
+    using GadgetProperties = std::unordered_map<std::string,std::string>;
+
     class PropertyMixin {
 
     protected:
@@ -28,7 +30,7 @@ namespace Gadgetron::Core {
 
     private:
 
-        const std::unordered_map<std::string, std::string> properties;
+        const GadgetProperties properties;
 
     };
 }

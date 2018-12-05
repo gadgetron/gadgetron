@@ -60,7 +60,8 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericImageReconGadget.h
         GenericReconAccumulateImageTriggerGadget.h
         GenericImageReconArrayToImageGadget.h
-        WhiteNoiseInjectorGadget.h
+#        WhiteNoiseInjectorGadget.h
+        ImageFinishGadget.h
 #        NoiseSummaryGadget.h
         NHLBICompression.h
         ImageAccumulatorGadget.h
@@ -75,6 +76,7 @@ set(gadgetron_mricore_src_files
         CombineGadget.cpp
         CropAndCombineGadget.cpp
         CoilSenMapGadget.cpp
+        ImageFinishGadget.cpp
 #        ImageWriterGadget.cpp
 #        MRIImageWriter.cpp
 #        MRIImageReader.cpp

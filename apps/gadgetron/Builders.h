@@ -33,6 +33,7 @@ namespace Gadgetron::Server::Builders {
     public:
         explicit WriterBuilder(const Gadgetron::Server::Config &config, const Gadgetron::Core::Context::Paths &paths);
         void process(std::function<void(std::unique_ptr<Gadgetron::Core::Writer>, boost::dll::shared_library)> on_writer);
+
     };
 
     class StreamBuilder : public Builder {
