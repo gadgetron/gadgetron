@@ -1,9 +1,7 @@
 
 #include "OversamplingGadget.h"
 
-namespace Gadgetron{
+namespace Gadgetron::Core::Gadgets {
 
-
-
-//    GADGETRON_GADGET_EXPORT(OversamplingGadget)
+    GADGETRON_GADGET_EXPORT(OversamplingGadget)
 }

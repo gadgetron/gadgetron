@@ -13,13 +13,13 @@ namespace Gadgetron::Core::Readers {
 
 
         auto header = std::make_unique<ISMRMRD::WaveformHeader>();
-        IO::read(stream,*header);
+        IO::read(stream, *header);
 
-        auto data = std::make_unique<hoNDArray<uint32_t>>(header->number_of_samples,header->channels);
+        auto data = std::make_unique<hoNDArray<uint32_t>>(header->number_of_samples, header->channels);
 
-        IO::read(stream,*data);
+        IO::read(stream, *data);
 
-        return std::make_unique<MessageTuple>(std::move(header),std::move(data));
+        return std::make_unique<MessageTuple>(std::move(header), std::move(data));
     }
 
     uint16_t WaveformReader::port() {
