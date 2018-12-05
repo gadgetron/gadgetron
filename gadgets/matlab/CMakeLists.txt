@@ -1,4 +1,4 @@
-include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math ${CMAKE_SOURCE_DIR}/toolboxes/matlab)
+include_directories(${MATLAB_INCLUDE_DIR})
 
 if (UNIX)
     if (APPLE)
@@ -27,8 +27,6 @@ target_link_libraries(
     gadgetron_toolbox_cpucore_math
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
-    optimized ${ACE_LIBRARIES}
-    debug ${ACE_DEBUG_LIBRARY}
 )
 install(TARGETS gadgetron_matlab DESTINATION lib COMPONENT main)
 install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -21,7 +21,7 @@ namespace Gadgetron::Core {
 }
 
 #define GADGETRON_READER_EXPORT(ReaderClass)                        \
-std::unique_ptr<Reader> reader_factory_##ReaderClass() {            \
+std::unique_ptr<Gadgetron::Core::Reader> reader_factory_##ReaderClass() {            \
     return std::make_unique<ReaderClass>();                         \
 }                                                                   \
                                                                     \

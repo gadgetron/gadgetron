@@ -54,7 +54,7 @@ add_library(gadgetron_cmr SHARED
 set_target_properties(gadgetron_cmr PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_cmr 
-    gadgetron_gadgetbase
+    gadgetron_core
     gadgetron_mricore
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
@@ -64,10 +64,6 @@ target_link_libraries(gadgetron_cmr
     gadgetron_toolbox_cpuoperator
     gadgetron_toolbox_image_analyze_io
     gadgetron_toolbox_cmr
-    ${ISMRMRD_LIBRARIES} 
-    ${FFTW3_LIBRARIES} 
-    ${OPTIMIZED_GADGET_LIBS}
-    ${Boost_LIBRARIES}
 )
 
 install(FILES ${gadgetron_cmr_header_files} DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

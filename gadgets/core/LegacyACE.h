@@ -34,7 +34,7 @@ namespace Gadgetron {
 
 
     private:
-        ACE_Message_Block *cont_element;
+        ACE_Message_Block *cont_element = nullptr;
 
     private:
         std::string buffer;

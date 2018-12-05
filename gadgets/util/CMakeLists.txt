@@ -21,8 +21,7 @@ if (CUDA_FOUND)
 target_link_libraries(gadgetron_util
     gadgetron_gadgetbase
     gadgetron_toolbox_log
-    ${ACE_LIBRARIES}
-    ${CUDA_LIBRARIES} 
+    ${CUDA_LIBRARIES}
     ${CUDA_CUFFT_LIBRARIES} 
     ${CUDA_CUBLAS_LIBRARIES} 
 )
@@ -31,7 +30,6 @@ else ()
   target_link_libraries(gadgetron_util
     gadgetron_gadgetbase
     gadgetron_toolbox_log
-    ${ACE_LIBRARIES}
 )
 endif()
 

@@ -85,7 +85,7 @@ set(gadgetron_mricore_src_files
         CoilReductionGadget.cpp
         AutoScaleGadget.cpp
         FlowPhaseSubtractionGadget.cpp
-#        GadgetIsmrmrdReadWrite.cpp
+        GadgetIsmrmrdReadWrite.cpp
         PhysioInterpolationGadget.cpp
         IsmrmrdDumpGadget.cpp
         AsymmetricEchoAdjustROGadget.cpp

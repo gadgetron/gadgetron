@@ -1,5 +1,4 @@
 install(FILES 	
-    FindACE.cmake
     FindArmadillo.cmake
     FindCUDA_advanced.cmake
     FindDCMTK.cmake

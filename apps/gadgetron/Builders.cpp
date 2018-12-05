@@ -20,7 +20,7 @@ namespace Gadgetron::Server::Builders {
     }
 
     boost::filesystem::path Builder::make_library_path(const std::string &shared_library_name) {
-        return paths.gadgetron_home / "lib" / shared_library_name;
+        return paths.gadgetron_home / "lib" / ("lib" +shared_library_name+ ".so");
     }
 
     ReaderBuilder::ReaderBuilder(const Config &config, const Context::Paths &paths) : Builder(config, paths) {}
