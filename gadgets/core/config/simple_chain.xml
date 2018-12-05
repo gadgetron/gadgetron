@@ -28,6 +28,14 @@
         </gadget>
 
         <gadget>
+            <name>DummyGadget</name>
+            <dll>gadgetron_core_gadgets</dll>
+            <classname>DummyGadget</classname>
+            <property name="foo" value="bar"/>
+            <property name="baz" reference="foo@DummyGadget"/>
+        </gadget>
+
+        <gadget>
             <name>AccTrig</name>
             <dll>gadgetron_core_gadgets</dll>
             <classname>AcquisitionAccumulateTriggerGadget</classname>
