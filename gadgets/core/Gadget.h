@@ -682,41 +682,39 @@ namespace Gadgetron{
 
 
       };
-
-      /* Macros for handling dyamic linking */
-
     }
 
 
 #define GADGET_DECLARE(GADGET)
 
-#define GADGET_FACTORY_DECLARE(GadgetClass)                                          \
-std::unique_ptr<Gadgetron::Core::Node> legacy_gadget_factory_##GadgetClass(          \
-        const Gadgetron::Core::Context &context,                                     \
-        const std::unordered_map<std::string, std::string> &props                    \
-) {                                                                                  \
-    auto gadget = std::make_unique<GadgetClass>();                                   \
-    return std::make_unique<Gadgetron::LegacyGadgetNode>(                            \
-            std::move(gadget),                                                       \
-            context.header,                                         \
-            props                                                   \
-    );                                                              \
-}                                                                   \
-                                                                    \
+#define GADGET_FACTORY_DECLARE(GadgetClass)                                         \
+std::unique_ptr<Gadgetron::Core::Node> legacy_gadget_factory_##GadgetClass(         \
+        const Gadgetron::Core::Context &context,                                    \
+        const std::unordered_map<std::string, std::string> &props                   \
+) {                                                                                 \
+    auto gadget = std::make_unique<GadgetClass>();                                  \
+    return std::make_unique<Gadgetron::LegacyGadgetNode>(                           \
+            std::move(gadget),                                                      \
+        context.header,                                                             \
+            props                                                                   \
+    );                                                                              \
+}                                                                                   \
+                                                                                    \
 BOOST_DLL_ALIAS(                                                    \
         legacy_gadget_factory_##GadgetClass,                        \
         gadget_factory_export_##GadgetClass                         \
 )                                                                   \
 
-#define GADGETRON_GADGET_EXPORT(GadgetClass)                        \
-std::unique_ptr<Node> gadget_factory_##GadgetClass(                 \
-        const Context &context,                                     \
-        const std::unordered_map<std::string, std::string &props    \
-) {                                                                 \
-  return std::make_unique<GadgetClass>(context, props);             \
-}                                                                   \
-                                                                    \
+#define GADGETRON_GADGET_EXPORT(GadgetClass)                                        \
+std::unique_ptr<Gadgetron::Core::Node> gadget_factory_##GadgetClass(                \
+        const Gadgetron::Core::Context &context,                                    \
+        const std::unordered_map<std::string, std::string> &props                   \
+) {                                                                                 \
+  return std::make_unique<GadgetClass>(context, props);                             \
+}                                                                                   \
+                                                                                    \
 BOOST_DLL_ALIAS(                                                    \
         gadget_factory_##GadgetClass,                               \
         gadget_factory_export_##GadgetClass                         \
-)
+)                                                                   \
+
