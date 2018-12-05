@@ -1,12 +1,9 @@
-#include "OversamplingGadget.h"
-#include "hoNDFFT.h"
-#include "ismrmrd/xml.h"
 
-#ifdef USE_OMP
-    #include "omp.h"
-#endif // USE_OMP
+#include "OversamplingGadget.h"
 
 namespace Gadgetron{
 
 
+
+//    GADGETRON_GADGET_EXPORT(OversamplingGadget)
 }

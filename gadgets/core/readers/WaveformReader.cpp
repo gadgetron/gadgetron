@@ -11,15 +11,15 @@ namespace Gadgetron::Core::Readers {
         using namespace Core;
         using namespace std::literals;
 
-        auto wave = std::make_unique<Waveform>();
 
-        IO::read(stream,wave->header);
+        auto header = std::make_unique<ISMRMRD::WaveformHeader>();
+        IO::read(stream,*header);
 
-        wave->data = hoNDArray<uint32_t>(wave->header.number_of_samples,wave->header.channels);
+        auto data = std::make_unique<hoNDArray<uint32_t>>(header->number_of_samples,header->channels);
 
-        IO::read(stream,wave->data);
+        IO::read(stream,*data);
 
-        return std::unique_ptr<Message>(new TypedMessage<Waveform>(std::move(wave)));
+        return std::make_unique<MessageTuple>(std::move(header),std::move(data));
     }
 
     uint16_t WaveformReader::port() {

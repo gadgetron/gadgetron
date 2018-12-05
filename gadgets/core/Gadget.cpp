@@ -12,4 +12,9 @@ namespace Gadgetron
     }
     return std::string(p->string_value());
   }
+
+GadgetPropertyBase::GadgetPropertyBase(const char* name, const char* type_string, const char* description)
+    {
+
+    }
 }

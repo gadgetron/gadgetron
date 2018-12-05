@@ -106,9 +106,6 @@ namespace Gadgetron::Core {
 
             }
 
-
-
-
         }
     }
 

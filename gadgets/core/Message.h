@@ -37,7 +37,7 @@ namespace Gadgetron {
 
             }
 
-            TypedMessage(T&& input) : data{std::make_unique<T>(input)} {
+            TypedMessage(T&& input) : data(std::make_unique<T>(std::move(input))) {
 
             }
 
@@ -72,7 +72,8 @@ namespace Gadgetron {
         class MessageTuple : public Message {
         public:
             template<class ...ARGS>
-            explicit MessageTuple(ARGS &&...  args) : Message(), messages_{std::move(make_message(std::move(args)))...} {
+            explicit MessageTuple(ARGS &&...  args) : Message(){
+                add_messages(std::move(args)...);
 
             }
 
@@ -96,11 +97,22 @@ namespace Gadgetron {
 
         private:
 
-            template<class T> std::unique_ptr<Message> make_message(T&& input){
+            template<class T> static std::unique_ptr<Message> make_message(T&& input){
                 return std::make_unique<TypedMessage<T>>(std::move(input));
             }
 
             std::vector<std::unique_ptr<Message>> messages_;
+
+            template<class T, class ...REST> void add_messages(T&& arg, REST&&... args){
+                messages_.emplace_back(make_message(std::move(arg)));
+                add_messages(std::move(args)...);
+            }
+
+            template<class T> void add_messages(T&& arg){
+                messages_.emplace_back(make_message(std::move(arg)));
+            }
+
+
 
 
 

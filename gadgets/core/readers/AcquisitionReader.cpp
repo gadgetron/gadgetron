@@ -13,20 +13,29 @@ namespace Gadgetron::Core::Readers {
         using namespace Core;
         using namespace std::literals;
 
-        auto acquisition = std::make_unique<Acquisition>();
-        auto& header = acquisition->header;
 
-        IO::read(stream, header);
+        std::vector<std::unique_ptr<Message>> messages;
+
+         auto header = ISMRMRD::AcquisitionHeader{};
+
+         IO::read(stream, header);
+
+         messages.emplace_back(std::make_unique<TypedMessage<ISMRMRD::AcquisitionHeader>>(header));
 
         if (header.trajectory_dimensions) {
-            acquisition->trajectory = hoNDArray<float>( header.trajectory_dimensions, header.number_of_samples);
-            IO::read(stream,*acquisition->trajectory);
+            auto trajectory = std::make_unique<hoNDArray<float>>( header.trajectory_dimensions, header.number_of_samples);
+            IO::read(stream,*trajectory);
+            messages.emplace_back(std::make_unique<TypedMessage<hoNDArray<float>>>(std::move(trajectory)));
         }
 
-        acquisition->data = hoNDArray<std::complex<float>>(header.number_of_samples, header.active_channels);
-        IO::read(stream, acquisition->data);
+         {
+             auto data = std::make_unique<hoNDArray<std::complex<float>>>(header.number_of_samples,
+                                                                          header.active_channels);
+             IO::read(stream, *data);
+             messages.emplace_back(std::make_unique<TypedMessage<hoNDArray<std::complex<float>>>>(std::move(data)));
+         }
 
-        return std::unique_ptr<Message>(new TypedMessage<Acquisition>(std::move(acquisition)));
+        return std::make_unique<Core::MessageTuple>(std::move(messages));
     }
 
     uint16_t AcquisitionReader::port() {

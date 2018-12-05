@@ -16,6 +16,8 @@
 #include <ismrmrd/xml.h>
 #include "LegacyACE.h"
 #include "Node.h"
+#include "Context.h"
+#include <boost/dll/alias.hpp>
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
@@ -173,7 +175,7 @@ namespace Gadgetron{
     int putq(GadgetContainerMessageBase* msg){
       return this->next_channel->putq(msg);
     }
-    virtual int close(unsigned long flags){ return 0;}
+    virtual int close(unsigned long flags = 0){ return 0;}
 
 
 
@@ -650,19 +652,26 @@ namespace Gadgetron{
 
 
       class LegacyGadgetNode : public Core::Node {
-
-          LegacyGadgetNode(std::unique_ptr<Gadget>&& gadget_ptr, const ISMRMRD::IsmrmrdHeader& header ) : gadget(std::move(gadget_ptr)) {
+      public:
+          LegacyGadgetNode(std::unique_ptr<Gadget>&& gadget_ptr, const ISMRMRD::IsmrmrdHeader& header, const std::unordered_map<std::string,std::string>& props ) : gadget(std::move(gadget_ptr)) {
             gadget->process_config(header);
+            for (auto& key_val : props){
+              gadget->set_parameter(key_val.first.c_str(),key_val.second.c_str());
+            }
+
+
           }
 
 
           virtual void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,std::shared_ptr<Core::OutputChannel> out  ) override {
-
-            gadget->next(std::make_shared<ChannelAdaptor>(out));
-
-            auto message = in->pop();
-
-            gadget->process(message->to_container_message());
+            try {
+              gadget->next(std::make_shared<ChannelAdaptor>(out));
+              auto message = in->pop();
+              gadget->process(message->to_container_message());
+            } catch(Core::ChannelClosedError err){
+              gadget->close();
+              out->close();
+            }
 
           }
 
@@ -676,8 +685,38 @@ namespace Gadgetron{
 
       /* Macros for handling dyamic linking */
 
-      #define GADGET_DECLARE(GADGET)
-      #define GADGET_FACTORY_DECLARE(GADGET) GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
-
     }
 
+
+#define GADGET_DECLARE(GADGET)
+
+#define GADGET_FACTORY_DECLARE(GadgetClass)                                          \
+std::unique_ptr<Gadgetron::Core::Node> legacy_gadget_factory_##GadgetClass(          \
+        const Gadgetron::Core::Context &context,                                     \
+        const std::unordered_map<std::string, std::string> &props                    \
+) {                                                                                  \
+    auto gadget = std::make_unique<GadgetClass>();                                   \
+    return std::make_unique<Gadgetron::LegacyGadgetNode>(                            \
+            std::move(gadget),                                                       \
+            context.header,                                         \
+            props                                                   \
+    );                                                              \
+}                                                                   \
+                                                                    \
+BOOST_DLL_ALIAS(                                                    \
+        legacy_gadget_factory_##GadgetClass,                        \
+        gadget_factory_export_##GadgetClass                         \
+)                                                                   \
+
+#define GADGETRON_GADGET_EXPORT(GadgetClass)                        \
+std::unique_ptr<Node> gadget_factory_##GadgetClass(                 \
+        const Context &context,                                     \
+        const std::unordered_map<std::string, std::string &props    \
+) {                                                                 \
+  return std::make_unique<GadgetClass>(context, props);             \
+}                                                                   \
+                                                                    \
+BOOST_DLL_ALIAS(                                                    \
+        gadget_factory_##GadgetClass,                               \
+        gadget_factory_export_##GadgetClass                         \
+)
