@@ -5,6 +5,7 @@
 #include <string>
 #include <boost/dll/shared_library.hpp>
 #include <boost/dll.hpp>
+#include <boost/range/algorithm/transform.hpp>
 
 #include "log.h"
 #include "gadgetron_config.h"
@@ -138,10 +139,10 @@ namespace {
 
     class ReaderHandler : public Handler {
     public:
-        ReaderHandler(std::unique_ptr<Reader> &&reader, boost::dll::shared_library &library, std::shared_ptr<MessageChannel> channel)
+        ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel)
             : reader(std::move(reader))
             , channel(std::move(channel))
-            , library(library) {}
+             {}
 
         void handle(std::iostream &stream) override {
             channel->push(reader->read(stream));
@@ -150,41 +151,23 @@ namespace {
         virtual ~ReaderHandler(){};
         std::unique_ptr<Reader> reader;
         std::shared_ptr<MessageChannel> channel;
-        boost::dll::shared_library library;
     };
 
     // --------------------------------------------------------------------- //
 
     // --------------------------------------------------------------------- //
 
-    class Stream {
-    public:
-        struct entry {
-            std::thread thread;
-            std::unique_ptr<Node> node;
-            boost::dll::shared_library library;
-        };
 
-        void join();
-
-    private:
-        std::vector<entry> entries;
-    };
-
-    void Stream::join() {
-        for(auto &entry : this->entries) {
-            entry.thread.join();
-        }
-    }
 
     class ConnectionImpl : public Connection, public std::enable_shared_from_this<ConnectionImpl> {
     public:
 
         using tcp = boost::asio::ip::tcp;
 
-        ConnectionImpl(Context::Paths &paths, tcp::socket &socket)
+        ConnectionImpl(Context::Paths &paths_in, tcp::socket &socket)
                 : stream(std::move(socket))
-                , paths(paths)
+                , paths(paths_in)
+                , builder(paths_in)
                 , channels {
                     std::make_shared<MessageChannel>(),
                     std::make_shared<MessageChannel>(),
@@ -195,21 +178,21 @@ namespace {
         void process_input();
         void process_output();
 
-        void build_stream(std::future<Config>, std::future<Header>);
+        void start_stream(std::future<Config>, std::future<Header>);
 
         void initialize_readers(const Config &config);
         void initialize_writers(const Config &config);
-        void initialize_stream(const Config &config, const Context &context);
 
         tcp::iostream stream;
         Gadgetron::Core::Context::Paths paths;
+        Builder builder;
 
         struct {
             std::shared_ptr<MessageChannel> input, output, error;
         } channels;
 
         struct {
-            std::promise<std::unique_ptr<Stream>> stream;
+            std::promise<std::unique_ptr<Gadgetron::Core::Node>> stream;
 
             std::promise<Config> config;
             std::promise<Header> header;
@@ -243,12 +226,11 @@ namespace {
         bool closed = false;
 
         auto reader_future = this->promises.readers.get_future();
-        auto build_thread = std::thread(
-                [&](auto config, auto header) { this->build_stream(std::move(config), std::move(header)); },
+        auto stream_thread = std::thread(
+                [&](auto config, auto header) { this->start_stream(std::move(config), std::move(header)); },
                 this->promises.config.get_future(),
                 this->promises.header.get_future()
         );
-        build_thread.detach();
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers;
         handlers[FILENAME] = std::make_unique<ConfigFileHandler>(this->promises.config, paths);
@@ -268,13 +250,14 @@ namespace {
 
             handlers.at(id)->handle(stream);
         }
+        stream_thread.join();
     }
 
     void ConnectionImpl::process_output() {
         GDEBUG_STREAM("Output thread running.");
     }
 
-    void ConnectionImpl::build_stream(std::future<Config> config_future, std::future<Header> header_future) {
+    void ConnectionImpl::start_stream(std::future<Config> config_future, std::future<Header> header_future) {
 
         Config config = config_future.get();
         this->initialize_readers(config);
@@ -283,43 +266,32 @@ namespace {
         Context::Header header = header_future.get();
         Context context{header, paths};
 
-        this->initialize_stream(config, context);
+        auto stream = builder.build_stream(config.stream,context);
+
+        stream->process(channels.input,channels.output);
+
     }
 
     void ConnectionImpl::initialize_readers(const Config &config) {
 
-        Builders::ReaderBuilder builder(config, paths);
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers;
 
-        builder.process(
-            [&](uint16_t port, std::unique_ptr<Reader> reader, boost::dll::shared_library lib) {
-                handlers[port] = std::make_unique<ReaderHandler>(std::move(reader), lib, this->channels.input);
-            }
-        );
+        auto readers = builder.build_readers(config.readers);
 
+        for (auto& reader_pair : readers){
+            handlers.emplace(reader_pair.first, std::make_unique<ReaderHandler>(std::move(reader_pair.second), channels.input));
+        }
         this->promises.readers.set_value(std::move(handlers));
     }
 
     void ConnectionImpl::initialize_writers(const Config &config) {
 
-        Builders::WriterBuilder builder(config, paths);
 
         // TODO: Writers
     }
 
-    void ConnectionImpl::initialize_stream(const Config &config, const Context &context) {
 
-        auto stream = std::make_unique<Stream>();
-
-        Builders::StreamBuilder builder(config, context, channels.input, channels.output);
-
-        builder.process(
-            [&](std::unique_ptr<Node> node, boost::dll::shared_library lib) {
-                GDEBUG_STREAM("Loaded node from shared library: " << lib.location() << std::endl);
-            }
-        );
-    }
 };
 
 std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket) {

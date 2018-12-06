@@ -19,7 +19,7 @@ namespace Gadgetron::Core {
 
         virtual ~Node() {};
 
-    protected:
+    public:
 
         virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
 
