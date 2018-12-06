@@ -1,6 +1,8 @@
 #include <pugixml.hpp>
 
 #include <set>
+#include <map>
+#include <memory>
 #include <string>
 
 #include <boost/optional.hpp>
@@ -15,175 +17,270 @@ using namespace Gadgetron::Server;
 
 namespace {
 
-    using name = std::string;
-    using property = std::string;
-
-    struct property_value_function;
-
-    using visited_set = std::set<std::pair<name, property>>;
-    using property_reference_map = std::unordered_map<name, std::unordered_map<property, std::unique_ptr<property_value_function>>>;
-
-    struct property_value_function {
-        virtual std::string evaluate(
-                const property_reference_map &,
-                std::set<std::pair<name, property>> &
-        ) = 0;
+    class Property {
+    public:
+        virtual std::string name() = 0;
+        virtual std::string value() = 0;
+        virtual std::string value(std::set<std::string> &visited) {
+            return value();
+        };
     };
 
-    Config::Reader parse_reader(const pugi::xml_node &reader_node) {
-
-        std::string port_str = reader_node.child_value("port");
-
-        boost::optional<uint16_t> port = boost::none;
-        if (!port_str.empty())
-            port = static_cast<uint16_t>(std::stoi(port_str));
-
-        return Config::Reader{reader_node.child_value("dll"),
-                              reader_node.child_value("classname"),
-                              port};
-    }
-
-    std::vector<Config::Reader> parse_readers(const pugi::xml_node &reader_root) {
-        std::vector<Config::Reader> readers;
-        for (const auto &node : reader_root.children("reader")) {
-            readers.push_back(parse_reader(node));
-        }
-        return readers;
-    }
-
-    Config::Writer parse_writer(const pugi::xml_node &writer_node) {
-        return Config::Writer{writer_node.child_value("dll"),
-                              writer_node.child_value("classname")};
-    }
-
-    std::vector<Config::Writer> parse_writers(const pugi::xml_node &writer_root) {
-        std::vector<Config::Writer> writers;
-        for (const auto &node : writer_root.children("reader")) {
-            writers.push_back(parse_writer(node));
-        }
-        return writers;
-    }
-
-
-    struct value_function : public property_value_function {
+    class PropertyBuilder {
     public:
-        value_function(std::string value) : value(value) {}
+        virtual bool accepts(const pugi::xml_node &node) const = 0;
+        virtual std::unique_ptr<Property> build(const pugi::xml_node &node) const = 0;
+    };
 
-        virtual std::string evaluate(
-                const property_reference_map &,
-                std::set<std::pair<name, property>> &
-        ) override {
-            GDEBUG_STREAM("Lol: " << value << std::endl);
-            return value;
+    using Location = std::string;
+    using PropertyMap = std::map<Location, std::unique_ptr<Property>>;
+    using PropertyBuilders = std::vector<std::unique_ptr<PropertyBuilder>>;
+
+    class Source {
+    public:
+        virtual std::string name(const pugi::xml_node &node) = 0;
+        virtual std::string value(const pugi::xml_node &node) = 0;
+        virtual std::string reference(const pugi::xml_node &node) = 0;
+
+        virtual bool accepts(const pugi::xml_node &node) = 0;
+        virtual bool is_reference(const pugi::xml_node &node) = 0;
+    };
+
+    class LegacySource : public Source {
+    public:
+        std::string name(const pugi::xml_node &node) override {
+            return node.child_value("name");
+        }
+
+        std::string value(const pugi::xml_node &node) override {
+            return node.child_value("value");
+        }
+
+        std::string reference(const pugi::xml_node &node) override {
+            return node.child_value("value");
+        }
+
+        bool accepts(const pugi::xml_node &node) override {
+            return node.child("name") && node.child("value");
+        }
+
+        bool is_reference(const pugi::xml_node &node) override {
+            return value(node).find('@') != std::string::npos;
+        }
+    };
+
+    class V2Source : public Source{
+    public:
+        std::string name(const pugi::xml_node &node) override {
+            return node.attribute("name").value();
+        }
+
+        std::string value(const pugi::xml_node &node) override {
+            return node.attribute("value").value();
+        }
+
+        std::string reference(const pugi::xml_node &node) override {
+            return node.attribute("reference").value();
+        }
+
+        bool accepts(const pugi::xml_node &node) override {
+            return node.attribute("name") && (node.attribute("value") || node.attribute("reference"));
+        }
+
+        bool is_reference(const pugi::xml_node &node) override {
+            return value(node).empty() && !reference(node).empty();
+        }
+    };
+
+
+    class ValueBuilder : public PropertyBuilder {
+    public:
+        explicit ValueBuilder(Source &source) : source(source) {}
+
+        bool accepts(const pugi::xml_node &node) const override {
+            return source.accepts(node) && !source.is_reference(node);
+        }
+
+        std::unique_ptr<Property> build(const pugi::xml_node &node) const override {
+            return std::make_unique<ValueProperty>(
+                source.name(node),
+                source.value(node)
+            );
         }
 
     private:
-        std::string value;
+        class ValueProperty : public Property {
+        public:
+            ValueProperty(std::string name, std::string value)
+            : name_(std::move(name)), value_(std::move(value)) {}
+
+            std::string name() override { return name_; }
+            std::string value() override { return value_; }
+        private:
+            std::string name_, value_;
+        };
+
+        Source &source;
     };
 
-    struct reference_function : public property_value_function {
+    class ReferenceBuilder : public PropertyBuilder {
     public:
-        reference_function(name name, property property) : name(name), property(property) {}
+        ReferenceBuilder(Source &source, PropertyMap &properties)
+        : source(source), properties(properties) {}
 
-        virtual std::string evaluate(
-                const property_reference_map &reference_map,
-                std::set<std::pair<name, property>> &visited
-        ) override {
-            auto label = std::make_pair(name, property);
+        bool accepts(const pugi::xml_node &node) const override {
+            return source.accepts(node) && source.is_reference(node);
+        }
 
-            if (visited.count(label)) {
-                std::stringstream message;
-                message << "Cyclic property value reference: " << property << "@" << name;
-                throw std::runtime_error(message.str());
-            }
-
-            GDEBUG_STREAM("Lel: " << property << "@" << name << std::endl);
-
-            visited.insert(label);
-            return reference_map.at(name).at(property)->evaluate(reference_map, visited);
+        std::unique_ptr<Property> build(const pugi::xml_node &node) const override {
+            return std::make_unique<ReferenceProperty>(
+                source.name(node),
+                source.reference(node),
+                properties
+            );
         }
 
     private:
-        name name;
-        property property;
+        class ReferenceProperty : public Property {
+        public:
+            ReferenceProperty(std::string name, std::string reference, PropertyMap &properties)
+            : name_(std::move(name)), reference_(std::move(reference)), properties(properties) {}
+
+            std::string name() override { return name_; }
+            std::string value() override {
+                std::set<std::string> visited;
+                return value(visited);
+            }
+
+            std::string value(std::set<std::string> &visited) override {
+                if (visited.count(reference_)) {
+                    throw std::runtime_error("Cyclical property reference: " + reference_);
+                }
+
+                visited.insert(reference_);
+                return properties.at(reference_)->value(visited);
+            }
+
+        private:
+            std::string name_, reference_;
+            PropertyMap &properties;
+        };
+
+        Source &source;
+        PropertyMap &properties;
     };
 
-    std::unique_ptr<property_value_function>
-    parse_value_function(const pugi::xml_node &node) {
+    class Parser {
+    public:
+        virtual Config parse(const pugi::xml_document &) = 0;
 
-        // TODO: Rework this function; rule based approach please.
+    protected:
+        PropertyMap referenceable_properties;
+        PropertyBuilders property_builders;
 
-        if (node.child("value")) {
-            GDEBUG("Parsing value property (old).\n");
-            return std::move(std::make_unique<value_function>(
-                    node.child_value("value")
-            ));
-        }
+        virtual void assemble_referenceable_properties(const pugi::xml_node &root) {
 
-        if (node.attribute("value")) {
-            GDEBUG("Parsing value property.\n");
-            return std::move(std::make_unique<value_function>(
-                    node.attribute("value").value()
-            ));
-        }
+            for (auto selector : root.select_nodes("//*[child::name and child::property]")) {
+                auto node = selector.node();
+                auto parent_name = node.child_value("name");
 
-        if (node.attribute("reference")) {
-            GDEBUG("Parsing reference property.\n");
-            return std::move(std::make_unique<reference_function>(
-                    "DummyGadget",
-                    "foo"
-            ));
-        }
+                for (auto p_node : node.children("property")) {
+                    auto property = parse_property(p_node);
+                    auto location = property->name() + "@" + parent_name;
 
-        throw std::runtime_error("Failed to parse referenceable property.");
-    }
-
-    std::string
-    parse_property_name(const pugi::xml_node &node) {
-        return node.child("name") ?
-            node.child_value("name") :
-            node.attribute("name").value();
-    }
-
-    property_reference_map assemble_referenceable_properties(const pugi::xml_node &root) {
-
-        auto properties = property_reference_map();
-
-        for (auto selector : root.select_nodes("//*[child::name and child::property]")) {
-            auto node = selector.node();
-            auto name = node.child_value("name");
-
-            for (auto property : node.children("property")) {
-                GDEBUG_STREAM(name << ":" << parse_property_name(property) << "\n");
-
-                properties[name][parse_property_name(property)] = std::move(parse_value_function(property));
+                    referenceable_properties[location] = std::move(property);
+                }
             }
         }
 
-        return properties;
-    }
+        std::unique_ptr<Property> parse_property(const pugi::xml_node &node) {
 
-    std::unordered_map<property, std::string>
-    parse_properties(const pugi::xml_node &root) {
+            for (auto &builder : property_builders) {
+                if (builder->accepts(node)) {
+                    return std::move(builder->build(node));
+                }
+            }
 
-        std::unordered_map<std::string, std::string> map;
-
-        for (const auto &node : root.children("property")) {
-            map.emplace(node.child_value("name"), node.child_value("value"));
+            throw std::runtime_error("Unable to parse property: " + node.path('/'));
         }
 
-        return map;
-    }
+        std::unordered_map<std::string, std::string>
+        parse_properties(const pugi::xml_node &gadget_node) {
 
-    Config::Gadget parse_gadget(const pugi::xml_node &gadget_node) {
-        return Config::Gadget{gadget_node.child_value("name"),
-                              gadget_node.child_value("dll"),
-                              gadget_node.child_value("classname"),
-                              parse_properties(gadget_node)};
+            std::unordered_map<std::string, std::string> properties;
 
-    }
+            for (auto &node : gadget_node.children("property")) {
+                auto property = parse_property(node);
+                properties[property->name()] = property->value();
+            }
 
-    namespace Legacy {
+            return properties;
+        }
+
+        Config::Reader parse_reader(const pugi::xml_node &reader_node) {
+
+            std::string port_str = reader_node.child_value("port");
+
+            boost::optional<uint16_t> port = boost::none;
+            if (!port_str.empty())
+                port = static_cast<uint16_t>(std::stoi(port_str));
+
+            return Config::Reader{reader_node.child_value("dll"),
+                                  reader_node.child_value("classname"),
+                                  port};
+        }
+
+        std::vector<Config::Reader> parse_readers(const pugi::xml_node &reader_root) {
+            std::vector<Config::Reader> readers;
+            for (const auto &node : reader_root.children("reader")) {
+                readers.push_back(parse_reader(node));
+            }
+            return readers;
+        }
+
+        Config::Writer parse_writer(const pugi::xml_node &writer_node) {
+            return Config::Writer{writer_node.child_value("dll"),
+                                  writer_node.child_value("classname")};
+        }
+
+        std::vector<Config::Writer> parse_writers(const pugi::xml_node &writer_root) {
+            std::vector<Config::Writer> writers;
+            for (const auto &node : writer_root.children("reader")) {
+                writers.push_back(parse_writer(node));
+            }
+            return writers;
+        }
+
+        Config::Gadget parse_gadget(const pugi::xml_node &gadget_node) {
+            return Config::Gadget{gadget_node.child_value("name"),
+                                  gadget_node.child_value("dll"),
+                                  gadget_node.child_value("classname"),
+                                  parse_properties(gadget_node)};
+        }
+    };
+
+    class Legacy : public Parser {
+    public:
+        Legacy() {
+            property_builders.push_back(std::make_unique<ValueBuilder>(legacy_source));
+            property_builders.push_back(std::make_unique<ReferenceBuilder>(legacy_source, referenceable_properties));
+        }
+
+        Config parse(const pugi::xml_document &config) override {
+
+            assemble_referenceable_properties(config);
+
+            pugi::xml_node root = config.child("gadgetronStreamConfiguration");
+
+            return Config{
+                parse_readers(root),
+                parse_writers(root),
+                parse_stream(root)
+            };
+        }
+
+    private:
+        LegacySource legacy_source;
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node& gadget_node){
             std::vector<Config::Gadget> gadgets;
@@ -191,37 +288,52 @@ namespace {
                 gadgets.push_back(parse_gadget(node));
             }
             return gadgets;
-
         }
 
         Config::Stream parse_stream(const pugi::xml_node& stream_node){
             std::vector<Config::Node> nodes;
-            boost::transform(parse_gadgets(stream_node),std::back_inserter(nodes),
-                             [](auto gadget){return Config::Node(gadget);});
+            boost::transform(
+                    parse_gadgets(stream_node),
+                    std::back_inserter(nodes),
+                    [](auto gadget) {
+                        return Config::Node(gadget);
+                    }
+            );
 
-            return Config::Stream{"main",nodes};
+            return Config::Stream{"main", nodes};
+        }
+    };
+
+
+    class V2 : public Parser {
+    public:
+        V2() {
+            node_parsers["gadget"] = [&](const pugi::xml_node& n){ return this->parse_gadget(n); };
+            node_parsers["parallel"] = [&](const pugi::xml_node& n){ return this->parse_parallel(n); };
+
+            property_builders.push_back(std::make_unique<ValueBuilder>(v2_source));
+            property_builders.push_back(std::make_unique<ReferenceBuilder>(v2_source, referenceable_properties));
+            property_builders.push_back(std::make_unique<ValueBuilder>(legacy_source));
+            property_builders.push_back(std::make_unique<ReferenceBuilder>(legacy_source, referenceable_properties));
         }
 
-        Config parse(const pugi::xml_document &config) {
+        Config parse(const pugi::xml_document& config) override {
 
-            auto referenceable_properties = assemble_referenceable_properties(config);
+            assemble_referenceable_properties(config);
 
-            pugi::xml_node root = config.child("gadgetronStreamConfiguration");
+            auto root = config.child("configuration");
 
-            if (!root) {
-                throw std::runtime_error("gadgetronStreamConfiguration element not found in configuration file");
-            }
-
-            return Config{parse_readers(root), parse_writers(root), parse_stream(root)};
+            return Config{
+                parse_readers(root.child("readers")),
+                parse_writers(root.child("writers")),
+                parse_stream(root.child("stream"))
+            };
         }
-    }
+    private:
+        std::unordered_map<std::string,std::function<Config::Node(const pugi::xml_node&)>> node_parsers;
 
-    namespace V2 {
-
-        Config::Stream parse_stream(const pugi::xml_node& stream_node ); //Forward declaration. Eww.
-
-        //NOTE: Branchnode, mergenode and gadget are all kind of the same. Should it be the same code?
-        // Conceptually they're very different.
+        LegacySource legacy_source;
+        V2Source     v2_source;
 
         Config::Merge parse_mergenode(const pugi::xml_node& merge_node){
             return Config::Merge{merge_node.child_value("name"), merge_node.child_value("dll"),
@@ -245,10 +357,6 @@ namespace {
             return Config::Parallel{branch, merge, streams};
         }
 
-        static const std::unordered_map<std::string,std::function<Config::Node(const pugi::xml_node&)>>
-                node_parsers = {{"gadget",[](const pugi::xml_node& n){return parse_gadget(n);}},
-                                {"parallel",[](const pugi::xml_node& n){return parse_parallel(n);}}};
-
         Config::Stream parse_stream(const pugi::xml_node& stream_node ){
             std::vector<Config::Node> nodes;
             for (auto& node : stream_node.children() ){
@@ -256,33 +364,13 @@ namespace {
             }
             return Config::Stream{stream_node.attribute("name").value(),nodes};
         }
+    };
 
-        Config parse(const pugi::xml_document& config){
-
-            auto referenceable_properties = assemble_referenceable_properties(config);
-            std::set<std::pair<name, property>> visited;
-
-            auto value = referenceable_properties.at("DummyGadget").at("baz")->evaluate(referenceable_properties, visited);
-
-            GDEBUG_STREAM("Reference property value: " << value << std::endl);
-
-            auto root = config.child("configuration");
-
-            auto readers = parse_readers(root.child("readers"));
-            auto writers = parse_writers(root.child("writers"));
-            auto stream = parse_stream(root.child("stream"));
-
-            return Config{readers, writers, stream};
-        }
-
-    }
-
-    std::function<Config(const pugi::xml_document&)> select_config_parser(const pugi::xml_document &raw_config) {
-
+   std::unique_ptr<Parser> select_config_parser(const pugi::xml_document &raw_config) {
         if (raw_config.child("gadgetronStreamConfiguration")){
-            return [](const pugi::xml_document& doc){return Legacy::parse(doc);};
+            return std::make_unique<Legacy>();
         } else {
-            return [](const pugi::xml_document &doc){return V2::parse(doc);};
+            return std::make_unique<V2>();
         }
     }
 }
@@ -299,8 +387,7 @@ namespace Gadgetron::Server {
             throw std::runtime_error(result.description());
         }
 
-        auto  parser = select_config_parser(doc);
-        return parser(doc);
+        auto parser = select_config_parser(doc);
+        return parser->parse(doc);
     }
 }
-
