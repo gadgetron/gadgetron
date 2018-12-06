@@ -7,6 +7,8 @@
 #include "log.h"
 #include <ismrmrd/xml.h>
 #include "PropteryMixin.h"
+#include "Context.h"
+#include <boost/dll/alias.hpp>
 
 namespace Gadgetron::Core {
 
@@ -17,7 +19,7 @@ namespace Gadgetron::Core {
 
         virtual ~Node() {};
 
-    protected:
+    public:
 
         virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
 
@@ -26,14 +28,14 @@ namespace Gadgetron::Core {
 
     class GadgetNode : public Node, public PropertyMixin {
     public:
-            GadgetNode(const ISMRMRD::IsmrmrdHeader& header, const std::unordered_map<std::string,std::string>& properties) : PropertyMixin(properties){};
+            GadgetNode(const GadgetProperties& properties) : PropertyMixin(properties){};
             virtual ~GadgetNode(){};
     };
 
 
     template<class ...ARGS >
     class TypedGadgetNode : public GadgetNode {
-        TypedGadgetNode(const ISMRMRD::IsmrmrdHeader &header) {
+        TypedGadgetNode(const GadgetProperties& properties): GadgetNode(properties) {
 
         }
 
@@ -48,25 +50,19 @@ namespace Gadgetron::Core {
     };
 
 
-/*
-    class MergeNode : public Node {
-
-    public:
-
-        MergeNode(std::shared_future<std::shared_ptr<OutputChannel>> output_future,
-                  const std::vector<std::string> &channel_names) {
-            for (auto &name : channel_names) {
-                input_channels.emplace({name, std::make_shared<MessageChannel>()});
-            }
-        }
-
-
-    private:
-        std::map<std::string, std::shared_ptr<MessageChannel>> input_channels;
-
-    };
-    */
 }
 
+#define GADGETRON_GADGET_EXPORT(GadgetClass)                                        \
+std::unique_ptr<Gadgetron::Core::Node> gadget_factory_##GadgetClass(                \
+        const Gadgetron::Core::Context &context,                                    \
+        const std::unordered_map<std::string, std::string> &props                   \
+) {                                                                                 \
+  return std::make_unique<GadgetClass>(context, props);                             \
+}                                                                                   \
+                                                                                    \
+BOOST_DLL_ALIAS(                                                    \
+        gadget_factory_##GadgetClass,                               \
+        gadget_factory_export_##GadgetClass                         \
+)                                                                   \
 
 

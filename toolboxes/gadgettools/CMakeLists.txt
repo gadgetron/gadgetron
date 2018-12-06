@@ -2,19 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_GADGETTOOLS__)
 endif ()
 
-include_directories(
-                    ${CMAKE_BINARY_DIR}/apps/gadgetron
-                    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-                    ${CMAKE_SOURCE_DIR}/toolboxes/core
-                    ${CMAKE_BINARY_DIR}/toolboxes/core
-                    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-                    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-                    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-                    ${CMAKE_SOURCE_DIR}/apps/gadgetron
-                    ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-                    ${Boost_INCLUDE_DIR}
- )
-
 
 include_directories( ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image )
 
@@ -38,8 +25,12 @@ set_target_properties(gadgetron_toolbox_gadgettools PROPERTIES VERSION ${GADGETR
 
 target_link_libraries(gadgetron_toolbox_gadgettools
 	              gadgetron_toolbox_log
-                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
-                      ${Boost_LIBRARIES})
+                      )
+
+target_include_directories(gadgetron_toolbox_gadgettools
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
+
 
 install(TARGETS gadgetron_toolbox_gadgettools DESTINATION lib COMPONENT main)
 

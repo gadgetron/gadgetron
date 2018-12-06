@@ -27,19 +27,6 @@ elseif (CUDA_FOUND)
   message("Cuda not found, not compiling gpu-based registration gadgets")
 endif ()
 
-include_directories(   
-  ${ACE_INCLUDE_DIR} 
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  ${CMAKE_SOURCE_DIR}/gadgets/moco
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/
-  ${HDF5_INCLUDE_DIR}
-  ${HDF5_INCLUDE_DIR}/cpp
-)
 
 if(CPU_REG)
   include_directories(   

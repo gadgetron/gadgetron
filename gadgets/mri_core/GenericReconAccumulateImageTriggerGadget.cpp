@@ -786,7 +786,25 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
+    template <typename T, int D> 
+    int GenericReconAccumulateImageTriggerGadget<T, D>::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(true, "GenericReconAccumulateImageTriggerGadget - close(flags) : " << flags);
 
+        if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
+
+        if ( flags!=0 && !triggered_in_close_ )
+        {
+            triggered_in_close_ = true;
+
+            GDEBUG_CONDITION_STREAM(true, "GenericReconAccumulateImageTriggerGadget - trigger in close(flags) ... ");
+
+            GADGET_CHECK_RETURN(this->trigger(imageBuffer_, imageSent_, true) == GADGET_OK, GADGET_FAIL);
+            GADGET_CHECK_RETURN(this->trigger(otherBuffer_, otherSent_, true) == GADGET_OK, GADGET_FAIL);
+        }
+
+        return GADGET_OK;
+    }
 
     GenericReconAccumulateImage2DTriggerGadget::GenericReconAccumulateImage2DTriggerGadget() : BaseClass()
     {

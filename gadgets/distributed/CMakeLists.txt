@@ -2,12 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_DISTRIBUTED_GADGETS__)
 endif ()
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
-    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-    ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-)
 
 add_library(gadgetron_distributed SHARED 
     gadgetron_distributed_gadgets_export.h 
@@ -28,7 +22,6 @@ target_link_libraries(gadgetron_distributed
     gadgetron_toolbox_log
     gadgetron_toolbox_cloudbus
     gadgetron_toolbox_gadgettools
-    ${ACE_LIBRARIES}
 )
 
 install(FILES 

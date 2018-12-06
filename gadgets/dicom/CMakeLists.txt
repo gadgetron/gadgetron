@@ -21,38 +21,7 @@ else ()
     endif ()
 endif ()
 
-# sanity check:
-#message("DCMTK ${DCMTK_HOME}")
-#message("Include: ${DCMTK_INCLUDE_DIRS}")
-#message("Libraries: ${GT_DICOM_LIBRARIES}")
 
-include_directories(
-        ${CMAKE_SOURCE_DIR}/gadgets/mri_core    # for GadgetIsmrmrdReadWrite.h
-        ${DCMTK_INCLUDE_DIRS}
-        ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/core
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-        ${CMAKE_SOURCE_DIR}/toolboxes/operators
-        ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-        ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-        ${CMAKE_SOURCE_DIR}/gadgets/core
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
-        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-        ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-        ${CMAKE_SOURCE_DIR}/apps/gadgetron
-        ${CMAKE_SOURCE_DIR}/apps/matlab
-        ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-        ${ARMADILLO_INCLUDE_DIRS}
-        )
 
 set(gadgetron_dicom_header_files 
     gadgetron_dicom_export.h 
@@ -80,8 +49,6 @@ target_link_libraries(
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore 
     ${ISMRMRD_LIBRARIES}
-    optimized ${ACE_LIBRARIES}
-    debug ${ACE_DEBUG_LIBRARY}
     ${Boost_LIBRARIES}
     ${GT_DICOM_LIBRARIES} )
 

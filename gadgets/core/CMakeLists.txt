@@ -11,6 +11,7 @@ add_library(gadgetron_core SHARED
 	Channel.hpp
     Channel.cpp
     Context.cpp
+	Gadget.cpp
     Reader.h
     Writer.h
 	LegacyACE.cpp
@@ -24,6 +25,9 @@ target_include_directories(
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${ISMRMRD_INCLUDE_DIR})
+
+
+install(TARGETS gadgetron_core DESTINATION lib COMPONENT main)
 
 install(FILES
     Channel.h
