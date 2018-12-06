@@ -251,14 +251,15 @@ namespace Gadgetron {
                 size_t image_elements = image_dims[0] * image_dims[1];
 
                 auto result = hoNDArray<T>(image.get_dimensions());
+
+                hoNDArray<T> result_view;
+                result_view.create(image_dims);
                 for (int i = 0; i < n_images; i++) {
 
                     auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));
-                    auto result_view = hoNDArray<T>(image_dims, result.get_data_ptr() + i * image_elements);
-
                     result_view = non_local_bayes_single_image(image_view, noise_std, search_window);
 
-
+                    memcpy(result.begin() + i * image_elements, result_view.begin(), result_view.get_number_of_bytes());
                 }
                 return result;
             }
