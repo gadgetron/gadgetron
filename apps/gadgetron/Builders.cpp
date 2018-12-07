@@ -20,29 +20,37 @@ namespace Gadgetron::Server {
 
         public:
 
-            Stream(std::vector<std::unique_ptr<Node>> nodes ) : nodes(std::move(nodes)) {}
+            Stream(std::vector<std::unique_ptr<Node>> nodes) : nodes(std::move(nodes)) {}
+
             void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) override {
 
                 std::vector<std::thread> threads;
 
                 auto current_input = in;
-                for (auto node_index = 0; node_index < nodes.size()-1; node_index++){
+                for (auto node_index = 0; node_index < nodes.size() - 1; node_index++) {
                     auto channel = std::make_shared<MessageChannel>();
 
                     threads.emplace_back(
-                                [&](){
-                                    nodes[node_index]->process(current_input,channel);
-                                }
-                            );
+                            [&](auto input_channel, auto output_channel) {
+                                nodes[node_index]->process(input_channel, output_channel);
+                            },
+                            current_input,
+                            channel
+                    );
                     current_input = channel;
                 }
 
-                threads.emplace_back([&](){
-                    nodes.back()->process(current_input,out);
-                });
+
+                threads.emplace_back(
+                        [&](auto input_channel, auto output_channel) {
+                            nodes.back()->process(input_channel, output_channel);
+                        },
+                        current_input,
+                        out
+                );
 
 
-                for (auto& thread : threads){
+                for (auto &thread : threads) {
                     thread.join();
                 }
 
