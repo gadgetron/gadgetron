@@ -8,6 +8,7 @@
 #include <boost/optional.hpp>
 #include <boost/parameter/name.hpp>
 #include <boost/range/algorithm/transform.hpp>
+#include <numeric>
 
 #include "log.h"
 
@@ -194,6 +195,14 @@ namespace {
         }
 
         std::unique_ptr<Property> parse_property(const pugi::xml_node &node) {
+
+            int num_accepting = std::accumulate(property_builders.begin(),property_builders.end(), int(0),[&](auto val, auto& builder){
+                return val + builder->accepts(node);
+            });
+
+            if (num_accepting != 1){
+                throw std::runtime_error("Unable to parse property: " + node.path('/'));
+            }
 
             for (auto &builder : property_builders) {
                 if (builder->accepts(node)) {

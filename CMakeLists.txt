@@ -262,11 +262,12 @@ else()
   find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED)
 endif()
 
-
-add_library(boost SHARED IMPORTED)
+add_library(boost INTERFACE IMPORTED)
 set_target_properties(boost PROPERTIES
-        IMPORTED_LOCATION ${Boost_LIBRARIES}
         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+
+target_link_libraries(boost INTERFACE
+        ${Boost_LIBRARIES})
 
 option(USE_CUDA "Build with CUDA support" On)
 

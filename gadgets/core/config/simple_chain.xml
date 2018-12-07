@@ -33,6 +33,11 @@
             <classname>DummyGadget</classname>
             <property name="foo" value="bar"/>
             <property name="baz" reference="foo@DummyGadget"/>
+            <property name="cycle1" reference="cycle2@DummyGadget"/>
+            <property>
+                <name>cycle2</name>
+                <value>cycle1@DummyGadget</value>
+            </property>
         </gadget>
 
         <gadget>
