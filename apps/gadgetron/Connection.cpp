@@ -170,7 +170,6 @@ namespace {
                 , builder(paths_in)
                 , channels {
                     std::make_shared<MessageChannel>(),
-                    std::make_shared<MessageChannel>(),
                     std::make_shared<MessageChannel>()
                 } {}
 
@@ -188,7 +187,7 @@ namespace {
         Builder builder;
 
         struct {
-            std::shared_ptr<MessageChannel> input, output, error;
+            std::shared_ptr<MessageChannel> input, output;
         } channels;
 
         struct {
@@ -198,7 +197,7 @@ namespace {
             std::promise<Header> header;
 
             std::promise<std::map<uint16_t, std::unique_ptr<Handler>>> readers;
-            std::promise<std::vector<int>> writers;
+            std::promise<std::vector<std::unique_ptr<Writer>>> writers;
         } promises;
     };
 
@@ -256,6 +255,22 @@ namespace {
 
     void ConnectionImpl::process_output() {
         GDEBUG_STREAM("Output thread running.");
+
+        auto writer_future = this->promises.writers.get_future();
+        auto writers = writer_future.get();
+
+        std::shared_ptr<InputChannel<Message>> output = this->channels.output;
+
+        for (std::unique_ptr<Message> message : *output) {
+
+            auto writer = std::find_if(writers.begin(), writers.end(),
+                    [&](auto &writer) { return writer->accepts(*message); }
+            );
+
+            if (writer != writers.end()) {
+                (*writer)->write(stream, std::move(message));
+            }
+        }
     }
 
     void ConnectionImpl::start_stream(std::future<Config> config_future, std::future<Header> header_future) {
@@ -269,8 +284,7 @@ namespace {
 
         auto stream = builder.build_stream(config.stream,context);
 
-        stream->process(channels.input,channels.output);
-
+        stream->process(channels.input, channels.output);
     }
 
     void ConnectionImpl::initialize_readers(const Config &config) {

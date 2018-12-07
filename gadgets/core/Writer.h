@@ -43,8 +43,6 @@ namespace Gadgetron::Core {
 
     }
 }
-
-
 #include "Writer.hpp"
 
 #define GADGETRON_WRITER_EXPORT(WriterClass)                /
