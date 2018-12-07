@@ -199,7 +199,7 @@ namespace {
                 }
             }
 
-            if (0 ==properties.size()) {
+            if (0 == properties.size()) {
                 throw_node_error("Unable to parse property:", node);
             }
 
