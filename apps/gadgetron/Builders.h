@@ -28,7 +28,7 @@ namespace Gadgetron::Server{
         std::unique_ptr<Gadgetron::Core::Node> load_node(const Config::Distributed& distributed_config, const Core::Context& );
 
         std::vector<boost::dll::shared_library> libraries;
-        const Gadgetron::Core::Context::Paths& paths;
+        const Gadgetron::Core::Context::Paths paths;
 
     };
 

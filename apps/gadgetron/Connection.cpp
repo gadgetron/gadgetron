@@ -184,7 +184,7 @@ namespace {
         void initialize_writers(const Config &config);
 
         tcp::iostream stream;
-        Gadgetron::Core::Context::Paths paths;
+        const Gadgetron::Core::Context::Paths paths;
         Builder builder;
 
         struct {
@@ -250,6 +250,7 @@ namespace {
 
             handlers.at(id)->handle(stream);
         }
+        channels.input->close();
         stream_thread.join();
     }
 
