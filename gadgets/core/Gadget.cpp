@@ -28,15 +28,13 @@ namespace Gadgetron {
             std::shared_ptr<Core::InputChannel<Core::Message>> in,
             std::shared_ptr<Core::OutputChannel> out) {
         try {
-            //              GDEBUG("PenPen was here");
             gadget->next(std::make_shared<ChannelAdaptor>(out));
 
             //              for (auto message : *in ) {
             while (true) {
                 auto message = in->pop();
-                //                  GDEBUG_STREAM("Message_ptr " << message.get() <<
-                //                  std::endl); GDEBUG_STREAM("Gadget_ptr " <<
-                //                  gadget.get() << std::endl);
+//                 GDEBUG_STREAM("Message_ptr " << message.get() <<  std::endl);
+                 //GDEBUG_STREAM("Gadget_ptr " <<  gadget.get() << std::endl);
                 gadget->process(message->to_container_message());
             }
         } catch (Core::ChannelClosedError err) {

@@ -145,7 +145,7 @@ namespace {
              {}
 
         void handle(std::iostream &stream) override {
-            channel->push(reader->read(stream));
+            channel->push_message(reader->read(stream));
         }
 
         virtual ~ReaderHandler(){};
