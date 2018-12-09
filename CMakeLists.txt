@@ -265,9 +265,10 @@ endif()
 add_library(boost INTERFACE IMPORTED)
 set_target_properties(boost PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-
-target_link_libraries(boost INTERFACE
-        ${Boost_LIBRARIES})
+set_property(TARGET boost PROPERTY
+        INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
+#target_link_libraries(boost INTERFACE
+#        ${Boost_LIBRARIES})
 
 option(USE_CUDA "Build with CUDA support" On)
 

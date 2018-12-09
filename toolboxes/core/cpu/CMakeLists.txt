@@ -59,6 +59,8 @@ add_library(gadgetron_toolbox_cpucore SHARED
                     ${header_files} 
                     ${image_files}  
                     ${algorithm_files} )
+
+
 target_include_directories(
         gadgetron_toolbox_cpucore
     PUBLIC
