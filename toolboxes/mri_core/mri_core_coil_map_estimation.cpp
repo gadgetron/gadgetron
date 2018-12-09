@@ -10,11 +10,9 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
 #include "complext.h"
-
+#include "GadgetronTimer.h"
 #ifdef USE_OMP
     #include <omp.h>
-#include <GadgetronTimer.h>
-
 #endif // USE_OMP
 
 namespace Gadgetron
