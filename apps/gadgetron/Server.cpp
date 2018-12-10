@@ -20,9 +20,9 @@ Server::Server(boost::asio::io_service &io_service, const boost::program_options
 
 void Server::accept() {
 
-    socket_ = std::make_unique<tcp::socket>(acceptor_.get_io_service());
+    stream = std::make_unique<tcp::iostream>();
     acceptor_.async_accept(
-            *socket_,
+            *stream->rdbuf(),
             [this](const boost::system::error_code &error) {
                 this->connection_handler(error);
                 this->accept();
@@ -38,8 +38,8 @@ void Server::connection_handler(const boost::system::error_code &error) {
     }
 
 
-    GINFO_STREAM("Accepting connection from: " << socket_->remote_endpoint().address());
+    GINFO_STREAM("Accepting connection from: " << stream->rdbuf()->remote_endpoint().address());
 
     auto paths = Gadgetron::Core::Context::Paths(args_["home"].as<path>(), args_["dir"].as<path>());
-    Connection::create(paths, *socket_);
+    Connection::create(paths, stream);
 }

@@ -19,7 +19,7 @@ namespace Gadgetron::Server {
         void connection_handler(const boost::system::error_code &error);
 
         tcp::acceptor acceptor_;
-        std::unique_ptr<tcp::socket> socket_;
+        std::unique_ptr<tcp::iostream> stream;
         const boost::program_options::variables_map &args_;
     };
 }
