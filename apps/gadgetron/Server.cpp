@@ -19,15 +19,18 @@ Server::Server(boost::asio::io_service &io_service, const boost::program_options
 }
 
 void Server::accept() {
+
+    socket_ = std::make_unique<tcp::socket>(acceptor_.get_io_service());
     acceptor_.async_accept(
-            [this](const boost::system::error_code &error, tcp::socket socket) {
-                this->connection_handler(error, socket);
+            *socket_,
+            [this](const boost::system::error_code &error) {
+                this->connection_handler(error);
                 this->accept();
             }
     );
 }
 
-void Server::connection_handler(const boost::system::error_code &error, tcp::socket &socket) {
+void Server::connection_handler(const boost::system::error_code &error) {
 
     if (error) {
         GERROR_STREAM("Failed to open connection: " << error);
@@ -35,8 +38,8 @@ void Server::connection_handler(const boost::system::error_code &error, tcp::soc
     }
 
 
-    GINFO_STREAM("Accepting connection from: " << socket.remote_endpoint().address());
+    GINFO_STREAM("Accepting connection from: " << socket_->remote_endpoint().address());
 
     auto paths = Gadgetron::Core::Context::Paths(args_["home"].as<path>(), args_["dir"].as<path>());
-    Connection::create(paths, socket);
+    Connection::create(paths, *socket_);
 }
