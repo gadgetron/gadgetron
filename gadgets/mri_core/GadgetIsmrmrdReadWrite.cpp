@@ -136,7 +136,7 @@ namespace Gadgetron {
 
     }
 
-    uint16_t GadgetIsmrmrdAcquisitionMessageReader::port() {
+    uint16_t GadgetIsmrmrdAcquisitionMessageReader::slot() {
         return 1008;
     }
 
@@ -156,7 +156,7 @@ namespace Gadgetron {
     }
 
 
-    uint16_t GadgetIsmrmrdWaveformMessageReader::port() {
+    uint16_t GadgetIsmrmrdWaveformMessageReader::slot() {
         return 1026;
     }
 

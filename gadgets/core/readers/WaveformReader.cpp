@@ -22,7 +22,7 @@ namespace Gadgetron::Core::Readers {
         return std::make_unique<MessageTuple>(std::move(header), std::move(data));
     }
 
-    uint16_t WaveformReader::port() {
+    uint16_t WaveformReader::slot() {
         return 1026;
     }
 

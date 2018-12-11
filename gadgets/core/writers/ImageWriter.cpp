@@ -66,4 +66,7 @@ namespace Gadgetron::Core::Writers {
             }
         }
     }
+
+    GADGETRON_WRITER_EXPORT(ImageWriter)
 }
+

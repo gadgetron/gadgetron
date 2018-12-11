@@ -262,13 +262,13 @@ namespace {
         std::shared_ptr<InputChannel<Message>> output = this->channels.output;
 
         for (std::unique_ptr<Message> message : *output) {
-
+            GDEBUG_STREAM("Writer got a: " << typeid(*message).name() << std::endl);
             auto writer = std::find_if(writers.begin(), writers.end(),
                     [&](auto &writer) { return writer->accepts(*message); }
             );
 
             if (writer != writers.end()) {
-                (*writer)->write(stream, std::move(message));
+                (*writer)->write(*stream, std::move(message));
             }
         }
     }

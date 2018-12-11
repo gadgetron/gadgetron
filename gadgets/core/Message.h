@@ -67,8 +67,11 @@ namespace Gadgetron {
 
         class MessageTuple : public Message {
         public:
+
+
             template<class ...ARGS>
-            explicit MessageTuple(ARGS &&...  args) : Message(){
+            MessageTuple(ARGS &&...  args) : Message(){
+                static_assert(sizeof...(ARGS) > 1);
                 add_messages(std::move(args)...);
 
             }
@@ -113,6 +116,13 @@ namespace Gadgetron {
 
 
         };
+
+
+         template<class ...REST>
+         bool convertible_to(const Message &message);
+
+         template<class ...ARGS>
+         std::tuple<std::unique_ptr<ARGS>...> unpack(std::unique_ptr<Message> &message);
     }
 }
 
