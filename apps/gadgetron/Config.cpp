@@ -18,6 +18,16 @@ using namespace Gadgetron::Server;
 
 namespace {
 
+    void throw_node_error(const std::string &message, const pugi::xml_node &node) {
+
+        std::stringstream stream;
+
+        stream << message << " ";
+        node.print(stream, "", pugi::format_raw);
+
+        throw std::runtime_error(stream.str());
+    }
+
     class Property {
     public:
         virtual std::string name() = 0;
@@ -41,10 +51,11 @@ namespace {
     public:
         virtual std::string name(const pugi::xml_node &node) = 0;
         virtual std::string value(const pugi::xml_node &node) = 0;
-        virtual std::string reference(const pugi::xml_node &node) = 0;
 
         virtual bool accepts(const pugi::xml_node &node) = 0;
-        virtual bool is_reference(const pugi::xml_node &node) = 0;
+        virtual bool is_reference(const pugi::xml_node &node) {
+            return value(node).find('@') != std::string::npos;
+        };
     };
 
     class LegacySource : public Source {
@@ -57,16 +68,8 @@ namespace {
             return node.child_value("value");
         }
 
-        std::string reference(const pugi::xml_node &node) override {
-            return node.child_value("value");
-        }
-
         bool accepts(const pugi::xml_node &node) override {
             return node.child("name") && node.child("value");
-        }
-
-        bool is_reference(const pugi::xml_node &node) override {
-            return value(node).find('@') != std::string::npos;
         }
     };
 
@@ -80,16 +83,8 @@ namespace {
             return node.attribute("value").value();
         }
 
-        std::string reference(const pugi::xml_node &node) override {
-            return node.attribute("reference").value();
-        }
-
         bool accepts(const pugi::xml_node &node) override {
-            return node.attribute("name") && (node.attribute("value") || node.attribute("reference"));
-        }
-
-        bool is_reference(const pugi::xml_node &node) override {
-            return value(node).empty() && !reference(node).empty();
+            return node.attribute("name") && node.attribute("value");
         }
     };
 
@@ -136,7 +131,7 @@ namespace {
         std::unique_ptr<Property> build(const pugi::xml_node &node) const override {
             return std::make_unique<ReferenceProperty>(
                 source.name(node),
-                source.reference(node),
+                source.value(node),
                 properties
             );
         }
@@ -196,21 +191,23 @@ namespace {
 
         std::unique_ptr<Property> parse_property(const pugi::xml_node &node) {
 
-            int num_accepting = std::accumulate(property_builders.begin(),property_builders.end(), int(0),[&](auto val, auto& builder){
-                return val + builder->accepts(node);
-            });
-
-            if (num_accepting != 1){
-                throw std::runtime_error("Unable to parse property: " + node.path('/'));
-            }
+            std::vector<std::unique_ptr<Property>> properties;
 
             for (auto &builder : property_builders) {
                 if (builder->accepts(node)) {
-                    return std::move(builder->build(node));
+                    properties.push_back(builder->build(node));
                 }
             }
 
-            throw std::runtime_error("Unable to parse property: " + node.path('/'));
+            if (0 == properties.size()) {
+                throw_node_error("Unable to parse property:", node);
+            }
+
+            if (2 <= properties.size()) {
+                throw_node_error("Ambiguous property parse:", node);
+            }
+
+            return std::move(properties[0]);
         }
 
         std::unordered_map<std::string, std::string>

@@ -15,7 +15,7 @@ add_library(gadgetron_core SHARED
     Reader.h
     Writer.h
 	LegacyACE.cpp
-	Message.cpp)
+	Message.cpp Writer.hpp)
 
 target_link_libraries(gadgetron_core
 		gadgetron_toolbox_cpucore)

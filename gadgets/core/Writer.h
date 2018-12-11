@@ -11,10 +11,38 @@ namespace Gadgetron::Core {
 
     class Writer {
     public:
+        virtual ~Writer() = default;
+        virtual bool accepts(const Message &) = 0;
         virtual void write(std::ostream &stream, std::unique_ptr<Message> &&message) = 0;
-        virtual std::vector<std::type_index> supported_types() const = 0;
-        virtual ~Writer() {};
     };
+
+    template<class ...ARGS>
+    class TypedWriter : public Writer {
+    public:
+        ~TypedWriter() override = default;
+        bool accepts(const Message &) override;
+        void write(std::ostream &stream, std::unique_ptr<Message> &&message) override;
+
+    protected:
+        virtual void serialize(std::ostream &stream, std::unique_ptr<ARGS> &&...) = 0;
+    };
+
 }
 
-#define GADGETRON_WRITER_EXPORT(WriterClass)
+namespace Gadgetron::Core {
+
+    template<class ...ARGS>
+    bool TypedWriter<ARGS...>::accepts(const Message &message) {
+        // TODO: Then magic happens.
+
+        return false;
+    }
+
+    template<class ...ARGS>
+    void TypedWriter<ARGS...>::write(std::ostream &stream, std::unique_ptr<Message> &&message) {
+
+    }
+}
+#include "Writer.hpp"
+
+#define GADGETRON_WRITER_EXPORT(WriterClass)                /

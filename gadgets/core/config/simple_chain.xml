@@ -32,8 +32,8 @@
             <dll>gadgetron_core_gadgets</dll>
             <classname>DummyGadget</classname>
             <property name="foo" value="bar"/>
-            <property name="baz" reference="foo@DummyGadget"/>
-            <property name="cycle1" reference="cycle2@DummyGadget"/>
+            <property name="baz" value="foo@DummyGadget"/>
+            <property name="cycle1" value="cycle2@DummyGadget"/>
             <property>
                 <name>cycle2</name>
                 <value>cycle1@DummyGadget</value>
