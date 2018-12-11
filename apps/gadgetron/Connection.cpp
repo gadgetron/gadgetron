@@ -145,7 +145,7 @@ namespace {
              {}
 
         void handle(std::iostream &stream) override {
-            channel->push(reader->read(stream));
+            channel->push_message(reader->read(stream));
         }
 
         virtual ~ReaderHandler(){};
@@ -164,8 +164,8 @@ namespace {
 
         using tcp = boost::asio::ip::tcp;
 
-        ConnectionImpl(Context::Paths &paths_in, tcp::socket &socket)
-                : stream(std::move(socket))
+        ConnectionImpl(Context::Paths &paths_in, std::unique_ptr<tcp::iostream>& stream_in)
+                : stream(std::move(stream_in))
                 , paths(paths_in)
                 , builder(paths_in)
                 , channels {
@@ -182,7 +182,7 @@ namespace {
         void initialize_readers(const Config &config);
         void initialize_writers(const Config &config);
 
-        tcp::iostream stream;
+        std::unique_ptr<tcp::iostream> stream;
         const Gadgetron::Core::Context::Paths paths;
         Builder builder;
 
@@ -239,7 +239,7 @@ namespace {
         handlers[QUERY]    = std::make_unique<QueryHandler>();
 
         while (!closed) {
-            auto id = read_t<uint16_t>(stream);
+            auto id = read_t<uint16_t>(*stream);
 
             GDEBUG_STREAM("Handling message with id: " << id << std::endl);
 
@@ -247,7 +247,7 @@ namespace {
                 handlers.merge(reader_future.get());
             }
 
-            handlers.at(id)->handle(stream);
+            handlers.at(id)->handle(*stream);
         }
         channels.input->close();
         stream_thread.join();
@@ -309,9 +309,9 @@ namespace {
 
 };
 
-std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket) {
+std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream>& stream) {
 
-    auto connection = std::make_shared<ConnectionImpl>(paths, socket);
+    auto connection = std::make_shared<ConnectionImpl>(paths, stream);
     connection->start();
 
     return connection;

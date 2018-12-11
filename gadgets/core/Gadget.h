@@ -162,7 +162,7 @@ namespace Gadgetron {
             return this->next_channel->putq(msg);
         }
 
-        virtual int close(unsigned long flags = 0) { return 0; }
+        virtual int close(unsigned long flags = 1) { return 0; }
 
 
         std::string get_string_value(const char *name);
@@ -238,6 +238,8 @@ namespace Gadgetron {
         virtual int process_config(ACE_Message_Block *m) {
             return 0;
         }
+
+
 
     protected:
 
@@ -488,7 +490,7 @@ namespace Gadgetron {
                 : Gadget() {
         }
 
-        virtual ~BasicPropertyGadget() {}
+        virtual ~BasicPropertyGadget() = default;
 
     protected:
         GADGET_PROPERTY(using_cloudbus, bool, "Indicates whether the cloudbus is in use and available", false);
@@ -506,7 +508,7 @@ namespace Gadgetron {
     class Gadget1 : public BasicPropertyGadget {
 
     protected:
-        int process(ACE_Message_Block *mb) {
+        int process(ACE_Message_Block *mb) override {
             GadgetContainerMessage<P1> *m = AsContainerMessage<P1>(mb);
 
             if (!m) {
@@ -524,7 +526,7 @@ namespace Gadgetron {
     class Gadget2 : public BasicPropertyGadget {
 
     protected:
-        int process(ACE_Message_Block *mb) {
+        int process(ACE_Message_Block *mb) override {
             GadgetContainerMessage<P1> *m1 = AsContainerMessage<P1>(mb);
 
             GadgetContainerMessage<P2> *m2 = 0;

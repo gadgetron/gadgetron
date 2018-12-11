@@ -3,6 +3,8 @@
 #include <string>
 #include "Message.h"
 #include "LegacyACE.h"
+#include <typeinfo>
+#include <log.h>
 
 namespace Gadgetron {
 
@@ -15,10 +17,6 @@ namespace Gadgetron {
 
         virtual ~GadgetContainerMessageBase(){};
 
-
-        std::type_index type(){
-            return message->type();
-        }
 
     protected:
 
@@ -84,7 +82,7 @@ namespace Gadgetron {
     template<class T>
     GadgetContainerMessage<T> *AsContainerMessage(ACE_Message_Block *mb) {
 
-        if (typeid(mb) == typeid(GadgetContainerMessage<T>*)){
+        if (mb && typeid(*mb) == typeid(GadgetContainerMessage<T>)){
             return reinterpret_cast<GadgetContainerMessage<T>*>(mb);
         }
         return nullptr;

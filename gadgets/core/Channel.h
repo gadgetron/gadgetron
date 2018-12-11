@@ -59,8 +59,9 @@ namespace Gadgetron::Core {
 
         virtual void close() override;
 
+        void push_message(std::unique_ptr<Message> &&) override;
+
     protected:
-        virtual void push_message(std::unique_ptr<Message> &&) override;
 
         std::list<std::unique_ptr<Message>> queue;
         std::mutex m;

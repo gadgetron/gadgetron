@@ -18,7 +18,6 @@ namespace Gadgetron {
         public:
             virtual ~Message(){};
 
-            virtual std::type_index type() = 0;
 
         protected:
 
@@ -27,9 +26,11 @@ namespace Gadgetron {
             friend MessageTuple;
         };
 
+         template<class T, typename = std::enable_if_t<!std::is_convertible_v<T*,Message*>>>
+        class TypedMessage;
 
         template<class T>
-        class TypedMessage : public Message {
+        class TypedMessage<T> : public Message {
         public:
 
 
@@ -59,11 +60,6 @@ namespace Gadgetron {
 
             virtual ~TypedMessage() {};
 
-            virtual std::type_index type() override final {
-                return std::type_index(typeid(T));
-            }
-
-
         protected:
             std::unique_ptr<T> data;
 
@@ -89,9 +85,7 @@ namespace Gadgetron {
                 return std::move(messages_);
             }
 
-            virtual std::type_index type() override {
-                return std::type_index(typeid(messages_));
-            }
+
 
             virtual GadgetContainerMessageBase* to_container_message() override;
 

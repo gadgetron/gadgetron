@@ -1,5 +1,5 @@
 #pragma once
-
+#include<typeinfo>
 namespace Gadgetron::Core {
     template<class ...ARGS>
     class InputChannel<ARGS...>::Iterator {
@@ -164,7 +164,7 @@ template<class T>
 std::unique_ptr<T> TypedInputChannel<T>::pop() {
 
     std::unique_ptr<Message> message = in->pop();
-    while (message->type() != std::type_index(typeid(T))) {
+    while (typeid(*message) == typeid(T)) {
         bypass->push(std::move(message));
         message = in->pop();
     }
@@ -192,7 +192,7 @@ namespace {
     template<unsigned int I, class T, class ...REST>
     bool convertible_to_tuple(MessageTuple *messagetuple) {
         auto& ptr = messagetuple->messages()[I];
-        if (ptr->type() == std::type_index(typeid(T))) {
+        if (typeid(*ptr) == typeid(T)) {
             return convertible_to_tuple<I + 1, REST...>(messagetuple);
         } else {
             return false;
@@ -203,7 +203,7 @@ namespace {
     bool convertible_to_tuple(MessageTuple *messagetuple) {
 
         auto& ptr = messagetuple->messages()[I];
-        if (ptr->type() == std::type_index(typeid(T))) {
+        if (typeid(*ptr) == typeid(T)) {
             return true;
         } else {
             return false;

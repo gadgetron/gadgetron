@@ -14,7 +14,7 @@ namespace Gadgetron::Server {
         using tcp = boost::asio::ip::tcp;
 
     public:
-        static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, tcp::socket &socket);
+        static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream);
         virtual ~Connection() = default;
     };
 }
