@@ -18,8 +18,8 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         CropAndCombineGadget.h
         CoilSenMapGadget.h
 #        ImageWriterGadget.h
-#        MRIImageWriter.h
-#        MRIImageReader.h
+        MRIImageWriter.h
+        MRIImageReader.h
         NoiseAdjustGadget_unoptimized.h
         ExtractGadget.h
         FloatToFixPointGadget.h
@@ -78,7 +78,7 @@ set(gadgetron_mricore_src_files
         CoilSenMapGadget.cpp
         ImageFinishGadget.cpp
 #        ImageWriterGadget.cpp
-#        MRIImageWriter.cpp
+        MRIImageWriter.cpp
 #        MRIImageReader.cpp
         NoiseAdjustGadget_unoptimized.cpp
         ExtractGadget.cpp
@@ -164,6 +164,7 @@ set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_S
 
 target_link_libraries(gadgetron_mricore
         gadgetron_core
+        gadgetron_core_writers
         gadgetron_toolbox_log
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_cpufft

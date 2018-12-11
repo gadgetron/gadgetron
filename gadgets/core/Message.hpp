@@ -1,6 +1,7 @@
 #include "Message.h"
 
 #include "GadgetContainerMessage.h"
+#include <boost/optional.hpp>
 
 namespace Gadgetron::Core {
 
@@ -15,29 +16,65 @@ namespace Gadgetron::Core {
 
         namespace gadgetron_detail {
 
+            template<class ... ARGS>
+            struct count_non_optional;
+
+            template<>
+            struct count_non_optional<>{
+                static constexpr size_t value = 0;
+            };
+
+            template<class T, class ...ARGS>
+            struct count_non_optional<T,ARGS...>{
+                static constexpr size_t value = count_non_optional<ARGS...>::value + 1;
+            };
+
+            template<class T, class ...ARGS>
+            struct count_non_optional<boost::optional<T>,ARGS...>{
+                static constexpr size_t value = count_non_optional<ARGS...>::value + 1;
+            };
 
 
+            template<unsigned int I, class ...ARGS>
+            struct tuple_converter;
 
             template<unsigned int I>
-            bool convertible_to_impl(const MessageTuple &) {
-                return true;
-            }
-            template<unsigned int I, class T, class ...REST>
-            bool convertible_to_impl(const MessageTuple &messagetuple) {
-                auto &ptr = messagetuple.messages()[I];
-                if (typeid(*ptr) == typeid(T)) {
-                    return convertible_to_impl<I + 1, REST...>(messagetuple);
+            struct tuple_converter<I> {
+                static bool accept(const MessageTuple&){
+                    return true;
                 }
+            };
 
-                return false;
 
-            }
+
+            template<unsigned int I, class T, class ...REST>
+            struct tuple_converter<I,T,REST...> {
+                static bool accept(const MessageTuple &messagetuple) {
+                    auto &ptr = messagetuple.messages()[I];
+                    if (typeid(*ptr) == typeid(T)) {
+                        return tuple_converter< I + 1, REST...>::accept(messagetuple);
+                    }
+                    return false;
+                }
+            };
+
+            template<unsigned int I, class T, class ...REST>
+            struct tuple_converter<I,boost::optional<T>,REST...> {
+                static bool accept(const MessageTuple &messagetuple) {
+                    auto &ptr = messagetuple.messages()[I];
+                    if (typeid(*ptr) == typeid(T)) {
+                        return tuple_converter< I + 1, REST...>::accept(messagetuple);
+                    }
+                    return tuple_converter<I,REST...>::accept(messagetuple);
+                }
+            };
+
 
 
             template<class ...ARGS>
             bool convertible_to_impl(const MessageTuple &messageTuple) {
-                if (sizeof...(ARGS) <= messageTuple.messages().size()) {
-                    return convertible_to_impl<0, ARGS...>(messageTuple);
+                if (count_non_optional<ARGS...>::value <= messageTuple.messages().size()) {
+                    return tuple_converter<0, ARGS...>::accept(messageTuple);
                 }
 
                 return false;

@@ -26,20 +26,20 @@ namespace {
     using Header = Gadgetron::Core::Context::Header;
 
     enum message_id : uint16_t {
-        FILENAME    = 1,
-        CONFIG      = 2,
-        HEADER      = 3,
-        CLOSE       = 4,
-        TEXT        = 5,
-        QUERY       = 6
+        FILENAME = 1,
+        CONFIG = 2,
+        HEADER = 3,
+        CLOSE = 4,
+        TEXT = 5,
+        QUERY = 6
     };
 
-    template <class T>
+    template<class T>
     void read_into(std::istream &stream, T &t) {
-        stream.read(reinterpret_cast<char*>(&t), sizeof(t));
+        stream.read(reinterpret_cast<char *>(&t), sizeof(t));
     }
 
-    template <class T>
+    template<class T>
     T read_t(std::istream &stream) {
         T t;
         read_into(stream, t);
@@ -65,7 +65,8 @@ namespace {
     class Handler {
     public:
         virtual void handle(std::iostream &stream) = 0;
-        virtual ~Handler(){};
+
+        virtual ~Handler() {};
     };
 
     class ConfigFileHandler : public Handler {
@@ -74,7 +75,8 @@ namespace {
                 : promise(config_promise), paths(paths) {}
 
         void handle(std::iostream &stream) override {
-            boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
+            boost::filesystem::path filename =
+                    paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
             std::ifstream config_stream(filename.string());
 
             GDEBUG_STREAM("Reading config file: " << filename << std::endl);
@@ -90,7 +92,7 @@ namespace {
 
     class ConfigHandler : public Handler {
     public:
-        ConfigHandler(std::promise<Config> &config_promise) : promise(config_promise){}
+        ConfigHandler(std::promise<Config> &config_promise) : promise(config_promise) {}
 
         void handle(std::iostream &stream) override {
             std::stringstream config_stream(read_string_from_stream(stream));
@@ -126,6 +128,7 @@ namespace {
         void handle(std::iostream &stream) override {
             closed = true;
         }
+
     private:
         bool &closed;
     };
@@ -140,15 +143,13 @@ namespace {
     class ReaderHandler : public Handler {
     public:
         ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel)
-            : reader(std::move(reader))
-            , channel(std::move(channel))
-             {}
+                : reader(std::move(reader)), channel(std::move(channel)) {}
 
         void handle(std::iostream &stream) override {
             channel->push_message(reader->read(stream));
         }
 
-        virtual ~ReaderHandler(){};
+        virtual ~ReaderHandler() {};
         std::unique_ptr<Reader> reader;
         std::shared_ptr<MessageChannel> channel;
     };
@@ -164,22 +165,22 @@ namespace {
 
         using tcp = boost::asio::ip::tcp;
 
-        ConnectionImpl(Context::Paths &paths_in, std::unique_ptr<tcp::iostream>& stream_in)
-                : stream(std::move(stream_in))
-                , paths(paths_in)
-                , builder(paths_in)
-                , channels {
-                    std::make_shared<MessageChannel>(),
-                    std::make_shared<MessageChannel>()
-                } {}
+        ConnectionImpl(Context::Paths &paths_in, std::unique_ptr<tcp::iostream> &stream_in)
+                : stream(std::move(stream_in)), paths(paths_in), builder(paths_in), channels{
+                std::make_shared<MessageChannel>(),
+                std::make_shared<MessageChannel>()
+        } {}
 
         void start();
+
         void process_input();
+
         void process_output();
 
         void start_stream(std::future<Config>, std::future<Header>);
 
         void initialize_readers(const Config &config);
+
         void initialize_writers(const Config &config);
 
         std::unique_ptr<tcp::iostream> stream;
@@ -233,10 +234,10 @@ namespace {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers;
         handlers[FILENAME] = std::make_unique<ConfigFileHandler>(this->promises.config, paths);
-        handlers[CONFIG]   = std::make_unique<ConfigHandler>(this->promises.config);
-        handlers[HEADER]   = std::make_unique<HeaderHandler>(this->promises.header);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(closed);
-        handlers[QUERY]    = std::make_unique<QueryHandler>();
+        handlers[CONFIG] = std::make_unique<ConfigHandler>(this->promises.config);
+        handlers[HEADER] = std::make_unique<HeaderHandler>(this->promises.header);
+        handlers[CLOSE] = std::make_unique<CloseHandler>(closed);
+        handlers[QUERY] = std::make_unique<QueryHandler>();
 
         while (!closed) {
             auto id = read_t<uint16_t>(*stream);
@@ -261,17 +262,26 @@ namespace {
 
         std::shared_ptr<InputChannel<Message>> output = this->channels.output;
 
-        for (std::unique_ptr<Message> message : *output) {
-            GDEBUG_STREAM("Writer got a: " << typeid(*message).name() << std::endl);
-            auto writer = std::find_if(writers.begin(), writers.end(),
-                    [&](auto &writer) { return writer->accepts(*message); }
-            );
+//        for (std::unique_ptr<Message> message : *output) {
+        try {
+            while (true) {
+                auto message = output->pop();
+                GDEBUG_STREAM("Ptr " << message.get() << std::endl);
+                GDEBUG_STREAM("Writer got a: " << typeid(*message).name() << std::endl);
+                auto writer = std::find_if(writers.begin(), writers.end(),
+                                           [&](auto &writer) { return writer->accepts(*message); }
+                );
 
-            if (writer != writers.end()) {
-                (*writer)->write(*stream, std::move(message));
+
+                if (writer != writers.end()) {
+                    (*writer)->write(*stream, std::move(message));
+                }
             }
+        } catch (ChannelClosedError err) {
+
         }
     }
+
 
     void ConnectionImpl::start_stream(std::future<Config> config_future, std::future<Header> header_future) {
 
@@ -282,7 +292,7 @@ namespace {
         Context::Header header = header_future.get();
         Context context{header, paths};
 
-        auto stream = builder.build_stream(config.stream,context);
+        auto stream = builder.build_stream(config.stream, context);
 
         stream->process(channels.input, channels.output);
     }
@@ -294,22 +304,23 @@ namespace {
 
         auto readers = builder.build_readers(config.readers);
 
-        for (auto& reader_pair : readers){
-            handlers.emplace(reader_pair.first, std::make_unique<ReaderHandler>(std::move(reader_pair.second), channels.input));
+        for (auto &reader_pair : readers) {
+            handlers.emplace(reader_pair.first,
+                             std::make_unique<ReaderHandler>(std::move(reader_pair.second), channels.input));
         }
         this->promises.readers.set_value(std::move(handlers));
     }
 
     void ConnectionImpl::initialize_writers(const Config &config) {
+        this->promises.writers.set_value(builder.build_writers(config.writers));
 
-
-        // TODO: Writers
     }
 
 
 };
 
-std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream>& stream) {
+std::shared_ptr<Connection>
+Connection::create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream) {
 
     auto connection = std::make_shared<ConnectionImpl>(paths, stream);
     connection->start();

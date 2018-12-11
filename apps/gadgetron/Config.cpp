@@ -251,7 +251,7 @@ namespace {
 
         std::vector<Config::Writer> parse_writers(const pugi::xml_node &writer_root) {
             std::vector<Config::Writer> writers;
-            for (const auto &node : writer_root.children("reader")) {
+            for (const auto &node : writer_root.children("writer")) {
                 writers.push_back(parse_writer(node));
             }
             return writers;
