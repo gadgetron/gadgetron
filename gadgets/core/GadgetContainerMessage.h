@@ -36,8 +36,8 @@ namespace Gadgetron {
          */
 
         template<typename... X>
-        GadgetContainerMessage(X &&... xs)  {
-            data= new T(std::move(xs)...);
+        GadgetContainerMessage(const X &... xs)  {
+            data= new T(xs...);
             message = std::make_unique<Core::TypedMessage<T>>(std::unique_ptr<T>(data));
         }
 

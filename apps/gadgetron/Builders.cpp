@@ -31,7 +31,7 @@ namespace Gadgetron::Server {
                     auto channel = std::make_shared<MessageChannel>();
 
                     threads.emplace_back(
-                            [&](auto input_channel, auto output_channel) {
+                            [this,node_index](auto input_channel, auto output_channel) {
                                 nodes[node_index]->process(input_channel, output_channel);
                             },
                             current_input,
