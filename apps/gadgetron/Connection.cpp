@@ -60,11 +60,11 @@ namespace {
     std::string read_string_from_stream(std::istream &stream) {
 
         auto n = read_t<T>(stream);
-        auto buffer = std::make_unique<char[]>(n);
 
-        stream.read(buffer.get(), n);
+        std::string str(n, 0);
+        stream.read(str.data(), n);
 
-        return std::string(buffer.get());
+        return str;
     }
 
     class Handler {
