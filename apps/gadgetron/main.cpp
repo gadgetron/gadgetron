@@ -7,6 +7,8 @@
 #include "log.h"
 #include "paths.h"
 
+#include "gadgetron_system_info.h"
+
 #include "Server.h"
 
 using namespace boost::filesystem;
@@ -39,8 +41,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (args.count("info")) {
-        // TODO: Output some build info. Obsoletes gadgetron_info?
-        std::cout << std::endl;
+        Info::print_system_information(std::cout);
         return 0;
     }
 

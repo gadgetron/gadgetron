@@ -12,11 +12,13 @@
 
 #include "Connection.h"
 
+#include "Response.h"
 #include "Builders.h"
 #include "Reader.h"
 #include "Writer.h"
 #include "Server.h"
 #include "Config.h"
+#include "Query.h"
 
 namespace {
 
@@ -31,7 +33,8 @@ namespace {
         HEADER      = 3,
         CLOSE       = 4,
         TEXT        = 5,
-        QUERY       = 6
+        QUERY       = 6,
+        RESPONSE    = 7
     };
 
     template <class T>
@@ -54,7 +57,7 @@ namespace {
 
     std::string read_string_from_stream(std::istream &stream) {
 
-        uint32_t n = read_t<uint32_t>(stream);
+        auto n = read_t<uint32_t>(stream);
         auto buffer = std::make_unique<char[]>(n);
 
         stream.read(buffer.get(), n);
@@ -64,49 +67,68 @@ namespace {
 
     class Handler {
     public:
-        virtual void handle(std::iostream &stream) = 0;
-        virtual ~Handler(){};
+        virtual void handle(std::istream &stream) = 0;
+        virtual ~Handler() = default;
     };
 
     class ConfigFileHandler : public Handler {
     public:
-        ConfigFileHandler(std::promise<Gadgetron::Server::Config> &config_promise, const Context::Paths &paths)
-                : promise(config_promise), paths(paths) {}
+        ConfigFileHandler(
+                std::promise<Config> &config_promise,
+                std::promise<std::stringstream> &raw_config_promise,
+                const Context::Paths &paths)
+                : promises {config_promise, raw_config_promise}
+                , paths(paths) {}
 
-        void handle(std::iostream &stream) override {
+        void handle(std::istream &stream) override {
             boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
-            std::ifstream config_stream(filename.string());
 
             GDEBUG_STREAM("Reading config file: " << filename << std::endl);
 
-            promise.set_value(parse_config(config_stream));
+            std::ifstream file_stream(filename.string());
+
+            std::stringstream config_stream;
+            config_stream << file_stream.rdbuf();
+
+            promises.config.set_value(parse_config(config_stream));
+            promises.string.set_value(std::move(config_stream));
         }
 
-
     private:
-        std::promise<Config> &promise;
+        struct {
+            std::promise<Config> &config;
+            std::promise<std::stringstream> &string;
+        } promises;
+
         const Context::Paths &paths;
     };
 
     class ConfigHandler : public Handler {
     public:
-        ConfigHandler(std::promise<Config> &config_promise) : promise(config_promise){}
+        explicit ConfigHandler(
+                std::promise<Config> &config_promise,
+                std::promise<std::stringstream> &raw_config_promise
+        ) : promises {config_promise, raw_config_promise} {}
 
-        void handle(std::iostream &stream) override {
+        void handle(std::istream &stream) override {
             std::stringstream config_stream(read_string_from_stream(stream));
 
-            promise.set_value(parse_config(config_stream));
+            promises.config.set_value(parse_config(config_stream));
+            promises.string.set_value(std::move(config_stream));
         }
 
     private:
-        std::promise<Config> &promise;
+        struct {
+            std::promise<Config> &config;
+            std::promise<std::stringstream> &string;
+        } promises;
     };
 
     class HeaderHandler : public Handler {
     public:
-        HeaderHandler(std::promise<Header> &header_promise) : promise(header_promise) {}
+        explicit HeaderHandler(std::promise<Header> &header_promise) : promise(header_promise) {}
 
-        void handle(std::iostream &stream) override {
+        void handle(std::istream &stream) override {
             std::string raw_header(read_string_from_stream(stream));
 
             ISMRMRD::IsmrmrdHeader header;
@@ -121,9 +143,9 @@ namespace {
 
     class CloseHandler : public Handler {
     public:
-        CloseHandler(bool &closed) : closed(closed) {}
+        explicit CloseHandler(bool &closed) : closed(closed) {}
 
-        void handle(std::iostream &stream) override {
+        void handle(std::istream &stream) override {
             closed = true;
         }
     private:
@@ -132,9 +154,46 @@ namespace {
 
     class QueryHandler : public Handler {
     public:
-        void handle(std::iostream &stream) override {
-
+        explicit QueryHandler(
+                std::future<std::stringstream> &&raw_config_future,
+                std::shared_ptr<MessageChannel> output
+        ) : channel(std::move(output)) {
+            handlers.emplace_back(std::make_unique<Query::ISMRMRDHandler>());
+            handlers.emplace_back(std::make_unique<Query::GadgetronHandler>());
+            handlers.emplace_back(std::make_unique<Query::ConfigHandler>(std::move(raw_config_future)));
         }
+
+        void handle(std::istream &stream) override {
+
+            auto reserved = read_t<uint64_t>(stream);
+            auto corr_id  = read_t<uint64_t>(stream);
+            auto query    = read_string_from_stream(stream);
+
+            if (reserved) {
+                throw std::runtime_error("Unsupported value in reserved bytes.");
+            }
+
+            auto response = get_response(query);
+
+            channel->push(std::make_unique<Response>(corr_id, response));
+        }
+
+        std::string get_response(const std::string &query) {
+
+            for (auto &handler : handlers) {
+                if (handler->accepts(query)) {
+                    return handler->handle(query);
+                }
+            }
+
+            // Response should be "Unable to respond."
+
+            throw std::runtime_error("No query handler found for query: " + query);
+        }
+
+    private:
+        std::vector<std::unique_ptr<Query::Handler>> handlers;
+        std::shared_ptr<OutputChannel> channel;
     };
 
     class ReaderHandler : public Handler {
@@ -144,19 +203,18 @@ namespace {
             , channel(std::move(channel))
              {}
 
-        void handle(std::iostream &stream) override {
+        void handle(std::istream &stream) override {
             channel->push_message(reader->read(stream));
         }
 
-        virtual ~ReaderHandler(){};
         std::unique_ptr<Reader> reader;
         std::shared_ptr<MessageChannel> channel;
     };
 
-    // --------------------------------------------------------------------- //
 
     // --------------------------------------------------------------------- //
 
+    // --------------------------------------------------------------------- //
 
 
     class ConnectionImpl : public Connection, public std::enable_shared_from_this<ConnectionImpl> {
@@ -184,6 +242,7 @@ namespace {
 
         std::unique_ptr<tcp::iostream> stream;
         const Gadgetron::Core::Context::Paths paths;
+
         Builder builder;
 
         struct {
@@ -224,6 +283,8 @@ namespace {
 
         bool closed = false;
 
+        std::promise<std::stringstream> raw_config_promise;
+
         auto reader_future = this->promises.readers.get_future();
         auto stream_thread = std::thread(
                 [&](auto config, auto header) { this->start_stream(std::move(config), std::move(header)); },
@@ -232,11 +293,11 @@ namespace {
         );
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers;
-        handlers[FILENAME] = std::make_unique<ConfigFileHandler>(this->promises.config, paths);
-        handlers[CONFIG]   = std::make_unique<ConfigHandler>(this->promises.config);
+        handlers[FILENAME] = std::make_unique<ConfigFileHandler>(this->promises.config, raw_config_promise, paths);
+        handlers[CONFIG]   = std::make_unique<ConfigHandler>(this->promises.config, raw_config_promise);
         handlers[HEADER]   = std::make_unique<HeaderHandler>(this->promises.header);
         handlers[CLOSE]    = std::make_unique<CloseHandler>(closed);
-        handlers[QUERY]    = std::make_unique<QueryHandler>();
+        handlers[QUERY]    = std::make_unique<QueryHandler>(raw_config_promise.get_future(), channels.output);
 
         while (!closed) {
             auto id = read_t<uint16_t>(*stream);
@@ -268,7 +329,7 @@ namespace {
             );
 
             if (writer != writers.end()) {
-                (*writer)->write(stream, std::move(message));
+                (*writer)->write(*stream, std::move(message));
             }
         }
     }
