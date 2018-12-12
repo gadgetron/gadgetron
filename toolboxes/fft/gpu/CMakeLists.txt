@@ -11,13 +11,13 @@ cuda_add_library(gadgetron_toolbox_gpufft SHARED
 
 set_target_properties(gadgetron_toolbox_gpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_include_directories(gadgetron_toolbox_gpufft
-        PUBLIC
+target_include_directories(gadgetron_toolbox_gpufft PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(gadgetron_toolbox_gpufft 
+
+target_link_libraries(gadgetron_toolbox_gpufft
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
-  gadgetron_toolbox_gpucore 
+  gadgetron_toolbox_gpucore
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   )

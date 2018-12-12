@@ -11,7 +11,7 @@ add_executable(gadgetron
         gadgetron_xml.h
         gadgetron_home.h
         gadgetron_home.cpp
-        Config.cpp Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h Builders.cpp Builders.h)
+        Config.cpp Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h Builders.cpp Builders.h Query.cpp Query.h gadgetron_system_info.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core

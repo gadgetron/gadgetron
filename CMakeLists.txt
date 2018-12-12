@@ -276,6 +276,11 @@ if (USE_CUDA)
 find_package(CUDA_advanced)
 endif()
 if (CUDA_FOUND AND USE_CUDA)
+
+  if (NOT CUDA_cublas_device_LIBRARY)
+    list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES CUDA_cublas_device_LIBRARY-NOTFOUND)
+  endif()
+
   add_definitions(-DUSE_CUDA)
   set( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )

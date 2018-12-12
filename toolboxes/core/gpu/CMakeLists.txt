@@ -55,11 +55,10 @@ target_link_libraries(gadgetron_toolbox_gpucore
 
 
 target_include_directories(
-        gadgetron_toolbox_gpucore
-        PUBLIC
+  gadgetron_toolbox_gpucore
+  PUBLIC
   ${CUDA_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 install(TARGETS gadgetron_toolbox_gpucore DESTINATION lib COMPONENT main)
