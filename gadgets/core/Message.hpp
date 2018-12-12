@@ -107,7 +107,7 @@ namespace Gadgetron::Core {
     }
 
     template<class ...REST>
-    bool convertible_to(const Message &message) {
+    std::enable_if_t<(sizeof...(REST) > 1), bool> convertible_to(const Message &message) {
         if (typeid(message) == typeid(MessageTuple)) {
             return gadgetron_detail::convertible_to_impl<REST...>(static_cast<const MessageTuple&>(message));
         }
@@ -121,7 +121,7 @@ namespace Gadgetron::Core {
     }
 
     template<class ...ARGS>
-    std::tuple<std::unique_ptr<ARGS>...> force_unpack(std::unique_ptr<Message> &message) {
+    std::enable_if_t<(sizeof...(ARGS) > 1),std::tuple<std::unique_ptr<ARGS>...>> force_unpack(std::unique_ptr<Message> &message) {
         return gadgetron_detail::message_to_tuple<ARGS...>(*message);
     }
 

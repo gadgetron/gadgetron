@@ -12,6 +12,7 @@
 
 #include "Connection.h"
 
+#include "writers/ResponseWriter.h"
 #include "Response.h"
 #include "Builders.h"
 #include "Reader.h"
@@ -55,9 +56,10 @@ namespace {
         return std::string(buffer);
     }
 
+    template<class T>
     std::string read_string_from_stream(std::istream &stream) {
 
-        auto n = read_t<uint32_t>(stream);
+        auto n = read_t<T>(stream);
         auto buffer = std::make_unique<char[]>(n);
 
         stream.read(buffer.get(), n);
@@ -112,7 +114,7 @@ namespace {
         ) : promises {config_promise, raw_config_promise} {}
 
         void handle(std::istream &stream) override {
-            std::stringstream config_stream(read_string_from_stream(stream));
+            std::stringstream config_stream(read_string_from_stream<uint32_t>(stream));
 
             promises.config.set_value(parse_config(config_stream));
             promises.string.set_value(std::move(config_stream));
@@ -130,7 +132,7 @@ namespace {
         explicit HeaderHandler(std::promise<Header> &header_promise) : promise(header_promise) {}
 
         void handle(std::istream &stream) override {
-            std::string raw_header(read_string_from_stream(stream));
+            std::string raw_header(read_string_from_stream<uint32_t>(stream));
 
             ISMRMRD::IsmrmrdHeader header;
             ISMRMRD::deserialize(raw_header.c_str(), header);
@@ -169,7 +171,7 @@ namespace {
 
             auto reserved = read_t<uint64_t>(stream);
             auto corr_id  = read_t<uint64_t>(stream);
-            auto query    = read_string_from_stream(stream);
+            auto query    = read_string_from_stream<uint64_t>(stream);
 
             if (reserved) {
                 throw std::runtime_error("Unsupported value in reserved bytes.");
@@ -181,6 +183,8 @@ namespace {
         }
 
         std::string get_response(const std::string &query) {
+
+            GDEBUG_STREAM("Processing query: " << query);
 
             for (auto &handler : handlers) {
                 if (handler->accepts(query)) {
@@ -319,8 +323,12 @@ namespace {
     void ConnectionImpl::process_output() {
         GDEBUG_STREAM("Output thread running.");
 
-        auto writer_future = this->promises.writers.get_future();
-        auto writers = writer_future.get();
+//        auto writer_future = this->promises.writers.get_future();
+//        auto writers = writer_future.get();
+
+        auto writers = std::vector{
+            std::make_unique<Writers::ResponseWriter>()
+        };
 
         std::shared_ptr<InputChannel<Message>> output = this->channels.output;
 

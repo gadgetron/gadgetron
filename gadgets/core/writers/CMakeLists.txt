@@ -1,5 +1,5 @@
 
-add_library(gadgetron_core_writers SHARED ImageWriter.cpp ImageWriter.h)
+add_library(gadgetron_core_writers SHARED ImageWriter.cpp ImageWriter.h ResponseWriter.cpp ResponseWriter.h)
 
 target_link_libraries(gadgetron_core_writers
         gadgetron_core
