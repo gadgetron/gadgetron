@@ -73,7 +73,7 @@ class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageReader : public Core::
         virtual std::unique_ptr<Core::Message> read(std::istream& stream) override final;
 
 
-        virtual uint16_t port() override final;
+        virtual uint16_t slot() override final;
         virtual ~GadgetIsmrmrdAcquisitionMessageReader(){};
     };
 
@@ -109,7 +109,7 @@ class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageReader : public Core::Rea
     public:
 
         virtual std::unique_ptr<Core::Message> read(std::istream& stream) override final;
-        virtual uint16_t port() override final;
+        virtual uint16_t slot() override final;
         virtual ~GadgetIsmrmrdWaveformMessageReader(){};
     };
 }

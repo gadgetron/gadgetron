@@ -16,7 +16,7 @@ namespace Gadgetron::Server {
 
         struct Reader {
             std::string dll, classname;
-            boost::optional<uint16_t> port;
+            boost::optional<uint16_t> slot;
         };
 
         struct Writer {

@@ -31,7 +31,7 @@ namespace Gadgetron::Server {
                     auto channel = std::make_shared<MessageChannel>();
 
                     threads.emplace_back(
-                            [&](auto input_channel, auto output_channel) {
+                            [this,node_index](auto input_channel, auto output_channel) {
                                 nodes[node_index]->process(input_channel, output_channel);
                             },
                             current_input,
@@ -79,8 +79,20 @@ namespace Gadgetron::Server {
     }
 
     std::vector<std::unique_ptr<Gadgetron::Core::Writer>>
-    Builder::build_writers(const std::vector<Config::Writer> &writers) {
-        return std::vector<std::unique_ptr<Writer>>();
+    Builder::build_writers(const std::vector<Config::Writer> &writer_configs) {
+
+        std::vector<std::unique_ptr<Gadgetron::Core::Writer>> writers;
+        for (auto &writer_config : writer_configs) {
+            auto library = load_library(writer_config.dll);
+            auto factory = library.get_alias<std::unique_ptr<Writer>(void)>(
+                    "writer_factory_export_" + writer_config.classname);
+
+            auto writer= factory();
+
+            writers.emplace_back( std::move(writer));
+        }
+
+        return std::move(writers);
     }
 
     std::vector<std::pair<uint16_t, std::unique_ptr<Gadgetron::Core::Reader>>>
@@ -95,8 +107,8 @@ namespace Gadgetron::Server {
 
             auto reader = factory();
 
-            uint16_t port = reader_config.port.value_or(reader->port());
-            readers.emplace_back(port, std::move(reader));
+            uint16_t slot = reader_config.slot.value_or(reader->slot());
+            readers.emplace_back(slot, std::move(reader));
         }
 
         return std::move(readers);

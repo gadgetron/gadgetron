@@ -225,15 +225,15 @@ namespace {
 
         Config::Reader parse_reader(const pugi::xml_node &reader_node) {
 
-            std::string port_str = reader_node.child_value("port");
+            std::string slot_str = reader_node.child_value("slot");
 
-            boost::optional<uint16_t> port = boost::none;
-            if (!port_str.empty())
-                port = static_cast<uint16_t>(std::stoi(port_str));
+            boost::optional<uint16_t> slot = boost::none;
+            if (!slot_str.empty())
+                slot = static_cast<uint16_t>(std::stoi(slot_str));
 
             return Config::Reader{reader_node.child_value("dll"),
                                   reader_node.child_value("classname"),
-                                  port};
+                                  slot};
         }
 
         std::vector<Config::Reader> parse_readers(const pugi::xml_node &reader_root) {
@@ -251,7 +251,7 @@ namespace {
 
         std::vector<Config::Writer> parse_writers(const pugi::xml_node &writer_root) {
             std::vector<Config::Writer> writers;
-            for (const auto &node : writer_root.children("reader")) {
+            for (const auto &node : writer_root.children("writer")) {
                 writers.push_back(parse_writer(node));
             }
             return writers;

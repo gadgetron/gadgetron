@@ -37,12 +37,12 @@ namespace {
         RESPONSE    = 7
     };
 
-    template <class T>
+    template<class T>
     void read_into(std::istream &stream, T &t) {
-        stream.read(reinterpret_cast<char*>(&t), sizeof(t));
+        stream.read(reinterpret_cast<char *>(&t), sizeof(t));
     }
 
-    template <class T>
+    template<class T>
     T read_t(std::istream &stream) {
         T t;
         read_into(stream, t);
@@ -93,6 +93,7 @@ namespace {
             promises.config.set_value(parse_config(config_stream));
             promises.string.set_value(std::move(config_stream));
         }
+
 
     private:
         struct {
@@ -148,6 +149,7 @@ namespace {
         void handle(std::istream &stream) override {
             closed = true;
         }
+
     private:
         bool &closed;
     };
@@ -199,14 +201,13 @@ namespace {
     class ReaderHandler : public Handler {
     public:
         ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel)
-            : reader(std::move(reader))
-            , channel(std::move(channel))
-             {}
+                : reader(std::move(reader)), channel(std::move(channel)) {}
 
         void handle(std::istream &stream) override {
             channel->push_message(reader->read(stream));
         }
 
+        virtual ~ReaderHandler() {};
         std::unique_ptr<Reader> reader;
         std::shared_ptr<MessageChannel> channel;
     };
@@ -215,6 +216,7 @@ namespace {
     // --------------------------------------------------------------------- //
 
     // --------------------------------------------------------------------- //
+
 
 
     class ConnectionImpl : public Connection, public std::enable_shared_from_this<ConnectionImpl> {
@@ -322,17 +324,26 @@ namespace {
 
         std::shared_ptr<InputChannel<Message>> output = this->channels.output;
 
-        for (std::unique_ptr<Message> message : *output) {
+//        for (std::unique_ptr<Message> message : *output) {
+        try {
+            while (true) {
+                auto message = output->pop();
+                GDEBUG_STREAM("Ptr " << message.get() << std::endl);
+                GDEBUG_STREAM("Writer got a: " << typeid(*message).name() << std::endl);
+                auto writer = std::find_if(writers.begin(), writers.end(),
+                                           [&](auto &writer) { return writer->accepts(*message); }
+                );
 
-            auto writer = std::find_if(writers.begin(), writers.end(),
-                    [&](auto &writer) { return writer->accepts(*message); }
-            );
 
-            if (writer != writers.end()) {
-                (*writer)->write(*stream, std::move(message));
+                if (writer != writers.end()) {
+                    (*writer)->write(*stream, std::move(message));
+                }
             }
+        } catch (ChannelClosedError err) {
+
         }
     }
+
 
     void ConnectionImpl::start_stream(std::future<Config> config_future, std::future<Header> header_future) {
 
@@ -343,7 +354,7 @@ namespace {
         Context::Header header = header_future.get();
         Context context{header, paths};
 
-        auto stream = builder.build_stream(config.stream,context);
+        auto stream = builder.build_stream(config.stream, context);
 
         stream->process(channels.input, channels.output);
     }
@@ -355,22 +366,23 @@ namespace {
 
         auto readers = builder.build_readers(config.readers);
 
-        for (auto& reader_pair : readers){
-            handlers.emplace(reader_pair.first, std::make_unique<ReaderHandler>(std::move(reader_pair.second), channels.input));
+        for (auto &reader_pair : readers) {
+            handlers.emplace(reader_pair.first,
+                             std::make_unique<ReaderHandler>(std::move(reader_pair.second), channels.input));
         }
         this->promises.readers.set_value(std::move(handlers));
     }
 
     void ConnectionImpl::initialize_writers(const Config &config) {
+        this->promises.writers.set_value(builder.build_writers(config.writers));
 
-
-        // TODO: Writers
     }
 
 
 };
 
-std::shared_ptr<Connection> Connection::create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream>& stream) {
+std::shared_ptr<Connection>
+Connection::create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream) {
 
     auto connection = std::make_shared<ConnectionImpl>(paths, stream);
     connection->start();

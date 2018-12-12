@@ -37,7 +37,7 @@ namespace Gadgetron::Core::Readers {
         return std::make_unique<Core::MessageTuple>(std::move(messages));
     }
 
-    uint16_t AcquisitionReader::port() {
+    uint16_t AcquisitionReader::slot() {
         return 1008;
     }
 
