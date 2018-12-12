@@ -8,7 +8,7 @@ namespace Gadgetron::Server::Query {
 
     class Handler {
     public:
-        ~Handler() = default;
+        virtual ~Handler() = default;
 
         virtual bool accepts(const std::string &query) = 0;
         virtual std::string handle(const std::string &query) = 0;

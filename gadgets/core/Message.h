@@ -118,11 +118,11 @@ namespace Gadgetron {
         };
 
 
-         template<class ...REST>
-         bool convertible_to(const Message &message);
-
-         template<class ...ARGS>
-         std::tuple<std::unique_ptr<ARGS>...> unpack(std::unique_ptr<Message> &message);
+//         template<class ...REST>
+//         bool convertible_to(const Message &message);
+//
+//         template<class ...ARGS>
+//         std::tuple<std::unique_ptr<ARGS>...> unpack(std::unique_ptr<Message> &message);
     }
 }
 

@@ -15,6 +15,7 @@ add_executable(gadgetron
 
 target_link_libraries(gadgetron
         gadgetron_core
+        gadgetron_core_writers
         gadgetron_toolbox_log
         pugixml
         boost
