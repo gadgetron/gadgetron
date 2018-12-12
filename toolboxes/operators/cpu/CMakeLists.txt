@@ -28,13 +28,15 @@ set(cpu_operator_header_files
     twoParaExpDecayOperator.h 
     twoParaExpRecoveryOperator.h 
     threeParaExpRecoveryOperator.h
+    hoMotionCompensation2DTOperator.h
     )
 
 set(cpu_operator_src_files 
     hoSPIRITOperator.cpp 
     hoSPIRIT2DOperator.cpp 
     hoSPIRIT2DTOperator.cpp 
-    hoSPIRIT2DTDataFidelityOperator.cpp 
+    hoSPIRIT2DTDataFidelityOperator.cpp
+    hoMotionCompensation2DTOperator.cpp
     hoSPIRIT3DOperator.cpp 
     hoWaveletOperator.cpp 
     hoWavelet1DOperator.cpp 

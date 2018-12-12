@@ -94,7 +94,7 @@ namespace Gadgetron {
 
         private:
 
-            template<class T> static std::unique_ptr<Message> make_message(T&& input){
+            template<class T> static std::unique_ptr<Message> make_message(std::unique_ptr<T>&& input){
                 return std::make_unique<TypedMessage<T>>(std::move(input));
             }
 
