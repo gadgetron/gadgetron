@@ -2,6 +2,7 @@
 
 #include "GadgetContainerMessage.h"
 #include <boost/optional.hpp>
+#include <boost/hana.hpp>
 
 namespace Gadgetron::Core {
 
@@ -16,100 +17,103 @@ namespace Gadgetron::Core {
 
         namespace gadgetron_detail {
 
-            template<class ... ARGS>
-            struct count_non_optional;
+            namespace hana = boost::hana;
 
-            template<>
-            struct count_non_optional<>{
-                static constexpr size_t value = 0;
-            };
+              template<class T>
+              constexpr bool is_optional(hana::basic_type<T> const&){
+                  return true;
+              }
 
-            template<class T, class ...ARGS>
-            struct count_non_optional<T,ARGS...>{
-                static constexpr size_t value = count_non_optional<ARGS...>::value + 1;
-            };
-
-            template<class T, class ...ARGS>
-            struct count_non_optional<boost::optional<T>,ARGS...>{
-                static constexpr size_t value = count_non_optional<ARGS...>::value + 1;
-            };
-
-
-            template<unsigned int I, class ...ARGS>
-            struct tuple_converter;
-
-            template<unsigned int I>
-            struct tuple_converter<I> {
-                static bool accept(const MessageTuple&){
-                    return true;
-                }
-            };
+            template<class T>
+            constexpr auto is_optional(hana::basic_type<boost::optional<T>> const&){
+                return hana::bool_c<true>;
+            }
 
 
 
-            template<unsigned int I, class T, class ...REST>
-            struct tuple_converter<I,T,REST...> {
-                static bool accept(const MessageTuple &messagetuple) {
-                    auto &ptr = messagetuple.messages()[I];
-                    if (typeid(*ptr) == typeid(T)) {
-                        return tuple_converter< I + 1, REST...>::accept(messagetuple);
-                    }
-                    return false;
-                }
-            };
-
-            template<unsigned int I, class T, class ...REST>
-            struct tuple_converter<I,boost::optional<T>,REST...> {
-                static bool accept(const MessageTuple &messagetuple) {
-                    auto &ptr = messagetuple.messages()[I];
-                    if (typeid(*ptr) == typeid(T)) {
-                        return tuple_converter< I + 1, REST...>::accept(messagetuple);
-                    }
-                    return tuple_converter<I,REST...>::accept(messagetuple);
-                }
-            };
 
 
+            template<class T, class Iterator>
+            auto convertible(const hana::basic_type<T> &, Iterator it) {
+                if (typeid(TypedMessage < T > ) == typeid(*it))
+                    return hana::make_tuple(true, ++it);
+                return hana::make_tuple(false, ++it);
+            }
 
-            template<class ...ARGS>
-            bool convertible_to_impl(const MessageTuple &messageTuple) {
-                if (count_non_optional<ARGS...>::value <= messageTuple.messages().size()) {
-                    return tuple_converter<0, ARGS...>::accept(messageTuple);
+            template<class T, class Iterator>
+            auto convertible(const hana::basic_type<boost::optional<T>> &, Iterator it) {
+                if (typeid(TypedMessage < T > ) == typeid(*it))
+                    return hana::make_tuple(true, ++it);
+                return hana::make_tuple(true, it);
+            }
+
+            template<class TYPES>
+            bool convertible_to_impl(const TYPES &types, const MessageTuple &messageTuple) {
+                using namespace hana::literals;
+                if (hana::count_if(types, [](auto a){ return hana::not_(is_optional(a));}) <= messageTuple.messages().size()) {
+                    auto val = hana::fold_left(types,hana::make_tuple(true,messageTuple.messages().begin()),[&](auto tuple, const auto& specific_type ){
+                        if (tuple[1_c] == messageTuple.messages().end())
+                            return tuple;
+                        auto result =  convertible(specific_type,tuple[1_c]);
+                        return hana::make_tuple(tuple[0_c] && result[0_c],result[1_c]);
+                    });
+                    return val[0_c];
                 }
 
                 return false;
             }
 
             template<class T>
-            std::unique_ptr<T> reinterpret_message(std::unique_ptr<Message> &message) {
-                return static_cast<TypedMessage<T> *>(message.get())->take_data();
+            T* reinterpret_message(std::unique_ptr<Message> &message) {
+                return static_cast<TypedMessage<T> *>(message.get())->take_data().release();
             }
 
-            template<class ...ARGS>
-            struct tuple_maker {
-                template<size_t ...S>
-                static auto from_messages(std::vector<std::unique_ptr<Message>> &messages, std::index_sequence<S...>) {
-                    return std::make_tuple(reinterpret_message<ARGS>(messages[S])...);
-                }
-            };
 
-            template<class ...ARGS, typename Indices = std::make_index_sequence<sizeof...(ARGS)>>
-            std::tuple<std::unique_ptr<ARGS>...> messageTuple_to_tuple(MessageTuple &messageTuple) {
+            template<class T, class Iterator>
+            auto convert(const hana::basic_type<T> &, Iterator it) {
+                return hana::make_tuple(reinterpret_message<T>(*it), ++it);
+            }
+
+            template<class T, class Iterator>
+            auto convert(const hana::basic_type<boost::optional<T>> &, Iterator it) {
+                if (typeid(TypedMessage < T > ) == typeid(*it)) {
+                    auto content = std::unique_ptr<T>(reinterpret_message<T>(*it));
+                    return hana::make_tuple(new boost::optional<T>(std::move(*content)),it);
+                }
+                return hana::make_tuple(new boost::optional<T>(boost::none), it);
+            }
+
+
+            template<class TYPES>
+            auto messageTuple_to_tuple(const TYPES &types, MessageTuple &messageTuple) {
+
+                using namespace hana::literals;
                 auto messages = messageTuple.take_messages();
-                return tuple_maker<ARGS...>::from_messages(messages, Indices{});
+                auto result = hana::fold_left(types, hana::make_tuple(hana::make_tuple(),messages.begin()),
+                [](auto tuple,auto& specific_type ){
+                    auto result = convert(specific_type,tuple[1_c]);
+                    return hana::make_tuple(hana::append(tuple[0_c],result[0_c]), result[1_c]);
+                });
+
+                return hana::unpack(result[0_c],[](auto ...xs){
+                    return std::make_tuple(std::unique_ptr<std::remove_pointer_t<decltype(xs)>>(xs)...);
+                });
+
+
             }
 
             template<class ...ARGS>
             std::tuple<std::unique_ptr<ARGS>...> message_to_tuple(Message &message) {
-                return gadgetron_detail::messageTuple_to_tuple<ARGS...>(static_cast<MessageTuple&>(message));
+                return gadgetron_detail::messageTuple_to_tuple(hana::tuple_t<ARGS...>,static_cast<MessageTuple&>(message));
             }
         }
     }
 
-    template<class ...REST>
+    template<class ...ARGS>
     bool convertible_to(const Message &message) {
         if (typeid(message) == typeid(MessageTuple)) {
-            return gadgetron_detail::convertible_to_impl<REST...>(static_cast<const MessageTuple&>(message));
+            return gadgetron_detail::convertible_to_impl(boost::hana::tuple_t<ARGS...>,
+                                                         static_cast<const MessageTuple &>(message));
         }
 
         return false;
