@@ -3,7 +3,7 @@
 
 void Gadgetron::Core::Writers::ResponseWriter::serialize(
         std::ostream &stream,
-        std::unique_ptr<Gadgetron::Core::Response> &&response
+        std::unique_ptr<Gadgetron::Core::Response> response
 ) {
     uint16_t message_id = 7;
     uint64_t correlation_id = response->correlation_id;

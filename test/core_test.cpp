@@ -77,3 +77,23 @@ TEST(TypeTests,optionaltype2){
         EXPECT_TRUE(convertible);
     }
 }
+
+
+TEST(TypeTests,converttype){
+
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel<Message>& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+
+    outputChannel.push(std::make_unique<std::string>("hello"),std::make_unique<std::string>("world"));
+
+    auto message = inputChannel.pop();
+
+    auto pack = unpack<std::string,std::string>(std::move(message));
+
+    EXPECT_EQ(*std::get<0>(pack),"hello");
+}

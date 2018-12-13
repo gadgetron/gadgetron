@@ -218,7 +218,7 @@ namespace {
             channel->push_message(reader->read(stream));
         }
 
-        virtual ~ReaderHandler() {};
+        virtual ~ReaderHandler() = default;
         std::unique_ptr<Reader> reader;
         std::shared_ptr<MessageChannel> channel;
     };

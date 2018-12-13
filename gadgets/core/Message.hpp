@@ -74,7 +74,8 @@ namespace Gadgetron::Core {
 
             template<class T, class Iterator>
             auto convert(const hana::basic_type<T> &, Iterator it, Iterator end_it) {
-                return hana::make_tuple(reinterpret_message<T>(**it), ++it);
+                auto val = reinterpret_message<T>(**it);
+                return hana::make_tuple(val, ++it);
             }
 
             template<class T, class Iterator>
@@ -144,21 +145,22 @@ namespace Gadgetron::Core {
 
 
     template<class T>
-    std::unique_ptr<T> force_unpack(std::unique_ptr<Message> &message) {
+    std::unique_ptr<T> force_unpack(std::unique_ptr<Message> message) {
         return std::unique_ptr<T>(gadgetron_detail::reinterpret_message<T>(*message));
     }
 
     template<class ...ARGS>
-    std::tuple<std::unique_ptr<ARGS>...> unpack(std::unique_ptr<Message> &message) {
+    std::enable_if_t<(sizeof...(ARGS) > 1),std::tuple<std::unique_ptr<ARGS>...>> unpack(std::unique_ptr<Message> message) {
         if (convertible_to<ARGS...>(*message)) {
             return force_unpack<ARGS...>(message);
         }
+        return std::tuple<std::unique_ptr<ARGS>...>();
     }
 
     template<class T>
-    std::unique_ptr<T> unpack(std::unique_ptr<Message> &message) {
+    std::unique_ptr<T> unpack(std::unique_ptr<Message>&& message) {
         if (convertible_to<T>(*message)) {
-            return gadgetron_detail::reinterpret_message<T>(message);
+            return force_unpack<T>(std::move(message));
         }
         return std::unique_ptr<T>();
 
