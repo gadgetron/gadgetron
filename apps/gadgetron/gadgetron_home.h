@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 
 namespace Gadgetron {
-    boost::filesystem::path EXPORTGADGETBASE get_gadgetron_home();
+    [[deprecated]] boost::filesystem::path EXPORTGADGETBASE get_gadgetron_home();
 }
 
 #endif //GADGETRON_GADGETRON_HOME_H

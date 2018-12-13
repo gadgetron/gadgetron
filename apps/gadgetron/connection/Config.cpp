@@ -14,7 +14,7 @@
 
 #include "Config.h"
 
-using namespace Gadgetron::Server;
+using namespace Gadgetron::Server::Connection;
 
 namespace {
 
@@ -237,7 +237,7 @@ namespace {
         }
 
         std::vector<Config::Reader> parse_readers(const pugi::xml_node &reader_root) {
-            std::vector<Config::Reader> readers;
+            std::vector<Config::Reader> readers{};
             for (const auto &node : reader_root.children("reader")) {
                 readers.push_back(parse_reader(node));
             }
@@ -250,7 +250,7 @@ namespace {
         }
 
         std::vector<Config::Writer> parse_writers(const pugi::xml_node &writer_root) {
-            std::vector<Config::Writer> writers;
+            std::vector<Config::Writer> writers{};
             for (const auto &node : writer_root.children("writer")) {
                 writers.push_back(parse_writer(node));
             }
@@ -289,7 +289,7 @@ namespace {
         LegacySource legacy_source;
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node& gadget_node){
-            std::vector<Config::Gadget> gadgets;
+            std::vector<Config::Gadget> gadgets{};
             for (const auto& node : gadget_node.children("gadget")){
                 gadgets.push_back(parse_gadget(node));
             }
@@ -356,7 +356,7 @@ namespace {
             auto branch = parse_branchnode(parallel_node.child("branch"));
             auto merge = parse_mergenode(parallel_node.child("merge"));
 
-            std::vector<Config::Stream> streams;
+            std::vector<Config::Stream> streams{};
             for (const auto& stream_node : parallel_node.children("stream")){
                 streams.push_back(parse_stream(stream_node));
             }
@@ -381,7 +381,7 @@ namespace {
     }
 }
 
-namespace Gadgetron::Server {
+namespace Gadgetron::Server::Connection {
 
     Config parse_config(std::istream &stream) {
 

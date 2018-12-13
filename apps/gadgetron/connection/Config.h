@@ -5,7 +5,7 @@
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
 
-namespace Gadgetron::Server {
+namespace Gadgetron::Server::Connection {
 
     struct Config {
 
