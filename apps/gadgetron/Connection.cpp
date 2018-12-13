@@ -325,11 +325,11 @@ namespace {
     void ConnectionImpl::process_output() {
         GDEBUG_STREAM("Output thread running.");
 
-//        auto writer_future = this->promises.writers.get_future();
-//        auto writers = writer_future.get();
+        auto writer_future = this->promises.writers.get_future();
+        auto writers = writer_future.get();
 
-        auto writers = std::vector<std::unique_ptr<Writer>>();
-        writers.push_back(std::make_unique<Writers::ResponseWriter>());
+//        auto writers = std::vector<std::unique_ptr<Writer>>();
+//        writers.push_back(std::make_unique<Writers::ResponseWriter>());
 
         std::shared_ptr<InputChannel<Message>> output = this->channels.output;
 

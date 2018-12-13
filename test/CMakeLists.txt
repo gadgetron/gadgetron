@@ -25,13 +25,14 @@ set(test_src_files tests.cpp
       image_morphology_test.cpp 
       pattern_recognition_test.cpp 
       cmr_mapping_test.cpp
-      node_discovery_test.cpp
+#      node_discovery_test.cpp
       hoNDArray_linalg_test.cpp
+      core_test.cpp
       )
-
-if (PYTHONLIBS_FOUND)
-    set(test_src_files ${test_src_files} python_converter_test.cpp )
-endif ()
+#
+#if (PYTHONLIBS_FOUND)
+#    set(test_src_files ${test_src_files} python_converter_test.cpp )
+#endif ()
 
 if ( CUDA_FOUND )
 
@@ -61,6 +62,8 @@ if ( CUDA_FOUND )
         )
 endif()
     target_link_libraries(test_all
+        gadgetron_core
+
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpucore_math
     gadgetron_toolbox_cpufft
@@ -80,14 +83,14 @@ endif()
     ${GTEST_LIBRARIES}
     )
 
-if (PYTHONLIBS_FOUND)
-    target_link_libraries(test_all 
-        gadgetron_toolbox_python
-        boost
-        ${ISMRMRD_LIBRARIES}
-        ${PYTHON_LIBRARIES}
-        )
-endif ()
+#if (PYTHONLIBS_FOUND)
+#    target_link_libraries(test_all
+#        gadgetron_toolbox_python
+#        boost
+#        ${ISMRMRD_LIBRARIES}
+#        ${PYTHON_LIBRARIES}
+#        )
+#endif ()
 
 
 add_test(test_all test_all)

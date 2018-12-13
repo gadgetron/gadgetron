@@ -133,13 +133,12 @@ namespace Gadgetron::Core {
     namespace {
         namespace gadgetron_detail {
 
-            template<class T>
-            std::unique_ptr<TypedMessage < T>>
-            make_message(std::unique_ptr<T>
-            && ptr) {
-            return std::make_unique<TypedMessage < T>>(
-            std::move(ptr)
-            );
+        template<class T>
+        std::unique_ptr<TypedMessage<T>>
+        make_message(std::unique_ptr<T> && ptr) {
+                return std::make_unique<TypedMessage < T>>(
+                        std::move(ptr)
+                        );
         }
 
         template<class ...ARGS>
@@ -182,7 +181,6 @@ std::unique_ptr<T> TypedInputChannel<T>::pop() {
 
     return force_unpack<T>(message);
 }
-
 
 
 template<class ...ARGS>
