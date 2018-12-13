@@ -27,19 +27,14 @@ namespace Gadgetron {
     void LegacyGadgetNode::process(
             std::shared_ptr<Core::InputChannel<Core::Message>> in,
             std::shared_ptr<Core::OutputChannel> out) {
-        try {
-            gadget->next(std::make_shared<ChannelAdaptor>(out));
 
-            //              for (auto message : *in ) {
-            while (true) {
-                auto message = in->pop();
-//                 GDEBUG_STREAM("Message_ptr " << message.get() <<  std::endl);
-                 //GDEBUG_STREAM("Gadget_ptr " <<  gadget.get() << std::endl);
-                gadget->process(message->to_container_message());
-            }
-        } catch (Core::ChannelClosedError err) {
-            gadget->close();
-            out->close();
+        gadget->next(std::make_shared<ChannelAdaptor>(out));
+
+        for (auto message : *in) {
+            gadget->process(message->to_container_message());
         }
+        gadget->close();
+        out->close();
     }
+
 }  // namespace Gadgetron

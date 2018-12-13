@@ -64,6 +64,8 @@ namespace Gadgetron {
             return "";
         }
 
+        virtual ~GadgetPropertyBase() = default;
+
     protected:
         std::string name_;
         std::string type_str_;
@@ -261,6 +263,7 @@ namespace Gadgetron {
         virtual bool within_limits(T &v) = 0;
 
         virtual const char *limits_description() = 0;
+        virtual ~GadgetPropertyLimits() = default;
     };
 
     template<typename T>

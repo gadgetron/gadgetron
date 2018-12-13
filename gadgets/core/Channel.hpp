@@ -7,7 +7,7 @@ namespace Gadgetron::Core {
     class InputChannel<ARGS...>::Iterator {
     public:
         Iterator(InputChannel<ARGS...> *c) : channel(c) {
-            this->operator*();
+            this->operator++();
         }
 
         Iterator() : channel(nullptr) {}
@@ -43,7 +43,7 @@ namespace Gadgetron::Core {
     class InputChannel<T>::Iterator {
     public:
         Iterator(InputChannel<T> *c) : channel(c) {
-            this->operator*();
+            this->operator++();
         }
 
         Iterator() : channel(nullptr) {}

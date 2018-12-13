@@ -10,13 +10,13 @@ namespace {
     using namespace Gadgetron::Core;
 
     template<class T>
-    class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, boost::optional<ISMRMRD::MetaContainer>, hoNDArray<T>> {
+class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, boost::optional<ISMRMRD::MetaContainer>> {
     public:
         void serialize(
                 std::ostream &stream,
                 std::unique_ptr<ISMRMRD::ImageHeader> &&header,
-                std::unique_ptr<boost::optional<ISMRMRD::MetaContainer>> &&meta,
-                std::unique_ptr<hoNDArray<T>> &&data
+                std::unique_ptr<hoNDArray<T>> &&data,
+                std::unique_ptr<boost::optional<ISMRMRD::MetaContainer>> &&meta
         ) override {
 
             uint16_t message_id = 1022;
@@ -45,7 +45,11 @@ namespace {
         std::make_shared<TypedImageWriter<float>>(),
         std::make_shared<TypedImageWriter<double>>(),
         std::make_shared<TypedImageWriter<std::complex<float>>>(),
-        std::make_shared<TypedImageWriter<std::complex<double>>>()
+        std::make_shared<TypedImageWriter<std::complex<double>>>(),
+        std::make_shared<TypedImageWriter<unsigned short>>(),
+        std::make_shared<TypedImageWriter<short>>(),
+        std::make_shared<TypedImageWriter<int>>(),
+         std::make_shared<TypedImageWriter<unsigned int>>()
     };
 }
 

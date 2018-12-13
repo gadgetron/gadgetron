@@ -35,12 +35,14 @@ namespace {
         virtual std::string value(std::set<std::string> &visited) {
             return value();
         };
+        virtual ~Property() = default;
     };
 
     class PropertyBuilder {
     public:
         virtual bool accepts(const pugi::xml_node &node) const = 0;
         virtual std::unique_ptr<Property> build(const pugi::xml_node &node) const = 0;
+        virtual ~PropertyBuilder() = default;
     };
 
     using Location = std::string;
@@ -56,6 +58,8 @@ namespace {
         virtual bool is_reference(const pugi::xml_node &node) {
             return value(node).find('@') != std::string::npos;
         };
+
+        virtual ~Source() = default;
     };
 
     class LegacySource : public Source {
@@ -169,6 +173,8 @@ namespace {
     class Parser {
     public:
         virtual Config parse(const pugi::xml_document &) = 0;
+
+        virtual ~Parser() = default;
 
     protected:
         PropertyMap referenceable_properties;

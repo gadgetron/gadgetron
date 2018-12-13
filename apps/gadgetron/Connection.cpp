@@ -29,13 +29,13 @@ namespace {
     using Header = Gadgetron::Core::Context::Header;
 
     enum message_id : uint16_t {
-        FILENAME    = 1,
-        CONFIG      = 2,
-        HEADER      = 3,
-        CLOSE       = 4,
-        TEXT        = 5,
-        QUERY       = 6,
-        RESPONSE    = 7
+        FILENAME = 1,
+        CONFIG = 2,
+        HEADER = 3,
+        CLOSE = 4,
+        TEXT = 5,
+        QUERY = 6,
+        RESPONSE = 7
     };
 
     template<class T>
@@ -67,9 +67,15 @@ namespace {
         return std::string(buffer.get());
     }
 
+    void write_close(std::ostream& stream ){
+        auto close_message = message_id::CLOSE;
+        stream.write(reinterpret_cast<char*>(&close_message),sizeof(close_message));
+    }
+
     class Handler {
     public:
         virtual void handle(std::istream &stream) = 0;
+
         virtual ~Handler() = default;
     };
 
@@ -79,11 +85,11 @@ namespace {
                 std::promise<Config> &config_promise,
                 std::promise<std::stringstream> &raw_config_promise,
                 const Context::Paths &paths)
-                : promises {config_promise, raw_config_promise}
-                , paths(paths) {}
+                : promises{config_promise, raw_config_promise}, paths(paths) {}
 
         void handle(std::istream &stream) override {
-            boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
+            boost::filesystem::path filename =
+                    paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
 
             GDEBUG_STREAM("Reading config file: " << filename << std::endl);
 
@@ -111,7 +117,7 @@ namespace {
         explicit ConfigHandler(
                 std::promise<Config> &config_promise,
                 std::promise<std::stringstream> &raw_config_promise
-        ) : promises {config_promise, raw_config_promise} {}
+        ) : promises{config_promise, raw_config_promise} {}
 
         void handle(std::istream &stream) override {
             std::stringstream config_stream(read_string_from_stream<uint32_t>(stream));
@@ -168,12 +174,11 @@ namespace {
         }
 
 
-
         void handle(std::istream &stream) override {
 
             auto reserved = read_t<uint64_t>(stream);
-            auto corr_id  = read_t<uint64_t>(stream);
-            auto query    = read_string_from_stream<uint64_t>(stream);
+            auto corr_id = read_t<uint64_t>(stream);
+            auto query = read_string_from_stream<uint64_t>(stream);
 
             if (reserved) {
                 throw std::runtime_error("Unsupported value in reserved bytes.");
@@ -230,22 +235,22 @@ namespace {
 
         using tcp = boost::asio::ip::tcp;
 
-        ConnectionImpl(Context::Paths &paths_in, std::unique_ptr<tcp::iostream>& stream_in)
-                : stream(std::move(stream_in))
-                , paths(paths_in)
-                , builder(paths_in)
-                , channels {
-                    std::make_shared<MessageChannel>(),
-                    std::make_shared<MessageChannel>()
-                } {}
+        ConnectionImpl(Context::Paths &paths_in, std::unique_ptr<tcp::iostream> &stream_in)
+                : stream(std::move(stream_in)), paths(paths_in), builder(paths_in), channels{
+                std::make_shared<MessageChannel>(),
+                std::make_shared<MessageChannel>()
+        } {}
 
         void start();
+
         void process_input();
+
         void process_output();
 
         void start_stream(std::future<Config>, std::future<Header>);
 
         void initialize_readers(const Config &config);
+
         void initialize_writers(const Config &config);
 
         std::unique_ptr<tcp::iostream> stream;
@@ -302,10 +307,10 @@ namespace {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers;
         handlers[FILENAME] = std::make_unique<ConfigFileHandler>(this->promises.config, raw_config_promise, paths);
-        handlers[CONFIG]   = std::make_unique<ConfigHandler>(this->promises.config, raw_config_promise);
-        handlers[HEADER]   = std::make_unique<HeaderHandler>(this->promises.header);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(closed);
-        handlers[QUERY]    = std::make_unique<QueryHandler>(raw_config_promise.get_future(), channels.output);
+        handlers[CONFIG] = std::make_unique<ConfigHandler>(this->promises.config, raw_config_promise);
+        handlers[HEADER] = std::make_unique<HeaderHandler>(this->promises.header);
+        handlers[CLOSE] = std::make_unique<CloseHandler>(closed);
+        handlers[QUERY] = std::make_unique<QueryHandler>(raw_config_promise.get_future(), channels.output);
 
         while (!closed) {
             auto id = read_t<uint16_t>(*stream);
@@ -333,24 +338,19 @@ namespace {
 
         std::shared_ptr<InputChannel<Message>> output = this->channels.output;
 
-//        for (std::unique_ptr<Message> message : *output) {
-        try {
-            while (true) {
-                auto message = output->pop();
-                GDEBUG_STREAM("Ptr " << message.get() << std::endl);
-                GDEBUG_STREAM("Writer got a: " << typeid(*message).name() << std::endl);
-                auto writer = std::find_if(writers.begin(), writers.end(),
-                                           [&](auto &writer) { return writer->accepts(*message); }
-                );
+        for (std::unique_ptr<Message> message : *output) {
+            auto writer = std::find_if(writers.begin(), writers.end(),
+                                       [&](auto &writer) { return writer->accepts(*message); }
+            );
 
 
-                if (writer != writers.end()) {
-                    (*writer)->write(*stream, std::move(message));
-                }
+            if (writer != writers.end()) {
+                (*writer)->write(*stream, std::move(message));
             }
-        } catch (ChannelClosedError err) {
-
         }
+        write_close(*stream);
+
+
     }
 
 

@@ -12,6 +12,7 @@ namespace Gadgetron::Core {
     template<class ...ARGS> class InputChannel {
     public:
         virtual std::tuple<std::unique_ptr<ARGS>...> pop() = 0;
+        virtual ~InputChannel() = default;
 
     public:
         class Iterator;
@@ -21,7 +22,7 @@ namespace Gadgetron::Core {
     class InputChannel<T> {
     public:
         virtual std::unique_ptr<T> pop() = 0;
-
+        virtual ~InputChannel() = default;
 
     public:
         class Iterator;
@@ -43,6 +44,7 @@ namespace Gadgetron::Core {
 
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
         virtual void close() = 0;
+        virtual ~OutputChannel() = default;
 
     public:
         class Iterator;

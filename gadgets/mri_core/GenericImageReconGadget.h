@@ -77,7 +77,7 @@ namespace Gadgetron {
         typedef Gadget1< Image2DBufferType > BaseClass;
 
         GenericImageReconGadgetBase();
-        ~GenericImageReconGadgetBase();
+        virtual ~GenericImageReconGadgetBase();
 
         /// get the 3D images from 2D buffer
         Image3DType* getImage3DFromImage2D(Image2DBufferType& ori, size_t cha, size_t slc, size_t con, size_t phs, size_t rep, size_t set, size_t ave);
