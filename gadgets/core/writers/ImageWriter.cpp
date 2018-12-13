@@ -21,7 +21,7 @@ namespace {
 
             uint16_t message_id = 1022;
             stream.write(reinterpret_cast<char *>(&message_id), sizeof(message_id));
-            stream.write(reinterpret_cast<char *>(header.get()), sizeof(header.get()));
+            stream.write(reinterpret_cast<char *>(header.get()), sizeof(*header));
 
             std::string serialized_meta;
 
