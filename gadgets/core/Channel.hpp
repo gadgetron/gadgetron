@@ -15,7 +15,7 @@ namespace Gadgetron::Core {
         Iterator &operator++() {
             try {
                 element = channel->pop();
-            } catch (ChannelClosedError err) {
+            } catch (ChannelClosed err) {
                 channel = nullptr;
             }
             return *this;
@@ -51,7 +51,7 @@ namespace Gadgetron::Core {
         Iterator &operator++() {
             try {
                 element = channel->pop();
-            } catch (ChannelClosedError err) {
+            } catch (ChannelClosed err) {
                 channel = nullptr;
             }
             return *this;

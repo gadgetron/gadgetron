@@ -7,7 +7,7 @@ namespace Gadgetron {
             std::unique_lock<std::mutex> lock(m);
             cv.wait(lock,[this](){return !this->queue.empty() || closed;});
             if (this->queue.empty()){
-                throw ChannelClosedError();
+                throw ChannelClosed();
             }
             std::unique_ptr<Message> ptr = std::move(queue.front());
             queue.pop_front();
@@ -19,7 +19,7 @@ namespace Gadgetron {
         void MessageChannel::push_message(std::unique_ptr<Message> && message ) {
             std::unique_lock<std::mutex> lock(m);
             if (closed){
-                throw ChannelClosedError();
+                throw ChannelClosed();
             }
             queue.emplace_back(std::move(message));
             cv.notify_one();

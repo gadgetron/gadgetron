@@ -100,9 +100,9 @@ namespace Gadgetron::Core {
     };
 
 
-    class ChannelClosedError : public std::runtime_error {
+    class ChannelClosed: public std::runtime_error {
     public:
-        ChannelClosedError() : std::runtime_error("Channel was closed") {};
+        ChannelClosed() : std::runtime_error("Channel was closed") {};
     };
 
 
