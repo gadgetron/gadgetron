@@ -288,7 +288,7 @@ class GadgetronClientResponseReader : public GadgetronClientMessageReader
 
         std::string response(response_length, 0);
 
-        boost::asio::read(*stream, boost::asio::buffer(response));
+        boost::asio::read(*stream, boost::asio::buffer(response.data(),response_length));
 
         std::cout << response << std::endl;
     }
