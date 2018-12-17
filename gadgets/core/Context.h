@@ -22,11 +22,8 @@ namespace Gadgetron::Core {
 
         Header header;
         Paths  paths;
-
-        void report_error(std::string message) const;
     };
 }
-
 
 
 #endif //GADGETRON_CONTEXT_H

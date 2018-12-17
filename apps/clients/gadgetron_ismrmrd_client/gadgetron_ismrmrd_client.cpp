@@ -281,7 +281,7 @@ class GadgetronClientResponseReader : public GadgetronClientMessageReader
     void read(tcp::socket *stream) override {
 
         uint64_t correlation_id = 0;
-        uint32_t response_length = 0;
+        uint64_t response_length = 0;
 
         boost::asio::read(*stream, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
         boost::asio::read(*stream, boost::asio::buffer(&response_length, sizeof(response_length)));
@@ -1216,8 +1216,8 @@ public:
 
         std::cout << "Query length: " << query_length << std::endl;
 
-        boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(reserved)));
-        boost::asio::write(*socket_, boost::asio::buffer(query, query.size()));
+        boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(query_length)));
+        boost::asio::write(*socket_, boost::asio::buffer(query));
     }
 
     void send_gadgetron_configuration_file(std::string config_xml_name) {

@@ -12,5 +12,5 @@ void Gadgetron::Core::Writers::ResponseWriter::serialize(
     stream.write(reinterpret_cast<char *>(&message_id), sizeof(message_id));
     stream.write(reinterpret_cast<char *>(&correlation_id), sizeof(correlation_id));
     stream.write(reinterpret_cast<char *>(&response_length), sizeof(response_length));
-    stream.write(response->response.c_str(), response_length);
+    stream.write(response->response.c_str(), response->response.size());
 }

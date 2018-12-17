@@ -8,7 +8,7 @@
 #include "log.h"
 
 #include "Server.h"
-#include "Connection.h"
+#include "connection/Connection.h"
 
 using namespace boost::filesystem;
 using namespace Gadgetron::Server;
@@ -19,6 +19,7 @@ Server::Server(boost::asio::io_service &io_service, const boost::program_options
 }
 
 void Server::accept() {
+    // Function accept recurses infinitely: Yes it does.
 
     stream = std::make_unique<tcp::iostream>();
     acceptor_.async_accept(
@@ -37,9 +38,8 @@ void Server::connection_handler(const boost::system::error_code &error) {
         return;
     }
 
-
     GINFO_STREAM("Accepting connection from: " << stream->rdbuf()->remote_endpoint().address());
 
     auto paths = Gadgetron::Core::Context::Paths(args_["home"].as<path>(), args_["dir"].as<path>());
-    Connection::create(paths, stream);
+    Connection::Connection::create(paths, stream);
 }

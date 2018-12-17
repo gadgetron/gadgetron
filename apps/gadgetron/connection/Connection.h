@@ -1,21 +1,18 @@
 #ifndef GADGETRON_CONNECTION_H
 #define GADGETRON_CONNECTION_H
 
-#include <boost/filesystem/path.hpp>
 #include <boost/asio.hpp>
 
 #include "Context.h"
 
-#include "log.h"
-
-namespace Gadgetron::Server {
+namespace Gadgetron::Server::Connection {
 
     class Connection {
         using tcp = boost::asio::ip::tcp;
 
     public:
-        static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream);
         virtual ~Connection() = default;
+        static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream);
     };
 }
 

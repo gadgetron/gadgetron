@@ -10,7 +10,7 @@
 #include "Context.h"
 #include "Channel.h"
 
-namespace Gadgetron::Server{
+namespace Gadgetron::Server::Connection {
 
     class Builder {
     public:

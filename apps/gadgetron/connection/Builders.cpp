@@ -4,7 +4,7 @@
 
 #include "Builders.h"
 
-namespace Gadgetron::Server {
+namespace Gadgetron::Server::Connection {
 
     using namespace Gadgetron::Core;
     using namespace boost::dll;
