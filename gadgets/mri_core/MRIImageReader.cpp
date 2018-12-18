@@ -1,7 +1,8 @@
 #include "MRIImageReader.h"
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/meta.h>
-
+#include "io/readers.h"
+#include <boost/variant.hpp>
 /*
 
 
@@ -120,150 +121,67 @@ public:
 
 namespace Gadgetron{
 
-  ACE_Message_Block* MRIImageReader::read(ACE_SOCK_Stream* stream)
-  {
+    namespace {
+        template<class T>
+        std::unique_ptr<Core::Message> combine_and_read(std::istream& stream, std::unique_ptr<ISMRMRD::ImageHeader> header, std::unique_ptr<ISMRMRD::MetaContainer> meta){
 
-    auto h = new GadgetContainerMessage< ISMRMRD::ImageHeader >();
-    
-    size_t recv_count = 0;
-    if ((recv_count = stream->recv_n(h->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
-      h->release();
-      GERROR("Failed to read ISMRMRD Image Header\n");
-      return 0;
+            using namespace Gadgetron::Core;
+            auto array = std::make_unique<hoNDArray<T>>(header->matrix_size[0],header->matrix_size[1],header->matrix_size[2],header->channels);
+            IO::read(stream,*array);
+
+            if (meta)
+                return std::make_unique<Core::MessageTuple>(std::move(header),std::move(array),std::move(meta));
+
+            return std::make_unique<Core::MessageTuple>(std::move(header),std::move(array));
+
+        }
+
+        using ISMRMRD_TYPES = boost::variant<uint16_t,int16_t,uint32_t,int32_t,float,double, std::complex<float>,std::complex<double>>;
+        static const auto ismrmrd_type_map = std::unordered_map<uint16_t,ISMRMRD_TYPES>{
+            {ISMRMRD::ISMRMRD_USHORT,   uint16_t()},
+            {ISMRMRD::ISMRMRD_SHORT,    int16_t()},
+            {ISMRMRD::ISMRMRD_INT,      int32_t()},
+            {ISMRMRD::ISMRMRD_UINT,     uint32_t()},
+            {ISMRMRD::ISMRMRD_FLOAT,    float()},
+            {ISMRMRD::ISMRMRD_DOUBLE,   double()},
+            {ISMRMRD::ISMRMRD_CXFLOAT,  std::complex<float>()},
+            {ISMRMRD::ISMRMRD_CXDOUBLE, std::complex<double>()}
+    };
+
     }
 
+
+
+  std::unique_ptr<Core::Message> MRIImageReader::read(std::istream& stream)
+  {
+      using namespace Gadgetron::Core;
+
+      auto header = std::make_unique<ISMRMRD::ImageHeader>(IO::read<ISMRMRD::ImageHeader>(stream));
     typedef unsigned long long size_t_type;
     
     //Read meta attributes
-    size_t_type meta_attrib_length;
-    if ((recv_count = stream->recv_n(&meta_attrib_length, sizeof(size_t_type))) <= 0) {
-      h->release();
-      GERROR("Failed to read length of meta attributes\n");
-      return 0;
-    }
-    
-    
-    GadgetContainerMessage<ISMRMRD::MetaContainer>* meta = 0;
+
+    auto meta_attrib_length = IO::read<size_t>(stream);
+
+    std::unique_ptr<ISMRMRD::MetaContainer> meta;
     if (meta_attrib_length>0)
     {
-      char* buffer = new char[meta_attrib_length+1];
-      if ((recv_count = stream->recv_n(buffer, meta_attrib_length)) <= 0) {
-	h->release();
-	GERROR("Failed to read meta attributes\n");
-	return 0;
-      }
+      auto buffer = std::make_unique<char[]>(meta_attrib_length+1);
 
-      meta = new GadgetContainerMessage<ISMRMRD::MetaContainer>();
+      stream.read(buffer.get(),meta_attrib_length+1);
 
-      ISMRMRD::deserialize(buffer, *(meta->getObjectPtr()));
-      
-      delete [] buffer;
-    } 
+      meta = std::make_unique<ISMRMRD::MetaContainer>();
 
-    //Read actual image data
-    char* data_ptr;
-    size_t data_size;
-    
-    size_t elements =
-      h->getObjectPtr()->matrix_size[0] *
-      h->getObjectPtr()->matrix_size[1] *
-      h->getObjectPtr()->matrix_size[2] *
-      h->getObjectPtr()->channels;
-
-    std::vector<size_t> img_dims{h->getObjectPtr()->matrix_size[0],
-	h->getObjectPtr()->matrix_size[1], h->getObjectPtr()->matrix_size[2], h->getObjectPtr()->channels};
-
-    ACE_Message_Block* data = 0;
-    try {
-      if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_USHORT)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray<uint16_t> >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(uint16_t);
-	h->cont(d);
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_SHORT)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray<int16_t> >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(int16_t);
-	h->cont(d);
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_UINT)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray<uint32_t> >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(uint32_t);
-	h->cont(d);
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_INT)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray<int32_t> >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(int32_t);
-	h->cont(d);
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_FLOAT)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray<float> >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(float);
-	h->cont(d);
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_DOUBLE)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray<double> >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(double);
-	h->cont(d);
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_CXFLOAT)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(std::complex<float>);
-	h->cont(d);
-
-      }
-      else if (h->getObjectPtr()->data_type == ISMRMRD::ISMRMRD_CXDOUBLE)
-      {
-	auto d = new GadgetContainerMessage< hoNDArray< std::complex<double> > >();
-	d->getObjectPtr()->create(img_dims);
-	data_ptr = reinterpret_cast<char*>(d->getObjectPtr()->get_data_ptr());
-	data_size = elements * sizeof(std::complex<double>);
-	h->cont(d);
-      }
-      else
-      {
-	throw std::runtime_error("Unknow data type");
-      }
-    } catch (std::runtime_error &err) {
-      GEXCEPTION(err, "Unable to create image array\n");
-      if (h) h->release();
-      if (meta) meta->release();
+      ISMRMRD::deserialize(buffer.get(), *meta);
     }
 
-    //Attach the meta data if it exists
-    h->cont()->cont(meta);
-    
-    //Now lets read the data from the socket into the array
-    if ((recv_count = stream->recv_n(data_ptr, data_size)) <= 0) {
-      h->release();
-      GERROR("Failed to read image array data\n");
-      return 0;
-    }
-    
-    return h;
+    return boost::apply_visitor([&](auto type_tag){
+        return combine_and_read<decltype(type_tag)>(stream,std::move(header),std::move(meta));
+    }, ismrmrd_type_map.at(header->data_type));
   }
 
   
-GADGETRON_READER_FACTORY_DECLARE(MRIImageReader)
-
+    uint16_t MRIImageReader::slot() {
+        return 0;
+    }
 }

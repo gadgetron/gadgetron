@@ -20,8 +20,7 @@ namespace Gadgetron
     class EXPORTGADGETSMRICORE DependencyQueryWriter : public GadgetMessageWriter
     {
     public:
-        GADGETRON_WRITER_DECLARE(DependencyQueryWriter)
-        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
+//        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
     };
 
 }

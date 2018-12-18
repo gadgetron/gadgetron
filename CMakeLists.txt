@@ -171,7 +171,7 @@ else ()
       endif()    
     endif()
   else()
-    set(CXX_STANDARDS 20 17 14 11)
+    set(CXX_STANDARDS 20 17 14 )
 
     set(CXX_STANDARD_FOUND 0)
     foreach(year ${CXX_STANDARDS})
@@ -230,6 +230,11 @@ else ()
   if (COMPILER_SUPPORT_WNON_VIRTUAL)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
   endif()
+ check_cxx_compiler_flag(-Werror=switch COMPILER_SUPPORT_SWITCH)
+  if (COMPILER_SUPPORT_SWITCH)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Werror=switch")
+  endif()
+
 endif()
 
 
