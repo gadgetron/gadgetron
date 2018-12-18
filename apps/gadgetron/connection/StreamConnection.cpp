@@ -4,9 +4,11 @@
 
 #include "StreamConnection.h"
 
+#include "Builders.h"
 #include "Handlers.h"
 
 #include "readers/Primitives.h"
+#include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
 
@@ -18,47 +20,37 @@ namespace {
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Connection::Handlers;
 
-    using Header = Gadgetron::Core::Context::Header;
-
-
-    class HeaderHandler : public Handler {
+    class ReaderHandler : public Handler {
     public:
-        explicit HeaderHandler(std::function<void(Header)> callback) : callback{callback} {}
+        ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel)
+                : reader(std::move(reader)), channel(std::move(channel)) {}
 
         void handle(std::istream &stream) override {
-            std::string raw_header(read_string_from_stream<uint32_t>(stream));
-
-            ISMRMRD::IsmrmrdHeader header;
-            ISMRMRD::deserialize(raw_header.c_str(), header);
-            callback(header);
+            channel->push_message(reader->read(stream));
         }
 
-    private:
-        std::function<void(Header)> callback;
+        std::unique_ptr<Reader> reader;
+        std::shared_ptr<MessageChannel> channel;
     };
 
-
 }
 
-StreamConnection::StreamConnection(Core::Context context, Config config, std::unique_ptr<std::iostream> stream) {
+namespace Gadgetron::Server::Connection {
 
-}
+    StreamConnection::StreamConnection(
+            Config config,
+            Context context,
+            std::unique_ptr<std::iostream> stream
+    ) : config(std::move(config)), context(std::move(context)), stream(std::move(stream)) {}
 
-void StreamConnection::start() {
+    void StreamConnection::start() {
 
-}
-
-void StreamConnection::process_input() {
-
-
-    std::unordered_map<uint16_t, std::unique_ptr<Handler>> handlers;
-    bool closed = false;
-
-     while (!closed) {
-        auto id = read_t<uint16_t>(*stream);
-        handlers.at(id)->handle(*stream);
+        GDEBUG_STREAM("HELLO, I'M SUPER ESCALATED!");
     }
 
-
-
+    std::shared_ptr<StreamConnection>
+    StreamConnection::create(Config config, Gadgetron::Core::Context context, std::unique_ptr<std::iostream> stream) {
+        return std::make_shared<StreamConnection>(std::move(config), std::move(context), std::move(stream));
+    }
 }
+

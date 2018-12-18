@@ -3,12 +3,12 @@
 
 #include <boost/asio.hpp>
 
+#include "connection/Handlers.h"
+
 #include "Context.h"
 
 namespace Gadgetron::Server::Connection {
-
-    static void start(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<boost::asio::ip::tcp::iostream> &stream);
-
+    void handle(const Gadgetron::Core::Context::Paths &paths, std::unique_ptr<std::iostream> stream);
 }
 
 
