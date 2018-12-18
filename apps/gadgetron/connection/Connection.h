@@ -7,13 +7,8 @@
 
 namespace Gadgetron::Server::Connection {
 
-    class Connection {
-        using tcp = boost::asio::ip::tcp;
+    static void start(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<boost::asio::ip::tcp::iostream> &stream);
 
-    public:
-        virtual ~Connection() = default;
-        static std::shared_ptr<Connection> create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream);
-    };
 }
 
 

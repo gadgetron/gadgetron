@@ -98,48 +98,22 @@ namespace {
     };
 };
 
-//void start_stream(const Config &config, std::future<Header> header_future) {
-//
-//    Context::Header header = header_future.get();
-//    Context context{header, paths};
-//
-//    auto stream = builder.build_stream(config.stream, context);
-//
-//    stream->process(channels.input, channels.output);
-//}
-//
-//void initialize_readers(const Config &config) {
-//
-//    std::map<uint16_t, std::unique_ptr<Handler>> handlers;
-//
-//    auto readers = builder.build_readers(config.readers);
-//
-//    for (auto &reader_pair : readers) {
-//        handlers.emplace(reader_pair.first,
-//                         std::make_unique<ReaderHandler>(std::move(reader_pair.second), channels.input));
-//    }
-//    this->promises.readers.set_value(std::move(handlers));
-//}
-//
-//void initialize_writers(const Config &config) {
-//    this->promises.writers.set_value(builder.build_writers(config.writers));
-//}
+
 
 namespace Gadgetron::Server::Connection {
 
     void ProtoConnection::start() {
         auto self = shared_from_this();
 
-        std::thread input_thread([=]() {
+        auto input_thread = std::thread ([=]() {
             self->process_input();
         });
 
-        std::thread output_thread([=]() {
+        output_thread = std::thread([=]() {
             self->process_output();
         });
 
         input_thread.detach();
-        output_thread.detach();
     };
 
 
@@ -171,31 +145,19 @@ namespace Gadgetron::Server::Connection {
     void ProtoConnection::process_output() {
         GDEBUG_STREAM("Output thread running.");
 
-//        auto writer_future = this->promises.writers.get_future();
-//        auto writers = writer_future.get();
-//
-////        auto writers = std::vector<std::unique_ptr<Writer>>();
-////        writers.push_back(std::make_unique<Writers::ResponseWriter>());
-//
-//        std::shared_ptr<InputChannel<Message>> output = this->channels.output;
-//
-////        for (std::unique_ptr<Message> message : *output) {
-//        try {
-//            while (true) {
-//                auto message = output->pop();
-//                GDEBUG_STREAM("Ptr " << message.get() << std::endl);
-//                GDEBUG_STREAM("Writer got a: " << typeid(*message).name() << std::endl);
-//                auto writer = std::find_if(writers.begin(), writers.end(),
-//                                           [&](auto &writer) { return writer->accepts(*message); }
-//                );
-//
-//
-//                if (writer != writers.end()) {
-//                    (*writer)->write(*stream, std::move(message));
-//                }
-//            }
-//        } catch (ChannelClosedError err) {
-//
-//        }
+        InputChannel<Message>& input = *channel;
+        for (auto message : input){
+            GDEBUG("Hi! Listen!\n");
+        }
+
     }
+
+    void ProtoConnection::escalate(Config config) {
+        channel->close();
+        output_thread.join();
+
+
+    }
+
+
 }

@@ -8,12 +8,9 @@
 using namespace boost::asio;
 using namespace Gadgetron::Server::Connection;
 
+using tcp = boost::asio::ip::tcp;
 
-std::shared_ptr<Connection>
-Connection::create(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream) {
-
+void Gadgetron::Server::Connection::start(Gadgetron::Core::Context::Paths &paths, std::unique_ptr<tcp::iostream> &stream) {
     auto connection = std::make_shared<ProtoConnection>(paths, stream);
     connection->start();
-
-    return connection;
 }
