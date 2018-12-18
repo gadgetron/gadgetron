@@ -23,19 +23,42 @@ namespace {
 
     class HeaderHandler : public Handler {
     public:
-        explicit HeaderHandler(std::promise<Header> &header_promise) : promise(header_promise) {}
+        explicit HeaderHandler(std::function<void(Header)> callback) : callback{callback} {}
 
         void handle(std::istream &stream) override {
             std::string raw_header(read_string_from_stream<uint32_t>(stream));
 
             ISMRMRD::IsmrmrdHeader header;
             ISMRMRD::deserialize(raw_header.c_str(), header);
-
-            promise.set_value(header);
+            callback(header);
         }
 
     private:
-        std::promise<Header> &promise;
+        std::function<void(Header)> callback;
     };
+
+
+}
+
+StreamConnection::StreamConnection(Core::Context context, Config config, std::unique_ptr<std::iostream> stream) {
+
+}
+
+void StreamConnection::start() {
+
+}
+
+void StreamConnection::process_input() {
+
+
+    std::unordered_map<uint16_t, std::unique_ptr<Handler>> handlers;
+    bool closed = false;
+
+     while (!closed) {
+        auto id = read_t<uint16_t>(*stream);
+        handlers.at(id)->handle(*stream);
+    }
+
+
 
 }
