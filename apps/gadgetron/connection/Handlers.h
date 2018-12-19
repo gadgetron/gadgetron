@@ -27,10 +27,14 @@ namespace Gadgetron::Server::Connection::Handlers {
     class QueryHandler : public Handler {
     public:
         explicit QueryHandler(std::shared_ptr<Gadgetron::Core::OutputChannel> channel);
+        QueryHandler(
+                std::shared_ptr<Gadgetron::Core::OutputChannel> channel,
+                std::map<std::string, std::string> additional_answers
+        );
 
         void handle(std::istream &stream) override;
 
-        std::map<std::string, std::function<std::string()>> handlers;
+        std::map<std::string, std::string> answers;
         std::shared_ptr<Gadgetron::Core::OutputChannel> channel;
     };
 
@@ -40,7 +44,19 @@ namespace Gadgetron::Server::Connection::Handlers {
 
         void handle(std::istream &stream) override;
 
+    private:
         std::string message;
     };
+
+    class CallbackHandler : public Handler {
+    public:
+        explicit CallbackHandler(std::function<void()> &callback);
+        void handle(std::istream &stream) override;
+
+    private:
+        std::function<void()> &callback;
+    };
+
+
 }
 

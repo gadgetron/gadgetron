@@ -197,6 +197,8 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_PARAMETER_SCRIPT                       =   3,
     GADGET_MESSAGE_CLOSE                                  =   4,
     GADGET_MESSAGE_TEXT                                   =   5,
+    GADGET_MESSAGE_QUERY                                  =   6,
+    GADGET_MESSAGE_RESPONSE                               =   7,
     GADGET_MESSAGE_INT_ID_MAX                             = 999,
     GADGET_MESSAGE_EXT_ID_MIN                             = 1000,
     GADGET_MESSAGE_ACQUISITION                            = 1001, /**< DEPRECATED */
@@ -1214,8 +1216,6 @@ public:
 
         uint64_t query_length = query.size();
 
-        std::cout << "Query length: " << query_length << std::endl;
-
         boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(query_length)));
         boost::asio::write(*socket_, boost::asio::buffer(query));
     }
@@ -1894,9 +1894,6 @@ int main(int argc, char **argv)
         con.connect(host_name,port);
 
         if (vm.count("info")) {
-
-            std::cout << "I'm totally querying! " << vm["info"].as<std::string>() << std::endl;
-
             con.send_gadgetron_info_query(vm["info"].as<std::string>());
         }
         else if (vm.count("config-local"))
