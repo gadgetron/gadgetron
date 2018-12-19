@@ -97,9 +97,8 @@ namespace Gadgetron::Server::Connection::Handlers {
         throw std::runtime_error(message);
     }
 
-    void CloseHandler::handle(std::istream &) {
-        closed = true;
-    }
+    CallbackHandler::CallbackHandler(std::function<void()> &callback) : callback(callback) {}
 
+    void CallbackHandler::handle(std::istream &stream) { callback(); }
 }
 

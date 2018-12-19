@@ -5,25 +5,28 @@
 #include "Channel.h"
 #include "Context.h"
 
+
 namespace Gadgetron::Server::Connection {
 
-    class ProtoConnection {
+    class ConfigConnection {
     public:
-        static boost::optional<Config> process(
+        using MessageChannel = Gadgetron::Core::MessageChannel;
+        using Header = Gadgetron::Core::Context::Header;
+        using Context = Gadgetron::Core::Context;
+
+        static Context process(
                 std::iostream &stream,
                 const Core::Context::Paths &paths
         );
 
     private:
-        ProtoConnection(Gadgetron::Core::Context::Paths paths, std::iostream &stream);
-        ~ProtoConnection();
-
-        using MessageChannel = Gadgetron::Core::MessageChannel;
+        ConfigConnection(Context::Paths paths, std::iostream &stream);
+        ~ConfigConnection();
 
         void process_input();
         void process_output();
 
-        std::promise<boost::optional<Config>> promise;
+        std::promise<Header> promise;
 
         std::shared_ptr<MessageChannel> channel;
         std::iostream &stream;
@@ -35,5 +38,5 @@ namespace Gadgetron::Server::Connection {
         const Gadgetron::Core::Context::Paths paths;
     };
 
-}
 
+}

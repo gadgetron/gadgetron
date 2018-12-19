@@ -40,37 +40,6 @@ namespace {
         return std::string(buffer);
     }
 
-    class HeaderHandler : public Handler {
-    public:
-        explicit HeaderHandler(
-            std::function<void(Config, Header)> &header_callback,
-            Config config
-        ) : header_callback(header_callback), config(std::move(config)) {}
-
-        void handle(std::istream &stream) override {
-            std::string raw_header(read_string_from_stream<uint32_t>(stream));
-
-            ISMRMRD::IsmrmrdHeader header{};
-
-            if (raw_header.empty()) {
-                GWARN_STREAM(
-                        "Received empty ISMRMRD header from client. " <<
-                        "This is deprecated, and only allowed for backwards compatibility. " <<
-                        "This will not be allowed in the future."
-                );
-            }
-            else {
-                ISMRMRD::deserialize(raw_header.c_str(), header);
-            }
-
-            header_callback(config, header);
-        }
-
-    private:
-        std::function<void(Config, Header)> &header_callback;
-        Config config;
-    };
-
     class ConfigHandler : public Handler {
     public:
         explicit ConfigHandler(std::function<void(Config)> &callback)
@@ -114,77 +83,46 @@ namespace {
             handle_callback(config_stream);
         }
     };
+
+
 };
-
-
 
 namespace Gadgetron::Server::Connection {
 
-    void ProtoConnection::start() {
-        auto self = shared_from_this();
-
-        threads.input = std::thread ([=]() {
-            self->process_input();
-        });
-
-        threads.output = std::thread([=]() {
-            self->process_output();
-        });
-
-        threads.input.detach();
-    };
-
-
     void ProtoConnection::process_input() {
-
-        GDEBUG_STREAM("Input thread running.");
 
         bool closed = false;
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        std::function<void(Config, Header)> header_callback = [&](Config config, Header header) {
-
-            // I should call the close handler with a post-close callback.
-            // Close handler should do the joining.
+        std::function<void()> close_callback = [&]() {
 
             closed = true;
-            channel->close();
-            threads.output.join();
-
-            Context context{header, paths};
-
-            auto connection = StreamConnection::create(config, context, std::move(stream));
-            connection->start();
+            promise.set_value(boost::none);
         };
 
         std::function<void(Config)> config_callback = [&](Config config) {
-            std::string error = "Received second config file. Only one config allowed.";
 
-            handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(error);
-            handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(error);
-            handlers[HEADER]   = std::make_unique<HeaderHandler>(header_callback, config);
+            closed = true;
+            promise.set_value(boost::make_optional(config));
         };
 
         handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
         handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(closed);
         handlers[QUERY]    = std::make_unique<QueryHandler>(channel);
+        handlers[CLOSE]    = std::make_unique<CallbackHandler>(close_callback);
 
         while (!closed) {
-            auto id = read_t<uint16_t>(*stream);
+            auto id = read_t<uint16_t>(stream);
 
             GDEBUG_STREAM("Processing message with id: " << id);
 
-            handlers.at(id)->handle(*stream);
+            handlers.at(id)->handle(stream);
         }
-
-//        channel->close();
     }
 
     void ProtoConnection::process_output() {
-        GDEBUG_STREAM("Output thread running.");
 
         std::vector<std::unique_ptr<Writer>> writers{};
 
@@ -198,15 +136,35 @@ namespace Gadgetron::Server::Connection {
                     [&](auto &writer) { return writer->accepts(*message); }
             );
 
-            (*writer)->write(*stream, std::move(message));
+            (*writer)->write(stream, std::move(message));
         }
     }
 
-    std::shared_ptr<ProtoConnection>
-    ProtoConnection::create(Gadgetron::Core::Context::Paths paths, std::unique_ptr<std::iostream> stream) {
-        return std::make_shared<ProtoConnection>(paths, std::move(stream));
+    ProtoConnection::ProtoConnection(Context::Paths paths, std::iostream &stream)
+    : stream(stream), paths(std::move(paths)), channel(std::make_shared<MessageChannel>()) {}
+
+    boost::optional<Config> ProtoConnection::process(std::iostream &stream, const Context::Paths &paths) {
+
+        ProtoConnection connection{paths, stream};
+
+        connection.threads.input  = std::thread([&]() {
+            connection.process_input();
+        });
+
+        connection.threads.output = std::thread([&]() {
+            connection.process_output();
+        });
+
+        auto future = connection.promise.get_future();
+        return future.get();
     }
 
-    ProtoConnection::ProtoConnection(Context::Paths paths, std::unique_ptr<std::iostream> stream)
-    : stream(std::move(stream)), paths(std::move(paths)), channel(std::make_shared<MessageChannel>()) {}
+    ProtoConnection::~ProtoConnection() {
+
+        // Terminate the input thread somehow? Sabotage the stream?
+        channel->close();
+
+        threads.input.join();
+        threads.output.join();
+    }
 }

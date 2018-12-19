@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Config.h"
+#include "Builders.h"
 
+#include "Node.h"
 #include "Context.h"
 #include "Channel.h"
 
@@ -9,23 +11,25 @@ namespace Gadgetron::Server::Connection {
 
     class StreamConnection : public std::enable_shared_from_this<StreamConnection> {
     public:
-        static std::shared_ptr<StreamConnection> create(
-                Config config,
-                Gadgetron::Core::Context context,
-                std::unique_ptr<std::iostream> stream
-        );
-        void start();
+        using MessageChannel = Gadgetron::Core::MessageChannel;
+        using Context = Gadgetron::Core::Context;
 
-        StreamConnection(Config config, Gadgetron::Core::Context context, std::unique_ptr<std::iostream> stream);
+        static void process(
+                std::iostream &stream,
+                Context context,
+                Config config
+        );
 
     private:
-        using MessageChannel = Gadgetron::Core::MessageChannel;
+
+        StreamConnection(Gadgetron::Core::Context context, Config config, std::iostream &stream);
+        ~StreamConnection();
 
         void process_input();
         void process_output();
 
         const Config config;
-        const Gadgetron::Core::Context context;
+        const Context context;
 
         struct {
             std::shared_ptr<MessageChannel> input, output;
@@ -35,7 +39,11 @@ namespace Gadgetron::Server::Connection {
             std::thread input, output;
         } threads;
 
-        std::unique_ptr<std::iostream> stream;
+        std::iostream &stream;
+
+        Builder builder;
+
+        std::unique_ptr<Core::Node> node;
     };
 }
 

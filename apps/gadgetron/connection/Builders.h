@@ -29,7 +29,6 @@ namespace Gadgetron::Server::Connection {
 
         std::vector<boost::dll::shared_library> libraries;
         const Gadgetron::Core::Context::Paths paths;
-
     };
 
 

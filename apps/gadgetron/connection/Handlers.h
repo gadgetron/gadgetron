@@ -48,14 +48,15 @@ namespace Gadgetron::Server::Connection::Handlers {
         std::string message;
     };
 
-    class CloseHandler : public Handler {
+    class CallbackHandler : public Handler {
     public:
-        explicit CloseHandler(bool &closed) : closed(closed) {}
-
+        explicit CallbackHandler(std::function<void()> &callback);
         void handle(std::istream &stream) override;
 
     private:
-        bool &closed;
+        std::function<void()> &callback;
     };
+
+
 }
 

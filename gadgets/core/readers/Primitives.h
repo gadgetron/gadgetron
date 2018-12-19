@@ -7,6 +7,8 @@ namespace Gadgetron::Core::Readers {
     template<class T>
     void read_into(std::istream &stream, T &t) {
         stream.read(reinterpret_cast<char *>(&t), sizeof(t));
+
+        // TODO: Check error bits on stream; throw if they are set.
     }
 
     template<class T>
