@@ -17,7 +17,8 @@ set(test_src_files tests.cpp
       hoNDArray_elemwise_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp 
-      hoNDArray_reductions_test.cpp 
+      hoNDArray_reductions_test.cpp
+        read_writer_test.cpp
       hoNDFFT_test.cpp
       hoNFFT_test.cpp
       hoNDWavelet_test.cpp

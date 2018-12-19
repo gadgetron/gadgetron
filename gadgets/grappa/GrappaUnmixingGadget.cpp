@@ -1,4 +1,4 @@
-#include "GadgetIsmrmrdReadWrite.h"
+#include "readers/GadgetIsmrmrdReader.h"
 #include "GrappaUnmixingGadget.h"
 #include "hoNDFFT.h"
 

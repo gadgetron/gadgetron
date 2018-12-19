@@ -1,6 +1,6 @@
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "readers/GadgetIsmrmrdReader.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDArray_reductions.h"
 #include "GadgetronTimer.h"

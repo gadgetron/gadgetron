@@ -35,7 +35,7 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
 
             uint64_t meta_size = serialized_meta.size();
             stream.write(reinterpret_cast<char *>(&meta_size), sizeof(meta_size));
-            stream.write(serialized_meta.c_str(), meta_size);
+            stream.write(serialized_meta.c_str(), meta_size+1);
 
             stream.write(reinterpret_cast<char *>(data->get_data_ptr()), data->get_number_of_bytes());
         }

@@ -80,29 +80,7 @@ class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageReader : public Core::
     // ------------------------------------------------------------------------------------------------------- //
     // ISMRMRD wave form reader/writer
 
-class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageWriter : public Core::Writer {
 
-    public:
-//        virtual void  write(std::ostream& stream, std::unique_ptr<Core::Message>&& message ) override final {
-//
-//            using namespace Core;
-//            auto hm = dynamic_cast<Core::TypedMessage<Waveform>*>(message.get());
-//
-//            if (!hm) {
-//               throw std::runtime_error("GadgetAcquisitionMessageWriter, invalid acquisition message objects");
-//            }
-//            auto h = hm->get_data();
-//
-//            GadgetMessageIdentifier id;
-//            id.id = GADGET_MESSAGE_ISMRMRD_WAVEFORM;
-//            IO::write(stream,id);
-//
-//            ISMRMRD::ISMRMRD_WaveformHeader& wavHead = h->header;
-//            IO::write(stream,wavHead);
-//
-//            IO::write(stream,h->data);
-//        }
-    };
 
 class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageReader : public Core::Reader {
 
