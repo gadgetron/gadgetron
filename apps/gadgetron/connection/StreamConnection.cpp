@@ -4,9 +4,9 @@
 
 #include "StreamConnection.h"
 
-#include "Builders.h"
 #include "Handlers.h"
 #include "Writers.h"
+#include "Loader.h"
 
 #include "readers/Primitives.h"
 #include "Reader.h"
@@ -58,7 +58,7 @@ namespace Gadgetron::Server::Connection {
         handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
 
-        for (auto &reader : builder.build_readers(config.readers)) {
+        for (auto &reader : loader.readers()) {
             handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), channels.input);
         }
 
@@ -66,25 +66,31 @@ namespace Gadgetron::Server::Connection {
     }
 
     std::vector<std::unique_ptr<Writer>> StreamConnection::prepare_writers() {
-        return builder.build_writers(config.writers);
+        return loader.writers();
     }
 
-    void StreamConnection::process(std::iostream &stream, Context context, Config config) {
-
-        StreamConnection connection(stream, std::move(context), std::move(config));
-
-        connection.start();
-        connection.node->process(connection.channels.input, connection.channels.output);
-        connection.join();
-    }
-
-    StreamConnection::StreamConnection(std::iostream &stream, Gadgetron::Core::Context context, Config config)
-    : Connection(stream), context(context), config(config), builder(context.paths) {
+    StreamConnection::StreamConnection(std::iostream &stream, Loader &loader)
+            : Connection(stream), loader(loader) {
 
         channels.input = std::make_shared<MessageChannel>();
         channels.output = std::make_shared<MessageChannel>();
 
-        node = builder.build_stream(config.stream, context);
+        node = loader.stream();
+    }
+
+    void StreamConnection::process(
+            std::iostream &stream,
+            Context context,
+            Config config,
+            ErrorHandler &error_handler
+    ) {
+        Loader loader{error_handler, std::move(context), std::move(config)};
+
+        StreamConnection connection(stream, loader);
+
+        connection.start(error_handler);
+        connection.node->process(connection.channels.input, connection.channels.output);
+        connection.join();
     }
 }
 

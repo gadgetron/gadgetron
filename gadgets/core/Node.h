@@ -12,26 +12,19 @@
 
 namespace Gadgetron::Core {
 
-
-
     class Node {
     public:
-
-        virtual ~Node() {};
-
-    public:
-
+        virtual ~Node() = default;
         virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
-
     };
-
 
     class GadgetNode : public Node, public PropertyMixin {
     public:
-            GadgetNode(const GadgetProperties& properties) : PropertyMixin(properties){};
-            virtual ~GadgetNode(){};
+            GadgetNode(
+                    const GadgetProperties& properties
+            ) : PropertyMixin(properties) {};
+            virtual ~GadgetNode() = default;
     };
-
 
     template<class ...ARGS >
     class TypedGadgetNode : public GadgetNode {
@@ -39,7 +32,7 @@ namespace Gadgetron::Core {
 
         }
 
-        virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) override final  {
+        void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) override final  {
             auto typed_input = TypedInputChannel<ARGS...>(in, out);
             this->process(typed_input, *out);
         }
@@ -57,12 +50,12 @@ std::unique_ptr<Gadgetron::Core::Node> gadget_factory_##GadgetClass(            
         const Gadgetron::Core::Context &context,                                    \
         const std::unordered_map<std::string, std::string> &props                   \
 ) {                                                                                 \
-  return std::make_unique<GadgetClass>(context, props);                             \
+    return std::make_unique<GadgetClass>(context, props);                           \
 }                                                                                   \
                                                                                     \
-BOOST_DLL_ALIAS(                                                    \
-        gadget_factory_##GadgetClass,                               \
-        gadget_factory_export_##GadgetClass                         \
-)                                                                   \
+BOOST_DLL_ALIAS(                                                                    \
+        gadget_factory_##GadgetClass,                                               \
+        gadget_factory_export_##GadgetClass                                         \
+)                                                                                   \
 
 

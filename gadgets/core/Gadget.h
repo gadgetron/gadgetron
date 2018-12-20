@@ -609,18 +609,18 @@ namespace Gadgetron {
 
     class LegacyGadgetNode : public Core::Node {
     public:
-        LegacyGadgetNode(std::unique_ptr<Gadget> &&gadget_ptr, const ISMRMRD::IsmrmrdHeader &header,
-                         const std::unordered_map<std::string, std::string> &props);
+        LegacyGadgetNode(
+                std::unique_ptr<Gadget> &&gadget_ptr,
+                const ISMRMRD::IsmrmrdHeader &header,
+                const std::unordered_map<std::string, std::string> &props
+        );
 
-
-        virtual void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,
-                             std::shared_ptr<Core::OutputChannel> out) override;
+        void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,
+                     std::shared_ptr<Core::OutputChannel> out) override;
 
     private:
 
         std::unique_ptr<Gadget> gadget;
-
-
     };
 }
 
@@ -635,15 +635,13 @@ std::unique_ptr<Gadgetron::Core::Node> legacy_gadget_factory_##GadgetClass(     
     auto gadget = std::make_unique<GadgetClass>();                                  \
     return std::make_unique<Gadgetron::LegacyGadgetNode>(                           \
             std::move(gadget),                                                      \
-        context.header,                                                             \
+            context.header,                                                         \
             props                                                                   \
     );                                                                              \
 }                                                                                   \
                                                                                     \
-BOOST_DLL_ALIAS(                                                    \
-        legacy_gadget_factory_##GadgetClass,                        \
-        gadget_factory_export_##GadgetClass                         \
-)                                                                   \
-
-
+BOOST_DLL_ALIAS(                                                                    \
+        legacy_gadget_factory_##GadgetClass,                                        \
+        gadget_factory_export_##GadgetClass                                         \
+)                                                                                   \
 

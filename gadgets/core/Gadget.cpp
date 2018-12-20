@@ -16,12 +16,14 @@ namespace Gadgetron {
     LegacyGadgetNode::LegacyGadgetNode(
             std::unique_ptr<Gadget> &&gadget_ptr,
             const ISMRMRD::IsmrmrdHeader &header,
-            const std::unordered_map<std::string, std::string> &props)
-            : gadget(std::move(gadget_ptr)) {
-        gadget->process_config(header);
+            const std::unordered_map<std::string, std::string> &props
+    ) : gadget(std::move(gadget_ptr)) {
+
         for (auto &key_val : props) {
             gadget->set_parameter(key_val.first.c_str(), key_val.second.c_str());
         }
+
+        gadget->process_config(header);
     }
 
     void LegacyGadgetNode::process(
@@ -36,5 +38,4 @@ namespace Gadgetron {
         gadget->close();
         out->close();
     }
-
 }  // namespace Gadgetron

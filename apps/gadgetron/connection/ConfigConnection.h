@@ -15,7 +15,8 @@ namespace Gadgetron::Server::Connection {
 
         static Context process(
                 std::iostream &stream,
-                const Core::Context::Paths &paths
+                const Core::Context::Paths &paths,
+                ErrorHandler &error_handler
         );
 
     protected:

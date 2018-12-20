@@ -81,4 +81,4 @@ std::unique_ptr<Gadgetron::Core::Writer> writer_factory_##WriterClass() {       
 BOOST_DLL_ALIAS(                                                    \
         writer_factory_##WriterClass,                               \
         writer_factory_export_##WriterClass                         \
-)                                                                   \
+)

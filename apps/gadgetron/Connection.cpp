@@ -22,6 +22,34 @@ using namespace Gadgetron::Server::Connection::Writers;
 
 namespace {
 
+    class ErrorChannel : public ErrorHandler {
+    public:
+        ErrorChannel() : errors(std::make_shared<MessageChannel>()) {}
+
+        void handle(const std::string &location, std::function<void()> fn) override {
+            try {
+                fn();
+            }
+            catch (const std::exception &e) {
+                push_error(location, e.what());
+            }
+            catch (const std::string &s) {
+                push_error(location, s);
+            }
+            catch (...) {
+                push_error(location, "Unknown exception.");
+            }
+        }
+
+    private:
+        void push_error(const std::string location, const std::string &message) {
+            errors->push(std::make_unique<std::string>("[" + location + "] ERROR: " + message));
+        }
+
+        std::shared_ptr<MessageChannel> errors;
+    };
+
+
     void send_errors(std::iostream &stream) {}
 
     void send_close(std::iostream &stream) {
@@ -31,12 +59,14 @@ namespace {
 
     void handle_connection(const Gadgetron::Core::Context::Paths &paths, std::unique_ptr<std::iostream> stream) {
 
-        auto config = ProtoConnection::process(*stream, paths);
+        ErrorChannel error_handler{};
+
+        auto config = ProtoConnection::process(*stream, paths, error_handler);
 
         if (config) {
-            auto context = ConfigConnection::process(*stream, paths);
+            auto context = ConfigConnection::process(*stream, paths, error_handler);
 
-            StreamConnection::process(*stream, context, config.get());
+            StreamConnection::process(*stream, context, config.get(), error_handler);
         }
 
         send_errors(*stream);
@@ -90,14 +120,18 @@ namespace Gadgetron::Server::Connection {
         return std::vector<std::unique_ptr<Writer>>();
     }
 
-    void Connection::start() {
-        threads.input  = std::thread([&]() {
-            process_input();
-        });
+    void Connection::start(ErrorHandler &handler) {
 
-        threads.output = std::thread([&]() {
-            process_output();
-        });
+        std::function<void()> handled_input = [&]() {
+            handler.handle("Connection Input", [&]() { this->process_input(); });
+        };
+
+        std::function<void()> handled_output = [&]() {
+            handler.handle("Connection Output", [&]() { this->process_output(); });
+        };
+
+        threads.input  = std::thread(handled_input);
+        threads.output = std::thread(handled_output);
     }
 
     void Connection::join() {

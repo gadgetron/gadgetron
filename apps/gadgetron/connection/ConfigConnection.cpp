@@ -71,11 +71,14 @@ namespace Gadgetron::Server::Connection {
         return handlers;
     }
 
-    Context ConfigConnection::process(std::iostream &stream, const Core::Context::Paths &paths) {
-
+    Context ConfigConnection::process(
+            std::iostream &stream,
+            const Core::Context::Paths &paths,
+            ErrorHandler &error_handler
+    ) {
         ConfigConnection connection{stream, paths};
 
-        connection.start();
+        connection.start(error_handler);
         connection.join();
 
         auto future = connection.promise.get_future();

@@ -7,8 +7,10 @@ namespace Gadgetron {
 
     class EXPORTGADGETSMRICORE ImageFinishGadget : public Core::GadgetNode {
     public:
-        ImageFinishGadget(const Core::Context &context, const Core::GadgetProperties &properties) : GadgetNode(
-                properties) {};
+        ImageFinishGadget(
+                const Core::Context &context,
+                const Core::GadgetProperties &properties
+        ) : GadgetNode(properties) {};
 
     protected:
         void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,

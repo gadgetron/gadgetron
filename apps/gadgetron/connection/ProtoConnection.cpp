@@ -121,12 +121,15 @@ namespace Gadgetron::Server::Connection {
         channels.input = channels.output = std::make_shared<MessageChannel>();
     }
 
-    boost::optional<Config> ProtoConnection::process(std::iostream &stream, const Context::Paths &paths) {
-
+    boost::optional<Config> ProtoConnection::process(
+            std::iostream &stream,
+            const Context::Paths &paths,
+            ErrorHandler &error_handler
+    ) {
         ProtoConnection connection{stream, paths};
         auto future = connection.promise.get_future();
 
-        connection.start();
+        connection.start(error_handler);
         connection.join();
 
         return future.get();

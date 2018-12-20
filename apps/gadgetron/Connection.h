@@ -12,6 +12,11 @@
 namespace Gadgetron::Server::Connection {
     void handle(const Gadgetron::Core::Context::Paths &paths, std::unique_ptr<std::iostream> stream);
 
+    class ErrorHandler {
+    public:
+        virtual ~ErrorHandler() = default;
+        virtual void handle(const std::string &location, std::function<void()> function) = 0;
+    };
 
     class Connection {
     public:
@@ -23,7 +28,7 @@ namespace Gadgetron::Server::Connection {
         virtual std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) = 0;
         virtual std::vector<std::unique_ptr<Writer>> prepare_writers();
 
-        void start();
+        void start(ErrorHandler &);
         void join();
 
         explicit Connection(std::iostream &stream);

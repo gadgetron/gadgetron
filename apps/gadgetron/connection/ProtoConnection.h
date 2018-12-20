@@ -11,7 +11,8 @@ namespace Gadgetron::Server::Connection {
     public:
         static boost::optional<Config> process(
                 std::iostream &stream,
-                const Core::Context::Paths &paths
+                const Core::Context::Paths &paths,
+                ErrorHandler &error_handler
         );
 
     protected:
