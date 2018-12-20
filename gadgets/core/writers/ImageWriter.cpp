@@ -48,8 +48,8 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
         std::make_shared<TypedImageWriter<std::complex<double>>>(),
         std::make_shared<TypedImageWriter<unsigned short>>(),
         std::make_shared<TypedImageWriter<short>>(),
-        std::make_shared<TypedImageWriter<int>>(),
-         std::make_shared<TypedImageWriter<unsigned int>>()
+        std::make_shared<TypedImageWriter<unsigned int>>(),
+        std::make_shared<TypedImageWriter<int>>()
     };
 }
 

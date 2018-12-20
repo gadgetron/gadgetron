@@ -1,21 +1,39 @@
 #pragma once
 
-#include <Context.h>
-#include "ProtoConnection.h"
+#include "Config.h"
+#include "Builders.h"
+
+#include "Connection.h"
+
+#include "Node.h"
+#include "Context.h"
+#include "Channel.h"
 
 namespace Gadgetron::Server::Connection {
 
-    class StreamConnection : public std::enable_shared_from_this<StreamConnection> {
+    class StreamConnection : public Connection {
+    public:
+        using MessageChannel = Gadgetron::Core::MessageChannel;
+        using Context = Gadgetron::Core::Context;
+
+        static void process(
+                std::iostream &stream,
+                Context context,
+                Config config
+        );
+
     private:
-        StreamConnection(Core::Context context, Config config, std::unique_ptr<std::iostream> stream);
+        StreamConnection(std::iostream &stream, Context context, Config config);
 
-        void start();
+        std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
+        std::vector<std::unique_ptr<Writer>> prepare_writers() override;
 
-        void process_input();
+        const Config config;
+        const Context context;
 
+        Builder builder;
 
-        std::unique_ptr<std::iostream> stream;
-
+        std::unique_ptr<Core::Node> node;
     };
 }
 

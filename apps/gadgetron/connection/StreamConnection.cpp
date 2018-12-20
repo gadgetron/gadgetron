@@ -4,9 +4,12 @@
 
 #include "StreamConnection.h"
 
+#include "Builders.h"
 #include "Handlers.h"
+#include "Writers.h"
 
 #include "readers/Primitives.h"
+#include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
 
@@ -16,49 +19,72 @@ namespace {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::Readers;
     using namespace Gadgetron::Server::Connection;
+    using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;
 
-    using Header = Gadgetron::Core::Context::Header;
-
-
-    class HeaderHandler : public Handler {
+    class ReaderHandler : public Handler {
     public:
-        explicit HeaderHandler(std::function<void(Header)> callback) : callback{callback} {}
+        ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel)
+                : reader(std::move(reader)), channel(std::move(channel)) {}
 
         void handle(std::istream &stream) override {
-            std::string raw_header(read_string_from_stream<uint32_t>(stream));
-
-            ISMRMRD::IsmrmrdHeader header;
-            ISMRMRD::deserialize(raw_header.c_str(), header);
-            callback(header);
+            channel->push_message(reader->read(stream));
         }
 
-    private:
-        std::function<void(Header)> callback;
+        std::unique_ptr<Reader> reader;
+        std::shared_ptr<MessageChannel> channel;
     };
 
-
 }
 
-StreamConnection::StreamConnection(Core::Context context, Config config, std::unique_ptr<std::iostream> stream) {
+#define CONFIG_ERROR "Received second config file. Only one config allowed."
+#define HEADER_ERROR "Received second ISMRMRD header. Only one allowed."
 
-}
+namespace Gadgetron::Server::Connection {
 
-void StreamConnection::start() {
+    std::map<uint16_t, std::unique_ptr<Connection::Handler>> StreamConnection::prepare_handlers(bool &closed) {
 
-}
+        std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-void StreamConnection::process_input() {
+        std::function<void()> close_callback = [&]() {
+            closed = true;
+            channels.input->close();
+        };
 
+        handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+        handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+        handlers[HEADER]   = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
 
-    std::unordered_map<uint16_t, std::unique_ptr<Handler>> handlers;
-    bool closed = false;
+        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
 
-     while (!closed) {
-        auto id = read_t<uint16_t>(*stream);
-        handlers.at(id)->handle(*stream);
+        for (auto &reader : builder.build_readers(config.readers)) {
+            handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), channels.input);
+        }
+
+        return handlers;
     }
 
+    std::vector<std::unique_ptr<Writer>> StreamConnection::prepare_writers() {
+        return builder.build_writers(config.writers);
+    }
 
+    void StreamConnection::process(std::iostream &stream, Context context, Config config) {
 
+        StreamConnection connection(stream, std::move(context), std::move(config));
+
+        connection.start();
+        connection.node->process(connection.channels.input, connection.channels.output);
+        connection.join();
+    }
+
+    StreamConnection::StreamConnection(std::iostream &stream, Gadgetron::Core::Context context, Config config)
+    : Connection(stream), context(context), config(config), builder(context.paths) {
+
+        channels.input = std::make_shared<MessageChannel>();
+        channels.output = std::make_shared<MessageChannel>();
+
+        node = builder.build_stream(config.stream, context);
+    }
 }
+

@@ -70,7 +70,6 @@ build_task:
     - make -j8
     - make install
     - cd /usr/local/share/gadgetron/config
-    - cp gadgetron.xml.example gadgetron.xml
 
 
 

@@ -5,24 +5,26 @@
 #include "Channel.h"
 #include "Context.h"
 
+
 namespace Gadgetron::Server::Connection {
 
-    class ProtoConnection : public Connection {
+    class ConfigConnection : public Connection {
     public:
-        static boost::optional<Config> process(
+        using Context = Gadgetron::Core::Context;
+        using Header = Context::Header;
+
+        static Context process(
                 std::iostream &stream,
                 const Core::Context::Paths &paths
         );
 
     protected:
-        ProtoConnection(std::iostream &stream, Gadgetron::Core::Context::Paths paths);
+        ConfigConnection(std::iostream &stream, Gadgetron::Core::Context::Paths paths);
 
         std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
 
-        std::promise<boost::optional<Config>> promise;
+        std::promise<Header> promise;
 
         const Gadgetron::Core::Context::Paths paths;
     };
-
 }
-

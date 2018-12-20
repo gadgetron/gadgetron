@@ -13,23 +13,26 @@
 #include "gadgetron_config.h"
 
 #include "readers/Primitives.h"
-#include "writers/ResponseWriter.h"
 #include "Response.h"
-
 #include "Reader.h"
 #include "Writer.h"
+
 #include "Server.h"
 #include "Config.h"
 
-#include "Builders.h"
+#include "Writers.h"
 #include "Handlers.h"
+#include "StreamConnection.h"
 
 namespace {
 
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::Readers;
     using namespace Gadgetron::Server::Connection;
+    using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;
+
+    using Header = Gadgetron::Core::Context::Header;
 
     std::string read_filename_from_stream(std::istream &stream) {
         char buffer[1024];
@@ -37,12 +40,25 @@ namespace {
         return std::string(buffer);
     }
 
-    class ConfigReferenceHandler : public Handler {
+    class ConfigHandler : public Handler {
+    public:
+        explicit ConfigHandler(std::function<void(Config)> callback)
+        : callback(std::move(callback)) {}
+
+        void handle_callback(std::istream &config_stream) {
+            callback(parse_config(config_stream));
+        }
+
+    private:
+        std::function<void(Config)> callback;
+    };
+
+    class ConfigReferenceHandler : public ConfigHandler {
     public:
         ConfigReferenceHandler(
-                std::function<void(Config config)> &escalate_callback,
+                std::function<void(Config)> &callback,
                 const Context::Paths &paths
-        ) : callback(escalate_callback), paths(paths) {}
+        ) : ConfigHandler(callback), paths(paths) {}
 
         void handle(std::istream &stream) override {
             boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
@@ -50,114 +66,69 @@ namespace {
             GDEBUG_STREAM("Reading config file: " << filename << std::endl);
 
             std::ifstream config_stream(filename.string());
-            callback(parse_config(config_stream));
+            handle_callback(config_stream);
         }
 
     private:
-        std::function<void(Config config)> &callback;
         const Context::Paths &paths;
     };
 
-    class ConfigStringHandler : public Handler {
+    class ConfigStringHandler : public ConfigHandler {
     public:
-        explicit ConfigStringHandler(std::function<void(Config config)> &escalate_callback)
-                : callback(escalate_callback) {}
+        explicit ConfigStringHandler(std::function<void(Config)> &callback)
+        : ConfigHandler(callback) {}
 
         void handle(std::istream &stream) override {
             std::stringstream config_stream(read_string_from_stream<uint32_t>(stream));
-            callback(parse_config(config_stream));
+            handle_callback(config_stream);
         }
-
-    private:
-        std::function<void(Config config)> &callback;
     };
 
-    class CloseHandler : public Handler {
-    public:
-        explicit CloseHandler(bool &closed) : closed(closed) {}
 
-        void handle(std::istream &stream) override {
-            closed = true;
-        }
-
-    private:
-        bool &closed;
-    };
-
-    class ReaderHandler : public Handler {
-    public:
-        ReaderHandler(std::unique_ptr<Reader> &&reader, std::shared_ptr<MessageChannel> channel)
-                : reader(std::move(reader)), channel(std::move(channel)) {}
-
-        void handle(std::istream &stream) override {
-            channel->push_message(reader->read(stream));
-        }
-
-        std::unique_ptr<Reader> reader;
-        std::shared_ptr<MessageChannel> channel;
-    };
 };
-
-
 
 namespace Gadgetron::Server::Connection {
 
-    void ProtoConnection::start() {
-        auto self = shared_from_this();
-
-        auto input_thread = std::thread ([=]() {
-            self->process_input();
-        });
-
-        output_thread = std::thread([=]() {
-            self->process_output();
-        });
-
-        input_thread.detach();
-    };
-
-
-    void ProtoConnection::process_input() {
-
-        GDEBUG_STREAM("Input thread running.");
-
-        bool closed = false;
+    std::map<uint16_t, std::unique_ptr<Handler>> ProtoConnection::prepare_handlers(bool &closed) {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        std::function<void(Config)> escalate_callback = [&](const Config &config) {
+        std::function<void(boost::optional<Config>)> deliver = [&](auto config) {
             closed = true;
-            this->escalate(config);
+            channels.input->close();
+            promise.set_value(config);
         };
 
-        handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(escalate_callback, paths);
-        handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(escalate_callback);
+        std::function<void()> close_callback = [&, deliver]() {
+            deliver(boost::none);
+        };
+
+        std::function<void(Config)> config_callback = [&, deliver](Config config) {
+            deliver(boost::make_optional(config));
+        };
+
+        handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
+        handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(closed);
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channel);
+        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
 
-        while (!closed) {
-            auto id = read_t<uint16_t>(*stream);
-            handlers.at(id)->handle(*stream);
-        }
+        return handlers;
     }
 
-    void ProtoConnection::process_output() {
-        GDEBUG_STREAM("Output thread running.");
-
-        InputChannel<Message>& input = *channel;
-        for (auto message : input){
-            GDEBUG("Hi! Listen!\n");
-        }
-
+    ProtoConnection::ProtoConnection(std::iostream &stream, Context::Paths paths)
+    : Connection(stream), paths(std::move(paths)) {
+        channels.input = channels.output = std::make_shared<MessageChannel>();
     }
 
-    void ProtoConnection::escalate(Config config) {
-        channel->close();
-        output_thread.join();
+    boost::optional<Config> ProtoConnection::process(std::iostream &stream, const Context::Paths &paths) {
 
+        ProtoConnection connection{stream, paths};
+        auto future = connection.promise.get_future();
 
+        connection.start();
+        connection.join();
+
+        return future.get();
     }
-
-
 }
