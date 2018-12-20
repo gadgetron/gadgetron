@@ -12,6 +12,7 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
+#include "Connection_common.h"
 
 
 namespace {
@@ -42,49 +43,52 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    std::map<uint16_t, std::unique_ptr<Connection::Handler>> StreamConnection::prepare_handlers(bool &closed) {
+    void StreamConnection::process() {
 
-        std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+        auto factory = [&](auto& closed ) {
 
-        std::function<void()> close_callback = [&]() {
-            closed = true;
-            channels.input->close();
+            std::function<void()> close_callback = [&]() {
+                closed = true;
+                input_channel->close();
+            };
+
+            std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+            handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+            handlers[CONFIG] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+            handlers[HEADER] = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
+
+            handlers[QUERY] = std::make_unique<QueryHandler>(input_channel);
+            handlers[CLOSE] = std::make_unique<CloseHandler>(close_callback);
+
+            for (auto &reader : builder.build_readers(config.readers)) {
+                handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), input_channel);
+            }
+
+            return handlers;
         };
-
-        handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[HEADER]   = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
-
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
-
-        for (auto &reader : builder.build_readers(config.readers)) {
-            handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), channels.input);
-        }
-
-        return handlers;
     }
 
-    std::vector<std::unique_ptr<Writer>> StreamConnection::prepare_writers() {
-        return builder.build_writers(config.writers);
-    }
-
-    void StreamConnection::process(std::iostream &stream, Context context, Config config) {
-
-        StreamConnection connection(stream, std::move(context), std::move(config));
-
-        connection.start();
-        connection.node->process(connection.channels.input, connection.channels.output);
-        connection.join();
-    }
 
     StreamConnection::StreamConnection(std::iostream &stream, Gadgetron::Core::Context context, Config config)
-    : Connection(stream), context(context), config(config), builder(context.paths) {
+    : stream(stream), context(context), config(config), builder(context.paths) {
 
-        channels.input = std::make_shared<MessageChannel>();
-        channels.output = std::make_shared<MessageChannel>();
+        output_thread = std::thread(
+                [&](auto writers){ handle_output(output_channel,stream,std::move(writers));},
+                builder.build_writers(this->config.writers)
+                );
 
-        node = builder.build_stream(config.stream, context);
+        stream_thread = std::thread(
+                [this](){
+                    auto node = builder.build_stream(this->config.stream, this->context);
+                    node->process(this->input_channel,this->output_channel);
+                });
+    }
+
+    StreamConnection::~StreamConnection() {
+        input_channel->close();
+        stream_thread.join();
+        output_thread.join();
+
     }
 }
 

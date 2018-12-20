@@ -3,7 +3,6 @@
 #include "Config.h"
 #include "Builders.h"
 
-#include "Connection.h"
 
 #include "Node.h"
 #include "Context.h"
@@ -11,29 +10,27 @@
 
 namespace Gadgetron::Server::Connection {
 
-    class StreamConnection : public Connection {
+    class StreamConnection  {
     public:
         using MessageChannel = Gadgetron::Core::MessageChannel;
         using Context = Gadgetron::Core::Context;
 
-        static void process(
-                std::iostream &stream,
-                Context context,
-                Config config
-        );
-
+    StreamConnection(std::iostream &stream, Context context, Config config);
+    ~StreamConnection();
+       void process();
     private:
-        StreamConnection(std::iostream &stream, Context context, Config config);
 
-        std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
-        std::vector<std::unique_ptr<Writer>> prepare_writers() override;
+        std::thread output_thread;
+        std::thread stream_thread;
+        std::iostream& stream;
+        std::shared_ptr<MessageChannel> input_channel = std::make_shared<MessageChannel>();
+        std::shared_ptr<MessageChannel> output_channel = std::make_shared<MessageChannel>();
 
         const Config config;
         const Context context;
 
         Builder builder;
 
-        std::unique_ptr<Core::Node> node;
     };
 }
 

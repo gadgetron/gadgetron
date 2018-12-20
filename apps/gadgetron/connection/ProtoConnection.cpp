@@ -22,7 +22,7 @@
 
 #include "Writers.h"
 #include "Handlers.h"
-#include "StreamConnection.h"
+#include "Connection_common.h"
 
 namespace {
 
@@ -85,50 +85,35 @@ namespace {
     };
 
 
-};
+}
 
 namespace Gadgetron::Server::Connection {
 
-    std::map<uint16_t, std::unique_ptr<Handler>> ProtoConnection::prepare_handlers(bool &closed) {
+     template<> boost::optional<Config> ProtoConnection::process()  {
 
-        std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        std::function<void(boost::optional<Config>)> deliver = [&](auto config) {
-            closed = true;
-            channels.input->close();
-            promise.set_value(config);
-        };
+        boost::optional<Config> config = boost::none;
 
-        std::function<void()> close_callback = [&, deliver]() {
-            deliver(boost::none);
-        };
+         auto factory = [&](auto& closed){
 
-        std::function<void(Config)> config_callback = [&, deliver](Config config) {
-            deliver(boost::make_optional(config));
-        };
+            std::function<void(Config)> config_callback = [&config,&closed](Config input_config) {
+                config = input_config;
+                closed = true;
+            };
+             std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+             handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
+             handlers[CONFIG] = std::make_unique<ConfigStringHandler>(config_callback);
+             handlers[HEADER] = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
+             handlers[QUERY] = std::make_unique<QueryHandler>(channel);
 
-        handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
-        handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
-        handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
+             return handlers;
+         };
 
-        return handlers;
+         handle_input(stream,factory);
+
+        return config;
+
     }
 
-    ProtoConnection::ProtoConnection(std::iostream &stream, Context::Paths paths)
-    : Connection(stream), paths(std::move(paths)) {
-        channels.input = channels.output = std::make_shared<MessageChannel>();
-    }
 
-    boost::optional<Config> ProtoConnection::process(std::iostream &stream, const Context::Paths &paths) {
-
-        ProtoConnection connection{stream, paths};
-        auto future = connection.promise.get_future();
-
-        connection.start();
-        connection.join();
-
-        return future.get();
-    }
 }

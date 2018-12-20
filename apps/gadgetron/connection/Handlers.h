@@ -50,11 +50,11 @@ namespace Gadgetron::Server::Connection::Handlers {
 
     class CloseHandler : public Handler {
     public:
-        explicit CloseHandler(std::function<void()> callback);
+        explicit CloseHandler(bool& closed_variable);
         void handle(std::istream &stream) override;
 
     private:
-        std::function<void()> callback;
+        bool& closed_variable;
     };
 
 

@@ -7,7 +7,7 @@
 #include "Handlers.h"
 #include "Writers.h"
 #include "Config.h"
-
+#include "Connection_common.h"
 
 namespace {
 
@@ -43,47 +43,28 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    std::map<uint16_t, std::unique_ptr<Connection::Handler>> ConfigConnection::prepare_handlers(bool &closed) {
+        using Header = Core::Context::Header ;
+        template<> Header ConfigConnection::process() {
 
-        std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+        Header header{};
 
-        std::function<void(Header)> deliver = [&](Header header) {
-            closed = true;
-            channels.input->close();
-            promise.set_value(header);
-        };
+        auto factory = [&](auto& closed ) {
 
-        std::function<void()> close_callback = [&, deliver]() {
+                auto header_callback = [&](Header input_header) { header = input_header; closed = false;};
 
-            // This crime is done to support void chains - chains with no input.
-            // Examples include dependency query gadgets. TODO: Fight crime.
-            Header header{};
-            deliver(header);
-        };
+                std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+                handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+                handlers[CONFIG] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+                handlers[QUERY] = std::make_unique<QueryHandler>(channel);
 
-        handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
+                handlers[HEADER] = std::make_unique<HeaderHandler>(header_callback);
+                return handlers;
+            };
 
-        handlers[HEADER]   = std::make_unique<HeaderHandler>(deliver);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
+        handle_input(stream,factory);
 
-        return handlers;
+        return header;
     }
 
-    Context ConfigConnection::process(std::iostream &stream, const Core::Context::Paths &paths) {
 
-        ConfigConnection connection{stream, paths};
-
-        connection.start();
-        connection.join();
-
-        auto future = connection.promise.get_future();
-        return Context{ future.get(), paths };
-    }
-
-    ConfigConnection::ConfigConnection(std::iostream &stream, Context::Paths paths)
-    : Connection(stream), paths(std::move(paths)) {
-        channels.input = channels.output = std::make_shared<MessageChannel>();
-    }
 }

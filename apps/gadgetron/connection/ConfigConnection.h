@@ -5,26 +5,11 @@
 #include "Channel.h"
 #include "Context.h"
 
-
+#include "Connection_common.h"
 namespace Gadgetron::Server::Connection {
 
-    class ConfigConnection : public Connection {
-    public:
-        using Context = Gadgetron::Core::Context;
-        using Header = Context::Header;
+    using ConfigConnection = Connection<Core::Context::Header>;
 
-        static Context process(
-                std::iostream &stream,
-                const Core::Context::Paths &paths
-        );
+    template<> Core::Context::Header ConfigConnection::process();
 
-    protected:
-        ConfigConnection(std::iostream &stream, Gadgetron::Core::Context::Paths paths);
-
-        std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
-
-        std::promise<Header> promise;
-
-        const Gadgetron::Core::Context::Paths paths;
-    };
 }
