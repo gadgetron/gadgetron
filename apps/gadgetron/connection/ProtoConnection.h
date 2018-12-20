@@ -7,30 +7,19 @@
 
 namespace Gadgetron::Server::Connection {
 
-    class ProtoConnection {
+    class ProtoConnection : public Connection {
     public:
         static boost::optional<Config> process(
                 std::iostream &stream,
                 const Core::Context::Paths &paths
         );
 
-    private:
-        ProtoConnection(Gadgetron::Core::Context::Paths paths, std::iostream &stream);
-        ~ProtoConnection();
+    protected:
+        ProtoConnection(std::iostream &stream, Gadgetron::Core::Context::Paths paths);
 
-        using MessageChannel = Gadgetron::Core::MessageChannel;
-
-        void process_input();
-        void process_output();
+        std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
 
         std::promise<boost::optional<Config>> promise;
-
-        std::shared_ptr<MessageChannel> channel;
-        std::iostream &stream;
-
-        struct {
-            std::thread input, output;
-        } threads;
 
         const Gadgetron::Core::Context::Paths paths;
     };

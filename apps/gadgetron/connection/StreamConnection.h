@@ -3,13 +3,15 @@
 #include "Config.h"
 #include "Builders.h"
 
+#include "Connection.h"
+
 #include "Node.h"
 #include "Context.h"
 #include "Channel.h"
 
 namespace Gadgetron::Server::Connection {
 
-    class StreamConnection : public std::enable_shared_from_this<StreamConnection> {
+    class StreamConnection : public Connection {
     public:
         using MessageChannel = Gadgetron::Core::MessageChannel;
         using Context = Gadgetron::Core::Context;
@@ -21,25 +23,13 @@ namespace Gadgetron::Server::Connection {
         );
 
     private:
+        StreamConnection(std::iostream &stream, Context context, Config config);
 
-        StreamConnection(Gadgetron::Core::Context context, Config config, std::iostream &stream);
-        ~StreamConnection();
-
-        void process_input();
-        void process_output();
+        std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
+        std::vector<std::unique_ptr<Writer>> prepare_writers() override;
 
         const Config config;
         const Context context;
-
-        struct {
-            std::shared_ptr<MessageChannel> input, output;
-        } channels;
-
-        struct {
-            std::thread input, output;
-        } threads;
-
-        std::iostream &stream;
 
         Builder builder;
 

@@ -42,15 +42,15 @@ namespace {
 
     class ConfigHandler : public Handler {
     public:
-        explicit ConfigHandler(std::function<void(Config)> &callback)
-        : callback(callback) {}
+        explicit ConfigHandler(std::function<void(Config)> callback)
+        : callback(std::move(callback)) {}
 
         void handle_callback(std::istream &config_stream) {
             callback(parse_config(config_stream));
         }
 
     private:
-        std::function<void(Config)> &callback;
+        std::function<void(Config)> callback;
     };
 
     class ConfigReferenceHandler : public ConfigHandler {
@@ -89,82 +89,46 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    void ProtoConnection::process_input() {
-
-        bool closed = false;
+    std::map<uint16_t, std::unique_ptr<Handler>> ProtoConnection::prepare_handlers(bool &closed) {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        std::function<void()> close_callback = [&]() {
-
+        std::function<void(boost::optional<Config>)> deliver = [&](auto config) {
             closed = true;
-            promise.set_value(boost::none);
+            channels.input->close();
+            promise.set_value(config);
         };
 
-        std::function<void(Config)> config_callback = [&](Config config) {
+        std::function<void()> close_callback = [&, deliver]() {
+            deliver(boost::none);
+        };
 
-            closed = true;
-            promise.set_value(boost::make_optional(config));
+        std::function<void(Config)> config_callback = [&, deliver](Config config) {
+            deliver(boost::make_optional(config));
         };
 
         handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
         handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channel);
-        handlers[CLOSE]    = std::make_unique<CallbackHandler>(close_callback);
+        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
 
-        while (!closed) {
-            auto id = read_t<uint16_t>(stream);
-
-            GDEBUG_STREAM("Processing message with id: " << id);
-
-            handlers.at(id)->handle(stream);
-        }
+        return handlers;
     }
 
-    void ProtoConnection::process_output() {
-
-        std::vector<std::unique_ptr<Writer>> writers{};
-
-        writers.push_back(std::make_unique<TextWriter>());
-        writers.push_back(std::make_unique<ResponseWriter>());
-
-        InputChannel<Message>& input = *channel;
-        for (auto message : input) {
-
-            auto writer = std::find_if(writers.begin(), writers.end(),
-                    [&](auto &writer) { return writer->accepts(*message); }
-            );
-
-            (*writer)->write(stream, std::move(message));
-        }
+    ProtoConnection::ProtoConnection(std::iostream &stream, Context::Paths paths)
+    : Connection(stream), paths(std::move(paths)) {
+        channels.input = channels.output = std::make_shared<MessageChannel>();
     }
-
-    ProtoConnection::ProtoConnection(Context::Paths paths, std::iostream &stream)
-    : stream(stream), paths(std::move(paths)), channel(std::make_shared<MessageChannel>()) {}
 
     boost::optional<Config> ProtoConnection::process(std::iostream &stream, const Context::Paths &paths) {
 
-        ProtoConnection connection{paths, stream};
-
-        connection.threads.input  = std::thread([&]() {
-            connection.process_input();
-        });
-
-        connection.threads.output = std::thread([&]() {
-            connection.process_output();
-        });
-
+        ProtoConnection connection{stream, paths};
         auto future = connection.promise.get_future();
+
+        connection.start();
+        connection.join();
+
         return future.get();
-    }
-
-    ProtoConnection::~ProtoConnection() {
-
-        // Terminate the input thread somehow? Sabotage the stream?
-        channel->close();
-
-        threads.input.join();
-        threads.output.join();
     }
 }

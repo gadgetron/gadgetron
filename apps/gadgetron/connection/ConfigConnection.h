@@ -8,35 +8,23 @@
 
 namespace Gadgetron::Server::Connection {
 
-    class ConfigConnection {
+    class ConfigConnection : public Connection {
     public:
-        using MessageChannel = Gadgetron::Core::MessageChannel;
-        using Header = Gadgetron::Core::Context::Header;
         using Context = Gadgetron::Core::Context;
+        using Header = Context::Header;
 
         static Context process(
                 std::iostream &stream,
                 const Core::Context::Paths &paths
         );
 
-    private:
-        ConfigConnection(Context::Paths paths, std::iostream &stream);
-        ~ConfigConnection();
+    protected:
+        ConfigConnection(std::iostream &stream, Gadgetron::Core::Context::Paths paths);
 
-        void process_input();
-        void process_output();
+        std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) override;
 
         std::promise<Header> promise;
 
-        std::shared_ptr<MessageChannel> channel;
-        std::iostream &stream;
-
-        struct {
-            std::thread input, output;
-        } threads;
-
         const Gadgetron::Core::Context::Paths paths;
     };
-
-
 }
