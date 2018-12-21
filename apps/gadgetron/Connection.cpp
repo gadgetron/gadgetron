@@ -24,7 +24,10 @@ namespace {
 
     class ErrorChannel : public ErrorHandler {
     public:
-        ErrorChannel() : errors(std::make_shared<MessageChannel>()) {}
+
+#ifdef NDEBUG
+        // When debugging, it is useful to have all exceptions bubble up to the
+        // debugger. To enable this, we sabotage the error handler on debug builds.
 
         void handle(const std::string &location, std::function<void()> fn) override {
             try {
@@ -40,17 +43,32 @@ namespace {
                 push_error(location, "Unknown exception.");
             }
         }
+#else
+        void handle(const std::string &, std::function<void()> fn) override {
+            fn();
+        }
+#endif
 
-    private:
-        void push_error(const std::string location, const std::string &message) {
-            errors->push(std::make_unique<std::string>("[" + location + "] ERROR: " + message));
+        void send_errors(std::iostream &stream) {
+
+            TextWriter writer{};
+
+            errors.close();
+            InputChannel<Message> &errors(this->errors);
+
+            for (auto error : errors) {
+                writer.write(stream, std::move(error));
+            }
         }
 
-        std::shared_ptr<MessageChannel> errors;
+    private:
+        void push_error(const std::string &location, const std::string &message) {
+            errors.push(std::make_unique<std::string>("[" + location + "] ERROR: " + message));
+        }
+
+        MessageChannel errors{};
     };
 
-
-    void send_errors(std::iostream &stream) {}
 
     void send_close(std::iostream &stream) {
         uint16_t close = 4;
@@ -61,15 +79,15 @@ namespace {
 
         ErrorChannel error_handler{};
 
-        auto config = ProtoConnection::process(*stream, paths, error_handler);
+        error_handler.handle("Connection Main Thread", [&]() {
+            auto config = ProtoConnection::process(*stream, paths, error_handler);
+            if (config) {
+                auto context = ConfigConnection::process(*stream, paths, error_handler);
+                StreamConnection::process(*stream, context, config.get(), error_handler);
+            }
+        });
 
-        if (config) {
-            auto context = ConfigConnection::process(*stream, paths, error_handler);
-
-            StreamConnection::process(*stream, context, config.get(), error_handler);
-        }
-
-        send_errors(*stream);
+        error_handler.send_errors(*stream);
 
         send_close(*stream);
     }
@@ -112,7 +130,9 @@ namespace Gadgetron::Server::Connection {
                    [&](auto &writer) { return writer->accepts(*message); }
             );
 
-            (*writer)->write(stream, std::move(message));
+            if (writer != writers.end()) {
+                (*writer)->write(stream, std::move(message));
+            }
         }
     }
 
@@ -123,11 +143,11 @@ namespace Gadgetron::Server::Connection {
     void Connection::start(ErrorHandler &handler) {
 
         std::function<void()> handled_input = [&]() {
-            handler.handle("Connection Input", [&]() { this->process_input(); });
+            handler.handle("Connection Input Thread", [&]() { this->process_input(); });
         };
 
         std::function<void()> handled_output = [&]() {
-            handler.handle("Connection Output", [&]() { this->process_output(); });
+            handler.handle("Connection Output Thread", [&]() { this->process_output(); });
         };
 
         threads.input  = std::thread(handled_input);

@@ -11,6 +11,29 @@ using namespace Gadgetron::Server::Connection;
 
 namespace {
 
+    class ErrorHandlingNode : public Node {
+    public:
+        ErrorHandlingNode(
+            std::unique_ptr<Node> node,
+            ErrorHandler &error_handler,
+            std::string location
+        ) : node(std::move(node)), location(std::move(location)), error_handler(error_handler) {};
+
+        void process(
+                std::shared_ptr<InputChannel<Message>> in,
+                std::shared_ptr<OutputChannel> out
+        ) override {
+            error_handler.handle(location, [&]() {
+                node->process(in, out);
+            });
+        }
+
+    private:
+        std::unique_ptr<Node> node;
+        const std::string location;
+        ErrorHandler &error_handler;
+    };
+
     class Stream : public Node {
     public:
 
@@ -22,12 +45,12 @@ namespace {
                 std::shared_ptr<OutputChannel> out
         ) override {
 
-            std::vector<std::shared_ptr<InputChannel<Message>>> input_channels(nodes.size());
-            std::vector<std::shared_ptr<OutputChannel>> output_channels(nodes.size());
+            std::vector<std::shared_ptr<InputChannel<Message>>> input_channels{};
+            std::vector<std::shared_ptr<OutputChannel>> output_channels{};
 
             input_channels.push_back(in);
 
-            for (auto &node : nodes) {
+            for (auto i = 0; i < (nodes.size() - 1); i++) {
 
                 auto channel = std::make_shared<MessageChannel>();
 
@@ -39,7 +62,13 @@ namespace {
 
             std::vector<std::thread> threads(nodes.size());
             for (auto i = 0; i < nodes.size(); i++) {
-                threads[i] = start_node(*nodes[i], input_channels[i], output_channels[i]);
+                threads[i] = std::thread(
+                        [&, i](auto in, auto out) {
+                            nodes[i]->process(in, out);
+                        },
+                        input_channels[i],
+                        output_channels[i]
+                );
             }
 
             for (auto &thread : threads) {
@@ -48,25 +77,6 @@ namespace {
         }
 
     private:
-
-        std::thread start_node(
-                Node &node,
-                std::shared_ptr<InputChannel<Message>> input,
-                std::shared_ptr<OutputChannel> output
-        ) {
-            std::function<void()> process = [&]() {
-                node.process(input, output);
-            };
-
-            std::function<void()> handled_process = [&, process]() {
-                // TODO: Node names.
-                error_handler.handle("Unknown Node", process);
-            };
-
-            return std::thread(handled_process);
-        }
-
-
         std::vector<std::unique_ptr<Node>> nodes;
         ErrorHandler &error_handler;
     };
@@ -160,9 +170,13 @@ namespace Gadgetron::Server::Connection {
         auto factory = library.get_alias<gadget_factory>("gadget_factory_export_" + gadget_config.classname);
 
         std::string name = gadget_config.name;
-        if (name.empty()) name = gadget_config.dll;
+        if (name.empty()) name = gadget_config.classname;
 
-        return factory(context, gadget_config.properties);
+        return std::make_unique<ErrorHandlingNode>(
+                factory(context, gadget_config.properties),
+                error_handler,
+                name
+        );
     }
 
     std::unique_ptr<Node>

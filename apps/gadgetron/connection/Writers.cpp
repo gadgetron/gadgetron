@@ -19,7 +19,16 @@ namespace Gadgetron::Server::Connection::Writers {
     }
 
 
-    void TextWriter::serialize(std::ostream &, std::unique_ptr<std::string>) {
+    void TextWriter::serialize(
+            std::ostream &stream,
+            std::unique_ptr<std::string> message
+    ) {
+        uint16_t message_id = 5;
 
+        auto length = uint32_t(message->size());
+
+        stream.write(reinterpret_cast<char *>(&message_id), sizeof(message_id));
+        stream.write(reinterpret_cast<char *>(&length), sizeof(length));
+        stream.write(message->data(), length);
     }
 }
