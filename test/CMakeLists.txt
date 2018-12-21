@@ -17,7 +17,8 @@ set(test_src_files tests.cpp
       hoNDArray_elemwise_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp 
-      hoNDArray_reductions_test.cpp 
+      hoNDArray_reductions_test.cpp
+        read_writer_test.cpp
       hoNDFFT_test.cpp
       hoNFFT_test.cpp
       hoNDWavelet_test.cpp
@@ -63,7 +64,7 @@ if ( CUDA_FOUND )
 endif()
     target_link_libraries(test_all
         gadgetron_core
-
+        gadgetron_mricore
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpucore_math
     gadgetron_toolbox_cpufft

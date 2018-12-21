@@ -1,4 +1,4 @@
-#include "GadgetIsmrmrdReadWrite.h"
+#include "readers/GadgetIsmrmrdReader.h"
 #include "MRIImageWriter.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"

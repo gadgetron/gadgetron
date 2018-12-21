@@ -38,7 +38,7 @@ def main():
     def ignore_failure(test):
         failed.append(test)
 
-    def exit_on_failure(test):
+    def exit_on_failure(_):
         sys.exit(1)
 
     parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
@@ -84,7 +84,7 @@ def main():
     if args.stats:
         output_csv(stats, args.stats)
 
-    print("\n{} tests passed. {} tests skipped.".format(len(passed), len(skipped)))
+    print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
 

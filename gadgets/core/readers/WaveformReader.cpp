@@ -3,7 +3,7 @@
 #include "mri_core_data.h"
 
 #include "WaveformReader.h"
-
+#include <ismrmrd/waveform.h>
 namespace Gadgetron::Core::Readers {
 
     std::unique_ptr<Core::Message> WaveformReader::read(std::istream& stream) {

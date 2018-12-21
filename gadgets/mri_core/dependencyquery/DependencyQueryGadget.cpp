@@ -2,7 +2,7 @@
 
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
-#include <GadgetMessageInterface.h>
+#include "Dependency.h"
 
 using namespace boost::filesystem;
 
@@ -99,13 +99,12 @@ namespace Gadgetron
                         GDEBUG_STREAM( "A total of " << v.size() << " dependency measurements are found ... ");
 
                         // if needed, clean the storage first
-                        std::string filename;
 
                         if ( clean_storage_while_query_ )
                         {
                             for (vec::const_iterator it (v.begin()); it != v.end(); ++it)
                             {
-                                filename = it->string();
+                                std::string filename = it->string();
 
                                 // find the file creation/modification time
                                 std::time_t lastWriteTime = last_write_time(*it);
@@ -127,23 +126,21 @@ namespace Gadgetron
                         }
 
                         // declear the attributes
-                        Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* m1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
+                        auto message = new GadgetContainerMessage<DependencyQuery::Dependency>();
+
+                        auto& dependencies = message->getObjectPtr()->dependencies;
 
                         size_t count = 0;
                         size_t ind;
 
                         for (vec::const_iterator it (v.begin()); it != v.end(); ++it)
                         {
-#                       if BOOST_VERSION < 104600
-                            filename = it->filename();
-#                       else
-                            filename = it->filename().string();
-#                       endif
+                            std::string filename = it->filename().string();
                             ind = filename.find(noise_dependency_prefix_);
 
                             if ( ind != std::string::npos )
                             {
-                                m1->getObjectPtr()->append(noise_dependency_attrib_name_.c_str(), filename.c_str());
+                                dependencies.append(noise_dependency_attrib_name_.c_str(), filename.c_str());
                                 count++;
                             }
                         }
@@ -153,15 +150,10 @@ namespace Gadgetron
                         if ( count == 0 )
                         {
                             // put into a dummy item
-                            m1->getObjectPtr()->set(noise_dependency_attrib_name_.c_str(), "Dummy");
+                            dependencies.append(noise_dependency_attrib_name_.c_str(), "Dummy");
                         }
 
-                        // send the found dependencies
-                        GadgetContainerMessage<GadgetMessageIdentifier>* mb = new GadgetContainerMessage<GadgetMessageIdentifier>();
-                        mb->getObjectPtr()->id = GADGET_MESSAGE_DEPENDENCY_QUERY;
-                        mb->cont(m1);
-
-                        this->next()->putq(mb);
+                        this->next()->putq(message);
                     }
                     else
                     {

@@ -1,5 +1,5 @@
 #include "GrappaCalibrationBuffer.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "readers/GadgetIsmrmrdReader.h"
 
 namespace Gadgetron{
 
