@@ -12,6 +12,7 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
+#include "Connection_common.h"
 
 
 namespace {
@@ -42,87 +43,52 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    void StreamConnection::process_input() {
+    void StreamConnection::process() {
 
-        bool closed = false;
+        auto factory = [&](auto& closed ) {
 
-        std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+            std::function<void()> close_callback = [&]() {
+                closed = true;
+                input_channel->close();
+            };
 
-        std::function<void()> close_callback = [&]() {
-            closed = true;
-            channels.input->close();
+            std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+            handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+            handlers[CONFIG] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
+            handlers[HEADER] = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
+
+            handlers[QUERY] = std::make_unique<QueryHandler>(input_channel);
+            handlers[CLOSE] = std::make_unique<CloseHandler>(close_callback);
+
+            for (auto &reader : builder.build_readers(config.readers)) {
+                handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), input_channel);
+            }
+
+            return handlers;
         };
-
-        handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[HEADER]   = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
-
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
-        handlers[CLOSE]    = std::make_unique<CallbackHandler>(close_callback);
-
-        for (auto &reader : builder.build_readers(config.readers)) {
-            handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), channels.input);
-        }
-
-        while (!closed) {
-            auto id = read_t<uint16_t>(stream);
-
-            GDEBUG_STREAM("Processing message with id: " << id);
-
-            handlers.at(id)->handle(stream);
-        }
-    }
-
-    void StreamConnection::process_output() {
-
-        std::vector<std::unique_ptr<Writer>> writers = builder.build_writers(config.writers);
-
-        writers.push_back(std::make_unique<TextWriter>());
-        writers.push_back(std::make_unique<ResponseWriter>());
-
-        InputChannel<Message>& output = *channels.output;
-        for (auto message : output) {
-
-            auto writer = std::find_if(writers.begin(), writers.end(),
-                   [&](auto &writer) { return writer->accepts(*message); }
-            );
-
-            (*writer)->write(stream, std::move(message));
-        }
     }
 
 
-    void StreamConnection::process(std::iostream &stream, Context context, Config config) {
+    StreamConnection::StreamConnection(std::iostream &stream, Gadgetron::Core::Context context, Config config)
+    : stream(stream), context(context), config(config), builder(context.paths) {
 
-        StreamConnection connection(std::move(context), std::move(config), stream);
+        output_thread = std::thread(
+                [&](auto writers){ handle_output(output_channel,stream,std::move(writers));},
+                builder.build_writers(this->config.writers)
+                );
 
-        connection.threads.input  = std::thread([&]() {
-            connection.process_input();
-        });
-
-        connection.threads.output = std::thread([&]() {
-            connection.process_output();
-        });
-
-        connection.node->process(connection.channels.input, connection.channels.output);
-
-        // Connection destructor joins input and output threads.
-    }
-
-    StreamConnection::StreamConnection(Gadgetron::Core::Context context, Config config, std::iostream &stream)
-    : context(context), config(config), stream(stream), channels {
-        std::make_shared<MessageChannel>(),
-        std::make_shared<MessageChannel>()
-    }, builder(context.paths) {
-        node = builder.build_stream(config.stream, context);
+        stream_thread = std::thread(
+                [this](){
+                    auto node = builder.build_stream(this->config.stream, this->context);
+                    node->process(this->input_channel,this->output_channel);
+                });
     }
 
     StreamConnection::~StreamConnection() {
+        input_channel->close();
+        stream_thread.join();
+        output_thread.join();
 
-        channels.output->close();
-
-        threads.input.join();
-        threads.output.join();
     }
 }
 

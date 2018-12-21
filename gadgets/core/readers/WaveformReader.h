@@ -2,7 +2,6 @@
 #define GADGETRON_WAVEFORMREADER_H
 
 #include "Reader.h"
-
 namespace Gadgetron::Core::Readers {
 
     class WaveformReader : public Gadgetron::Core::Reader {

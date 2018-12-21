@@ -22,7 +22,7 @@
 
 #include "Writers.h"
 #include "Handlers.h"
-#include "StreamConnection.h"
+#include "Connection_common.h"
 
 namespace {
 
@@ -42,15 +42,15 @@ namespace {
 
     class ConfigHandler : public Handler {
     public:
-        explicit ConfigHandler(std::function<void(Config)> &callback)
-        : callback(callback) {}
+        explicit ConfigHandler(std::function<void(Config)> callback)
+        : callback(std::move(callback)) {}
 
         void handle_callback(std::istream &config_stream) {
             callback(parse_config(config_stream));
         }
 
     private:
-        std::function<void(Config)> &callback;
+        std::function<void(Config)> callback;
     };
 
     class ConfigReferenceHandler : public ConfigHandler {
@@ -85,86 +85,37 @@ namespace {
     };
 
 
-};
+}
 
 namespace Gadgetron::Server::Connection {
 
-    void ProtoConnection::process_input() {
+     template<> boost::optional<Config> ProtoConnection::process()  {
 
-        bool closed = false;
 
-        std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+        boost::optional<Config> config = boost::none;
 
-        std::function<void()> close_callback = [&]() {
+         auto factory = [&](auto& closed){
 
-            closed = true;
-            promise.set_value(boost::none);
-        };
+            std::function<void(Config)> config_callback = [&config,&closed](Config input_config) {
+                config = input_config;
+                closed = true;
+            };
+             std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
+             handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
+             handlers[CONFIG] = std::make_unique<ConfigStringHandler>(config_callback);
+             handlers[HEADER] = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
+             handlers[QUERY] = std::make_unique<QueryHandler>(channel);
 
-        std::function<void(Config)> config_callback = [&](Config config) {
+             return handlers;
+         };
 
-            closed = true;
-            promise.set_value(boost::make_optional(config));
-        };
+         handle_input(stream,factory);
 
-        handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
-        handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
-        handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channel);
-        handlers[CLOSE]    = std::make_unique<CallbackHandler>(close_callback);
+        return config;
 
-        while (!closed) {
-            auto id = read_t<uint16_t>(stream);
-
-            GDEBUG_STREAM("Processing message with id: " << id);
-
-            handlers.at(id)->handle(stream);
-        }
     }
 
-    void ProtoConnection::process_output() {
+    template class ProtoConnection;
 
-        std::vector<std::unique_ptr<Writer>> writers{};
 
-        writers.push_back(std::make_unique<TextWriter>());
-        writers.push_back(std::make_unique<ResponseWriter>());
-
-        InputChannel<Message>& input = *channel;
-        for (auto message : input) {
-
-            auto writer = std::find_if(writers.begin(), writers.end(),
-                    [&](auto &writer) { return writer->accepts(*message); }
-            );
-
-            (*writer)->write(stream, std::move(message));
-        }
-    }
-
-    ProtoConnection::ProtoConnection(Context::Paths paths, std::iostream &stream)
-    : stream(stream), paths(std::move(paths)), channel(std::make_shared<MessageChannel>()) {}
-
-    boost::optional<Config> ProtoConnection::process(std::iostream &stream, const Context::Paths &paths) {
-
-        ProtoConnection connection{paths, stream};
-
-        connection.threads.input  = std::thread([&]() {
-            connection.process_input();
-        });
-
-        connection.threads.output = std::thread([&]() {
-            connection.process_output();
-        });
-
-        auto future = connection.promise.get_future();
-        return future.get();
-    }
-
-    ProtoConnection::~ProtoConnection() {
-
-        // Terminate the input thread somehow? Sabotage the stream?
-        channel->close();
-
-        threads.input.join();
-        threads.output.join();
-    }
 }

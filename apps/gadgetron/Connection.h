@@ -1,15 +1,17 @@
-#ifndef GADGETRON_CONNECTION_H
-#define GADGETRON_CONNECTION_H
+#pragma once
 
 #include <boost/asio.hpp>
 
 #include "connection/Handlers.h"
 
+
+
+#include "Writer.h"
 #include "Context.h"
+#include "Channel.h"
 
 namespace Gadgetron::Server::Connection {
     void handle(const Gadgetron::Core::Context::Paths &paths, std::unique_ptr<std::iostream> stream);
 }
 
 
-#endif //GADGETRON_CONNECTION_H

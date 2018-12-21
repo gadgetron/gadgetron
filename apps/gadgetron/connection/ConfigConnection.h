@@ -5,38 +5,11 @@
 #include "Channel.h"
 #include "Context.h"
 
-
+#include "Connection_common.h"
 namespace Gadgetron::Server::Connection {
 
-    class ConfigConnection {
-    public:
-        using MessageChannel = Gadgetron::Core::MessageChannel;
-        using Header = Gadgetron::Core::Context::Header;
-        using Context = Gadgetron::Core::Context;
+    using ConfigConnection = BasicConnection<Core::Context::Header>;
 
-        static Context process(
-                std::iostream &stream,
-                const Core::Context::Paths &paths
-        );
-
-    private:
-        ConfigConnection(Context::Paths paths, std::iostream &stream);
-        ~ConfigConnection();
-
-        void process_input();
-        void process_output();
-
-        std::promise<Header> promise;
-
-        std::shared_ptr<MessageChannel> channel;
-        std::iostream &stream;
-
-        struct {
-            std::thread input, output;
-        } threads;
-
-        const Gadgetron::Core::Context::Paths paths;
-    };
-
+    template<> Core::Context::Header ConfigConnection::process();
 
 }

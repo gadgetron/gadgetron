@@ -1,15 +1,25 @@
 
 #include <memory>
+#include <connection/StreamConnection.h>
 
 #include "connection/ProtoConnection.h"
 #include "connection/ConfigConnection.h"
-#include "connection/StreamConnection.h"
-#include "Connection.h"
+#include "connection/Writers.h"
 
+#include "Connection.h"
+#include "connection/Connection_common.h"
+
+
+#include "readers/Primitives.h"
 #include "log.h"
 
 using namespace boost::asio;
+
+using namespace Gadgetron::Core;
+using namespace Gadgetron::Core::Readers;
+
 using namespace Gadgetron::Server::Connection;
+using namespace Gadgetron::Server::Connection::Writers;
 
 namespace {
 
@@ -20,26 +30,22 @@ namespace {
         stream.write(reinterpret_cast<char *>(&close), sizeof(close));
     }
 
-    void handle_connection(const Gadgetron::Core::Context::Paths &paths, std::unique_ptr<std::iostream> stream) {
-
-        auto config = ProtoConnection::process(*stream, paths);
-
-        if (config) {
-            auto context = ConfigConnection::process(*stream, paths);
-
-            StreamConnection::process(*stream, context, config.get());
-        }
-
-        GDEBUG_STREAM("Sending errors.");
-        send_errors(*stream);
-
-        GDEBUG_STREAM("Sending close.");
-        send_close(*stream);
-    }
 }
 
-void Gadgetron::Server::Connection::handle(const Gadgetron::Core::Context::Paths &paths, std::unique_ptr<std::iostream> stream) {
+void Gadgetron::Server::Connection::handle(const Gadgetron::Core::Context::Paths &paths,
+                                           std::unique_ptr<std::iostream> stream) {
 
-    auto thread = std::thread(handle_connection, paths, std::move(stream));
-    thread.detach();
+    auto config = process<ProtoConnection, decltype(*stream), decltype(paths)>(*stream,paths);
+
+    if (config){
+
+        auto header = process<ConfigConnection, decltype(*stream), decltype(paths)>(*stream,paths);
+
+        auto context = Core::Context{header,paths};
+        process<StreamConnection,decltype(*stream),decltype(context),decltype(*config)>(*stream,context,*config);
+        GDEBUG("WEEEE");
+    }
+
+    send_errors(*stream);
+    send_close(*stream);
 }
