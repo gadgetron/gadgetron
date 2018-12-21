@@ -17,7 +17,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         CombineGadget.h
         CropAndCombineGadget.h
         CoilSenMapGadget.h
-#        ImageWriterGadget.h
+        ImageWriterGadget.h
         MRIImageWriter.h
         MRIImageReader.h
         NoiseAdjustGadget_unoptimized.h
@@ -32,9 +32,9 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         IsmrmrdDumpGadget.h
         AsymmetricEchoAdjustROGadget.h
         MaxwellCorrectionGadget.h
-#        CplxDumpGadget.h
-#        DependencyQueryGadget.h
-#        DependencyQueryWriter.h
+        CplxDumpGadget.h
+        DependencyQueryGadget.h
+        DependencyQueryWriter.h
         ComplexToFloatGadget.h
         AcquisitionAccumulateTriggerGadget.h
         BucketToBufferGadget.h
@@ -60,9 +60,9 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericImageReconGadget.h
         GenericReconAccumulateImageTriggerGadget.h
         GenericImageReconArrayToImageGadget.h
-#        WhiteNoiseInjectorGadget.h
+        WhiteNoiseInjectorGadget.h
         ImageFinishGadget.h
-#        NoiseSummaryGadget.h
+        NoiseSummaryGadget.h
         NHLBICompression.h
         ImageAccumulatorGadget.h
         DenoiseGadget.h)
@@ -77,9 +77,9 @@ set(gadgetron_mricore_src_files
         CropAndCombineGadget.cpp
         CoilSenMapGadget.cpp
         ImageFinishGadget.cpp
-#        ImageWriterGadget.cpp
+        ImageWriterGadget.cpp
         MRIImageWriter.cpp
-#        MRIImageReader.cpp
+        MRIImageReader.cpp
         NoiseAdjustGadget_unoptimized.cpp
         ExtractGadget.cpp
         FloatToFixPointGadget.cpp
@@ -92,8 +92,8 @@ set(gadgetron_mricore_src_files
         IsmrmrdDumpGadget.cpp
         AsymmetricEchoAdjustROGadget.cpp
         MaxwellCorrectionGadget.cpp
-#        CplxDumpGadget.cpp
-#        DependencyQueryGadget.cpp
+        CplxDumpGadget.cpp
+        DependencyQueryGadget.cpp
 #        DependencyQueryWriter.cpp
         ComplexToFloatGadget.cpp
         AcquisitionAccumulateTriggerGadget.cpp

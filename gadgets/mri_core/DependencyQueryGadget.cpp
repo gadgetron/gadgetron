@@ -2,6 +2,8 @@
 
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
+#include <GadgetMessageInterface.h>
+
 using namespace boost::filesystem;
 
 namespace Gadgetron
@@ -159,12 +161,7 @@ namespace Gadgetron
                         mb->getObjectPtr()->id = GADGET_MESSAGE_DEPENDENCY_QUERY;
                         mb->cont(m1);
 
-                        int ret =  this->controller_->output_ready(mb);
-                        if ( (ret < 0) )
-                        {
-                            GDEBUG("Failed to return massage to controller\n");
-                            return GADGET_FAIL;
-                        }
+                        this->next()->putq(mb);
                     }
                     else
                     {
