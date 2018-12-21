@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <limits>
 #include <fstream>
+#include "Dependency.h"
 
 using namespace boost::filesystem;
 
@@ -38,17 +39,18 @@ namespace Gadgetron
             path p = path(noise_dependency_folder_) / path(noise_file.value());
 
             // declear the attributes
-            Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* m1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
+            auto message = new Gadgetron::GadgetContainerMessage<DependencyQuery::Dependency>();
+            auto& dependencies = message->getObjectPtr()->dependencies;
+
             
             hoNDArray< std::complex<float> > noise_covariance_matrix;
             float noise_dwell_time;
 
             if ( !boost::filesystem::exists( p) ) {
-                m1->getObjectPtr()->append("status", "failed");                
+                dependencies.append("status", "failed");
             } else {
 
-                std::ifstream infile;
-                infile.open (p.string(), std::ios::in|std::ios::binary);
+                std::ifstream infile(p.string(), std::ios::in|std::ios::binary);
 
                 if (infile.good()) {
                     //Read the XML header of the noise scan
@@ -61,20 +63,15 @@ namespace Gadgetron
                     
                     size_t len;
                     infile.read( reinterpret_cast<char*>(&len), sizeof(size_t));
-                    
-                    char* buf = new char[len];
-                    if ( buf == NULL ) return false;
-                    
-                    infile.read(buf, len);
 
-                    if ( !noise_covariance_matrix.deserialize(buf, len) ) {
-                        delete [] buf;
+                    auto buf = std::make_unique<char[]>(len);
+
+                    infile.read(buf.get(), len);
+
+                    if ( !noise_covariance_matrix.deserialize(buf.get(), len) ) {
                         GERROR("Unable to deserialize matrix\n");
                         return GADGET_FAIL;
                     }
-
-                    delete [] buf;
-                    infile.close();
                 } else {
                     GDEBUG("Noise covariance matrix file is not found. Error\n");
                     return GADGET_FAIL;
@@ -98,20 +95,16 @@ namespace Gadgetron
                 GDEBUG("Max Sigma: %f\n", max_sigma);
                 GDEBUG("Mean Sigma: %f\n", mean_sigma);
 
-                m1->getObjectPtr()->append("noise_dwell_time_us",noise_dwell_time);
-                m1->getObjectPtr()->append("min_sigma",min_sigma);
-                m1->getObjectPtr()->append("max_sigma",max_sigma);
-                m1->getObjectPtr()->append("mean_sigma",mean_sigma);
-                m1->getObjectPtr()->append("channels", static_cast<long>(coils));
-                m1->getObjectPtr()->append("status", "success");
+                dependencies.append("noise_dwell_time_us",noise_dwell_time);
+                dependencies.append("min_sigma",min_sigma);
+                dependencies.append("max_sigma",max_sigma);
+                dependencies.append("mean_sigma",mean_sigma);
+                dependencies.append("channels", static_cast<long>(coils));
+                dependencies.append("status", "success");
             }
-            
-            // send the found dependencies
-            GadgetContainerMessage<GadgetMessageIdentifier>* mb = new GadgetContainerMessage<GadgetMessageIdentifier>();
-            mb->getObjectPtr()->id = GADGET_MESSAGE_DEPENDENCY_QUERY;
-            mb->cont(m1);
 
-            int ret =  this->controller_->output_ready(mb);
+            this->next()->putq(message);
+            
         }
         
         return GADGET_OK;

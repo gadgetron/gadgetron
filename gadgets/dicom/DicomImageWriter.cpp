@@ -3,7 +3,7 @@
 #include <time.h>
 
 // Gadgetron includes
-#include "GadgetIsmrmrdReadWrite.h"
+#include "readers/GadgetIsmrmrdReader.h"
 #include "DicomImageWriter.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"

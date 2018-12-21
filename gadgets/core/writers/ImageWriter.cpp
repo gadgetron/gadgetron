@@ -1,6 +1,7 @@
 
 #include <ismrmrd/meta.h>
 #include <boost/optional.hpp>
+#include <io/writers.h>
 
 #include "ImageWriter.h"
 
@@ -18,10 +19,9 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
                 std::unique_ptr<hoNDArray<T>> data,
                 std::unique_ptr<boost::optional<ISMRMRD::MetaContainer>> meta
         ) override {
-
             uint16_t message_id = 1022;
-            stream.write(reinterpret_cast<char *>(&message_id), sizeof(message_id));
-            stream.write(reinterpret_cast<char *>(header.get()), sizeof(*header));
+            IO::write(stream,message_id);
+            IO::write(stream,*header);
 
             std::string serialized_meta;
 
@@ -34,10 +34,9 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
             }
 
             uint64_t meta_size = serialized_meta.size();
-            stream.write(reinterpret_cast<char *>(&meta_size), sizeof(meta_size));
+            IO::write(stream,meta_size);
             stream.write(serialized_meta.c_str(), meta_size);
-
-            stream.write(reinterpret_cast<char *>(data->get_data_ptr()), data->get_number_of_bytes());
+            IO::write(stream, *data);
         }
     };
 

@@ -1,4 +1,4 @@
-#include "GadgetIsmrmrdReadWrite.h"
+#include "GadgetIsmrmrdReader.h"
 #include "NHLBICompression.h"
 
 #if defined GADGETRON_COMPRESSION_ZFP

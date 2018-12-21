@@ -1,6 +1,6 @@
 #ifndef GADGETMRIHEADERS_H
 #define GADGETMRIHEADERS_H
-
+#include <cstdint>
 
 //Data flags
 /*
@@ -34,7 +34,7 @@ enum GadgetImageTypes
 
 namespace Gadgetron{
 
-enum GadgetMessageID {
+enum GadgetMessageID : std::uint16_t {
   GADGET_MESSAGE_EXT_ID_MIN                             = 1000,
   GADGET_MESSAGE_ACQUISITION                            = 1001, /**< DEPRECATED */
   GADGET_MESSAGE_NEW_MEASUREMENT                        = 1002, /**< DEPRECATED */

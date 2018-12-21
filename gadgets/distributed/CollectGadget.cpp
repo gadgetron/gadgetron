@@ -1,7 +1,7 @@
 #include "CollectGadget.h"
 #include <ismrmrd/ismrmrd.h>
 #include "GadgetMRIHeaders.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "readers/GadgetIsmrmrdReader.h"
 #include "GadgetStreamInterface.h"
 
 namespace Gadgetron{

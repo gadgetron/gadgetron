@@ -6,19 +6,22 @@
 #ifndef DependencyQueryWriter_H
 #define DependencyQueryWriter_H
 
-#include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd/meta.h"
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
+#include "Dependency.h"
 
 namespace Gadgetron
 {
 
-    class EXPORTGADGETSMRICORE DependencyQueryWriter : public GadgetMessageWriter
+    class EXPORTGADGETSMRICORE DependencyQueryWriter : public Core::TypedWriter<DependencyQuery::Dependency>
     {
+    protected:
+        void serialize(std::ostream &stream, std::unique_ptr<DependencyQuery::Dependency>) override;
+
     public:
 //        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
     };
