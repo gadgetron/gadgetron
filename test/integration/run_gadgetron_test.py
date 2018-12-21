@@ -222,7 +222,7 @@ def ensure_instance_satisfies_requirements(args, config):
         info = subprocess.check_output(["gadgetron_ismrmrd_client",
                                         "-a", gadgetron.host,
                                         "-p", gadgetron.port,
-                                        "-q", "-c", "gadgetron_info.xml"],
+                                        "-q", "-Q", "gadgetron::info"],
                                        universal_newlines=True)
 
         failed_rules = [rule for rule in build_rules(config.items('REQUIREMENTS'))

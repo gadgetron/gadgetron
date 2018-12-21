@@ -21,6 +21,26 @@ def output_csv(stats, filename):
 
 
 def main():
+
+    stats = []
+    passed = []
+    failed = []
+    skipped = []
+
+    def pass_handler(test):
+        passed.append(test)
+        with open('test/stats.json') as f:
+            stats.append(json.loads(f.read()))
+
+    def skip_handler(test):
+        skipped.append(test)
+
+    def ignore_failure(test):
+        failed.append(test)
+
+    def exit_on_failure(test):
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -37,6 +57,9 @@ def main():
     parser.add_argument('-e', '--external', action='store_const', const=['-e'], default=[],
                         help="Use external Gadgetron; don't start a new instance each test.")
 
+    parser.add_argument('--ignore-failures',
+                        action='store_const', const=ignore_failure, default=exit_on_failure,
+                        help="Ignore a failing cases; keep running tests.")
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
@@ -44,21 +67,7 @@ def main():
 
     args = parser.parse_args()
 
-    def pass_handler(test):
-        passed.append(test)
-        with open('test/stats.json') as f:
-            stats.append(json.loads(f.read()))
-
-    def skip_handler(test):
-        skipped.append(test)
-
-    def fail_handler(test):
-        sys.exit(1)
-
-    stats = []
-    passed = []
-    skipped = []
-    handlers = {0: pass_handler, 1: fail_handler, 2: skip_handler}
+    handlers = {0: pass_handler, 1: args.ignore_failures, 2: skip_handler}
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
