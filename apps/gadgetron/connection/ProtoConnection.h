@@ -8,7 +8,7 @@
 #include "Connection_common.h"
 namespace Gadgetron::Server::Connection {
 
-    using ProtoConnection = Connection<boost::optional<Config>>;
+    using ProtoConnection = BasicConnection<boost::optional<Config>>;
 
     template<> boost::optional<Config> ProtoConnection::process();
 

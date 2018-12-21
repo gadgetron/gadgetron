@@ -8,7 +8,7 @@
 #include "Connection_common.h"
 namespace Gadgetron::Server::Connection {
 
-    using ConfigConnection = Connection<Core::Context::Header>;
+    using ConfigConnection = BasicConnection<Core::Context::Header>;
 
     template<> Core::Context::Header ConfigConnection::process();
 

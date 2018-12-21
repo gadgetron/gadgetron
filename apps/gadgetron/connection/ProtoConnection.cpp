@@ -115,5 +115,7 @@ namespace Gadgetron::Server::Connection {
 
     }
 
+    template class ProtoConnection;
+
 
 }

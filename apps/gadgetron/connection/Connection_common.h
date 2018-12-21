@@ -2,14 +2,18 @@
 
 #include "Handlers.h"
 #include "io/readers.h"
+#include "Writers.h"
+#include <tuple>
 namespace Gadgetron::Server::Connection {
+    template<class CONNECTION_TYPE>
+    struct Connection {
+        template<class ...ARGS>
+        static inline auto process(ARGS... xs ) {
 
-    template<class CONNECTION, class ...ARGS>
-    inline auto process(ARGS... xs){
+            auto connection = CONNECTION(xs...);
 
-        auto connection = CONNECTION(xs...);
-
-        return connection.process();
+            return connection.process();
+        }
     }
 
     template<class HANDLER_FACTORY>
@@ -44,11 +48,9 @@ namespace Gadgetron::Server::Connection {
 
 
     template<class RETURN_TYPE>
-    class Connection {
+    class BasicConnection {
     public:
-        static RETURN_TYPE process(std::iostream& stream, Gadgetron::Core::Context::Paths paths);
-        private:
-        Connection(std::iostream &stream, Gadgetron::Core::Context::Paths paths) :stream(stream),paths(paths){
+        BasicConnection(std::iostream &stream, Gadgetron::Core::Context::Paths paths) :stream(stream),paths(paths){
 
          output_thread = std::thread(
                  [&](){handle_output(channel,stream);}
@@ -59,10 +61,12 @@ namespace Gadgetron::Server::Connection {
         }
         RETURN_TYPE process();
 
-        ~Connection(){
+        ~BasicConnection(){
             channel->close();
             output_thread.join();
         };
+
+    private:
 
         std::thread output_thread;
         std::shared_ptr<Core::MessageChannel> channel;

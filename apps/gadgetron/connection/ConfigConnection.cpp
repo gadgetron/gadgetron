@@ -67,4 +67,7 @@ namespace Gadgetron::Server::Connection {
     }
 
 
+    template class ConfigConnection;
+
+
 }
