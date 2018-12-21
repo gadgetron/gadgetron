@@ -115,7 +115,7 @@ namespace Gadgetron::Server::Connection {
 
     }
 
-    template class ProtoConnection;
+    template class BasicConnection<boost::optional<Config>>;
 
 
 }

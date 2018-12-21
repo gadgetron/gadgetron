@@ -8,17 +8,17 @@ namespace Gadgetron::Server::Connection {
     template<class CONNECTION_TYPE>
     struct Connection {
         template<class ...ARGS>
-        static inline auto process(ARGS... xs ) {
+        static inline auto process(ARGS&&... xs ) {
 
-            auto connection = CONNECTION(xs...);
+            auto connection = CONNECTION_TYPE(xs...);
 
             return connection.process();
         }
-    }
+    };
 
     template<class HANDLER_FACTORY>
     inline void handle_input(std::istream& stream, HANDLER_FACTORY factory){
-        bool closed = true;
+        bool closed = false;
         auto handlers = factory(closed);
         handlers[Handlers::CLOSE]    = std::make_unique<Handlers::CloseHandler>(closed);
 
@@ -69,7 +69,7 @@ namespace Gadgetron::Server::Connection {
     private:
 
         std::thread output_thread;
-        std::shared_ptr<Core::MessageChannel> channel;
+        std::shared_ptr<Core::MessageChannel> channel = std::make_shared<Core::MessageChannel>();
         std::iostream& stream;
         const Gadgetron::Core::Context::Paths paths;
     };

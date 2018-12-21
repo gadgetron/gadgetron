@@ -16,7 +16,7 @@ TEST(ReadWriteTest,AcquisitionTest){
     acquisition_header->active_channels = 1;
     acquisition_header->available_channels = 1;
 
-    auto data= std::make_unique<hoNDArray<std::complex<float_complext>>>(32);
+    auto data= std::make_unique<hoNDArray<std::complex<float>>>(32);
     data->fill(42.0f);
 
 

@@ -50,7 +50,7 @@ namespace Gadgetron::Server::Connection {
 
         auto factory = [&](auto& closed ) {
 
-                auto header_callback = [&](Header input_header) { header = input_header; closed = false;};
+                auto header_callback = [&](Header input_header) { header = input_header; closed = true;};
 
                 std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
                 handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
@@ -66,8 +66,8 @@ namespace Gadgetron::Server::Connection {
         return header;
     }
 
+    template class BasicConnection<Header>;
 
-    template class ConfigConnection;
 
 
 }

@@ -18,7 +18,7 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
                 std::unique_ptr<hoNDArray<T>> data,
                 std::unique_ptr<boost::optional<ISMRMRD::MetaContainer>> meta
         ) override {
-
+            GDEBUG_STREAM("Data " << data.get() << std::endl);
             uint16_t message_id = 1022;
             stream.write(reinterpret_cast<char *>(&message_id), sizeof(message_id));
             stream.write(reinterpret_cast<char *>(header.get()), sizeof(*header));

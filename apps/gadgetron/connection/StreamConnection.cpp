@@ -56,9 +56,7 @@ namespace Gadgetron::Server::Connection {
             handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
             handlers[CONFIG] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
             handlers[HEADER] = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
-
             handlers[QUERY] = std::make_unique<QueryHandler>(input_channel);
-            handlers[CLOSE] = std::make_unique<CloseHandler>(close_callback);
 
             for (auto &reader : builder.build_readers(config.readers)) {
                 handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), input_channel);
@@ -66,6 +64,9 @@ namespace Gadgetron::Server::Connection {
 
             return handlers;
         };
+
+
+        handle_input(stream,factory);
     }
 
 

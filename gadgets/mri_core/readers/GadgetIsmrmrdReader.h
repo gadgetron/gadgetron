@@ -19,49 +19,6 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageWriter : public Core::Writer {
-
-    public:
-//        virtual void write(std::ostream &stream, std::unique_ptr<Core::Message> &&message) override final {
-//            using namespace Core;
-//            auto hm = dynamic_cast<Core::TypedMessage<Acquisition>*>(message.get());
-//
-//            if (!hm) {
-//               throw std::runtime_error("GadgetAcquisitionMessageWriter, invalid acquisition message objects");
-//            }
-//
-//            auto acquisition = hm->get_data();
-//
-//            ssize_t send_cnt = 0;
-//
-//            GadgetMessageIdentifier id;
-//            id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
-//
-//            IO::write(stream,id);
-//
-//            ISMRMRD::AcquisitionHeader& acqHead = acquisition->header;
-//
-//            IO::write(stream,acqHead);
-//
-//
-//            unsigned long trajectory_elements = acqHead.trajectory_dimensions * acqHead.number_of_samples;
-//            unsigned long data_elements = acqHead.active_channels * acqHead.number_of_samples;
-//
-//
-//            if (acquisition->trajectory) {
-//                IO::write(stream,*acquisition->trajectory);
-//            }
-//
-//            if (data_elements) {
-//                IO::write(stream,acquisition->data);
-//            }
-//        }
-//
-//
-//        virtual std::vector<std::type_index> supported_types() const override final {
-//            return {std::type_index(typeid(Core::TypedMessage<Acquisition>))};
-//        }
-    };
 
     /**
     Default implementation of GadgetMessageReader for IsmrmrdAcquisition messages

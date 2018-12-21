@@ -35,14 +35,14 @@ namespace {
 void Gadgetron::Server::Connection::handle(const Gadgetron::Core::Context::Paths &paths,
                                            std::unique_ptr<std::iostream> stream) {
 
-    auto config = process<ProtoConnection, decltype(*stream), decltype(paths)>(*stream,paths);
+    auto config = Connection<ProtoConnection>::process(*stream,paths);
 
     if (config){
 
-        auto header = process<ConfigConnection, decltype(*stream), decltype(paths)>(*stream,paths);
+        auto header = Connection<ConfigConnection>::process(*stream,paths);
 
         auto context = Core::Context{header,paths};
-        process<StreamConnection,decltype(*stream),decltype(context),decltype(*config)>(*stream,context,*config);
+        Connection<StreamConnection>::process(*stream,context,*config);
         GDEBUG("WEEEE");
     }
 
