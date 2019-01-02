@@ -1,7 +1,8 @@
-//
-// Created by dchansen on 1/2/19.
-//
 #pragma once
+
+#include <memory>
+
+#include "Channel.h"
 
 namespace Gadgetron::Server::Connection {
     class NodeHandler {

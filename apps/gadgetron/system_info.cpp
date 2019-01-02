@@ -1,5 +1,5 @@
 
-#include "gadgetron_system_info.h"
+#include "system_info.h"
 
 #include <iostream>
 

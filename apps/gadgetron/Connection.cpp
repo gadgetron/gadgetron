@@ -1,8 +1,9 @@
 
 #include <memory>
 
-#include "connection/ProtoConnection.h"
+#include "connection/VoidConnection.h"
 #include "connection/ConfigConnection.h"
+#include "connection/HeaderConnection.h"
 #include "connection/StreamConnection.h"
 #include "connection/Writers.h"
 
@@ -22,6 +23,12 @@ using namespace Gadgetron::Server::Connection::Writers;
 
 namespace {
 
+    template<class T>
+    struct RAIICloser {
+        std::shared_ptr<T> t;
+        ~RAIICloser() { t->close(); }
+    };
+
     class ErrorChannel : public ErrorHandler {
     public:
 
@@ -40,7 +47,7 @@ namespace {
                 push_error(location, s);
             }
             catch (...) {
-                push_error(location, "Unknown exception.");
+                push_error(location, "Unknown error.");
             }
         }
 #else
@@ -80,15 +87,10 @@ namespace {
         ErrorChannel error_handler{};
 
         error_handler.handle("Connection Main Thread", [&]() {
-            auto config = ProtoConnection::process(*stream, paths, error_handler);
-            if (config) {
-                auto context = ConfigConnection::process(*stream, paths, error_handler);
-                StreamConnection::process(*stream, context, config.get(), error_handler);
-            }
+            ConfigConnection::process(*stream, paths, error_handler);
         });
 
         error_handler.send_errors(*stream);
-
         send_close(*stream);
     }
 }
@@ -104,8 +106,10 @@ namespace Gadgetron::Server::Connection {
 
     void Connection::process_input() {
 
+        RAIICloser<MessageChannel> closer{channels.input};
+
         bool closed = false;
-        auto handlers = prepare_handlers(closed);
+        auto handlers = prepare_handlers([&]() { closed = true; });
 
         while (!closed) {
             auto id = read_t<uint16_t>(stream);
@@ -117,6 +121,8 @@ namespace Gadgetron::Server::Connection {
     }
 
     void Connection::process_output() {
+
+        RAIICloser<MessageChannel> closer{channels.output};
 
         auto writers = prepare_writers();
 
@@ -138,25 +144,6 @@ namespace Gadgetron::Server::Connection {
 
     std::vector<std::unique_ptr<Writer>> Connection::prepare_writers() {
         return std::vector<std::unique_ptr<Writer>>();
-    }
-
-    void Connection::start(ErrorHandler &handler) {
-
-        std::function<void()> handled_input = [&]() {
-            handler.handle("Connection Input Thread", [&]() { this->process_input(); });
-        };
-
-        std::function<void()> handled_output = [&]() {
-            handler.handle("Connection Output Thread", [&]() { this->process_output(); });
-        };
-
-        threads.input  = std::thread(handled_input);
-        threads.output = std::thread(handled_output);
-    }
-
-    void Connection::join() {
-        threads.input.join();
-        threads.output.join();
     }
 }
 

@@ -16,23 +16,30 @@ namespace Gadgetron::Server::Connection {
     public:
         virtual ~ErrorHandler() = default;
         virtual void handle(const std::string &location, std::function<void()> function) = 0;
+
+        template<class F, class... ARGS>
+        std::thread run(const std::string &location, F fn, ARGS... args) {
+            auto decorated = [=]() { fn(std::forward(args)...); };
+            return std::thread(
+                    [=]() {
+                        this->handle(location, decorated);
+                    }
+            );
+        }
     };
 
     class Connection {
     public:
         using MessageChannel = Gadgetron::Core::MessageChannel;
-        using Handler = Gadgetron::Server::Connection::Handlers::Handler;
         using Writer = Gadgetron::Core::Writer;
+        using Handler = Handlers::Handler;
 
     protected:
-        virtual std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(bool &closed) = 0;
-        virtual std::vector<std::unique_ptr<Writer>> prepare_writers();
-
-        void start(ErrorHandler &);
-        void join();
-
         explicit Connection(std::iostream &stream);
         virtual ~Connection() = default;
+
+        virtual std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(std::function<void()> close) = 0;
+        virtual std::vector<std::unique_ptr<Writer>> prepare_writers();
 
         void process_input();
         void process_output();
@@ -42,10 +49,6 @@ namespace Gadgetron::Server::Connection {
         struct {
             std::shared_ptr<MessageChannel> input, output;
         } channels;
-
-        struct {
-            std::thread input, output;
-        } threads;
     };
 }
 

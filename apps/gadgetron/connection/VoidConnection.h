@@ -11,20 +11,20 @@
 
 namespace Gadgetron::Server::Connection {
 
-    class StreamConnection : public Connection {
+    class VoidConnection : public Connection {
     public:
         using MessageChannel = Gadgetron::Core::MessageChannel;
         using Context = Gadgetron::Core::Context;
 
         static void process(
                 std::iostream &stream,
-                const Context &context,
+                const Context::Paths &paths,
                 const Config &config,
                 ErrorHandler &error_handler
         );
 
     private:
-        StreamConnection(std::iostream &stream, Loader &loader);
+        VoidConnection(std::iostream &stream, Loader &loader);
 
         std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(std::function<void()> close) override;
         std::vector<std::unique_ptr<Writer>> prepare_writers() override;
@@ -33,5 +33,4 @@ namespace Gadgetron::Server::Connection {
         std::unique_ptr<NodeHandler> node;
     };
 }
-
 

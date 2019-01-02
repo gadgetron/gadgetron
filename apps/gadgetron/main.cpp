@@ -7,7 +7,7 @@
 #include "log.h"
 #include "paths.h"
 
-#include "gadgetron_system_info.h"
+#include "system_info.h"
 
 #include "Server.h"
 

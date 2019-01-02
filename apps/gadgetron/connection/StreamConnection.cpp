@@ -1,6 +1,5 @@
 
 #include <memory>
-#include <future>
 
 #include "StreamConnection.h"
 
@@ -42,21 +41,16 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    std::map<uint16_t, std::unique_ptr<Connection::Handler>> StreamConnection::prepare_handlers(bool &closed) {
+    std::map<uint16_t, std::unique_ptr<Connection::Handler>> StreamConnection::prepare_handlers(std::function<void()> close) {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
-
-        std::function<void()> close_callback = [&]() {
-            closed = true;
-            channels.input->close();
-        };
 
         handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>(HEADER_ERROR);
 
-        handlers[QUERY]    = std::make_unique<QueryHandler>(channels.output);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
+        handlers[QUERY]    = std::make_unique<QueryHandler>(*channels.input);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
         for (auto &reader : loader.readers()) {
             handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), channels.input);
@@ -80,17 +74,26 @@ namespace Gadgetron::Server::Connection {
 
     void StreamConnection::process(
             std::iostream &stream,
-            Context context,
-            Config config,
+            const Context &context,
+            const Config &config,
             ErrorHandler &error_handler
     ) {
-        Loader loader{error_handler, std::move(context), std::move(config)};
+        Loader loader{error_handler, context, config};
+        StreamConnection connection{stream, loader};
 
-        StreamConnection connection(stream, loader);
+        std::thread input_thread = error_handler.run(
+                "Connection Input Thread",
+                [&]() { connection.process_input(); }
+        );
 
-        connection.start(error_handler);
+        std::thread output_thread = error_handler.run(
+                "Connection Output Thread",
+                [&]() { connection.process_output(); }
+        );
+
         connection.node->process(connection.channels.input, connection.channels.output);
-        connection.join();
+        input_thread.join();
+        output_thread.join();
     }
 }
 
