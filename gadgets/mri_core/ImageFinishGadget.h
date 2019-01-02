@@ -13,8 +13,8 @@ namespace Gadgetron {
         ) : GadgetNode(properties) {};
 
     protected:
-        void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,
-                     std::shared_ptr<Core::OutputChannel> out) override;
+        void process(Core::InputChannel& in,
+                    Core::OutputChannel& out) override;
 
     };
 }

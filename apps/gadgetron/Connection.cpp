@@ -54,7 +54,7 @@ namespace {
             TextWriter writer{};
 
             errors.close();
-            InputChannel<Message> &errors(this->errors);
+            InputChannel &errors(this->errors);
 
             for (auto error : errors) {
                 writer.write(stream, std::move(error));
@@ -123,7 +123,7 @@ namespace Gadgetron::Server::Connection {
         writers.push_back(std::make_unique<TextWriter>());
         writers.push_back(std::make_unique<ResponseWriter>());
 
-        InputChannel<Message> &output = *channels.output;
+        InputChannel &output = *channels.output;
         for (auto message : output) {
 
             auto writer = std::find_if(writers.begin(), writers.end(),

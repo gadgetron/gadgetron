@@ -3,46 +3,10 @@
 #include<typeinfo>
 
 namespace Gadgetron::Core {
-    template<class ...ARGS>
-    class InputChannel<ARGS...>::Iterator {
+
+    class InputChannel::Iterator {
     public:
-        Iterator(InputChannel<ARGS...> *c) : channel(c) {
-            this->operator++();
-        }
-
-        Iterator() : channel(nullptr) {}
-
-        Iterator &operator++() {
-            try {
-                element = channel->pop();
-            } catch (ChannelClosed err) {
-                channel = nullptr;
-            }
-            return *this;
-        };
-
-
-        bool operator==(const Iterator &other) const {
-            return this->channel == other.channel;
-        }
-
-        bool operator!=(const Iterator &other) const {
-            return this->channel != other.channel;
-        }
-
-        auto operator*() {
-            return std::move(element);
-        }
-
-    private:
-        InputChannel *channel;
-        decltype(channel->pop()) element;
-    };
-
-    template<class T>
-    class InputChannel<T>::Iterator {
-    public:
-        Iterator(InputChannel<T> *c) : channel(c) {
+        Iterator(InputChannel *c) : channel(c) {
             this->operator++();
         }
 
@@ -76,14 +40,15 @@ namespace Gadgetron::Core {
     };
 
 
-    template<class ...ARGS>
-    typename InputChannel<ARGS...>::Iterator begin(InputChannel<ARGS...> &channel) {
-        return typename InputChannel<ARGS...>::Iterator(&channel);
+
+
+
+    inline typename InputChannel::Iterator begin(InputChannel &channel) {
+        return typename InputChannel::Iterator(&channel);
     }
 
-    template<class ...ARGS>
-    typename InputChannel<ARGS...>::Iterator end(InputChannel<ARGS...> &) {
-        return typename InputChannel<ARGS...>::Iterator();
+    inline typename InputChannel::Iterator end(InputChannel &) {
+        return typename InputChannel::Iterator();
     }
 
     class OutputChannel::Iterator {
@@ -156,7 +121,7 @@ inline void OutputChannel::push(std::unique_ptr<ARGS> &&... ptr) {
     this->push_message(gadgetron_detail::make_message<ARGS...>(std::move(ptr)...));
 
 }
-
+/*
 
 template<class ...ARGS>
 TypedInputChannel<ARGS...>::TypedInputChannel(
@@ -194,4 +159,5 @@ std::tuple<std::unique_ptr<ARGS>...> TypedInputChannel<ARGS...>::pop() {
     return force_unpack<ARGS...>(message);
 
 }
+ */
 }
