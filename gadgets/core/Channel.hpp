@@ -4,15 +4,16 @@
 
 namespace Gadgetron::Core {
 
-    class InputChannel::Iterator {
+    template<class INPUTCHANNEL>
+    class ChannelIterator {
     public:
-        Iterator(InputChannel *c) : channel(c) {
+        ChannelIterator(INPUTCHANNEL *c) : channel(c) {
             this->operator++();
         }
 
-        Iterator() : channel(nullptr) {}
+        ChannelIterator() : channel(nullptr) {}
 
-        Iterator &operator++() {
+        ChannelIterator &operator++() {
             try {
                 element = channel->pop();
             } catch (ChannelClosed err) {
@@ -22,11 +23,11 @@ namespace Gadgetron::Core {
         };
 
 
-        bool operator==(const Iterator &other) const {
+        bool operator==(const ChannelIterator &other) const {
             return this->channel == other.channel;
         }
 
-        bool operator!=(const Iterator &other) const {
+        bool operator!=(const ChannelIterator &other) const {
             return this->channel != other.channel;
         }
 
@@ -35,25 +36,23 @@ namespace Gadgetron::Core {
         }
 
     private:
-        InputChannel *channel;
+        INPUTCHANNEL *channel;
         decltype(channel->pop()) element;
     };
 
 
-
-
-
-    inline typename InputChannel::Iterator begin(InputChannel &channel) {
-        return typename InputChannel::Iterator(&channel);
+    inline ChannelIterator<InputChannel> begin(InputChannel &channel) {
+        return ChannelIterator<InputChannel>(&channel);
     }
 
-    inline typename InputChannel::Iterator end(InputChannel &) {
-        return typename InputChannel::Iterator();
+    inline ChannelIterator<InputChannel> end(InputChannel &) {
+        return ChannelIterator<InputChannel>();
     }
 
-    class OutputChannel::Iterator {
+    template<>
+    class ChannelIterator<OutputChannel> {
     public:
-        Iterator(OutputChannel *c) : channel(c) {
+        ChannelIterator(OutputChannel *c) : channel(c) {
 
         }
 
@@ -68,16 +67,16 @@ namespace Gadgetron::Core {
         }
 
 
-        Iterator &operator++() {
+        ChannelIterator &operator++() {
             return *this;
         }
 
-        Iterator &operator++(int) {
+        ChannelIterator &operator++(int) {
             return *this;
         }
 
 
-        Iterator &operator*() {
+        ChannelIterator &operator*() {
             return *this;
         }
 
@@ -86,78 +85,51 @@ namespace Gadgetron::Core {
 
 
     private:
-        Iterator *it;
+        ChannelIterator *it;
 
     };
 
-    inline OutputChannel::Iterator begin(OutputChannel &channel) {
-        return OutputChannel::Iterator(&channel);
+    inline ChannelIterator<OutputChannel> begin(OutputChannel &channel) {
+        return ChannelIterator<OutputChannel>(&channel);
     }
-
 
     namespace {
         namespace gadgetron_detail {
 
-        template<class T>
-        std::unique_ptr<TypedMessage<T>>
-        make_message(std::unique_ptr<T> && ptr) {
-                return std::make_unique<TypedMessage < T>>(
-                        std::move(ptr)
-                        );
+            template<class T>
+            std::unique_ptr<TypedMessage < T>>
+            make_message(std::unique_ptr<T>
+            && ptr) {
+            return std::make_unique<TypedMessage < T>>(
+            std::move(ptr)
+            );
         }
 
-        template<class ...ARGS>
+        template<class... ARGS>
         std::enable_if_t<(sizeof...(ARGS) > 1), std::unique_ptr<MessageTuple>>
         make_message(std::unique_ptr<ARGS> &&... ptrs) {
             return std::make_unique<MessageTuple>(ptrs...);
-
         }
 
-    }
-}
+    }  // namespace gadgetron_detail
+}  // namespace
 
 template<class ...ARGS>
 inline void OutputChannel::push(std::unique_ptr<ARGS> &&... ptr) {
     this->push_message(gadgetron_detail::make_message<ARGS...>(std::move(ptr)...));
 
 }
-/*
 
-template<class ...ARGS>
-TypedInputChannel<ARGS...>::TypedInputChannel(
-        std::shared_ptr<InputChannel < Message>>
-
-input,
-std::shared_ptr<Gadgetron::Core::OutputChannel> output
-):
-
-in (input), bypass(output) {
-
-}
-
-template<class T>
-std::unique_ptr<T> TypedInputChannel<T>::pop() {
-
-    std::unique_ptr<Message> message = in->pop();
-    while (!convertible_to<T>(message)) {
-        bypass->push(std::move(message));
-        message = in->pop();
-    }
-
-    return force_unpack<T>(message);
+template<class... ARGS>
+ChannelIterator <TypedInputChannel<ARGS...>> begin(
+        TypedInputChannel<ARGS...> &channel) {
+    return ChannelIterator < TypedInputChannel < ARGS...>>(channel);
 }
 
 
-template<class ...ARGS>
-std::tuple<std::unique_ptr<ARGS>...> TypedInputChannel<ARGS...>::pop() {
-    std::unique_ptr<Message> message = in->pop();
-    while (!convertible_to<ARGS...>(message)) {
-        bypass->push(std::move(message));
-        message = in->pop();
-    }
-
-    return force_unpack<ARGS...>(message);
-
+template<class... ARGS>
+ChannelIterator <TypedInputChannel<ARGS...>> end(
+        TypedInputChannel<ARGS...> &channel) {
+    return ChannelIterator < TypedInputChannel < ARGS...>>();
 }
- */
 }
