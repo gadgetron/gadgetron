@@ -57,7 +57,9 @@ namespace Gadgetron::Server::Connection {
                 [&]() { connection.process_output(); }
         );
 
+        connection.channels.input->close();
         connection.node->process(connection.channels.input, connection.channels.output);
+
         output_thread.join();
     }
 }
