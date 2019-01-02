@@ -1,11 +1,7 @@
-#ifndef GADGETRON_GADGETRON_HOME_H
-#define GADGETRON_GADGETRON_HOME_H
+#pragma once
 
-#include "gadgetbase_export.h"
 #include <boost/filesystem.hpp>
 
 namespace Gadgetron {
-    [[deprecated]] boost::filesystem::path EXPORTGADGETBASE get_gadgetron_home();
+    [[deprecated]] boost::filesystem::path get_gadgetron_home();
 }
-
-#endif //GADGETRON_GADGETRON_HOME_H

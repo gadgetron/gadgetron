@@ -2,7 +2,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include "Handlers.h"
 
-#include "gadgetron_system_info.h"
+#include "system_info.h"
 
 #include "readers/Primitives.h"
 #include "Response.h"

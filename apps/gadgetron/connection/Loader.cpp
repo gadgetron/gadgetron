@@ -11,9 +11,9 @@ using namespace Gadgetron::Server::Connection;
 
 namespace {
 
-    class ErrorHandlingNode : public NodeHandler {
+    class HousekeepingNode : public NodeHandler {
     public:
-        ErrorHandlingNode(
+        HousekeepingNode(
             std::unique_ptr<Node> node,
             ErrorHandler &error_handler,
             std::string location
@@ -30,7 +30,7 @@ namespace {
             out->close();
         }
 
-        virtual ~ErrorHandlingNode() = default;
+        virtual ~HousekeepingNode() = default;
 
     private:
         std::unique_ptr<Node> node;
@@ -176,7 +176,7 @@ namespace Gadgetron::Server::Connection {
         std::string name = gadget_config.name;
         if (name.empty()) name = gadget_config.classname;
 
-        return std::make_unique<ErrorHandlingNode>(
+        return std::make_unique<HousekeepingNode>(
                 factory(context, gadget_config.properties),
                 error_handler,
                 name
