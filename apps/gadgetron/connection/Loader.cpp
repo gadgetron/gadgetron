@@ -4,14 +4,14 @@
 
 #include "Connection.h"
 
-#include "Node.h"
+#include "NodeHandler.h"
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection;
 
 namespace {
 
-    class ErrorHandlingNode : public Node {
+    class ErrorHandlingNode : public NodeHandler {
     public:
         ErrorHandlingNode(
             std::unique_ptr<Node> node,
@@ -20,13 +20,17 @@ namespace {
         ) : node(std::move(node)), location(std::move(location)), error_handler(error_handler) {};
 
         void process(
-                std::shared_ptr<InputChannel<Message>> in,
-                std::shared_ptr<OutputChannel> out
+                std::shared_ptr<Channel> in,
+                std::shared_ptr<Channel> out
         ) override {
             error_handler.handle(location, [&]() {
-                node->process(in, out);
+                node->process(*in, *out);
             });
+            in->close();
+            out->close();
         }
+
+        virtual ~ErrorHandlingNode() = default;
 
     private:
         std::unique_ptr<Node> node;
@@ -34,19 +38,19 @@ namespace {
         ErrorHandler &error_handler;
     };
 
-    class Stream : public Node {
+    class Stream : public NodeHandler {
     public:
 
-        Stream(ErrorHandler &error_handler, std::vector<std::unique_ptr<Node>> nodes)
+        Stream(ErrorHandler &error_handler, std::vector<std::unique_ptr<NodeHandler>> nodes)
         : nodes(std::move(nodes)), error_handler(error_handler) {}
 
         void process(
-                std::shared_ptr<InputChannel<Message>> in,
-                std::shared_ptr<OutputChannel> out
+                std::shared_ptr<Channel> in,
+                std::shared_ptr<Channel> out
         ) override {
 
-            std::vector<std::shared_ptr<InputChannel<Message>>> input_channels{};
-            std::vector<std::shared_ptr<OutputChannel>> output_channels{};
+            std::vector<std::shared_ptr<Channel>> input_channels{};
+            std::vector<std::shared_ptr<Channel>> output_channels{};
 
             input_channels.push_back(in);
 
@@ -77,7 +81,7 @@ namespace {
         }
 
     private:
-        std::vector<std::unique_ptr<Node>> nodes;
+        std::vector<std::unique_ptr<NodeHandler>> nodes;
         ErrorHandler &error_handler;
     };
 }
@@ -147,9 +151,9 @@ namespace Gadgetron::Server::Connection {
         return std::move(writers);
     }
 
-    std::unique_ptr<Node> Loader::stream() {
+    std::unique_ptr<NodeHandler> Loader::stream() {
 
-        std::vector<std::unique_ptr<Node>> nodes;
+        std::vector<std::unique_ptr<NodeHandler>> nodes;
         for (auto &node_config : config.stream.nodes) {
             nodes.emplace_back(
                     boost::apply_visitor([&](auto n) { return load_node(n); }, node_config)
@@ -164,7 +168,7 @@ namespace Gadgetron::Server::Connection {
             const std::unordered_map<std::string, std::string> &
     );
 
-    std::unique_ptr<Node>
+    std::unique_ptr<NodeHandler>
     Loader::load_node(const Config::Gadget &gadget_config) {
         auto library = load_library(gadget_config.dll);
         auto factory = library.get_alias<gadget_factory>("gadget_factory_export_" + gadget_config.classname);
@@ -179,14 +183,14 @@ namespace Gadgetron::Server::Connection {
         );
     }
 
-    std::unique_ptr<Node>
+    std::unique_ptr<NodeHandler>
     Loader::load_node(const Config::Parallel &parallel_config) {
-        return std::unique_ptr<Node>();
+        return std::unique_ptr<NodeHandler>();
     }
 
-    std::unique_ptr<Node>
+    std::unique_ptr<NodeHandler>
     Loader::load_node(const Config::Distributed &distributed_config) {
-        return std::unique_ptr<Node>();
+        return std::unique_ptr<NodeHandler>();
     }
 }
 

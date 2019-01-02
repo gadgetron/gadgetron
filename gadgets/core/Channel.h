@@ -9,30 +9,42 @@
 
 namespace Gadgetron::Core {
 
-    template<class ...ARGS> class InputChannel {
-    public:
-        virtual std::tuple<std::unique_ptr<ARGS>...> pop() = 0;
-        virtual ~InputChannel() = default;
 
+
+    class InputChannel {
+    public:
+        virtual std::unique_ptr<Message> pop() = 0;
+        virtual ~InputChannel() = default;
     public:
         class Iterator;
     };
 
-    template<class T>
-    class InputChannel<T> {
-    public:
-        virtual std::unique_ptr<T> pop() = 0;
-        virtual ~InputChannel() = default;
 
-    public:
-        class Iterator;
-    };
 
-    template<class ...ARGS>
-    typename InputChannel<ARGS...>::Iterator begin(InputChannel<ARGS...> &);
 
-    template<class ...ARGS>
-    typename InputChannel<ARGS...>::Iterator end(InputChannel<ARGS...> &);
+//    template<class ...ARGS> class InputChannel {
+//    public:
+//        virtual std::tuple<std::unique_ptr<ARGS>...> pop() = 0;
+//        virtual ~InputChannel() = default;
+//
+//    public:
+//        class Iterator;
+//    };
+//
+//    template<class T>
+//    class InputChannel<T> {
+//    public:
+//        virtual std::unique_ptr<T> pop() = 0;
+//        virtual ~InputChannel() = default;
+//
+//    public:
+//        class Iterator;
+//    };
+
+
+    typename InputChannel::Iterator begin(InputChannel &);
+
+    typename InputChannel::Iterator end(InputChannel &);
 
 
     class OutputChannel {
@@ -43,7 +55,6 @@ namespace Gadgetron::Core {
 
 
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
-        virtual void close() = 0;
         virtual ~OutputChannel() = default;
 
     public:
@@ -55,7 +66,14 @@ namespace Gadgetron::Core {
     OutputChannel::Iterator begin(OutputChannel &);
 
 
-    class MessageChannel : public OutputChannel, public InputChannel<Message> {
+    class Channel : public OutputChannel, public InputChannel {
+    public:
+        virtual void close() = 0;
+        virtual ~Channel() = default;
+    };
+
+
+    class MessageChannel : public Channel {
     public:
         virtual std::unique_ptr<Message> pop() override;
 
@@ -73,7 +91,7 @@ namespace Gadgetron::Core {
 
     };
 
-
+/*
 
     template<class ...ARGS>
     class TypedInputChannel : public InputChannel<ARGS...> {
@@ -98,13 +116,12 @@ namespace Gadgetron::Core {
         std::shared_ptr<InputChannel<Message>> in;
         std::shared_ptr<OutputChannel> bypass;
     };
-
+*/
 
     class ChannelClosed: public std::runtime_error {
     public:
         ChannelClosed() : std::runtime_error("Channel was closed") {};
     };
-
 
 }
 

@@ -30,7 +30,7 @@ namespace Gadgetron::Server::Connection {
         std::vector<std::unique_ptr<Writer>> prepare_writers() override;
 
         Loader &loader;
-        std::unique_ptr<Core::Node> node;
+        std::unique_ptr<NodeHandler> node;
     };
 }
 

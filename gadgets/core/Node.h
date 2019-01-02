@@ -15,7 +15,7 @@ namespace Gadgetron::Core {
     class Node {
     public:
         virtual ~Node() = default;
-        virtual void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) = 0;
+        virtual void process(InputChannel& in, OutputChannel& out) = 0;
     };
 
     class GadgetNode : public Node, public PropertyMixin {
@@ -25,15 +25,15 @@ namespace Gadgetron::Core {
             ) : PropertyMixin(properties) {};
             virtual ~GadgetNode() = default;
     };
-
+/*
     template<class ...ARGS >
     class TypedGadgetNode : public GadgetNode {
         TypedGadgetNode(const GadgetProperties& properties): GadgetNode(properties) {
 
         }
 
-        void process(std::shared_ptr<InputChannel<Message>> in, std::shared_ptr<OutputChannel> out) override final  {
-            auto typed_input = TypedInputChannel<ARGS...>(in, out);
+        void process(std::shared_ptr<InputChannelOutputChannel> out) override final  {
+            auto typed_input = TypedInputChannel(in, out);
             this->process(typed_input, *out);
         }
 
@@ -41,6 +41,7 @@ namespace Gadgetron::Core {
         virtual void process(InputChannel<ARGS...> &in, OutputChannel &out) = 0;
 
     };
+    */
 
 
 }

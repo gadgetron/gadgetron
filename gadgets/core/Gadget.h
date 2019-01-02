@@ -79,7 +79,7 @@ namespace Gadgetron {
     class EXPORTGADGETCORE ChannelAdaptor {
     public:
 
-        ChannelAdaptor(std::shared_ptr<Core::OutputChannel> out) : channel(out) {
+        ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
 
         }
 
@@ -97,10 +97,10 @@ namespace Gadgetron {
 
         int putq(GadgetContainerMessageBase *msg) {
             if (msg->cont()) {
-                channel->push_message(to_message_tuple(msg));
+                channel.push_message(to_message_tuple(msg));
 
             } else {
-                channel->push_message(msg->take_message());
+                channel.push_message(msg->take_message());
             }
             msg->release();
 
@@ -119,7 +119,7 @@ namespace Gadgetron {
             return std::make_unique<Core::MessageTuple>(std::move(messages));
         }
 
-        std::shared_ptr<Core::OutputChannel> channel;
+        Core::OutputChannel& channel;
     };
 
     class EXPORTGADGETCORE Gadget {
@@ -230,7 +230,11 @@ namespace Gadgetron {
 
         virtual int process_config(const ISMRMRD::IsmrmrdHeader &header) {
             std::stringstream stream;
-            ISMRMRD::serialize(header, stream);
+            try {
+                ISMRMRD::serialize(header, stream);
+            } catch (...){
+
+            }
 
             ACE_Message_Block block(stream.str());
             return this->process_config(&block);
@@ -615,8 +619,8 @@ namespace Gadgetron {
                 const std::unordered_map<std::string, std::string> &props
         );
 
-        void process(std::shared_ptr<Core::InputChannel<Core::Message>> in,
-                     std::shared_ptr<Core::OutputChannel> out) override;
+        void process(Core::InputChannel& in,
+                     Core::OutputChannel& out) override;
 
     private:
 
