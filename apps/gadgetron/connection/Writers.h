@@ -14,8 +14,4 @@ namespace Gadgetron::Server::Connection::Writers {
     public:
         void serialize(std::ostream &, std::unique_ptr<std::string>) override;
     };
-
 }
-
-
-

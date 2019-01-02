@@ -63,15 +63,15 @@ namespace Gadgetron::Server::Connection::Handlers {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::Readers;
 
-    QueryHandler::QueryHandler(std::shared_ptr<Gadgetron::Core::OutputChannel> channel)
-    : channel(std::move(channel)) {
+    QueryHandler::QueryHandler(OutputChannel &channel)
+    : channel(channel) {
         initialize_with_default_queries(answers);
     }
 
     QueryHandler::QueryHandler(
-            std::shared_ptr<Gadgetron::Core::OutputChannel> channel,
+            OutputChannel &channel,
             std::map<std::string, std::string> additional_answers
-    ) : QueryHandler(std::move(channel)) {
+    ) : QueryHandler(channel) {
         answers.merge(additional_answers);
     }
 
@@ -85,7 +85,7 @@ namespace Gadgetron::Server::Connection::Handlers {
             throw std::runtime_error("Unsupported value in reserved bytes.");
         }
 
-        channel->push(std::make_unique<Response>(corr_id, answers.at(query)));
+        channel.push(std::make_unique<Response>(corr_id, answers.at(query)));
     }
 
 
