@@ -49,13 +49,11 @@ namespace Gadgetron {
 
     int ACE_Message_Queue<ACE_MT_SYNCH>::ITERATOR::advance() {
         list_iterator++;
-        if (list_iterator == list_end)
-            return 0;
         return 1;
-
     }
 
     int ACE_Message_Queue<ACE_MT_SYNCH>::ITERATOR::next(ACE_Message_Block *& msg) {
+        if (list_iterator == list_end) { return 0; }
 
         msg = list_iterator->get();
         return 1;
