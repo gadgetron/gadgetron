@@ -57,7 +57,7 @@ def main():
     parser.add_argument('-e', '--external', action='store_const', const=['-e'], default=[],
                         help="Use external Gadgetron; don't start a new instance each test.")
 
-    parser.add_argument('--ignore-failures',
+    parser.add_argument('--ignore-failures', dest='failure_handler',
                         action='store_const', const=ignore_failure, default=exit_on_failure,
                         help="Ignore a failing cases; keep running tests.")
     parser.add_argument('-s', '--stats', type=str, default=None,
@@ -67,7 +67,7 @@ def main():
 
     args = parser.parse_args()
 
-    handlers = {0: pass_handler, 1: args.ignore_failures, 2: skip_handler}
+    handlers = {0: pass_handler, 1: args.failure_handler, 2: skip_handler}
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
@@ -83,6 +83,11 @@ def main():
 
     if args.stats:
         output_csv(stats, args.stats)
+
+    if failed:
+        print("\nFailed tests:")
+        for test in failed:
+            print("\t{}".format(test))
 
     print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
