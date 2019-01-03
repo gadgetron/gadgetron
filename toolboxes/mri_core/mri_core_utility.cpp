@@ -226,7 +226,7 @@ namespace Gadgetron
                 hoNDArray<T> kspace(complexIm);
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(complexIm, kspace);
 
-                Gadgetron::pad(sizeRO, sizeE1, sizeE2, &kspace, &complexImResized);
+                Gadgetron::pad(sizeRO, sizeE1, sizeE2, kspace, complexImResized);
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(complexImResized);
 
@@ -253,7 +253,7 @@ namespace Gadgetron
                 hoNDArray<T> kspace(complexIm);
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexIm, kspace);
 
-                Gadgetron::pad(sizeRO, sizeE1, &kspace, &complexImResized);
+                Gadgetron::pad(sizeRO, sizeE1, kspace, complexImResized);
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(complexImResized);
 
                 typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeRO*sizeE1) / std::sqrt((double)RO*E1));
@@ -1235,5 +1235,26 @@ namespace Gadgetron
         if (name == "DIM_other3") return DIM_other3;
 
         return DIM_NONE;
+    }
+    namespace {
+        template<class T> std::map<std::string, decltype(T::value)> to_map_internal(const std::vector<T>& userparameters){
+            std::map<std::string, decltype(T::value)> output_map;
+            for (auto element : userparameters){
+                output_map.insert({element.name, element.value});
+            }
+            return output_map;
+        }
+    }
+
+    std::map<std::string, long> to_map(const std::vector<ISMRMRD::UserParameterLong> & userparameters) {
+        return to_map_internal(userparameters);
+    }
+
+    std::map<std::string, double> to_map(const std::vector<ISMRMRD::UserParameterDouble> & userparameters) {
+        return to_map_internal(userparameters);
+    }
+
+    std::map<std::string, std::string> to_map(const std::vector<ISMRMRD::UserParameterString> & userparameters) {
+        return to_map_internal(userparameters);
     }
 }

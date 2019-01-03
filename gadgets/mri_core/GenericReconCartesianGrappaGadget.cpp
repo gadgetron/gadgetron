@@ -202,7 +202,7 @@ namespace Gadgetron {
                 if (perform_timing.value()) {
                     gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array");
                 }
-                this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e,
+                this->send_out_image_array(recon_obj_[e].recon_res_, e,
                                            image_series.value() + ((int) e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -217,7 +217,7 @@ namespace Gadgetron {
                     if (perform_timing.value()) {
                         gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array, gfactor");
                     }
-                    this->send_out_image_array(recon_bit_->rbit_[e], res, e, image_series.value() + 10 * ((int) e + 2),
+                    this->send_out_image_array(res, e, image_series.value() + 10 * ((int) e + 2),
                                                GADGETRON_IMAGE_GFACTOR);
                     if (perform_timing.value()) { gt_timer_.stop(); }
                 }
@@ -250,7 +250,7 @@ namespace Gadgetron {
                         res.meta_ = recon_obj_[e].recon_res_.meta_;
                         res.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
-                        this->send_out_image_array(recon_bit_->rbit_[e], res, e,
+                        this->send_out_image_array(res, e,
                                                    image_series.value() + 100 * ((int) e + 3), GADGETRON_IMAGE_SNR_MAP);
 
                         if (perform_timing.value()) { gt_timer_.stop(); }

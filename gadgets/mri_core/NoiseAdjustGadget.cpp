@@ -393,7 +393,7 @@ namespace Gadgetron {
                 else
                 {
                     //Cholesky and invert lower triangular
-                    arma::cx_fmat noise_covf = as_arma_matrix(&noise_prewhitener_matrixf_);
+                    arma::cx_fmat noise_covf = as_arma_matrix(noise_prewhitener_matrixf_);
                     noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf)));
                 }
 

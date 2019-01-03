@@ -101,7 +101,7 @@ perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int
 		order.push_back(0); order.push_back(1); order.push_back(2);
 		order.push_back(4); order.push_back(3);
 		cuNDArray<float> tmp(host_result_field.get()); // permute is too slow on the host
-		host_result_field = permute(&tmp, &order)->to_host();
+		host_result_field = permute(tmp, order).to_host();
 
 		/*char filename[256];
     sprintf(&(filename[0]), "displacement_field_%i.real", phase);

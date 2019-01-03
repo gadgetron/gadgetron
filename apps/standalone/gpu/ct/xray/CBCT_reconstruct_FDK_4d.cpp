@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 	E4D->set_use_filtered_backprojection(true);
 	E4D->set_domain_dimensions(&is_dims);
 
-	hoCuNDArray<float> fdk(*expand(&fdk_3d,numBins));
+	hoCuNDArray<float> fdk(expand(fdk_3d,numBins));
 	hoCuNDArray<float> diff_proj(projections.get_dimensions());
 
 	E4D->mult_M(&fdk,&diff_proj);

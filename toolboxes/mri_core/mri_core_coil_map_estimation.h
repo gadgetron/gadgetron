@@ -54,6 +54,9 @@ namespace Gadgetron
     // data: [RO E1 E2 CHA N S SLC ...], if E2==1, the 2D coil map estimation is assumed
     template<typename T> EXPORTMRICORE void coil_map_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks=7, size_t kz=5, size_t iterNum=5, typename realType<T>::Type thres=0.001);
 
+    template<class REAL,unsigned int D>
+    EXPORTMRICORE hoNDArray<complext<REAL>>  estimate_b1_map(const hoNDArray<complext<REAL>>& data);
+
     // coil combination
     // the cha_dim = 2 for 2D case, e.g.
     // data: in image domain, at least 3D [RO E1 CHA ...]

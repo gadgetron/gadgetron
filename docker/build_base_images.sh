@@ -5,6 +5,9 @@ base_dir=$(pwd)
 cd ${base_dir}/base/ubuntu_1604
 docker build --network=host -t gadgetron/ubuntu_1604_base .
 
+cd ${base_dir}/base/ubuntu_1604_basic
+docker build --network=host -t gadgetron/ubuntu_1604_base_basic .
+
 # cd ${base_dir}/base/ubuntu_1604_cuda55
 # docker build --network=host -t gadgetron/ubuntu_1604_cuda55_base .
 

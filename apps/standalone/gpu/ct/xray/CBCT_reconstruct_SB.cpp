@@ -237,7 +237,7 @@ int main(int argc, char** argv)
 
 		float s = dot(&projections,&tmp_proj)/dot(&tmp_proj,&tmp_proj);
 		*prior3d *= s;
-		boost::shared_ptr<hoCuNDArray<float> > prior(new hoCuNDArray<float>(*expand( prior3d.get(), is_dims.back() )));
+		boost::shared_ptr<hoCuNDArray<float> > prior(new hoCuNDArray<float>(expand( *prior3d, is_dims.back() )));
 		boost::shared_ptr<hoCuPartialDerivativeOperator<float,4> > dx (new hoCuPartialDerivativeOperator<float,4>(0) );
 		boost::shared_ptr<hoCuPartialDerivativeOperator<float,4> > dy (new hoCuPartialDerivativeOperator<float,4>(1) );
 		boost::shared_ptr<hoCuPartialDerivativeOperator<float,4> > dz (new hoCuPartialDerivativeOperator<float,4>(2) );

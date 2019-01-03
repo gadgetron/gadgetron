@@ -295,7 +295,7 @@ namespace Gadgetron {
                 crop_size[2] = ref_calib.get_size(2) - crop_offset[2];
             }
 
-            Gadgetron::crop(crop_offset, crop_size, &ref_calib, &ref_recon_buf);
+            Gadgetron::crop(crop_offset, crop_size, ref_calib, ref_recon_buf);
             ref_calib = ref_recon_buf;
 
             if (!debug_folder_full_path_.empty())

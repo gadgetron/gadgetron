@@ -11,15 +11,17 @@ endif()
 
 add_library(gadgetron_toolbox_cpunfft SHARED 
     hoNFFT.h
-    cpunfft_export.h
     hoNFFT.cpp
+    hoNFFT_sparseMatrix.h
+    hoNFFT_sparseMatrix.cpp
   )
 
 set_target_properties(gadgetron_toolbox_cpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_include_directories(gadgetron_toolbox_cpunfft
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 target_link_libraries(gadgetron_toolbox_cpunfft 
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpucore
@@ -31,5 +33,4 @@ install(TARGETS gadgetron_toolbox_cpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
     hoNFFT.h 
-    cpunfft_export.h 
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

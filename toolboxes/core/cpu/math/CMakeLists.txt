@@ -1,6 +1,8 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUCORE_MATH__)
-endif ()
+elseif(WIN32)
+    set(CMAKE_CXX_FLAGS -fpermissive)
+endif (WIN32)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -9,7 +11,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${ARMADILLO_INCLUDE_DIRS}
-    ${CBLAS_INCLUDE_DIR})
+    ${CBLAS_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
+    )
 
 if (MKL_FOUND)
     include_directories( ${MKL_INCLUDE_DIR} )
@@ -55,6 +59,7 @@ if (MKL_FOUND)
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
         ${CBLAS_LIBRARY}
+        ${Boost_LIBRARIES}
     )
 else ()
     target_link_libraries(gadgetron_toolbox_cpucore_math 
@@ -65,6 +70,7 @@ else ()
         ${LAPACK_LIBRARIES}
         ${FFTW3_LIBRARIES}
         ${CBLAS_LIBRARY}
+        ${Boost_LIBRARIES}
     )
 endif ()
 

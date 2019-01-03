@@ -172,7 +172,7 @@ namespace Gadgetron {
 
     int GenericReconFieldOfViewAdjustmentGadget::adjust_FOV(IsmrmrdImageArray& recon_res)
     {
-        try
+//        try
         {
             size_t RO = recon_res.data_.get_size(0);
             size_t E1 = recon_res.data_.get_size(1);
@@ -209,7 +209,7 @@ namespace Gadgetron {
                 else if (RO >= reconSizeRO && E1 >= reconSizeE1 && E2 >= reconSizeE2)
                 {
                     this->perform_fft(E2, recon_res.data_, kspace_buf_);
-                    Gadgetron::crop(reconSizeRO, reconSizeE1, reconSizeE2, &kspace_buf_, &res_);
+                    Gadgetron::crop(reconSizeRO, reconSizeE1, reconSizeE2, kspace_buf_, res_);
                     this->perform_ifft(E2, res_, recon_res.data_);
                 }
                 else
@@ -247,7 +247,7 @@ namespace Gadgetron {
                 else if (encodingE1 <= E1 - 1)
                 {
                     this->perform_fft(E2, *pSrc, kspace_buf_);
-                    Gadgetron::crop(RO, encodingE1, E2, &kspace_buf_, pDst);
+                    Gadgetron::crop(RO, encodingE1, E2, kspace_buf_, *pDst);
                     this->perform_ifft(E2, *pDst, *pDst);
 
                     pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -262,7 +262,7 @@ namespace Gadgetron {
                 else if (encodingE2 <= E2 - 1)
                 {
                     this->perform_fft(E2, *pSrc, kspace_buf_);
-                    Gadgetron::crop(RO, pSrc->get_size(1), encodingE2, &kspace_buf_, pDst);
+                    Gadgetron::crop(RO, pSrc->get_size(1), encodingE2, kspace_buf_, *pDst);
                     this->perform_ifft(E2, *pDst, *pDst);
 
                     pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -277,14 +277,14 @@ namespace Gadgetron {
                 else if (RO > reconSizeRO)
                 {
                     this->perform_fft(E2, *pSrc, kspace_buf_);
-                    Gadgetron::crop(reconSizeRO, pSrc->get_size(1), pSrc->get_size(2), &kspace_buf_, pDst);
+                    Gadgetron::crop(reconSizeRO, pSrc->get_size(1), pSrc->get_size(2), kspace_buf_, *pDst);
                     this->perform_ifft(E2, *pDst, *pDst);
 
                     pTmp = pSrc; pSrc = pDst; pDst = pTmp;
                 }
 
                 // final cut on image
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO, reconSizeE1, reconSizeE2, pSrc, pDst));
+                Gadgetron::crop(reconSizeRO, reconSizeE1, reconSizeE2, *pSrc, *pDst);
 
                 if (pDst != &recon_res.data_)
                 {
@@ -292,11 +292,11 @@ namespace Gadgetron {
                 }
             }
         }
-        catch (...)
-        {
-            GERROR_STREAM("Errors in GenericReconFieldOfViewAdjustmentGadget::adjust_FOV(IsmrmrdImageArray& data) ... ");
-            return GADGET_FAIL;
-        }
+//        catch (...)
+//        {
+//            GERROR_STREAM("Errors in GenericReconFieldOfViewAdjustmentGadget::adjust_FOV(IsmrmrdImageArray& data) ... ");
+//            return GADGET_FAIL;
+//        }
 
         return GADGET_OK;
     }

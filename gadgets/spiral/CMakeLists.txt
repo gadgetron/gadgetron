@@ -16,10 +16,9 @@ set_target_properties(gadgetron_spiral PROPERTIES VERSION ${GADGETRON_VERSION_ST
 
 target_link_libraries(gadgetron_spiral
   gadgetron_core
+  gadgetron_mricore
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore 
-  ${ISMRMRD_LIBRARIES} 
-  ${FFTW3_LIBRARIES} 
   )
 
 if (CUDA_FOUND)
@@ -32,37 +31,6 @@ if (CUDA_FOUND)
                                 gadgetron_toolbox_gpuparallelmri )
 endif()
 
-
-target_include_directories(
-    gadgetron_spiral
-    PUBLIC
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-    ${CMAKE_SOURCE_DIR}/gadgets/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-
-  )
-
-
-
-if (CUDA_FOUND)
-    target_include_directories(
-      gadgetron_spiral
-        PUBLIC
-      ${CMAKE_SOURCE_DIR}/gadgets/pmri
-      ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-      ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-      ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
-      ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-      ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
-            PRIVATE
-      ${CUDA_INCLUDE_DIRS}
-      )
-
-
-endif()
 
 install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
 install (FILES ${SPIRAL_HEADER_FILES}

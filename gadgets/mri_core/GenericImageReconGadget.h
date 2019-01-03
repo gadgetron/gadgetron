@@ -235,6 +235,7 @@ namespace Gadgetron {
 
         int process(ACE_Message_Block* mb);
 
+        virtual int process_image(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1);
         int process2D(GadgetContainerMessage<Image2DBufferType>* m1);
         int process3D(GadgetContainerMessage<Image3DBufferType>* m1);
 

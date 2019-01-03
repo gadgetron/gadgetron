@@ -84,36 +84,6 @@ RUN cd /opt && \
     make install && \ 
     cd /opt && rm -rf ./armadillo-8.600.0
 
-#ZFP
-RUN cd /opt && \
-    git clone https://github.com/hansenms/ZFP.git && \
-    cd ZFP && \
-    mkdir lib && \
-    make && \
-    make shared && \
-    make install
-
-# BART
-RUN cd /opt && \
-    git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
-    cd bart && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
-    make -j $(nproc) && \
-    make install
-
-# Ceres
-RUN apt-get install --yes libgoogle-glog-dev libeigen3-dev libsuitesparse-dev
-RUN cd /opt && \
-    wget http://ceres-solver.org/ceres-solver-1.14.0.tar.gz && \
-    tar zxf ceres-solver-1.14.0.tar.gz && \
-    mkdir ceres-bin && \
-    cd ceres-bin && \
-    cmake ../ceres-solver-1.14.0 && \
-    make -j16 && \
-    make install
-    
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
     ISMRMRD_HOME=/usr/local

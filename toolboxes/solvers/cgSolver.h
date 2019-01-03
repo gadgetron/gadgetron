@@ -378,14 +378,14 @@ namespace Gadgetron{
       //
 
       this->encoding_operator_->mult_MH_M( in, &q, false );
-      axpy( this->encoding_operator_->get_weight(), &q, out );
+      axpy( ELEMENT_TYPE (this->encoding_operator_->get_weight()), &q, out );
 
       // Iterate over regularization operators
       //
 
       for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){      
         this->regularization_operators_[i]->mult_MH_M( in, &q, false );
-        axpy( this->regularization_operators_[i]->get_weight(), &q, out );
+        axpy( ELEMENT_TYPE(this->regularization_operators_[i]->get_weight()), &q, out );
       }      
     }
     

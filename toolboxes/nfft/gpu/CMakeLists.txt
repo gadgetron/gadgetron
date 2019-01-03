@@ -7,10 +7,9 @@ endif ()
 
 cuda_add_library(gadgetron_toolbox_gpunfft SHARED 
     cuNFFT.h
-    cuNFFTOperator.h
     gpunfft_export.h
     cuNFFT.cu 
-    cuNFFTOperator.cu
+    cuNFFTOperator.cpp
   )
 
 target_include_directories(gadgetron_toolbox_gpunfft
