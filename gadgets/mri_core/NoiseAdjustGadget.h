@@ -22,6 +22,7 @@ namespace Gadgetron {
       NoiseAdjustGadget();
       virtual ~NoiseAdjustGadget();
 
+      int close(unsigned long flags) override;
 
     protected:
       GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix of noise depencency file", "GadgetronNoiseCovarianceMatrix");
