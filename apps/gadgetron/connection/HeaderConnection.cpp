@@ -1,22 +1,24 @@
 
 #include "HeaderConnection.h"
 
-#include "readers/Primitives.h"
-#include "Context.h"
-
-#include "Handlers.h"
-#include "Writers.h"
-#include "Config.h"
+#include <map>
+#include <iostream>
 
 #include "StreamConnection.h"
 #include "VoidConnection.h"
+#include "Handlers.h"
+#include "Config.h"
+
+#include "readers/Primitives.h"
+#include "Context.h"
+
+#define CONFIG_ERROR "Received second config file. Only one allowed."
 
 namespace {
 
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::Readers;
     using namespace Gadgetron::Server::Connection;
-    using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;
 
     using Header = Gadgetron::Core::Context::Header;
@@ -39,71 +41,76 @@ namespace {
     private:
         std::function<void(Header)> header_callback;
     };
-}
 
-#define CONFIG_ERROR "Received second config file. Only one allowed."
+    class HeaderContext {
+    public:
+        std::shared_ptr<MessageChannel> channel;
+        boost::optional<Header> header;
+        const Context::Paths paths;
+    };
 
-namespace Gadgetron::Server::Connection {
-
-    std::map<uint16_t, std::unique_ptr<Connection::Handler>> HeaderConnection::prepare_handlers(std::function<void()> close) {
-
+    std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(
+            std::function<void()> close,
+            HeaderContext &context
+    ) {
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        auto deliver = [=](boost::optional<Header> header) {
+        auto close_callback = [=, &context]() {
+            context.header = boost::none;
             close();
-            promise.set_value(header);
+        };
+
+        auto header_callback = [=, &context](Header header) {
+            context.header = header;
+            close();
         };
 
         handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
-        handlers[QUERY]    = std::make_unique<QueryHandler>(*channels.input);
-
-        handlers[HEADER]   = std::make_unique<HeaderHandler>([=](Header header) {
-            deliver(boost::make_optional(header));
-        });
-
-        handlers[CLOSE]    = std::make_unique<CloseHandler>([=]() {
-            deliver(boost::none);
-        });
+        handlers[HEADER]   = std::make_unique<HeaderHandler>(header_callback);
+        handlers[QUERY]    = std::make_unique<QueryHandler>(*context.channel);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
 
         return handlers;
     }
+}
 
-    void HeaderConnection::process(
+namespace Gadgetron::Server::Connection::HeaderConnection {
+
+    void process(
             std::iostream &stream,
-            const Context::Paths &paths,
+            const Core::Context::Paths &paths,
             const Config &config,
             ErrorHandler &error_handler
     ) {
-        HeaderConnection connection{stream, paths};
+        HeaderContext context{
+                std::make_shared<MessageChannel>(),
+                boost::none,
+                paths
+        };
 
-        std::thread input_thread = error_handler.run(
-                "Connection Input Thread",
-                [&]() { connection.process_input(); }
+        std::thread input_thread = start_input_thread(
+                stream,
+                context.channel,
+                [&](auto close) { return prepare_handlers(close, context); },
+                error_handler
         );
 
-        std::thread output_thread = error_handler.run(
-                "Connection Output Thread",
-                [&]() { connection.process_output(); }
+        std::thread output_thread = start_output_thread(
+                stream,
+                context.channel,
+                default_writers,
+                error_handler
         );
 
         input_thread.join();
         output_thread.join();
 
-        auto future = connection.promise.get_future();
-        auto header = future.get();
-
-        if (header) {
-            Context context{header.get(), paths};
-            StreamConnection::process(stream, context, config, error_handler);
+        if (context.header) {
+            StreamConnection::process(stream, Context{context.header.get(), paths}, config, error_handler);
         }
         else {
             VoidConnection::process(stream, paths, config, error_handler);
         }
-    }
-
-    HeaderConnection::HeaderConnection(std::iostream &stream, Context::Paths paths)
-    : Connection(stream), paths(std::move(paths)) {
-        channels.input = channels.output = std::make_shared<MessageChannel>();
     }
 }

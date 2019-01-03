@@ -1,36 +1,23 @@
 
 #include "ConfigConnection.h"
 
-#include <typeindex>
+#include <map>
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <boost/dll/shared_library.hpp>
-#include <boost/dll.hpp>
-#include <boost/range/algorithm/transform.hpp>
 
-#include "log.h"
 #include "gadgetron_config.h"
 
-#include "readers/Primitives.h"
-#include "Response.h"
-#include "Reader.h"
-#include "Writer.h"
-
-#include "Server.h"
+#include "HeaderConnection.h"
+#include "Handlers.h"
 #include "Config.h"
 
-#include "Writers.h"
-#include "Handlers.h"
-#include "StreamConnection.h"
-#include "HeaderConnection.h"
+#include "readers/Primitives.h"
+#include "Context.h"
 
 namespace {
 
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::Readers;
     using namespace Gadgetron::Server::Connection;
-    using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;
 
     using Header = Gadgetron::Core::Context::Header;
@@ -84,66 +71,70 @@ namespace {
             handle_callback(config_stream);
         }
     };
-};
 
-namespace Gadgetron::Server::Connection {
+    class ConfigContext {
+    public:
+        std::shared_ptr<MessageChannel> channel;
+        boost::optional<Config> config;
+        const Context::Paths paths;
+    };
 
-    std::map<uint16_t, std::unique_ptr<Handler>> ConfigConnection::prepare_handlers(std::function<void()> close) {
-
+    std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(
+            std::function<void()> close,
+            ConfigContext &context
+    ) {
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        auto deliver = [=](auto config) {
+        auto close_callback = [=, &context]() {
+            context.config = boost::none;
             close();
-            promise.set_value(config);
         };
 
-        auto close_callback = [=]() {
-            deliver(boost::none);
+        auto config_callback = [=, &context](Config config) {
+            context.config = config;
+            close();
         };
 
-        auto config_callback = [=](Config config) {
-            deliver(boost::make_optional(config));
-        };
-
-        handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, paths);
+        handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, context.paths);
         handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[QUERY]    = std::make_unique<QueryHandler>(*channels.input);
+        handlers[QUERY]    = std::make_unique<QueryHandler>(*context.channel);
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
 
         return handlers;
     }
+};
 
-    ConfigConnection::ConfigConnection(std::iostream &stream, Context::Paths paths)
-    : Connection(stream), paths(std::move(paths)) {
-        channels.input = channels.output = std::make_shared<MessageChannel>();
-    }
 
-    void ConfigConnection::process(
-            std::iostream &stream,
-            const Context::Paths &paths,
-            ErrorHandler &error_handler
-    ) {
-        ConfigConnection connection{stream, paths};
+namespace Gadgetron::Server::Connection::ConfigConnection {
 
-        std::thread input_thread = error_handler.run(
-                "Connection Input Thread",
-                [&]() { connection.process_input(); }
+    void process(std::iostream &stream, const Core::Context::Paths &paths, ErrorHandler &error_handler) {
+
+        ConfigContext context{
+            std::make_shared<MessageChannel>(),
+            boost::none,
+            paths
+        };
+
+        std::thread input_thread = start_input_thread(
+                stream,
+                context.channel,
+                [&](auto close) { return prepare_handlers(close, context); },
+                error_handler
         );
 
-        std::thread output_thread = error_handler.run(
-                "Connection Output Thread",
-                [&]() { connection.process_output(); }
+        std::thread output_thread = start_output_thread(
+                stream,
+                context.channel,
+                default_writers,
+                error_handler
         );
 
         input_thread.join();
         output_thread.join();
 
-        auto future = connection.promise.get_future();
-        auto config = future.get();
-
-        if (config) {
-            HeaderConnection::process(stream, paths, config.get(), error_handler);
+        if (context.config) {
+            HeaderConnection::process(stream, paths, context.config.get(), error_handler);
         }
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Connection.h"
+#include "Core.h"
 #include "Config.h"
 
 #include "Context.h"

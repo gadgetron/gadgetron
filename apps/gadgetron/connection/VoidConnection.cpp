@@ -18,48 +18,49 @@ namespace {
     using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;
 
+    class VoidContext {
+    public:
+        struct {
+            std::shared_ptr<MessageChannel> input, output;
+        } channels;
+        Loader loader;
+    };
+
+    std::vector<std::unique_ptr<Writer>> prepare_writers(Loader &loader) {
+        auto writers = loader.writers();
+        auto defaults = default_writers();
+
+        for (auto &writer : defaults) { writers.emplace_back(std::move(writer)); }
+
+        return std::move(writers);
+    }
 }
 
-namespace Gadgetron::Server::Connection {
+namespace Gadgetron::Server::Connection::VoidConnection {
 
-    std::map<uint16_t, std::unique_ptr<Connection::Handler>> VoidConnection::prepare_handlers(std::function<void()> close) {
-        throw std::runtime_error("VoidConnection has no handlers - it doesn't have an input loop.");
-    }
-
-
-    std::vector<std::unique_ptr<Writer>> VoidConnection::prepare_writers() {
-        return loader.writers();
-    }
-
-    VoidConnection::VoidConnection(std::iostream &stream, Loader &loader)
-          : Connection(stream), loader(loader) {
-
-        channels.input = std::make_shared<MessageChannel>();
-        channels.output = std::make_shared<MessageChannel>();
-
-        node = loader.stream();
-    }
-
-    void VoidConnection::process(
+    void process(
             std::iostream &stream,
-            const Context::Paths &paths,
+            const Core::Context::Paths &paths,
             const Config &config,
             ErrorHandler &error_handler
     ) {
-        ISMRMRD::IsmrmrdHeader header{};
-        Context context{header, paths};
+        // Please note the header crime. TODO: Fight crime.
+        VoidContext ctx{
+                {std::make_shared<MessageChannel>(), std::make_shared<MessageChannel>()},
+                Loader{error_handler, Context{Context::Header{}, paths}, config}
+        };
 
-        Loader loader{error_handler, context, config};
-        VoidConnection connection{stream, loader};
+        auto node = ctx.loader.stream();
 
-        std::thread output_thread = error_handler.run(
-                "Connection Output Thread",
-                [&]() { connection.process_output(); }
+        std::thread output_thread = start_output_thread(
+                stream,
+                ctx.channels.output,
+                [&]() { return prepare_writers(ctx.loader); },
+                error_handler
         );
 
-        connection.channels.input->close();
-        connection.node->process(connection.channels.input, connection.channels.output);
-
+        ctx.channels.input->close();
+        node->process(ctx.channels.input, ctx.channels.output);
         output_thread.join();
     }
 }
