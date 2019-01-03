@@ -57,7 +57,7 @@ namespace {
     class ConfigReferenceHandler : public ConfigHandler {
     public:
         ConfigReferenceHandler(
-                std::function<void(Config)> &callback,
+                std::function<void(Config)> &&callback,
                 const Context::Paths &paths
         ) : ConfigHandler(callback), paths(paths) {}
 
@@ -76,7 +76,7 @@ namespace {
 
     class ConfigStringHandler : public ConfigHandler {
     public:
-        explicit ConfigStringHandler(std::function<void(Config)> &callback)
+        explicit ConfigStringHandler(std::function<void(Config)> &&callback)
         : ConfigHandler(callback) {}
 
         void handle(std::istream &stream) override {
@@ -84,8 +84,6 @@ namespace {
             handle_callback(config_stream);
         }
     };
-
-
 };
 
 namespace Gadgetron::Server::Connection {
@@ -94,16 +92,16 @@ namespace Gadgetron::Server::Connection {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        std::function<void(boost::optional<Config>)> deliver = [&](auto config) {
+        auto deliver = [=](auto config) {
             close();
             promise.set_value(config);
         };
 
-        std::function<void()> close_callback = [&, deliver]() {
+        auto close_callback = [=]() {
             deliver(boost::none);
         };
 
-        std::function<void(Config)> config_callback = [&, deliver](Config config) {
+        auto config_callback = [=](Config config) {
             deliver(boost::make_optional(config));
         };
 

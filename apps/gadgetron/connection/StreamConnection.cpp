@@ -92,6 +92,7 @@ namespace Gadgetron::Server::Connection {
         );
 
         connection.node->process(connection.channels.input, connection.channels.output);
+
         input_thread.join();
         output_thread.join();
     }

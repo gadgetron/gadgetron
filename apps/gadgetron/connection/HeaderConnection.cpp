@@ -49,7 +49,7 @@ namespace Gadgetron::Server::Connection {
 
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        auto deliver = [&](boost::optional<Header> header) {
+        auto deliver = [=](boost::optional<Header> header) {
             close();
             promise.set_value(header);
         };
@@ -58,11 +58,11 @@ namespace Gadgetron::Server::Connection {
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[QUERY]    = std::make_unique<QueryHandler>(*channels.input);
 
-        handlers[HEADER]   = std::make_unique<HeaderHandler>([deliver](Header header) {
+        handlers[HEADER]   = std::make_unique<HeaderHandler>([=](Header header) {
             deliver(boost::make_optional(header));
         });
 
-        handlers[CLOSE]    = std::make_unique<CloseHandler>([deliver]() {
+        handlers[CLOSE]    = std::make_unique<CloseHandler>([=]() {
             deliver(boost::none);
         });
 
