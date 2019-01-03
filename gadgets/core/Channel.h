@@ -10,65 +10,41 @@
 namespace Gadgetron::Core {
 
 
-
     class InputChannel {
     public:
         virtual std::unique_ptr<Message> pop() = 0;
+
         virtual ~InputChannel() = default;
-    public:
-        class Iterator;
     };
 
 
+    template<class CHANNEL>
+    class ChannelIterator;
 
+    ChannelIterator<InputChannel> begin(InputChannel &);
 
-//    template<class ...ARGS> class InputChannel {
-//    public:
-//        virtual std::tuple<std::unique_ptr<ARGS>...> pop() = 0;
-//        virtual ~InputChannel() = default;
-//
-//    public:
-//        class Iterator;
-//    };
-//
-//    template<class T>
-//    class InputChannel<T> {
-//    public:
-//        virtual std::unique_ptr<T> pop() = 0;
-//        virtual ~InputChannel() = default;
-//
-//    public:
-//        class Iterator;
-//    };
-
-
-    typename InputChannel::Iterator begin(InputChannel &);
-
-    typename InputChannel::Iterator end(InputChannel &);
+    ChannelIterator<InputChannel> end(InputChannel &);
 
 
     class OutputChannel {
     public:
         template<class ...ARGS>
-        void push(std::unique_ptr<ARGS>&&... ptrs);
-
+        void push(std::unique_ptr<ARGS> &&... ptrs);
 
 
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
+
         virtual ~OutputChannel() = default;
 
-    public:
-        class Iterator;
-
-        friend Iterator;
     };
 
-    OutputChannel::Iterator begin(OutputChannel &);
+    ChannelIterator<OutputChannel> begin(OutputChannel &);
 
 
     class Channel : public OutputChannel, public InputChannel {
     public:
         virtual void close() = 0;
+
         virtual ~Channel() = default;
     };
 
@@ -91,34 +67,33 @@ namespace Gadgetron::Core {
 
     };
 
-/*
 
     template<class ...ARGS>
-    class TypedInputChannel : public InputChannel<ARGS...> {
+    class TypedInputChannel {
     public:
-        TypedInputChannel(std::shared_ptr<InputChannel<Message>> input, std::shared_ptr<OutputChannel> bypass);
+        TypedInputChannel(InputChannel &input, OutputChannel &bypass) : in(input), bypass(bypass) {};
 
-        virtual std::tuple<std::unique_ptr<ARGS>...> pop() override;
+        auto pop() {
+            std::unique_ptr<Message> message = in.pop();
+            while (!convertible_to<ARGS...>(message)) {
+                bypass.push(std::move(message));
+                message = in.pop();
+            }
+            return force_unpack<ARGS...>(message);
+        }
 
     private:
-        std::shared_ptr<InputChannel<Message>> in;
-        std::shared_ptr<OutputChannel> bypass;
+        InputChannel &in;
+        OutputChannel &bypass;
     };
 
-    template<class T>
-    class TypedInputChannel<T> : public InputChannel<T> {
-    public:
-        TypedInputChannel(std::shared_ptr<InputChannel<Message>> input, std::shared_ptr<OutputChannel> bypass);
+    template<class ...ARGS>
+    ChannelIterator<TypedInputChannel<ARGS...>> begin(TypedInputChannel<ARGS...> &);
 
-        virtual std::unique_ptr<T> pop() override;
+    template<class ...ARGS>
+    ChannelIterator<TypedInputChannel<ARGS...>> end(TypedInputChannel<ARGS...> &);
 
-    private:
-        std::shared_ptr<InputChannel<Message>> in;
-        std::shared_ptr<OutputChannel> bypass;
-    };
-*/
-
-    class ChannelClosed: public std::runtime_error {
+    class ChannelClosed : public std::runtime_error {
     public:
         ChannelClosed() : std::runtime_error("Channel was closed") {};
     };

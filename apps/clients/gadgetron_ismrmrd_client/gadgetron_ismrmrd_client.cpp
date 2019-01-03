@@ -38,6 +38,7 @@
 #include <thread>
 #include <chrono>
 #include <condition_variable>
+#include <boost/make_shared.hpp>
 
 #include "NHLBICompression.h"
 
@@ -1562,7 +1563,7 @@ class GadgetronClientQueryToStringReader : public GadgetronClientMessageReader
 {
   
 public:
-  GadgetronClientQueryToStringReader(std::string* result) : result_(result)
+  GadgetronClientQueryToStringReader(std::string& result) : result_(result)
   {
     
   }
@@ -1580,35 +1581,16 @@ public:
     size_t_type len(0);
     boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
 
-    char* buf = NULL;
-    try {
-      buf = new char[len];
-      memset(buf, '\0', len);
-      memcpy(buf, &len, sizeof(size_t_type));
-    } catch (std::runtime_error &err) {
-      std::cerr << "DependencyQueryReader, failed to allocate buffer" << std::endl;
-      throw;
-    }
-    
-    
-    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    result_ = std::string(len+1,0);
+    if (boost::asio::read(*stream, boost::asio::buffer(result_.data(), len)) != len)
     {
-      delete [] buf;
-      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");
     }
     
-    if (!result_) {
-      delete [] buf;
-      throw GadgetronClientException("Result pointer is NULL");  
-    }
-    
-    *result_ = std::string(buf);
-
-    delete[] buf;
   }
   
   protected:
-    std::string* result_;
+    std::string& result_;
 };
 
 
@@ -1619,7 +1601,7 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
     std::string result;
     NoiseStatistics stat;
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientQueryToStringReader(&result)));
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::make_shared<GadgetronClientQueryToStringReader>(result));
     
     std::string xml_config;
     
