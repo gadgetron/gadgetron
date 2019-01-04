@@ -4,7 +4,6 @@ endif ()
 
 add_subdirectory(readers)
 add_subdirectory(writers)
-add_subdirectory(gadgets)
 
 add_library(gadgetron_core SHARED
 		Channel.h

@@ -7,9 +7,6 @@ endif ()
 
 add_executable(gadgetron
         main.cpp
-        gadgetron_xml.h
-        gadgetron_home.h
-        gadgetron_home.cpp
         connection/Config.cpp
         connection/Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h system_info.cpp connection/ConfigConnection.cpp connection/ConfigConnection.h connection/StreamConnection.cpp connection/StreamConnection.h connection/Handlers.cpp connection/Handlers.h connection/Writers.cpp connection/Writers.h connection/VoidConnection.cpp connection/VoidConnection.h connection/HeaderConnection.cpp connection/HeaderConnection.h connection/Loader.cpp connection/Loader.h connection/Core.cpp connection/Core.h)
 
