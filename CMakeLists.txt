@@ -450,6 +450,7 @@ find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
 
+add_subdirectory(core)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 
