@@ -10,12 +10,7 @@
 #include "Reader.h"
 #include "Writer.h"
 #include "mri_core_data.h"
-#include "io/readers.h"
-#include "io/writers.h"
-
-
-
-
+#include "io/primitives.h"
 
 namespace Gadgetron {
 

@@ -1,7 +1,7 @@
 
 #include <ismrmrd/meta.h>
 #include <boost/optional.hpp>
-#include <io/writers.h>
+#include <io/primitives.h>
 
 #include "ImageWriter.h"
 

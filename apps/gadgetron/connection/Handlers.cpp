@@ -4,7 +4,7 @@
 
 #include "system_info.h"
 
-#include "readers/Primitives.h"
+#include "io/primitives.h"
 #include "Response.h"
 
 namespace {
@@ -61,7 +61,7 @@ namespace {
 namespace Gadgetron::Server::Connection::Handlers {
 
     using namespace Gadgetron::Core;
-    using namespace Gadgetron::Core::Readers;
+    using namespace Gadgetron::Core::IO;
 
     QueryHandler::QueryHandler(OutputChannel &channel)
     : channel(channel) {
@@ -77,8 +77,8 @@ namespace Gadgetron::Server::Connection::Handlers {
 
     void QueryHandler::handle(std::istream &stream) {
 
-        auto reserved = read_t<uint64_t>(stream);
-        auto corr_id  = read_t<uint64_t>(stream);
+        auto reserved = read<uint64_t>(stream);
+        auto corr_id  = read<uint64_t>(stream);
         auto query    = read_string_from_stream<uint64_t>(stream);
 
         if (reserved) {

@@ -11,13 +11,13 @@
 #include "Connection.h"
 
 
-#include "readers/Primitives.h"
+#include "io/primitives.h"
 #include "log.h"
 
 using namespace boost::asio;
 
 using namespace Gadgetron::Core;
-using namespace Gadgetron::Core::Readers;
+using namespace Gadgetron::Core::IO;
 
 using namespace Gadgetron::Server::Connection;
 using namespace Gadgetron::Server::Connection::Writers;

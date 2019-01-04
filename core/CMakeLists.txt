@@ -18,7 +18,7 @@ add_library(gadgetron_core SHARED
 		Message.cpp
 		Writer.hpp
 		Response.h
-		Response.cpp)
+		Response.cpp io/primitives.h)
 
 target_link_libraries(gadgetron_core
 		gadgetron_toolbox_cpucore)

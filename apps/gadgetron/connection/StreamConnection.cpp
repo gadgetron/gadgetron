@@ -7,7 +7,7 @@
 #include "Writers.h"
 #include "Loader.h"
 
-#include "readers/Primitives.h"
+#include "io/primitives.h"
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
@@ -18,7 +18,7 @@
 namespace {
 
     using namespace Gadgetron::Core;
-    using namespace Gadgetron::Core::Readers;
+    using namespace Gadgetron::Core::IO;
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;

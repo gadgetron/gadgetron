@@ -2,7 +2,7 @@
 #include "DependencyQueryWriter.h"
 #include "GadgetContainerMessage.h"
 
-#include "io/writers.h"
+#include "io/primitives.h"
 
 namespace Gadgetron{
 

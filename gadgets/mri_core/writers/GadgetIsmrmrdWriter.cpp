@@ -4,7 +4,7 @@
 
 #include <GadgetMRIHeaders.h>
 #include "GadgetIsmrmrdWriter.h"
-#include "io/writers.h"
+#include "io/primitives.h"
 
 void Gadgetron::GadgetIsmrmrdWaveformMessageWriter::serialize(std::ostream &stream,
                                                               std::unique_ptr<ISMRMRD::WaveformHeader> header,

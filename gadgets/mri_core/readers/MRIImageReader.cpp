@@ -1,7 +1,7 @@
 #include "MRIImageReader.h"
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/meta.h>
-#include "io/readers.h"
+#include "io/primitives.h"
 #include <boost/variant.hpp>
 /*
 

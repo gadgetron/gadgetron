@@ -10,13 +10,13 @@
 #include "Handlers.h"
 #include "Config.h"
 
-#include "readers/Primitives.h"
+#include "io/primitives.h"
 #include "Context.h"
 
 namespace {
 
     using namespace Gadgetron::Core;
-    using namespace Gadgetron::Core::Readers;
+    using namespace Gadgetron::Core::IO;
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Connection::Handlers;
 
@@ -24,7 +24,7 @@ namespace {
 
     std::string read_filename_from_stream(std::istream &stream) {
         char buffer[1024];
-        read_into(stream, buffer);
+        read(stream, buffer);
         return std::string(buffer);
     }
 

@@ -9,7 +9,7 @@
 #include "Handlers.h"
 #include "Config.h"
 
-#include "readers/Primitives.h"
+#include "io/primitives.h"
 #include "Context.h"
 
 #define CONFIG_ERROR "Received second config file. Only one allowed."
@@ -17,7 +17,7 @@
 namespace {
 
     using namespace Gadgetron::Core;
-    using namespace Gadgetron::Core::Readers;
+    using namespace Gadgetron::Core::IO;
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Connection::Handlers;
 

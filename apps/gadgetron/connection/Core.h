@@ -4,7 +4,7 @@
 #include <memory>
 #include <functional>
 
-#include "readers/Primitives.h"
+#include "io/primitives.h"
 #include "Writer.h"
 #include "Channel.h"
 #include "Context.h"
@@ -43,7 +43,7 @@ namespace Gadgetron::Server::Connection {
         auto handlers = handler_factory([&]() { closed = true; });
 
         while (!closed) {
-            auto id = Core::Readers::read_t<uint16_t>(stream);
+            auto id = Core::IO::read<uint16_t>(stream);
             handlers.at(id)->handle(stream);
         }
     }
