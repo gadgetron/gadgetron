@@ -121,9 +121,9 @@ inline void OutputChannel::push(std::unique_ptr<ARGS> &&... ptr) {
 }
 
 template<class... ARGS>
-ChannelIterator <TypedInputChannel<ARGS...>> begin(
+ChannelIterator<TypedInputChannel<ARGS...>> begin(
         TypedInputChannel<ARGS...> &channel) {
-    return ChannelIterator < TypedInputChannel < ARGS...>>(channel);
+    return ChannelIterator < TypedInputChannel < ARGS...>>(&channel);
 }
 
 

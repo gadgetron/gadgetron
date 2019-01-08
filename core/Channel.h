@@ -73,13 +73,13 @@ namespace Gadgetron::Core {
     public:
         TypedInputChannel(InputChannel &input, OutputChannel &bypass) : in(input), bypass(bypass) {};
 
-        auto pop() {
+        decltype(auto) pop() {
             std::unique_ptr<Message> message = in.pop();
-            while (!convertible_to<ARGS...>(message)) {
-                bypass.push(std::move(message));
+            while (!convertible_to<ARGS...>(*message)) {
+                bypass.push_message(std::move(message));
                 message = in.pop();
             }
-            return force_unpack<ARGS...>(message);
+            return force_unpack<ARGS...>(std::move(message));
         }
 
     private:
