@@ -1,27 +1,12 @@
 
 #include <memory>
+#include <iostream>
 
-#include "connection/VoidConnection.h"
-#include "connection/ConfigConnection.h"
-#include "connection/HeaderConnection.h"
-#include "connection/StreamConnection.h"
-#include "connection/Writers.h"
+#include "Context.h"
+
 #include "connection/Core.h"
 
-#include "Connection.h"
-
-
-#include "io/primitives.h"
-#include "log.h"
-
-using namespace boost::asio;
-
-using namespace Gadgetron::Core;
-using namespace Gadgetron::Core::IO;
-
 using namespace Gadgetron::Server::Connection;
-using namespace Gadgetron::Server::Connection::Writers;
-
 
 namespace Gadgetron::Server::Connection {
 
@@ -30,4 +15,3 @@ namespace Gadgetron::Server::Connection {
         thread.detach();
     }
 }
-

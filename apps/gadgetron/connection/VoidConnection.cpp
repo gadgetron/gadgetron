@@ -18,21 +18,12 @@ namespace {
     using namespace Gadgetron::Server::Connection::Writers;
     using namespace Gadgetron::Server::Connection::Handlers;
 
-    class VoidContext {
-    public:
-        struct {
-            std::shared_ptr<MessageChannel> input, output;
-        } channels;
-        Loader loader;
-    };
+    std::vector<std::unique_ptr<Writer>> prepare_writers(std::vector<std::unique_ptr<Writer>> &writers) {
+        auto ws = default_writers();
 
-    std::vector<std::unique_ptr<Writer>> prepare_writers(Loader &loader) {
-        auto writers = loader.writers();
-        auto defaults = default_writers();
+        for (auto &writer : writers) { writers.emplace_back(std::move(writer)); }
 
-        for (auto &writer : defaults) { writers.emplace_back(std::move(writer)); }
-
-        return std::move(writers);
+        return std::move(ws);
     }
 }
 
@@ -45,22 +36,26 @@ namespace Gadgetron::Server::Connection::VoidConnection {
             ErrorHandler &error_handler
     ) {
         // Please note the header crime. TODO: Fight crime.
-        VoidContext ctx{
-                {std::make_shared<MessageChannel>(), std::make_shared<MessageChannel>()},
-                Loader{error_handler, Context{Context::Header{}, paths}, config}
-        };
+        Context context{Context::Header{}, paths};
+        Loader loader{error_handler, context, config};
 
-        auto node = ctx.loader.stream();
+        struct {
+            std::shared_ptr<MessageChannel> input = std::make_shared<MessageChannel>();
+            std::shared_ptr<MessageChannel> output = std::make_shared<MessageChannel>();
+        } channels;
+
+        auto node = loader.stream();
+        auto writers = loader.writers();
 
         std::thread output_thread = start_output_thread(
                 stream,
-                ctx.channels.output,
-                [&]() { return prepare_writers(ctx.loader); },
+                channels.output,
+                [&]() { return prepare_writers(writers); },
                 error_handler
         );
 
-        ctx.channels.input->close();
-        node->process(ctx.channels.input, ctx.channels.output);
+        channels.input->close();
+        node->process(channels.input, channels.output);
         output_thread.join();
     }
 }

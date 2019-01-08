@@ -81,12 +81,9 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
                    check=True)
 
 
-def start_gadgetron_instance(*, log, port, rest_port='19080', relay_host='localhost', relay_port='8004'):
+def start_gadgetron_instance(*, log, port):
     proc = subprocess.Popen(["gadgetron",
-                             "-p", port,
-                             '-R', rest_port,
-                             '-r', relay_host,
-                             '-l', relay_port],
+                             "-p", port],
                             stdout=log,
                             stderr=log)
     time.sleep(2)
@@ -309,41 +306,8 @@ def start_additional_nodes(args, config):
     if not config.has_section('DISTRIBUTED'):
         return
 
-    def start_gadgetron_relay_action(cont, **state):
-
-        print("Starting CloudBus relay.")
-
-        relay_port = config['DISTRIBUTED']['relay_port']
-        rest_port = config['DISTRIBUTED']['relay_rest_port']
-
-        with open(os.path.join(args.test_folder, 'relay.log'), 'w') as log:
-            with subprocess.Popen(['gadgetron_cloudbus_relay', relay_port, rest_port],
-                                  stdout=log,
-                                  stderr=log) as relay:
-                try:
-                    return cont(relay_port=relay_port, relay_rest_port=rest_port, **state)
-                finally:
-                    relay.kill()
-
-    def start_gadgetron_node_action(node, cont, *, relay_port, **state):
-        print("Starting gadgetron node: {}".format(node))
-
-        node_port = int(config['DISTRIBUTED']['node_port_base']) + node
-        node_rest_port = int(config['DISTRIBUTED']['node_rest_port_base']) + node
-
-        with open(os.path.join(args.test_folder, "gadgetron.{}.log".format(node)), 'w') as log:
-            with start_gadgetron_instance(log=log,
-                                          port=str(node_port),
-                                          rest_port=str(node_rest_port),
-                                          relay_port=relay_port) as node:
-                try:
-                    return cont(relay_port=relay_port, **state)
-                finally:
-                    node.kill()
-
-    yield start_gadgetron_relay_action
-    yield from (functools.partial(start_gadgetron_node_action, i)
-                for i in range(0, int(config['DISTRIBUTED']['nodes'])))
+    # Distributed chains not currently supported.
+    yield from []
 
 
 def run_gadgetron_client(args, config):

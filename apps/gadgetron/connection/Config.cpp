@@ -374,7 +374,7 @@ namespace {
             for (auto& node : stream_node.children() ){
                 nodes.push_back(node_parsers.at(node.name())(node));
             }
-            return Config::Stream{stream_node.attribute("name").value(),nodes};
+            return Config::Stream{stream_node.attribute("key").value(), nodes};
         }
     };
 

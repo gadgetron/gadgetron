@@ -37,7 +37,7 @@ namespace Gadgetron::Server::Connection {
     template<class F>
     void process_input(std::iostream &stream, std::shared_ptr<Core::MessageChannel> input, F handler_factory) {
 
-        RAIICloser<Core::MessageChannel> closer{std::move(input)};
+        RAIICloser<Core::MessageChannel> closer{input};
 
         bool closed = false;
         auto handlers = handler_factory([&]() { closed = true; });
@@ -64,6 +64,9 @@ namespace Gadgetron::Server::Connection {
 
             if (writer != writers.end()) {
                 (*writer)->write(stream, std::move(message));
+            }
+            else {
+                GDEBUG_STREAM("Failed to find writer for stream output.");
             }
         }
     }

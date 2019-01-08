@@ -85,11 +85,6 @@ namespace {
     ) {
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        auto close_callback = [=, &context]() {
-            context.config = boost::none;
-            close();
-        };
-
         auto config_callback = [=, &context](Config config) {
             context.config = config;
             close();
@@ -99,7 +94,7 @@ namespace {
         handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
         handlers[QUERY]    = std::make_unique<QueryHandler>(*context.channel);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
         return handlers;
     }
