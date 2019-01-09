@@ -25,23 +25,24 @@ namespace Gadgetron::Core {
             ) : PropertyMixin(properties) {};
             virtual ~GadgetNode() = default;
     };
-/*
+
     template<class ...ARGS >
     class TypedGadgetNode : public GadgetNode {
+    public:
         TypedGadgetNode(const GadgetProperties& properties): GadgetNode(properties) {
 
         }
 
-        void process(std::shared_ptr<InputChannelOutputChannel> out) override final  {
-            auto typed_input = TypedInputChannel(in, out);
-            this->process(typed_input, *out);
+        void process(InputChannel& in, OutputChannel& out)  final  {
+            auto typed_input = TypedInputChannel<ARGS...>(in, out);
+            this->process(typed_input, out);
         }
 
 
-        virtual void process(InputChannel<ARGS...> &in, OutputChannel &out) = 0;
+        virtual void process(TypedInputChannel<ARGS...> &in, OutputChannel &out) = 0;
 
     };
-    */
+
 
 
 }
@@ -49,7 +50,7 @@ namespace Gadgetron::Core {
 #define GADGETRON_GADGET_EXPORT(GadgetClass)                                        \
 std::unique_ptr<Gadgetron::Core::Node> gadget_factory_##GadgetClass(                \
         const Gadgetron::Core::Context &context,                                    \
-        const std::unordered_map<std::string, std::string> &props                   \
+        const Gadgetron::Core::GadgetProperties &props                   \
 ) {                                                                                 \
     return std::make_unique<GadgetClass>(context, props);                           \
 }                                                                                   \

@@ -262,9 +262,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED)
+  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED OPTIONAL_COMPONENTS python)
 else()
-  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED)
+  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED OPTIONAL_COMPONENTS python)
 endif()
 
 add_library(boost INTERFACE IMPORTED)
@@ -420,8 +420,15 @@ if (BUILD_PYTHON_SUPPORT)
     message("NumPy NOT found, NOT compiling Python Gadgets")
     set(BUILD_PYTHON_SUPPORT OFF)
   else()
-    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES}")
+    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
   endif()
+
+
+  add_library(python INTERFACE IMPORTED)
+  target_include_directories(python INTERFACE
+         ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+  set_property(TARGET python PROPERTY
+        INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
 
 endif()
 

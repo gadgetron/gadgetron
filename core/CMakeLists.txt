@@ -7,6 +7,7 @@ add_subdirectory(writers)
 add_subdirectory(parallel)
 
 add_library(gadgetron_core SHARED
+		Types.h
 		Channel.h
 		Channel.hpp
 		Channel.cpp
@@ -41,6 +42,7 @@ install(FILES
 		Context.h
 		Gadget.h
 		Reader.h
+		Types.h
 		Writer.h
 		Node.h
 		LegacyACE.h

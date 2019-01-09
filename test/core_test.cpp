@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include "Message.h"
 #include "Channel.h"
+#include "Types.h"
 
 TEST(TypeTests,multitype){
     using namespace Gadgetron::Core;
@@ -47,7 +48,7 @@ TEST(TypeTests,optionaltype){
     outputChannel.push(std::make_unique<std::string>("test"), std::make_unique<int>(1));
     {
         auto message = inputChannel.pop();
-        bool convertible = convertible_to<std::string, boost::optional<int>>(*message);
+        bool convertible = convertible_to<std::string, optional<int>>(*message);
         EXPECT_TRUE(convertible);
     }
 
@@ -55,7 +56,7 @@ TEST(TypeTests,optionaltype){
         outputChannel.push(std::make_unique<std::string>("test"), std::make_unique<std::string>("test"));
 
         auto message = inputChannel.pop();
-        bool convertible = convertible_to<std::string, boost::optional<int>, std::string>(*message);
+        bool convertible = convertible_to<std::string, optional<int>, std::string>(*message);
         EXPECT_TRUE(convertible);
     }
 
@@ -73,7 +74,7 @@ TEST(TypeTests,optionaltype2){
         outputChannel.push(std::make_unique<std::string>("test"));
 
         auto message = inputChannel.pop();
-        bool convertible = convertible_to<std::string, boost::optional<int>>(*message);
+        bool convertible = convertible_to<std::string, optional<int>>(*message);
         EXPECT_TRUE(convertible);
     }
 }
@@ -96,4 +97,84 @@ TEST(TypeTests,converttype){
     auto pack = unpack<std::string,std::string>(std::move(message));
 
     EXPECT_EQ(*std::get<0>(pack),"hello");
+}
+
+
+TEST(TypeTests,optionaltype3){
+
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+
+    outputChannel.push(std::make_unique<std::string>("hello"));
+
+    auto message = inputChannel.pop();
+
+    bool convertible = convertible_to<optional<std::string>,std::string>(*message);
+    EXPECT_TRUE(convertible);
+}
+
+
+TEST(TypeTests,varianttype){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::make_unique<std::string>("hello"));
+
+    {
+        auto message = inputChannel.pop();
+
+        bool convertible = convertible_to<variant<std::string, int>>(*message);
+        EXPECT_TRUE(convertible);
+    }
+
+    {
+        outputChannel.push(std::make_unique<std::string>("hello"));
+
+        auto message = inputChannel.pop();
+
+        bool convertible = convertible_to<variant<int,std::string>>(*message);
+        EXPECT_TRUE(convertible);
+    }
+}
+
+TEST(TypeTests,tupletype){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::make_unique<std::string>("hello"),std::make_unique<float>(1.0f),std::make_unique<int>(42));
+
+    auto message = inputChannel.pop();
+
+    bool convertible = convertible_to<tuple<std::string,float, int>>(*message);
+    EXPECT_TRUE(convertible);
+}
+
+
+TEST(TypeTests,tuplevarianttype){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::make_unique<std::string>("hello"),std::make_unique<float>(1.0f),std::make_unique<int>(42));
+
+    auto message = inputChannel.pop();
+
+    bool convertible = convertible_to<variant<tuple<std::string,float, int>,float>>(*message);
+    EXPECT_TRUE(convertible);
 }
