@@ -5,17 +5,17 @@ endif ()
 
 add_library(gadgetron_grappa SHARED
         gadgetron_grappa_export.h
-#        GrappaCalibrationBuffer.h
+        GrappaCalibrationBuffer.h
         GrappaUnmixingGadget.h
-#        GrappaWeights.h
-#        GrappaWeightsCalculator.h
-        GrappaGadget.cpp
+        GrappaWeights.h
+        GrappaWeightsCalculator.h
         GrappaGadget.h
-#        GrappaCalibrationBuffer.cpp
-#        GrappaWeights.cpp
-#        GrappaWeightsCalculator.cpp
+        GrappaGadget.cpp
+        GrappaCalibrationBuffer.cpp
+        GrappaWeights.cpp
+        GrappaWeightsCalculator.cpp
         GrappaUnmixingGadget.cpp
-        )
+)
 
 set_target_properties(gadgetron_grappa PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 target_link_libraries(gadgetron_grappa
