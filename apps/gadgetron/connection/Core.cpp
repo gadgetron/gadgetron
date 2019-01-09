@@ -12,7 +12,7 @@ namespace {
     class ErrorChannel : public ErrorHandler {
     public:
 
-#if defined(NDEBUG) || true
+#if defined(NDEBUG)
         // When debugging, it is useful to have all exceptions bubble up to the
         // debugger. To enable this, we sabotage the error handler on debug builds.
 

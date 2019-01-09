@@ -72,25 +72,29 @@ namespace Gadgetron {
 
     void PythonGadget::process(Core::TypedInputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) {
 
-        if (config_success_) {
-            GadgetReference ref(out);
-            class_.attr("set_next_gadget")(&ref);
+        if (! config_success_) return;
 
-            for (auto &&message : in) {
-                GILLock lock;
-                try {
-                    boost::apply_visitor([this,&out](auto &&message) { process_message(class_,out, message); }, *message);
-                }
-                catch (boost::python::error_already_set const &) {
-                    GDEBUG("Passing data on to python module failed\n");
-                    std::string err = pyerr_to_string();
-                    GERROR(err.c_str());
-                    if (!error_ignored_mode) {
-                        throw std::runtime_error(err);
-                    }
+        auto ref = std::make_shared<GadgetReference>(out);
+        boost::python::object set_next_gadget = class_.attr("set_next_gadget");
+
+
+//        set_next_gadget(boost::python::object());
+
+        for (auto message : in) {
+            GILLock lock;
+            try {
+                boost::apply_visitor([this, &out](auto &&message) { process_message(class_, out, message); }, *message);
+            }
+            catch (boost::python::error_already_set const &) {
+                GDEBUG("Passing data on to python module failed\n");
+                std::string err = pyerr_to_string();
+                GERROR(err.c_str());
+                if (!error_ignored_mode) {
+                    throw std::runtime_error(err);
                 }
             }
         }
+
     }
 
 
@@ -107,7 +111,7 @@ namespace Gadgetron {
         GDEBUG("Python Module          : %s\n", python_module.c_str());
         GDEBUG("Python Class           : %s\n", python_class.c_str());
 
-        boost::filesystem::path gadgetron_python_path = context.paths.gadgetron_home / "share/python";
+        boost::filesystem::path gadgetron_python_path = context.paths.gadgetron_home / "share" / "gadgetron" / "python";
         GDEBUG("Python folder          : %s\n", gadgetron_python_path.generic_string().c_str());
 
         for (std::string path : {python_path, gadgetron_python_path.generic_string()}) {
@@ -120,7 +124,7 @@ namespace Gadgetron {
             throw std::runtime_error("Empty python class provided");
 
         GILLock lock;
-        try {
+//        try {
             module_ = boost::python::import(python_module.c_str());
             GDEBUG_STREAM("Successfully import module : " << python_module)
 
@@ -165,16 +169,16 @@ namespace Gadgetron {
                     process_config_fn(boost::python::object(sstream.str()));
 
 
-        } catch (boost::python::error_already_set const &) {
-            GERROR("Error loading python modules in Gadget ");
-            std::string err = pyerr_to_string();
-            GERROR(err.c_str());
-            if (!error_ignored_mode)
-                throw std::runtime_error(err);
-        }
+            config_success_ = true;
+//        } catch (boost::python::error_already_set const &) {
+//            GERROR("Error loading python modules in Gadget ");
+//            std::string err = pyerr_to_string();
+//            GERROR(err.c_str());
+//            if (!error_ignored_mode)
+//                throw std::runtime_error("Python " + err);
+//        }
         GDEBUG_STREAM("Call process_config completed without error ")
 
-        config_success_ = true;
     }
 
     void
