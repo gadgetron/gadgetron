@@ -79,7 +79,7 @@ add_library(gadgetron_python SHARED
 set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_python
-        gadgetron_gadgetbase
+        gadgetron_core
         gadgetron_toolbox_python
         gadgetron_toolbox_log
         ${ISMRMRD_LIBRARIES}
@@ -88,7 +88,7 @@ target_link_libraries(gadgetron_python
         ${MKL_LIBRARIES})
 
 target_link_libraries(GadgetronPythonMRI
-        gadgetron_gadgetbase
+        gadgetron_core
         gadgetron_toolbox_log
         gadgetron_toolbox_python
         ${ISMRMRD_LIBRARIES}
