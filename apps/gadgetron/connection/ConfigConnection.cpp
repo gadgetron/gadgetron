@@ -105,6 +105,8 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
 
     void process(std::iostream &stream, const Core::Context::Paths &paths, ErrorHandler &error_handler) {
 
+        GINFO_STREAM("Connection state: [CONFIG]");
+
         ConfigContext context{
             std::make_shared<MessageChannel>(),
             boost::none,

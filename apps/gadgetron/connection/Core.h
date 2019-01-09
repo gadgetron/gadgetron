@@ -65,9 +65,6 @@ namespace Gadgetron::Server::Connection {
             if (writer != writers.end()) {
                 (*writer)->write(stream, std::move(message));
             }
-            else {
-                GDEBUG_STREAM("Failed to find writer for stream output.");
-            }
         }
     }
 

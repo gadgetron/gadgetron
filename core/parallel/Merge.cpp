@@ -35,6 +35,9 @@ namespace Gadgetron::Core::Parallel {
 
             GINFO_STREAM("Input streams closed. Closing output.");
 
+            for (auto &pair : in) {
+                pair.second->close();
+            }
             out->close();
         }
     };

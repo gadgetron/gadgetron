@@ -59,7 +59,7 @@ namespace {
     std::vector<std::unique_ptr<Writer>> prepare_writers(std::vector<std::unique_ptr<Writer>> &writers) {
         auto ws = default_writers();
 
-        for (auto &writer : writers) { writers.emplace_back(std::move(writer)); }
+        for (auto &writer : writers) { ws.emplace_back(std::move(writer)); }
 
         return std::move(ws);
     }
@@ -74,6 +74,8 @@ namespace Gadgetron::Server::Connection::StreamConnection {
             const Config &config,
             ErrorHandler &error_handler
     ) {
+        GINFO_STREAM("Connection state: [STREAM]");
+
         Loader loader{error_handler, context, config};
 
         struct {

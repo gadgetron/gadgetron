@@ -78,6 +78,8 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
             const Config &config,
             ErrorHandler &error_handler
     ) {
+        GINFO_STREAM("Connection state: [HEADER]");
+
         HeaderContext context{
                 std::make_shared<MessageChannel>(),
                 boost::none,

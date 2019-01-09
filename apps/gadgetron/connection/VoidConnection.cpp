@@ -21,7 +21,7 @@ namespace {
     std::vector<std::unique_ptr<Writer>> prepare_writers(std::vector<std::unique_ptr<Writer>> &writers) {
         auto ws = default_writers();
 
-        for (auto &writer : writers) { writers.emplace_back(std::move(writer)); }
+        for (auto &writer : writers) { ws.emplace_back(std::move(writer)); }
 
         return std::move(ws);
     }
@@ -35,6 +35,8 @@ namespace Gadgetron::Server::Connection::VoidConnection {
             const Config &config,
             ErrorHandler &error_handler
     ) {
+        GINFO_STREAM("Connection state: [VOID]");
+
         // Please note the header crime. TODO: Fight crime.
         Context context{Context::Header{}, paths};
         Loader loader{error_handler, context, config};

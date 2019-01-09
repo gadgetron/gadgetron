@@ -17,7 +17,7 @@ namespace Gadgetron::Core::Parallel {
             GINFO_STREAM("Fanout Branch process running.");
 
             InputChannel &input = *in;
-            OutputChannel &output = *out.at("grappa-recon");
+            OutputChannel &output = *out.at("sense-spirit");
 
             for (auto message : input) {
                 output.push_message(std::move(message));
