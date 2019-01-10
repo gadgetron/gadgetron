@@ -44,114 +44,89 @@ namespace Gadgetron::Core {
                 static bool
                 convertible(Iterator it, const Iterator &it_end, const hana::basic_type<optional<T>> &,
                             const hana::basic_type<TYPES> &... xs) {
-                    if (it != it_end && (typeid(TypedMessage<T>) == typeid(**it))) {
-                        return convertible(it + 1, it_end, xs...);
-                    }
-
                     if (convertible(it, it_end, hana::type_c<T>, xs...)) return true;
-
                     return convertible(it, it_end, xs...);
-
                 }
 
-                template<class Iterator, class... TTYPES, class ...TYPES>
+                template<class Iterator, class... TTYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<tuple<TTYPES...>> &,
-                            const hana::basic_type<TYPES> &... xs) {
-                    if (it != it_end && (typeid(TypedMessage<tuple<TTYPES...>>) == typeid(**it))) {
-                        return convertible(it + 1, it_end, xs...);
-                    }
-
-                    return convertible(it, it_end, hana::type_c<TTYPES>..., xs...);
-
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<tuple<TTYPES...>> &) {
+                    return convertible(it, it_end, hana::type_c<TTYPES>...);
                 }
 
 
                 template<class Iterator, class ...VTYPES, class ...TYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<variant<VTYPES...>> &,
-                            const hana::basic_type<TYPES> &... xs) {
-
-                    if (it != it_end && typeid(variant<VTYPES...>) == typeid(**it)) return true;
-
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<variant<VTYPES...>> &) {
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;
                     return hana::fold(vtypes, false, [&](bool result, auto type) {
-                        return result || convertible(it, it_end, type, xs...);
+                        return result || convertible(it, it_end, type);
                     });
                 }
 
 
                 template<class T>
-                static T *reinterpret_message(Message &message) {
-                    return static_cast<TypedMessage<T> &>(message).take_data().release();
+                static std::unique_ptr<T> reinterpret_message(Message &message) {
+                    return static_cast<TypedMessage<T> &>(message).take_data();
                 }
 
                 template<class Iterator>
-                static auto convert(Iterator it, const Iterator &it_end) {
+                static auto convert(Iterator& it, const Iterator &it_end) {
                     return hana::make_tuple();
                 }
 
                 template<class Iterator, class T, class... TYPES>
-                static auto convert(Iterator it, const Iterator &it_end, const hana::basic_type<T>,
+                static auto convert(Iterator& it, const Iterator &it_end, const hana::basic_type<T>,
                                     const hana::basic_type<TYPES> &...xs) {
                     auto val = reinterpret_message<T>(**it);
-                    return hana::prepend(convert(++it, it_end, xs...), val);
+                    return hana::prepend(convert(++it, it_end, xs...), std::move(val));
                 }
 
 
                 template<class Iterator, class T, class... TYPES>
-                static auto convert(Iterator it, const Iterator &it_end, const hana::basic_type<boost::optional<T>> &,
+                static auto convert(Iterator& it, const Iterator &it_end, const hana::basic_type<boost::optional<T>> &,
                                     const hana::basic_type<TYPES> &... xs) {
 
                     if (it != it_end && typeid(TypedMessage<optional<T>>) == typeid(**it)) {
                         auto val = reinterpret_message<optional<T>>(**it);
-                        return hana::prepend(convert(++it, it_end, xs...), val);
+                        return hana::prepend(convert(++it, it_end, xs...), std::move(val));
                     }
 
                     if (convertible(it, it_end, hana::basic_type<T>(), xs...)) {
-                        auto val = std::unique_ptr<T>(reinterpret_message<T>(**it));
-                        return hana::prepend(convert(++it, it_end, xs...), new boost::optional<T>(std::move(*val)));
+                        auto val = reinterpret_message<T>(**it);
+                        return hana::prepend(convert(++it, it_end, xs...), std::make_unique<optional<T>>(std::move(*val)));
                     }
 
-                    return hana::prepend(convert(++it, it_end, xs...), new boost::optional<T>(boost::none));
+                    return hana::prepend(convert(++it, it_end, xs...), std::make_unique<optional<T>>());
                 }
 
-                template<class Iterator, class... TTYPES, class... TYPES>
-                static auto convert(Iterator it, const Iterator &it_end, const hana::basic_type<tuple<TTYPES...>> &,
-                                    const hana::basic_type<TYPES> &... xs) {
+                template<class Iterator, class... TTYPES>
+                static auto convert(Iterator it, const Iterator &it_end, const hana::basic_type<tuple<TTYPES...>>&) {
 
                     if (it != it_end && typeid(TypedMessage<tuple<TTYPES...>>) == typeid(**it)) {
                         auto val = reinterpret_message<tuple<TTYPES...>>(**it);
-                        return hana::prepend(convert(++it, it_end, xs...), val);
+                        return hana::tuple(std::move(val));
                     }
 
-                    return convert(it,it_end, hana::type_c<TTYPES>..., xs...);
-
+                    return convert(it,it_end, hana::type_c<TTYPES>... );
                 }
 
-                template<class Iterator, class... VTYPES, class... TYPES>
-                static auto convert(Iterator it, const Iterator &it_end, const hana::basic_type<VTYPES...> &,
-                                    const hana::basic_type<TYPES> &... xs) {
-
-                    if (it != it_end && typeid(TypedMessage<variant<VTYPES...>>) == typeid(**it)) {
-                        auto val = reinterpret_message<variant<VTYPES...>>(**it);
-                        return hana::prepend(convert(it + 1, it_end, xs...), val);
-                    }
+                template<class Iterator, class... VTYPES>
+                static auto convert(Iterator it, const Iterator &it_end, const hana::basic_type<variant<VTYPES...>> &) {
 
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;
-                    variant<VTYPES...> *result = nullptr;
+                    variant<std::unique_ptr<VTYPES>...> variation;
+                    bool variant_found = hana::fold(vtypes, false, [&](bool result, auto type) {
+                        if (result) return true;
+                        if(convertible(it, it_end, type)) {
+                            variation = convert(it, it_end, type);
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (!variant_found)
+                        throw std::runtime_error("Tried to convert message to variant, but no legal type was found");
 
-                    return hana::prepend(convert(it + 1, it_end, xs...),
-                                         hana::fold(vtypes, result, [&](auto res, auto type_tag) {
-                                             using T = typename decltype(type_tag)::type;
-                                             if (res) return res;
-
-                                             if (convertible(it, it_end, type_tag, xs...)) {
-                                                 auto val = std::unique_ptr<T>(reinterpret_message<T>(**it));
-                                                 return new variant<VTYPES...>(std::move(*val));
-                                             }
-                                             return res;
-                                         }));
 
 
                 }
