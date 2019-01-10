@@ -29,10 +29,7 @@ TEST_F(python_converter_test, no_return_value)
     unsigned int d(117);
     std::complex<double> e(2.12894, -1.103103);
 
-    std::vector<size_t> dims;
-    dims.push_back(4);
-    dims.push_back(4);
-    dims.push_back(4);
+    std::vector<size_t> dims = {4,4,4};
     hoNDArray<std::complex<float> > arr(dims);
 
 #if PY_MAJOR_VERSION == 3

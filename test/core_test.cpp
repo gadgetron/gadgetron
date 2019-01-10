@@ -145,6 +145,26 @@ TEST(TypeTests,varianttype){
         EXPECT_TRUE(convertible);
     }
 }
+TEST(TypeTests,varianttype2){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::make_unique<std::string>("hello"));
+
+    {
+        auto message = inputChannel.pop();
+
+        auto variation = unpack<variant<std::string, int>>(std::move(message));
+        EXPECT_FALSE(variation->empty());
+        std::cout << variation->type().name() << std::endl;
+        EXPECT_EQ(variation->which(),1);
+    }
+
+}
 
 TEST(TypeTests,tupletype){
     using namespace Gadgetron::Core;

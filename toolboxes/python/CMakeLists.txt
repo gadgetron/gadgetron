@@ -24,6 +24,7 @@ target_link_libraries(gadgetron_toolbox_python
         gadgetron_core
         gadgetron_mricore
         gadgetron_toolbox_cpucore
+        boost
         python
         gadgetron_toolbox_log)
 
