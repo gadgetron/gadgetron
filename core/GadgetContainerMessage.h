@@ -11,17 +11,8 @@ namespace Gadgetron {
 
     class GadgetContainerMessageBase : public ACE_Message_Block {
     public:
-
-
         virtual std::unique_ptr<Core::Message> take_message() = 0;
-
-        virtual ~GadgetContainerMessageBase(){};
-
-
-    protected:
-
-
-        std::unique_ptr<Core::Message> message;
+        virtual ~GadgetContainerMessageBase() = default;
     };
 
 
@@ -35,26 +26,12 @@ namespace Gadgetron {
          * @param xs Variadic arguments to the contained class
          */
 
-        template<typename... X>
-        GadgetContainerMessage(const X &... xs)  {
-            data= new T(xs...);
-            message = std::make_unique<Core::TypedMessage<T>>(std::unique_ptr<T>(data));
+        explicit GadgetContainerMessage(T&& input_data){
+            message = std::make_unique<Core::TypedMessage<T>>(std::forward<T>(input_data));
+            data = &message->data;
         }
 
-        GadgetContainerMessage(std::unique_ptr<Core::TypedMessage<T>>&& msg ){
-            auto msg_data = msg->take_data();
-            data = msg_data.get();
-            message = std::make_unique<Core::TypedMessage<T>>(std::move(msg_data));
-        }
-
-        GadgetContainerMessage(std::unique_ptr<T>&& msg_data ){
-            data = msg_data.get();
-            message = std::make_unique<Core::TypedMessage<T>>(std::move(msg_data));
-        }
-
-        virtual ~GadgetContainerMessage() {
-
-        }
+         ~GadgetContainerMessage() override = default;
 
         virtual std::unique_ptr<Core::Message> take_message() override {
             data = nullptr;
@@ -74,7 +51,7 @@ namespace Gadgetron {
         }
 
     private:
-
+        std::unique_ptr<Core::TypedMessage<T>> message;
         T* data;
     };
 

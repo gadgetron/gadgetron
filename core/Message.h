@@ -16,7 +16,7 @@ namespace Gadgetron {
 
         class Message {
         public:
-            virtual ~Message(){};
+            virtual ~Message() = default;
 
 
         protected:
@@ -26,53 +26,39 @@ namespace Gadgetron {
             friend MessageTuple;
         };
 
-         template<class T, typename = std::enable_if_t<!std::is_convertible_v<T*,Message*>>>
-        class TypedMessage;
 
         template<class T>
-        class TypedMessage<T> : public Message {
+        class TypedMessage : public Message {
         public:
 
 
-            TypedMessage(const T& input) : data(std::make_unique<T>(input)) {
+            explicit TypedMessage(const T& input) : data(input) {
 
             }
 
-            TypedMessage(T&& input) : data(std::make_unique<T>(std::move(input))) {
+            explicit TypedMessage(T&& input) : data(std::move(input)) {
 
             }
 
-            TypedMessage(std::unique_ptr<T> &&input_ptr) : data(std::move(input_ptr)) {
+            TypedMessage(TypedMessage &&other) noexcept  = default;
+            TypedMessage(const TypedMessage& other) = default;
+            TypedMessage& operator=(const TypedMessage& other) = default;
+            TypedMessage& operator=(TypedMessage&& other) = default;
 
-            }
+            GadgetContainerMessageBase* to_container_message() override;
 
-            TypedMessage(TypedMessage &&other) : data(other.get_data()) {
+            ~TypedMessage() override =  default;
 
-            }
-
-            TypedMessage(TypedMessage& other) = delete;
-
-            std::unique_ptr<T> &&take_data() {
-                return std::move(data);
-            }
-
-            virtual GadgetContainerMessageBase* to_container_message() override;
-
-            virtual ~TypedMessage() {};
-
-        protected:
-            std::unique_ptr<T> data;
+            T data;
 
         };
 
         class MessageTuple : public Message {
         public:
-
-
             template<class ...ARGS>
             MessageTuple(ARGS &&...  args) : Message(){
                 static_assert(sizeof...(ARGS) > 1);
-                add_messages(std::move(args)...);
+                add_messages(std::forward<ARGS>(args)...);
 
             }
 
@@ -84,29 +70,27 @@ namespace Gadgetron {
                 return messages_;
             }
 
-            std::vector<std::unique_ptr<Message>> &&take_messages() {
+            std::vector<std::unique_ptr<Message>>&& take_messages() {
                 return std::move(messages_);
             }
 
-
-
-            virtual GadgetContainerMessageBase* to_container_message() override;
+            GadgetContainerMessageBase* to_container_message() override;
 
         private:
 
-            template<class T> static std::unique_ptr<Message> make_message(std::unique_ptr<T>&& input){
-                return std::make_unique<TypedMessage<T>>(std::move(input));
+            template<class T> static std::unique_ptr<Message> make_message(T&& input){
+                return std::make_unique<TypedMessage<T>>(std::forward<T>(input));
             }
 
             std::vector<std::unique_ptr<Message>> messages_;
 
             template<class T, class ...REST> void add_messages(T&& arg, REST&&... args){
-                messages_.emplace_back(make_message(std::move(arg)));
-                add_messages(std::move(args)...);
+                messages_.emplace_back(make_message(std::forward<T>(arg)));
+                add_messages(std::forward<REST>(args)...);
             }
 
             template<class T> void add_messages(T&& arg){
-                messages_.emplace_back(make_message(std::move(arg)));
+                messages_.emplace_back(make_message(std::forward<T>(arg)));
             }
 
 
