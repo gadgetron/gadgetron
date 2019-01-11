@@ -40,7 +40,7 @@ namespace Gadgetron {
 
             }
 
-            TypedMessage(TypedMessage &&other) noexcept  = default;
+            TypedMessage(TypedMessage &&other) = default;
             TypedMessage(const TypedMessage& other) = default;
             TypedMessage& operator=(const TypedMessage& other) = default;
             TypedMessage& operator=(TypedMessage&& other) = default;

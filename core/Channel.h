@@ -29,7 +29,7 @@ namespace Gadgetron::Core {
     class OutputChannel {
     public:
         template<class ...ARGS>
-        void push(std::unique_ptr<ARGS> &&... ptrs);
+        void push(ARGS&&... ptrs);
 
 
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
