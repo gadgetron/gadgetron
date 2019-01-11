@@ -20,6 +20,18 @@
 #include "mri_core_grappa.h"
 #include "mri_core_coil_map_estimation.h"
 
+
+namespace {
+
+    namespace CPU {
+
+    }
+
+    namespace GPU {
+
+    }
+}
+
 namespace Gadgetron {
 
     template<class T>
@@ -35,9 +47,11 @@ namespace Gadgetron {
 
     template<class T>
     int GrappaWeightsCalculator<T>::svc(void) {
+
         ACE_Message_Block *mb;
 
         while (this->getq(mb) >= 0) {
+
             if (mb->msg_type() == ACE_Message_Block::MB_HANGUP) {
                 GDEBUG("Hanging up in weights calculator\n");
                 if (this->putq(mb) == -1) {
@@ -172,11 +186,7 @@ namespace Gadgetron {
                     data_dimensions.push_back(uncombined_channels_.size() + 1);
                 }
 
-                try { unmixing_.create(data_dimensions); }
-                catch (std::runtime_error &err) { GEXCEPTION(err,
-                                                             "Unable to allocate host memory for unmixing coeffcients\n");
-                    return GADGET_FAIL;
-                }
+                unmixing_.create(data_dimensions);
 
                 // compute the unmixing coefficients
                 size_t numUnCombined = uncombined_channels_.size();
@@ -222,8 +232,6 @@ namespace Gadgetron {
                         Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_,
                                                            (size_t) (mb1->getObjectPtr()->acceleration_factor),
                                                            unmixing_, gFactor_);
-
-                        // GDEBUG_STREAM("cpu triggered - unmixing_ : " << Gadgetron::norm2(unmixing_));
                     }
                 } else {
                     hoNDArray<std::complex<float> > acs(RO, E1, CHA,
@@ -359,8 +367,6 @@ namespace Gadgetron {
 
                     memcpy(unmixing_host->begin(), unmixing_.begin(), unmixing_.get_number_of_bytes());
 
-                    // GDEBUG_STREAM("cpu triggered ... : " << Gadgetron::norm2(*unmixing_host));
-
                     if (mb1->getObjectPtr()->destination->update(unmixing_host.get()) < 0) {
                         GDEBUG("Update of GRAPPA weights failed\n");
                         return GADGET_FAIL;
@@ -405,32 +411,29 @@ namespace Gadgetron {
             std::vector<unsigned int> uncombined_channel_weights,
             bool include_uncombined_channels_in_combined_weights) {
 
-        GadgetContainerMessage<GrappaWeightsDescription<T> > *mb1 =
-                new GadgetContainerMessage<GrappaWeightsDescription<T> >();
+        auto *weights_description_message = new GadgetContainerMessage<GrappaWeightsDescription<T> >();
 
-
-        mb1->getObjectPtr()->sampled_region = sampled_region;
-        mb1->getObjectPtr()->acceleration_factor = acceleration_factor;
-        mb1->getObjectPtr()->destination = destination;
-        mb1->getObjectPtr()->uncombined_channel_weights = uncombined_channel_weights;
-        mb1->getObjectPtr()->include_uncombined_channels_in_combined_weights =
+        weights_description_message->getObjectPtr()->sampled_region = sampled_region;
+        weights_description_message->getObjectPtr()->acceleration_factor = acceleration_factor;
+        weights_description_message->getObjectPtr()->destination = destination;
+        weights_description_message->getObjectPtr()->uncombined_channel_weights = uncombined_channel_weights;
+        weights_description_message->getObjectPtr()->include_uncombined_channels_in_combined_weights =
                 include_uncombined_channels_in_combined_weights;
 
-        GadgetContainerMessage<hoNDArray<std::complex<T> > > *mb2 =
-                new GadgetContainerMessage<hoNDArray<std::complex<T> > >();
+        auto *weights_data_message = new GadgetContainerMessage<hoNDArray<std::complex<T> > >();
 
-        mb1->cont(mb2);
+        weights_description_message->cont(weights_data_message);
 
-        try { mb2->getObjectPtr()->create(ref_data->get_dimensions().get()); }
+        try { weights_data_message->getObjectPtr()->create(ref_data->get_dimensions().get()); }
         catch (std::runtime_error &err) {
-            mb1->release();
+            weights_description_message->release();
             return -3;
         }
 
-        memcpy(mb2->getObjectPtr()->get_data_ptr(), ref_data->get_data_ptr(),
+        memcpy(weights_data_message->getObjectPtr()->get_data_ptr(), ref_data->get_data_ptr(),
                ref_data->get_number_of_elements() * sizeof(T) * 2);
 
-        this->putq(mb1);
+        this->putq(weights_description_message);
 
         return 0;
     }

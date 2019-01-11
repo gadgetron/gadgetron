@@ -122,12 +122,12 @@ namespace Gadgetron {
 
     public:
         GrappaCalibrationBuffer(std::vector<size_t> dimensions,
-                                boost::shared_ptr<GrappaWeights<float> > w,
+                                boost::shared_ptr<GrappaWeights<float> > weights,
                                 GrappaWeightsCalculator<float> *weights_calculator);
 
-        virtual ~GrappaCalibrationBuffer() {}
+        virtual ~GrappaCalibrationBuffer() = default;
 
-        int add_data(ISMRMRD::AcquisitionHeader *m1, hoNDArray<std::complex<float> > *m2,
+        int add_data(ISMRMRD::AcquisitionHeader *acq_header, hoNDArray<std::complex<float> > *acq_data,
                      unsigned short line_offset = 0, unsigned short partition_offset = 0);
 
     private:

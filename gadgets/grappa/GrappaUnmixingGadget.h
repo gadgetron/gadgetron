@@ -25,9 +25,9 @@ namespace Gadgetron {
         virtual ~GrappaUnmixingGadget();
 
     protected:
-        virtual int process(GadgetContainerMessage<GrappaUnmixingJob> *m1,
-                            GadgetContainerMessage<ISMRMRD::ImageHeader> *m2,
-                            GadgetContainerMessage<hoNDArray<std::complex<float> > > *m3);
+        virtual int process(GadgetContainerMessage<GrappaUnmixingJob> *unmixing_job_message,
+                            GadgetContainerMessage<ISMRMRD::ImageHeader> *image_header_message,
+                            GadgetContainerMessage<hoNDArray<std::complex<float> > > *image_data_message);
     };
 }
 

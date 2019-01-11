@@ -4,9 +4,9 @@
 namespace Gadgetron {
 
     GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<size_t> dimensions,
-                                                     boost::shared_ptr<GrappaWeights<float> > w,
+                                                     boost::shared_ptr<GrappaWeights<float> > weights,
                                                      GrappaWeightsCalculator<float> *weights_calculator)
-            : weights_(w), weights_calculator_(weights_calculator), buffer_counter_(dimensions[1]),
+            : weights_(weights), weights_calculator_(weights_calculator), buffer_counter_(dimensions[1]),
               biggest_gap_current_(0), acceleration_factor_(0), last_line_(0), weights_invalid_(true) {
         dimensions_ = dimensions;
         try {
@@ -17,17 +17,17 @@ namespace Gadgetron {
 
     }
 
-    int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader *m1, hoNDArray<std::complex<float> > *m2,
+    int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader *acq_header, hoNDArray<std::complex<float> > *acq_data,
                                           unsigned short line_offset, unsigned short partition_offset) {
         if (!buffer_.get_data_ptr()) {
             GDEBUG("Buffer not allocated, cannot add data");
             return GADGET_FAIL;
         }
 
-        unsigned int samples = m1->number_of_samples;
-        unsigned int line = m1->idx.kspace_encode_step_1 + line_offset;
-        unsigned int partition = m1->idx.kspace_encode_step_2 + partition_offset;
-        unsigned int slice = m1->idx.slice; //We should probably check this
+        unsigned int samples = acq_header->number_of_samples;
+        unsigned int line = acq_header->idx.kspace_encode_step_1 + line_offset;
+        unsigned int partition = acq_header->idx.kspace_encode_step_2 + partition_offset;
+        unsigned int slice = acq_header->idx.slice; //We should probably check this // KLK: How? Why?
 
         if (samples != dimensions_[0]) {
             GDEBUG("Wrong number of samples received\n");
@@ -35,11 +35,11 @@ namespace Gadgetron {
         }
 
         std::complex<float> *b = buffer_.get_data_ptr();
-        std::complex<float> *d = m2->get_data_ptr();
+        std::complex<float> *d = acq_data->get_data_ptr();
 
         size_t offset = 0;
         //Copy the data for all the channels
-        for (int c = 0; c < m1->active_channels; c++) {
+        for (int c = 0; c < acq_header->active_channels; c++) {
             offset =
                     c * dimensions_[0] * dimensions_[1] * dimensions_[2] +
                     partition * dimensions_[0] * dimensions_[1] +
@@ -47,8 +47,8 @@ namespace Gadgetron {
             memcpy(b + offset, d + c * samples, sizeof(std::complex<float>) * samples);
         }
 
-        int buf_update = buffer_counter_.update_line(line, m1->position,
-                                                     m1->read_dir, m1->phase_dir, m1->slice_dir);
+        int buf_update = buffer_counter_.update_line(line, acq_header->position,
+                                                     acq_header->read_dir, acq_header->phase_dir, acq_header->slice_dir);
 
         if (buf_update < 0) {
             GDEBUG("Unable to update buffer counter for line %d\n", line);
@@ -62,7 +62,7 @@ namespace Gadgetron {
             weights_invalid_ = true;
         }
 
-        bool is_first_scan_in_slice = m1->isFlagSet(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
+        bool is_first_scan_in_slice = acq_header->isFlagSet(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
 
         //Depending on the sequence used, we could get into trouble if the sequence switches slice acquisition scheme before finishing a slice.
         bool acquiring_sequentially = line > last_line_;
@@ -78,7 +78,7 @@ namespace Gadgetron {
         last_line_ = line;
 
 
-        bool is_last_scan_in_slice = m1->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+        bool is_last_scan_in_slice = acq_header->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
 
         if (is_last_scan_in_slice && acquiring_sequentially) {
             unsigned int min_ky, max_ky;

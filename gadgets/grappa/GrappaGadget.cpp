@@ -229,7 +229,7 @@ namespace Gadgetron {
 
         size_t offset = 0;
         //Copy the data for all the channels
-        for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
+        for (int c = 0; c < acq_head->active_channels; c++) {
             offset =
                     c * image_dimensions_[0] * image_dimensions_[1] * image_dimensions_[2] +
                     partition * image_dimensions_[0] * image_dimensions_[1] +
@@ -239,12 +239,11 @@ namespace Gadgetron {
         }
 
 
-        bool is_last_scan_in_slice = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
-
-        bool is_first_scan_in_slice = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
+        bool is_last_scan_in_slice = acq_head->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+        bool is_first_scan_in_slice = acq_head->isFlagSet(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
 
         if (is_first_scan_in_slice) {
-            time_stamps_[slice] = m1->getObjectPtr()->acquisition_time_stamp;
+            time_stamps_[slice] = acq_head->acquisition_time_stamp;
         }
 
         if (is_last_scan_in_slice) {
@@ -284,7 +283,6 @@ namespace Gadgetron {
 
             cm1->getObjectPtr()->image_index = ++image_counter_;
             cm1->getObjectPtr()->image_series_index = image_series_;
-
 
             cm0->getObjectPtr()->weights_ = weights_[slice];
             cm0->cont(cm1);
