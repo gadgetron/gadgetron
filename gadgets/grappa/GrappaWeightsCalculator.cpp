@@ -88,34 +88,27 @@ namespace Gadgetron {
 #endif // USE_CUDA
 
             if (use_gpu_) {
-#ifdef USE_CUDA
+#if defined(USE_CUDA)
                 // Copy the image data to the device
                 cuNDArray<float_complext> device_data(host_data);
                 device_data.squeeze();
 
-                std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
+                std::vector<size_t> ftdims {0, 1};
 
                 //Go to image space
-                 cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
+                cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
 
                 size_t RO = device_data.get_size(0);
                 size_t E1 = device_data.get_size(1);
                 size_t CHA = device_data.get_size(2);
 
-                boost::shared_ptr< cuNDArray<float_complext> > csm;
-                {
-                    //GPUTimer timer("GRAPPA CSM");
-                    csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>( device_data, target_coils_ ));
+                auto csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>(device_data, target_coils_));
 
-                    // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
-
-                    //GDEBUG("Coils in csm: %d\n", csm->get_size(2));
-                }
-                //Go back to kspace
+                //Go back to k-space
                 cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
 
-                cuNDArray<complext<float> > unmixing_dev;
-                boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
+                cuNDArray<complext<float>> unmixing_dev;
+                boost::shared_ptr< std::vector<size_t>> data_dimensions = device_data.get_dimensions();
 
                 if (uncombined_channels_.size() > 0) {
                     data_dimensions->push_back(uncombined_channels_.size()+1);
@@ -128,8 +121,6 @@ namespace Gadgetron {
                 }
 
                 {
-                    //GPUTimer unmix_timer("GRAPPA Unmixing");
-                    //GadgetronTimer timer("GRAPPA unmixing", true);
                     std::vector<unsigned int> kernel_size;
 
                     //TODO: Add parameters for kernel size
@@ -254,9 +245,7 @@ namespace Gadgetron {
                         hoNDFFT<float>::instance()->ifft2c(acs, complex_im_);
 
                         Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
-
                         Gadgetron::conjugate(coil_map_, coil_map_);
-
                         Gadgetron::clear(unmixing_);
 
                         // copy back to unmixing
