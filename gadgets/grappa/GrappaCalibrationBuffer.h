@@ -123,7 +123,7 @@ namespace Gadgetron {
     public:
         GrappaCalibrationBuffer(std::vector<size_t> dimensions,
                                 boost::shared_ptr<GrappaWeights<float> > weights,
-                                GrappaWeightsCalculator<float> *weights_calculator);
+                                GrappaWeightsCalculator *weights_calculator);
 
         virtual ~GrappaCalibrationBuffer() = default;
 

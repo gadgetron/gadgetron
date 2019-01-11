@@ -56,7 +56,9 @@ namespace Gadgetron {
         GADGET_PROPERTY(image_series, int, "Image series number for output images", 0);
 
     private:
-        typedef std::map<std::string, int> map_type_;
+        using map_type_ = std::map<std::string, int>;
+
+        GrappaWeightsCalculator weights_calculator_;
 
         std::vector<GrappaCalibrationBuffer *> buffers_;
         std::vector<unsigned int> fov_;
@@ -64,7 +66,6 @@ namespace Gadgetron {
         std::vector<size_t> image_dimensions_;
         std::vector<GadgetContainerMessage<hoNDArray<std::complex<float> > > *> image_data_;
         std::vector<boost::shared_ptr<GrappaWeights<float> > > weights_;
-        GrappaWeightsCalculator<float> weights_calculator_;
         std::vector<ACE_UINT32> time_stamps_;
         int image_counter_;
         int image_series_;
