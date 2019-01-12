@@ -21,13 +21,10 @@ namespace Gadgetron {
     class GadgetContainerMessage : public GadgetContainerMessageBase {
 
     public:
-        /**
-         *  Constructor, passing on input arguments to the contained class.
-         * @param xs Variadic arguments to the contained class
-         */
 
-        explicit GadgetContainerMessage(T&& input_data){
-            message = std::make_unique<Core::TypedMessage<T>>(std::forward<T>(input_data));
+        template<class... ARGS>
+        explicit GadgetContainerMessage(ARGS&&... xs){
+            message = std::make_unique<Core::TypedMessage<T>>(std::forward<ARGS>(xs)...);
             data = &message->data;
         }
 

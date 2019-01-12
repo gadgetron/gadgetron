@@ -21,17 +21,16 @@ namespace Gadgetron {
                 boost::python::object process_fn = class_.attr("process_waveform");
                 process_fn(head, data);
             } else {
-                out.push(std::make_unique<ISMRMRD::WaveformHeader>(head),
-                         std::make_unique<hoNDArray<uint32_t>>(std::move(data)));
+                out.push(head, data);
             }
         };
 
         void process_message(boost::python::object &class_, Core::OutputChannel &out,
-                             Core::tuple<ISMRMRD::AcquisitionHeader, hoNDArray<std::complex<float>>, Core::optional<hoNDArray<float>>> &acquisition) {
+                             Core::tuple<ISMRMRD::AcquisitionHeader, Core::optional<hoNDArray<float>>, hoNDArray<std::complex<float>>>  &acquisition) {
 
             auto &head = std::get<0>(acquisition);
-            auto &data = std::get<1>(acquisition);
-            auto &traj = std::get<2>(acquisition);
+            auto &traj = std::get<1>(acquisition);
+            auto &data = std::get<2>(acquisition);
 
             boost::python::object process_fn = class_.attr("process");
             if (traj) {
@@ -57,14 +56,13 @@ namespace Gadgetron {
 
         }
 
+        template<class T>
         void process_message(boost::python::object &class_, Core::OutputChannel &out,
-                             Core::tuple<ISMRMRD::ImageHeader, Python::IsmrmrdArrayTypes, Core::optional<ISMRMRD::MetaContainer>> &image) {
+                             Core::tuple<ISMRMRD::ImageHeader, hoNDArray<T>, Core::optional<ISMRMRD::MetaContainer>> &image) {
             auto &head = std::get<0>(image);
             auto &data = std::get<1>(image);
             auto &meta = std::get<2>(image);
-            boost::apply_visitor([&](auto array) {
-                process_image(class_, out, head, array, meta);
-            }, data);
+            process_image(class_, out, head, data, meta);
 
         }
 
@@ -72,18 +70,21 @@ namespace Gadgetron {
 
     void PythonGadget::process(Core::TypedInputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) {
 
-        if (! config_success_) return;
+        if (!config_success_) return;
 
-        auto ref = std::make_shared<GadgetReference>(out);
-        boost::python::object set_next_gadget = class_.attr("set_next_gadget");
+        {
+            GILLock lock;
+            auto ref = std::make_shared<GadgetReference>(out);
+            boost::python::object set_next_gadget = class_.attr("set_next_gadget");
 
+            set_next_gadget(ref.get());
 
-//        set_next_gadget(boost::python::object());
+        }
 
         for (auto message : in) {
             GILLock lock;
             try {
-                boost::apply_visitor([this, &out](auto &&message) { process_message(class_, out, message); }, *message);
+                boost::apply_visitor([this, &out](auto &&message) { process_message(class_, out, message); }, message);
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");

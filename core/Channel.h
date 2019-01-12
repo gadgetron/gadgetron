@@ -28,9 +28,13 @@ namespace Gadgetron::Core {
 
     class OutputChannel {
     public:
+
         template<class ...ARGS>
         void push(ARGS&&... ptrs);
 
+
+        template<class ...ARGS>
+        void push(std::unique_ptr<ARGS>&&... ptrs);
 
         virtual void push_message(std::unique_ptr<Message> &&) = 0;
 
@@ -79,7 +83,7 @@ namespace Gadgetron::Core {
                 bypass.push_message(std::move(message));
                 message = in.pop();
             }
-            return force_unpack<ARGS...>(std::move(message));
+            return force_unpack<ARGS...>(*message);
         }
 
     private:

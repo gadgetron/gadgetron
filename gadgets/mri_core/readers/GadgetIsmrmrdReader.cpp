@@ -24,13 +24,13 @@ namespace Gadgetron {
         messages.emplace_back(std::make_unique<TypedMessage<ISMRMRD::AcquisitionHeader>>(header));
 
         if (header.trajectory_dimensions) {
-            auto trajectory = std::make_unique<hoNDArray<float>>(header.trajectory_dimensions,
-                                                                 header.number_of_samples);
-            IO::read(stream, *trajectory);
+            auto trajectory = hoNDArray<float>(header.trajectory_dimensions,
+                                               header.number_of_samples);
+            IO::read(stream, trajectory);
             messages.emplace_back(std::make_unique<TypedMessage<hoNDArray<float>>>(std::move(trajectory)));
         }
-        auto data = std::make_unique<hoNDArray<std::complex<float>>>(header.number_of_samples,
-                                                                     header.active_channels);
+        auto data = hoNDArray<std::complex<float>>(header.number_of_samples,
+                                                   header.active_channels);
 
 
         if (header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1)) { //Is this ZFP compressed data
@@ -82,7 +82,7 @@ namespace Gadgetron {
                 throw std::runtime_error(errorstream.str());
             }
 
-            zfp_field_set_pointer(field.get(), data->get_data_ptr());
+            zfp_field_set_pointer(field.get(), data.get_data_ptr());
 
             if (!zfp_decompress(zfp.get(), field.get())) {
                 throw std::runtime_error("Unable to decompress stream");
@@ -110,13 +110,13 @@ namespace Gadgetron {
             CompressedBuffer<float> comp;
             comp.deserialize(comp_buffer);
 
-            if (comp.size() != data->get_number_of_elements() * 2) { //*2 for complex
+            if (comp.size() != data.get_number_of_elements() * 2) { //*2 for complex
                 std::stringstream error;
                 error << "Mismatch between uncompressed data samples " << comp.size();
-                error << " and expected number of samples" << data->get_number_of_elements() * 2;
+                error << " and expected number of samples" << data.get_number_of_elements() * 2;
             }
 
-            float *d_ptr = (float *) data->get_data_ptr();
+            float *d_ptr = (float *) data.get_data_ptr();
             for (size_t i = 0; i < comp.size(); i++) {
                 d_ptr[i] = comp[i]; //This uncompresses sample by sample into the uncompressed array
             }
@@ -126,7 +126,7 @@ namespace Gadgetron {
 
         } else {
             //Uncompressed data
-            IO::read(stream, *data);
+            IO::read(stream, data);
 
         }
 
@@ -161,6 +161,7 @@ namespace Gadgetron {
     }
 
     GADGETRON_READER_EXPORT(GadgetIsmrmrdAcquisitionMessageReader)
+
     GADGETRON_READER_EXPORT(GadgetIsmrmrdWaveformMessageReader)
 
 }

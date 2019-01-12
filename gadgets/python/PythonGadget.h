@@ -17,17 +17,16 @@ namespace Gadgetron {
 
     namespace Python {
 
-        template<class... ARGS>
-        using ArrayTypes = Core::variant<hoNDArray<ARGS>...>;
 
-        using IsmrmrdArrayTypes = ArrayTypes<float, std::complex<float>, double, std::complex<double>, uint16_t, int16_t, uint32_t, int32_t>;
-
-        using PythonTypes = Core::variant<IsmrmrdReconData,
+        template<class... BASETYPES>
+        using PythonTypePattern = Core::variant<IsmrmrdReconData,
                 IsmrmrdImageArray,
                 Core::tuple<ISMRMRD::WaveformHeader, hoNDArray<uint32_t>>,
                 Core::tuple<ISMRMRD::AcquisitionHeader, Core::optional<hoNDArray<float>>, hoNDArray<std::complex<float>>>,
-                Core::tuple<ISMRMRD::ImageHeader, IsmrmrdArrayTypes, Core::optional<ISMRMRD::MetaContainer>>
+                Core::tuple<ISMRMRD::ImageHeader, hoNDArray<BASETYPES>, Core::optional<ISMRMRD::MetaContainer>>...
         >;
+
+        using PythonTypes = PythonTypePattern<float, std::complex<float>, double, std::complex<double>, uint16_t, int16_t, uint32_t, int32_t>;
     }
     /// This PythonGadget is the gateway for c++ to call python
     class EXPORTGADGETSPYTHON PythonGadget : public Core::TypedGadgetNode<Python::PythonTypes> {

@@ -84,7 +84,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator,class T>
                 static T convert(Iterator& it, const Iterator &it_end, const hana::basic_type<T>) {
-                    return std::move(reinterpret_message(**it).data);
+                    return std::move(reinterpret_message<T>(**it).data);
                 }
 
                 template<class Iterator,class T>
@@ -102,12 +102,12 @@ namespace Gadgetron::Core {
 
 
                 template<class Iterator, class T, class... TYPES>
-                static hana::tuple<T,TYPES...> convert(Iterator& it, const Iterator &it_end, const hana::basic_type<boost::optional<T>> &,
+                static hana::tuple<optional<T>,TYPES...> convert(Iterator& it, const Iterator &it_end, const hana::basic_type<boost::optional<T>> &,
                                     const hana::basic_type<TYPES> &... xs) {
 
                    if (convertible(it, it_end, hana::basic_type<T>(), xs...)) {
                         auto& val = reinterpret_message<T>(**it).data;
-                        return optional<T>(std::move(val)) | convert(++it, it_end, xs...);
+                        return combine(optional<T>(std::move(val)), convert(++it, it_end, xs...));
                     }
                     return combine(optional<T>(),convert(it,it_end,xs...));
                 }
@@ -142,7 +142,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class... TYPES>
                 static auto
-                messageTuple_to_tuple(Iterator it, const Iterator &it_end, const hana::basic_type<TYPES> &... xs) {
+                messageTuple_to_tuple(std::enable_if_t<(sizeof...(TYPES) > 1),Iterator> it, const Iterator &it_end, const hana::basic_type<TYPES> &... xs) {
 
                     auto result = convert(it, it_end, xs...);
                     return hana::unpack(result, [](auto ...xs) {
@@ -152,8 +152,14 @@ namespace Gadgetron::Core {
 
                 }
 
+                template<class Iterator, class TYPE>
+                static auto
+                messageTuple_to_tuple(Iterator it, const Iterator &it_end, const hana::basic_type<TYPE> & x) {
+                    return convert(it, it_end, x);
+                }
+
                 template<class ...ARGS>
-                static std::tuple<ARGS...> message_to_tuple(Message &message) {
+                static auto message_to_tuple(Message &message) {
                     if (typeid(message) == typeid(MessageTuple)) {
                         auto messages = static_cast<MessageTuple &>(message).take_messages();
                         return messageTuple_to_tuple(messages.begin(), messages.end(), hana::basic_type<ARGS>()...);
@@ -187,8 +193,7 @@ namespace Gadgetron::Core {
 
     template<class T>
     T force_unpack(Message& message) {
-        auto tup = gadgetron_detail::detail::message_to_tuple<T>(message);
-        return std::move(std::get<0>(tup));
+        return gadgetron_detail::detail::message_to_tuple<T>(message);
     }
 
     template<class ...ARGS>

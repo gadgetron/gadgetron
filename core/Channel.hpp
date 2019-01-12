@@ -97,10 +97,9 @@ namespace Gadgetron::Core {
         namespace gadgetron_detail {
 
             template<class T>
-            std::unique_ptr<TypedMessage < T>>
-            make_message(T
-            && data) {
-            return std::make_unique<TypedMessage < T>>(
+            std::unique_ptr<TypedMessage < std::remove_reference_t<T>>>
+            make_message(T && data) {
+            return std::make_unique<TypedMessage < std::remove_reference_t<T>>>(
             std::forward<T>(data)
             );
         }
@@ -117,6 +116,13 @@ namespace Gadgetron::Core {
 template<class ...ARGS>
 inline void OutputChannel::push(ARGS&& ... ptr) {
     this->push_message(gadgetron_detail::make_message<ARGS...>(std::forward<ARGS>(ptr)...));
+
+}
+
+
+template<class ...ARGS>
+inline void OutputChannel::push(std::unique_ptr<ARGS>&& ... ptr) {
+        penguin(ptr...);
 
 }
 

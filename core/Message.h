@@ -31,14 +31,8 @@ namespace Gadgetron {
         class TypedMessage : public Message {
         public:
 
-
-            explicit TypedMessage(const T& input) : data(input) {
-
-            }
-
-            explicit TypedMessage(T&& input) : data(std::move(input)) {
-
-            }
+            template<class... ARGS>
+            explicit TypedMessage(ARGS&& ... xs) : data(std::forward<ARGS>(xs)...) {}
 
             TypedMessage(TypedMessage &&other) = default;
             TypedMessage(const TypedMessage& other) = default;
@@ -79,7 +73,7 @@ namespace Gadgetron {
         private:
 
             template<class T> static std::unique_ptr<Message> make_message(T&& input){
-                return std::make_unique<TypedMessage<T>>(std::forward<T>(input));
+                return std::make_unique<TypedMessage<std::remove_reference_t<T>>>(std::forward<T>(input));
             }
 
             std::vector<std::unique_ptr<Message>> messages_;
