@@ -41,7 +41,8 @@ template<> struct fftw_types<double>{
     Access using e.g.
     FFT<float>::instance()
     */
-    template <typename T> class EXPORTCPUFFT hoNDFFT
+    template <typename T>
+    class EXPORTCPUFFT hoNDFFT
     {
     public:
 

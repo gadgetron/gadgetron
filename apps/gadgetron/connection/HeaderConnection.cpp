@@ -55,11 +55,6 @@ namespace {
     ) {
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
-        auto close_callback = [=, &context]() {
-            context.header = boost::none;
-            close();
-        };
-
         auto header_callback = [=, &context](Header header) {
             context.header = header;
             close();
@@ -69,7 +64,7 @@ namespace {
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[HEADER]   = std::make_unique<HeaderHandler>(header_callback);
         handlers[QUERY]    = std::make_unique<QueryHandler>(*context.channel);
-        handlers[CLOSE]    = std::make_unique<CloseHandler>(close_callback);
+        handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
         return handlers;
     }
@@ -83,6 +78,8 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
             const Config &config,
             ErrorHandler &error_handler
     ) {
+        GINFO_STREAM("Connection state: [HEADER]");
+
         HeaderContext context{
                 std::make_shared<MessageChannel>(),
                 boost::none,

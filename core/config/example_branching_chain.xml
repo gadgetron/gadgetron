@@ -4,19 +4,19 @@
 
     <readers>
         <reader>
-            <dll>gadgetron_mricore</dll>
-            <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
         </reader>
         <reader>
-            <dll>gadgetron_mricore</dll>
-            <classname>GadgetIsmrmrdWaveformMessageReader</classname>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
         </reader>
     </readers>
 
     <writers>
         <writer>
-            <dll>gadgetron_mricore</dll>
-            <classname>MRIImageWriter</classname>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
         </writer>
     </writers>
 
@@ -42,13 +42,13 @@
         <parallel>
             <branch>
                 <name>Fanout</name>
-                <dll>gadgetron_core</dll>
-                <classname>FanoutDisperseNode</classname>
+                <dll>gadgetron_core_parallel</dll>
+                <classname>FanoutBranch</classname>
             </branch>
             <merge>
                 <name>Merge</name>
-                <dll>image_compare</dll>
-                <classname>ImageConvergeNode</classname>
+                <dll>gadgetron_core_parallel</dll>
+                <classname>SimpleMerge</classname>
             </merge>
 
             <stream key="sense-spirit">
@@ -76,14 +76,6 @@
                     <property><name>average_all_ref_N</name><value>true</value></property>
                     <property><name>average_all_ref_S</name><value>true</value></property>
                     <property><name>prepare_ref_always</name><value>true</value></property>
-                </gadget>
-
-                <gadget>
-                    <name>CoilCompression</name>
-                    <dll>gadgetron_mricore</dll>
-                    <classname>GenericReconEigenChannelGadget</classname>
-                    <property><name>average_all_ref_N</name><value>true</value></property>
-                    <property><name>average_all_ref_S</name><value>true</value></property>
                 </gadget>
 
                 <gadget>
@@ -134,14 +126,6 @@
                 </gadget>
 
                 <gadget>
-                    <name>CoilCompression</name>
-                    <dll>gadgetron_mricore</dll>
-                    <classname>GenericReconEigenChannelGadget</classname>
-                    <property><name>average_all_ref_N</name><value>true</value></property>
-                    <property><name>average_all_ref_S</name><value>true</value></property>
-                </gadget>
-
-                <gadget>
                     <name>Recon</name>
                     <dll>gadgetron_mricore</dll>
                     <classname>GenericReconCartesianGrappaGadget</classname>
@@ -156,6 +140,28 @@
                     <property><name>partial_fourier_filter_E2_width</name><value>0.15</value></property>
                     <property><name>partial_fourier_filter_densityComp</name><value>false</value></property>
                 </gadget>
+
+                <gadget>
+                    <name>KSpaceFilter</name>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>GenericReconKSpaceFilteringGadget</classname>
+
+                    <!-- if incoming images have this meta field, it will not be processed -->
+                    <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
+
+                    <!-- parameters for kspace filtering -->
+                    <property><name>filterRO</name><value>Gaussian</value></property>
+                    <property><name>filterRO_sigma</name><value>1.0</value></property>
+                    <property><name>filterRO_width</name><value>0.15</value></property>
+
+                    <property><name>filterE1</name><value>Gaussian</value></property>
+                    <property><name>filterE1_sigma</name><value>1.0</value></property>
+                    <property><name>filterE1_width</name><value>0.15</value></property>
+
+                    <property><name>filterE2</name><value>Gaussian</value></property>
+                    <property><name>filterE2_sigma</name><value>1.0</value></property>
+                    <property><name>filterE2_width</name><value>0.15</value></property>
+                </gadget>
             </stream>
         </parallel>
 
@@ -163,6 +169,12 @@
             <name>FOVAdjustment</name>
             <dll>gadgetron_mricore</dll>
             <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>StdMap</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>GenericReconNoiseStdMapComputingGadget</classname>
         </gadget>
 
         <gadget>
@@ -181,6 +193,22 @@
             <name>ImageArraySplit</name>
             <dll>gadgetron_mricore</dll>
             <classname>ImageArraySplitGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>ComplexToFloatAttrib</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>ComplexToFloatGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>FloatToShortAttrib</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>FloatToUShortGadget</classname>
+
+            <property><name>max_intensity</name><value>32767</value></property>
+            <property><name>min_intensity</name><value>0</value></property>
+            <property><name>intensity_offset</name><value>0</value></property>
         </gadget>
 
         <gadget>

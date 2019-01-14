@@ -9,24 +9,26 @@
 
 #include <complex>
 
-namespace Gadgetron{
+namespace Gadgetron {
 
-  struct EXPORTGADGETSGRAPPA GrappaUnmixingJob
-  {
-    boost::shared_ptr< GrappaWeights<float> > weights_;
-  };
+    struct EXPORTGADGETSGRAPPA GrappaUnmixingJob {
+        boost::shared_ptr<GrappaWeights<float> > weights_;
+    };
 
-  class EXPORTGADGETSGRAPPA GrappaUnmixingGadget: public Gadget3<GrappaUnmixingJob, ISMRMRD::ImageHeader, hoNDArray<std::complex<float> > > {
-  public:
-    GADGET_DECLARE(GrappaUnmixingGadget);
+    class EXPORTGADGETSGRAPPA GrappaUnmixingGadget
+            : public Gadget3<GrappaUnmixingJob, ISMRMRD::ImageHeader, hoNDArray<std::complex<float> > > {
+    public:
+        GADGET_DECLARE(GrappaUnmixingGadget);
 
-    GrappaUnmixingGadget();
-    virtual ~GrappaUnmixingGadget();
+        GrappaUnmixingGadget();
 
-  protected:
-    virtual int process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
-                        GadgetContainerMessage<ISMRMRD::ImageHeader>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3);
-  };
+        virtual ~GrappaUnmixingGadget();
+
+    protected:
+        virtual int process(GadgetContainerMessage<GrappaUnmixingJob> *unmixing_job_message,
+                            GadgetContainerMessage<ISMRMRD::ImageHeader> *image_header_message,
+                            GadgetContainerMessage<hoNDArray<std::complex<float> > > *image_data_message);
+    };
 }
 
 #endif /* GRAPPAUNMIXINGGADGET_H_ */
