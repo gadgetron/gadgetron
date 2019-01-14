@@ -9,6 +9,7 @@
 #include <boost/parameter/name.hpp>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/range/algorithm/count_if.hpp>
+#include <boost/range/algorithm/find_if.hpp>
 #include <numeric>
 
 #include "log.h"
@@ -92,10 +93,12 @@ namespace {
     template<class... Rulesets>
     Property parse_property(const pugi::xml_node &node) {
         std::vector<optional<Property>> potentials = {make_property<Rulesets>(node)...};
-        auto n_valid = boost::count_if(potentials, [](auto &potential) { return bool(potential); });
+        auto to_bool = [](auto& potential) {return bool(potential);};
+
+        auto n_valid = boost::count_if(potentials, to_bool );
         if (n_valid < 1) { throw ConfigNodeError("Unable to parse property", node); };
         if (n_valid > 1) { throw ConfigNodeError("Ambigous property parse", node); };
-        return *potentials.front();
+        return **boost::find_if(potentials,to_bool);
     }
 
 
