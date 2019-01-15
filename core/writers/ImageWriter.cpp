@@ -15,20 +15,20 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
     public:
         void serialize(
                 std::ostream &stream,
-                std::unique_ptr<ISMRMRD::ImageHeader> header,
-                std::unique_ptr<hoNDArray<T>> data,
-                std::unique_ptr<boost::optional<ISMRMRD::MetaContainer>> meta
+                const ISMRMRD::ImageHeader& header,
+                const hoNDArray<T>& data,
+                const optional<ISMRMRD::MetaContainer>& meta
         ) override {
             uint16_t message_id = 1022;
             IO::write(stream,message_id);
-            IO::write(stream,*header);
+            IO::write(stream,header);
 
             std::string serialized_meta;
 
-            if(*meta) {
+            if(meta) {
                 std::stringstream meta_stream;
 
-                ISMRMRD::serialize(meta->value(), meta_stream);
+                ISMRMRD::serialize(*meta, meta_stream);
 
                 serialized_meta = meta_stream.str();
             }
@@ -36,7 +36,7 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
             uint64_t meta_size = serialized_meta.size();
             IO::write(stream,meta_size);
             stream.write(serialized_meta.c_str(), meta_size);
-            IO::write(stream, *data);
+            IO::write(stream, data);
         }
     };
 
@@ -61,10 +61,10 @@ namespace Gadgetron::Core::Writers {
         );
     }
 
-    void ImageWriter::write(std::ostream &stream, std::unique_ptr<Message> message) {
+    void ImageWriter::write(std::ostream &stream, Message& message) {
         for (auto &writer : writers){
-            if (writer->accepts(*message)) {
-                writer->write(stream, std::move(message));
+            if (writer->accepts(message)) {
+                writer->write(stream, message);
                 return;
             }
         }

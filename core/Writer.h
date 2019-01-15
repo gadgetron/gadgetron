@@ -16,8 +16,9 @@ namespace Gadgetron::Core {
 
         virtual bool accepts(const Message &) = 0;
 
-        virtual void write(std::ostream &stream, std::unique_ptr<Message> message) = 0;
+        virtual void write(std::ostream &stream, Message& message) = 0;
     };
+
 
     template<class ...ARGS>
     class TypedWriter : public Writer {
@@ -26,10 +27,10 @@ namespace Gadgetron::Core {
 
         bool accepts(const Message &) override;
 
-        void write(std::ostream &stream, std::unique_ptr<Message> message) override;
+        void write(std::ostream &stream, Message& message) override;
 
     protected:
-        virtual void serialize(std::ostream &stream, std::unique_ptr<ARGS> ...) = 0;
+        virtual void serialize(std::ostream &stream, const ARGS& ...) = 0;
     };
 
 }
@@ -56,19 +57,19 @@ namespace Gadgetron::Core {
             }
         }
     }
+}
+
 
 
     template<class ...ARGS>
-    void TypedWriter<ARGS...>::write(std::ostream &stream, std::unique_ptr<Message> message) {
+    void Gadgetron::Core::TypedWriter<ARGS...>::write(std::ostream &stream,  Message& message) {
 
-        std::tuple<std::unique_ptr<ARGS>...> arg_tuple = unpack<ARGS...>(std::move(message));
+        std::tuple<ARGS...> arg_tuple = unpack<ARGS...>(message);
 
         gadgetron_detail::index_apply<sizeof...(ARGS)>(
                 [&](auto... Is) { this->serialize(stream, std::move(std::get<Is>(arg_tuple))...); });
-
-
     }
-}
+
 
 #include "Writer.hpp"
 

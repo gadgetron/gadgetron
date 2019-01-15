@@ -5,6 +5,7 @@ endif ()
 add_subdirectory(readers)
 add_subdirectory(writers)
 add_subdirectory(parallel)
+add_subdirectory(distributed)
 
 add_library(gadgetron_core SHARED
 		Types.h

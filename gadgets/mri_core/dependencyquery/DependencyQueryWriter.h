@@ -20,7 +20,7 @@ namespace Gadgetron
     class EXPORTGADGETSMRICORE DependencyQueryWriter : public Core::TypedWriter<DependencyQuery::Dependency>
     {
     protected:
-        void serialize(std::ostream &stream, std::unique_ptr<DependencyQuery::Dependency>) override;
+        void serialize(std::ostream &stream, const DependencyQuery::Dependency&) override;
 
     public:
 //        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);

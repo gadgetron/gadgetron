@@ -6,13 +6,13 @@
 
 namespace Gadgetron{
 
-    void DependencyQueryWriter::serialize(std::ostream &stream, std::unique_ptr<DependencyQuery::Dependency> ptr) {
+    void DependencyQueryWriter::serialize(std::ostream &stream, const DependencyQuery::Dependency& dependencies) {
         using namespace Core;
 
         IO::write(stream,GADGET_MESSAGE_DEPENDENCY_QUERY);
 
 
-        auto& meta = ptr->dependencies;
+        auto& meta = dependencies.dependencies;
 
         std::stringstream meta_stream;
         ISMRMRD::serialize(meta,meta_stream);

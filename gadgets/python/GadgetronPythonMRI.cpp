@@ -10,7 +10,7 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 {
     // boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
 
-    class_<Gadgetron::GadgetReference>("GadgetReference", init<Gadgetron::Core::OutputChannel&>())
+    class_<Gadgetron::GadgetReference>("GadgetReference", no_init)
       .def("return_acquisition", &Gadgetron::GadgetReference::return_acquisition)
       .def("return_recondata",&Gadgetron::GadgetReference::return_recondata)
       .def("return_ismrmrd_image_array", &Gadgetron::GadgetReference::return_ismrmrd_image_array)

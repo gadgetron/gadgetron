@@ -97,26 +97,32 @@ namespace Gadgetron::Core {
         namespace gadgetron_detail {
 
             template<class T>
-            std::unique_ptr<TypedMessage < T>>
-            make_message(std::unique_ptr<T>
-            && ptr) {
-            return std::make_unique<TypedMessage < T>>(
-            std::move(ptr)
+            std::unique_ptr<TypedMessage < std::remove_reference_t<T>>>
+            make_message(T && data) {
+            return std::make_unique<TypedMessage < std::remove_reference_t<T>>>(
+            std::forward<T>(data)
             );
         }
 
         template<class... ARGS>
         std::enable_if_t<(sizeof...(ARGS) > 1), std::unique_ptr<MessageTuple>>
-        make_message(std::unique_ptr<ARGS> &&... ptrs) {
-            return std::make_unique<MessageTuple>(ptrs...);
+        make_message(ARGS &&... data) {
+            return std::make_unique<MessageTuple>(std::forward<ARGS>(data)...);
         }
 
     }  // namespace gadgetron_detail
 }  // namespace
 
 template<class ...ARGS>
-inline void OutputChannel::push(std::unique_ptr<ARGS> &&... ptr) {
-    this->push_message(gadgetron_detail::make_message<ARGS...>(std::move(ptr)...));
+inline void OutputChannel::push(ARGS&& ... ptr) {
+    this->push_message(gadgetron_detail::make_message<ARGS...>(std::forward<ARGS>(ptr)...));
+
+}
+
+
+template<class ...ARGS>
+inline void OutputChannel::push(std::unique_ptr<ARGS>&& ... ptr) {
+        penguin(ptr...);
 
 }
 

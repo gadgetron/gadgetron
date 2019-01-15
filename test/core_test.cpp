@@ -11,7 +11,7 @@ TEST(TypeTests,multitype){
     InputChannel& inputChannel = channel;
     OutputChannel& outputChannel = channel;
 
-    outputChannel.push(std::make_unique<std::string>("test"),std::make_unique<int>(4));
+    outputChannel.push(std::string("test"),int(4));
 
 
     auto message = inputChannel.pop();
@@ -29,7 +29,7 @@ TEST(TypeTests,singletype){
     InputChannel& inputChannel = channel;
     OutputChannel& outputChannel = channel;
 
-    outputChannel.push(std::make_unique<std::string>("test"));
+    outputChannel.push(std::string("test"));
 
 
     auto message = inputChannel.pop();
@@ -45,7 +45,7 @@ TEST(TypeTests,optionaltype){
     InputChannel& inputChannel = channel;
     OutputChannel& outputChannel = channel;
 
-    outputChannel.push(std::make_unique<std::string>("test"), std::make_unique<int>(1));
+    outputChannel.push(std::string("test"), int(1));
     {
         auto message = inputChannel.pop();
         bool convertible = convertible_to<std::string, optional<int>>(*message);
@@ -53,7 +53,7 @@ TEST(TypeTests,optionaltype){
     }
 
     {
-        outputChannel.push(std::make_unique<std::string>("test"), std::make_unique<std::string>("test"));
+        outputChannel.push(std::string("test"), std::string("test"));
 
         auto message = inputChannel.pop();
         bool convertible = convertible_to<std::string, optional<int>, std::string>(*message);
@@ -71,7 +71,7 @@ TEST(TypeTests,optionaltype2){
 
 
     {
-        outputChannel.push(std::make_unique<std::string>("test"));
+        outputChannel.push(std::string("test"));
 
         auto message = inputChannel.pop();
         bool convertible = convertible_to<std::string, optional<int>>(*message);
@@ -90,13 +90,13 @@ TEST(TypeTests,converttype){
     OutputChannel& outputChannel = channel;
 
 
-    outputChannel.push(std::make_unique<std::string>("hello"),std::make_unique<std::string>("world"));
+    outputChannel.push(std::string("hello"),std::string("world"));
 
     auto message = inputChannel.pop();
 
-    auto pack = unpack<std::string,std::string>(std::move(message));
+    auto pack = unpack<std::string,std::string>(*message);
 
-    EXPECT_EQ(*std::get<0>(pack),"hello");
+    EXPECT_EQ(std::get<0>(pack),"hello");
 }
 
 
@@ -110,7 +110,7 @@ TEST(TypeTests,optionaltype3){
     OutputChannel& outputChannel = channel;
 
 
-    outputChannel.push(std::make_unique<std::string>("hello"));
+    outputChannel.push(std::string("hello"));
 
     auto message = inputChannel.pop();
 
@@ -127,7 +127,7 @@ TEST(TypeTests,varianttype){
     InputChannel& inputChannel = channel;
     OutputChannel& outputChannel = channel;
 
-    outputChannel.push(std::make_unique<std::string>("hello"));
+    outputChannel.push(std::string("hello"));
 
     {
         auto message = inputChannel.pop();
@@ -137,13 +137,33 @@ TEST(TypeTests,varianttype){
     }
 
     {
-        outputChannel.push(std::make_unique<std::string>("hello"));
+        outputChannel.push(std::string("hello"));
 
         auto message = inputChannel.pop();
 
         bool convertible = convertible_to<variant<int,std::string>>(*message);
         EXPECT_TRUE(convertible);
     }
+}
+TEST(TypeTests,varianttype2){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::string("hello"));
+
+    {
+        auto message = inputChannel.pop();
+
+        auto variation = unpack<variant<std::string, int>>(*message);
+        EXPECT_FALSE(variation.empty());
+        std::cout << variation.type().name() << std::endl;
+        EXPECT_EQ(variation.which(),1);
+    }
+
 }
 
 TEST(TypeTests,tupletype){
@@ -154,7 +174,7 @@ TEST(TypeTests,tupletype){
     InputChannel& inputChannel = channel;
     OutputChannel& outputChannel = channel;
 
-    outputChannel.push(std::make_unique<std::string>("hello"),std::make_unique<float>(1.0f),std::make_unique<int>(42));
+    outputChannel.push(std::string("hello"),1.0f,int(42));
 
     auto message = inputChannel.pop();
 
@@ -171,7 +191,7 @@ TEST(TypeTests,tuplevarianttype){
     InputChannel& inputChannel = channel;
     OutputChannel& outputChannel = channel;
 
-    outputChannel.push(std::make_unique<std::string>("hello"),std::make_unique<float>(1.0f),std::make_unique<int>(42));
+    outputChannel.push(std::string("hello"),float(1.0f),int(42));
 
     auto message = inputChannel.pop();
 

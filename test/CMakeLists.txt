@@ -31,9 +31,9 @@ set(test_src_files tests.cpp
       core_test.cpp
       )
 #
-#if (PYTHONLIBS_FOUND)
-#    set(test_src_files ${test_src_files} python_converter_test.cpp )
-#endif ()
+if (PYTHONLIBS_FOUND)
+    set(test_src_files ${test_src_files} python_converter_test.cpp )
+endif ()
 
 if ( CUDA_FOUND )
 
@@ -84,19 +84,15 @@ endif()
     ${GTEST_LIBRARIES}
     )
 
-#if (PYTHONLIBS_FOUND)
-#    target_link_libraries(test_all
-#        gadgetron_toolbox_python
-#        boost
-#        ${ISMRMRD_LIBRARIES}
-#        ${PYTHON_LIBRARIES}
-#        )
-#endif ()
+if (PYTHONLIBS_FOUND)
+    target_link_libraries(test_all
+        gadgetron_toolbox_python
+            python )
+endif ()
 
 
 add_test(test_all test_all)
 
-set_target_properties(test_all PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 install(TARGETS test_all DESTINATION bin COMPONENT main)
 
 endif ()

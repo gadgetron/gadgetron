@@ -12,7 +12,7 @@ namespace {
     class ErrorChannel : public ErrorHandler {
     public:
 
-#if defined(NDEBUG) || true
+#if defined(NDEBUG)
         // When debugging, it is useful to have all exceptions bubble up to the
         // debugger. To enable this, we sabotage the error handler on debug builds.
 
@@ -47,7 +47,7 @@ namespace {
             InputChannel &errors(this->errors);
 
             for (auto error : errors) {
-                writer.write(stream, std::move(error));
+                writer.write(stream, *error);
             }
         }
 
@@ -55,7 +55,7 @@ namespace {
         void push_error(const std::string &location, const std::string &message) {
             std::string error("[" + location + "] ERROR: " + message);
             GERROR_STREAM(error);
-            errors.push(std::make_unique<std::string>(error));
+            errors.push(error);
         }
 
         MessageChannel errors{};

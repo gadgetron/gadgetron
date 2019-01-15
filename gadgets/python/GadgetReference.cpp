@@ -12,29 +12,27 @@ namespace Gadgetron {
 
 
     void GadgetReference::return_recondata(boost::python::object rec) {
-        output.push(std::make_unique<IsmrmrdReconData>(boost::python::extract<IsmrmrdReconData>(rec)()));
+        output.push(IsmrmrdReconData(boost::python::extract<IsmrmrdReconData>(rec)()));
 
     }
 
     void GadgetReference::return_ismrmrd_image_array(boost::python::object rec) {
-        output.push(std::make_unique<IsmrmrdImageArray>(boost::python::extract<IsmrmrdImageArray>(rec)()));
+        output.push(IsmrmrdImageArray(boost::python::extract<IsmrmrdImageArray>(rec)()));
     }
 
     template<class TH, class TD>
     void GadgetReference::return_data(TH header, boost::python::object arr, const char *meta) {
 
-        auto m1 = std::make_unique<TH>(std::move(header));
-
-        auto m2 = std::make_unique<hoNDArray<TD>>(boost::python::extract<hoNDArray<TD>>(arr));
+        hoNDArray<TD> data = boost::python::extract<hoNDArray<TD>>(arr);
 
         if (meta) {
-            auto m3 = std::make_unique<ISMRMRD::MetaContainer>();
-            ISMRMRD::deserialize(meta, *m3);
-            output.push(std::move(m1), std::move(m2), std::move(m3));
+            auto m3 = ISMRMRD::MetaContainer{};
+            ISMRMRD::deserialize(meta, m3);
+            output.push(std::move(header), std::move(data), std::move(m3));
             return;
         }
 
-        output.push(std::move(m1), std::move(m2));
+        output.push(std::move(header), std::move(data));
     }
 
     void GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr) {

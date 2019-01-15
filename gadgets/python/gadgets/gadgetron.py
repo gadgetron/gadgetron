@@ -26,6 +26,7 @@ class Gadget(object):
         return self.get_results()
 
     def set_next_gadget(self, gadget):
+        print("The penguins are comming")
         self.next_gadget = gadget
 
     def process_config(self, conf):
@@ -79,7 +80,7 @@ class Gadget(object):
                 self.next_gadget.return_recondata(args[0])
             else:
                 raise ("Unsupported types when returning to Gadgetron framework")
-            else:
+        else:
             raise ("next_gadget is set to unsupported type")
 
 
