@@ -111,7 +111,6 @@ namespace {
 
         }
 
-
         std::unordered_map<std::string, std::string>
         parse_properties(const pugi::xml_node &gadget_node) {
 
@@ -182,7 +181,7 @@ namespace {
                 auto val = dereference_key(map, value);
                 map[key] = val;
                 return val;
-            } catch (std::out_of_range) {
+            } catch (const std::out_of_range&) {
                 throw std::runtime_error("Cycle detected in Gadget xml properties");
             }
         }
@@ -279,17 +278,11 @@ namespace {
         V2(const pugi::xml_document &doc) : Parser<V2Source, LegacySource>(doc) {
             node_parsers["gadget"] = [&](const pugi::xml_node &n) { return this->parse_gadget(n); };
             node_parsers["parallel"] = [&](const pugi::xml_node &n) { return this->parse_parallel(n); };
+            node_parsers["distributed"] = [&](const pugi::xml_node &n) { return this->parse_distributed(n); };
 
         }
 
         std::unordered_map<std::string, std::function<Config::Node(const pugi::xml_node &)>> node_parsers;
-
-
-        static Property parse_property(const pugi::xml_node &node) {
-            if (auto property = make_property<LegacySource>(node))
-                return *property;
-            throw ConfigNodeError("Illegal node encountered", node);
-        }
 
         Config::Merge parse_mergenode(const pugi::xml_node &merge_node) {
             return Config::Merge{merge_node.child_value("name"), merge_node.child_value("dll"),
@@ -313,6 +306,18 @@ namespace {
             return Config::Parallel{branch, merge, streams};
         }
 
+        Config::Distributed parse_distributed(const pugi::xml_node& distributed_node){
+            auto branch = parse_branchnode(distributed_node.child("branch"));
+            auto merge = parse_mergenode(distributed_node.child("merge"));
+
+            std::vector<Config::Stream> streams{};
+            for (const auto &stream_node : distributed_node.children("stream")) {
+                streams.push_back(parse_stream(stream_node));
+            }
+
+            throw std::runtime_error("Not really implemented yet");
+        }
+
         Config::Stream parse_stream(const pugi::xml_node &stream_node) {
             std::vector<Config::Node> nodes;
             for (auto &node : stream_node.children()) {
@@ -321,8 +326,6 @@ namespace {
             return Config::Stream{stream_node.attribute("key").value(), nodes};
         }
     };
-
-
 }
 
 namespace Gadgetron::Server::Connection {
@@ -336,7 +339,6 @@ namespace Gadgetron::Server::Connection {
             GERROR("Loading config file failed with following error: %s (%d)\n", result.description(), result.status);
             throw std::runtime_error(result.description());
         }
-
 
         if (doc.child("gadgetronStreamConfiguration"))
             return Legacy::parse(doc);

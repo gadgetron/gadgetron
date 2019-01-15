@@ -28,6 +28,9 @@ namespace Gadgetron::Server::Connection {
             std::vector<Node> nodes;
         };
 
+        struct RepeatedStream : Stream {
+        };
+
         struct Gadget {
             std::string name, dll, classname;
             std::unordered_map<std::string, std::string> properties;
@@ -46,7 +49,11 @@ namespace Gadgetron::Server::Connection {
 
         struct Distributed {
             Discovery discovery;
-            Stream stream;
+            std::vector<Reader> readers;
+            std::vector<Writer> writers;
+            std::vector<Stream> streams;
+            std::vector<RepeatedStream> repeated_streams;
+
         };
 
         std::vector<Reader> readers;
