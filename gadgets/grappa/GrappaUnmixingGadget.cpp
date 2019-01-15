@@ -26,7 +26,7 @@ namespace Gadgetron {
             return GADGET_FAIL;
         }
 
-        unmixing_job_message->cont(0);
+        unmixing_job_message->cont(nullptr);
         image_header_message->cont(image_data);
 
         hoNDFFT<float>::instance()->ifft3c(*image_data_message->getObjectPtr());

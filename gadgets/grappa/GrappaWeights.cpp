@@ -91,7 +91,4 @@ namespace Gadgetron {
 
     template
     class EXPORTGADGETSGRAPPA GrappaWeights<float>;
-
-    template
-    class EXPORTGADGETSGRAPPA GrappaWeights<double>;
 }

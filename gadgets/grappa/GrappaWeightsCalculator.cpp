@@ -98,7 +98,8 @@ namespace Gadgetron {
                     Gadgetron::conjugate(coil_map_, coil_map_);
                     Gadgetron::clear(unmixing_);
                     memcpy(unmixing_.begin(), coil_map_.begin(), coil_map_.get_number_of_bytes());
-                } else {
+                }
+                else {
                     size_t startRO = description->sampled_region[0].first;
                     size_t endRO = description->sampled_region[0].second;
 
@@ -117,7 +118,8 @@ namespace Gadgetron {
                                                        description->acceleration_factor,
                                                        unmixing_, gFactor_);
                 }
-            } else {
+            }
+            else {
                 hoNDArray<std::complex<float> > acs(RO, E1, CHA, host_data->begin());
 
                 // handle the case that all channels are reconed
@@ -151,7 +153,8 @@ namespace Gadgetron {
                             pUnmixing[p] = 1;
                         }
                     }
-                } else {
+                }
+                else {
                     // first, assemble the target_acs
                     // the combined channel comes first and then all uncombined channels
                     std::vector<size_t> dimTarget(3);
@@ -184,7 +187,8 @@ namespace Gadgetron {
                                 srcChaLoc[ind] = sCha;
                                 ind++;
                             }
-                        } else {
+                        }
+                        else {
                             memcpy(target_acs_.begin() +
                                    (target_coils_with_uncombined - numUnCombined + ind_uncombined) * RO * E1,
                                    acs.begin() + sCha * RO * E1, sizeof(std::complex<float>) * RO * E1);
@@ -273,7 +277,7 @@ namespace Gadgetron {
             std::vector<unsigned int> uncombined_channel_weights,
             bool include_uncombined_channels_in_combined_weights) {
 
-        auto *weights_description_message = new GadgetContainerMessage<WeightsDescription<T> >();
+        auto *weights_description_message = new GadgetContainerMessage<WeightsDescription>();
 
         weights_description_message->getObjectPtr()->sampled_region = sampled_region;
         weights_description_message->getObjectPtr()->acceleration_factor = acceleration_factor;
