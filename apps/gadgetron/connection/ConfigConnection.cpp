@@ -51,7 +51,7 @@ namespace {
         void handle(std::istream &stream) override {
             boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
 
-            GDEBUG_STREAM("Reading config file: " << filename << std::endl);
+            GDEBUG_STREAM("Reading config file: " << filename);
 
             std::ifstream config_stream(filename.string());
             handle_callback(config_stream);

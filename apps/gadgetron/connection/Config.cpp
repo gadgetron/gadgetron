@@ -90,9 +90,9 @@ namespace {
     }
 
 
-    template<class... Rulesets>
+    template<class... Sources>
     Property parse_property(const pugi::xml_node &node) {
-        std::vector<optional<Property>> potentials = {make_property<Rulesets>(node)...};
+        std::vector<optional<Property>> potentials = {make_property<Sources>(node)...};
         auto to_bool = [](auto& potential) {return bool(potential);};
 
         auto n_valid = boost::count_if(potentials, to_bool );
@@ -102,14 +102,12 @@ namespace {
     }
 
 
-    template<class... Rulesets>
+    template<class... Sources>
     class Parser {
 
     protected:
 
-        Parser(const pugi::xml_document &doc) : referenceable_properties(create_referenceable_properties(doc)) {
-
-        }
+        explicit Parser(const pugi::xml_document &doc) : referenceable_properties(create_referenceable_properties(doc)) {}
 
         std::unordered_map<std::string, std::string>
         parse_properties(const pugi::xml_node &gadget_node) {
@@ -117,7 +115,7 @@ namespace {
             std::unordered_map<std::string, std::string> properties;
 
             for (auto &node : gadget_node.children("property")) {
-                auto property = parse_property<Rulesets...>(node);
+                auto property = parse_property<Sources...>(node);
                 properties[property.name] = dereference(property.value);
             }
 
@@ -173,23 +171,24 @@ namespace {
     private:
         PropertyMap referenceable_properties;
 
-        static std::string dereference_key(PropertyMap &map, const std::string &key) {
-            try {
-                std::string value = map.at(key);
-                if (!is_reference(value)) return value;
-                map.erase(key);
-                auto val = dereference_key(map, value);
-                map[key] = val;
-                return val;
-            } catch (const std::out_of_range&) {
-                throw std::runtime_error("Cycle detected in Gadget xml properties");
+        static std::string value_of(const PropertyMap &map, const std::string &key, std::set<std::string> visited) {
+
+            if (visited.count(key)) throw std::runtime_error("Cyclic reference detected in Gadget xml property: " + key);
+
+            auto value = map.at(key);
+
+            if (is_reference(value)) {
+                visited.insert(key);
+                return value_of(map, value, visited);
             }
+
+            return value;
         }
 
         static PropertyMap dereference_map(const PropertyMap &propertyMap) {
             PropertyMap resultMap = propertyMap;
             for (auto property : resultMap) {
-                resultMap[property.first] = dereference_key(resultMap, property.first);
+                resultMap[property.first] = value_of(resultMap, property.first, std::set<std::string>());
             }
             return resultMap;
         }
@@ -203,7 +202,7 @@ namespace {
                 auto parent_name = node.child_value("name");
 
                 for (auto p_node : node.children("property")) {
-                    auto property = parse_property<Rulesets...>(p_node);
+                    auto property = parse_property<Sources...>(p_node);
                     auto location = property.name + "@" + parent_name;
 
                     propertyMap[location] = property.value;
@@ -232,7 +231,7 @@ namespace {
 
     private:
 
-        Legacy(const pugi::xml_document &config) : Parser<LegacySource>(config) {}
+        explicit Legacy(const pugi::xml_document &config) : Parser<LegacySource>(config) {}
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node &gadget_node) {
             std::vector<Config::Gadget> gadgets{};

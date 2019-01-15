@@ -13,7 +13,7 @@ namespace Gadgetron::Core {
 
     class Reader {
     public:
-        virtual std::unique_ptr <Message> read(std::istream &stream) = 0;
+        virtual std::unique_ptr<Message> read(std::istream &stream) = 0;
         virtual uint16_t slot() = 0;
 
         virtual ~Reader() = default;
