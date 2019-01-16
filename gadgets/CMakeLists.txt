@@ -3,9 +3,6 @@ if (WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif ()
 
-# These dependencies should have been found already to even get in here, but we play safe
-find_package(FFTW3 COMPONENTS single double)
-
 add_subdirectory(mri_core)
 add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
@@ -17,9 +14,6 @@ if(BART_FOUND)
 else()
   message("BART not found, NOT compiling bartgadget")
 endif()
-
-
-
 
 if (CUDA_FOUND)
   message("Cuda found, compiling gpu accelerated gadgets")
@@ -33,7 +27,8 @@ else ()
 endif()
 
 add_subdirectory(spiral)
-#add_subdirectory(grappa)
+# add_subdirectory(grappa)
+add_subdirectory(grappa_new)
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB gadgets")

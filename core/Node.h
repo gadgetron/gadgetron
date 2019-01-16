@@ -6,7 +6,7 @@
 #include <future>
 #include "log.h"
 #include <ismrmrd/xml.h>
-#include "PropteryMixin.h"
+#include "PropertyMixin.h"
 #include "Context.h"
 #include <boost/dll/alias.hpp>
 

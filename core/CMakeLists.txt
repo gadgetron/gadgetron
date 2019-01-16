@@ -47,7 +47,7 @@ install(FILES
 		Writer.h
 		Node.h
 		LegacyACE.h
-		PropteryMixin.h
+        PropertyMixin.h
 		Channel.h
 		gadgetcore_export.h
 		GadgetronExport.h

@@ -18,11 +18,16 @@ namespace Gadgetron::Server::Connection {
         using Context = Gadgetron::Core::Context;
         using Reader  = Gadgetron::Core::Reader;
         using Writer  = Gadgetron::Core::Writer;
+        using GadgetProperties = Gadgetron::Core::GadgetProperties;
 
-        using gadget_factory = std::unique_ptr<Core::Node>(
+        template<class RESULT>
+        using generic_factory = std::unique_ptr<RESULT>(
                 const Context &,
-                const std::unordered_map<std::string, std::string> &
+                const GadgetProperties &
         );
+        using node_factory = generic_factory<Core::Node>;
+        using branch_factory = generic_factory<Core::Parallel::Branch>;
+        using merge_factory = generic_factory<Core::Parallel::Merge>;
 
     public:
         Loader(ErrorHandler &error_handler, Context context, Config config);
@@ -37,8 +42,8 @@ namespace Gadgetron::Server::Connection {
 
         std::unique_ptr<Reader> load_reader(const Config::Reader &);
         std::unique_ptr<Writer> load_writer(const Config::Writer &);
-        std::unique_ptr<Core::Parallel::Branch> load_branch(const Config::Branch &);
-        std::unique_ptr<Core::Parallel::Merge>  load_merge(const Config::Merge &);
+        std::unique_ptr<BranchHandler> load_branch(const Config::Branch &);
+        std::unique_ptr<MergeHandler>  load_merge(const Config::Merge &);
 
         std::unique_ptr<NodeHandler> load_stream(const Config::Stream &);
         std::unique_ptr<NodeHandler> load_node(const Config::Gadget &);

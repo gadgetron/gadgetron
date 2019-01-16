@@ -35,7 +35,12 @@ namespace {
         }
 #else
         void handle(const std::string &, std::function<void()> fn) override {
-            fn();
+            try {
+                fn();
+            }
+            catch (const ChannelClosed &e) {
+                // Ignored.
+            }
         }
 #endif
 

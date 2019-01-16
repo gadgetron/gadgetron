@@ -29,12 +29,12 @@ namespace {
         }
     };
 
-    class HousekeepingNode : public NodeHandler {
+    class NodeHousekeeping : public NodeHandler {
     public:
-        HousekeepingNode(
-            std::unique_ptr<Node> node,
-            ErrorHandler &error_handler,
-            std::string location
+        NodeHousekeeping(
+                std::unique_ptr<Node> node,
+                ErrorHandler &error_handler,
+                std::string location
         ) : node(std::move(node)), location(std::move(location)), error_handler(error_handler) {};
 
         void process(
@@ -54,11 +54,27 @@ namespace {
         ErrorHandler &error_handler;
     };
 
+    class BranchHousekeeping : public BranchHandler {
+    public:
+        BranchHousekeeping(
+                std::unique_ptr<Branch> branch,
+                ErrorHandler &error_handler
+        ) {};
+    };
+
+    class MergeHousekeeping : public MergeHandler {
+    public:
+        MergeHousekeeping(
+                std::unique_ptr<Merge> merge,
+                ErrorHandler &error_handler
+        ) {};
+
+
+    };
+
     class Stream : public NodeHandler {
     public:
-
-        Stream(ErrorHandler &error_handler, std::vector<std::unique_ptr<NodeHandler>> nodes)
-        : nodes(std::move(nodes)), error_handler(error_handler) {}
+        Stream(std::vector<std::unique_ptr<NodeHandler>> nodes) : nodes(std::move(nodes)) {}
 
         void process(
                 std::shared_ptr<Channel> in,
@@ -98,7 +114,6 @@ namespace {
 
     private:
         std::vector<std::unique_ptr<NodeHandler>> nodes;
-        ErrorHandler &error_handler;
     };
 
     class ParallelNode : public NodeHandler {
@@ -164,7 +179,7 @@ namespace {
 
             threads.emplace_back(error_handler.run(
                     "Branch",
-                    [&]() { branch->process(in, input_channels); }
+                    [&]() { branch->process(in, input_channels, out); }
             ));
 
             threads.emplace_back(error_handler.run(
@@ -253,22 +268,26 @@ namespace Gadgetron::Server::Connection {
         return factory();
     }
 
-    std::unique_ptr<Branch> Loader::load_branch(const Config::Branch &branch_config) {
+    std::unique_ptr<BranchHandler> Loader::load_branch(const Config::Branch &branch_config) {
 
         auto library = load_library(branch_config.dll);
-        auto factory = library.get_alias<std::unique_ptr<Branch>(void)>(
+        auto factory = library.get_alias<branch_factory>(
                 "branch_factory_export_" + branch_config.classname);
 
-        return factory();
+        return std::make_unique<BranchHousekeeping>(
+                factory(context, branch_config.properties)
+        );
     }
 
-    std::unique_ptr<Merge> Loader::load_merge(const Config::Merge &merge_config) {
+    std::unique_ptr<MergeHandler> Loader::load_merge(const Config::Merge &merge_config) {
 
         auto library = load_library(merge_config.dll);
-        auto factory = library.get_alias<std::unique_ptr<Merge>(void)>(
+        auto factory = library.get_alias<merge_factory>(
                 "merge_factory_export_" + merge_config.classname);
 
-        return factory();
+        return std::make_unique<MergeHousekeeping>(
+                factory(context, merge_config.properties)
+        );
     }
 
     std::unique_ptr<NodeHandler> Loader::load_stream(const Config::Stream &stream_config) {
@@ -280,17 +299,17 @@ namespace Gadgetron::Server::Connection {
             );
         }
 
-        return std::make_unique<Stream>(error_handler, std::move(nodes));
+        return std::make_unique<Stream>(std::move(nodes));
     }
 
     std::unique_ptr<NodeHandler> Loader::load_node(const Config::Gadget &gadget_config) {
         auto library = load_library(gadget_config.dll);
-        auto factory = library.get_alias<gadget_factory>("gadget_factory_export_" + gadget_config.classname);
+        auto factory = library.get_alias<node_factory>("gadget_factory_export_" + gadget_config.classname);
 
         std::string name = gadget_config.name;
         if (name.empty()) name = gadget_config.classname;
 
-        return std::make_unique<HousekeepingNode>(
+        return std::make_unique<NodeHousekeeping>(
                 factory(context, gadget_config.properties),
                 error_handler,
                 name
