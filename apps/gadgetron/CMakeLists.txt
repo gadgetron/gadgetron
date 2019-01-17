@@ -8,7 +8,38 @@ endif ()
 add_executable(gadgetron
         main.cpp
         connection/Config.cpp
-        connection/Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h system_info.cpp connection/ConfigConnection.cpp connection/ConfigConnection.h connection/StreamConnection.cpp connection/StreamConnection.h connection/Handlers.cpp connection/Handlers.h connection/Writers.cpp connection/Writers.h connection/VoidConnection.cpp connection/VoidConnection.h connection/HeaderConnection.cpp connection/HeaderConnection.h connection/Loader.cpp connection/Loader.h connection/Core.cpp connection/Core.h connection/streams/Stream.cpp connection/streams/Stream.h connection/streams/Parallel.cpp connection/streams/Parallel.h connection/streams/Distributed.cpp connection/streams/Distributed.h connection/streams/External.cpp connection/streams/External.h)
+        connection/Config.h
+        Server.cpp
+        Server.h
+        Connection.cpp
+        Connection.h
+        paths.cpp
+        paths.h
+        system_info.cpp
+        connection/ConfigConnection.cpp
+        connection/ConfigConnection.h
+        connection/StreamConnection.cpp
+        connection/StreamConnection.h
+        connection/Handlers.cpp
+        connection/Handlers.h
+        connection/Writers.cpp
+        connection/Writers.h
+        connection/VoidConnection.cpp
+        connection/VoidConnection.h
+        connection/HeaderConnection.cpp
+        connection/HeaderConnection.h
+        connection/Loader.cpp
+        connection/Loader.h
+        connection/Core.cpp
+        connection/Core.h
+        connection/stream/Stream.cpp
+        connection/stream/Stream.h
+        connection/stream/Parallel.cpp
+        connection/stream/Parallel.h
+        connection/stream/Distributed.cpp
+        connection/stream/Distributed.h
+        connection/stream/External.cpp
+        connection/stream/External.h connection/stream/Processable.h connection/stream/CloseGuard.h)
 
 target_link_libraries(gadgetron
         gadgetron_core

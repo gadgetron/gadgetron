@@ -9,7 +9,7 @@ namespace {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Server::Connection;
 
-    class ErrorChannel : public ErrorHandler {
+    class RootErrorHandler : public ErrorHandler {
     public:
 
 #if defined(NDEBUG)
@@ -79,7 +79,7 @@ namespace Gadgetron::Server::Connection {
 
     void handle_connection(std::unique_ptr<std::iostream> stream, Gadgetron::Core::Context::Paths paths) {
 
-        ErrorChannel error_handler{};
+        RootErrorHandler error_handler{};
 
         error_handler.handle("Connection Main Thread", [&]() {
             ConfigConnection::process(*stream, paths, error_handler);

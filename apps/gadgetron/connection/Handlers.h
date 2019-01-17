@@ -15,7 +15,8 @@ namespace Gadgetron::Server::Connection::Handlers {
         CLOSE       = 4,
         TEXT        = 5,
         QUERY       = 6,
-        RESPONSE    = 7
+        RESPONSE    = 7,
+        ERROR       = 8
     };
 
     class Handler {

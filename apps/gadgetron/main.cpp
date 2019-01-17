@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    GINFO("Configuring services, Running on port %d\n", args["port"].as<unsigned short>());
+    GINFO("Running on port %d\n", args["port"].as<unsigned short>());
 
     try {
         // Ensure working directory exists.
