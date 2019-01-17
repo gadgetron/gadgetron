@@ -11,6 +11,7 @@
 
 #include "io/primitives.h"
 #include "Context.h"
+#include "MessageID.h"
 
 #define CONFIG_ERROR "Received second config file. Only one allowed."
 

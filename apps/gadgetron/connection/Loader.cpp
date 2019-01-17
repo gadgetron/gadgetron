@@ -304,7 +304,7 @@ namespace Gadgetron::Server::Connection {
         std::map<std::string, std::unique_ptr<NodeHandler>> streams;
         for (auto &stream_config : parallel_config.streams) {
 
-            std::string name = stream_config.name;
+            std::string name = stream_config.key;
             if (name.empty()) name = "unnamed-stream-" + std::to_string(stream_index++);
 
             streams[name] = load_stream(stream_config);

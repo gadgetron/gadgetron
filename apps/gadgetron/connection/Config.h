@@ -24,11 +24,8 @@ namespace Gadgetron::Server::Connection {
         };
 
         struct Stream {
-            std::string name;
+            std::string key;
             std::vector<Node> nodes;
-        };
-
-        struct RepeatedStream : Stream {
         };
 
         struct Gadget {
@@ -45,15 +42,14 @@ namespace Gadgetron::Server::Connection {
             std::vector<Stream> streams;
         };
 
-        struct Discovery {};
+        struct Distributor : Gadget {};
+
 
         struct Distributed {
-            Discovery discovery;
             std::vector<Reader> readers;
             std::vector<Writer> writers;
-            std::vector<Stream> streams;
-            std::vector<RepeatedStream> repeated_streams;
-
+            Distributor distributor;
+            Stream stream;
         };
 
         std::vector<Reader> readers;
@@ -62,4 +58,5 @@ namespace Gadgetron::Server::Connection {
     };
 
     Config parse_config(std::istream &stream);
+    std::string serialize_config(const Config& config);
 }

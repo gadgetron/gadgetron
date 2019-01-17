@@ -12,6 +12,7 @@
 
 #include "io/primitives.h"
 #include "Context.h"
+#include "MessageID.h"
 
 namespace {
 

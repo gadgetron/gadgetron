@@ -8,10 +8,12 @@ endif ()
 add_executable(gadgetron
         main.cpp
         connection/Config.cpp
-        connection/Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h system_info.cpp connection/ConfigConnection.cpp connection/ConfigConnection.h connection/StreamConnection.cpp connection/StreamConnection.h connection/Handlers.cpp connection/Handlers.h connection/Writers.cpp connection/Writers.h connection/VoidConnection.cpp connection/VoidConnection.h connection/HeaderConnection.cpp connection/HeaderConnection.h connection/Loader.cpp connection/Loader.h connection/Core.cpp connection/Core.h)
+        connection/Config.h Server.cpp Server.h Connection.cpp Connection.h paths.cpp paths.h system_info.cpp connection/ConfigConnection.cpp connection/ConfigConnection.h connection/StreamConnection.cpp connection/StreamConnection.h connection/Handlers.cpp connection/Handlers.h connection/Writers.cpp connection/Writers.h connection/VoidConnection.cpp connection/VoidConnection.h connection/HeaderConnection.cpp connection/HeaderConnection.h connection/Loader.cpp connection/Loader.h connection/Core.cpp connection/Core.h connection/distributed/Distributed.cpp connection/distributed/Distributed.h connection/distributed/RemoteChannelCreator.cpp connection/distributed/RemoteChannelCreator.h
+        connection/distributed/RemoteChannel.cpp connection/distributed/RemoteChannel.h)
 
 target_link_libraries(gadgetron
         gadgetron_core
+        gadgetron_core_distributed
         gadgetron_toolbox_log
         pugixml
         boost

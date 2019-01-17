@@ -11,6 +11,7 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
+#include "MessageID.h"
 
 #define CONFIG_ERROR "Received second config file. Only one allowed."
 #define HEADER_ERROR "Received second ISMRMRD header. Only one allowed."
@@ -61,7 +62,7 @@ namespace {
 
         for (auto &writer : writers) { ws.emplace_back(std::move(writer)); }
 
-        return std::move(ws);
+        return ws;
     }
 }
 

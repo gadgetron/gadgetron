@@ -326,6 +326,100 @@ namespace {
             return Config::Stream{stream_node.attribute("key").value(), nodes};
         }
     };
+
+    struct XMLSerializer {
+        template<class ConfigNode>
+        static constexpr const char *xml_name();
+
+        template<>
+        constexpr const char *xml_name<Config::Reader>() { return "reader"; }
+
+        template<>
+        constexpr const char *xml_name<Config::Writer>() { return "writer"; }
+
+        template<>
+        constexpr const char *xml_name<Config::Gadget>() { return "gadget"; }
+
+        template<>
+        constexpr const char *xml_name<Config::Branch>() { return "branch"; }
+
+        template<>
+        constexpr const char *xml_name<Config::Merge>() { return "merge"; }
+
+        template<>
+        constexpr const char *xml_name<Config::Distributor>() { return "distributor"; }
+
+
+
+        template<class ConfigNode>
+        static pugi::xml_node add_basenode(const ConfigNode &configNode, pugi::xml_node &node) {
+            auto child_node = node.append_child(xml_name<ConfigNode>());
+            child_node.append_child("dll").set_value(configNode.dll.c_str());
+            child_node.append_child("classname").set_value(configNode.classname.c_str());
+            return child_node;
+        }
+
+        static pugi::xml_node add_readers(const std::vector<Config::Reader> &readers, pugi::xml_node &node) {
+            auto readers_node = node.append_child("readers");
+            for (auto &reader : readers) add_basenode(reader, readers_node);
+            return readers_node;
+        }
+
+        static pugi::xml_node add_writers(const std::vector<Config::Writer> &writers, pugi::xml_node &node) {
+            auto writers_node = node.append_child("writers");
+            for (auto &writer : writers) add_basenode(writer, writers_node);
+            return writers_node;
+        }
+
+        template<class ConfigNode>
+        static pugi::xml_node add_node(const ConfigNode &configNode, pugi::xml_node &node) {
+            auto gadget_node = add_basenode(configNode, node);
+            gadget_node.append_child("name").set_value(configNode.name.c_str());
+            for (auto property : configNode.properties) {
+                auto property_node = gadget_node.append_child("property");
+                property_node.append_attribute("name").set_value(property.first.c_str());
+                property_node.append_attribute("value").set_value(property.second.c_str());
+            }
+            return gadget_node;
+        }
+
+        template<>
+        static pugi::xml_node add_node<Config::Parallel>(const Config::Parallel &parallel, pugi::xml_node &node) {
+            auto parallel_node = node.append_child("parallel");
+            add_node(parallel.merge, parallel_node);
+            add_node(parallel.branch, parallel_node);
+            for (auto &stream : parallel.streams) {
+                add_node(stream, parallel_node);
+            }
+            return parallel_node;
+        }
+
+        template<>
+        static pugi::xml_node add_node<Config::Distributed>(const Config::Distributed &distributed, pugi::xml_node &node) {
+            auto distributed_node = node.append_child("distributed");
+            add_readers(distributed.readers,distributed_node);
+            add_writers(distributed.writers,distributed_node);
+            add_node(distributed.distributor,distributed_node);
+            add_node(distributed.stream,distributed_node);
+
+            return distributed_node;
+        }
+
+        template<>
+        static pugi::xml_node add_node<Config::Stream>(const Config::Stream &stream, pugi::xml_node &node) {
+            auto stream_node = node.append_child("stream");
+            stream_node.append_attribute("key").set_value(stream.key.c_str());
+            for (auto node : stream.nodes) {
+                boost::apply_visitor([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
+            }
+            return stream_node;
+        }
+    };
+
+
+
+
+
 }
 
 namespace Gadgetron::Server::Connection {
@@ -344,5 +438,18 @@ namespace Gadgetron::Server::Connection {
             return Legacy::parse(doc);
 
         return V2::parse(doc);
+    }
+
+    std::string serialize_config(const Config &config) {
+        auto  doc = pugi::xml_document{};
+        auto config_node = doc.append_child("configuration");
+        config_node.append_child("version").set_value("2");
+        XMLSerializer::add_readers(config.readers,config_node);
+        XMLSerializer::add_writers(config.writers,config_node);
+        XMLSerializer::add_node(config.stream,config_node);
+
+        std::stringstream stream;
+        doc.save(stream);
+        return stream.str();
     }
 }
