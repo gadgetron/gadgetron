@@ -45,14 +45,14 @@ RUN cd /opt && \
 # RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 
-RUN pip3 install numpy scipy Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install numpy==1.15.4 scipy Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 
 # RUN pip3 install Cython
 
-RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install https://download.pytorch.org/whl/cpu/torch-1.0.0-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install torchvision 
 RUN pip3 install --upgrade tensorflow
 RUN pip3 install tensorboardx visdom
