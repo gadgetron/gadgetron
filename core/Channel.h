@@ -33,8 +33,7 @@ namespace Gadgetron::Core {
         void push(ARGS&&... ptrs);
 
 
-        template<class ... TARGS>
-        void push(tuple<TARGS...>&& tuple);
+
 
 
         virtual void push_message(std::unique_ptr<Message> &&) = 0;

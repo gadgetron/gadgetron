@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "Channel.h"
 #include "Node.h"
 

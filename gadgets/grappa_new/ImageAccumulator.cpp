@@ -1,5 +1,7 @@
 #include "ImageAccumulator.h"
 
+#include <chrono>
+
 #include "Node.h"
 
 #include "log.h"
@@ -15,8 +17,18 @@ namespace Gadgetron::Grappa {
             const std::unordered_map<std::string, std::string> &props
     ) : TypedGadgetNode<Acquisition>(props) {}
 
-    void ImageAccumulator::process(Core::TypedInputChannel<Core::Acquisition> &in, Core::OutputChannel &out) {
+    void ImageAccumulator::process(TypedInputChannel<Acquisition> &in, OutputChannel &out) {
+
         GINFO_STREAM("Hello, I'm the ImageAccumulator process function. I'm running!");
+
+        std::vector<hoNDArray<std::complex<float>>> image_data;
+        std::vector<std::chrono::milliseconds> time_stamps;
+
+        for (auto acquisition : in) {
+            GINFO_STREAM("ImageAccumulator handling an acquisition.")
+        }
+
+        GINFO_STREAM("ImageAccumulator acquisition loop over - channel closed.")
     }
 
     GADGETRON_GADGET_EXPORT(ImageAccumulator);

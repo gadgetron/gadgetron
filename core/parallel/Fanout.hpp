@@ -21,4 +21,3 @@ namespace Gadgetron::Core::Parallel {
         }
     }
 }
-

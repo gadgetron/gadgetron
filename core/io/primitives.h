@@ -45,13 +45,10 @@ namespace Gadgetron::Core::IO {
         stream.write(reinterpret_cast<const char*>(array.get_data_ptr()),array.get_number_of_bytes());
     }
 
-    template<class SIZE_TYPE>
-    void write_string_to_stream(std::ostream &stream, const std::string& str) {
-
-        SIZE_TYPE string_length = static_cast<SIZE_TYPE>(str.size());
-        write(stream,string_length);
-        stream.write(str.data(),string_length);
-
-
+    template<class T>
+    void write_string_to_stream(std::ostream &stream, const std::string &str) {
+        auto string_length = static_cast<T>(str.size());
+        write(stream, string_length);
+        stream.write(str.data(), string_length);
     }
 }

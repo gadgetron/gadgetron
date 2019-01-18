@@ -4,6 +4,7 @@
 #include <vector>
 #include <typeindex>
 #include <numeric>
+#include "Types.h"
 
 namespace Gadgetron {
 
@@ -51,9 +52,7 @@ namespace Gadgetron {
         public:
             template<class ...ARGS>
             MessageTuple(ARGS &&...  args) : Message(){
-                static_assert(sizeof...(ARGS) > 1);
                 add_messages(std::forward<ARGS>(args)...);
-
             }
 
             explicit MessageTuple(std::vector<std::unique_ptr<Message>>&& message_vector) : messages_(std::move(message_vector)){
@@ -78,13 +77,25 @@ namespace Gadgetron {
 
             std::vector<std::unique_ptr<Message>> messages_;
 
+          template<class... VARGS, class ...REST> void add_message(variant<VARGS...> var, REST&&... args){
+              boost::apply_visitor([&](auto val){add_messages(val,std::forward<REST>(args)...);},var);
+          }
+
+          template<class... TARGS, class ...REST> void add_messages(tuple<TARGS...> opt, REST&&... args){
+                Core::apply([&](auto... targs){add_messages(std::move(targs)...,std::forward<REST...>(args)...); },opt);
+            }
+
+            template<class T, class ...REST> void add_messages(optional<T> opt, REST&&... args){
+                if (opt) messages_.emplace_back(make_message(*opt));
+                add_messages(std::forward<REST>(args)...);
+            }
+
             template<class T, class ...REST> void add_messages(T&& arg, REST&&... args){
                 messages_.emplace_back(make_message(std::forward<T>(arg)));
                 add_messages(std::forward<REST>(args)...);
             }
 
-            template<class T> void add_messages(T&& arg){
-                messages_.emplace_back(make_message(std::forward<T>(arg)));
+            void add_messages(){
             }
 
 

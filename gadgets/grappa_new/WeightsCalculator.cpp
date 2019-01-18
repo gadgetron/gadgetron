@@ -15,6 +15,10 @@ namespace Gadgetron::Grappa {
 
     void WeightsCalculator::process(Core::TypedInputChannel<Core::Acquisition> &in, Core::OutputChannel &out) {
         GINFO_STREAM("Hello, I'm the WeightsCalculator process function. I'm running!");
+
+        for (auto acquisition : in) {
+            GINFO_STREAM("WeightsCalculator processing acquisition.");
+        }
     }
 
     GADGETRON_GADGET_EXPORT(WeightsCalculator);
