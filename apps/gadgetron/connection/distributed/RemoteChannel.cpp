@@ -71,7 +71,7 @@ void Gadgetron::Server::Distributed::RemoteChannel::push_message(std::unique_ptr
 Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &address, const std::string &xml_config,
                                                              const std::map<uint16_t, std::shared_ptr<Gadgetron::Core::Reader>> &readers,
                                                              const std::vector<std::shared_ptr<Gadgetron::Core::Writer>> &writers)
-        : readers(readers), writers(writers) {
+        : readers(readers), writers(writers), address(address) {
 
     info_handlers = {{CLOSE, [this](auto &connection_stream) { this->handle_close(); }},
                      {ERROR, [this](auto &connection_stream) {
@@ -101,7 +101,7 @@ void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {
     closed = true;
 
     if (error_messages.empty()) throw ChannelClosed();
-
+    throw RemoteError(address,error_messages);
 
 }
 

@@ -33,6 +33,7 @@ class RemoteChannel : public Core::Channel {
         void save_error(const std::string& error_message);
 
         std::unique_ptr<std::iostream> stream;
+        const Address address;
         const std::map<uint16_t,std::shared_ptr<Core::Reader>> readers;
         const std::vector<std::shared_ptr<Core::Writer>>& writers;
 

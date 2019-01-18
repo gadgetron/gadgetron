@@ -48,9 +48,9 @@ namespace Gadgetron::Core::IO {
     template<class SIZE_TYPE>
     void write_string_to_stream(std::ostream &stream, const std::string& str) {
 
-        SIZE_TYPE string_length = static_cast<SIZE_TYPE>(str.size()+1);
-        write(stream,SIZE_TYPE(string_length));
-        stream.write(str.c_str(),string_length);
+        SIZE_TYPE string_length = static_cast<SIZE_TYPE>(str.size());
+        write(stream,string_length);
+        stream.write(str.data(),string_length);
 
 
     }

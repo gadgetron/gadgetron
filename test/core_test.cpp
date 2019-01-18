@@ -198,3 +198,37 @@ TEST(TypeTests,tuplevarianttype){
     bool convertible = convertible_to<variant<tuple<std::string,float, int>,float>>(*message);
     EXPECT_TRUE(convertible);
 }
+
+TEST(TypeTests,tupletype2){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::make_tuple(std::string("hello"),1.0f,int(42)));
+
+    auto message = inputChannel.pop();
+
+    bool convertible = convertible_to<tuple<std::string,float, int>>(*message);
+    EXPECT_TRUE(convertible);
+}
+
+
+TEST(TypeTests,tupletype3){
+    using namespace Gadgetron::Core;
+
+
+    MessageChannel channel;
+    InputChannel& inputChannel = channel;
+    OutputChannel& outputChannel = channel;
+
+    outputChannel.push(std::make_tuple(std::string("hello"),1.0f,int(42)));
+
+    auto message = inputChannel.pop();
+
+    auto converted =  unpack<tuple<std::string,float,int>>(*message);
+
+    EXPECT_EQ(std::get<1>(converted),1.0f);
+}
