@@ -116,26 +116,18 @@ namespace Gadgetron::Core {
 template<class ...ARGS>
 inline void OutputChannel::push(ARGS&& ... ptr) {
     this->push_message(gadgetron_detail::make_message<ARGS...>(std::forward<ARGS>(ptr)...));
-
 }
 
 template<class... TARGS>
-inline void OutputChannel::push(tuple<TARGS...>&&
-        tuple) {
+inline void OutputChannel::push(tuple<TARGS...> tuple) {
     this->push_message(Core::apply([](auto&&... args){return gadgetron_detail::make_message(args...);},tuple));
-
 }
-
-
-
-
 
 template<class... ARGS>
 ChannelIterator<TypedInputChannel<ARGS...>> begin(
         TypedInputChannel<ARGS...> &channel) {
     return ChannelIterator < TypedInputChannel < ARGS...>>(&channel);
 }
-
 
 template<class... ARGS>
 ChannelIterator <TypedInputChannel<ARGS...>> end(
