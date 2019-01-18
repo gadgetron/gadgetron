@@ -40,7 +40,7 @@ namespace {
     std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(
             std::function<void()> close,
             std::shared_ptr<MessageChannel> input,
-            std::vector<std::pair<uint16_t, std::unique_ptr<Reader>>> &readers
+            std::map<uint16_t, std::unique_ptr<Reader>> &readers
     ) {
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
@@ -50,8 +50,8 @@ namespace {
         handlers[QUERY]    = std::make_unique<QueryHandler>(*input);
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
-        for (auto &reader : readers) {
-            handlers[reader.first] = std::make_unique<ReaderHandler>(std::move(reader.second), input);
+        for (auto &pair : readers) {
+            handlers[pair.first] = std::make_unique<ReaderHandler>(std::move(pair.second), input);
         }
 
         return handlers;
@@ -77,17 +77,16 @@ namespace Gadgetron::Server::Connection::StreamConnection {
     ) {
         GINFO_STREAM("Connection state: [STREAM]");
 
-        Loader loader{error_handler, context, config};
+        Loader loader{context};
 
         struct {
             std::shared_ptr<MessageChannel> input = std::make_shared<MessageChannel>();
             std::shared_ptr<MessageChannel> output = std::make_shared<MessageChannel>();
         } channels;
 
-        auto node = loader.stream();
-
-        auto readers = loader.readers();
-        auto writers = loader.writers();
+        auto node = loader.load(config.stream);
+        auto readers = loader.load_readers(config);
+        auto writers = loader.load_writers(config);
 
         std::thread input_thread = start_input_thread(
                 stream,
@@ -103,7 +102,7 @@ namespace Gadgetron::Server::Connection::StreamConnection {
                 error_handler
         );
 
-        node->process(channels.input, channels.output);
+        node->process(channels.input, channels.output, error_handler);
 
         input_thread.join();
         output_thread.join();

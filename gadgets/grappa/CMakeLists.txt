@@ -2,7 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_GRAPPA__)
 endif ()
 
-
 add_library(gadgetron_grappa SHARED
         gadgetron_grappa_export.h
         GrappaCalibrationBuffer.h
@@ -27,20 +26,13 @@ target_link_libraries(gadgetron_grappa
         gadgetron_toolbox_cpufft
         gadgetron_mricore
         )
+
 if (CUDA_FOUND)
     target_link_libraries(gadgetron_grappa
             gadgetron_toolbox_gpufft
             )
 
 endif ()
-
-install(FILES gadgetron_grappa_export.h
-        GrappaCalibrationBuffer.h
-        GrappaGadget.h
-        GrappaUnmixingGadget.h
-        GrappaWeights.h
-        GrappaWeightsCalculator.h
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_grappa DESTINATION lib COMPONENT main)
 

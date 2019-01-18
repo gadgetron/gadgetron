@@ -9,7 +9,7 @@ namespace {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Server::Connection;
 
-    class ErrorChannel : public ErrorHandler {
+    class RootErrorHandler : public ErrorHandler {
     public:
 
 #if defined(NDEBUG)
@@ -35,7 +35,12 @@ namespace {
         }
 #else
         void handle(const std::string &, std::function<void()> fn) override {
-            fn();
+            try {
+                fn();
+            }
+            catch (const ChannelClosed &e) {
+                // Ignored.
+            }
         }
 #endif
 
@@ -74,7 +79,7 @@ namespace Gadgetron::Server::Connection {
 
     void handle_connection(std::unique_ptr<std::iostream> stream, Gadgetron::Core::Context::Paths paths) {
 
-        ErrorChannel error_handler{};
+        RootErrorHandler error_handler{};
 
         error_handler.handle("Connection Main Thread", [&]() {
             ConfigConnection::process(*stream, paths, error_handler);
@@ -88,6 +93,7 @@ namespace Gadgetron::Server::Connection {
         std::vector<std::unique_ptr<Writer>> writers{};
 
         writers.emplace_back(std::make_unique<Writers::TextWriter>());
+        // writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
         writers.emplace_back(std::make_unique<Writers::ResponseWriter>());
 
         return std::move(writers);

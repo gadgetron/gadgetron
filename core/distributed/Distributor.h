@@ -2,7 +2,7 @@
 
 #include "../Channel.h"
 #include "ChannelCreator.h"
-#include "PropteryMixin.h"
+#include "PropertyMixin.h"
 
 namespace Gadgetron::Core::Distributed {
     class Distributor : public PropertyMixin {

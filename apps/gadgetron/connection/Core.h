@@ -4,18 +4,14 @@
 #include <memory>
 #include <functional>
 
+#include "CloseGuard.h"
+
 #include "io/primitives.h"
 #include "Writer.h"
 #include "Channel.h"
 #include "Context.h"
 
 namespace Gadgetron::Server::Connection {
-
-    template<class T>
-    struct RAIICloser {
-        std::shared_ptr<T> t;
-        ~RAIICloser() { t->close(); }
-    };
 
     class ErrorHandler {
     public:
@@ -37,7 +33,7 @@ namespace Gadgetron::Server::Connection {
     template<class F>
     void process_input(std::iostream &stream, std::shared_ptr<Core::MessageChannel> input, F handler_factory) {
 
-        RAIICloser<Core::MessageChannel> closer{input};
+        CloseGuard closer{input};
 
         bool closed = false;
         auto handlers = handler_factory([&]() { closed = true; });
@@ -51,11 +47,11 @@ namespace Gadgetron::Server::Connection {
     template<class F>
     void process_output(std::iostream &stream, std::shared_ptr<Core::MessageChannel> output, F writer_factory) {
 
-        RAIICloser<Core::MessageChannel> closer{std::move(output)};
+        CloseGuard closer{output};
 
         auto writers = writer_factory();
 
-        Core::InputChannel &messages = *closer.t;
+        Core::InputChannel &messages = *output;
         for (auto message : messages) {
 
             auto writer = std::find_if(writers.begin(), writers.end(),

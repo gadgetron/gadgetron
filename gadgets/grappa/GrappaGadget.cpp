@@ -92,7 +92,7 @@ namespace Gadgetron {
     int GrappaGadget::initial_setup() {
 
 
-        weights_ = std::vector<boost::shared_ptr<GrappaWeights<float> > >(dimensions_[4]);
+        weights_ = std::vector<boost::shared_ptr<GrappaWeights<float>>>(dimensions_[4]);
 
         buffers_ = std::vector<GrappaCalibrationBuffer *>(dimensions_[4], 0);
         time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4], 0);
@@ -184,7 +184,6 @@ namespace Gadgetron {
             m1->release();
             return GADGET_OK;
         }
-
 
         if (first_call_) {
             if (m1->getObjectPtr()->active_channels != dimensions_[3]) {

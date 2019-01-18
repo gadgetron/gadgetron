@@ -14,6 +14,11 @@ namespace Gadgetron::Server::Connection {
         struct Distributed;
         using Node = boost::variant<Gadget, Parallel, Distributed>;
 
+        template<class CONFIG>
+        static std::string name(CONFIG config) {
+            return config.name.empty() ? config.classname : config.name;
+        }
+
         struct Reader {
             std::string dll, classname;
             boost::optional<uint16_t> slot;

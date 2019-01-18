@@ -37,17 +37,17 @@ namespace Gadgetron::Server::Connection::VoidConnection {
     ) {
         GINFO_STREAM("Connection state: [VOID]");
 
-        // Please note the header crime. TODO: Fight crime.
+        // Please note the empty header initialization crime. TODO: Fight crime.
         Context context{Context::Header{}, paths};
-        Loader loader{error_handler, context, config};
+        Loader loader{context};
 
         struct {
             std::shared_ptr<MessageChannel> input = std::make_shared<MessageChannel>();
             std::shared_ptr<MessageChannel> output = std::make_shared<MessageChannel>();
         } channels;
 
-        auto node = loader.stream();
-        auto writers = loader.writers();
+        auto node = loader.load(config.stream);
+        auto writers = loader.load_writers(config);
 
         std::thread output_thread = start_output_thread(
                 stream,
@@ -57,7 +57,7 @@ namespace Gadgetron::Server::Connection::VoidConnection {
         );
 
         channels.input->close();
-        node->process(channels.input, channels.output);
+        node->process(channels.input, channels.output, error_handler);
         output_thread.join();
     }
 }
