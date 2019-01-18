@@ -327,27 +327,27 @@ namespace {
         }
     };
 
+    template<class ConfigNode>
+    constexpr const char *xml_name();
+
+    template<>
+    constexpr const char *xml_name<Config::Reader>() { return "reader"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Writer>() { return "writer"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Gadget>() { return "gadget"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Branch>() { return "branch"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Merge>() { return "merge"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Distributor>() { return "distributor"; }
     struct XMLSerializer {
-        template<class ConfigNode>
-        static constexpr const char *xml_name();
-
-        template<>
-        constexpr const char *xml_name<Config::Reader>() { return "reader"; }
-
-        template<>
-        constexpr const char *xml_name<Config::Writer>() { return "writer"; }
-
-        template<>
-        constexpr const char *xml_name<Config::Gadget>() { return "gadget"; }
-
-        template<>
-        constexpr const char *xml_name<Config::Branch>() { return "branch"; }
-
-        template<>
-        constexpr const char *xml_name<Config::Merge>() { return "merge"; }
-
-        template<>
-        constexpr const char *xml_name<Config::Distributor>() { return "distributor"; }
 
 
 
@@ -383,8 +383,7 @@ namespace {
             return gadget_node;
         }
 
-        template<>
-        static pugi::xml_node add_node<Config::Parallel>(const Config::Parallel &parallel, pugi::xml_node &node) {
+        static pugi::xml_node add_node(const Config::Parallel &parallel, pugi::xml_node &node) {
             auto parallel_node = node.append_child("parallel");
             add_node(parallel.merge, parallel_node);
             add_node(parallel.branch, parallel_node);
@@ -394,8 +393,7 @@ namespace {
             return parallel_node;
         }
 
-        template<>
-        static pugi::xml_node add_node<Config::Distributed>(const Config::Distributed &distributed, pugi::xml_node &node) {
+        static pugi::xml_node add_node(const Config::Distributed &distributed, pugi::xml_node &node) {
             auto distributed_node = node.append_child("distributed");
             add_readers(distributed.readers,distributed_node);
             add_writers(distributed.writers,distributed_node);
@@ -405,8 +403,7 @@ namespace {
             return distributed_node;
         }
 
-        template<>
-        static pugi::xml_node add_node<Config::Stream>(const Config::Stream &stream, pugi::xml_node &node) {
+        static pugi::xml_node add_node(const Config::Stream &stream, pugi::xml_node &node) {
             auto stream_node = node.append_child("stream");
             stream_node.append_attribute("key").set_value(stream.key.c_str());
             for (auto node : stream.nodes) {

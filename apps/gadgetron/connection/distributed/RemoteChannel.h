@@ -29,17 +29,27 @@ class RemoteChannel : public Core::Channel {
 
     private:
 
+        void handle_close();
+        void save_error(const std::string& error_message);
+
         std::unique_ptr<std::iostream> stream;
         const std::map<uint16_t,std::shared_ptr<Core::Reader>> readers;
         const std::vector<std::shared_ptr<Core::Writer>>& writers;
 
-        std::map<uint16_t, std::function<void(std::ostream&)>> error_readers;
+        std::map<uint16_t, std::function<void(std::istream&)>> info_handlers;
 
         bool closed = false;
         std::mutex closed_mutex;
 
+        std::vector<std::string> error_messages;
+
 
     };
+
+class RemoteError : public std::runtime_error {
+public:
+    RemoteError(const Address& address, const std::vector<std::string>& errors);
+};
 
 }
 

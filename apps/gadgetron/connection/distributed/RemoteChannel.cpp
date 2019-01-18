@@ -73,6 +73,10 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
                                                              const std::vector<std::shared_ptr<Gadgetron::Core::Writer>> &writers)
         : readers(readers), writers(writers) {
 
+    info_handlers = {{CLOSE, [this](auto &connection_stream) { this->handle_close(); }},
+                     {ERROR, [this](auto &connection_stream) {
+                         this->save_error(IO::read_string_from_stream<uint64_t>(connection_stream));
+                     }}};
 
     stream = std::make_unique<tcp::iostream>(address.ip, address.port);
     send_config_file(*stream, xml_config);
@@ -82,8 +86,46 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
 
 std::unique_ptr<Gadgetron::Core::Message> Gadgetron::Server::Distributed::RemoteChannel::pop() {
     auto id = Core::IO::read<uint16_t>(*stream);
-    if (!is_writable_message(id)) throw error_readers.at(id)(*stream);
+    while (!is_writable_message(id)) {
+        info_handlers.at(id)(*stream);
+        id = Core::IO::read<uint16_t>(*stream);
+    }
+
 
     return readers.at(id)->read(*stream);
+
+}
+
+void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {
+    std::lock_guard guard(closed_mutex);
+    closed = true;
+
+    if (error_messages.empty()) throw ChannelClosed();
+
+
+}
+
+void Gadgetron::Server::Distributed::RemoteChannel::save_error(const std::string &error_message) {
+    error_messages.push_back(error_message);
+}
+
+namespace {
+    std::string
+    make_error_message(const Gadgetron::Server::Distributed::Address &address, const std::vector<std::string> &errors) {
+        std::stringstream error_maker;
+        error_maker << "Error received from " << address.ip << ":" << address.port << std::endl;
+        error_maker << "Errors received: " << std::endl;
+        for (auto &error : errors) {
+            error_maker << error << std::endl;
+        }
+
+        return error_maker.str();
+
+
+    }
+}
+
+Gadgetron::Server::Distributed::RemoteError::RemoteError(const Address &address, const std::vector<std::string> &errors)
+        : std::runtime_error(make_error_message(address, errors)) {
 
 }

@@ -3,7 +3,7 @@
 //
 
 #include "AcquisitionDistributor.h"
-
+#include <map>
 namespace {
     std::function<uint16_t(const ISMRMRD::AcquisitionHeader&)> selector_function(const std::string &key) {
 

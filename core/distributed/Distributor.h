@@ -60,4 +60,4 @@ std::unique_ptr<Gadgetron::Core::Distributed::Distributor> distributor_factory_#
 BOOST_DLL_ALIAS(                                                                    \
         distributor_factory_##DistributorClass,                                               \
         distributor_factory_export_##DistributorClass                                         \
-)                                                                                   \
+)
