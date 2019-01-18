@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "connection/Loader.h"
-#include "connection/stream/CloseGuard.h"
+#include "connection/CloseGuard.h"
 
 #include "Channel.h"
 #include "Context.h"
@@ -94,10 +94,13 @@ namespace Gadgetron::Server::Connection::Stream {
             ErrorHandler &error_handler
     ) {
         CloseGuard input_closer{input}, output_closer{output};
-        error_handler.handle(key, [&]() { branch.process(input, output, bypass); });
+        error_handler.handle(key, [&]() { branch->process(input, output, bypass); });
     }
 
-    Parallel::DecoratedBranch::DecoratedBranch(Branch &branch, std::string key) : branch(branch), key(std::move(key)) {}
+    Parallel::DecoratedBranch::DecoratedBranch(
+            std::unique_ptr<Branch> branch,
+            std::string key
+    ) : branch(std::move(branch)), key(std::move(key)) {}
 
     void Parallel::DecoratedMerge::process(
             std::map<std::string, std::shared_ptr<Channel>> input,
@@ -105,8 +108,11 @@ namespace Gadgetron::Server::Connection::Stream {
             ErrorHandler &error_handler
     ) {
         CloseGuard input_closer{input}, output_closer{output};
-        error_handler.handle(key, [&]() { merge.process(input, output); });
+        error_handler.handle(key, [&]() { merge->process(input, output); });
     }
 
-    Parallel::DecoratedMerge::DecoratedMerge(Merge &merge, std::string key) : merge(merge), key(std::move(key)) {}
+    Parallel::DecoratedMerge::DecoratedMerge(
+            std::unique_ptr<Merge> merge,
+            std::string key
+    ) : merge(std::move(merge)), key(std::move(key)) {}
 }

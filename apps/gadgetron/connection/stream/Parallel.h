@@ -28,7 +28,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         class DecoratedBranch {
         public:
-            DecoratedBranch(Branch &branch, std::string key);
+            DecoratedBranch(std::unique_ptr<Branch> branch, std::string key);
 
             void process(
                     std::shared_ptr<Channel> input,
@@ -38,12 +38,12 @@ namespace Gadgetron::Server::Connection::Stream {
             );
         private:
             const std::string key;
-            Branch &branch;
+            std::unique_ptr<Branch> branch;
         };
 
         class DecoratedMerge {
         public:
-            DecoratedMerge(Merge &merge, std::string key);
+            DecoratedMerge(std::unique_ptr<Merge> merge, std::string key);
 
             void process(
                     std::map<std::string, std::shared_ptr<Channel>> input,
@@ -52,7 +52,7 @@ namespace Gadgetron::Server::Connection::Stream {
             );
         private:
             const std::string key;
-            Merge &merge;
+            std::unique_ptr<Merge> merge;
         };
 
     private:

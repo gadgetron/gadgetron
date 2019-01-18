@@ -93,6 +93,7 @@ namespace Gadgetron::Server::Connection {
         std::vector<std::unique_ptr<Writer>> writers{};
 
         writers.emplace_back(std::make_unique<Writers::TextWriter>());
+        // writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
         writers.emplace_back(std::make_unique<Writers::ResponseWriter>());
 
         return std::move(writers);

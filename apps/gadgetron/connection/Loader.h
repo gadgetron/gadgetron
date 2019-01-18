@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <memory>
+
 #include "stream/Stream.h"
 #include "Config.h"
 
@@ -7,21 +10,24 @@
 #include "Reader.h"
 #include "Writer.h"
 
-namespace Gadgetron::Server::Connection {
+namespace Gadgetron::Server::Connection::Stream {
+    class Stream;
+}
 
+namespace Gadgetron::Server::Connection {
 
     class Loader {
         using Context = Core::Context;
-        using GadgetProperties = Core::GadgetProperties;
         using Reader  = Gadgetron::Core::Reader;
         using Writer  = Gadgetron::Core::Writer;
-        using Stream  = Stream::Stream;
+
+        using GadgetProperties = Core::GadgetProperties;
     public:
         explicit Loader(const Context &);
 
         std::unique_ptr<Reader> load(const Config::Reader &);
         std::unique_ptr<Writer> load(const Config::Writer &);
-        std::unique_ptr<Stream> load(const Config::Stream &);
+        std::unique_ptr<Stream::Stream> load(const Config::Stream &);
 
         template<class RESULT>
         using generic_factory = std::unique_ptr<RESULT>(
@@ -34,6 +40,33 @@ namespace Gadgetron::Server::Connection {
             auto library = load_library(dll);
             return library.get_alias<FACTORY>(prefix + classname);
         }
+
+        template<class CONFIG>
+        std::map<uint16_t, std::unique_ptr<Reader>> load_readers(CONFIG config) {
+
+            std::map<uint16_t, std::unique_ptr<Reader>> readers{};
+
+            for (auto &reader_config : config.readers) {
+                auto reader = load(reader_config);
+                uint16_t slot = reader_config.slot.value_or(reader->slot());
+                readers[slot] = std::move(reader);
+            }
+
+            return std::move(readers);
+        }
+
+        template<class CONFIG>
+        std::vector<std::unique_ptr<Writer>> load_writers(CONFIG config) {
+
+            std::vector<std::unique_ptr<Writer>> writers{};
+
+            for (auto &writer_config : config.writers) {
+                writers.emplace_back(load(writer_config));
+            }
+
+            return std::move(writers);
+        }
+
 
     private:
         boost::dll::shared_library load_library(const std::string &shared_library_name);

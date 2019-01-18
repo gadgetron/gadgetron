@@ -3,11 +3,16 @@
 
 #include <memory>
 
+#include "connection/Config.h"
 #include "connection/Loader.h"
 #include "connection/stream/Processable.h"
 
 #include "Channel.h"
 #include "Context.h"
+
+namespace Gadgetron::Server::Connection {
+    class Loader;
+}
 
 namespace Gadgetron::Server::Connection::Stream {
 

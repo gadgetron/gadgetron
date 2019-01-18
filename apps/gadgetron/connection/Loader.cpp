@@ -41,6 +41,6 @@ namespace Gadgetron::Server::Connection {
     }
 
     std::unique_ptr<Stream::Stream> Loader::load(const Config::Stream &conf) {
-        return std::make_unique<Stream>(conf, context, *this);
+        return std::make_unique<Stream::Stream>(conf, context, *this);
     }
 }

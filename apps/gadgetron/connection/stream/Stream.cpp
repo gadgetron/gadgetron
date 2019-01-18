@@ -4,7 +4,7 @@
 #include "connection/stream/Parallel.h"
 #include "connection/stream/External.h"
 #include "connection/stream/Distributed.h"
-#include "connection/stream/CloseGuard.h"
+#include "connection/CloseGuard.h"
 #include "connection/Loader.h"
 
 #include "Node.h"
@@ -42,7 +42,7 @@ namespace {
     }
 
     std::unique_ptr<Processable> load_node(const Config::Distributed &, const Context &, Loader &) {
-        return std::make_unique<Processable>();
+        return std::unique_ptr<Processable>(nullptr);
     }
 }
 

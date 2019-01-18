@@ -1,9 +1,10 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <memory>
 
-namespace Gadgetron::Server::Connection::Stream {
+namespace Gadgetron::Server::Connection {
 
     class CloseGuard {
     public:
@@ -16,7 +17,7 @@ namespace Gadgetron::Server::Connection::Stream {
             std::transform(
                     args.begin(), args.end(),
                     std::back_inserter(closers),
-                    [](auto t) { return std::make_shared<Closeable>(t); }
+                    [](auto t) { return std::make_shared<Closeable<T>>(t); }
             );
         }
 
@@ -25,7 +26,7 @@ namespace Gadgetron::Server::Connection::Stream {
             std::transform(
                     args.begin(), args.end(),
                     std::back_inserter(closers),
-                    [](auto pair) { return std::make_shared<Closeable>(pair.second); }
+                    [](auto pair) { return std::make_shared<Closeable<V>>(pair.second); }
             );
         }
 
@@ -48,6 +49,15 @@ namespace Gadgetron::Server::Connection::Stream {
             void close() override { t.close(); }
         private:
             T &t;
+        };
+
+        template<class T>
+        class Closeable<std::shared_ptr<T>> : public ICloseable {
+        public:
+            explicit Closeable(std::shared_ptr<T> t) : t(std::move(t)) {}
+            void close() override { t->close(); }
+        private:
+            std::shared_ptr<T> t;
         };
 
         std::vector<std::shared_ptr<ICloseable>> closers;

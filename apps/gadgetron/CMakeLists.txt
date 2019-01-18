@@ -39,7 +39,7 @@ add_executable(gadgetron
         connection/stream/Distributed.cpp
         connection/stream/Distributed.h
         connection/stream/External.cpp
-        connection/stream/External.h connection/stream/Processable.h connection/stream/CloseGuard.h)
+        connection/stream/External.h connection/stream/Processable.h connection/CloseGuard.h)
 
 target_link_libraries(gadgetron
         gadgetron_core
