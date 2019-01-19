@@ -19,16 +19,16 @@ RUN pip3 install -U pip setuptools
 
 # tensorflow does not work with cuda92
 RUN pip3 install --upgrade tensorflow 
-# use pytorch 0.4.1
-RUN pip3 install http://download.pytorch.org/whl/cu92/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
+# use pytorch 1.0
+RUN pip3 install torch
 RUN pip3 install torchvision
 RUN pip3 install tensorboardx visdom
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install numpy==1.15.4 Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
