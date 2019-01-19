@@ -3,6 +3,8 @@ FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 ARG BART_URL=https://github.com/mrirecon/bart
 ARG BART_BRANCH=master
 
+RUN rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
