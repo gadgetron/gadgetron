@@ -93,24 +93,9 @@ namespace Gadgetron::Core {
         return ChannelIterator<OutputChannel>(&channel);
     }
 
-    namespace {
-        namespace gadgetron_detail {
-
-
-        template<class... ARGS>
-        std::unique_ptr<MessageTuple>
-        make_message(ARGS &&... data) {
-            return std::make_unique<MessageTuple>(std::forward<ARGS>(data)...);
-        }
-
-
-
-    }  // namespace gadgetron_detail
-}  // namespace
-
 template<class ...ARGS>
 inline void OutputChannel::push(ARGS&& ... ptr) {
-    this->push_message(gadgetron_detail::make_message<ARGS...>(std::forward<ARGS>(ptr)...));
+    this->push_message(Message(std::forward<ARGS>(ptr)...));
 }
 
 

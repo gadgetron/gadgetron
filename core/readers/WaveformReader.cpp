@@ -6,7 +6,7 @@
 #include <ismrmrd/waveform.h>
 namespace Gadgetron::Core::Readers {
 
-    std::unique_ptr<Core::Message> WaveformReader::read(std::istream& stream) {
+    Core::Message WaveformReader::read(std::istream& stream) {
 
         using namespace Core;
         using namespace std::literals;
@@ -19,7 +19,7 @@ namespace Gadgetron::Core::Readers {
 
         IO::read(stream, *data);
 
-        return std::make_unique<MessageTuple>(std::move(header), std::move(data));
+        return Message(std::move(header), std::move(data));
     }
 
     uint16_t WaveformReader::slot() {

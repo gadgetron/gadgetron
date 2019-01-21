@@ -49,19 +49,19 @@ void Gadgetron::Server::Distributed::RemoteChannel::close() {
     closed = true;
 }
 
-void Gadgetron::Server::Distributed::RemoteChannel::push_message(std::unique_ptr<Gadgetron::Core::Message> &&message) {
+void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core::Message message) {
 
     std::lock_guard guard(closed_mutex);
     if (closed) throw Core::ChannelClosed();
 
     auto writer = std::find_if(writers.begin(), writers.end(),
-                               [&](auto &writer) { return writer->accepts(*message); }
+                               [&](auto &writer) { return writer->accepts(message); }
     );
 
     if (writer == writers.end())
         throw std::runtime_error("Tried to push message with no corresponding Writer to RemoteChannel");
 
-    (*writer)->write(*stream, *message);
+    (*writer)->write(*stream, message);
 
 }
 
@@ -81,16 +81,13 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
 
 }
 
-std::unique_ptr<Gadgetron::Core::Message> Gadgetron::Server::Distributed::RemoteChannel::pop() {
+Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
     auto id = Core::IO::read<uint16_t>(*stream);
     while (!is_writable_message(id)) {
         info_handlers.at(id)(*stream);
         id = Core::IO::read<uint16_t>(*stream);
     }
-
-
     return readers.at(id)->read(*stream);
-
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {
@@ -115,10 +112,7 @@ namespace {
         for (auto &error : errors) {
             error_maker << error << std::endl;
         }
-
         return error_maker.str();
-
-
     }
 }
 

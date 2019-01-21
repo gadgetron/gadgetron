@@ -19,8 +19,8 @@ class EXPORTGADGETSMRICORE MRIImageReader : public Core::Reader
     {
     public:
 
-        std::unique_ptr<Core::Message> read(std::istream& stream) override;
-        uint16_t slot() override;
+        Core::Message read(std::istream& stream) final;
+        uint16_t slot() final;
 
     };
 

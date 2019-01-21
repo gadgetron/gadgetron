@@ -33,7 +33,7 @@ namespace Gadgetron {
         gadget->next(std::make_shared<ChannelAdaptor>(out));
 
         for (auto message : in) {
-            gadget->process(message->to_container_message());
+            gadget->process(message.to_container_message());
         }
         gadget->close();
     }

@@ -97,10 +97,7 @@ namespace Gadgetron {
 
         int putq(GadgetContainerMessageBase *msg) {
             if (msg->cont()) {
-                channel.push_message(to_message_tuple(msg));
-
-            } else {
-                channel.push_message(msg->take_message());
+                channel.push_message(to_message(msg));
             }
             msg->release();
 
@@ -109,14 +106,14 @@ namespace Gadgetron {
         }
 
     private:
-        static std::unique_ptr<Core::MessageTuple> to_message_tuple(GadgetContainerMessageBase *message) {
-            std::vector<std::unique_ptr<Core::Message>> messages;
+        static Core::Message to_message(GadgetContainerMessageBase *message) {
+            std::vector<std::unique_ptr<Core::MessageChunk>> messages;
             auto *current_message = message;
             while (current_message) {
                 messages.emplace_back(current_message->take_message());
                 current_message = dynamic_cast<GadgetContainerMessageBase *>(current_message->cont());
             }
-            return std::make_unique<Core::MessageTuple>(std::move(messages));
+            return Core::Message(std::move(messages));
         }
 
         Core::OutputChannel& channel;

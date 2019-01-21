@@ -64,7 +64,7 @@ namespace Gadgetron::Core {
     template<class ...ARGS>
     void Gadgetron::Core::TypedWriter<ARGS...>::write(std::ostream &stream,  Message& message) {
 
-        std::tuple<ARGS...> arg_tuple = unpack<ARGS...>(message);
+        std::tuple<ARGS...> arg_tuple = force_unpack<ARGS...>(message);
 
         gadgetron_detail::index_apply<sizeof...(ARGS)>(
                 [&](auto... Is) { this->serialize(stream, std::move(std::get<Is>(arg_tuple))...); });

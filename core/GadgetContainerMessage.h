@@ -11,7 +11,7 @@ namespace Gadgetron {
 
     class GadgetContainerMessageBase : public ACE_Message_Block {
     public:
-        virtual std::unique_ptr<Core::Message> take_message() = 0;
+        virtual std::unique_ptr<Core::MessageChunk> take_message() = 0;
         virtual ~GadgetContainerMessageBase() = default;
     };
 
@@ -24,13 +24,13 @@ namespace Gadgetron {
 
         template<class... ARGS>
         explicit GadgetContainerMessage(ARGS&&... xs){
-            message = std::make_unique<Core::TypedMessage<T>>(std::forward<ARGS>(xs)...);
+            message = std::make_unique<Core::TypedMessageChunk<T>>(std::forward<ARGS>(xs)...);
             data = &message->data;
         }
 
          ~GadgetContainerMessage() override = default;
 
-        virtual std::unique_ptr<Core::Message> take_message() override {
+        virtual std::unique_ptr<Core::MessageChunk> take_message() override {
             data = nullptr;
             return std::move(message);
         }
@@ -48,7 +48,7 @@ namespace Gadgetron {
         }
 
     private:
-        std::unique_ptr<Core::TypedMessage<T>> message;
+        std::unique_ptr<Core::TypedMessageChunk<T>> message;
         T* data;
     };
 

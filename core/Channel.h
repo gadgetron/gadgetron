@@ -12,7 +12,7 @@ namespace Gadgetron::Core {
 
     class InputChannel {
     public:
-        virtual std::unique_ptr<Message> pop() = 0;
+        virtual Message pop() = 0;
 
         virtual ~InputChannel() = default;
     };
@@ -31,12 +31,7 @@ namespace Gadgetron::Core {
 
         template<class ...ARGS>
         void push(ARGS&&... ptrs);
-
-
-
-
-
-        virtual void push_message(std::unique_ptr<Message> &&) = 0;
+        virtual void push_message(Message) = 0;
 
         virtual ~OutputChannel() = default;
 
@@ -49,21 +44,21 @@ namespace Gadgetron::Core {
     public:
         virtual void close() = 0;
 
-        virtual ~Channel() = default;
+        ~Channel() override  = default;
     };
 
 
     class MessageChannel : public Channel {
     public:
-        virtual std::unique_ptr<Message> pop() override;
+        Message pop() override;
 
-        virtual void close() override;
+        void close() override;
 
-        void push_message(std::unique_ptr<Message> &&) override;
+        void push_message(Message) override;
 
     protected:
 
-        std::list<std::unique_ptr<Message>> queue;
+        std::list<Message> queue;
         std::mutex m;
         std::condition_variable cv;
         bool closed = false;
@@ -78,12 +73,12 @@ namespace Gadgetron::Core {
         TypedInputChannel(InputChannel &input, OutputChannel &bypass) : in(input), bypass(bypass) {};
 
         decltype(auto) pop() {
-            std::unique_ptr<Message> message = in.pop();
-            while (!convertible_to<ARGS...>(*message)) {
+            Message message = in.pop();
+            while (!convertible_to<ARGS...>(message)) {
                 bypass.push_message(std::move(message));
                 message = in.pop();
             }
-            return force_unpack<ARGS...>(*message);
+            return force_unpack<ARGS...>(message);
         }
 
     private:
