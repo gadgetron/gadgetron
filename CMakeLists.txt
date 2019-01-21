@@ -29,6 +29,9 @@ endif()
 if(EXISTS $ENV{ISMRMRD_HOME})
   list(APPEND CMAKE_PREFIX_PATH $ENV{ISMRMRD_HOME})
 endif()
+if(EXISTS $ENV{TORCH_HOME})
+  list(APPEND CMAKE_PREFIX_PATH $ENV{TORCH_HOME})
+endif()
 list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 message(STATUS "Looking for packages in : ${CMAKE_PREFIX_PATH}")
 # ---
@@ -367,6 +370,11 @@ if (LAPACK_FOUND)
   add_definitions(-DUSE_LAPACK)
 endif ()
 
+find_package(Torch)
+if (TORCH_FOUND)
+  add_definitions(-DUSE_TORCH)
+  message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+endif ()
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
