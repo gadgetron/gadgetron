@@ -55,4 +55,4 @@ branch_factory_##BranchClass(                                                   
 BOOST_DLL_ALIAS(                                                                \
         branch_factory_##BranchClass,                                           \
         branch_factory_export_##BranchClass                                     \
-)                                                                               \
+)

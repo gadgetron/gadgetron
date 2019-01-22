@@ -18,7 +18,7 @@ struct Address {
 class RemoteChannel : public Core::Channel {
     public:
 
-        RemoteChannel(const Address& address, const std::string& xml_config, const std::map<uint16_t,std::shared_ptr<Core::Reader>>& readers,const std::vector<std::shared_ptr<Core::Writer>>& writers );
+        RemoteChannel(const Address& address, const std::string& xml_config, const std::map<uint16_t,std::unique_ptr<Core::Reader>>& readers,const std::vector<std::unique_ptr<Core::Writer>>& writers );
 
 
        Core::Message pop() override;
@@ -34,8 +34,8 @@ class RemoteChannel : public Core::Channel {
 
         std::unique_ptr<std::iostream> stream;
         const Address address;
-        const std::map<uint16_t,std::shared_ptr<Core::Reader>> readers;
-        const std::vector<std::shared_ptr<Core::Writer>>& writers;
+        const std::map<uint16_t,std::unique_ptr<Core::Reader>>& readers;
+        const std::vector<std::unique_ptr<Core::Writer>>& writers;
 
         std::map<uint16_t, std::function<void(std::istream&)>> info_handlers;
 

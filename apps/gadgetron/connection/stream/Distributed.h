@@ -9,15 +9,19 @@
 #include "connection/stream/Processable.h"
 #include "Stream.h"
 #include "connection/distributed/RemoteChannel.h"
+#include <memory>
+#include <map>
+#include <vector>
+#include <string>
 
 namespace Gadgetron::Server::Connection::Stream {
     class Distributed : public Processable {
 
+    public:
         using RemoteChannel = Gadgetron::Server::Distributed::RemoteChannel;
         Distributed(const Config::Distributed &, const Core::Context &, Loader &);
 
 
-    public:
         void process(std::shared_ptr<Core::Channel> input, std::shared_ptr<Core::Channel> output,
                      ErrorHandler &error_handler) override;
 
@@ -28,7 +32,7 @@ namespace Gadgetron::Server::Connection::Stream {
         std::unique_ptr<Core::Distributed::Distributor> load_distributor(const Config::Distributor&);
 
         std::unique_ptr<Core::Distributed::Distributor> distributor;
-        const Config config;
+        const std::string xml_config;
         const Core::Context context;
         std::map<uint16_t,std::unique_ptr<Core::Reader>> readers;
         std::vector<std::unique_ptr<Core::Writer>> writers;

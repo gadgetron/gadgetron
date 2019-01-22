@@ -23,3 +23,11 @@ Gadgetron::Core::Message::Message(std::vector<std::unique_ptr<Gadgetron::Core::M
 
 }
 
+const std::vector<std::unique_ptr<Gadgetron::Core::MessageChunk>> &Gadgetron::Core::Message::messages() const {
+    return messages_;
+}
+
+std::vector<std::unique_ptr<Gadgetron::Core::MessageChunk>> Gadgetron::Core::Message::take_messages() {
+    return std::move(messages_);
+}
+
