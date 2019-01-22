@@ -72,7 +72,7 @@ namespace Gadgetron {
         fov_.push_back(r_space.fieldOfView_mm.y);
         fov_.push_back(r_space.fieldOfView_mm.z);
 
-        line_offset_ = (dimensions_[1] >> 1) - e_limits.kspace_encoding_step_1->center;
+        line_offset_ = (dimensions_[1] / 2) - e_limits.kspace_encoding_step_1->center;
 
         if (h.userParameters) {
             for (size_t i = 0; i < h.userParameters->userParameterString.size(); i++) {

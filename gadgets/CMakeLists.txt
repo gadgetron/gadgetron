@@ -27,7 +27,7 @@ else ()
 endif()
 
 add_subdirectory(spiral)
-#add_subdirectory(grappa)
+add_subdirectory(grappa)
 add_subdirectory(grappa_new)
 
 if (MATLAB_FOUND)
