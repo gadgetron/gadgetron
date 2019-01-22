@@ -21,9 +21,9 @@ class RemoteChannel : public Core::Channel {
         RemoteChannel(const Address& address, const std::string& xml_config, const std::map<uint16_t,std::shared_ptr<Core::Reader>>& readers,const std::vector<std::shared_ptr<Core::Writer>>& writers );
 
 
-        std::unique_ptr<Core::Message> pop() override;
+       Core::Message pop() override;
 
-        void push_message(std::unique_ptr<Core::Message> &&ptr) override;
+        void push_message(Core::Message ptr) override;
 
         void close() override;
 

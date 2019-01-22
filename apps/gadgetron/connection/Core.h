@@ -55,11 +55,11 @@ namespace Gadgetron::Server::Connection {
         for (auto message : messages) {
 
             auto writer = std::find_if(writers.begin(), writers.end(),
-                    [&](auto &writer) { return writer->accepts(*message); }
+                    [&](auto &writer) { return writer->accepts(message); }
             );
 
             if (writer != writers.end()) {
-                (*writer)->write(stream, *message);
+                (*writer)->write(stream, message);
             }
         }
     }

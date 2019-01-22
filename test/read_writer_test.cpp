@@ -20,14 +20,14 @@ TEST(ReadWriteTest,AcquisitionTest){
     data->fill(42.0f);
 
 
-    auto message = std::make_unique<Core::MessageTuple>(std::move(acquisition_header),std::move(data));
+    auto message = Core::Message(std::move(acquisition_header),std::move(data));
 
 
     auto reader = GadgetIsmrmrdAcquisitionMessageReader();
     auto writer = GadgetIsmrmrdAcquisitionMessageWriter();
 
 
-    ASSERT_TRUE(writer.accepts(*message));
+    ASSERT_TRUE(writer.accepts(message));
 
 
 
