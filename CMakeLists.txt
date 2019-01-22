@@ -379,8 +379,8 @@ if(EXISTS $ENV{TORCH_HOME})
     message("Do not find Pytorch c++ library")
   endif ()
 else()
-+  message("Do not find TORCH_HOME")
-+endif()
+  message("Do not find TORCH_HOME")
+endif()
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
