@@ -6,7 +6,7 @@
 
 namespace {
     std::vector<Gadgetron::Server::Distributed::Address> get_workers() {
-        return {{"localhost", "9003"}};
+        return {{"localhost", "9002"}};
     }
 
 
@@ -40,18 +40,26 @@ void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr
                                                                  std::shared_ptr<Gadgetron::Core::Channel> output,
                                                                  Gadgetron::Server::Connection::ErrorHandler &error_handler) {
     std::vector<std::thread> threads;
+    std::vector<std::shared_ptr<RemoteChannel>> channels;
 
     auto creator = ChannelCreatorFunction([&]() {
         auto channel = this->create_remote_channel();
 
         threads.emplace_back(error_handler.run("ChannelReader", process_channel, channel, output));
+        channels.push_back(channel);
         return channel;
     });
 
-    distributor->process(*input,creator,*output);
+    error_handler.handle("Distributor",[&](){distributor->process(*input,creator,*output);});
+
+    for (auto channel : channels)
+        channel->close();
 
     for (auto& t : threads)
         t.join();
+
+    input->close();
+    output->close();
 
 }
 
@@ -82,5 +90,5 @@ Gadgetron::Server::Connection::Stream::Distributed::load_distributor(
 std::shared_ptr<Gadgetron::Server::Distributed::RemoteChannel>
 Gadgetron::Server::Connection::Stream::Distributed::create_remote_channel() {
 
-    return std::make_shared<RemoteChannel>(workers.front(), xml_config, readers, writers);
+    return std::make_shared<RemoteChannel>(workers.front(), xml_config,context.header, readers, writers);
 }

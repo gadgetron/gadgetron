@@ -13,13 +13,19 @@ using namespace Gadgetron::Core;
 
 namespace {
 
-    class MessageHandler {
-
-    };
 
     void send_config_file(std::ostream &stream, const std::string &xml_config) {
-        IO::write(stream, uint16_t(2));
+        IO::write(stream, CONFIG);
         IO::write_string_to_stream<uint32_t>(stream, xml_config);
+    }
+
+    void send_header(std::ostream& stream, const ISMRMRD::IsmrmrdHeader& header) {
+
+        std::stringstream sstream;
+        ISMRMRD::serialize(header,sstream);
+        IO::write(stream,HEADER);
+        IO::write_string_to_stream<uint32_t>(stream,sstream.str());
+
     }
 
     bool is_writable_message(uint16_t message_id) {
@@ -65,7 +71,7 @@ void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core
 
 }
 
-Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &address, const std::string &xml_config,
+Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &address, const std::string &xml_config, const ISMRMRD::IsmrmrdHeader& header,
                                                              const std::map<uint16_t, std::unique_ptr<Gadgetron::Core::Reader>> &readers,
                                                              const std::vector<std::unique_ptr<Gadgetron::Core::Writer>> &writers)
         : readers(readers), writers(writers), address(address) {
@@ -76,12 +82,17 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
                      }}};
 
     stream = std::make_unique<tcp::iostream>(address.ip, address.port);
+
+    stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit );
     send_config_file(*stream, xml_config);
+    send_header(*stream, header);
 
 
 }
 
 Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
+
+    std::this_thread::sleep_for(std::chrono::seconds(10));
     auto id = Core::IO::read<uint16_t>(*stream);
     while (!is_writable_message(id)) {
         info_handlers.at(id)(*stream);

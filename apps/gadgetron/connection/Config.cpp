@@ -343,8 +343,10 @@ namespace {
         template<class ConfigNode>
         static pugi::xml_node add_basenode(const ConfigNode &configNode, pugi::xml_node &node) {
             auto child_node = node.append_child(xml_name<ConfigNode>());
-            child_node.append_child("dll").set_value(configNode.dll.c_str());
-            child_node.append_child("classname").set_value(configNode.classname.c_str());
+            auto dll = child_node.append_child("dll");
+            dll.append_child(pugi::node_pcdata).set_value(configNode.dll.c_str());
+            auto classname = child_node.append_child("classname");
+            classname.append_child(pugi::node_pcdata).set_value(configNode.classname.c_str());
             return child_node;
         }
 
@@ -363,7 +365,7 @@ namespace {
         template<class ConfigNode>
         static pugi::xml_node add_node(const ConfigNode &configNode, pugi::xml_node &node) {
             auto gadget_node = add_basenode(configNode, node);
-            gadget_node.append_child("name").set_value(configNode.name.c_str());
+            gadget_node.append_child("name").append_child(pugi::node_pcdata).set_value(configNode.name.c_str());
             for (auto property : configNode.properties) {
                 auto property_node = gadget_node.append_child("property");
                 property_node.append_attribute("name").set_value(property.first.c_str());
