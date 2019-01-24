@@ -19,6 +19,7 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
                 const hoNDArray<T>& data,
                 const optional<ISMRMRD::MetaContainer>& meta
         ) override {
+            GDEBUG("Sending out da imaaaaages \n");
             uint16_t message_id = 1022;
             IO::write(stream,message_id);
             IO::write(stream,header);

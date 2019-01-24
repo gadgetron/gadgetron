@@ -75,6 +75,7 @@ int ImageArraySplitGadget::process( GadgetContainerMessage<IsmrmrdImageArray>* m
                     cm2->cont(cm3);
                 }
 
+                GDEBUG_STREAM("Sending out the stuff");
                 //Pass the image down the chain
                 if (this->next()->putq(cm1) < 0) {
                     return GADGET_FAIL;

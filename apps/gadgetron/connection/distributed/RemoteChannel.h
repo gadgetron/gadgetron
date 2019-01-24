@@ -7,7 +7,7 @@
 #include <vector>
 #include <atomic>
 #include <iostream>
-
+#include <boost/asio/ip/tcp.hpp>
 namespace Gadgetron::Server::Distributed{
 
 struct Address {
@@ -32,15 +32,18 @@ class RemoteChannel : public Core::Channel {
         void handle_close();
         void save_error(const std::string& error_message);
 
-        std::unique_ptr<std::iostream> stream;
+        std::unique_ptr<boost::asio::ip::tcp::iostream> stream;
         const Address address;
         const std::map<uint16_t,std::unique_ptr<Core::Reader>>& readers;
         const std::vector<std::unique_ptr<Core::Writer>>& writers;
 
         std::map<uint16_t, std::function<void(std::istream&)>> info_handlers;
 
-        bool closed = false;
+        bool closed_input = false;
+        bool closed_output = false;
+
         std::mutex closed_mutex;
+        std::mutex stream_mutex;
 
         std::vector<std::string> error_messages;
 

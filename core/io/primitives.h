@@ -10,7 +10,6 @@ namespace Gadgetron::Core::IO {
     template<class T, class V = std::enable_if<std::is_trivially_copyable_v<T>>>
     void read(std::istream& stream, T& value ){
         stream.read(reinterpret_cast<char*>(&value),sizeof(value));
-
         // TODO: Check error bits on stream and throw on failure.
     }
 

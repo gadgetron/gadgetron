@@ -51,14 +51,14 @@ void Gadgetron::Server::Distributed::RemoteChannel::close() {
 
     std::lock_guard guard(closed_mutex);
 
-    if (!closed) IO::write(*stream, CLOSE);
-    closed = true;
+    if (!closed_input) IO::write(*stream, CLOSE);
+    closed_input = true;
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core::Message message) {
 
     std::lock_guard guard(closed_mutex);
-    if (closed) throw Core::ChannelClosed();
+    if (closed_input) throw Core::ChannelClosed();
 
     auto writer = std::find_if(writers.begin(), writers.end(),
                                [&](auto &writer) { return writer->accepts(message); }
@@ -91,20 +91,24 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
 }
 
 Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
-
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+//    std::this_thread::sleep_for(std::chrono::seconds(1));
+    {
+        std::lock_guard guard(closed_mutex);
+        if (closed_output) throw ChannelClosed();
+    }
     auto id = Core::IO::read<uint16_t>(*stream);
     while (!is_writable_message(id)) {
         info_handlers.at(id)(*stream);
         id = Core::IO::read<uint16_t>(*stream);
     }
+    GDEBUG_STREAM(stream->error().message());
     return readers.at(id)->read(*stream);
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {
     std::lock_guard guard(closed_mutex);
-    closed = true;
-
+    closed_input = true;
+    closed_output = true;
     if (error_messages.empty()) throw ChannelClosed();
     throw RemoteError(address,error_messages);
 

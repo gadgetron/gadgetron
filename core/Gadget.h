@@ -113,6 +113,12 @@ namespace Gadgetron {
                 messages.emplace_back(current_message->take_message());
                 current_message = dynamic_cast<GadgetContainerMessageBase *>(current_message->cont());
             }
+            if (messages.size() == 1){
+                GDEBUG_STREAM("U wut mate?");
+            }
+            if (messages.size() == 0){
+                throw std::runtime_error("WUT??");
+            }
             return Core::Message(std::move(messages));
         }
 

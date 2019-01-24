@@ -6,7 +6,7 @@
 
 namespace {
     std::vector<Gadgetron::Server::Distributed::Address> get_workers() {
-        return {{"localhost", "9002"}};
+        return {{"localhost", "9003"}};
     }
 
 
@@ -30,11 +30,12 @@ namespace {
     process_channel(std::shared_ptr<Gadgetron::Core::Channel> input, std::shared_ptr<Gadgetron::Core::Channel> output) {
 
         Gadgetron::Core::InputChannel &in_view = *input;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         for (auto &&message : in_view)
             output->push_message(std::move(message));
     }
 
-}
+    }
 
 void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr<Gadgetron::Core::Channel> input,
                                                                  std::shared_ptr<Gadgetron::Core::Channel> output,
@@ -52,13 +53,13 @@ void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr
 
     error_handler.handle("Distributor",[&](){distributor->process(*input,creator,*output);});
 
+    input->close();
     for (auto channel : channels)
         channel->close();
 
     for (auto& t : threads)
         t.join();
 
-    input->close();
     output->close();
 
 }

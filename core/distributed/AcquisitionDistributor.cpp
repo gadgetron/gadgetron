@@ -40,7 +40,8 @@ void Gadgetron::Core::Distributed::AcquisitionDistributor::process(
 
     std::map<uint16_t, std::shared_ptr<OutputChannel>> channels;
     for (Acquisition acq : input) {
-        uint16_t channel_index = selector(std::get<0>(acq));
+//        uint16_t channel_index = selector(std::get<0>(acq));
+        uint16_t  channel_index = 0;
         if (!channels.count(channel_index)) channels.emplace(channel_index,creator.create());
         channels.at(channel_index)->push(std::move(acq));
     }
