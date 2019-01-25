@@ -1,21 +1,29 @@
 #pragma once
 
+#include <functional>
+
 #include "Context.h"
 #include "Channel.h"
 #include "Types.h"
 
 #include "hoNDArray.h"
 
-
 namespace Gadgetron::Grappa {
 
     class AcquisitionBuffer {
-        using Context = Core::Context;
-        using Acquisition = Core::Acquisition;
     public:
-        explicit AcquisitionBuffer(Context);
+        explicit AcquisitionBuffer(Core::Context);
 
-        void add_acquisition(const Acquisition &acquisition);
+        void add(const Core::Acquisition &acquisition);
+
+        template<class T>
+        void add(const T &acquisitions) {
+            for (const auto &acquisition : acquisitions) {
+                add(acquisition);
+            }
+        }
+
+        void add_acquisition_hook(std::function<void(const Core::Acquisition &)> fn);
 
         hoNDArray<std::complex<float>>
         take(size_t index);
@@ -26,13 +34,14 @@ namespace Gadgetron::Grappa {
         void clear(size_t index);
 
     private:
-        const Context context;
+        const Core::Context context;
 
         struct {
             std::vector<unsigned long> buffer_dimensions;
-            int line_offset;
+            int line_offset = 0;
         } internals;
 
         std::vector<hoNDArray<std::complex<float>>> buffers;
+        std::vector<std::function<void(const Core::Acquisition &)>> acquisition_hooks;
     };
 }

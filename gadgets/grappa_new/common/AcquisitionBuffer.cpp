@@ -1,10 +1,15 @@
 #include "AcquisitionBuffer.h"
 
+#include "Context.h"
+#include "Channel.h"
+#include "Types.h"
+
 #include "hoNDArray.h"
 
 namespace {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
+    using namespace Gadgetron::Grappa;
 
     size_t get_receiver_channels(const Context &context, size_t default_receiver_channels = 1) {
 
@@ -51,7 +56,7 @@ namespace Gadgetron::Grappa {
         buffers = std::vector<hoNDArray<std::complex<float>>>(slices, create_buffer(internals.buffer_dimensions));
     }
 
-    void AcquisitionBuffer::add_acquisition(const Acquisition &acquisition) {
+    void AcquisitionBuffer::add(const Acquisition &acquisition) {
 
         auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
         const auto &data = std::get<hoNDArray<std::complex<float>>>(acquisition);
@@ -71,6 +76,8 @@ namespace Gadgetron::Grappa {
 
             std::copy_n(source, samples, destination);
         }
+
+        for (const auto &hook : acquisition_hooks) hook(acquisition);
     }
 
     hoNDArray<std::complex<float>> AcquisitionBuffer::take(size_t index) {
@@ -85,5 +92,9 @@ namespace Gadgetron::Grappa {
 
     void AcquisitionBuffer::clear(size_t index) {
         buffers[index] = create_buffer(internals.buffer_dimensions);
+    }
+
+    void AcquisitionBuffer::add_acquisition_hook(std::function<void(const Core::Acquisition &)> fn) {
+        acquisition_hooks.emplace_back(std::move(fn));
     }
 }

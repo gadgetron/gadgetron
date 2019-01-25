@@ -1,4 +1,4 @@
-#include "Combine.h"
+#include "Reconstruction.h"
 
 #include "parallel/Merge.h"
 
@@ -7,18 +7,18 @@ namespace {
 }
 
 namespace Gadgetron::Grappa {
-    GADGETRON_MERGE_EXPORT(Combine);
+    GADGETRON_MERGE_EXPORT(Reconstruction);
 
-    Combine::Combine(
+    Reconstruction::Reconstruction(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
     ) : Merge(props) {}
 
-    void Combine::process(
+    void Reconstruction::process(
             std::map<std::string, std::shared_ptr<Channel>> input,
             std::shared_ptr<Channel> output
     ) {
-        TypedInputChannel<CombineJob> jobs{*input.at("images"), *output};
+        TypedInputChannel<Image> images{*input.at("images"), *output};
         TypedInputChannel<Weights> weights{*input.at("weights"), *output};
 
     }

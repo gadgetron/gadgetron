@@ -5,7 +5,7 @@ namespace Gadgetron::Core {
 
     Message MessageChannel::pop_impl(std::unique_lock<std::mutex> lock) {
         cv.wait(lock,[this](){return !this->queue.empty() || closed;});
-        if (closed){
+        if (queue.empty()){
             throw ChannelClosed();
         }
         Message message = std::move(queue.front());

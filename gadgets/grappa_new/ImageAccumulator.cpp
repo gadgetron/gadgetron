@@ -4,7 +4,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <boost/range/algorithm/copy.hpp>
 
-#include "Combine.h"
+#include "Reconstruction.h"
 #include "common/AcquisitionBuffer.h"
 
 #include "Node.h"
@@ -18,10 +18,6 @@ namespace {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Grappa;
 
-    bool is_last_in_slice(const Acquisition &acquisition) {
-        auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
-        return header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
-    }
 
     void emit_reconstruction_job(
             const Acquisition &acquisition,
@@ -31,7 +27,7 @@ namespace {
         auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
         auto slice = header.idx.slice;
 
-        Grappa::CombineJob image{};
+        Grappa::Image image{};
 
         image.data = buffer.take(slice);
         image.meta.slice = slice;
@@ -53,19 +49,17 @@ namespace Gadgetron::Grappa {
     ImageAccumulator::ImageAccumulator(
             const Core::Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : TypedGadgetNode<Acquisition>(props), context(context) {}
+    ) : TypedGadgetNode<Slice>(props), context(context) {}
 
-    void ImageAccumulator::process(TypedInputChannel<Acquisition> &in, OutputChannel &out) {
+    void ImageAccumulator::process(TypedInputChannel<Slice> &in, OutputChannel &out) {
 
         AcquisitionBuffer buffer{context};
 
-        for (const auto &acquisition : in) {
+        for (const auto &slice : in) {
+            GINFO_STREAM("Processing slice with " << slice.size() << " acquisitions.")
 
-            buffer.add_acquisition(acquisition);
-
-            if (is_last_in_slice(acquisition)) {
-                emit_reconstruction_job(acquisition, buffer, out);
-            }
+            buffer.add(slice);
+            emit_reconstruction_job(slice.back(), buffer, out);
         }
     }
 
