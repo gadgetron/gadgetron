@@ -3,8 +3,10 @@
 add_library(gadgetron_grappa_new SHARED
         ImageAccumulator.cpp
         WeightsCalculator.cpp
-        Reconstruction.cpp
-        AcquisitionFanout.cpp)
+        Combine.cpp
+        AcquisitionFanout.cpp
+        common/AcquisitionBuffer.cpp
+        common/AcquisitionBuffer.h)
 
 set_target_properties(gadgetron_grappa_new PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
@@ -12,7 +14,8 @@ set_target_properties(gadgetron_grappa_new PROPERTIES
 
 target_link_libraries(gadgetron_grappa_new
         gadgetron_core
-        gadgetron_core_parallel)
+        gadgetron_core_parallel
+        gadgetron_toolbox_cpufft)
 
 install(TARGETS gadgetron_grappa_new DESTINATION lib COMPONENT main)
 

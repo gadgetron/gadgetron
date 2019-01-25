@@ -13,6 +13,7 @@ namespace Gadgetron::Core {
 
     template<class T>
     using optional = boost::optional<T>;
+    static const auto none = boost::none;
 
     template<class... ARGS>
     using variant = boost::variant<ARGS...>;

@@ -1,4 +1,4 @@
-#include "Reconstruction.h"
+#include "Combine.h"
 
 #include "parallel/Merge.h"
 
@@ -7,22 +7,24 @@ namespace {
 }
 
 namespace Gadgetron::Grappa {
-    GADGETRON_MERGE_EXPORT(Reconstruction);
+    GADGETRON_MERGE_EXPORT(Combine);
 
-    Reconstruction::Reconstruction(
+    Combine::Combine(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
     ) : Merge(props) {}
 
-    void Reconstruction::process(
+    void Combine::process(
             std::map<std::string, std::shared_ptr<Channel>> input,
             std::shared_ptr<Channel> output
     ) {
-        TypedInputChannel<hoNDArray<std::complex<float>>> images{*input.at("images"), *output};
-        TypedInputChannel<hoNDArray<float>> weights{*input.at("images"), *output};
+        TypedInputChannel<Image>   images{*input.at("images"), *output};
+        TypedInputChannel<Weights> weights{*input.at("images"), *output};
 
         for (auto image : images) {
             GINFO_STREAM("Reconstruction handling image.")
+
+            // Excellent!
         }
     }
 }

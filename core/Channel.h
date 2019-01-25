@@ -1,18 +1,20 @@
 #pragma once
 
-#include "Message.h"
-#include <thread>
 #include <list>
 #include <memory>
 #include <mutex>
 #include <condition_variable>
 
-namespace Gadgetron::Core {
+#include "Message.h"
+#include "Types.h"
 
+
+namespace Gadgetron::Core {
 
     class InputChannel {
     public:
         virtual Message pop() = 0;
+        virtual optional<Message> try_pop() = 0;
 
         virtual ~InputChannel() = default;
     };
@@ -22,7 +24,6 @@ namespace Gadgetron::Core {
     class ChannelIterator;
 
     ChannelIterator<InputChannel> begin(InputChannel &);
-
     ChannelIterator<InputChannel> end(InputChannel &);
 
 
@@ -51,12 +52,14 @@ namespace Gadgetron::Core {
     class MessageChannel : public Channel {
     public:
         Message pop() override;
+        optional<Message> try_pop() override;
 
         void close() override;
 
         void push_message(Message) override;
 
     protected:
+        Message pop_impl(std::unique_lock<std::mutex> lock);
 
         std::list<Message> queue;
         std::mutex m;
@@ -79,6 +82,20 @@ namespace Gadgetron::Core {
                 message = in.pop();
             }
             return force_unpack<ARGS...>(message);
+        }
+
+        optional<decltype(force_unpack<ARGS...>(Message{}))> try_pop() {
+
+            optional<Message> message = in.try_pop();
+
+            while(message && !convertible_to<ARGS...>(*message)) {
+                bypass.push_message(std::move(*message));
+                message = in.try_pop();
+            }
+
+            if (!message) return none;
+
+            return force_unpack<ARGS...>(*message);
         }
 
     private:

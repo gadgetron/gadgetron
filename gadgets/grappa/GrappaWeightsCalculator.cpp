@@ -222,10 +222,10 @@ namespace Gadgetron {
                                                        unmixing_all_channels, gFactor_);
 
                     // set unmixing coefficients for uncombined channels
-                    ind = 1;
+                    ind = 0;
                     for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++, ind++) {
                         memcpy(unmixing_.begin() + ind * RO * E1 * CHA,
-                               kIm_.begin() + (target_coils_with_uncombined - numUnCombined + ind - 1) * RO * E1 * CHA,
+                               kIm_.begin() + (target_coils_with_uncombined - numUnCombined + ind) * RO * E1 * CHA,
                                sizeof(std::complex<float>) * RO * E1 * CHA);
                     }
                 }

@@ -77,6 +77,8 @@ namespace Gadgetron {
         }
         last_line_ = line;
 
+        // KLK: Not our problem. We NEED the full slice. If you don't send them sequentially,
+        // inject an earlier gadget to line things up. TODO: Not caring about line sequence.
 
         bool is_last_scan_in_slice = acq_header->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
 

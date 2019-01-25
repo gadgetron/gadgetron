@@ -8,7 +8,7 @@
 
 namespace Gadgetron::Grappa {
 
-    class Image {
+    class CombineJob {
     public:
 
         struct {
@@ -24,9 +24,11 @@ namespace Gadgetron::Grappa {
 
     };
 
-    class Reconstruction : public Core::Parallel::Merge {
+    class Combine : public Core::Parallel::Merge {
     public:
-        Reconstruction(const Core::Context &context, const std::unordered_map<std::string, std::string> &props);
+        Combine(const Core::Context &context, const std::unordered_map<std::string, std::string> &props);
+
+        NODE_PROPERTY(image_series, int, "Image series number for output images", 0);
 
         void process(
                 std::map<std::string, std::shared_ptr<Core::Channel>> input,
