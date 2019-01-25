@@ -13,8 +13,8 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   )
 
-set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h TrajectoryParameters.h)
-set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp TrajectoryParameters.cpp)
+set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h TrajectoryParameters.h gpuSpiralDeblurGadget.h)
+set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp TrajectoryParameters.cpp gpuSpiralDeblurGadget.cpp)
 
 if (CUDA_FOUND)
     include_directories(
