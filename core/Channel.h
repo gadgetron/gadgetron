@@ -81,7 +81,7 @@ namespace Gadgetron::Core {
                 bypass.push_message(std::move(message));
                 message = in.pop();
             }
-            return force_unpack<ARGS...>(message);
+            return force_unpack<ARGS...>(std::move(message));
         }
 
         optional<decltype(force_unpack<ARGS...>(Message{}))> try_pop() {
@@ -95,7 +95,7 @@ namespace Gadgetron::Core {
 
             if (!message) return none;
 
-            return force_unpack<ARGS...>(*message);
+            return force_unpack<ARGS...>(std::move(*message));
         }
 
     private:

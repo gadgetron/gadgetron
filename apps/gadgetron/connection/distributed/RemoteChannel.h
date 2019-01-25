@@ -22,6 +22,9 @@ class RemoteChannel : public Core::Channel {
 
 
        Core::Message pop() override;
+       Core::optional<Core::Message> try_pop() override {
+           return Core::none;
+       };
 
         void push_message(Core::Message ptr) override;
 

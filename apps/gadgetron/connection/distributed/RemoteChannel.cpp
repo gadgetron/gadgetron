@@ -67,7 +67,7 @@ void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core
     if (writer == writers.end())
         throw std::runtime_error("Tried to push message with no corresponding Writer to RemoteChannel");
 
-    (*writer)->write(*stream, message);
+    (*writer)->write(*stream, std::move(message));
 
 }
 

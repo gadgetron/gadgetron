@@ -16,7 +16,7 @@ namespace Gadgetron::Core {
 
         virtual bool accepts(const Message &) = 0;
 
-        virtual void write(std::ostream &stream, Message& message) = 0;
+        virtual void write(std::ostream &stream, Message message) = 0;
     };
 
 
@@ -27,7 +27,7 @@ namespace Gadgetron::Core {
 
         bool accepts(const Message &) override;
 
-        void write(std::ostream &stream, Message& message) override;
+        void write(std::ostream &stream, Message message) override;
 
     protected:
         virtual void serialize(std::ostream &stream, const ARGS& ...) = 0;
@@ -62,9 +62,9 @@ namespace Gadgetron::Core {
 
 
     template<class ...ARGS>
-    void Gadgetron::Core::TypedWriter<ARGS...>::write(std::ostream &stream,  Message& message) {
+    void Gadgetron::Core::TypedWriter<ARGS...>::write(std::ostream &stream,  Message message) {
 
-        std::tuple<ARGS...> arg_tuple = force_unpack<ARGS...>(message);
+        std::tuple<ARGS...> arg_tuple = force_unpack<ARGS...>(std::move(message));
 
         gadgetron_detail::index_apply<sizeof...(ARGS)>(
                 [&](auto... Is) { this->serialize(stream, std::move(std::get<Is>(arg_tuple))...); });
