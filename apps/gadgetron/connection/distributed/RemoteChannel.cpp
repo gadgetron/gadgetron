@@ -101,7 +101,6 @@ Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
         info_handlers.at(id)(*stream);
         id = Core::IO::read<uint16_t>(*stream);
     }
-    GDEBUG_STREAM(stream->error().message());
     return readers.at(id)->read(*stream);
 }
 

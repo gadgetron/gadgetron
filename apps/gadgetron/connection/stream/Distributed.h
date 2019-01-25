@@ -27,11 +27,14 @@ namespace Gadgetron::Server::Connection::Stream {
 
     private:
 
-        std::shared_ptr<RemoteChannel> create_remote_channel();
+        std::shared_ptr<Core::Channel> create_remote_channel();
 
         std::unique_ptr<Core::Distributed::Distributor> load_distributor(const Config::Distributor&);
 
         std::unique_ptr<Core::Distributed::Distributor> distributor;
+
+
+        const Config::Stream stream_config;
         const std::string xml_config;
         const Core::Context context;
         std::map<uint16_t,std::unique_ptr<Core::Reader>> readers;

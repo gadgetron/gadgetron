@@ -94,7 +94,7 @@ TEST(TypeTests,converttype){
 
     auto message = inputChannel.pop();
 
-    auto pack = unpack<std::string,std::string>(message);
+    auto pack = unpack<std::string,std::string>(std::move(message));
 
     EXPECT_EQ(std::get<0>(*pack),"hello");
 }
@@ -158,7 +158,7 @@ TEST(TypeTests,varianttype2){
     {
         auto message = inputChannel.pop();
 
-        auto variation = force_unpack<variant<std::string, int>>(message);
+        auto variation = force_unpack<variant<std::string, int>>(std::move(message));
         EXPECT_FALSE(variation.empty());
         std::cout << variation.type().name() << std::endl;
         EXPECT_EQ(variation.which(),1);
@@ -228,7 +228,7 @@ TEST(TypeTests,tupletype3){
 
     auto message = inputChannel.pop();
 
-    auto converted =  force_unpack<tuple<std::string,float,int>>(message);
+    auto converted =  force_unpack<tuple<std::string,float,int>>(std::move(message));
 
     EXPECT_EQ(std::get<1>(converted),1.0f);
 }
