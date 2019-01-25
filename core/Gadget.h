@@ -79,7 +79,7 @@ namespace Gadgetron {
     class EXPORTGADGETCORE ChannelAdaptor {
     public:
 
-        ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
+        explicit ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
 
         }
 
@@ -96,7 +96,7 @@ namespace Gadgetron {
         }
 
         int putq(GadgetContainerMessageBase *msg) {
-            if (msg->cont()) {
+            if (msg) {
                 channel.push_message(to_message(msg));
             }
             msg->release();
@@ -112,12 +112,6 @@ namespace Gadgetron {
             while (current_message) {
                 messages.emplace_back(current_message->take_message());
                 current_message = dynamic_cast<GadgetContainerMessageBase *>(current_message->cont());
-            }
-            if (messages.size() == 1){
-                GDEBUG_STREAM("U wut mate?");
-            }
-            if (messages.size() == 0){
-                throw std::runtime_error("WUT??");
             }
             return Core::Message(std::move(messages));
         }
