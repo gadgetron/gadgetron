@@ -93,12 +93,12 @@ namespace {
     template<class... Sources>
     Property parse_property(const pugi::xml_node &node) {
         std::vector<optional<Property>> potentials = {make_property<Sources>(node)...};
-        auto to_bool = [](auto& potential) {return bool(potential);};
+        auto to_bool = [](auto &potential) { return bool(potential); };
 
-        auto n_valid = boost::count_if(potentials, to_bool );
+        auto n_valid = boost::count_if(potentials, to_bool);
         if (n_valid < 1) { throw ConfigNodeError("Unable to parse property", node); };
         if (n_valid > 1) { throw ConfigNodeError("Ambigous property parse", node); };
-        return **boost::find_if(potentials,to_bool);
+        return **boost::find_if(potentials, to_bool);
     }
 
 
@@ -107,7 +107,8 @@ namespace {
 
     protected:
 
-        explicit Parser(const pugi::xml_document &doc) : referenceable_properties(create_referenceable_properties(doc)) {}
+        explicit Parser(const pugi::xml_document &doc) : referenceable_properties(
+                create_referenceable_properties(doc)) {}
 
         std::unordered_map<std::string, std::string>
         parse_properties(const pugi::xml_node &gadget_node) {
@@ -161,11 +162,12 @@ namespace {
             return writers;
         }
 
-        Config::Gadget parse_gadget(const pugi::xml_node &gadget_node) {
-            return Config::Gadget{gadget_node.child_value("name"),
-                                  gadget_node.child_value("dll"),
-                                  gadget_node.child_value("classname"),
-                                  parse_properties(gadget_node)};
+        template<class NODE>
+        NODE parse_node(const pugi::xml_node &gadget_node) {
+            return NODE{gadget_node.child_value("name"),
+                        gadget_node.child_value("dll"),
+                        gadget_node.child_value("classname"),
+                        parse_properties(gadget_node)};
         }
 
     private:
@@ -173,7 +175,8 @@ namespace {
 
         static std::string value_of(const PropertyMap &map, const std::string &key, std::set<std::string> visited) {
 
-            if (visited.count(key)) throw std::runtime_error("Cyclic reference detected in Gadget xml property: " + key);
+            if (visited.count(key))
+                throw std::runtime_error("Cyclic reference detected in Gadget xml property: " + key);
 
             auto value = map.at(key);
 
@@ -236,7 +239,7 @@ namespace {
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node &gadget_node) {
             std::vector<Config::Gadget> gadgets{};
             for (const auto &node : gadget_node.children("gadget")) {
-                gadgets.push_back(parse_gadget(node));
+                gadgets.push_back(parse_node<Config::Gadget>(node));
             }
             return gadgets;
         }
@@ -275,7 +278,7 @@ namespace {
     private:
 
         V2(const pugi::xml_document &doc) : Parser<V2Source, LegacySource>(doc) {
-            node_parsers["gadget"] = [&](const pugi::xml_node &n) { return this->parse_gadget(n); };
+            node_parsers["gadget"] = [&](const pugi::xml_node &n) { return this->parse_node<Config::Gadget>(n); };
             node_parsers["parallel"] = [&](const pugi::xml_node &n) { return this->parse_parallel(n); };
             node_parsers["distributed"] = [&](const pugi::xml_node &n) { return this->parse_distributed(n); };
 
@@ -283,20 +286,11 @@ namespace {
 
         std::unordered_map<std::string, std::function<Config::Node(const pugi::xml_node &)>> node_parsers;
 
-        Config::Merge parse_mergenode(const pugi::xml_node &merge_node) {
-            return Config::Merge{merge_node.child_value("name"), merge_node.child_value("dll"),
-                                 merge_node.child_value("classname"), parse_properties(merge_node)};
-        }
-
-        Config::Branch parse_branchnode(const pugi::xml_node &branch_node) {
-            return Config::Branch{branch_node.child_value("name"), branch_node.child_value("dll"),
-                                  branch_node.child_value("classname"), parse_properties(branch_node)};
-        }
 
         Config::Parallel parse_parallel(const pugi::xml_node &parallel_node) {
 
-            auto branch = parse_branchnode(parallel_node.child("branch"));
-            auto merge = parse_mergenode(parallel_node.child("merge"));
+            auto branch = parse_node<Config::Branch>(parallel_node.child("branch"));
+            auto merge = parse_node<Config::Merge>(parallel_node.child("merge"));
 
             std::vector<Config::Stream> streams{};
             for (const auto &stream_node : parallel_node.children("stream")) {
@@ -305,16 +299,12 @@ namespace {
             return Config::Parallel{branch, merge, streams};
         }
 
-        Config::Distributed parse_distributed(const pugi::xml_node& distributed_node){
-            auto branch = parse_branchnode(distributed_node.child("branch"));
-            auto merge = parse_mergenode(distributed_node.child("merge"));
-
-            std::vector<Config::Stream> streams{};
-            for (const auto &stream_node : distributed_node.children("stream")) {
-                streams.push_back(parse_stream(stream_node));
-            }
-
-            throw std::runtime_error("Not really implemented yet");
+        Config::Distributed parse_distributed(const pugi::xml_node &distributed_node) {
+            auto distributor = parse_node<Config::Distributor>(distributed_node.child("distributor"));
+            auto stream = parse_stream(distributed_node.child("stream"));
+            auto readers = parse_readers(distributed_node.child("readers"));
+            auto writers = parse_writers(distributed_node.child("writers"));
+            return {readers,writers,distributor,stream};
         }
 
         Config::Stream parse_stream(const pugi::xml_node &stream_node) {
@@ -346,15 +336,17 @@ namespace {
 
     template<>
     constexpr const char *xml_name<Config::Distributor>() { return "distributor"; }
-    struct XMLSerializer {
 
+    struct XMLSerializer {
 
 
         template<class ConfigNode>
         static pugi::xml_node add_basenode(const ConfigNode &configNode, pugi::xml_node &node) {
             auto child_node = node.append_child(xml_name<ConfigNode>());
-            child_node.append_child("dll").set_value(configNode.dll.c_str());
-            child_node.append_child("classname").set_value(configNode.classname.c_str());
+            auto dll = child_node.append_child("dll");
+            dll.append_child(pugi::node_pcdata).set_value(configNode.dll.c_str());
+            auto classname = child_node.append_child("classname");
+            classname.append_child(pugi::node_pcdata).set_value(configNode.classname.c_str());
             return child_node;
         }
 
@@ -373,7 +365,7 @@ namespace {
         template<class ConfigNode>
         static pugi::xml_node add_node(const ConfigNode &configNode, pugi::xml_node &node) {
             auto gadget_node = add_basenode(configNode, node);
-            gadget_node.append_child("name").set_value(configNode.name.c_str());
+            gadget_node.append_child("name").append_child(pugi::node_pcdata).set_value(configNode.name.c_str());
             for (auto property : configNode.properties) {
                 auto property_node = gadget_node.append_child("property");
                 property_node.append_attribute("name").set_value(property.first.c_str());
@@ -394,10 +386,10 @@ namespace {
 
         static pugi::xml_node add_node(const Config::Distributed &distributed, pugi::xml_node &node) {
             auto distributed_node = node.append_child("distributed");
-            add_readers(distributed.readers,distributed_node);
-            add_writers(distributed.writers,distributed_node);
-            add_node(distributed.distributor,distributed_node);
-            add_node(distributed.stream,distributed_node);
+            add_readers(distributed.readers, distributed_node);
+            add_writers(distributed.writers, distributed_node);
+            add_node(distributed.distributor, distributed_node);
+            add_node(distributed.stream, distributed_node);
 
             return distributed_node;
         }
@@ -411,9 +403,6 @@ namespace {
             return stream_node;
         }
     };
-
-
-
 
 
 }
@@ -437,12 +426,12 @@ namespace Gadgetron::Server::Connection {
     }
 
     std::string serialize_config(const Config &config) {
-        auto  doc = pugi::xml_document{};
+        auto doc = pugi::xml_document{};
         auto config_node = doc.append_child("configuration");
         config_node.append_child("version").set_value("2");
-        XMLSerializer::add_readers(config.readers,config_node);
-        XMLSerializer::add_writers(config.writers,config_node);
-        XMLSerializer::add_node(config.stream,config_node);
+        XMLSerializer::add_readers(config.readers, config_node);
+        XMLSerializer::add_writers(config.writers, config_node);
+        XMLSerializer::add_node(config.stream, config_node);
 
         std::stringstream stream;
         doc.save(stream);

@@ -21,7 +21,7 @@ namespace Gadgetron::Core::Distributed {
 
 
 
-        NODE_PROPERTY(parallel_dimensions,std::string, "slice", "Dimension that data will be parallelized over" );
+        NODE_PROPERTY(parallel_dimension,std::string, "Dimension that data will be parallelized over","slice" );
 
     private:
         const std::function<uint16_t(const ISMRMRD::AcquisitionHeader&)> selector;

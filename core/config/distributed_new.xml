@@ -52,15 +52,15 @@
                 </writer>
             </writers>
 
-            <branch>
+            <distributor>
                 <name>Distribute</name>
-                <dll>gadgetron_distributed</dll>
-                <classname>IsmrmrdAcquisitionDistributeGadget</classname>
+                <dll>gadgetron_core_distributed</dll>
+                <classname>AcquisitionDistributor</classname>
                 <property name="parallel_dimension" value="repetition"/>
-            </branch>
+            </distributor>
 
 
-            <repeatedstream>
+            <stream>
                 <gadget>
                     <name>RemoveROOversampling</name>
                     <dll>gadgetron_mricore</dll>
@@ -110,12 +110,8 @@
                     <dll>gadgetron_mricore</dll>
                     <classname>ImageArraySplitGadget</classname>
                 </gadget>
-            </repeatedstream>
-            <merge>
-                <name>Collect</name>
-                <dll>gadgetron_distributed</dll>
-                <classname>CollectGadget</classname>
-            </merge>
+            </stream>
+
 
         </distributed>
 

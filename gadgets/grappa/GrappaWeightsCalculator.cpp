@@ -98,8 +98,7 @@ namespace Gadgetron {
                     Gadgetron::conjugate(coil_map_, coil_map_);
                     Gadgetron::clear(unmixing_);
                     memcpy(unmixing_.begin(), coil_map_.begin(), coil_map_.get_number_of_bytes());
-                }
-                else {
+                } else {
                     size_t startRO = description->sampled_region[0].first;
                     size_t endRO = description->sampled_region[0].second;
 
@@ -118,8 +117,7 @@ namespace Gadgetron {
                                                        description->acceleration_factor,
                                                        unmixing_, gFactor_);
                 }
-            }
-            else {
+            } else {
                 hoNDArray<std::complex<float> > acs(RO, E1, CHA, host_data->begin());
 
                 // handle the case that all channels are reconed
@@ -153,8 +151,7 @@ namespace Gadgetron {
                             pUnmixing[p] = 1;
                         }
                     }
-                }
-                else {
+                } else {
                     // first, assemble the target_acs
                     // the combined channel comes first and then all uncombined channels
                     std::vector<size_t> dimTarget(3);
@@ -187,8 +184,7 @@ namespace Gadgetron {
                                 srcChaLoc[ind] = sCha;
                                 ind++;
                             }
-                        }
-                        else {
+                        } else {
                             memcpy(target_acs_.begin() +
                                    (target_coils_with_uncombined - numUnCombined + ind_uncombined) * RO * E1,
                                    acs.begin() + sCha * RO * E1, sizeof(std::complex<float>) * RO * E1);
@@ -244,7 +240,7 @@ namespace Gadgetron {
         boost::shared_ptr<std::vector<size_t> > tmp_dims = host_data->get_dimensions();
 
         if (uncombined_channels_.size()) {
-                tmp_dims->push_back((size_t) (uncombined_channels_.size() + 1));
+            tmp_dims->push_back((size_t) (uncombined_channels_.size() + 1));
         }
 
         auto unmixing_host = std::make_shared<hoNDArray<std::complex<float>>>(tmp_dims);
@@ -271,11 +267,11 @@ namespace Gadgetron {
 
 
     int GrappaWeightsCalculator::add_job(hoNDArray<std::complex<float>> *ref_data,
-            std::vector<std::pair<unsigned int, unsigned int>> sampled_region,
-            unsigned int acceleration_factor,
-            boost::shared_ptr<GrappaWeights<float>> destination,
-            std::vector<unsigned int> uncombined_channel_weights,
-            bool include_uncombined_channels_in_combined_weights) {
+                                         std::vector<std::pair<unsigned int, unsigned int>> sampled_region,
+                                         unsigned int acceleration_factor,
+                                         boost::shared_ptr<GrappaWeights<float>> destination,
+                                         std::vector<unsigned int> uncombined_channel_weights,
+                                         bool include_uncombined_channels_in_combined_weights) {
 
         auto *weights_description_message = new GadgetContainerMessage<WeightsDescription>();
 

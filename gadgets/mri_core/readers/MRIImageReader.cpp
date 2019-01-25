@@ -182,4 +182,5 @@ namespace Gadgetron {
     uint16_t MRIImageReader::slot() {
         return 1009;
     }
+  GADGETRON_READER_EXPORT(MRIImageReader)
 }

@@ -31,3 +31,8 @@ void Gadgetron::GadgetIsmrmrdAcquisitionMessageWriter::serialize(std::ostream &s
 
     IO::write(stream,data);
 }
+
+namespace Gadgetron {
+    GADGETRON_WRITER_EXPORT(GadgetIsmrmrdAcquisitionMessageWriter);
+    GADGETRON_WRITER_EXPORT(GadgetIsmrmrdWaveformMessageWriter);
+}

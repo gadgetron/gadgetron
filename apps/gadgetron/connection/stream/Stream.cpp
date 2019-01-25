@@ -41,8 +41,8 @@ namespace {
         return std::make_unique<Gadgetron::Server::Connection::Stream::Parallel>(conf, context, loader);
     }
 
-    std::unique_ptr<Processable> load_node(const Config::Distributed &, const Context &, Loader &) {
-        return std::unique_ptr<Processable>(nullptr);
+    std::unique_ptr<Processable> load_node(const Config::Distributed &conf, const Context &context, Loader &loader) {
+        return std::make_unique<Gadgetron::Server::Connection::Stream::Distributed>(conf,context,loader);
     }
 }
 

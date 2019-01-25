@@ -79,7 +79,7 @@ namespace Gadgetron {
     class EXPORTGADGETCORE ChannelAdaptor {
     public:
 
-        ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
+        explicit ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
 
         }
 
@@ -96,7 +96,7 @@ namespace Gadgetron {
         }
 
         int putq(GadgetContainerMessageBase *msg) {
-            if (msg->cont()) {
+            if (msg) {
                 channel.push_message(to_message(msg));
             }
             msg->release();

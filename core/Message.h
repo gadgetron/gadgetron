@@ -36,13 +36,14 @@ namespace Gadgetron {
 
             explicit Message(std::vector<std::unique_ptr<MessageChunk>> message_vector);
 
-            const std::vector<std::unique_ptr<MessageChunk>> &messages() const {
-                return messages_;
-            }
+            Message(const Message&) = delete;
+            Message(Message&&) = default;
 
-            std::vector<std::unique_ptr<MessageChunk>> &&take_messages() {
-                return std::move(messages_);
-            }
+            Message& operator=(Message&&) = default;
+
+            const std::vector<std::unique_ptr<MessageChunk>> &messages() const;
+
+            std::vector<std::unique_ptr<MessageChunk>> take_messages();
 
             GadgetContainerMessageBase *to_container_message();
 

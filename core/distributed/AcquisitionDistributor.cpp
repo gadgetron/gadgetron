@@ -38,11 +38,12 @@ void Gadgetron::Core::Distributed::AcquisitionDistributor::process(
         Gadgetron::Core::TypedInputChannel<Gadgetron::Core::Acquisition> &input,
         Gadgetron::Core::Distributed::ChannelCreator &creator) {
 
-    std::map<uint16_t, OutputChannel &> channels;
+    std::map<uint16_t, std::shared_ptr<OutputChannel>> channels;
     for (Acquisition acq : input) {
-        uint16_t channel_index = selector(std::get<0>(acq));
+//        uint16_t channel_index = selector(std::get<0>(acq));
+        uint16_t  channel_index = 0;
         if (!channels.count(channel_index)) channels.emplace(channel_index,creator.create());
-        channels.at(channel_index).push(std::move(acq));
+        channels.at(channel_index)->push(std::move(acq));
     }
 
 
@@ -51,6 +52,10 @@ void Gadgetron::Core::Distributed::AcquisitionDistributor::process(
 
 Gadgetron::Core::Distributed::AcquisitionDistributor::AcquisitionDistributor(const Gadgetron::Core::Context &context,
                                                                              const Gadgetron::Core::GadgetProperties &props)
-        : TypedDistributor(props), selector(selector_function(parallel_dimensions)) {
+        : TypedDistributor(props), selector(selector_function(parallel_dimension)) {
 
+}
+
+namespace Gadgetron::Core::Distributed {
+    GADGETRON_DISTRIBUTOR_EXPORT(AcquisitionDistributor);
 }

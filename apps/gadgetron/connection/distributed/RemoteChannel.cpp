@@ -13,13 +13,19 @@ using namespace Gadgetron::Core;
 
 namespace {
 
-    class MessageHandler {
-
-    };
 
     void send_config_file(std::ostream &stream, const std::string &xml_config) {
-        IO::write(stream, uint16_t(2));
+        IO::write(stream, CONFIG);
         IO::write_string_to_stream<uint32_t>(stream, xml_config);
+    }
+
+    void send_header(std::ostream& stream, const ISMRMRD::IsmrmrdHeader& header) {
+
+        std::stringstream sstream;
+        ISMRMRD::serialize(header,sstream);
+        IO::write(stream,HEADER);
+        IO::write_string_to_stream<uint32_t>(stream,sstream.str());
+
     }
 
     bool is_writable_message(uint16_t message_id) {
@@ -45,14 +51,14 @@ void Gadgetron::Server::Distributed::RemoteChannel::close() {
 
     std::lock_guard guard(closed_mutex);
 
-    if (!closed) IO::write(*stream, CLOSE);
-    closed = true;
+    if (!closed_input) IO::write(*stream, CLOSE);
+    closed_input = true;
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core::Message message) {
 
     std::lock_guard guard(closed_mutex);
-    if (closed) throw Core::ChannelClosed();
+    if (closed_input) throw Core::ChannelClosed();
 
     auto writer = std::find_if(writers.begin(), writers.end(),
                                [&](auto &writer) { return writer->accepts(message); }
@@ -65,9 +71,9 @@ void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core
 
 }
 
-Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &address, const std::string &xml_config,
-                                                             const std::map<uint16_t, std::shared_ptr<Gadgetron::Core::Reader>> &readers,
-                                                             const std::vector<std::shared_ptr<Gadgetron::Core::Writer>> &writers)
+Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &address, const std::string &xml_config, const ISMRMRD::IsmrmrdHeader& header,
+                                                             const std::map<uint16_t, std::unique_ptr<Gadgetron::Core::Reader>> &readers,
+                                                             const std::vector<std::unique_ptr<Gadgetron::Core::Writer>> &writers)
         : readers(readers), writers(writers), address(address) {
 
     info_handlers = {{CLOSE, [this](auto &connection_stream) { this->handle_close(); }},
@@ -76,24 +82,33 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
                      }}};
 
     stream = std::make_unique<tcp::iostream>(address.ip, address.port);
+
+    stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit );
     send_config_file(*stream, xml_config);
+    send_header(*stream, header);
 
 
 }
 
 Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
+//    std::this_thread::sleep_for(std::chrono::seconds(1));
+    {
+        std::lock_guard guard(closed_mutex);
+        if (closed_output) throw ChannelClosed();
+    }
     auto id = Core::IO::read<uint16_t>(*stream);
     while (!is_writable_message(id)) {
         info_handlers.at(id)(*stream);
         id = Core::IO::read<uint16_t>(*stream);
     }
+    GDEBUG_STREAM(stream->error().message());
     return readers.at(id)->read(*stream);
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {
     std::lock_guard guard(closed_mutex);
-    closed = true;
-
+    closed_input = true;
+    closed_output = true;
     if (error_messages.empty()) throw ChannelClosed();
     throw RemoteError(address,error_messages);
 
