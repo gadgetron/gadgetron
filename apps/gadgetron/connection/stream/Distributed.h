@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "connection/distributed/CyclicIterator.h"
 
 namespace Gadgetron::Server::Connection::Stream {
     class Distributed : public Processable {
@@ -38,6 +39,7 @@ namespace Gadgetron::Server::Connection::Stream {
         std::vector<std::unique_ptr<Core::Writer>> writers;
         Gadgetron::Server::Connection::Loader& loader;
         const std::vector<Gadgetron::Server::Distributed::Address> workers;
+        CyclicIterator<decltype(workers)::const_iterator> current_worker;
 
     };
 }

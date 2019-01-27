@@ -6,7 +6,8 @@
 
 namespace {
     std::vector<Gadgetron::Server::Distributed::Address> get_workers() {
-        return {{"localhost", "9003"}};
+        return {{"localhost", "9003"},
+                {"localhost", "9004"}};
     }
 
 
@@ -19,11 +20,9 @@ namespace {
             return func();
         }
 
-       std::function<std::shared_ptr<Gadgetron::Core::OutputChannel>(void)> func;
+        std::function<std::shared_ptr<Gadgetron::Core::OutputChannel>(void)> func;
 
     };
-
-
 
 
     void
@@ -35,7 +34,7 @@ namespace {
             output->push_message(std::move(message));
     }
 
-    }
+}
 
 void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr<Gadgetron::Core::Channel> input,
                                                                  std::shared_ptr<Gadgetron::Core::Channel> output,
@@ -51,13 +50,13 @@ void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr
         return channel;
     });
 
-    error_handler.handle("Distributor",[&](){distributor->process(*input,creator,*output);});
+    error_handler.handle("Distributor", [&]() { distributor->process(*input, creator, *output); });
 
     input->close();
     for (auto channel : channels)
         channel->close();
 
-    for (auto& t : threads)
+    for (auto &t : threads)
         t.join();
 
     output->close();
@@ -70,8 +69,7 @@ Gadgetron::Server::Connection::Stream::Distributed::Distributed(const Config::Di
         : loader(loader), context(context),
           xml_config{serialize_config(
                   Config{distributed_config.readers, distributed_config.writers, distributed_config.stream})},
-          workers{get_workers()} {
-
+          workers{get_workers()}, current_worker{make_cyclic(workers.begin(), workers.end())} {
     distributor = load_distributor(distributed_config.distributor);
 
     readers = loader.load_readers(distributed_config);
@@ -91,5 +89,16 @@ Gadgetron::Server::Connection::Stream::Distributed::load_distributor(
 std::shared_ptr<Gadgetron::Server::Distributed::RemoteChannel>
 Gadgetron::Server::Connection::Stream::Distributed::create_remote_channel() {
 
-    return std::make_shared<RemoteChannel>(workers.front(), xml_config,context.header, readers, writers);
+    auto previous_worker = current_worker;
+    ++current_worker;
+    while (true) {
+        try {
+            auto result = std::make_shared<RemoteChannel>(*current_worker, xml_config, context.header, readers,
+                                                          writers);
+            return result;
+        } catch (const std::runtime_error &) {
+            if (current_worker == previous_worker) throw;
+            ++current_worker;
+        }
+    }
 }
