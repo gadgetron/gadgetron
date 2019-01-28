@@ -62,10 +62,10 @@ namespace Gadgetron::Core::Writers {
         );
     }
 
-    void ImageWriter::write(std::ostream &stream, Message& message) {
+    void ImageWriter::write(std::ostream &stream, Message message) {
         for (auto &writer : writers){
             if (writer->accepts(message)) {
-                writer->write(stream, message);
+                writer->write(stream, std::move(message));
                 return;
             }
         }

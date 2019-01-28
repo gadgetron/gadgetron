@@ -59,7 +59,7 @@ namespace Gadgetron::Server::Connection {
             );
 
             if (writer != writers.end()) {
-                (*writer)->write(stream, message);
+                (*writer)->write(stream, std::move(message));
             }
         }
     }

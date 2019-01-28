@@ -18,11 +18,8 @@ namespace Gadgetron::Grappa {
             std::map<std::string, std::shared_ptr<Channel>> input,
             std::shared_ptr<Channel> output
     ) {
-        TypedInputChannel<hoNDArray<std::complex<float>>> images{*input.at("images"), *output};
-        TypedInputChannel<hoNDArray<float>> weights{*input.at("images"), *output};
+        TypedInputChannel<Image> images{*input.at("images"), *output};
+        TypedInputChannel<Weights> weights{*input.at("weights"), *output};
 
-        for (auto image : images) {
-            GINFO_STREAM("Reconstruction handling image.")
-        }
     }
 }

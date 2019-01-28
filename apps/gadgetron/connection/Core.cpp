@@ -52,7 +52,7 @@ namespace {
             InputChannel &errors(this->errors);
 
             for (auto error : errors) {
-                writer.write(stream, error);
+                writer.write(stream, std::move(error));
             }
         }
 

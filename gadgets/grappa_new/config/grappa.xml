@@ -50,6 +50,11 @@
             <classname>RemoveROOversamplingGadget</classname>
         </gadget>
 
+        <gadget>
+            <dll>gadgetron_grappa_new</dll>
+            <classname>SliceAccumulator</classname>
+        </gadget>
+
         <parallel>
             <branch>
                 <dll>gadgetron_grappa_new</dll>

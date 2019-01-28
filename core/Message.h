@@ -56,19 +56,19 @@ namespace Gadgetron {
 
         template<class ...ARGS>
         std::enable_if_t<(sizeof...(ARGS) > 1), std::tuple<ARGS...>>
-        force_unpack(Message &message);
+        force_unpack(Message message);
 
 
         template<class T>
-        T force_unpack(Message &message);
+        T force_unpack(Message message);
 
 
         template<class ...ARGS>
         std::enable_if_t<(sizeof...(ARGS) > 1), optional<std::tuple<ARGS...>>>
-        unpack(Message &message);
+        unpack(Message &&message);
 
         template<class T>
-        optional<T> unpack(Message &message);
+        optional<T> unpack(Message &&message);
 
 
         template<class T>

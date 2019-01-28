@@ -254,36 +254,31 @@ namespace Gadgetron::Core {
 
     template<class ...ARGS>
     std::enable_if_t<(sizeof...(ARGS) > 1), std::tuple<ARGS...>>
-    force_unpack(Message &message) {
+    force_unpack(Message message) {
         return gadgetron_detail::detail::message_to_tuple<ARGS...>(message);
     }
 
 
     template<class T>
-    T force_unpack(Message &message) {
+    T force_unpack(Message message) {
         return gadgetron_detail::detail::message_to_tuple<T>(message);
     }
 
     template<class ...ARGS>
     std::enable_if_t<(sizeof...(ARGS) > 1), optional < std::tuple<ARGS...>>>
-    unpack(Message
-    &message) {
-    if (
-    convertible_to<ARGS...>(message)
-) {
-    return
-    force_unpack<ARGS...>(message);
-}
-return
-boost::none;
+    unpack(Message &&message) {
+    if (convertible_to<ARGS...>(message)) {
+        return force_unpack<ARGS...>(message);
+    }
+    return none;
 }
 
 template<class T>
-optional <T> unpack(Message &message) {
+optional <T> unpack(Message &&message) {
     if (convertible_to<T>(message)) {
         return force_unpack<T>(message);
     }
-    return boost::none;
+    return none;
 
 }
 

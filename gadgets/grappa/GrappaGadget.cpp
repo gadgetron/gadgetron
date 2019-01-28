@@ -72,7 +72,7 @@ namespace Gadgetron {
         fov_.push_back(r_space.fieldOfView_mm.y);
         fov_.push_back(r_space.fieldOfView_mm.z);
 
-        line_offset_ = (dimensions_[1] >> 1) - e_limits.kspace_encoding_step_1->center;
+        line_offset_ = (dimensions_[1] / 2) - e_limits.kspace_encoding_step_1->center;
 
         if (h.userParameters) {
             for (size_t i = 0; i < h.userParameters->userParameterString.size(); i++) {
@@ -247,45 +247,45 @@ namespace Gadgetron {
 
         if (is_last_scan_in_slice) {
 
-            GadgetContainerMessage<GrappaUnmixingJob> *cm0 =
+            GadgetContainerMessage<GrappaUnmixingJob> *unmixing_job_container =
                     new GadgetContainerMessage<GrappaUnmixingJob>();
 
-            GadgetContainerMessage<ISMRMRD::ImageHeader> *cm1 =
+            GadgetContainerMessage<ISMRMRD::ImageHeader> *image_header_container =
                     new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-            cm1->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
-            cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
-            cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
+            image_header_container->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
+            image_header_container->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
+            image_header_container->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
 
-            cm1->getObjectPtr()->field_of_view[0] = fov_[0];
-            cm1->getObjectPtr()->field_of_view[1] = fov_[1];
-            cm1->getObjectPtr()->field_of_view[2] = fov_[2];
+            image_header_container->getObjectPtr()->field_of_view[0] = fov_[0];
+            image_header_container->getObjectPtr()->field_of_view[1] = fov_[1];
+            image_header_container->getObjectPtr()->field_of_view[2] = fov_[2];
 
-            cm1->getObjectPtr()->channels = 1 + weights_calculator_.get_number_of_uncombined_channels();
-            cm1->getObjectPtr()->slice = m1->getObjectPtr()->idx.slice;
-            cm1->getObjectPtr()->acquisition_time_stamp = time_stamps_[slice];
+            image_header_container->getObjectPtr()->channels = 1 + weights_calculator_.get_number_of_uncombined_channels();
+            image_header_container->getObjectPtr()->slice = m1->getObjectPtr()->idx.slice;
+            image_header_container->getObjectPtr()->acquisition_time_stamp = time_stamps_[slice];
 
-            memcpy(cm1->getObjectPtr()->position, m1->getObjectPtr()->position,
+            memcpy(image_header_container->getObjectPtr()->position, m1->getObjectPtr()->position,
                    sizeof(float) * 3);
 
-            memcpy(cm1->getObjectPtr()->read_dir, m1->getObjectPtr()->read_dir,
+            memcpy(image_header_container->getObjectPtr()->read_dir, m1->getObjectPtr()->read_dir,
                    sizeof(float) * 3);
 
-            memcpy(cm1->getObjectPtr()->phase_dir, m1->getObjectPtr()->phase_dir,
+            memcpy(image_header_container->getObjectPtr()->phase_dir, m1->getObjectPtr()->phase_dir,
                    sizeof(float) * 3);
 
-            memcpy(cm1->getObjectPtr()->slice_dir, m1->getObjectPtr()->slice_dir,
+            memcpy(image_header_container->getObjectPtr()->slice_dir, m1->getObjectPtr()->slice_dir,
                    sizeof(float) * 3);
 
-            memcpy(cm1->getObjectPtr()->patient_table_position, m1->getObjectPtr()->patient_table_position,
+            memcpy(image_header_container->getObjectPtr()->patient_table_position, m1->getObjectPtr()->patient_table_position,
                    sizeof(float) * 3);
 
-            cm1->getObjectPtr()->image_index = ++image_counter_;
-            cm1->getObjectPtr()->image_series_index = image_series_;
+            image_header_container->getObjectPtr()->image_index = ++image_counter_;
+            image_header_container->getObjectPtr()->image_series_index = image_series_;
 
-            cm0->getObjectPtr()->weights_ = weights_[slice];
-            cm0->cont(cm1);
-            cm1->cont(image_data_[slice]);
+            unmixing_job_container->getObjectPtr()->weights_ = weights_[slice];
+            unmixing_job_container->cont(image_header_container);
+            image_header_container->cont(image_data_[slice]);
 
             image_data_[slice] = 0;
             if (create_image_buffer(slice) != GADGET_OK) {
@@ -293,7 +293,7 @@ namespace Gadgetron {
                 return GADGET_FAIL;
             }
 
-            if (this->next()->putq(cm0) < 0) {
+            if (this->next()->putq(unmixing_job_container) < 0) {
                 GDEBUG("Failed to pass image on to next Gadget in chain\n");
                 return GADGET_FAIL;
             }
