@@ -33,7 +33,8 @@ namespace {
     };
 
     std::unique_ptr<Processable> load_node(const Config::Gadget &conf, const Context &context, Loader &loader) {
-        auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname, conf.dll);
+        auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname,
+                                                                          conf.dll);
         return std::make_unique<NodeProcessable>(factory(context, conf.properties), Config::name(conf));
     }
 
@@ -42,7 +43,7 @@ namespace {
     }
 
     std::unique_ptr<Processable> load_node(const Config::Distributed &conf, const Context &context, Loader &loader) {
-        return std::make_unique<Gadgetron::Server::Connection::Stream::Distributed>(conf,context,loader);
+        return std::make_unique<Gadgetron::Server::Connection::Stream::Distributed>(conf, context, loader);
     }
 }
 
@@ -61,10 +62,8 @@ namespace Gadgetron::Server::Connection::Stream {
             std::shared_ptr<Channel> output,
             ErrorHandler &error_handler
     ) {
-        std::vector<std::shared_ptr<Channel>> input_channels{};
+        std::vector<std::shared_ptr<Channel>> input_channels{input};
         std::vector<std::shared_ptr<Channel>> output_channels{};
-
-        input_channels.push_back(input);
 
         for (auto i = 0; i < (nodes.size() - 1); i++) {
 

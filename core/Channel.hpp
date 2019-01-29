@@ -57,13 +57,12 @@ namespace Gadgetron::Core {
         }
 
         template<class T>
-        void operator=(T &data) {
-            channel->push(std::make_unique<T>(data));
+        void operator=(T &&data) {
+            channel->push(std::move(data));
         }
 
-        template<class T>
-        void operator=(std::unique_ptr<T> &&ptr) {
-            channel->push(ptr);
+        void operator=(Message&& message) {
+            channel->push_message(std::move(message));
         }
 
 

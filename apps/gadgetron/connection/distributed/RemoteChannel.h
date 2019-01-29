@@ -15,6 +15,8 @@ struct Address {
     std::string port;
 };
 
+class Local{};
+
 class RemoteChannel : public Core::Channel {
     public:
 

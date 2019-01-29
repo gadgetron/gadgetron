@@ -20,6 +20,11 @@ namespace Gadgetron::Server::Connection::Stream {
 
     public:
         using RemoteChannel = Gadgetron::Server::Distributed::RemoteChannel;
+
+        using Worker = Core::variant<Server::Distributed::Address, Server::Distributed::Local>;
+        using Address = Gadgetron::Server::Distributed::Address;
+        using Local = Gadgetron::Server::Distributed::Local;
+
         Distributed(const Config::Distributed &, const Core::Context &, Loader &);
 
 
@@ -28,22 +33,13 @@ namespace Gadgetron::Server::Connection::Stream {
 
     private:
 
-        std::shared_ptr<Core::Channel> create_remote_channel();
+        std::unique_ptr<Core::Distributed::Distributor> load_distributor(const Config::Distributor &);
 
-        std::unique_ptr<Core::Distributed::Distributor> load_distributor(const Config::Distributor&);
 
         std::unique_ptr<Core::Distributed::Distributor> distributor;
-
-
-        const Config::Stream stream_config;
-        const std::string xml_config;
+        Gadgetron::Server::Connection::Loader &loader;
         const Core::Context context;
-        std::map<uint16_t,std::unique_ptr<Core::Reader>> readers;
-        std::vector<std::unique_ptr<Core::Writer>> writers;
-        Gadgetron::Server::Connection::Loader& loader;
-        const std::vector<Gadgetron::Server::Distributed::Address> workers;
-        CyclicIterator<decltype(workers)::const_iterator> current_worker;
-
+        const Config::Distributed config;
     };
 }
 
