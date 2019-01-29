@@ -128,9 +128,11 @@ namespace Gadgetron {
                          Core::optional<ISMRMRD::MetaContainer> meta) {
 
             using namespace Gadgetron::Core;
-            auto array = std::make_unique<hoNDArray<T>>(header.matrix_size[0], header.matrix_size[1],
+            auto array = hoNDArray<T>(header.matrix_size[0], header.matrix_size[1],
                                                         header.matrix_size[2], header.channels);
-            IO::read(stream, *array);
+
+
+            IO::read(stream, array);
 
             return Core::Message(std::move(header), std::move(array), std::move(meta));
 
@@ -166,7 +168,7 @@ namespace Gadgetron {
         if (meta_attrib_length > 0) {
             auto buffer = std::make_unique<char[]>(meta_attrib_length + 1);
 
-            stream.read(buffer.get(), meta_attrib_length + 1);
+            stream.read(buffer.get(), meta_attrib_length);
 
             meta = ISMRMRD::MetaContainer();
 
@@ -180,7 +182,7 @@ namespace Gadgetron {
 
 
     uint16_t MRIImageReader::slot() {
-        return 1009;
+        return 1022;
     }
   GADGETRON_READER_EXPORT(MRIImageReader)
 }

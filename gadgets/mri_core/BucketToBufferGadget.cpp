@@ -93,7 +93,6 @@ namespace Gadgetron {
     int BucketToBufferGadget
         ::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
     {
-        GDEBUG_STREAM("I god one!");
         size_t key;
         std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
 

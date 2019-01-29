@@ -33,4 +33,4 @@ install(FILES
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_distributed DESTINATION lib COMPONENT main)
-install(FILES config/distributed_default.xml config/distributed_image_default.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES config/distributed_default_old.xml config/distributed_image_default.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

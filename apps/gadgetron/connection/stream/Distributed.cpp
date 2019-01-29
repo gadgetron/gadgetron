@@ -29,7 +29,6 @@ namespace {
     process_channel(std::shared_ptr<Gadgetron::Core::Channel> input, std::shared_ptr<Gadgetron::Core::Channel> output) {
 
         Gadgetron::Core::InputChannel &in_view = *input;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
         for (auto &&message : in_view)
             output->push_message(std::move(message));
     }
@@ -40,8 +39,10 @@ void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr
                                                                  std::shared_ptr<Gadgetron::Core::Channel> output,
                                                                  Gadgetron::Server::Connection::ErrorHandler &error_handler) {
     std::vector<std::thread> threads;
-    std::vector<std::shared_ptr<RemoteChannel>> channels;
+    std::vector<std::shared_ptr<Core::Channel>> channels;
 
+    std::vector<std::shared_ptr<Stream>> streams;
+//
     auto creator = ChannelCreatorFunction([&]() {
         auto channel = this->create_remote_channel();
 
@@ -50,6 +51,19 @@ void Gadgetron::Server::Connection::Stream::Distributed::process(std::shared_ptr
         return channel;
     });
 
+//    auto creator = ChannelCreatorFunction([&]() {
+//
+//        auto stream = std::make_shared<Stream>(stream_config,context,loader);
+//        auto channel = std::make_shared<Core::MessageChannel>();
+//        auto out_channel = std::make_shared<Core::MessageChannel>();
+//
+//        threads.emplace_back(error_handler.run("Stream", [&,channel,stream](){
+//            stream->process(channel,output,error_handler);
+//            }));
+//
+//        channels.push_back(channel);
+//        return channel;
+//    });
     error_handler.handle("Distributor", [&]() { distributor->process(*input, creator, *output); });
 
     input->close();
