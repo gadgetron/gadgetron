@@ -6,8 +6,8 @@
 
 namespace {
     std::vector<Gadgetron::Server::Distributed::Address> get_workers() {
-        return {{"localhost", "9003"},
-                {"localhost", "9004"}};
+        return {{"localhost", "9002"},
+                {"localhost", "9002"}};
     }
 
 
@@ -90,11 +90,11 @@ std::shared_ptr<Gadgetron::Server::Distributed::RemoteChannel>
 Gadgetron::Server::Connection::Stream::Distributed::create_remote_channel() {
 
     auto previous_worker = current_worker;
-    ++current_worker;
     while (true) {
         try {
             auto result = std::make_shared<RemoteChannel>(*current_worker, xml_config, context.header, readers,
                                                           writers);
+            ++current_worker;
             return result;
         } catch (const std::runtime_error &) {
             if (current_worker == previous_worker) throw;

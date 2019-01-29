@@ -268,7 +268,7 @@ namespace Gadgetron::Core {
     std::enable_if_t<(sizeof...(ARGS) > 1), optional < std::tuple<ARGS...>>>
     unpack(Message &&message) {
     if (convertible_to<ARGS...>(message)) {
-        return force_unpack<ARGS...>(message);
+        return force_unpack<ARGS...>(std::move(message));
     }
     return none;
 }
@@ -276,7 +276,7 @@ namespace Gadgetron::Core {
 template<class T>
 optional <T> unpack(Message &&message) {
     if (convertible_to<T>(message)) {
-        return force_unpack<T>(message);
+        return force_unpack<T>(std::move(message));
     }
     return none;
 
