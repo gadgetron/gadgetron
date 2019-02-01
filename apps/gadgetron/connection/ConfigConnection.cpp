@@ -49,7 +49,7 @@ namespace {
                 const Context::Paths &paths
         ) : ConfigHandler(callback), paths(paths) {}
 
-        void handle(std::istream &stream) override {
+        void handle(std::istream &stream, Gadgetron::Core::OutputChannel&) override {
             boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
 
             GDEBUG_STREAM("Reading config file: " << filename);
@@ -67,7 +67,7 @@ namespace {
         explicit ConfigStringHandler(std::function<void(Config)> &&callback)
         : ConfigHandler(callback) {}
 
-        void handle(std::istream &stream) override {
+        void handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) override {
             std::stringstream config_stream(read_string_from_stream<uint32_t>(stream));
             handle_callback(config_stream);
         }
@@ -75,7 +75,6 @@ namespace {
 
     class ConfigContext {
     public:
-        std::shared_ptr<MessageChannel> channel;
         boost::optional<Config> config;
         const Context::Paths paths;
     };
@@ -94,7 +93,7 @@ namespace {
         handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, context.paths);
         handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
-        handlers[QUERY]    = std::make_unique<QueryHandler>(*context.channel);
+        handlers[QUERY]    = std::make_unique<QueryHandler>();
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
         return handlers;
@@ -109,21 +108,22 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         GINFO_STREAM("Connection state: [CONFIG]");
 
         ConfigContext context{
-            std::make_shared<MessageChannel>(),
             boost::none,
             paths
         };
 
+        auto channel = make_channel<MessageChannel>();
+
         std::thread input_thread = start_input_thread(
                 stream,
-                context.channel,
+                std::move(channel.output),
                 [&](auto close) { return prepare_handlers(close, context); },
                 error_handler
         );
 
         std::thread output_thread = start_output_thread(
                 stream,
-                context.channel,
+                std::move(channel.input),
                 default_writers,
                 error_handler
         );

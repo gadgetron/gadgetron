@@ -10,7 +10,7 @@
 namespace Gadgetron::Core::Distributed {
     class ChannelCreator {
     public:
-        virtual std::shared_ptr<OutputChannel> create() = 0;
+        virtual OutputChannel create() = 0;
         virtual ~ChannelCreator() = default;
     };
 }

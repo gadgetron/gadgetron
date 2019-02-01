@@ -14,9 +14,9 @@ namespace Gadgetron::Core::Parallel {
     public:
         virtual ~Branch() = default;
         virtual void process(
-                std::shared_ptr<Channel> input,
-                const std::map<std::string, std::shared_ptr<Channel>> &output,
-                std::shared_ptr<Channel> bypass
+                InputChannel input,
+                std::map<std::string, OutputChannel> output,
+                OutputChannel bypass
         ) = 0;
 
     private:
@@ -31,12 +31,12 @@ namespace Gadgetron::Core::Parallel {
         explicit TypedBranch(const GadgetProperties &props);
 
         void process(
-                std::shared_ptr<Channel> input,
-                const std::map<std::string, std::shared_ptr<Channel>> &output,
-                std::shared_ptr<Channel> bypass
+                InputChannel input,
+                std::map<std::string, OutputChannel> output,
+                OutputChannel bypass
         ) final;
 
-        virtual void process(TypedInputChannel<ARGS...> &, std::map<std::string, std::shared_ptr<OutputChannel>>) = 0;
+        virtual void process(TypedInputChannel<ARGS...> &, std::map<std::string,OutputChannel>) = 0;
     };
 
 }

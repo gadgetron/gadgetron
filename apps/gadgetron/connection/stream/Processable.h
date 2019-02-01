@@ -2,24 +2,11 @@
 
 #include "Channel.h"
 #include "Context.h"
-
+#include <memory>
+#include <thread>
 #include "connection/Core.h"
 
 namespace Gadgetron::Server::Connection::Stream {
-
-    class DecoratedErrorHandler : public ErrorHandler {
-    public:
-        ErrorHandler &handler;
-        std::string decorator;
-
-        DecoratedErrorHandler(ErrorHandler &handler, std::string decorator)
-                : handler(handler), decorator(std::move(decorator)) {}
-
-        void handle(const std::string &location, std::function<void()> function) override {
-            handler.handle(decorator + "/" + location, function);
-        }
-    };
-
 
 
     class Processable {
@@ -27,9 +14,20 @@ namespace Gadgetron::Server::Connection::Stream {
         virtual ~Processable() = default;
 
         virtual void process(
-                std::shared_ptr<Core::Channel> input,
-                std::shared_ptr<Core::Channel> output,
+                Core::InputChannel input,
+                Core::OutputChannel output,
                 ErrorHandler &error_handler
         ) = 0;
+
+        virtual const std::string& name() = 0;
+
+        static std::thread process_async(
+                std::shared_ptr<Processable> processable,
+                Core::InputChannel input,
+                Core::OutputChannel output,
+                const ErrorHandler &errorHandler
+        );
     };
+
+
 }

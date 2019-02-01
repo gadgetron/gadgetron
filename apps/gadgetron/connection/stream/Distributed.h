@@ -27,8 +27,10 @@ namespace Gadgetron::Server::Connection::Stream {
 
         Distributed(const Config::Distributed &, const Core::Context &, Loader &);
 
+        const std::string &name() override;
 
-        void process(std::shared_ptr<Core::Channel> input, std::shared_ptr<Core::Channel> output,
+
+        void process(Core::InputChannel input, Core::OutputChannel output,
                      ErrorHandler &error_handler) override;
 
     private:

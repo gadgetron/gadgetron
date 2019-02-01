@@ -2,12 +2,13 @@
 
 #include<typeinfo>
 
+
 namespace Gadgetron::Core {
 
     template<class INPUTCHANNEL>
     class ChannelIterator {
     public:
-        ChannelIterator(INPUTCHANNEL *c) : channel(c) {
+        explicit ChannelIterator(INPUTCHANNEL *c) : channel(c) {
             this->operator++();
         }
 
@@ -16,7 +17,7 @@ namespace Gadgetron::Core {
         ChannelIterator &operator++() {
             try {
                 element = channel->pop();
-            } catch (ChannelClosed err) {
+            } catch (const ChannelClosed& err) {
                 channel = nullptr;
             }
             return *this;
@@ -52,13 +53,13 @@ namespace Gadgetron::Core {
     template<>
     class ChannelIterator<OutputChannel> {
     public:
-        ChannelIterator(OutputChannel *c) : channel(c) {
+        explicit ChannelIterator(OutputChannel *c) : channel(c) {
 
         }
 
         template<class T>
         void operator=(T &&data) {
-            channel->push(std::move(data));
+            channel->push(std::forward<T>(data));
         }
 
         void operator=(Message&& message) {
@@ -83,8 +84,6 @@ namespace Gadgetron::Core {
         OutputChannel *channel;
 
 
-    private:
-        ChannelIterator *it;
 
     };
 
@@ -98,7 +97,9 @@ inline void OutputChannel::push(ARGS&& ... ptr) {
 }
 
 
-template<class... ARGS>
+
+
+    template<class... ARGS>
 ChannelIterator<TypedInputChannel<ARGS...>> begin(
         TypedInputChannel<ARGS...> &channel) {
     return ChannelIterator < TypedInputChannel < ARGS...>>(&channel);

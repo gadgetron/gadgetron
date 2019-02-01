@@ -44,7 +44,7 @@ add_executable(gadgetron
         connection/CloseGuard.h
         connection/distributed/RemoteChannel.cpp
         connection/distributed/RemoteChannel.h
-        )
+        connection/stream/Processable.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core

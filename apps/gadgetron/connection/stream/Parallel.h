@@ -13,6 +13,8 @@ namespace Gadgetron::Server::Connection::Stream {
 
     class Parallel : public Processable {
         using Channel = Core::Channel;
+        using InputChannel = Core::InputChannel;
+        using OutputChannel = Core::OutputChannel;
         using Branch = Core::Parallel::Branch;
         using Merge  = Core::Parallel::Merge;
 
@@ -20,24 +22,25 @@ namespace Gadgetron::Server::Connection::Stream {
         Parallel(const Config::Parallel &, const Core::Context &, Loader &);
 
         void process(
-                std::shared_ptr<Core::Channel> input,
-                std::shared_ptr<Core::Channel> output,
+                Core::InputChannel input,
+                Core::OutputChannel output,
                 ErrorHandler &error_handler
         ) override;
+
+        const std::string &name() override;
 
 
         class DecoratedBranch {
         public:
             DecoratedBranch(std::unique_ptr<Branch> branch, std::string key);
 
+            const std::string key;
             void process(
-                    std::shared_ptr<Channel> input,
-                    std::map<std::string, std::shared_ptr<Channel>> output,
-                    std::shared_ptr<Channel> bypass,
-                    ErrorHandler &error_handler
+                    InputChannel input,
+                    std::map<std::string, OutputChannel> output,
+                    OutputChannel bypass
             );
         private:
-            const std::string key;
             std::unique_ptr<Branch> branch;
         };
 
@@ -45,19 +48,19 @@ namespace Gadgetron::Server::Connection::Stream {
         public:
             DecoratedMerge(std::unique_ptr<Merge> merge, std::string key);
 
+            const std::string key;
             void process(
-                    std::map<std::string, std::shared_ptr<Channel>> input,
-                    std::shared_ptr<Channel> output,
-                    ErrorHandler &error_handler
+                    std::map<std::string, InputChannel> input,
+                    OutputChannel output
             );
         private:
-            const std::string key;
             std::unique_ptr<Merge> merge;
         };
 
     private:
         std::unique_ptr<DecoratedBranch> branch;
         std::unique_ptr<DecoratedMerge>  merge;
-        std::vector<std::unique_ptr<Stream>> streams;
+        std::vector<std::shared_ptr<Stream>> streams;
     };
+
 }

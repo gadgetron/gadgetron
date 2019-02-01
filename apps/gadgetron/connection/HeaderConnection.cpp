@@ -30,7 +30,7 @@ namespace {
                 std::function<void(Header)> header_callback
         ) : header_callback(std::move(header_callback)) {}
 
-        void handle(std::istream &stream) override {
+        void handle(std::istream &stream, OutputChannel&) override {
             std::string raw_header(read_string_from_stream<uint32_t>(stream));
 
             ISMRMRD::IsmrmrdHeader header{};
@@ -45,7 +45,6 @@ namespace {
 
     class HeaderContext {
     public:
-        std::shared_ptr<MessageChannel> channel;
         boost::optional<Header> header;
         const Context::Paths paths;
     };
@@ -64,7 +63,7 @@ namespace {
         handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[HEADER]   = std::make_unique<HeaderHandler>(header_callback);
-        handlers[QUERY]    = std::make_unique<QueryHandler>(*context.channel);
+        handlers[QUERY]    = std::make_unique<QueryHandler>();
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
         return handlers;
@@ -82,21 +81,22 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
         GINFO_STREAM("Connection state: [HEADER]");
 
         HeaderContext context{
-                std::make_shared<MessageChannel>(),
                 boost::none,
                 paths
         };
 
+        auto channel = make_channel<MessageChannel>();
+
         std::thread input_thread = start_input_thread(
                 stream,
-                context.channel,
+                std::move(channel.output),
                 [&](auto close) { return prepare_handlers(close, context); },
                 error_handler
         );
 
         std::thread output_thread = start_output_thread(
                 stream,
-                context.channel,
+                std::move(channel.input),
                 default_writers,
                 error_handler
         );

@@ -1,120 +1,178 @@
 #pragma once
 
+#include <condition_variable>
 #include <list>
 #include <memory>
 #include <mutex>
-#include <condition_variable>
 
 #include "Message.h"
 #include "Types.h"
 
-
 namespace Gadgetron::Core {
+class InputChannel;
 
-    class InputChannel {
-    public:
-        virtual Message pop() = 0;
-        virtual optional<Message> try_pop() = 0;
+class OutputChannel;
+struct ChannelPair;
 
-        virtual ~InputChannel() = default;
-    };
+class Channel {
+public:
+    virtual ~Channel() = default;
 
+    friend InputChannel;
+    friend OutputChannel;
 
-    template<class CHANNEL>
-    class ChannelIterator;
+protected:
+    virtual Message pop() = 0;
 
-    ChannelIterator<InputChannel> begin(InputChannel &);
-    ChannelIterator<InputChannel> end(InputChannel &);
+    virtual optional<Message> try_pop() = 0;
 
+    virtual void push_message(Message) = 0;
 
-    class OutputChannel {
-    public:
+    virtual void close() = 0;
 
-        template<class ...ARGS>
-        void push(ARGS&&... ptrs);
-        virtual void push_message(Message) = 0;
+    class Closer;
+};
 
-        virtual ~OutputChannel() = default;
+InputChannel split(const InputChannel& channel);
 
-    };
+OutputChannel split(const OutputChannel& channel);
 
-    ChannelIterator<OutputChannel> begin(OutputChannel &);
+class InputChannel {
+public:
+    InputChannel(InputChannel&& other) noexcept = default;
 
+    Message pop();
 
-    class Channel : public OutputChannel, public InputChannel {
-    public:
-        virtual void close() = 0;
+    optional<Message> try_pop();
 
-        ~Channel() override  = default;
-    };
+private:
+    InputChannel(const InputChannel&) = default;
 
+    template <class ChannelType, class... ARGS>
+    friend ChannelPair make_channel(ARGS&&... args);
 
-    class MessageChannel : public Channel {
-    public:
-        Message pop() override;
-        optional<Message> try_pop() override;
+    friend InputChannel split(const InputChannel& channel);
 
-        void close() override;
+    explicit InputChannel(std::shared_ptr<Channel>);
 
-        void push_message(Message) override;
+    std::shared_ptr<Channel::Closer> closer;
+    std::shared_ptr<Channel> channel;
+};
 
-    protected:
-        Message pop_impl(std::unique_lock<std::mutex> lock);
+template <class CHANNEL>
+class ChannelIterator;
 
-        std::list<Message> queue;
-        std::mutex m;
-        std::condition_variable cv;
-        bool closed = false;
+ChannelIterator<InputChannel> begin(InputChannel&);
 
+ChannelIterator<InputChannel> end(InputChannel&);
 
-    };
+class OutputChannel {
+public:
+    OutputChannel(OutputChannel&& other) noexcept = default;
 
+    template <class... ARGS>
+    void push(ARGS&&... ptrs);
 
-    template<class ...ARGS>
-    class TypedInputChannel {
-    public:
-        TypedInputChannel(InputChannel &input, OutputChannel &bypass) : in(input), bypass(bypass) {};
+    void push_message(Message);
 
-        decltype(auto) pop() {
-            Message message = in.pop();
-            while (!convertible_to<ARGS...>(message)) {
-                bypass.push_message(std::move(message));
-                message = in.pop();
-            }
-            return force_unpack<ARGS...>(std::move(message));
-        }
+private:
+    OutputChannel(const OutputChannel&) = default;
 
-        optional<decltype(force_unpack<ARGS...>(Message{}))> try_pop() {
+    template <class ChannelType, class... ARGS>
+    friend ChannelPair make_channel(ARGS&&... args);
 
-            optional<Message> message = in.try_pop();
+    friend OutputChannel split(const OutputChannel& channel);
 
-            while(message && !convertible_to<ARGS...>(*message)) {
-                bypass.push_message(std::move(*message));
-                message = in.try_pop();
-            }
+    explicit OutputChannel(std::shared_ptr<Channel>);
 
-            if (!message) return none;
+    std::shared_ptr<Channel> channel;
+    std::shared_ptr<Channel::Closer> closer;
+};
 
-            return force_unpack<ARGS...>(std::move(*message));
-        }
+struct ChannelPair {
+    InputChannel input;
+    OutputChannel output;
+};
 
-    private:
-        InputChannel &in;
-        OutputChannel &bypass;
-    };
+template <class ChannelType, class... ARGS>
+ChannelPair make_channel(ARGS&&... args)
+{
 
-    template<class ...ARGS>
-    ChannelIterator<TypedInputChannel<ARGS...>> begin(TypedInputChannel<ARGS...> &);
-
-    template<class ...ARGS>
-    ChannelIterator<TypedInputChannel<ARGS...>> end(TypedInputChannel<ARGS...> &);
-
-    class ChannelClosed : public std::runtime_error {
-    public:
-        ChannelClosed() : std::runtime_error("Channel was closed") {};
-    };
-
+    auto channel = std::make_shared<ChannelType>(std::forward<ARGS>(args)...);
+    return { InputChannel(channel), OutputChannel(channel) };
 }
 
+ChannelIterator<OutputChannel> begin(OutputChannel&);
+
+class MessageChannel : public Channel {
+
+protected:
+    Message pop() override;
+
+    optional<Message> try_pop() override;
+
+    void close() override;
+
+    void push_message(Message) override;
+
+    Message pop_impl(std::unique_lock<std::mutex> lock);
+
+    std::list<Message> queue;
+    std::mutex m;
+    std::condition_variable cv;
+    bool closed = false;
+};
+
+template <class... ARGS>
+class TypedInputChannel {
+public:
+    TypedInputChannel(InputChannel& input, OutputChannel& bypass)
+        : in(input)
+        , bypass(bypass) {};
+
+    decltype(auto) pop()
+    {
+        Message message = in.pop();
+        while (!convertible_to<ARGS...>(message)) {
+            bypass.push_message(std::move(message));
+            message = in.pop();
+        }
+        return force_unpack<ARGS...>(std::move(message));
+    }
+
+    optional<decltype(force_unpack<ARGS...>(Message {}))> try_pop()
+    {
+
+        optional<Message> message = in.try_pop();
+
+        while (message && !convertible_to<ARGS...>(*message)) {
+            bypass.push_message(std::move(*message));
+            message = in.try_pop();
+        }
+
+        if (!message)
+            return none;
+
+        return force_unpack<ARGS...>(std::move(*message));
+    }
+
+private:
+    InputChannel& in;
+    OutputChannel& bypass;
+};
+
+template <class... ARGS>
+ChannelIterator<TypedInputChannel<ARGS...>> begin(TypedInputChannel<ARGS...>&);
+
+template <class... ARGS>
+ChannelIterator<TypedInputChannel<ARGS...>> end(TypedInputChannel<ARGS...>&);
+
+class ChannelClosed : public std::runtime_error {
+public:
+    ChannelClosed()
+        : std::runtime_error("Channel was closed") {};
+};
+
+}
 
 #include "Channel.hpp"

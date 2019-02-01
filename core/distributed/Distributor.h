@@ -9,7 +9,7 @@ namespace Gadgetron::Core::Distributed {
     class Distributor : public PropertyMixin {
 
     public:
-        virtual void process(InputChannel &input, ChannelCreator &creator, OutputChannel &bypass) = 0;
+        virtual void process(InputChannel input, ChannelCreator &creator, OutputChannel bypass) = 0;
 
         virtual ~Distributor() = default;
 
@@ -28,7 +28,7 @@ namespace Gadgetron::Core::Distributed {
 
         TypedDistributor(const GadgetProperties &properties);
 
-        void process(InputChannel &input, ChannelCreator &creator, OutputChannel &bypass) final;
+    void process(InputChannel input, ChannelCreator &creator, OutputChannel bypass) final;
 
         virtual void process(TypedInputChannel<ARGS...> &input, ChannelCreator &creator) = 0;
 
@@ -38,8 +38,8 @@ namespace Gadgetron::Core::Distributed {
 
 
     template<class... ARGS>
-    void TypedDistributor<ARGS...>::process(InputChannel &input, ChannelCreator &creator,
-                                            OutputChannel &bypass) {
+    void TypedDistributor<ARGS...>::process(InputChannel input, ChannelCreator &creator,
+                                            OutputChannel bypass) {
         TypedInputChannel < ARGS...> typed_input(input, bypass);
         process(typed_input, creator);
     }

@@ -41,23 +41,25 @@ namespace Gadgetron::Server::Connection::VoidConnection {
         Context context{Context::Header{}, paths};
         Loader loader{context};
 
-        struct {
-            std::shared_ptr<MessageChannel> input = std::make_shared<MessageChannel>();
-            std::shared_ptr<MessageChannel> output = std::make_shared<MessageChannel>();
-        } channels;
+
+        auto ochannel = make_channel<MessageChannel>();
+        auto ichannel = make_channel<MessageChannel>();
 
         auto node = loader.load(config.stream);
         auto writers = loader.load_writers(config);
 
         std::thread output_thread = start_output_thread(
                 stream,
-                channels.output,
-                [&]() { return prepare_writers(writers); },
+                std::move(ochannel.input),
+                [&writers]() { return prepare_writers(writers); },
                 error_handler
         );
 
-        channels.input->close();
-        node->process(channels.input, channels.output, error_handler);
+        { // This.... this is not nice.
+            OutputChannel removed = std::move(ichannel.output);
+        }
+
+        node->process(std::move(ichannel.input) , std::move(ochannel.output) ,error_handler);
         output_thread.join();
     }
 }

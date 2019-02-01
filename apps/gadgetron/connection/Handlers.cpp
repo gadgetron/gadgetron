@@ -63,19 +63,18 @@ namespace Gadgetron::Server::Connection::Handlers {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::IO;
 
-    QueryHandler::QueryHandler(OutputChannel &channel)
-    : channel(channel) {
+    QueryHandler::QueryHandler()
+    {
         initialize_with_default_queries(answers);
     }
 
     QueryHandler::QueryHandler(
-            OutputChannel &channel,
             std::map<std::string, std::string> additional_answers
-    ) : QueryHandler(channel) {
+    ) {
         answers.merge(additional_answers);
     }
 
-    void QueryHandler::handle(std::istream &stream) {
+    void QueryHandler::handle(std::istream &stream, Gadgetron::Core::OutputChannel& channel) {
 
         auto reserved = read<uint64_t>(stream);
         auto corr_id  = read<uint64_t>(stream);
@@ -93,12 +92,12 @@ namespace Gadgetron::Server::Connection::Handlers {
     : message(std::move(message)) {}
 
 
-    void ErrorProducingHandler::handle(std::istream &) {
+    void ErrorProducingHandler::handle(std::istream &, Gadgetron::Core::OutputChannel&) {
         throw std::runtime_error(message);
     }
 
     CloseHandler::CloseHandler(std::function<void()> callback) : callback(std::move(callback)) {}
 
-    void CloseHandler::handle(std::istream &stream) { callback(); }
+    void CloseHandler::handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) { callback(); }
 }
 
