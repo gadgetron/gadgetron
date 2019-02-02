@@ -2,24 +2,31 @@
 #include "Node.h"
 
 namespace Gadgetron::Core {
-    class PureGadget : public GadgetNode {
-    public:
-       PureGadget(const GadgetProperties& props) : GadgetNode(props) {}
+class PureGadget : public GadgetNode {
+public:
+    explicit PureGadget(const GadgetProperties& props)
+        : GadgetNode(props)
+    {
+    }
 
-    };
+    void process(InputChannel& in, OutputChannel& out) final
+    {
+        for (auto message : in )
+            out.push(this->process_function(std::move(message)));
+    }
 
-   template<class Base,class... ARGS>
+    virtual Message process_function(Message) const = 0;
+};
+
+template <class RETURN, class... ARGS>
 class TypedPureGadget : public PureGadget {
 public:
-    void process(InputChannel &in, OutputChannel &out) override {
-        auto self = (const Base*) this;
 
-        auto tin = TypedInputChannel<ARGS...>(in,out);
-
-        for (auto message : tin){
-            out.push(self->process_function(message));
-        }
-
+    Message process_function(Message message) const override{
+        if (!convertible_to<ARGS...>(message)) return message;
+        return  process_function(force_unpack<ARGS...>(message));
     }
+    virtual RETURN process_function(ARGS&&... args) const = 0;
+
 };
 }

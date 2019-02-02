@@ -41,7 +41,6 @@ add_executable(gadgetron
         connection/stream/External.cpp
         connection/stream/External.h
         connection/stream/Processable.h
-        connection/CloseGuard.h
         connection/distributed/RemoteChannel.cpp
         connection/distributed/RemoteChannel.h
         connection/stream/Processable.cpp)
