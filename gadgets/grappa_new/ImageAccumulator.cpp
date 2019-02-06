@@ -4,7 +4,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <boost/range/algorithm/copy.hpp>
 
-#include "Reconstruction.h"
+#include "Unmixing.h"
 #include "common/AcquisitionBuffer.h"
 
 #include "Node.h"

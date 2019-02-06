@@ -58,6 +58,8 @@ namespace Gadgetron::Grappa {
 
     void AcquisitionBuffer::add(const Acquisition &acquisition) {
 
+        for (auto &fn : pre_update_callbacks) fn(acquisition);
+
         auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
         const auto &data = std::get<hoNDArray<std::complex<float>>>(acquisition);
 
@@ -77,7 +79,7 @@ namespace Gadgetron::Grappa {
             std::copy_n(source, samples, destination);
         }
 
-        for (const auto &hook : acquisition_hooks) hook(acquisition);
+        for (auto &fn : post_update_callbacks) fn(acquisition);
     }
 
     hoNDArray<std::complex<float>> AcquisitionBuffer::take(size_t index) {
@@ -94,7 +96,11 @@ namespace Gadgetron::Grappa {
         buffers[index] = create_buffer(internals.buffer_dimensions);
     }
 
-    void AcquisitionBuffer::add_acquisition_hook(std::function<void(const Core::Acquisition &)> fn) {
-        acquisition_hooks.emplace_back(std::move(fn));
+    void AcquisitionBuffer::add_pre_update_callback(std::function<void(const Core::Acquisition &)> fn) {
+        pre_update_callbacks.emplace_back(std::move(fn));
+    }
+
+    void AcquisitionBuffer::add_post_update_callback(std::function<void(const Core::Acquisition &)> fn) {
+        post_update_callbacks.emplace_back(std::move(fn));
     }
 }

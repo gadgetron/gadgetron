@@ -1,5 +1,7 @@
 #include "SliceAccumulator.h"
 
+#include "common/slice.h"
+
 #include "Context.h"
 #include "Channel.h"
 #include "Types.h"
@@ -10,11 +12,6 @@ namespace {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Grappa;
-
-    bool is_last_in_slice(const Acquisition &acquisition) {
-        auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
-        return header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
-    }
 }
 
 namespace Gadgetron::Grappa {
@@ -26,15 +23,17 @@ namespace Gadgetron::Grappa {
 
     void SliceAccumulator::process(TypedInputChannel<Acquisition> &in, OutputChannel &out) {
 
-        std::vector<Acquisition> acquisitions;
+        std::vector<Acquisition> acquisitions{};
 
         for (auto acquisition : in) {
-            auto last_in_slice = is_last_in_slice(acquisition);
             acquisitions.emplace_back(std::move(acquisition));
 
-            if (last_in_slice) {
+            if (is_last_in_slice(acquisitions.back())) {
+                GINFO_STREAM("Finished accumulating slice: " << slice_of(acquisitions.back()));
+
                 out.push(std::move(acquisitions));
                 acquisitions = std::vector<Acquisition>{};
+
             }
         }
     }

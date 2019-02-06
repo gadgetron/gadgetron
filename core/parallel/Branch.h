@@ -36,7 +36,7 @@ namespace Gadgetron::Core::Parallel {
                 OutputChannel bypass
         ) final;
 
-        virtual void process(TypedInputChannel<ARGS...> &, std::map<std::string,OutputChannel>) = 0;
+        virtual void process(TypedInputChannel<ARGS...> &, std::map<std::string, OutputChannel>) = 0;
     };
 
 }

@@ -73,7 +73,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         threads.emplace_back(error_handler.run(
                 [this](auto input, auto input_channels, auto output, auto &nested_handler) {
-                    ErrorHandler handler{nested_handler,branch->key};
+                    ErrorHandler handler{nested_handler, branch->key};
                     handler.handle([&](){branch->process(std::move(input), std::move(input_channels), std::move(output));});
                 },
                 std::move(input),
@@ -84,7 +84,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         threads.emplace_back(error_handler.run(
                 [this](auto output_channels, auto output, auto &nested_handler) {
-                    ErrorHandler handler{nested_handler,branch->key};
+                    ErrorHandler handler{nested_handler, branch->key};
                     handler.handle([&](){merge->process(std::move(output_channels), std::move(output));});
                 },
                 transform_map(output_channels, [](auto &val) { return std::move(val.input); }),
@@ -92,8 +92,10 @@ namespace Gadgetron::Server::Connection::Stream {
         ));
 
         for (auto &stream : streams) {
-            threads.emplace_back( Processable::process_async(stream, std::move(input_channels.at(stream->key).input),
-                    std::move(input_channels.at(stream->key).output),error_handler));
+            threads.emplace_back(
+                    Processable::process_async(stream, std::move(input_channels.at(stream->key).input),
+                    std::move(output_channels.at(stream->key).output), error_handler)
+            );
         }
 
         for (auto &thread : threads) { thread.join(); }

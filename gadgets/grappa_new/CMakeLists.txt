@@ -3,10 +3,10 @@
 add_library(gadgetron_grappa_new SHARED
         ImageAccumulator.cpp
         WeightsCalculator.cpp
-        Reconstruction.cpp
+        Unmixing.cpp
         AcquisitionFanout.cpp
         SliceAccumulator.cpp
-        common/AcquisitionBuffer.cpp)
+        common/AcquisitionBuffer.cpp common/slice.cpp common/slice.h)
 
 set_target_properties(gadgetron_grappa_new PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
