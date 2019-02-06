@@ -2,6 +2,7 @@
 
 # Mute the h5py import warning. TODO: Remove these lines when possible.
 import warnings
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
@@ -20,7 +21,6 @@ import json
 import h5py
 import numpy
 
-
 default_config_values = {
     "DEFAULT": {
         'parameter_xml': 'IsmrmrdParameterMap_Siemens.xml',
@@ -31,10 +31,7 @@ default_config_values = {
         'output': 'out.h5',
         'value_comparison_threshold': '0.01',
         'scale_comparison_threshold': '0.01',
-        'relay_port': '8002',
-        'relay_rest_port': '18004',
         'node_port_base': '9050',
-        'node_rest_port_base': '10050'
     }
 }
 
@@ -81,17 +78,16 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
                    check=True)
 
 
-def start_gadgetron_instance(*, log, port):
+def start_gadgetron_instance(*, log, port, env=None):
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
-                            stderr=log)
+                            stderr=log, env=env)
     time.sleep(2)
     return proc
 
 
 def build_rules(requirements):
-
     class Rule:
         def __init__(self, pattern, reason, validate, default_value=0):
             self.reason = reason
@@ -131,7 +127,6 @@ def build_rules(requirements):
 
 def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
                     value_threshold, scale_threshold):
-
     try:
         output = numpy.squeeze(h5py.File(output_file)[output_dataset])
     except KeyError:
@@ -155,13 +150,14 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
         return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
 
     if value_threshold < abs(1 - scale):
-        return Failure, "Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale), scale_threshold)
+        return Failure, "Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale),
+                                                                                        scale_threshold)
 
-    return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale), scale_threshold)
+    return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
+                                                               scale_threshold)
 
 
 def error_handlers(args, config):
-
     def handle_subprocess_errors(cont, **state):
         try:
             return cont(**state)
@@ -174,7 +170,6 @@ def error_handlers(args, config):
 
 
 def clear_test_folder(args, config):
-
     def clear_test_folder_action(cont, **state):
         if os.path.exists(args.test_folder):
             shutil.rmtree(args.test_folder)
@@ -186,16 +181,15 @@ def clear_test_folder(args, config):
 
 
 def ensure_gadgetron_instance(args, config):
-
     class Gadgetron:
         def __init__(self, **kwargs):
             self.__dict__.update(**kwargs)
 
     gadgetron = Gadgetron(host=str(args.host), port=str(args.port))
 
-    def start_gadgetron_action(cont, **state):
+    def start_gadgetron_action(cont, *, env=None, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=gadgetron.port) as instance:
+            with start_gadgetron_instance(log=log, port=gadgetron.port,env=env) as instance:
                 try:
                     return cont(gadgetron=gadgetron, **state)
                 finally:
@@ -211,7 +205,6 @@ def ensure_gadgetron_instance(args, config):
 
 
 def ensure_instance_satisfies_requirements(args, config):
-
     if args.force:
         return
 
@@ -236,14 +229,12 @@ def ensure_instance_satisfies_requirements(args, config):
 
 
 def prepare_copy_input_data(args, config):
-
     if not config.has_section('COPY'):
         return
 
     destination_file = os.path.join(args.test_folder, config['CLIENT']['input'])
 
     def copy_prepared_data_action(cont, **state):
-
         source_file = os.path.join(args.data_folder, config['COPY']['source'])
 
         print("Copying prepared ismrmrd data: {} -> {}".format(source_file, destination_file))
@@ -255,14 +246,12 @@ def prepare_copy_input_data(args, config):
 
 
 def prepare_siemens_input_data(args, config):
-
     if not config.has_section('SIEMENS'):
         return
 
     destination_file = os.path.join(args.test_folder, config['CLIENT']['input'])
 
     def convert_siemens_data_action(cont, **state):
-
         source_file = os.path.join(args.data_folder, config['SIEMENS']['data_file'])
 
         print("Converting Siemens data: {} -> {}".format(source_file, destination_file))
@@ -277,9 +266,9 @@ def prepare_siemens_input_data(args, config):
         return cont(client_input=destination_file, siemens_source=source_file, **state)
 
     def convert_siemens_dependency_action(dependency, measurement, cont, *, siemens_source, dependencies=[], **state):
-
         destination_file = os.path.join(args.test_folder, "{}.h5".format(dependency))
-        print("Converting Siemens dependency measurement: {} {} -> {}".format(dependency, measurement, destination_file))
+        print(
+            "Converting Siemens dependency measurement: {} {} -> {}".format(dependency, measurement, destination_file))
 
         siemens_to_ismrmrd(input=siemens_source,
                            output=destination_file,
@@ -299,30 +288,44 @@ def prepare_siemens_input_data(args, config):
 
 
 def start_additional_nodes(args, config):
-
     if args.external:
         return
 
     if not config.has_section('DISTRIBUTED'):
         return
 
-    # Distributed chains not currently supported.
-    yield from []
+    base_port = int(config['DISTRIBUTED']['node_port_base'])
+
+    nodes = int(config['DISTRIBUTED']['nodes'])
+
+    def start_additional_nodes_action(port, cont, *, worker_list=[], **state):
+        with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
+            with start_gadgetron_instance(log=log, port=port) as instance:
+                worker = 'localhost' + ':' + port
+                try:
+                    return cont(worker_list=worker_list + [worker], **state)
+                finally:
+                    instance.kill()
+
+    def set_distributed_environment(cont, *, worker_list=[], env=dict(os.environ), **state):
+        env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+        return cont(env=env, **state)
+
+    yield from (functools.partial(start_additional_nodes_action,str(base_port + id))
+                                  for id in range(nodes))
+    yield set_distributed_environment
 
 
 def run_gadgetron_client(args, config):
-
     output_file = os.path.join(args.test_folder, config['CLIENT']['output'])
 
     def send_dependencies_action(cont, *, gadgetron, dependencies=[], **state):
-
         for dependency in dependencies:
             send_dependency_to_gadgetron(gadgetron, dependency)
 
         return cont(gadgetron=gadgetron, dependencies=dependencies, **state)
 
     def send_data_action(cont, *, gadgetron, client_input, **state):
-
         start_time = time.time()
         send_data_to_gadgetron(gadgetron,
                                input=client_input,
@@ -345,7 +348,6 @@ def run_gadgetron_client(args, config):
 
 
 def validate_client_output(args, config):
-
     pattern = re.compile(r"TEST(.*)")
 
     def validate_output_action(section, cont, *, client_output, **state):
@@ -370,9 +372,7 @@ def validate_client_output(args, config):
 
 
 def output_stats(args, config):
-
     def output_stats_action(cont, **state):
-
         stats = {
             'test': state.get('test'),
             'processing_time': state.get('processing_time')
@@ -389,11 +389,11 @@ def output_stats(args, config):
 def build_actions(args, config):
     yield from error_handlers(args, config)
     yield from clear_test_folder(args, config)
+    yield from start_additional_nodes(args, config)
     yield from ensure_gadgetron_instance(args, config)
     yield from ensure_instance_satisfies_requirements(args, config)
     yield from prepare_copy_input_data(args, config)
     yield from prepare_siemens_input_data(args, config)
-    yield from start_additional_nodes(args, config)
     yield from run_gadgetron_client(args, config)
     yield from validate_client_output(args, config)
     yield from output_stats(args, config)
@@ -408,7 +408,6 @@ def chain_actions(actions):
 
 
 def main():
-
     parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 

@@ -13,7 +13,7 @@
 TEST(distributed,get_remote_workers){
 
 
-    std::string test_string = "GADGETRON_REMOTE_WORKER_COMMAND= echo [\"localhost:9002\", \"localhost:9003\"]";
+    std::string test_string = R"(GADGETRON_REMOTE_WORKER_COMMAND= echo ["localhost:9002", "[::1]:9003"])";
 
     putenv(test_string.data());
 
@@ -22,7 +22,7 @@ TEST(distributed,get_remote_workers){
     EXPECT_EQ(workers.size(),2);
     EXPECT_EQ(workers[0].ip,"localhost");
     EXPECT_EQ(workers[0].port,"9002");
-    EXPECT_EQ(workers[1].ip,"localhost");
+    EXPECT_EQ(workers[1].ip,"::1");
     EXPECT_EQ(workers[1].port,"9003");
 }
 

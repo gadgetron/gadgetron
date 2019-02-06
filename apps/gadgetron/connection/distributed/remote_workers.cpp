@@ -38,7 +38,7 @@ optional<std::vector<Address>> parse_remote_workers(Iterator first, Iterator las
     using qi::phrase_parse;
 
     qi::rule<Iterator, std::string(), ascii::space_type> ipv6 = '[' >> lexeme[+(char_ - ']')] >> ']';
-    qi::rule<Iterator, Address(), ascii::space_type> address_rule = '"' >> (lexeme[+(char_ - ':')] | ipv6) >> ':' >> lexeme[+(char_ - '"')] >> '"';
+    qi::rule<Iterator, Address(), ascii::space_type> address_rule = '"' >> (lexeme[+(char_ - (lexeme[':'] | lexeme[']'] | lexeme['[']))] | ipv6) >> ':' >> lexeme[+(char_ - '"')] >> '"';
     auto result = std::vector<Address> {};
     bool r = phrase_parse(first, last,
         (
@@ -67,6 +67,10 @@ std::vector<Gadgetron::Server::Distributed::Address> Gadgetron::Server::Distribu
     auto worker_list = output.get();
 
     auto maybe_result = parse_remote_workers(worker_list.begin(),worker_list.end());
-    if (!maybe_result) throw std::runtime_error("Could not parse remote worker list");
+    if (!maybe_result){
+        std::stringstream sstream;
+        sstream << "Could not parse remote worker list: " << worker_list;
+      throw std::runtime_error(sstream.str());
+    }
     return std::move(*maybe_result);
 }
