@@ -45,8 +45,6 @@ void Gadgetron::Core::Distributed::AcquisitionDistributor::process(
         channels.at(channel_index).push(std::move(acq));
     }
 
-
-    GDEBUG("AAAAND DONE");
 }
 
 

@@ -4,19 +4,20 @@
 
 #include "Distributed.h"
 #include <algorithm>
+#include <cstdlib>
+#include "connection/distributed/remote_workers.h"
+
 
 namespace {
 using Worker = Gadgetron::Server::Connection::Stream::Distributed::Worker;
 using Address = Gadgetron::Server::Distributed::Address;
 using Local = Gadgetron::Server::Distributed::Local;
 using namespace Gadgetron::Server::Connection;
+using namespace Gadgetron::Server::Distributed;
 using namespace Gadgetron;
 
-std::vector<Worker> get_workers()
-{
-    return { Address { "localhost", "9003" },
-        Address { "localhost", "9004" },
-        Local {} };
+std::vector<Worker> get_workers(){
+    return std::vector<Worker>();
 }
 
 std::string print_worker(const Address& address)

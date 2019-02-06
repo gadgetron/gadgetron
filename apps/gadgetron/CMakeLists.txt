@@ -43,6 +43,7 @@ add_executable(gadgetron
         connection/stream/Processable.h
         connection/distributed/RemoteChannel.cpp
         connection/distributed/RemoteChannel.h
+        connection/distributed/remote_workers.cpp
         connection/stream/Processable.cpp)
 
 target_link_libraries(gadgetron

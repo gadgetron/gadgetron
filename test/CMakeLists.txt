@@ -26,10 +26,11 @@ set(test_src_files tests.cpp
       image_morphology_test.cpp 
       pattern_recognition_test.cpp 
       cmr_mapping_test.cpp
-#      node_discovery_test.cpp
       hoNDArray_linalg_test.cpp
       core_test.cpp
-      )
+
+      ../apps/gadgetron/connection/distributed/remote_workers.cpp
+        distributed_test.cpp)
 #
 if (PYTHONLIBS_FOUND)
     set(test_src_files ${test_src_files} python_converter_test.cpp )

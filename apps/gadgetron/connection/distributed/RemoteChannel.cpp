@@ -81,7 +81,7 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address &addr
                          this->save_error(IO::read_string_from_stream<uint64_t>(connection_stream));
                      }}};
 
-    stream = std::make_unique<tcp::iostream>(address.ip, address.port);
+    stream = std::make_unique<tcp::iostream>(tcp::v6(),address.ip, address.port);
 
     stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit );
     send_config_file(*stream, xml_config);
