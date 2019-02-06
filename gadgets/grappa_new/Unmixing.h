@@ -21,12 +21,21 @@ namespace Gadgetron::Grappa {
 
     class Weights {
     public:
+        struct {
+            size_t slice;
+        } meta;
 
+        hoNDArray<std::complex<float>> data;
     };
 
-    class Reconstruction : public Core::Parallel::Merge {
+    class Unmixing : public Core::Parallel::Merge {
     public:
-        Reconstruction(const Core::Context &context, const std::unordered_map<std::string, std::string> &props);
+        Unmixing(const Core::Context &context, const std::unordered_map<std::string, std::string> &props);
+
+        NODE_PROPERTY(target_coils, int, "Number of target coils for GRAPPA recon", 0);
+
+        // TODO: Get rid of these pointless things.
+        NODE_PROPERTY(device_channels, int, "Number of device channels", 0);
 
         NODE_PROPERTY(image_series, int, "Image series number for output images", 0);
 
@@ -35,8 +44,8 @@ namespace Gadgetron::Grappa {
         NODE_PROPERTY(uncombined_channels_by_name, std::string, "Uncombined channels (as a comma separated list of channel names", "");
 
         void process(
-                std::map<std::string, std::shared_ptr<Core::Channel>> input,
-                std::shared_ptr<Core::Channel> output
+                std::map<std::string, Core::InputChannel> input,
+                Core::OutputChannel output
         ) override;
     };
 }

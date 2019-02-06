@@ -77,7 +77,7 @@
 
             <merge>
                 <dll>gadgetron_grappa_new</dll>
-                <classname>Reconstruction</classname>
+                <classname>Unmixing</classname>
             </merge>
         </parallel>
 

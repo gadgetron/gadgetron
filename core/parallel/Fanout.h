@@ -13,7 +13,7 @@ namespace Gadgetron::Core::Parallel {
     class Fanout : public TypedBranch<ARGS...> {
     public:
         Fanout(const Context &context, const GadgetProperties &props);
-        void process(TypedInputChannel<ARGS...> &, std::map<std::string, std::shared_ptr<OutputChannel>>) override;
+        void process(TypedInputChannel<ARGS...> &, std::map<std::string, OutputChannel>) override;
     };
 }
 

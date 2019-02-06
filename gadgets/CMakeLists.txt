@@ -28,7 +28,7 @@ endif()
 
 add_subdirectory(spiral)
 #add_subdirectory(grappa)
-#add_subdirectory(grappa_new)
+add_subdirectory(grappa_new)
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB gadgets")

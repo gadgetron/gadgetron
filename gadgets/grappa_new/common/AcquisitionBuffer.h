@@ -23,8 +23,6 @@ namespace Gadgetron::Grappa {
             }
         }
 
-        void add_acquisition_hook(std::function<void(const Core::Acquisition &)> fn);
-
         hoNDArray<std::complex<float>>
         take(size_t index);
 
@@ -32,6 +30,9 @@ namespace Gadgetron::Grappa {
         view(size_t index);
 
         void clear(size_t index);
+
+        void add_pre_update_callback(std::function<void(const Core::Acquisition &)> fn);
+        void add_post_update_callback(std::function<void(const Core::Acquisition &)> fn);
 
     private:
         const Core::Context context;
@@ -42,6 +43,8 @@ namespace Gadgetron::Grappa {
         } internals;
 
         std::vector<hoNDArray<std::complex<float>>> buffers;
-        std::vector<std::function<void(const Core::Acquisition &)>> acquisition_hooks;
+
+        std::vector<std::function<void(const Core::Acquisition &)>> pre_update_callbacks;
+        std::vector<std::function<void(const Core::Acquisition &)>> post_update_callbacks;
     };
 }
