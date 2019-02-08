@@ -34,7 +34,7 @@ namespace {
             slices.emplace_back(std::move(*opt_slice));
         }
 
-        GDEBUG_STREAM("Read " << slices.size() << " available slices.");
+        GDEBUG_STREAM("Read " << slices.size() << " available slice(s).");
 
         return std::move(slices);
     }
@@ -45,33 +45,33 @@ namespace {
             auto e_limits = context.header.encoding[0].encodingLimits;
             auto slices = e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
 
-            regions = std::vector<std::pair<size_t, size_t>>(
-                    slices,
-                    std::make_pair(std::numeric_limits<size_t>::max(), size_t(0))
-            );
+            regions = std::vector<std::array<size_t, 4>>(slices, clear_region);
         }
 
         void operator()(const Acquisition &acquisition) {
             auto old_region = regions[slice_of(acquisition)];
-            regions[slice_of(acquisition)] = std::make_pair(
-                    std::min(old_region.first, line_of(acquisition)),
-                    std::max(old_region.second, line_of(acquisition))
-            );
+            regions[slice_of(acquisition)] = std::array<size_t, 4> {
+                0,
+                samples_in(acquisition) - 1,
+                std::min(old_region[2], line_of(acquisition)),
+                std::max(old_region[3], line_of(acquisition))
+            };
         }
 
-        std::pair<size_t, size_t> region_of_support(size_t slice) {
+        std::array<size_t, 4> region_of_support(size_t slice) {
             return regions[slice];
         }
 
         void clear(size_t slice) {
-            regions[slice] = std::make_pair(
-                    std::numeric_limits<size_t>::max(),
-                    size_t(0)
-            );
+            regions[slice] = clear_region;
         }
 
     private:
-        std::vector<std::pair<size_t, size_t>> regions;
+        std::vector<std::array<size_t, 4>> regions;
+
+        static constexpr std::array<size_t, 4> clear_region = {
+            0, 0, std::numeric_limits<size_t>::max(), 0
+        };
     };
 
     class AccelerationMonitor {
@@ -156,15 +156,55 @@ namespace {
     // ---------------------------------------------------------------------------- //
     // ---------------------------------------------------------------------------- //
 
-    hoNDArray<std::complex<float>> calculate_weights(
-            hoNDArray<std::complex<float>> data,
-            std::pair<size_t, size_t> region_of_support,
-            size_t acceleration_factor
-    ) {
-        GINFO_STREAM("Hello, I'm calculating some weights.");
+    class WeightCore {
+    public:
+        WeightCore() {
 
+        }
+
+        hoNDArray<std::complex<float>> calculate_weights(
+                hoNDArray<std::complex<float>> data,
+                std::array<size_t, 4> region_of_support,
+                size_t acceleration_factor
+        );
+
+        hoNDArray<std::complex<float>> calculate_coil_map(
+
+        );
+
+    private:
+        // In an attempt to avoid unnecessary allocations, we maintain (and overwrite) some buffers
+        // (coil map and image kernels) between weight calculations.
+
+        size_t target_channels; // Initialize from context? Yes, everything in context/props.
+    };
+
+    hoNDArray<std::complex<float>> WeightCore::calculate_coil_map(
+
+    ) {
         return hoNDArray<std::complex<float>>();
     }
+
+    hoNDArray<std::complex<float>> WeightCore::calculate_weights(
+            hoNDArray<std::complex<float>> data,
+            std::array<size_t, 4> region_of_support,
+            size_t acceleration_factor
+    ) {
+        GINFO_STREAM("Acceleration Factor: " << acceleration_factor);
+        GINFO_STREAM("Region of support:");
+        GINFO_STREAM("\tStart R0: " << region_of_support[0]);
+        GINFO_STREAM("\t  End R0: " << region_of_support[1]);
+        GINFO_STREAM("\tStart E1: " << region_of_support[2]);
+        GINFO_STREAM("\t  End E1: " << region_of_support[3]);
+
+        return hoNDArray<std::complex<float>>();
+
+        // Reorder the Channels - Combined channels, then uncombined channels after.
+
+
+
+    }
+
 
     // ---------------------------------------------------------------------------- //
     // ---------------------------------------------------------------------------- //
@@ -196,15 +236,15 @@ namespace Gadgetron::Grappa {
             buffer.add(slices);
 
             for (auto index : updated_slices) {
-                Grappa::Weights weights {
-                        { index },
-                        calculate_weights(
-                                buffer.view(index),
-                                support_monitor.region_of_support(index),
-                                acceleration_monitor.acceleration_factor(index)
-                        )
-                };
-                out.push(std::move(weights));
+//                Grappa::Weights weights {
+//                        { index },
+//                        calculate_weights(
+//                                buffer.view(index),
+//                                support_monitor.region_of_support(index),
+//                                acceleration_monitor.acceleration_factor(index)
+//                        )
+//                };
+//                out.push(std::move(weights));
             }
 
             updated_slices.clear();

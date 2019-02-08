@@ -18,8 +18,12 @@ namespace Gadgetron::Grappa {
             std::map<std::string, InputChannel> input,
             OutputChannel output
     ) {
-//        TypedInputChannel<Image> images{*input.at("images"), *output};
-//        TypedInputChannel<Weights> weights{*input.at("weights"), *output};
 
+        TypedInputChannel<Image> images{input.at("images"), output};
+        TypedInputChannel<Weights> weights{input.at("weights"), output};
+
+        for (auto image : images) {
+            GINFO_STREAM("Received unmixing job. Excellent.")
+        }
     }
 }

@@ -60,6 +60,7 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
+        ErrorHandler nested_handler{error_handler, branch->key};
 
         std::vector<std::thread> threads;
         std::map<std::string, ChannelPair> input_channels;
@@ -71,30 +72,32 @@ namespace Gadgetron::Server::Connection::Stream {
             output_channels.emplace(stream->key, make_channel<MessageChannel>());
         }
 
-        threads.emplace_back(error_handler.run(
-                [this](auto input, auto input_channels, auto output, auto &nested_handler) {
-                    ErrorHandler handler{nested_handler, branch->key};
-                    handler.handle([&](){branch->process(std::move(input), std::move(input_channels), std::move(output));});
+        threads.emplace_back(nested_handler.run(
+                [&](auto input, auto output, auto bypass) {
+                    branch->process(std::move(input), std::move(output), std::move(bypass));
                 },
                 std::move(input),
                 transform_map(input_channels, [](auto& val) { return std::move(val.output); }),
-                split(output),error_handler
+                split(output)
         ));
 
 
-        threads.emplace_back(error_handler.run(
-                [this](auto output_channels, auto output, auto &nested_handler) {
-                    ErrorHandler handler{nested_handler, branch->key};
-                    handler.handle([&](){merge->process(std::move(output_channels), std::move(output));});
+        threads.emplace_back(nested_handler.run(
+                [&](auto input, auto output) {
+                    merge->process(std::move(input), std::move(output));
                 },
                 transform_map(output_channels, [](auto &val) { return std::move(val.input); }),
-                std::move(output),error_handler
+                std::move(output)
         ));
 
         for (auto &stream : streams) {
             threads.emplace_back(
-                    Processable::process_async(stream, std::move(input_channels.at(stream->key).input),
-                    std::move(output_channels.at(stream->key).output), error_handler)
+                    Processable::process_async(
+                            stream,
+                            std::move(input_channels.at(stream->key).input),
+                            std::move(output_channels.at(stream->key).output),
+                            nested_handler
+                    )
             );
         }
 

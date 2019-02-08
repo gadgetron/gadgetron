@@ -52,6 +52,12 @@
 
         <gadget>
             <dll>gadgetron_grappa_new</dll>
+            <classname>ChannelReorderer</classname>
+            <property name="uncombined_channels" value="1,3, 5, 4, 2"/>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_grappa_new</dll>
             <classname>SliceAccumulator</classname>
         </gadget>
 

@@ -74,9 +74,15 @@ namespace Gadgetron{
         boost::shared_ptr< std::vector<size_t> > get_dimensions() const;
         void get_dimensions(std::vector<size_t>& dim) const;
 
+        std::vector<size_t> const &dimensions() const;
+
         const T* get_data_ptr() const;
         T* get_data_ptr();
 
+        const T* data() const;
+        T* data();
+
+        size_t size() const;
         size_t get_number_of_elements() const;
 
         size_t get_number_of_bytes() const;
@@ -312,6 +318,12 @@ namespace Gadgetron{
         dim = dimensions_;
     }
 
+    template<class T>
+    inline std::vector<size_t> const &NDArray<T>::dimensions() const {
+        return dimensions_;
+    }
+
+
     template <typename T> 
     inline const T* NDArray<T>::get_data_ptr() const
     { 
@@ -323,10 +335,28 @@ namespace Gadgetron{
         return data_;
     }
 
-    template <typename T> 
-    inline size_t NDArray<T>::get_number_of_elements() const
+    template <typename T>
+    const T* NDArray<T>::data() const
+    {
+        return data_;
+    }
+
+    template <typename T>
+    T* NDArray<T>::data()
+    {
+        return data_;
+    }
+
+
+    template<class T>
+    inline size_t NDArray<T>::size() const
     {
         return elements_;
+    }
+
+    template <class T>
+    inline size_t NDArray<T>::get_number_of_elements() const {
+        return size();
     }
 
     template <typename T> 

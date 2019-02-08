@@ -1,8 +1,10 @@
 #pragma once
 
 #include <boost/make_shared.hpp>
+#include <boost/range/combine.hpp>
 #include <numeric>
 #include "hoNDArray.h"
+#include "hoNDArray_iterators.h"
 #include "vector_td_utilities.h"
 
 #include <boost/math/interpolators/cubic_b_spline.hpp>
@@ -951,23 +953,44 @@ namespace Gadgetron {
       out_ptr[idx] = in_ptr[in_idx];
 	}
 
-
-
     return out;
   }
-
-
 
   template<class T> hoNDArray<T> repeat(const hoNDArray<T>& array,unsigned int repeats){
       auto dims = *array.get_dimensions();
       dims.push_back(repeats);
 
       hoNDArray<T> output(dims);
-      T* out_ptr = output.get_data_ptr();
 
-      for (int i =0; i < repeats; i++){
-          std::copy(array.begin(),array.end(),out_ptr+i*array.get_number_of_elements());
+      for (auto span : spans(output, array.get_number_of_dimensions())) {
+          span = array;
       }
+
+      return output;
+  }
+
+  template<class T, template<class> class COLL>
+  hoNDArray<T> concat(const COLL<hoNDArray<T>> &arrays) {
+
+      if (arrays.empty()) return hoNDArray<T>();
+
+      const hoNDArray<T> &first = *std::begin(arrays);
+
+      auto dims = first.dimensions();
+      auto size = first.size();
+
+      if (!std::all_of(begin(arrays), end(arrays), [&](auto &array) { return dims == array.dimensions(); }) ||
+          !std::all_of(begin(arrays), end(arrays), [&](auto &array) { return size == array.size(); })) {
+          throw std::runtime_error("Array size or dimensions do not match.");
+      }
+
+      dims.push_back(arrays.size());
+      hoNDArray<T> output(dims);
+
+      auto output_iterator = spans(output, first.get_number_of_dimensions()).begin();
+
+      for (auto &array : arrays) { *output_iterator++ = array; }
+
       return output;
   }
 }

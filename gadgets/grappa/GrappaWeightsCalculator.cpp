@@ -179,15 +179,20 @@ namespace Gadgetron {
 
                         if (!uncombined) {
                             if (ind < (target_coils_with_uncombined - numUnCombined)) {
-                                memcpy(target_acs_.begin() + ind * RO * E1, acs.begin() + sCha * RO * E1,
-                                       sizeof(std::complex<float>) * RO * E1);
+                                memcpy(
+                                        target_acs_.begin() + ind * RO * E1,
+                                        acs.begin() + sCha * RO * E1,
+                                        sizeof(std::complex<float>) * RO * E1
+                                );
                                 srcChaLoc[ind] = sCha;
                                 ind++;
                             }
                         } else {
-                            memcpy(target_acs_.begin() +
-                                   (target_coils_with_uncombined - numUnCombined + ind_uncombined) * RO * E1,
-                                   acs.begin() + sCha * RO * E1, sizeof(std::complex<float>) * RO * E1);
+                            memcpy(
+                                    target_acs_.begin() + (target_coils_with_uncombined - numUnCombined + ind_uncombined) * RO * E1,
+                                    acs.begin() + sCha * RO * E1,
+                                    sizeof(std::complex<float>) * RO * E1
+                            );
                             srcChaLoc[target_coils_with_uncombined - numUnCombined + ind_uncombined] = sCha;
                             ind_uncombined++;
                         }
@@ -218,8 +223,7 @@ namespace Gadgetron {
                                                        unmixing_all_channels, gFactor_);
 
                     // set unmixing coefficients for uncombined channels
-                    ind = 0;
-                    for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++, ind++) {
+                    for (ind = 0, it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++, ind++) {
                         memcpy(unmixing_.begin() + ind * RO * E1 * CHA,
                                kIm_.begin() + (target_coils_with_uncombined - numUnCombined + ind) * RO * E1 * CHA,
                                sizeof(std::complex<float>) * RO * E1 * CHA);
