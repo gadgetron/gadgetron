@@ -27,7 +27,7 @@ namespace Gadgetron::Core {
             struct MessageMaker {
                 template<class... VARGS, class ...REST>
                 static void
-                add_message(std::vector<std::unique_ptr<MessageChunk>> &messages, variant<VARGS...> var,
+                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, variant<VARGS...> var,
                             REST &&... args) {
                     boost::apply_visitor([&](auto val) { add_messages(messages, val, std::forward<REST>(args)...); },
                                          var);

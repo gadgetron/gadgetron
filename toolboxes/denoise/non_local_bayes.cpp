@@ -123,7 +123,7 @@ namespace Gadgetron {
 
             template<class T>
             void
-            filter_patches(std::vector<ImagePatch<T>> &patches, int n_patches, const arma::Col<T> &reference_patch) {
+            filter_patches(std::vector<ImagePatch<T>> &patches, int max_n_patches, const arma::Col<T> &reference_patch) {
 
                 auto distances = std::vector<float>(patches.size());
                 transform(patches.begin(), patches.end(), distances.begin(),
@@ -135,7 +135,7 @@ namespace Gadgetron {
                 sort(patch_indices.begin(), patch_indices.end(),
                      [&](auto v1, auto v2) { return distances[v1] < distances[v2]; });
 
-
+                int n_patches = std::min<int>(patches.size(),max_n_patches);
                 std::vector<ImagePatch<T>> best_patches(n_patches);
 
                 for (int i = 0; i < n_patches; i++) {
@@ -223,7 +223,7 @@ namespace Gadgetron {
 
 
                             for (auto &patch : patches) {
-                                #pragma omp critical
+//                                #pragma omp critical
                                 add_patch(patch, result, count, patch_size, image_dims);
                                 mask(patch.center_x, patch.center_y) = false;
                             }
@@ -254,6 +254,7 @@ namespace Gadgetron {
 
                 hoNDArray<T> result_view;
                 result_view.create(image_dims);
+                #pragma omp parallel for
                 for (int i = 0; i < n_images; i++) {
 
                     auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));

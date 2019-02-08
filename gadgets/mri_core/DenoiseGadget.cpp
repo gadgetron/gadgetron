@@ -4,54 +4,11 @@
 
 #include "DenoiseGadget.h"
 #include "GadgetronTimer.h"
-#include "non_local_means.h"
 #include "non_local_bayes.h"
-
+#include "non_local_means.h"
 namespace Gadgetron {
-    int DenoiseGadget::process(ACE_Message_Block *mb) {
-
-
-        if (auto m1 = AsContainerMessage<ISMRMRD::ImageHeader>(mb)) {
-            if (auto m2 = AsContainerMessage<hoNDArray<float>>(m1->cont())) {
-                return this->process(m1, m2);
-            } else if (auto m2 = AsContainerMessage<hoNDArray<std::complex<float>>>(m1->cont())) {
-                return this->process(m1, m2);
-            }
-        }
-
-
-        if (auto m1 = AsContainerMessage<IsmrmrdImageArray>(mb)) {
-            return this->process(m1);
-        }
-
-            return this->next()->putq(mb);
-    }
-
-
-    template<class T>
-    int DenoiseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *header_msg,
-                               GadgetContainerMessage<hoNDArray<T>> *image_msg) {
-
-        auto &input = *image_msg->getObjectPtr();
-        input = denoise_function(input);
-        this->next()->putq(header_msg);
-
-        return GADGET_OK;
-
-    }
-
-    int DenoiseGadget::process(GadgetContainerMessage<IsmrmrdImageArray> *image_array) {
-
-        auto &input = image_array->getObjectPtr()->data_;
-        input = denoise_function(input);
-        this->next()->putq(image_array);
-
-        return GADGET_OK;
-
-    }
-
-    template<class T>
-    hoNDArray<T> DenoiseGadget::denoise_function(const Gadgetron::hoNDArray<T> & input) {
+    template <class T>
+    Gadgetron::hoNDArray<T> Gadgetron::DenoiseGadget::denoise_function(const Gadgetron::hoNDArray<T>& input) const {
 
         if (denoiser == "non_local_bayes") {
             return Denoise::non_local_bayes(input, image_std, search_radius);
@@ -60,10 +17,23 @@ namespace Gadgetron {
         } else {
             throw std::invalid_argument(std::string("DenoiseGadget: Unknown denoiser type: ") + std::string(denoiser));
         }
-
     }
 
+    DenoiseSupportedTypes DenoiseGadget::process_function(DenoiseSupportedTypes input) const {
+        return boost::apply_visitor(
+            [&](auto image) { return DenoiseSupportedTypes(denoise(std::move(image))); }, std::move(input));
+    }
 
-    GADGET_FACTORY_DECLARE(DenoiseGadget)
-
+    template <class T> DenoiseImage<T> DenoiseGadget::denoise(DenoiseImage<T> image) const {
+        return DenoiseImage<T>{ std::move(std::get<ISMRMRD::ImageHeader>(image)),
+            denoise_function(std::get<hoNDArray<T>>(image)) };
+    }
+    IsmrmrdImageArray DenoiseGadget::denoise(IsmrmrdImageArray image_array) const {
+        auto& input = image_array.data_;
+        input       = denoise_function(input);
+        return std::move(image_array);
+    }
+    DenoiseGadget::DenoiseGadget(const Core::Context& context, const Core::GadgetProperties& props)
+        : Core::TypedPureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes>{ props } {}
+    GADGETRON_GADGET_EXPORT(DenoiseGadget)
 }

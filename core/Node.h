@@ -20,9 +20,7 @@ namespace Gadgetron::Core {
 
     class GadgetNode : public Node, public PropertyMixin {
     public:
-            GadgetNode(
-                    const GadgetProperties& properties
-            ) : PropertyMixin(properties) {};
+            using PropertyMixin::PropertyMixin;
             virtual ~GadgetNode() = default;
     };
 

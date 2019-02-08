@@ -281,6 +281,7 @@ namespace {
             node_parsers["gadget"] = [&](const pugi::xml_node &n) { return this->parse_node<Config::Gadget>(n); };
             node_parsers["parallel"] = [&](const pugi::xml_node &n) { return this->parse_parallel(n); };
             node_parsers["distributed"] = [&](const pugi::xml_node &n) { return this->parse_distributed(n); };
+            node_parsers["parallelprocess"] = [&](const pugi::xml_node &n) { return this->parse_parallelprocess(n); };
 
         }
 
@@ -313,6 +314,16 @@ namespace {
                 nodes.push_back(node_parsers.at(node.name())(node));
             }
             return Config::Stream{stream_node.attribute("key").value(), nodes};
+        }
+
+        Config::ParallelProcess parse_parallelprocess(const pugi::xml_node& parallelprocess_node)
+        {
+            size_t workers = std::stoul(parallelprocess_node.attribute("workers").value());
+            std::vector<Config::Gadget> gadgets;
+            boost::transform(parallelprocess_node.child("purestream").children(), std::back_inserter(gadgets),
+                [&](auto node) { return parse_node<Config::Gadget>(node); });
+
+            return Config::ParallelProcess{workers,Config::PureStream{gadgets}};
         }
     };
 
@@ -401,6 +412,21 @@ namespace {
                 boost::apply_visitor([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
             }
             return stream_node;
+        }
+
+        static pugi::xml_node add_node(const Config::ParallelProcess& parallelProcess, pugi::xml_node & node){
+            auto parallel_node = node.append_child("ParallelProcess");
+            parallel_node.append_attribute("workers").set_value(parallelProcess.workers);
+            add_node(parallelProcess.stream, parallel_node);
+            return parallel_node;
+        }
+
+        static pugi::xml_node add_node(const Config::PureStream& stream, pugi::xml_node& node){
+            auto purestream_node = node.append_child("PureStream");
+            for (auto& gadget : stream.gadgets){
+                add_node(gadget,purestream_node);
+            }
+            return purestream_node;
         }
     };
 
