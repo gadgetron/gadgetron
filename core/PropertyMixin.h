@@ -12,27 +12,26 @@ namespace Gadgetron::Core {
     protected:
 
         template<class KEY_VALUE_STORAGE>
-        PropertyMixin(const KEY_VALUE_STORAGE &pairs) : properties(pairs.begin(), pairs.end()) {
-
-        }
+        explicit PropertyMixin(const KEY_VALUE_STORAGE &pairs) : properties(pairs.begin(), pairs.end()) {}
 
         template<class T>
-        T get_property(const std::string &name, T default_value, const std::string &description) {
-            if (properties.count(name)) {
-                T val;
-                std::stringstream stream(properties.at(name));
-                stream >> val;
-                return val;
-            } else {
-                return default_value;
-            }
+        inline T get_property(const std::string &name, T default_value, const std::string &) {
+            if (!properties.count(name)) return default_value;
+            T val;
+            std::stringstream stream(properties.at(name));
+            stream >> val;
+            return val;
         }
 
     private:
-
         const GadgetProperties properties;
-
     };
+
+    template<>
+    inline std::string PropertyMixin::get_property<std::string>(const std::string &name, std::string default_value, const std::string &) {
+        if (!properties.count(name)) return default_value;
+        return properties.at(name);
+    }
 }
 
 #define NODE_PROPERTY(NAME,TYPE, DESCRIPTION, DEFAULT) const TYPE NAME = this->get_property<TYPE>(#NAME,DEFAULT,DESCRIPTION)

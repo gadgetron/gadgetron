@@ -6,14 +6,13 @@ class PureGadget : public GadgetNode {
 public:
     using GadgetNode::GadgetNode;
 
-    void process(InputChannel& in, OutputChannel& out) final
-    {
-        for (auto message : in )
-            out.push(this->process_function(std::move(message)));
-    }
+        void process(InputChannel &in, OutputChannel &out) final {
+            for (auto message : in)
+                out.push(this->process_function(std::move(message)));
+        }
 
-    virtual Message process_function(Message) const = 0;
-};
+        virtual Message process_function(Message) const = 0;
+    };
 
 template <class RETURN, class ARG>
 class TypedPureGadget : public PureGadget {

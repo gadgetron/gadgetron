@@ -49,7 +49,7 @@ set(image_files image/hoNDImage.h
             image/hoNDImage.hxx 
             image/hoNDImageContainer2D.h )
 
-set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx)
+set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx hoNDArray_iterators.h)
 
 source_group(algorithm FILES ${algorithm_files})
 source_group(image FILES ${image_files})

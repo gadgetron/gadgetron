@@ -1,13 +1,20 @@
 #include "Processable.h"
 
 
-std::thread Gadgetron::Server::Connection::Stream::Processable::process_async(std::shared_ptr<Processable> processable, Core::InputChannel input,
-                                           Core::OutputChannel output, const ErrorHandler &errorHandler) {
-        return std::thread([](auto processable, auto input, auto output, auto error_handler) {
-            error_handler.handle([processable, &error_handler](auto input, auto output) {
-                                     processable->process(std::move(input), std::move(output), error_handler);
-                                 },
-                                 std::move(input), std::move(output));
-        }, processable, std::move(input), std::move(output), ErrorHandler{errorHandler,processable->name()});
+std::thread Gadgetron::Server::Connection::Stream::Processable::process_async(
+        std::shared_ptr<Processable> processable,
+        Core::InputChannel input,
+        Core::OutputChannel output,
+        const ErrorHandler &error_handler
+) {
+        ErrorHandler nested_handler{error_handler, processable->name()};
 
+        return nested_handler.run(
+            [=](auto input, auto output, auto error_handler) {
+                processable->process(std::move(input), std::move(output), error_handler);
+            },
+            std::move(input),
+            std::move(output),
+            nested_handler
+        );
     }

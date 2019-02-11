@@ -5,7 +5,7 @@ namespace Gadgetron::Core {
 
     class Channel::Closer {
     public:
-        explicit Closer(std::shared_ptr<Channel> channel) : channel{channel} {}
+        explicit Closer(std::shared_ptr<Channel> channel) : channel{std::move(channel)} {}
 
         ~Closer() { channel->close(); }
 
@@ -62,7 +62,6 @@ namespace Gadgetron::Core {
 
     InputChannel::InputChannel(std::shared_ptr<Channel> channel) : channel{channel},
                                                                    closer{std::make_shared<Channel::Closer>(channel)} {
-
     }
 
 

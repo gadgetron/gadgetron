@@ -19,4 +19,8 @@ namespace Gadgetron::Grappa {
     size_t line_of(const Core::Acquisition &acquisition) {
         return std::get<ISMRMRD::AcquisitionHeader>(acquisition).idx.kspace_encode_step_1;
     }
+
+    size_t samples_in(const Core::Acquisition &acquisition) {
+        return std::get<ISMRMRD::AcquisitionHeader>(acquisition).number_of_samples;
+    }
 }
