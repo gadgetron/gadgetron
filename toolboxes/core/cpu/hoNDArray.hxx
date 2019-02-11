@@ -285,7 +285,7 @@ namespace Gadgetron
 
 #if __cplusplus > 199711L
     template <typename T>
-    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
+    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) noexcept : NDArray<T>::NDArray(){
         data_ = a.data_;
         this->dimensions_ = a.dimensions_;
         this->elements_ = a.elements_;
@@ -322,7 +322,7 @@ namespace Gadgetron
 
 #if __cplusplus > 199711L
     template <typename T>
-    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs)
+    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs) noexcept
     {
         if ( &rhs == this ) return *this;
         this->clear();

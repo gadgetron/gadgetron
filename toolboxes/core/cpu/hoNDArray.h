@@ -69,8 +69,8 @@ namespace Gadgetron{
 
 #if __cplusplus > 199711L
     //Move constructors
-    hoNDArray(hoNDArray<T>&& a);
-    hoNDArray& operator=(hoNDArray&& rhs);
+    hoNDArray(hoNDArray<T>&& a) noexcept;
+    hoNDArray& operator=(hoNDArray&& rhs) noexcept;
 
 #endif
 
