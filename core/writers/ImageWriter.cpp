@@ -36,7 +36,7 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
             uint64_t meta_size = serialized_meta.size();
             IO::write(stream,meta_size);
             stream.write(serialized_meta.c_str(), meta_size);
-            IO::write(stream, data);
+            IO::write(stream, data.get_data_ptr(), data.get_number_of_elements());
         }
     };
 

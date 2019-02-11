@@ -13,7 +13,7 @@ void Gadgetron::GadgetIsmrmrdWaveformMessageWriter::serialize(std::ostream &stre
     using namespace Core;
     IO::write(stream,GADGET_MESSAGE_ISMRMRD_WAVEFORM);
     IO::write(stream,header);
-    IO::write(stream,array);
+    IO::write(stream,array.get_data_ptr(),array.get_number_of_elements());
 
 }
 
@@ -27,9 +27,9 @@ void Gadgetron::GadgetIsmrmrdAcquisitionMessageWriter::serialize(std::ostream &s
     IO::write(stream,GADGET_MESSAGE_ISMRMRD_ACQUISITION);
     IO::write(stream,header);
     if (trajectory)
-        IO::write(stream,*trajectory);
+        IO::write(stream,trajectory->get_data_ptr(),trajectory->get_number_of_elements());
 
-    IO::write(stream,data);
+    IO::write(stream,data.get_data_ptr(),data.get_number_of_elements());
 }
 
 namespace Gadgetron {

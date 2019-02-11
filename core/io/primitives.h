@@ -39,10 +39,13 @@ namespace Gadgetron::Core::IO {
         stream.write(reinterpret_cast<const char*>(&value), sizeof(value));
     }
 
-
-    template<class T> void write(std::ostream& stream, const hoNDArray<T>& array ){
-        stream.write(reinterpret_cast<const char*>(array.get_data_ptr()),array.get_number_of_bytes());
+    template<class T>
+    void write(std::ostream& stream, const T* data, size_t number_of_elements){
+        stream.write(reinterpret_cast<const char*>(data),number_of_elements*sizeof(T));
     }
+//    template<class T> void write(std::ostream& stream, const hoNDArray<T>& array ){
+//        stream.write(reinterpret_cast<const char*>(array.get_data_ptr()),array.get_number_of_bytes());
+//    }
 
     template<class T>
     void write_string_to_stream(std::ostream &stream, const std::string &str) {
