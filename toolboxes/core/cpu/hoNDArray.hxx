@@ -1049,4 +1049,13 @@ namespace Gadgetron
         len = sizeof(size_t)+sizeof(size_t)*NDim+sizeof(T)*elements_;
         return true; // Temporary. Should not be a boolean function.
     }
+
+    template<typename T>
+    bool hoNDArray<T>::operator==(const hoNDArray &rhs) const {
+        auto result =  this->dimensions_equal(rhs.dimensions());
+
+        for (size_t i = 0; i < this->size(); i++)
+            result &= this->data_[i] == rhs[i];
+        return result;
+    }
 }

@@ -13,20 +13,20 @@ namespace Gadgetron::Core::Readers {
         using namespace std::literals;
 
 
-        auto header = ISMRMRD::AcquisitionHeader{};
+        auto header = IO::read<ISMRMRD::AcquisitionHeader>(stream);
 
-        IO::read(stream, header);
 
         optional<hoNDArray<float>> trajectory = boost::none;
         if (header.trajectory_dimensions) {
             trajectory = hoNDArray<float>(header.trajectory_dimensions,
                                           header.number_of_samples);
-            IO::read(stream, *trajectory);
+
+            IO::read(stream, trajectory->data(),trajectory->size());
         }
 
         auto data = hoNDArray<std::complex<float>>(header.number_of_samples,
                                                    header.active_channels);
-        IO::read(stream, data);
+        IO::read(stream, data.data(),data.size());
 
         return Core::Message(header, trajectory, data);
     }

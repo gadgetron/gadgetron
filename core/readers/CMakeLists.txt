@@ -3,7 +3,7 @@ add_library(gadgetron_core_readers SHARED
         AcquisitionReader.h
         AcquisitionReader.cpp
         WaveformReader.h
-        WaveformReader.cpp)
+        WaveformReader.cpp BufferReader.cpp BufferReader.h)
 
 target_link_libraries(gadgetron_core_readers
         gadgetron_core

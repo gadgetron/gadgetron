@@ -132,7 +132,7 @@ namespace Gadgetron {
                                                         header.matrix_size[2], header.channels);
 
 
-            IO::read(stream, array);
+            IO::read(stream, array.data(),array.size());
 
             return Core::Message(std::move(header), std::move(array), std::move(meta));
 

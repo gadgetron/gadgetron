@@ -24,9 +24,8 @@ namespace {
     using Header = Gadgetron::Core::Context::Header;
 
     std::string read_filename_from_stream(std::istream &stream) {
-        char buffer[1024];
-        read(stream, buffer);
-        return std::string(buffer);
+        auto buffer = read<std::array<char,1024>>(stream);
+        return std::string(buffer.data());
     }
 
     class ConfigHandler : public Handler {

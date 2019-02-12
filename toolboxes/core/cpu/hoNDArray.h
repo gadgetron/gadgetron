@@ -77,6 +77,7 @@ namespace Gadgetron{
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
+    bool operator==(const hoNDArray& rhs) const;
     virtual void create(const std::vector<size_t>& dimensions);
     virtual void create(const std::vector<size_t> *dimensions);
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);

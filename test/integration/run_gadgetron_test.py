@@ -79,6 +79,7 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
 
 
 def start_gadgetron_instance(*, log, port, env=None):
+    print("Starting Gadgetron instance on port ",port)
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
@@ -288,10 +289,17 @@ def prepare_siemens_input_data(args, config):
 
 
 def start_additional_nodes(args, config):
-    if args.external:
-        return
 
     if not config.has_section('DISTRIBUTED'):
+        return
+
+    def set_distributed_environment(cont, *, worker_list=[], env=dict(os.environ), **state):
+        env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+        return cont(env=env, **state)
+
+    if args.external:
+
+        yield functools.partial(set_distributed_environment,worker_list=['localhost:' + str(args.port)])
         return
 
     base_port = int(config['DISTRIBUTED']['node_port_base'])
@@ -299,17 +307,17 @@ def start_additional_nodes(args, config):
     nodes = int(config['DISTRIBUTED']['nodes'])
 
     def start_additional_nodes_action(port, cont, *, worker_list=[], **state):
+        print('Starting additional nodes')
         with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
             with start_gadgetron_instance(log=log, port=port) as instance:
                 worker = 'localhost' + ':' + port
+                print("Starting instance",port)
                 try:
                     return cont(worker_list=worker_list + [worker], **state)
                 finally:
                     instance.kill()
 
-    def set_distributed_environment(cont, *, worker_list=[], env=dict(os.environ), **state):
-        env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
-        return cont(env=env, **state)
+
 
     yield from (functools.partial(start_additional_nodes_action,str(base_port + id))
                                   for id in range(nodes))
