@@ -1053,7 +1053,7 @@ namespace Gadgetron
     template<typename T>
     bool hoNDArray<T>::operator==(const hoNDArray &rhs) const {
         auto result =  this->dimensions_equal(rhs.dimensions());
-
+        if (!result) return false;
         for (size_t i = 0; i < this->size(); i++)
             result &= this->data_[i] == rhs[i];
         return result;
