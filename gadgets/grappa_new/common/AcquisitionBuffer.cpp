@@ -56,7 +56,7 @@ namespace Gadgetron::Grappa {
         buffers = std::vector<hoNDArray<std::complex<float>>>(slices, create_buffer(internals.buffer_dimensions));
     }
 
-    void AcquisitionBuffer::add(const Acquisition &acquisition) {
+    void AcquisitionBuffer::add(const AnnotatedAcquisition &acquisition) {
 
         for (auto &fn : pre_update_callbacks) fn(acquisition);
 
@@ -96,11 +96,11 @@ namespace Gadgetron::Grappa {
         buffers[index] = create_buffer(internals.buffer_dimensions);
     }
 
-    void AcquisitionBuffer::add_pre_update_callback(std::function<void(const Core::Acquisition &)> fn) {
+    void AcquisitionBuffer::add_pre_update_callback(std::function<void(const AnnotatedAcquisition &)> fn) {
         pre_update_callbacks.emplace_back(std::move(fn));
     }
 
-    void AcquisitionBuffer::add_post_update_callback(std::function<void(const Core::Acquisition &)> fn) {
+    void AcquisitionBuffer::add_post_update_callback(std::function<void(const AnnotatedAcquisition &)> fn) {
         post_update_callbacks.emplace_back(std::move(fn));
     }
 }

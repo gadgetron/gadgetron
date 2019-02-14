@@ -3,20 +3,12 @@
 #include <map>
 #include <set>
 
+#include "common/AnnotatedAcquisition.h"
+
 #include "PureGadget.h"
 #include "Types.h"
 
 namespace Gadgetron::Grappa {
-
-    struct ChannelAnnotation {
-        const size_t number_of_combined_channels, number_of_uncombined_channels;
-        const std::vector<size_t> reordering;
-    };
-
-    using AnnotatedAcquisition = Core::tuple<ISMRMRD::AcquisitionHeader,
-                                             Core::optional<hoNDArray<float>>,
-                                             hoNDArray<std::complex<float>>,
-                                             Core::optional<ChannelAnnotation>>;
 
     class ChannelReorderer : public Core::TypedPureGadget<AnnotatedAcquisition, Core::Acquisition> {
     public:
@@ -43,7 +35,7 @@ namespace Gadgetron::Grappa {
         size_t
         parse_uncombined_channel(const std::string &);
 
-        std::vector<size_t>
+        std::vector<uint64_t>
         create_reordering(size_t number_of_channels) const;
     };
 }

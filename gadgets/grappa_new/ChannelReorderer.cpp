@@ -5,10 +5,35 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
+#include "hoNDArray_iterators.h"
 #include "hoNDArray_utils.h"
 
 namespace {
     using namespace Gadgetron::Core;
+
+    template<class T>
+    std::vector<T> reorder(std::vector<T> v, const std::vector<uint64_t> &reordering) {
+        std::vector<T> reordered; reordered.reserve(reordering.size());
+        for (auto i : reordering) reordered.push_back(v[i]);
+        return reordered;
+    }
+
+    ISMRMRD::AcquisitionHeader reorder(const ISMRMRD::AcquisitionHeader &header, const std::vector<uint64_t> &reordering) {
+        auto reordered_header = header;
+
+        for (uint16_t out_idx = 0; out_idx < reordering.size(); out_idx++) {
+            auto in_idx = uint16_t(reordering[out_idx]);
+
+            if (header.isChannelActive(in_idx)) {
+                reordered_header.setChannelActive(out_idx);
+            }
+            else {
+                reordered_header.setChannelNotActive(out_idx);
+            }
+        }
+
+        return reordered_header;
+    }
 }
 
 namespace Gadgetron::Grappa
@@ -27,25 +52,18 @@ namespace Gadgetron::Grappa
         auto trajectory = std::get<optional<hoNDArray<float>>>(acquisition);
         auto data       = std::get<hoNDArray<std::complex<float>>>(acquisition);
 
-        auto reordered_data = data;
-        auto reordered_header = header;
-
         auto reordering = create_reordering(header.available_channels);
 
-
-        // TODO: Actually reorder.
-
-        GINFO_STREAM("Reordering: (" << header.available_channels << ")");
-        for (auto r : reordering) GINFO_STREAM("\t" << r);
-
-
+        auto channels = spans(data, 1);
+        auto reordered_channels = reorder(std::vector(channels.begin(), channels.end()), reordering);
 
         return AnnotatedAcquisition{
-            reordered_header,
+            reorder(header, reordering),
             trajectory,
-            reordered_data,
+            concat(reordered_channels),
             ChannelAnnotation{
-                0, 0,
+                header.available_channels - uncombined_indices.size(),
+                uncombined_indices.size(),
                 std::move(reordering)
             }
         };
@@ -104,9 +122,9 @@ namespace Gadgetron::Grappa
         throw std::runtime_error("Unable to parse uncombined channel list token: " + token);
     }
 
-    std::vector<size_t> ChannelReorderer::create_reordering(size_t number_of_channels) const {
+    std::vector<uint64_t> ChannelReorderer::create_reordering(size_t number_of_channels) const {
 
-        std::vector<size_t> reordering(number_of_channels);
+        std::vector<uint64_t> reordering(number_of_channels);
         std::iota(reordering.begin(), reordering.end(), 0);
 
         reordering.erase(std::remove_if(reordering.begin(), reordering.end(), [&](auto index) {

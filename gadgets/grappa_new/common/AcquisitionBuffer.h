@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "AnnotatedAcquisition.h"
+
 #include "Context.h"
 #include "Channel.h"
 #include "Types.h"
@@ -14,7 +16,7 @@ namespace Gadgetron::Grappa {
     public:
         explicit AcquisitionBuffer(Core::Context);
 
-        void add(const Core::Acquisition &acquisition);
+        void add(const AnnotatedAcquisition &acquisition);
 
         template<class T>
         void add(const T &acquisitions) {
@@ -31,8 +33,8 @@ namespace Gadgetron::Grappa {
 
         void clear(size_t index);
 
-        void add_pre_update_callback(std::function<void(const Core::Acquisition &)> fn);
-        void add_post_update_callback(std::function<void(const Core::Acquisition &)> fn);
+        void add_pre_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
+        void add_post_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
 
     private:
         const Core::Context context;
@@ -44,7 +46,7 @@ namespace Gadgetron::Grappa {
 
         std::vector<hoNDArray<std::complex<float>>> buffers;
 
-        std::vector<std::function<void(const Core::Acquisition &)>> pre_update_callbacks;
-        std::vector<std::function<void(const Core::Acquisition &)>> post_update_callbacks;
+        std::vector<std::function<void(const AnnotatedAcquisition &)>> pre_update_callbacks;
+        std::vector<std::function<void(const AnnotatedAcquisition &)>> post_update_callbacks;
     };
 }

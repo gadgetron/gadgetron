@@ -20,7 +20,7 @@ namespace {
 
 
     void emit_reconstruction_job(
-            const Acquisition &acquisition,
+            const AnnotatedAcquisition &acquisition,
             AcquisitionBuffer &buffer,
             OutputChannel &output
     ) {
@@ -56,8 +56,6 @@ namespace Gadgetron::Grappa {
         AcquisitionBuffer buffer{context};
 
         for (const auto &slice : in) {
-            GINFO_STREAM("Processing slice with " << slice.size() << " acquisitions.")
-
             buffer.add(slice);
             emit_reconstruction_job(slice.back(), buffer, out);
         }

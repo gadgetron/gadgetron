@@ -12,7 +12,7 @@ namespace Gadgetron::Grappa {
     public:
 
         struct {
-            size_t slice;
+            uint64_t slice;
             std::array<float, 3> position, read_dir, phase_dir, slice_dir, table_pos;
         } meta;
 
@@ -22,7 +22,7 @@ namespace Gadgetron::Grappa {
     class Weights {
     public:
         struct {
-            size_t slice;
+            uint64_t slice, n_combined_channels;
         } meta;
 
         hoNDArray<std::complex<float>> data;

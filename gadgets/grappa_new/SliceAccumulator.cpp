@@ -1,6 +1,7 @@
 #include "SliceAccumulator.h"
 
-#include "common/slice.h"
+#include "common/AnnotatedAcquisition.h"
+#include "common/grappa_common.h"
 
 #include "Context.h"
 #include "Channel.h"
@@ -21,19 +22,16 @@ namespace Gadgetron::Grappa {
             const std::unordered_map<std::string, std::string> &props
     ) : TypedGadgetNode(props), context(context) {}
 
-    void SliceAccumulator::process(TypedInputChannel<Acquisition> &in, OutputChannel &out) {
+    void SliceAccumulator::process(TypedInputChannel<AnnotatedAcquisition> &in, OutputChannel &out) {
 
-        std::vector<Acquisition> acquisitions{};
+        std::vector<AnnotatedAcquisition> acquisitions{};
 
         for (auto acquisition : in) {
             acquisitions.emplace_back(std::move(acquisition));
 
             if (is_last_in_slice(acquisitions.back())) {
-                GINFO_STREAM("Finished accumulating slice: " << slice_of(acquisitions.back()));
-
                 out.push(std::move(acquisitions));
-                acquisitions = std::vector<Acquisition>{};
-
+                acquisitions = std::vector<AnnotatedAcquisition>{};
             }
         }
     }

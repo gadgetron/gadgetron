@@ -282,7 +282,6 @@ namespace Gadgetron {
         weights_description_message->getObjectPtr()->sampled_region = sampled_region;
         weights_description_message->getObjectPtr()->acceleration_factor = acceleration_factor;
         weights_description_message->getObjectPtr()->destination = destination;
-        weights_description_message->getObjectPtr()->uncombined_channel_weights = uncombined_channel_weights;
         weights_description_message->getObjectPtr()->include_uncombined_channels_in_combined_weights =
                 include_uncombined_channels_in_combined_weights;
 

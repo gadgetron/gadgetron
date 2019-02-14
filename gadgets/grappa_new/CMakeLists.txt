@@ -6,7 +6,7 @@ add_library(gadgetron_grappa_new SHARED
         Unmixing.cpp
         AcquisitionFanout.cpp
         SliceAccumulator.cpp
-        common/AcquisitionBuffer.cpp common/slice.cpp common/slice.h ChannelReorderer.cpp ChannelReorderer.h)
+        common/AcquisitionBuffer.cpp common/grappa_common.h ChannelReorderer.cpp ChannelReorderer.h common/AnnotatedAcquisition.h)
 
 set_target_properties(gadgetron_grappa_new PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
@@ -15,7 +15,12 @@ set_target_properties(gadgetron_grappa_new PROPERTIES
 target_link_libraries(gadgetron_grappa_new
         gadgetron_core
         gadgetron_core_parallel
+        gadgetron_mricore
+        gadgetron_toolbox_cpucore
+        gadgetron_toolbox_cpucore_math
         gadgetron_toolbox_cpufft)
+
+
 
 install(TARGETS gadgetron_grappa_new DESTINATION lib COMPONENT main)
 
