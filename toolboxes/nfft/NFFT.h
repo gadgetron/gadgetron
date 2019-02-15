@@ -151,14 +151,14 @@ namespace Gadgetron {
     protected:
 
         // Dedicated computes
-        virtual void compute_NFFT_C2NC(ARRAY <complext<REAL>>&in, ARRAY <complext<REAL>>& out);
+        void compute_NFFT_C2NC(ARRAY <complext<REAL>>&in, ARRAY <complext<REAL>>& out);
 
-        virtual void compute_NFFT_NC2C(const ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
+        void compute_NFFT_NC2C(const ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
 
 
-        virtual void compute_NFFTH_NC2C(const ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
+        void compute_NFFTH_NC2C(const ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
 
-        virtual void compute_NFFTH_C2NC(ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
+        void compute_NFFTH_C2NC(ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
 
 
         typename uint64d<D>::Type matrix_size;          // Matrix size
