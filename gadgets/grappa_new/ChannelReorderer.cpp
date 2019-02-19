@@ -95,7 +95,7 @@ namespace Gadgetron::Grappa
 
         for (auto token : tokens) {
             boost::trim(token);
-            uncombined.insert(parse_uncombined_channel(token));
+            if (!token.empty()) uncombined.insert(parse_uncombined_channel(token));
         }
 
         std::vector<size_t> sorted{uncombined.begin(), uncombined.end()};

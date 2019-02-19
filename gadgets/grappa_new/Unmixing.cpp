@@ -1,9 +1,12 @@
+#include <cpu/hoNDArray_fileio.h>
 #include "Unmixing.h"
 
 #include "parallel/Merge.h"
 
 #include "hoNDArray.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
+
 
 namespace {
     using namespace Gadgetron;
@@ -53,7 +56,7 @@ namespace {
             const hoNDArray<std::complex<float>> &weights,
             const hoNDArray<std::complex<float>> &data_in,
             hoNDArray<std::complex<float>> data_out,
-            std::complex<float> scale = std::complex<float>(1.0, 0.0)
+            std::complex<float> scale
     ) {
         auto sets = weights.get_number_of_elements() / data_in.get_number_of_elements();
         auto image_elements = data_out.get_number_of_elements() / sets;
@@ -66,7 +69,8 @@ namespace {
                 for (unsigned int c = 0; c < coils; c++) {
                     data_out[s * image_elements + p] +=
                             weights[s * image_elements * coils + c * image_elements + p] *
-                            data_in[c * image_elements + p] * scale;
+                            data_in[c * image_elements + p] *
+                            scale;
                 }
             }
         }
@@ -79,7 +83,9 @@ namespace Gadgetron::Grappa {
     Unmixing::Unmixing(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : Merge(props), context(context), image_dimensions(create_output_image_dimensions(context)) {}
+    ) : Merge(props), context(context),
+        image_dimensions(create_output_image_dimensions(context)),
+        image_fov(create_output_image_fov(context)) {}
 
     void Unmixing::process(
             std::map<std::string, InputChannel> input,
@@ -91,15 +97,40 @@ namespace Gadgetron::Grappa {
         WeightsProvider weights_provider(context, weights);
 
         for (auto image : images) {
-            GINFO_STREAM("Received unmixing job. Excellent.");
 
             auto current_weights = weights_provider[image.meta.slice];
 
             hoNDArray<std::complex<float>> unmixed_image(image_dimensions);
             unmix(current_weights.data, image.data, unmixed_image, unmixing_scale);
 
-            GINFO_STREAM("All right! Unmixed image!")
+            output.push(
+                    create_image_header(image, current_weights),
+                    std::move(unmixed_image)
+            );
         }
+    }
+
+    ISMRMRD::ImageHeader Unmixing::create_image_header(const Image &image, const Weights &weights) {
+
+        ISMRMRD::ImageHeader header;
+
+        header.slice = image.meta.slice;
+        header.acquisition_time_stamp = image.meta.time_stamp;
+        header.channels = weights.meta.n_uncombined_channels + uint16_t(1);
+
+        std::copy(image_dimensions.begin(), image_dimensions.end(), std::begin(header.matrix_size));
+        std::copy(image_fov.begin(), image_fov.end(), std::begin(header.field_of_view));
+
+        std::copy(image.meta.position.begin(), image.meta.position.end(), std::begin(header.position));
+        std::copy(image.meta.read_dir.begin(), image.meta.read_dir.end(), std::begin(header.read_dir));
+        std::copy(image.meta.phase_dir.begin(), image.meta.phase_dir.end(), std::begin(header.phase_dir));
+        std::copy(image.meta.slice_dir.begin(), image.meta.slice_dir.end(), std::begin(header.slice_dir));
+        std::copy(image.meta.table_pos.begin(), image.meta.table_pos.end(), std::begin(header.patient_table_position));
+
+        header.image_index = ++image_index_counter;
+        header.image_series_index = image_series;
+
+        return header;
     }
 
     std::vector<size_t> Unmixing::create_output_image_dimensions(const Core::Context &context) {
@@ -108,6 +139,15 @@ namespace Gadgetron::Grappa {
                 r_space.matrixSize.x,
                 r_space.matrixSize.y,
                 r_space.matrixSize.z
+        };
+    }
+
+    std::vector<float> Unmixing::create_output_image_fov(const Core::Context &context) {
+        auto r_space  = context.header.encoding[0].reconSpace;
+        return {
+                r_space.fieldOfView_mm.x,
+                r_space.fieldOfView_mm.y,
+                r_space.fieldOfView_mm.z
         };
     }
 }

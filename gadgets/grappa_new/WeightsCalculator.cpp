@@ -284,17 +284,20 @@ namespace Gadgetron::Grappa {
 
     void WeightsCalculator::process(TypedInputChannel<Slice> &in, OutputChannel &out) {
 
-        std::set<size_t> updated_slices{};
-        size_t n_combined_channels = 0;
+        std::set<uint16_t> updated_slices{};
+        uint16_t n_combined_channels = 0, n_uncombined_channels = 0;
 
         AcquisitionBuffer buffer{context};
         SupportMonitor support_monitor{context};
         AccelerationMonitor acceleration_monitor{context};
 
-        buffer.add_post_update_callback([&](auto &acq) { n_combined_channels = combined_channels(acq); });
         buffer.add_post_update_callback([&](auto &acq) { updated_slices.insert(slice_of(acq)); });
         buffer.add_post_update_callback([&](auto &acq) { acceleration_monitor(acq); });
         buffer.add_post_update_callback([&](auto &acq) { support_monitor(acq); });
+        buffer.add_post_update_callback([&](auto &acq) {
+            n_combined_channels = combined_channels(acq);
+            n_uncombined_channels = uncombined_channels(acq);
+        });
 
         buffer.add_pre_update_callback(DirectionMonitor{buffer, support_monitor, acceleration_monitor});
 
@@ -309,7 +312,7 @@ namespace Gadgetron::Grappa {
 
             for (auto index : updated_slices) {
                 Grappa::Weights weights {
-                        { index, n_combined_channels },
+                        { index, n_combined_channels, n_uncombined_channels },
                         core.calculate_weights(
                                 buffer.view(index),
                                 support_monitor.region_of_support(index),
