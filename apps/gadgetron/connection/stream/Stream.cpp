@@ -54,6 +54,11 @@ namespace {
     std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const Context& context, Loader& loader){
         return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);
     }
+
+    std::shared_ptr<Processable> load_node(const Config::PureDistributed& conf, const Context& context, Loader& loader){
+        throw std::runtime_error("Not implemented yet");
+//        return std::make_shared<Gadgetron::Server::Connection::Stream::PureDistributed>
+    }
 }
 
 namespace Gadgetron::Server::Connection::Stream {

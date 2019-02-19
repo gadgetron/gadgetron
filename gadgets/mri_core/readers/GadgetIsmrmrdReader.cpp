@@ -33,7 +33,7 @@ namespace Gadgetron {
 
 #if defined GADGETRON_COMPRESSION_ZFP
 
-            uint32_t comp_size = IO::read<uint32_t>(stream, comp_size);
+            uint32_t comp_size = IO::read<uint32_t>(stream);
 
             std::vector<char> comp_buffer(comp_size);
 

@@ -6,7 +6,7 @@
 #include "Message.h"
 #include "PureGadget.h"
 #include "connection/Loader.h"
-#include <connection/Config.h>
+#include "connection/Config.h"
 
 namespace Gadgetron::Server::Connection::Stream {
 class PureStream {

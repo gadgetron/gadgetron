@@ -428,6 +428,10 @@ namespace {
             }
             return purestream_node;
         }
+
+        static pugi::xml_node add_node(const Config::PureDistributed& distributed, pugi::xml_node& node){
+            throw std::runtime_error("Not implemented yet");
+        }
     };
 
 

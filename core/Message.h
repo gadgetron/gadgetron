@@ -21,7 +21,7 @@ namespace Gadgetron {
         class MessageChunk {
         public:
             virtual ~MessageChunk() = default;
-
+            virtual std::unique_ptr<MessageChunk> clone() const = 0;
         protected:
             virtual GadgetContainerMessageBase *to_container_message() = 0;
 
@@ -46,6 +46,8 @@ namespace Gadgetron {
             std::vector<std::unique_ptr<MessageChunk>> take_messages();
 
             GadgetContainerMessageBase *to_container_message();
+
+            Message clone();
 
         private:
             std::vector<std::unique_ptr<MessageChunk>> messages_;
@@ -87,6 +89,8 @@ namespace Gadgetron {
             TypedMessageChunk &operator=(TypedMessageChunk &&other) = default;
 
             GadgetContainerMessageBase *to_container_message() override;
+
+            std::unique_ptr<MessageChunk> clone() const override;
 
             ~TypedMessageChunk() override = default;
 

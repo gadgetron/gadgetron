@@ -44,7 +44,7 @@ add_executable(gadgetron
         connection/distributed/RemoteChannel.cpp
         connection/distributed/RemoteChannel.h
         connection/distributed/remote_workers.cpp
-        connection/stream/Processable.cpp connection/stream/ParallelProcess.cpp connection/stream/ParallelProcess.h connection/stream/PureStream.cpp connection/stream/PureStream.h)
+        connection/stream/Processable.cpp connection/stream/ParallelProcess.cpp connection/stream/ParallelProcess.h connection/stream/PureStream.cpp connection/stream/PureStream.h connection/stream/PureDistributed.cpp connection/stream/PureDistributed.h)
 
 target_link_libraries(gadgetron
         gadgetron_core
