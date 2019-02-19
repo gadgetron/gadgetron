@@ -8,6 +8,7 @@
 #include "SliceAccumulator.h"
 #include "Unmixing.h"
 
+#include "GadgetronTimer.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_iterators.h"
 #include "hoNDArray_utils.h"
@@ -171,8 +172,13 @@ namespace {
                 uint64_t n_combined_channels
         );
 
-        const hoNDArray<std::complex<float>> &estimate_coil_map(const hoNDArray<std::complex<float>> &data);
-        hoNDArray<std::complex<float>> keep_combined_channels(
+        const hoNDArray<std::complex<float>> &
+        estimate_coil_map(
+                const hoNDArray<std::complex<float>> &data
+        );
+
+        const hoNDArray<std::complex<float>>
+        keep_combined_channels(
                 uint64_t n_combined_channels,
                 const hoNDArray<std::complex<float>> &data
         );
@@ -201,15 +207,16 @@ namespace {
         return buffers.coil_map;
     }
 
-    hoNDArray<std::complex<float>> WeightsCore::keep_combined_channels(
+    const hoNDArray<std::complex<float>> WeightsCore::keep_combined_channels(
             uint64_t n_combined_channels,
             const hoNDArray<std::complex<float>> &data
     ) {
-        auto channels = spans(data, 2);
-        return concat(std::vector<hoNDArray<std::complex<float>>>(
-                channels.begin(),
-                channels.begin() + n_combined_channels
-        ));
+        return hoNDArray<std::complex<float>>(
+            data.dimensions()[0],
+            data.dimensions()[1],
+            n_combined_channels,
+            const_cast<std::complex<float> *>(data.data())
+        );
     }
 
     hoNDArray<std::complex<float>> WeightsCore::calculate_weights(
@@ -220,6 +227,7 @@ namespace {
     ) {
         // TODO: Optimize accel_factor == 1;
 
+        GadgetronTimer weights_timer("Grappa weights calculation");
         data.squeeze();
 
         size_t RO = data.get_size(0);

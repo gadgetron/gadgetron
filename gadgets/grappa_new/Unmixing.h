@@ -32,18 +32,19 @@ namespace Gadgetron::Grappa {
     public:
         Unmixing(const Core::Context &context, const std::unordered_map<std::string, std::string> &props);
 
-
-        // TODO: Get rid of these pointless things.
-        NODE_PROPERTY(device_channels, int, "Number of device channels", 0);
-
         NODE_PROPERTY(image_series, int, "Image series number for output images", 0);
 
-        NODE_PROPERTY(target_channels, int, "Number of target channels for GRAPPA recon", 0);
-
+        NODE_PROPERTY(unmixing_scale, float, "", 1.0);
 
         void process(
                 std::map<std::string, Core::InputChannel> input,
                 Core::OutputChannel output
         ) override;
+
+    private:
+        static std::vector<size_t> create_output_image_dimensions(const Core::Context &context);
+
+        const Core::Context context;
+        const std::vector<size_t> image_dimensions;
     };
 }
