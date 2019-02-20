@@ -87,13 +87,11 @@ namespace Gadgetron::Grappa {
             const Image &image,
             const Weights &weights
     ) {
-
         hoNDArray<std::complex<float>> unmixed_image(create_unmixed_image_dimensions(weights));
         hoNDArray<std::complex<float>> input_image = image.data;
 
         input_image *= weights.data;
         input_image *= unmixing_scale;
-
         sum_over_dimension(input_image, unmixed_image, 2);
 
         return std::move(unmixed_image);
