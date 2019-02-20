@@ -42,6 +42,10 @@ namespace Gadgetron::Grappa {
         ) override;
 
     private:
+        hoNDArray<std::complex<float>> unmix(const Image &image, const Weights &weights);
+
+        std::vector<size_t> create_unmixed_image_dimensions(const Weights &weights);
+
         static std::vector<size_t> create_output_image_dimensions(const Core::Context &context);
         static std::vector<float> create_output_image_fov(const Core::Context &context);
         ISMRMRD::ImageHeader create_image_header(const Image &image, const Weights &weights);

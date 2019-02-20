@@ -19,12 +19,11 @@ namespace {
         return *context.header.acquisitionSystemInformation->receiverChannels;
     }
 
-    hoNDArray<std::complex<float>> create_buffer(const std::vector<unsigned long> &dimensions) {
-
-        hoNDArray<std::complex<float>> buffer{dimensions};
-        std::fill(buffer.begin(), buffer.end(), std::complex<float>(0.0f, 0.0f));
-
-        return buffer;
+    template<class T>
+    std::set<T> create_set(T low, T high) {
+        std::set<T> s{};
+        for (auto i = low; i <= high; i++) s.insert(i);
+        return s;
     }
 }
 
@@ -45,15 +44,22 @@ namespace Gadgetron::Grappa {
 
         auto slices = e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
 
+        if (r_space.matrixSize.z != 1) {
+            throw std::runtime_error("RT Grappa works only with 2D images. 3D output requested.");
+        }
+
         internals.line_offset = (e_space.matrixSize.y / 2) - e_limits.kspace_encoding_step_1->center;
+        internals.expected_lines = create_set(
+                e_limits.kspace_encoding_step_1->minimum,
+                e_limits.kspace_encoding_step_1->maximum
+        );
         internals.buffer_dimensions = {
                 r_space.matrixSize.x,
                 r_space.matrixSize.y,
-                r_space.matrixSize.z,
                 get_receiver_channels(context)
         };
 
-        buffers = std::vector<hoNDArray<std::complex<float>>>(slices, create_buffer(internals.buffer_dimensions));
+        buffers = std::vector<buffer>(slices, create_buffer());
     }
 
     void AcquisitionBuffer::add(const AnnotatedAcquisition &acquisition) {
@@ -63,17 +69,21 @@ namespace Gadgetron::Grappa {
         auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
         const auto &data = std::get<hoNDArray<std::complex<float>>>(acquisition);
 
+        if (header.idx.kspace_encode_step_2 != 0) {
+            throw std::runtime_error("RT Grappa works only on 2D data. 3D data received.");
+        }
+
         auto current_slice = header.idx.slice;
         auto current_line = header.idx.kspace_encode_step_1 + internals.line_offset;
-        auto current_partition = header.idx.kspace_encode_step_2;
         auto samples = header.number_of_samples;
 
         auto &buffer = buffers[current_slice];
+        buffer.sampled_lines.insert(header.idx.kspace_encode_step_1);
 
         // Copy the acquisition data to the buffer for each channel.
         for (size_t channel = 0; channel < header.active_channels; channel++) {
 
-            auto destination = &buffer(0, size_t(current_line), current_partition, channel);
+            auto destination = &buffer.data(0, size_t(current_line), channel);
             auto source = &data(0, channel);
 
             std::copy_n(source, samples, destination);
@@ -85,16 +95,33 @@ namespace Gadgetron::Grappa {
     hoNDArray<std::complex<float>> AcquisitionBuffer::take(size_t index) {
         auto buffer = std::move(buffers[index]);
         clear(index);
-        return buffer;
+        return buffer.data;
     }
 
     const hoNDArray<std::complex<float>> &AcquisitionBuffer::view(size_t index) {
-        return buffers[index];
+        return buffers[index].data;
     }
 
     void AcquisitionBuffer::clear(size_t index) {
-        buffers[index] = create_buffer(internals.buffer_dimensions);
+        buffers[index] = create_buffer();
     }
+
+    bool AcquisitionBuffer::is_fully_sampled(size_t index) {
+        return internals.expected_lines == buffers[index].sampled_lines;
+    }
+
+    AcquisitionBuffer::buffer AcquisitionBuffer::create_buffer() {
+
+        buffer buffer {
+            hoNDArray<std::complex<float>>(internals.buffer_dimensions),
+            std::set<uint16_t>()
+        };
+
+        std::fill(buffer.data.begin(), buffer.data.end(), std::complex<float>(0.0f, 0.0f));
+
+        return buffer;
+    }
+
 
     void AcquisitionBuffer::add_pre_update_callback(std::function<void(const AnnotatedAcquisition &)> fn) {
         pre_update_callbacks.emplace_back(std::move(fn));

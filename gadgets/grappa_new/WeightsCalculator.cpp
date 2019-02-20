@@ -212,8 +212,8 @@ namespace {
             const hoNDArray<std::complex<float>> &data
     ) {
         return hoNDArray<std::complex<float>>(
-            data.dimensions()[0],
-            data.dimensions()[1],
+            data.get_size(0),
+            data.get_size(1),
             n_combined_channels,
             const_cast<std::complex<float> *>(data.data())
         );
@@ -228,7 +228,6 @@ namespace {
         // TODO: Optimize accel_factor == 1;
 
         GadgetronTimer weights_timer("Grappa weights calculation");
-        data.squeeze();
 
         size_t RO = data.get_size(0);
         size_t E1 = data.get_size(1);
@@ -311,6 +310,9 @@ namespace Gadgetron::Grappa {
             buffer.add(slices);
 
             for (auto index : updated_slices) {
+
+                if (!buffer.is_fully_sampled(index)) continue;
+
                 Grappa::Weights weights {
                         { index, n_combined_channels, n_uncombined_channels },
                         core.calculate_weights(

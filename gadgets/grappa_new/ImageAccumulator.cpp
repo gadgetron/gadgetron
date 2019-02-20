@@ -41,7 +41,7 @@ namespace {
         boost::copy(last_header.slice_dir, image.meta.slice_dir.begin());
         boost::copy(last_header.patient_table_position, image.meta.table_pos.begin());
 
-        hoNDFFT<float>::instance()->ifft3c(image.data);
+        hoNDFFT<float>::instance()->ifft2c(image.data);
 
         output.push(std::move(image));
     }

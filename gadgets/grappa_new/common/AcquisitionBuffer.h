@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <functional>
 
 #include "AnnotatedAcquisition.h"
@@ -33,6 +34,8 @@ namespace Gadgetron::Grappa {
 
         void clear(size_t index);
 
+        bool is_fully_sampled(size_t index);
+
         void add_pre_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
         void add_post_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
 
@@ -40,11 +43,19 @@ namespace Gadgetron::Grappa {
         const Core::Context context;
 
         struct {
-            std::vector<unsigned long> buffer_dimensions;
+            std::vector<size_t> buffer_dimensions;
+            std::set<uint16_t> expected_lines;
             int line_offset = 0;
         } internals;
 
-        std::vector<hoNDArray<std::complex<float>>> buffers;
+        struct buffer {
+            hoNDArray<std::complex<float>> data;
+            std::set<uint16_t> sampled_lines;
+        };
+
+        buffer create_buffer();
+
+        std::vector<buffer> buffers;
 
         std::vector<std::function<void(const AnnotatedAcquisition &)>> pre_update_callbacks;
         std::vector<std::function<void(const AnnotatedAcquisition &)>> post_update_callbacks;

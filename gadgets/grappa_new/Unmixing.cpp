@@ -51,30 +51,6 @@ namespace {
         TypedInputChannel<Weights> &source;
         std::vector<optional<Weights>> weights;
     };
-
-    void unmix(
-            const hoNDArray<std::complex<float>> &weights,
-            const hoNDArray<std::complex<float>> &data_in,
-            hoNDArray<std::complex<float>> data_out,
-            std::complex<float> scale
-    ) {
-        auto sets = weights.get_number_of_elements() / data_in.get_number_of_elements();
-        auto image_elements = data_out.get_number_of_elements() / sets;
-        auto coils = weights.get_number_of_elements() / (sets * image_elements);
-
-        clear(data_out);
-
-        for (unsigned int s = 0; s < sets; s++) {
-            for (unsigned int p = 0; p < image_elements; p++) {
-                for (unsigned int c = 0; c < coils; c++) {
-                    data_out[s * image_elements + p] +=
-                            weights[s * image_elements * coils + c * image_elements + p] *
-                            data_in[c * image_elements + p] *
-                            scale;
-                }
-            }
-        }
-    }
 }
 
 namespace Gadgetron::Grappa {
@@ -100,14 +76,27 @@ namespace Gadgetron::Grappa {
 
             auto current_weights = weights_provider[image.meta.slice];
 
-            hoNDArray<std::complex<float>> unmixed_image(image_dimensions);
-            unmix(current_weights.data, image.data, unmixed_image, unmixing_scale);
-
             output.push(
                     create_image_header(image, current_weights),
-                    std::move(unmixed_image)
+                    unmix(image, current_weights)
             );
         }
+    }
+
+    hoNDArray<std::complex<float>> Unmixing::unmix(
+            const Image &image,
+            const Weights &weights
+    ) {
+
+        hoNDArray<std::complex<float>> unmixed_image(create_unmixed_image_dimensions(weights));
+        hoNDArray<std::complex<float>> input_image = image.data;
+
+        input_image *= weights.data;
+        input_image *= unmixing_scale;
+
+        sum_over_dimension(input_image, unmixed_image, 2);
+
+        return std::move(unmixed_image);
     }
 
     ISMRMRD::ImageHeader Unmixing::create_image_header(const Image &image, const Weights &weights) {
@@ -149,5 +138,11 @@ namespace Gadgetron::Grappa {
                 r_space.fieldOfView_mm.y,
                 r_space.fieldOfView_mm.z
         };
+    }
+
+    std::vector<size_t> Unmixing::create_unmixed_image_dimensions(const Weights &weights) {
+        std::vector<size_t> dimensions = image_dimensions;
+        dimensions.push_back(1u + weights.meta.n_uncombined_channels);
+        return dimensions;
     }
 }

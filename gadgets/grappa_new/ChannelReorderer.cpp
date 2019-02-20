@@ -52,7 +52,7 @@ namespace Gadgetron::Grappa
         auto trajectory = std::get<optional<hoNDArray<float>>>(acquisition);
         auto data       = std::get<hoNDArray<std::complex<float>>>(acquisition);
 
-        auto reordering = create_reordering(header.available_channels);
+        auto reordering = create_reordering(header.active_channels);
 
         auto channels = spans(data, 1);
         auto reordered_channels = reorder(std::vector(channels.begin(), channels.end()), reordering);
@@ -62,7 +62,7 @@ namespace Gadgetron::Grappa
             trajectory,
             concat(reordered_channels),
             ChannelAnnotation{
-                header.available_channels - uncombined_indices.size(),
+                header.active_channels - uncombined_indices.size(),
                 uncombined_indices.size(),
                 std::move(reordering)
             }

@@ -36,7 +36,7 @@
             <classname>CoilReductionGadget</classname>
             <property>
                 <name>coils_out</name>
-                <value>16</value>
+                <value>8</value>
             </property>
         </gadget>
 
