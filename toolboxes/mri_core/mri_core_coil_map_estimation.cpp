@@ -21,8 +21,6 @@ namespace Gadgetron
 template<typename T> 
 void coil_map_2d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
 {
-    GadgetronTimer timer("**** Coil Map");
-
     try
     {
         typedef typename realType<T>::Type value_type;

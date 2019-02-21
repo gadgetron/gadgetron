@@ -94,7 +94,7 @@ namespace Gadgetron {
 
         weights_ = std::vector<boost::shared_ptr<GrappaWeights<float>>>(dimensions_[4]);
 
-        buffers_ = std::vector<GrappaCalibrationBuffer *>(dimensions_[4], 0);
+        buffers_ = std::vector<GrappaCalibrationBuffer *>(dimensions_[4], nullptr);
         time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4], 0);
 
         //Let's figure out the number of target coils

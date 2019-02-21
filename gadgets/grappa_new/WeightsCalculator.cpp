@@ -178,17 +178,11 @@ namespace {
                 const hoNDArray<std::complex<float>> &data
         );
 
-        const hoNDArray<std::complex<float>>
-        keep_combined_channels(
-                uint64_t n_combined_channels,
-                const hoNDArray<std::complex<float>> &data
-        );
-
-        void
+        hoNDArray<std::complex<float>>
         fill_in_uncombined_weights(
                 hoNDArray<std::complex<float>> &unmixing_coefficients,
-                size_t n_combined_channels,
-                size_t n_uncombined_channels
+                const hoNDArray<std::complex<float>> &image_domain_kernels,
+                size_t n_combined_channels
         );
 
         struct {
@@ -215,48 +209,22 @@ namespace {
         return buffers.coil_map;
     }
 
-    const hoNDArray<std::complex<float>> WeightsCore::keep_combined_channels(
-            uint64_t n_combined_channels,
-            const hoNDArray<std::complex<float>> &data
-    ) {
-        return hoNDArray<std::complex<float>>(
-            data.get_size(0),
-            data.get_size(1),
-            n_combined_channels,
-            const_cast<std::complex<float> *>(data.data())
-        );
-    }
-
-    void WeightsCore::fill_in_uncombined_weights(
+    hoNDArray<std::complex<float>> WeightsCore::fill_in_uncombined_weights(
             hoNDArray<std::complex<float>> &unmixing_coefficients,
-            size_t n_combined_channels,
-            size_t n_uncombined_channels
+            const hoNDArray<std::complex<float>> &image_domain_kernels,
+            size_t n_combined_channels
     ) {
+        auto uncombined_coefficients_range = spans(buffers.image_domain_kernel, 3);
 
-        // All right, let's see.
-        GINFO_STREAM("Weights dimensions: " << to_string(unmixing_coefficients.dimensions()));
-        GINFO_STREAM("Image domain kernel dimensions: " << to_string(buffers.image_domain_kernel.dimensions()));
-        GINFO_STREAM("Channels: (" << n_combined_channels << ", " << n_uncombined_channels << ")");
+        std::vector<hoNDArray<std::complex<float>>> weights = { unmixing_coefficients };
 
+        std::for_each(
+                uncombined_coefficients_range.begin() + n_combined_channels,
+                uncombined_coefficients_range.end(),
+                [&](auto w) { weights.push_back(w); }
+        );
 
-//        hoNDArray<std::complex<float> > unmixing_all_channels(RO, E1, CHA, unmixing_.begin());
-//        Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_,
-//                                           description->acceleration_factor,
-//                                           unmixing_all_channels, gFactor_);
-//
-//        // set unmixing coefficients for uncombined channels
-//        for (ind = 0, it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++, ind++) {
-//            memcpy(unmixing_.begin() + ind * RO * E1 * CHA,
-//                   kIm_.begin() + (target_coils_with_uncombined - numUnCombined + ind) * RO * E1 * CHA,
-//                   sizeof(std::complex<float>) * RO * E1 * CHA);
-//        }
-//
-//
-//
-//        std::copy_n();
-//
-//        buffers.image_domain_kernel
-
+        return concat(weights);
     }
 
     hoNDArray<std::complex<float>> WeightsCore::calculate_weights(
@@ -268,20 +236,17 @@ namespace {
     ) {
         // TODO: Optimize accel_factor == 1;
 
-        GINFO_STREAM("Calculating weights. Data: " << to_string(data.dimensions()));
-
         GadgetronTimer weights_timer("Grappa weights calculation");
 
         size_t RO = data.get_size(0);
         size_t E1 = data.get_size(1);
         size_t CHA = data.get_size(2);
 
-        auto combined_data = keep_combined_channels(n_combined_channels, data);
-        auto coil_map = estimate_coil_map(combined_data);
+        auto coil_map = estimate_coil_map(data);
 
         Gadgetron::grappa2d_calib_convolution_kernel(
                 data,
-                combined_data,
+                data,
                 acceleration_factor,
                 kernel_params.threshold,
                 kernel_params.width,
@@ -301,6 +266,7 @@ namespace {
         );
 
         hoNDArray<std::complex<float>> unmixing_coefficients(RO, E1, CHA);
+
         Gadgetron::grappa2d_unmixing_coeff(
                 buffers.image_domain_kernel,
                 coil_map,
@@ -309,13 +275,11 @@ namespace {
                 buffers.g_factor
         );
 
-        fill_in_uncombined_weights(
+        return fill_in_uncombined_weights(
                 unmixing_coefficients,
-                n_combined_channels,
-                n_uncombined_channels
+                buffers.image_domain_kernel,
+                n_combined_channels
         );
-
-        return unmixing_coefficients;
     }
 
     // ---------------------------------------------------------------------------- //

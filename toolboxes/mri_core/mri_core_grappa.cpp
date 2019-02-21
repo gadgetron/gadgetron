@@ -24,7 +24,6 @@
 
 #include "mri_core_grappa.h"
 #include "mri_core_utility.h"
-#include "GadgetronTimer.h"
 #include "hoMatrix.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDFFT.h"
@@ -285,8 +284,6 @@ template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArr
 template <typename T>
 void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& convKer)
 {
-    GadgetronTimer timer("**** Calibrate Convolution Kernel");
-
     try
     {
         std::vector<int> kE1, oE1;
@@ -389,8 +386,6 @@ template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< s
 template <typename T> 
 void grappa2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t E1, hoNDArray<T>& kIm)
 {
-    GadgetronTimer timer("**** Image Domain Kernel");
-
     try
     {
         hoNDArray<T> convKerScaled(convKer);
@@ -414,8 +409,6 @@ template EXPORTMRICORE void grappa2d_image_domain_kernel(const hoNDArray< std::c
 template <typename T>
 void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, size_t acceFactorE1, hoNDArray<T>& unmixCoeff, hoNDArray< typename realType<T>::Type >& gFactor)
 {
-    GadgetronTimer timer("**** Unmixing Coefficients");
-
     try
     {
         typedef typename realType<T>::Type value_type;

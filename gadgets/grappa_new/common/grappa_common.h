@@ -44,6 +44,9 @@ namespace Gadgetron::Grappa {
 
     template<class Coll>
     std::string to_string(Coll collection) {
+
+        if (collection.empty()) return "[]";
+
         std::stringstream stream;
 
         stream << "[";

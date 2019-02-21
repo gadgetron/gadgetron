@@ -215,6 +215,10 @@ namespace Gadgetron {
                     // kIm_ stored the unwrapping coefficients as [RO E1 CHA target_coils_with_uncombined]
                     // for the target_coils_with_uncombined dimension, combined channels come first and then uncombined channels
 
+                    
+
+
+
                     Gadgetron::clear(unmixing_);
 
                     hoNDArray<std::complex<float> > unmixing_all_channels(RO, E1, CHA, unmixing_.begin());

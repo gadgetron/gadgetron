@@ -20,16 +20,14 @@ target_link_libraries(gadgetron_grappa_new
         gadgetron_toolbox_cpucore_math
         gadgetron_toolbox_cpufft)
 
-
-
 install(TARGETS gadgetron_grappa_new DESTINATION lib COMPONENT main)
 
 install(FILES
         config/grappa.xml
-        config/grappa_cpu.xml
-        config/grappa_float.xml
-        config/grappa_float_cpu.xml
-        config/grappa_unoptimized.xml
-        config/grappa_unoptimized_float.xml
+#        config/grappa_cpu.xml
+#        config/grappa_float.xml
+#        config/grappa_float_cpu.xml
+#        config/grappa_unoptimized.xml
+#        config/grappa_unoptimized_float.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
