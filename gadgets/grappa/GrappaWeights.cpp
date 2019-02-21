@@ -80,7 +80,9 @@ namespace Gadgetron {
             for (unsigned int p = 0; p < image_elements; p++) {
                 for (unsigned int c = 0; c < coils; c++) {
                     out_ptr[s * image_elements + p] +=
-                            weights_ptr[s * image_elements * coils + c * image_elements + p] * in_ptr[c * image_elements + p] * scale;
+                            weights_ptr[s * image_elements * coils + c * image_elements + p] *
+                            in_ptr[c * image_elements + p] *
+                            scale;
                 }
             }
         }

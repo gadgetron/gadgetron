@@ -34,10 +34,7 @@
         <gadget>
             <dll>gadgetron_mricore</dll>
             <classname>CoilReductionGadget</classname>
-            <property>
-                <name>coils_out</name>
-                <value>8</value>
-            </property>
+            <property name="coils_out" value="8"/>
         </gadget>
 
         <gadget>
@@ -53,7 +50,7 @@
         <gadget>
             <dll>gadgetron_grappa_new</dll>
             <classname>ChannelReorderer</classname>
-            <!--<property name="uncombined_channels" value="8, 9, 10, 11, 12, 13, 14, 15"/>-->
+            <property name="uncombined_channels" value=""/>
         </gadget>
 
         <gadget>

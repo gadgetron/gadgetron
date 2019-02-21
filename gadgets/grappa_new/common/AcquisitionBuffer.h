@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <set>
 #include <functional>
 
@@ -43,8 +44,8 @@ namespace Gadgetron::Grappa {
         const Core::Context context;
 
         struct {
-            std::vector<size_t> buffer_dimensions;
             std::set<uint16_t> expected_lines;
+            size_t number_of_samples, number_of_lines;
             int line_offset = 0;
         } internals;
 
@@ -53,9 +54,9 @@ namespace Gadgetron::Grappa {
             std::set<uint16_t> sampled_lines;
         };
 
-        buffer create_buffer();
+        buffer create_buffer(const std::vector<size_t> &dimensions);
 
-        std::vector<buffer> buffers;
+        std::map<size_t, buffer> buffers;
 
         std::vector<std::function<void(const AnnotatedAcquisition &)>> pre_update_callbacks;
         std::vector<std::function<void(const AnnotatedAcquisition &)>> post_update_callbacks;

@@ -41,4 +41,15 @@ namespace Gadgetron::Grappa {
         boost::optional<ChannelAnnotation> optional_annotation = std::get<Core::optional<ChannelAnnotation>>(acquisition);
         return optional_annotation ? optional_annotation->number_of_uncombined_channels : 0;
     }
+
+    template<class Coll>
+    std::string to_string(Coll collection) {
+        std::stringstream stream;
+
+        stream << "[";
+        for (auto i : collection) stream << i << ", ";
+        stream << "\b\b]";
+
+        return stream.str();
+    }
 }
