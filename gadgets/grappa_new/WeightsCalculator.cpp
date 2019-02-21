@@ -214,10 +214,9 @@ namespace {
             const hoNDArray<std::complex<float>> &image_domain_kernels,
             size_t n_combined_channels
     ) {
-        auto uncombined_coefficients_range = spans(buffers.image_domain_kernel, 3);
-
         std::vector<hoNDArray<std::complex<float>>> weights = { unmixing_coefficients };
 
+        auto uncombined_coefficients_range = spans(buffers.image_domain_kernel, 3);
         std::for_each(
                 uncombined_coefficients_range.begin() + n_combined_channels,
                 uncombined_coefficients_range.end(),

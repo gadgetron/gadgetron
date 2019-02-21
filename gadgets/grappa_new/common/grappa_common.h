@@ -27,7 +27,7 @@ namespace Gadgetron::Grappa {
 
     template<class T>
     size_t channels_in(const T &acquisition) {
-        return std::get<ISMRMRD::AcquisitionHeader>(acquisition).available_channels;
+        return std::get<ISMRMRD::AcquisitionHeader>(acquisition).active_channels;
     }
 
     template<class T>
