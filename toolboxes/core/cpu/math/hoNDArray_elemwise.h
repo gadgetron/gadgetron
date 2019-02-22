@@ -404,7 +404,7 @@ template<class T> void clear( hoNDArray<T>& x )
 {
     if ( x.get_number_of_elements() > 0 )
     {
-        memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
+        memset( x.get_data_ptr(), 0, x.get_number_of_elements() * sizeof(T));
     }
 }
 

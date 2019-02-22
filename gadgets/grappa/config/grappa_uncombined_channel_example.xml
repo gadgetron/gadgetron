@@ -49,6 +49,12 @@
 
         <gadget>
             <dll>gadgetron_grappa</dll>
+            <classname>ChannelReorderer</classname>
+            <property name="uncombined_channels" value=""/>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_grappa</dll>
             <classname>SliceAccumulator</classname>
         </gadget>
 
@@ -81,6 +87,16 @@
         <gadget>
             <dll>gadgetron_mricore</dll>
             <classname>ExtractGadget</classname>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>AutoScaleGadget</classname>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>FloatToUShortGadget</classname>
         </gadget>
     </stream>
 </configuration>

@@ -16,12 +16,8 @@ set_target_properties(gadgetron_toolbox_gpusolvers PROPERTIES VERSION ${GADGETRO
 
 target_link_libraries(gadgetron_toolbox_gpusolvers 
   gadgetron_toolbox_gpucore
-  gadgetron_toolbox_log
-  ${Boost_LIBRARIES}
-  ${CUDA_LIBRARIES}
-  ${CUDA_CUBLAS_LIBRARIES} 
-  )
-
+  gadgetron_toolbox_solvers
+  gadgetron_toolbox_log)
 
 target_include_directories(gadgetron_toolbox_gpusolvers
         PUBLIC
