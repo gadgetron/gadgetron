@@ -55,7 +55,10 @@ namespace Gadgetron::Grappa
         auto reordering = create_reordering(header.active_channels);
 
         auto channels = spans(data, 1);
-        auto reordered_channels = reorder(std::vector(channels.begin(), channels.end()), reordering);
+        auto reordered_channels = reorder(
+                std::vector<hoNDArray<std::complex<float>>>(channels.begin(), channels.end()),
+                reordering
+        );
 
         return AnnotatedAcquisition{
             reorder(header, reordering),

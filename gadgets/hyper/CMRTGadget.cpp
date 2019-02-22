@@ -1,7 +1,6 @@
 #include "CMRTGadget.h"
 #include "cuNFFT.h"
 #include "vector_td_utilities.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "permutationOperator.h"
 #include "hoNDArray_utils.h"
 #include "hoNDArray_fileio.h"

@@ -18,11 +18,13 @@ target_include_directories(gadgetron_toolbox_gpureg
         ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(gadgetron_toolbox_gpureg PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_gpureg 
-  gadgetron_toolbox_gpucore
-  gadgetron_toolbox_log
-  ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}
-  )
+target_link_libraries(gadgetron_toolbox_gpureg
+        gadgetron_toolbox_registration_optical_flow
+        gadgetron_toolbox_operator
+        gadgetron_toolbox_gpucore
+        gadgetron_toolbox_solvers
+        gadgetron_toolbox_log
+        ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 
 install(TARGETS gadgetron_toolbox_gpureg DESTINATION lib COMPONENT main)
 

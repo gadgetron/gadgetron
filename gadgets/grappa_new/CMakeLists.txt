@@ -6,7 +6,7 @@ add_library(gadgetron_grappa_new SHARED
         Unmixing.cpp
         AcquisitionFanout.cpp
         SliceAccumulator.cpp
-        common/AcquisitionBuffer.cpp common/grappa_common.h ChannelReorderer.cpp ChannelReorderer.h common/AnnotatedAcquisition.h)
+        common/AcquisitionBuffer.cpp common/grappa_common.h ChannelReorderer.cpp ChannelReorderer.h common/AnnotatedAcquisition.h CPU/WeightsCore.cpp CPU/WeightsCore.h GPU/WeightsCore.cpp GPU/WeightsCore.h)
 
 set_target_properties(gadgetron_grappa_new PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
