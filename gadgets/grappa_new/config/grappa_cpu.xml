@@ -68,7 +68,7 @@
             <stream key="weights">
                 <gadget>
                     <dll>gadgetron_grappa_new</dll>
-                    <classname>WeightsCalculator</classname>
+                    <classname>cpuWeightsCalculator</classname>
                 </gadget>
             </stream>
 

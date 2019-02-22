@@ -13,10 +13,10 @@ namespace Gadgetron::Grappa::CPU {
     public:
         hoNDArray<std::complex<float>> calculate_weights(
                 const hoNDArray<std::complex<float>> &data,
-                std::array<size_t, 4> region_of_support,
-                size_t acceleration_factor,
-                size_t n_combined_channels,
-                size_t n_uncombined_channels
+                std::array<uint16_t, 4> region_of_support,
+                uint16_t acceleration_factor,
+                uint16_t n_combined_channels,
+                uint16_t n_uncombined_channels
         );
 
         const hoNDArray<std::complex<float>> &
@@ -31,11 +31,11 @@ namespace Gadgetron::Grappa::CPU {
         );
 
         struct {
-            size_t ks, power;
+            uint16_t ks, power;
         } coil_map_params;
 
         struct {
-            size_t width, height;
+            uint16_t width, height;
             float threshold;
         } kernel_params;
 

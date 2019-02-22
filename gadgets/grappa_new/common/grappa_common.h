@@ -11,22 +11,22 @@ namespace Gadgetron::Grappa {
     }
 
     template<class T>
-    size_t slice_of(const T &acquisition) {
+    uint16_t slice_of(const T &acquisition) {
         return std::get<ISMRMRD::AcquisitionHeader>(acquisition).idx.slice;
     }
 
     template<class T>
-    size_t line_of(const T &acquisition) {
+    uint16_t line_of(const T &acquisition) {
         return std::get<ISMRMRD::AcquisitionHeader>(acquisition).idx.kspace_encode_step_1;
     }
 
     template<class T>
-    size_t samples_in(const T &acquisition) {
+    uint16_t samples_in(const T &acquisition) {
         return std::get<ISMRMRD::AcquisitionHeader>(acquisition).number_of_samples;
     }
 
     template<class T>
-    size_t channels_in(const T &acquisition) {
+    uint16_t channels_in(const T &acquisition) {
         return std::get<ISMRMRD::AcquisitionHeader>(acquisition).active_channels;
     }
 

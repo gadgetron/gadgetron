@@ -1,13 +1,27 @@
 
 
-add_library(gadgetron_grappa_new SHARED
+set(RTGRAPPA_SOURCES
         ImageAccumulator.cpp
         WeightsCalculator.cpp
         Unmixing.cpp
         AcquisitionFanout.cpp
         SliceAccumulator.cpp
-        common/AcquisitionBuffer.cpp common/grappa_common.h ChannelReorderer.cpp ChannelReorderer.h common/AnnotatedAcquisition.h CPU/WeightsCore.cpp CPU/WeightsCore.h GPU/WeightsCore.cpp GPU/WeightsCore.h)
+        common/AcquisitionBuffer.cpp
+        common/AcquisitionBuffer.h
+        common/grappa_common.h
+        common/AnnotatedAcquisition.h
+        ChannelReorderer.cpp
+        ChannelReorderer.h
+        cpu/WeightsCore.cpp
+        cpu/WeightsCore.h)
 
+if (CUDA_FOUND)
+    set(RTGRAPPA_SOURCES ${RTGRAPPA_SOURCES}
+            gpu/WeightsCore.cpp
+            gpu/WeightsCore.h)
+endif()
+
+add_library(gadgetron_grappa_new SHARED ${RTGRAPPA_SOURCES})
 set_target_properties(gadgetron_grappa_new PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
         SOVERSION ${GADGETRON_SOVERSION})
@@ -20,15 +34,21 @@ target_link_libraries(gadgetron_grappa_new
         gadgetron_toolbox_cpucore_math
         gadgetron_toolbox_cpufft)
 
+if (CUDA_FOUND)
+    target_link_libraries(gadgetron_grappa_new
+            gadgetron_toolbox_gpunfft
+            gadgetron_toolbox_gpucore
+            gadgetron_toolbox_gpuparallelmri)
+endif()
+
 install(TARGETS gadgetron_grappa_new DESTINATION lib COMPONENT main)
 
 install(FILES
-#        config/grappa.xml
+        config/grappa.xml
         config/grappa_cpu.xml
-#        config/grappa_float.xml
+        config/grappa_float.xml
         config/grappa_float_cpu.xml
-#        config/grappa_unoptimized.xml
-#        config/grappa_unoptimized_float.xml
+        config/grappa_unoptimized.xml
+        config/grappa_unoptimized_float.xml
         config/grappa_uncombined_channel_example.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-

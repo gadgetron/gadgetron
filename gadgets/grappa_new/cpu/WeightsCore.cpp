@@ -28,10 +28,10 @@ namespace Gadgetron::Grappa::CPU {
 
     hoNDArray<std::complex<float>> WeightsCore::calculate_weights(
             const hoNDArray<std::complex<float>> &data,
-            std::array<size_t, 4> region_of_support,
-            size_t acceleration_factor,
-            size_t n_combined_channels,
-            size_t n_uncombined_channels
+            std::array<uint16_t, 4> region_of_support,
+            uint16_t acceleration_factor,
+            uint16_t n_combined_channels,
+            uint16_t n_uncombined_channels
     ) {
         // TODO: Optimize accel_factor == 1;
 

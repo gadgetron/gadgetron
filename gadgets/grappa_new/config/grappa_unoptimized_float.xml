@@ -23,34 +23,13 @@
     <stream>
         <gadget>
             <dll>gadgetron_mricore</dll>
-            <classname>NoiseAdjustGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_mricore</dll>
-            <classname>PCACoilGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_mricore</dll>
             <classname>CoilReductionGadget</classname>
             <property name="coils_out" value="8"/>
         </gadget>
 
         <gadget>
             <dll>gadgetron_mricore</dll>
-            <classname>AsymmetricEchoAdjustROGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_mricore</dll>
             <classname>RemoveROOversamplingGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_grappa_new</dll>
-            <classname>ChannelReorderer</classname>
-            <property name="uncombined_channels" value=""/>
         </gadget>
 
         <gadget>
@@ -74,7 +53,7 @@
             <stream key="weights">
                 <gadget>
                     <dll>gadgetron_grappa_new</dll>
-                    <classname>cpuWeightsCalculator</classname>
+                    <classname>gpuWeightsCalculator</classname>
                 </gadget>
             </stream>
 
@@ -87,16 +66,6 @@
         <gadget>
             <dll>gadgetron_mricore</dll>
             <classname>ExtractGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_mricore</dll>
-            <classname>AutoScaleGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_mricore</dll>
-            <classname>FloatToUShortGadget</classname>
         </gadget>
     </stream>
 </configuration>

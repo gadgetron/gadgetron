@@ -49,12 +49,6 @@
 
         <gadget>
             <dll>gadgetron_grappa_new</dll>
-            <classname>ChannelReorderer</classname>
-            <property name="uncombined_channels" value=""/>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_grappa_new</dll>
             <classname>SliceAccumulator</classname>
         </gadget>
 
@@ -74,7 +68,7 @@
             <stream key="weights">
                 <gadget>
                     <dll>gadgetron_grappa_new</dll>
-                    <classname>cpuWeightsCalculator</classname>
+                    <classname>gpuWeightsCalculator</classname>
                 </gadget>
             </stream>
 

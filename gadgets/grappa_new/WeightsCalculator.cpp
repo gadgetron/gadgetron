@@ -5,7 +5,11 @@
 #include "common/AcquisitionBuffer.h"
 #include "common/grappa_common.h"
 
-#include "CPU/WeightsCore.h"
+#ifdef USE_CUDA
+#include "gpu/WeightsCore.h"
+#endif
+
+#include "cpu/WeightsCore.h"
 
 #include "SliceAccumulator.h"
 #include "Unmixing.h"
@@ -47,20 +51,20 @@ namespace {
             auto e_limits = context.header.encoding[0].encodingLimits;
             auto slices = e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
 
-            regions = std::vector<std::array<size_t, 4>>(slices, clear_region);
+            regions = std::vector<std::array<uint16_t, 4>>(slices, clear_region);
         }
 
         void operator()(const AnnotatedAcquisition &acquisition) {
             auto old_region = regions[slice_of(acquisition)];
-            regions[slice_of(acquisition)] = std::array<size_t, 4> {
+            regions[slice_of(acquisition)] = std::array<uint16_t, 4> {
                 0,
-                samples_in(acquisition) - 1,
+                uint16_t(samples_in(acquisition) - 1u),
                 std::min(old_region[2], line_of(acquisition)),
                 std::max(old_region[3], line_of(acquisition))
             };
         }
 
-        std::array<size_t, 4> region_of_support(size_t slice) {
+        std::array<uint16_t, 4> region_of_support(size_t slice) {
             return regions[slice];
         }
 
@@ -69,10 +73,10 @@ namespace {
         }
 
     private:
-        std::vector<std::array<size_t, 4>> regions;
+        std::vector<std::array<uint16_t, 4>> regions;
 
-        static constexpr std::array<size_t, 4> clear_region = {
-            0, 0, std::numeric_limits<size_t>::max(), 0
+        static constexpr std::array<uint16_t, 4> clear_region = {
+            0, 0, std::numeric_limits<uint16_t>::max(), 0
         };
     };
 
@@ -157,12 +161,14 @@ namespace {
 
 namespace Gadgetron::Grappa {
 
-    WeightsCalculator::WeightsCalculator(
+    template<class WeightsCore>
+    WeightsCalculator<WeightsCore>::WeightsCalculator(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
     ) : TypedGadgetNode<Slice>(props), context(context) {}
 
-    void WeightsCalculator::process(TypedInputChannel<Slice> &in, OutputChannel &out) {
+    template<class WeightsCore>
+    void WeightsCalculator<WeightsCore>::process(TypedInputChannel<Slice> &in, OutputChannel &out) {
 
         std::set<uint16_t> updated_slices{};
         uint16_t n_combined_channels = 0, n_uncombined_channels = 0;
@@ -181,7 +187,7 @@ namespace Gadgetron::Grappa {
 
         buffer.add_pre_update_callback(DirectionMonitor{buffer, support_monitor, acceleration_monitor});
 
-        CPU::WeightsCore core{
+        WeightsCore core{
                 {coil_map_estimation_ks, coil_map_estimation_power},
                 {block_size_samples, block_size_lines, convolution_kernel_threshold}
         };
@@ -195,12 +201,17 @@ namespace Gadgetron::Grappa {
                 if (!buffer.is_fully_sampled(index)) continue;
 
                 Grappa::Weights weights {
-                        { index, n_combined_channels, n_uncombined_channels },
+                        {
+                            index,
+                            n_combined_channels,
+                            n_uncombined_channels
+                        },
                         core.calculate_weights(
                                 buffer.view(index),
                                 support_monitor.region_of_support(index),
                                 acceleration_monitor.acceleration_factor(index),
-                                n_combined_channels, n_uncombined_channels
+                                n_combined_channels,
+                                n_uncombined_channels
                         )
                 };
                 out.push(std::move(weights));
@@ -210,5 +221,11 @@ namespace Gadgetron::Grappa {
         }
     }
 
-    GADGETRON_GADGET_EXPORT(WeightsCalculator);
+    using cpuWeightsCalculator = WeightsCalculator<CPU::WeightsCore>;
+    GADGETRON_GADGET_EXPORT(cpuWeightsCalculator);
+
+#ifdef USE_CUDA
+    using gpuWeightsCalculator = WeightsCalculator<GPU::WeightsCore>;
+    GADGETRON_GADGET_EXPORT(gpuWeightsCalculator);
+#endif
 }
