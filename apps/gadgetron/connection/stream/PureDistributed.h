@@ -25,6 +25,7 @@ namespace Gadgetron::Server::Connection::Stream {
         Loader& loader;
         std::string remote_config;
         const Core::Context context;
+        size_t nworkers=0;
     };
 
 }

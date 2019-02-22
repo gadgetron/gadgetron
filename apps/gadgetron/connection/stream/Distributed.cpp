@@ -57,7 +57,7 @@ namespace {
             while (true) {
                 try {
                     auto worker = *current_worker;
-                    GDEBUG_STREAM(boost::apply_visitor([](auto w) { return print_worker(w); }, worker));
+                    GDEBUG_STREAM(boost::apply_visitor([](auto w) { return print_worker(w); }, worker))
 
                     auto result = boost::apply_visitor([&](auto v) { return this->create_channel(v); }, worker);
 

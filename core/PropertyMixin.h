@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <sstream>
+#include "io/from_string.h"
 
 namespace Gadgetron::Core {
 
@@ -17,10 +17,7 @@ namespace Gadgetron::Core {
         template<class T>
         inline T get_property(const std::string &name, T default_value, const std::string &) {
             if (!properties.count(name)) return default_value;
-            T val;
-            std::stringstream stream(properties.at(name));
-            stream >> val;
-            return val;
+            return IO::from_string<T>(properties.at(name));
         }
 
     private:

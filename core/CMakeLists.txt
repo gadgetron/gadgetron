@@ -22,7 +22,7 @@ add_library(gadgetron_core SHARED
 		Response.h
 		Response.cpp
 		PureGadget.h
-		io/primitives.h Types.hpp MessageID.h)
+		io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp)
 
 target_link_libraries(gadgetron_core
 		gadgetron_toolbox_cpucore)

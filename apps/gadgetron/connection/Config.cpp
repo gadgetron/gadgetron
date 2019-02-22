@@ -282,6 +282,7 @@ namespace {
             node_parsers["parallel"] = [&](const pugi::xml_node &n) { return this->parse_parallel(n); };
             node_parsers["distributed"] = [&](const pugi::xml_node &n) { return this->parse_distributed(n); };
             node_parsers["parallelprocess"] = [&](const pugi::xml_node &n) { return this->parse_parallelprocess(n); };
+            node_parsers["puredistributed"] = [&](const pugi::xml_node &n) { return this->parse_puredistributed(n); };
 
         }
 
@@ -316,14 +317,25 @@ namespace {
             return Config::Stream{stream_node.attribute("key").value(), nodes};
         }
 
+        Config::PureStream parse_purestream(const pugi::xml_node &purestream_node){
+            std::vector<Config::Gadget> gadgets;
+            boost::transform(purestream_node.children(), std::back_inserter(gadgets),
+                [&](auto node) { return parse_node<Config::Gadget>(node); });
+            return {gadgets};
+        }
+
         Config::ParallelProcess parse_parallelprocess(const pugi::xml_node& parallelprocess_node)
         {
             size_t workers = std::stoul(parallelprocess_node.attribute("workers").value());
-            std::vector<Config::Gadget> gadgets;
-            boost::transform(parallelprocess_node.child("purestream").children(), std::back_inserter(gadgets),
-                [&](auto node) { return parse_node<Config::Gadget>(node); });
+            return Config::ParallelProcess{workers,parse_purestream(parallelprocess_node.child("purestream"))};
+        }
 
-            return Config::ParallelProcess{workers,Config::PureStream{gadgets}};
+        Config::PureDistributed parse_puredistributed(const pugi::xml_node& puredistributedprocess_node){
+
+            auto purestream = parse_purestream(puredistributedprocess_node.child("purestream"));
+            auto readers = parse_readers(puredistributedprocess_node.child("readers"));
+            auto writers = parse_writers(puredistributedprocess_node.child("writers"));
+            return {readers,writers,purestream};
         }
     };
 
@@ -415,14 +427,14 @@ namespace {
         }
 
         static pugi::xml_node add_node(const Config::ParallelProcess& parallelProcess, pugi::xml_node & node){
-            auto parallel_node = node.append_child("ParallelProcess");
+            auto parallel_node = node.append_child("parallelprocess");
             parallel_node.append_attribute("workers").set_value(parallelProcess.workers);
             add_node(parallelProcess.stream, parallel_node);
             return parallel_node;
         }
 
         static pugi::xml_node add_node(const Config::PureStream& stream, pugi::xml_node& node){
-            auto purestream_node = node.append_child("PureStream");
+            auto purestream_node = node.append_child("purestream");
             for (auto& gadget : stream.gadgets){
                 add_node(gadget,purestream_node);
             }
@@ -430,7 +442,11 @@ namespace {
         }
 
         static pugi::xml_node add_node(const Config::PureDistributed& distributed, pugi::xml_node& node){
-            throw std::runtime_error("Not implemented yet");
+            auto puredistributed_node = node.append_child("puredistributed");
+            add_readers(distributed.readers,puredistributed_node);
+            add_writers(distributed.writers,puredistributed_node);
+            add_node(distributed.stream,puredistributed_node);
+            return puredistributed_node;
         }
     };
 

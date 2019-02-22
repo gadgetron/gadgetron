@@ -70,16 +70,25 @@
         <distributed>
             <readers>
                 <reader>
-                    <dll>gadgetron_core</dll>
+                    <dll>gadgetron_mricore</dll>
+                    <classname>MRIImageReader</classname>
+                </reader>
+                 <reader>
+                    <dll>gadgetron_core_readers</dll>
                     <classname>BufferReader</classname>
                 </reader>
             </readers>
             <writers>
                 <writer>
+                    <dll>gadgetron_core_writers</dll>
+                    <classname>BufferWriter</classname>
+                </writer>
+                <writer>
                     <dll>gadgetron_mricore</dll>
                     <classname>MRIImageWriter</classname>
                 </writer>
             </writers>
+
 
             <distributor>
                 <name>Distribute</name>

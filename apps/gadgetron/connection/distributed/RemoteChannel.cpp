@@ -85,32 +85,22 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address& addr
     stream = std::make_unique<tcp::iostream>(tcp::v6(), address.ip, address.port);
 
     stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
-    try {
-        send_config_file(*stream, xml_config);
-        send_header(*stream, header);
-    } catch (const std::ios_base::failure& failure) {
-        throw RemoteError{ address, { failure.what() } };
-    }
+    send_config_file(*stream, xml_config);
+    send_header(*stream, header);
 }
 
 Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
-    //    std::this_thread::sleep_for(std::chrono::seconds(1));
     {
         std::lock_guard guard(closed_mutex);
         if (closed_output)
             throw ChannelClosed();
     }
-    try {
-        auto id = Core::IO::read<uint16_t>(*stream);
-        while (!is_writable_message(id)) {
-            info_handlers.at(id)(*stream);
-            id = Core::IO::read<uint16_t>(*stream);
-        }
-        return readers.at(id)->read(*stream);
-
-    } catch (const std::ios_base::failure& failure) {
-        throw RemoteError{ address, { failure.what() } };
+    auto id = Core::IO::read<uint16_t>(*stream);
+    while (!is_writable_message(id)) {
+        info_handlers.at(id)(*stream);
+        id = Core::IO::read<uint16_t>(*stream);
     }
+    return readers.at(id)->read(*stream);
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {

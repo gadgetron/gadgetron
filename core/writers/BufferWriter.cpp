@@ -21,3 +21,6 @@ Gadgetron::Core::Writers::BufferWriter::serialize(std::ostream &stream, const Ga
     IO::write(stream, reconData);
 
 }
+namespace Gadgetron::Core::Writers {
+    GADGETRON_WRITER_EXPORT(BufferWriter)
+}
