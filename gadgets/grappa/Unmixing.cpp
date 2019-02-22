@@ -73,9 +73,7 @@ namespace Gadgetron::Grappa {
         WeightsProvider weights_provider(context, weights);
 
         for (auto image : images) {
-
             auto current_weights = weights_provider[image.meta.slice];
-
             output.push(
                     create_image_header(image, current_weights),
                     unmix(image, current_weights)

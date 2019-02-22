@@ -19,11 +19,10 @@ namespace {
     using namespace Gadgetron::Grappa;
 
 
-    void emit_reconstruction_job(
+    Grappa::Image create_reconstruction_job(
             const AnnotatedAcquisition &first,
             const AnnotatedAcquisition &last,
-            AcquisitionBuffer &buffer,
-            OutputChannel &output
+            AcquisitionBuffer &buffer
     ) {
         auto &first_header = std::get<ISMRMRD::AcquisitionHeader>(first);
         auto &last_header = std::get<ISMRMRD::AcquisitionHeader>(last);
@@ -43,7 +42,7 @@ namespace {
 
         hoNDFFT<float>::instance()->ifft2c(image.data);
 
-        output.push(std::move(image));
+        return std::move(image);
     }
 }
 
@@ -60,7 +59,7 @@ namespace Gadgetron::Grappa {
 
         for (const auto &slice : in) {
             buffer.add(slice);
-            emit_reconstruction_job(slice.front(), slice.back(), buffer, out);
+            out.push(create_reconstruction_job(slice.front(), slice.back(), buffer));
         }
     }
 

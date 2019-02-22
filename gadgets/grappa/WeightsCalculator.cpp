@@ -100,7 +100,6 @@ namespace {
                     acceleration[slice_of(acquisition)] = line_of(acquisition) - previous_line[slice_of(acquisition)].get();
                 }
             }
-
             previous_line[slice_of(acquisition)] = line_of(acquisition);
         }
 
@@ -216,7 +215,6 @@ namespace Gadgetron::Grappa {
                 };
                 out.push(std::move(weights));
             }
-
             updated_slices.clear();
         }
     }
