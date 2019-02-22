@@ -2,8 +2,8 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_GADGETCORE__)
 endif ()
 
-set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h)
-set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp)
+set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h TrajectoryParameters.h)
+set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp TrajectoryParameters.cpp)
 
 if (CUDA_FOUND)
 set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h)
