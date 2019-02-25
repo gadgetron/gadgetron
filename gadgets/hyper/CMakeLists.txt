@@ -17,7 +17,6 @@ set_target_properties(gadgetron_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STR
 target_link_libraries(gadgetron_hyper
   gadgetron_core
   gadgetron_mricore
-  gadgetron_gadgetbase
   gadgetron_gpuparallelmri
   gadgetron_toolbox_gpunfft
   gadgetron_toolbox_gpucore

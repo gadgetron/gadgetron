@@ -411,7 +411,7 @@ namespace Gadgetron {
         bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
         unsigned int channels = m1->getObjectPtr()->active_channels;
         unsigned int samples = m1->getObjectPtr()->number_of_samples;
-
+        GDEBUG("NOISE!");
         //TODO: Remove this
         if (measurement_id_.empty()) {
             unsigned int muid = m1->getObjectPtr()->measurement_uid;

@@ -36,5 +36,5 @@ TEST(ReadWriteTest,AcquisitionTest){
 
     EXPECT_TRUE(bool(unpacked));
 
-    ASSERT_EQ(data,std::get<2>(*unpacked));
+    ASSERT_EQ(data,std::get<hoNDArray<std::complex<float>>>(*unpacked));
 }

@@ -1,21 +1,16 @@
 if (WIN32)
-add_definitions(-D__BUILD_GADGETRON_GPUREG__)
+    add_definitions(-D__BUILD_GADGETRON_GPUREG__)
 endif ()
 
 
+cuda_add_library(gadgetron_toolbox_gpureg SHARED
+        cuOpticalFlowSolver.cu
+        cuHSOpticalFlowSolver.cu
+        cuCKOpticalFlowSolver.cu
+        cuResampleOperator.cu
+        cuLinearResampleOperator.cu
+        )
 
-cuda_add_library(gadgetron_toolbox_gpureg SHARED 
-  cuOpticalFlowSolver.cu 
-  cuHSOpticalFlowSolver.cu 
-  cuCKOpticalFlowSolver.cu 
-  cuResampleOperator.cu 
-  cuLinearResampleOperator.cu
-#  cuRegistration_utils.cu
-  )
-
-target_include_directories(gadgetron_toolbox_gpureg
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(gadgetron_toolbox_gpureg PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_toolbox_gpureg
@@ -26,15 +21,19 @@ target_link_libraries(gadgetron_toolbox_gpureg
         gadgetron_toolbox_log
         ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 
+target_include_directories(gadgetron_toolbox_gpureg
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
 install(TARGETS gadgetron_toolbox_gpureg DESTINATION lib COMPONENT main)
 
 install(FILES
-  cuOpticalFlowSolver.h
-  cuHSOpticalFlowSolver.h
-  cuCKOpticalFlowSolver.h
-  gpureg_export.h
-  cuResampleOperator.h
-  cuLinearResampleOperator.h
-#  cuRegistration_utils.h
-  cuCGHSOFSolver.h
-  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+        cuOpticalFlowSolver.h
+        cuHSOpticalFlowSolver.h
+        cuCKOpticalFlowSolver.h
+        gpureg_export.h
+        cuResampleOperator.h
+        cuLinearResampleOperator.h
+        cuCGHSOFSolver.h
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

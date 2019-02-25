@@ -12,7 +12,6 @@ add_library(gadgetron_core SHARED
 		Channel.h
 		Channel.hpp
 		Channel.cpp
-		Context.cpp
 		Gadget.cpp
 		Reader.h
 		Writer.h

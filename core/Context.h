@@ -14,10 +14,8 @@ namespace Gadgetron::Core {
                 ISMRMRD::IsmrmrdHeader;
 
         struct Paths {
-            Paths(const boost::filesystem::path &home, const boost::filesystem::path &work);
-
-            const boost::filesystem::path gadgetron_home;
-            const boost::filesystem::path working_folder;
+            boost::filesystem::path gadgetron_home;
+            boost::filesystem::path working_folder;
         };
 
         Header header;

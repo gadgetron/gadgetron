@@ -124,7 +124,7 @@ namespace Gadgetron {
 
         }
 
-        return Core::Message(std::move(header),std::move(trajectory),std::move(data));
+        return Core::Message(std::move(header),std::move(data),std::move(trajectory));
 
     }
 
