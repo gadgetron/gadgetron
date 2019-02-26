@@ -21,8 +21,7 @@ target_link_libraries(gadgetron_spiral
   gadgetron_toolbox_cpucore)
 
 if (CUDA_FOUND)
-    target_link_libraries(gadgetron_spiral 
-                                ${CUDA_LIBRARIES}
+    target_link_libraries(gadgetron_spiral
                                 gadgetron_gpuparallelmri
                                 gadgetron_toolbox_gpucore
                                 gadgetron_toolbox_gpunfft 

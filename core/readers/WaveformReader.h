@@ -1,5 +1,4 @@
-#ifndef GADGETRON_WAVEFORMREADER_H
-#define GADGETRON_WAVEFORMREADER_H
+#pragma once
 
 #include "Reader.h"
 namespace Gadgetron::Core::Readers {
@@ -10,6 +9,3 @@ namespace Gadgetron::Core::Readers {
         virtual uint16_t slot() override;
     };
 };
-
-
-#endif //GADGETRON_WAVEFORMREADER_H

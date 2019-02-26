@@ -9,10 +9,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconPartialFourierHandlingFilterGadget : public GenericReconPartialFourierHandlingGadget
+    class GenericReconPartialFourierHandlingFilterGadget : public GenericReconPartialFourierHandlingGadget
     {
     public:
-        GADGET_DECLARE(GenericReconPartialFourierHandlingFilterGadget);
 
         typedef float real_value_type;
         typedef std::complex<real_value_type> ValueType;
@@ -20,8 +19,9 @@ namespace Gadgetron {
 
         typedef GenericReconPartialFourierHandlingGadget BaseClass;
 
-        GenericReconPartialFourierHandlingFilterGadget();
-        ~GenericReconPartialFourierHandlingFilterGadget();
+        using GenericReconPartialFourierHandlingGadget::GenericReconPartialFourierHandlingGadget;
+
+        ~GenericReconPartialFourierHandlingFilterGadget() override =default;
 
         /// ------------------------------------------------------------------------------------
         /// parameters to control the reconstruction
@@ -29,21 +29,24 @@ namespace Gadgetron {
 
         // ------------------------------------------------------------------------------------
 
-        GADGET_PROPERTY(partial_fourier_filter_RO_width, double, "Partial fourier filter width for tapered hanning for RO dimension", 0.15);
-        GADGET_PROPERTY(partial_fourier_filter_E1_width, double, "Partial fourier filter width for tapered hanning for E1 dimension", 0.15);
-        GADGET_PROPERTY(partial_fourier_filter_E2_width, double, "Partial fourier filter width for tapered hanning for E2 dimension", 0.15);
+        NODE_PROPERTY(partial_fourier_filter_RO_width, double, "Partial fourier filter width for tapered hanning for RO dimension", 0.15);
+        NODE_PROPERTY(partial_fourier_filter_E1_width, double, "Partial fourier filter width for tapered hanning for E1 dimension", 0.15);
+        NODE_PROPERTY(partial_fourier_filter_E2_width, double, "Partial fourier filter width for tapered hanning for E2 dimension", 0.15);
 
-        GADGET_PROPERTY(partial_fourier_filter_densityComp, bool, "Whether to apply density compensation for RO dimension", false);
+        NODE_PROPERTY(partial_fourier_filter_densityComp, bool, "Whether to apply density compensation for RO dimension", false);
 
         // ------------------------------------------------------------------------------------
 
     protected:
 
-        // partial fourier filters, avoid recomputing
-        hoNDArray<T> filter_pf_RO_;
-        hoNDArray<T> filter_pf_E1_;
-        hoNDArray<T> filter_pf_E2_;
+        // partial fourier filters, avoid recomputing. Must be mutable and locked to respect PureGadgets promise of being thread safe
 
-        virtual int perform_partial_fourier_handling();
+        mutable std::mutex filter_mutex;
+        mutable hoNDArray<T> filter_pf_RO_;
+        mutable hoNDArray<T> filter_pf_E1_;
+        mutable hoNDArray<T> filter_pf_E2_;
+
+        hoNDArray <std::complex<float>> perform_partial_fourier_handling(const hoNDArray <std::complex<float>> &kspace, size_t start_RO, size_t end_RO,
+                                         size_t start_E1, size_t end_E1, size_t start_E2, size_t end_E2) const override ;
     };
 }

@@ -27,17 +27,13 @@ endif()
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)
-#add_subdirectory(rest)
 
 add_subdirectory(ffd)
 add_subdirectory(image)
 add_subdirectory(pattern_recognition)
 add_subdirectory(denoise)
 
-#if (ACE_FOUND)
-#  add_subdirectory(gadgettools)
-#  add_subdirectory(cloudbus)
-#endif()
+
 
 add_subdirectory(image_io)
 

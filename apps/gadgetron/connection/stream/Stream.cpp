@@ -4,6 +4,8 @@
 #include "connection/stream/Parallel.h"
 #include "connection/stream/External.h"
 #include "connection/stream/Distributed.h"
+#include "connection/stream/ParallelProcess.h"
+#include "connection/stream/PureDistributed.h"
 #include "connection/Loader.h"
 
 #include "Node.h"
@@ -47,6 +49,15 @@ namespace {
 
     std::shared_ptr<Processable> load_node(const Config::Distributed &conf, const Context &context, Loader &loader) {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Distributed>(conf, context, loader);
+    }
+
+
+    std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const Context& context, Loader& loader){
+        return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);
+    }
+
+    std::shared_ptr<Processable> load_node(const Config::PureDistributed& conf, const Context& context, Loader& loader){
+        return std::make_shared<Gadgetron::Server::Connection::Stream::PureDistributed>(conf,context,loader);
     }
 }
 

@@ -69,14 +69,15 @@ namespace Gadgetron{
 
 #if __cplusplus > 199711L
     //Move constructors
-    hoNDArray(hoNDArray<T>&& a);
-    hoNDArray& operator=(hoNDArray&& rhs);
+    hoNDArray(hoNDArray<T>&& a) noexcept;
+    hoNDArray& operator=(hoNDArray&& rhs) noexcept;
 
 #endif
 
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
+    bool operator==(const hoNDArray& rhs) const;
     virtual void create(const std::vector<size_t>& dimensions);
     virtual void create(const std::vector<size_t> *dimensions);
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);

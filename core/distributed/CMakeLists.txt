@@ -1,7 +1,7 @@
 
 add_library(gadgetron_core_distributed SHARED
         Distributor.h
-        ChannelCreator.h AcquisitionDistributor.cpp AcquisitionDistributor.h Distributor.cpp)
+        ChannelCreator.h AcquisitionDistributor.cpp AcquisitionDistributor.h Distributor.cpp BufferDistributor.cpp BufferDistributor.h)
 
 target_link_libraries(gadgetron_core_distributed
         gadgetron_core

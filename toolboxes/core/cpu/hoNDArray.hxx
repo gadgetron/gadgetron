@@ -285,7 +285,7 @@ namespace Gadgetron
 
 #if __cplusplus > 199711L
     template <typename T>
-    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
+    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) noexcept : NDArray<T>::NDArray(){
         data_ = a.data_;
         this->dimensions_ = a.dimensions_;
         this->elements_ = a.elements_;
@@ -322,7 +322,7 @@ namespace Gadgetron
 
 #if __cplusplus > 199711L
     template <typename T>
-    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs)
+    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs) noexcept
     {
         if ( &rhs == this ) return *this;
         this->clear();
@@ -1048,5 +1048,14 @@ namespace Gadgetron
 
         len = sizeof(size_t)+sizeof(size_t)*NDim+sizeof(T)*elements_;
         return true; // Temporary. Should not be a boolean function.
+    }
+
+    template<typename T>
+    bool hoNDArray<T>::operator==(const hoNDArray &rhs) const {
+        auto result =  this->dimensions_equal(rhs.dimensions());
+
+        for (size_t i = 0; i < this->size(); i++)
+            result &= this->data_[i] == rhs[i];
+        return result;
     }
 }

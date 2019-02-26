@@ -74,7 +74,6 @@ namespace Gadgetron
         m2->release();
 
         m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;
-
         if (this->next()->putq(m1) == -1)
         {
             m1->release();

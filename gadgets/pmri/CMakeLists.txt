@@ -30,7 +30,6 @@ set_target_properties(gadgetron_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VE
 target_link_libraries(gadgetron_gpuparallelmri
   gadgetron_core
   gadgetron_mricore
-  gadgetron_gadgetbase
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_gpudwt

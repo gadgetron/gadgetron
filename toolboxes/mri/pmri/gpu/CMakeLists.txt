@@ -50,10 +50,6 @@ target_link_libraries(gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_gpunfft 
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
-  ${FFTW3_LIBRARIES} 
-  ${CUDA_LIBRARIES} 
-  ${CUDA_CUFFT_LIBRARIES} 
-  ${CUDA_CUBLAS_LIBRARIES} 
   )
 
 

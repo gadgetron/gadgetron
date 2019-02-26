@@ -8,6 +8,7 @@
 #include <set>
 #include "hoNDArray.h"
 #include <boost/optional.hpp>
+#include "Types.h"
 
 namespace Gadgetron 
 {
@@ -73,75 +74,27 @@ namespace Gadgetron
         ISMRMRD_noacceleration
     };
 
-  class SamplingLimit
+  struct SamplingLimit
   {
-  public:
-    uint16_t min_;
-    uint16_t center_;
-    uint16_t max_;
+    uint16_t min_ = 0;
+    uint16_t center_ = 0;
+    uint16_t max_ = 0;
 
-    SamplingLimit()
-    {
-        min_ = 0;
-        center_ = 0;
-        max_ = 0;
-    }
   };
   
-  class SamplingDescription
+  struct SamplingDescription
   {
-  public:
     // encoding FOV
-    float encoded_FOV_[3];
+    float encoded_FOV_[3] = {0,0,0};
     // recon FOV
-    float recon_FOV_[3];
+    float recon_FOV_[3] ={0,0,0};
     
-    uint16_t encoded_matrix_[3];
-    uint16_t recon_matrix_[3];
+    uint16_t encoded_matrix_[3] = {0,0,0};
+    uint16_t recon_matrix_[3] = {0,0,0};
     
     // sampled range along RO, E1, E2 (for asymmetric echo and partial fourier)
     // min, max and center
     SamplingLimit sampling_limits_[3];
-
-    SamplingDescription()
-    {
-        encoded_FOV_[0] = 0;
-        encoded_FOV_[1] = 0;
-        encoded_FOV_[2] = 0;
-
-        recon_FOV_[0] = 0;
-        recon_FOV_[1] = 0;
-        recon_FOV_[2] = 0;
-
-        encoded_matrix_[0] = 0;
-        encoded_matrix_[1] = 0;
-        encoded_matrix_[2] = 0;
-
-        recon_matrix_[0] = 0;
-        recon_matrix_[1] = 0;
-        recon_matrix_[2] = 0;
-    }
-
-    SamplingDescription(SamplingDescription& obj)
-    {
-        encoded_FOV_[0] = obj.encoded_FOV_[0];
-        encoded_FOV_[1] = obj.encoded_FOV_[1];
-        encoded_FOV_[2] = obj.encoded_FOV_[2];
-
-        recon_FOV_[0] = obj.recon_FOV_[0];
-        recon_FOV_[1] = obj.recon_FOV_[1];
-        recon_FOV_[2] = obj.recon_FOV_[2];
-
-        encoded_matrix_[0] = obj.encoded_matrix_[0];
-        encoded_matrix_[1] = obj.encoded_matrix_[1];
-        encoded_matrix_[2] = obj.encoded_matrix_[2];
-
-        recon_matrix_[0] = obj.recon_matrix_[0];
-        recon_matrix_[1] = obj.recon_matrix_[1];
-        recon_matrix_[2] = obj.recon_matrix_[2];
-    }
-
-    ~SamplingDescription() {}
   };
   
   struct IsmrmrdDataBuffered
@@ -249,10 +202,10 @@ namespace Gadgetron
     std::vector< ISMRMRD::MetaContainer > meta_;
 
     // wave form
-    boost::optional<std::vector< ISMRMRD::Waveform>> waveform_;
+    Core::optional<std::vector< ISMRMRD::Waveform>> waveform_;
 
     // acquisition header, [Y, Z, N, S, LOC]
-    boost::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
+    Core::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
 
 
     ~IsmrmrdImageArray() = default;

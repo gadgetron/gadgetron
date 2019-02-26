@@ -12,7 +12,9 @@ namespace Gadgetron::Server::Connection {
         struct Gadget;
         struct Parallel;
         struct Distributed;
-        using Node = boost::variant<Gadget, Parallel, Distributed>;
+        struct ParallelProcess;
+        struct PureDistributed;
+        using Node = boost::variant<Gadget, Parallel, Distributed, ParallelProcess, PureDistributed>;
 
         template<class CONFIG>
         static std::string name(CONFIG config) {
@@ -33,6 +35,10 @@ namespace Gadgetron::Server::Connection {
             std::vector<Node> nodes;
         };
 
+        struct PureStream{
+            std::vector<Gadget> gadgets;
+        };
+
         struct Gadget {
             std::string name, dll, classname;
             std::unordered_map<std::string, std::string> properties;
@@ -45,6 +51,18 @@ namespace Gadgetron::Server::Connection {
             Branch branch;
             Merge merge;
             std::vector<Stream> streams;
+        };
+
+        struct PureDistributed {
+            std::vector<Reader> readers;
+            std::vector<Writer> writers;
+            PureStream stream;
+        };
+
+        struct ParallelProcess {
+
+            size_t workers = 0;
+            PureStream stream;
         };
 
         struct Distributor : Gadget {};

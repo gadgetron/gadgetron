@@ -12,7 +12,6 @@ add_library(gadgetron_core SHARED
 		Channel.h
 		Channel.hpp
 		Channel.cpp
-		Context.cpp
 		Gadget.cpp
 		Reader.h
 		Writer.h
@@ -22,7 +21,7 @@ add_library(gadgetron_core SHARED
 		Response.h
 		Response.cpp
 		PureGadget.h
-		io/primitives.h Types.hpp MessageID.h)
+		io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp io/ismrmrd_types.h)
 
 target_link_libraries(gadgetron_core
 		gadgetron_toolbox_cpucore)
@@ -58,4 +57,5 @@ install(FILES
 		config/example_branching_chain.xml
 		config/simple_chain.xml
         config/distributed_default.xml
+		config/distributed_generic_default.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

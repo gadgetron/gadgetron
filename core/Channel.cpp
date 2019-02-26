@@ -13,42 +13,22 @@ namespace Gadgetron::Core {
         std::shared_ptr<Channel> channel;
     };
 
-    Message MessageChannel::pop_impl(std::unique_lock<std::mutex> lock) {
-        cv.wait(lock, [this]() { return !this->queue.empty() || closed; });
-        if (queue.empty()) {
-            throw ChannelClosed();
-        }
-        Message message = std::move(queue.front());
-        queue.pop_front();
-        return message;
-    }
+
 
     Message MessageChannel::pop() {
-        std::unique_lock<std::mutex> lock(m);
-        return pop_impl(std::move(lock));
+        return channel.pop();
     }
 
     optional<Message> MessageChannel::try_pop() {
-        std::unique_lock<std::mutex> lock(m);
-        if (queue.empty()) {
-            return none;
-        }
-        return pop_impl(std::move(lock));
+       return channel.try_pop();
     }
 
     void MessageChannel::push_message(Message message) {
-        std::unique_lock<std::mutex> lock(m);
-        if (closed) {
-            throw ChannelClosed();
-        }
-        queue.emplace_back(std::move(message));
-        cv.notify_one();
+        channel.push(std::move(message));
     }
 
     void MessageChannel::close() {
-        std::unique_lock<std::mutex> lock(m);
-        closed = true;
-        cv.notify_all();
+       channel.close();
     }
 
     Message InputChannel::pop() {

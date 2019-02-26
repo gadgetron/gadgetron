@@ -14,7 +14,7 @@ using namespace boost::filesystem;
 using namespace Gadgetron::Server;
 
 Server::Server(boost::asio::io_service &io_service, const boost::program_options::variables_map &args)
-    : args_(args) , acceptor_(io_service, tcp::endpoint(tcp::v4(), args["port"].as<unsigned short>())) {
+    : args_(args) , acceptor_(io_service, tcp::endpoint(tcp::v6(), args["port"].as<unsigned short>())) {
     accept();
 }
 
@@ -41,6 +41,6 @@ void Server::connection_handler(const boost::system::error_code &error) {
     GINFO_STREAM("Accepting connection from: " << stream->rdbuf()->remote_endpoint().address());
 
 
-    auto paths = Gadgetron::Core::Context::Paths(args_["home"].as<path>(), args_["dir"].as<path>());
+    auto paths = Gadgetron::Core::Context::Paths{args_["home"].as<path>(), args_["dir"].as<path>()};
     Connection::handle(paths, std::move(stream));
 }

@@ -33,6 +33,7 @@ private:
 
 template<class Iter>
 CyclicIterator<Iter> make_cyclic(const Iter &begin, const Iter &end) {
+    if (begin == end) throw std::runtime_error("Empty range provided");
     return CyclicIterator<Iter>(begin, end);
 };
 

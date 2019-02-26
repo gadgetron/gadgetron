@@ -2,12 +2,8 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_RADIAL__)
 endif ()
 
-if (ARMADILLO_FOUND)
-  list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.h RadialPhaseCorrectionGadget.cpp)
-  install (FILES  RadialPhaseCorrectionGadget.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-elseif (ARMADILLO_FOUND)
-  message("Armadillo not found, not compiling radial phase correction gadget")
-endif ()
+list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.h RadialPhaseCorrectionGadget.cpp)
+install (FILES  RadialPhaseCorrectionGadget.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_library(gadgetron_gpuradial SHARED 
   gadgetron_radial_export.h
@@ -22,7 +18,6 @@ set_target_properties(gadgetron_gpuradial PROPERTIES VERSION ${GADGETRON_VERSION
 target_link_libraries(gadgetron_gpuradial
         gadgetron_core
         gadgetron_mricore
-        gadgetron_gadgetbase
         gadgetron_toolbox_log
         gadgetron_gpuparallelmri
         gadgetron_toolbox_gpunfft

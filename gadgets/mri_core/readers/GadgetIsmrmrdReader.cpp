@@ -15,16 +15,15 @@ namespace Gadgetron {
         using namespace Core;
         using namespace std::literals;
 
-        auto header = ISMRMRD::AcquisitionHeader{};
+        auto header = IO::read<ISMRMRD::AcquisitionHeader>(stream);
 
-        IO::read(stream, header);
 
 
         optional<hoNDArray<float>> trajectory = boost::none;
         if (header.trajectory_dimensions) {
             trajectory = hoNDArray<float>(header.trajectory_dimensions,
                                                header.number_of_samples);
-            IO::read(stream, *trajectory);
+            IO::read(stream, trajectory->data(),trajectory->size());
         }
         auto data = hoNDArray<std::complex<float>>(header.number_of_samples,
                                                    header.active_channels);
@@ -34,8 +33,7 @@ namespace Gadgetron {
 
 #if defined GADGETRON_COMPRESSION_ZFP
 
-            uint32_t comp_size = 0;
-            IO::read(stream, comp_size);
+            uint32_t comp_size = IO::read<uint32_t>(stream);
 
             std::vector<char> comp_buffer(comp_size);
 
@@ -98,8 +96,7 @@ namespace Gadgetron {
 
         } else if (header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_COMPRESSION2)) {
             //NHLBI Compression
-            uint32_t comp_size;
-            IO::read(stream, comp_size);
+            uint32_t comp_size = IO::read<uint32_t>(stream);
 
             std::vector<uint8_t> comp_buffer(comp_size);
             stream.read((char *) comp_buffer.data(), comp_size);
@@ -123,11 +120,11 @@ namespace Gadgetron {
 
         } else {
             //Uncompressed data
-            IO::read(stream, data);
+            IO::read(stream, data.data(),data.size());
 
         }
 
-        return Core::Message(std::move(header),std::move(trajectory),std::move(data));
+        return Core::Message(std::move(header),std::move(data),std::move(trajectory));
 
     }
 
@@ -144,7 +141,7 @@ namespace Gadgetron {
 
         auto data = hoNDArray<uint32_t>(header.number_of_samples, header.channels);
 
-        IO::read(stream, data);
+        IO::read(stream, data.data(),data.size());
 
         return Message(std::move(header), std::move(data));
     }

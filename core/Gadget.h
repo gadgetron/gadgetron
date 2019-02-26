@@ -163,6 +163,7 @@ namespace Gadgetron {
 
         virtual int close(unsigned long flags = 1) { return 0; }
 
+        void set_context(const Core::Context& context);
 
         std::string get_string_value(const char *name);
 
@@ -248,12 +249,14 @@ namespace Gadgetron {
 
         std::string name;
         std::mutex parameter_mutex_;
+        Core::Context context;
 
         static constexpr bool pass_on_undesired_data_ = true;
     private:
         std::map<std::string, std::string> parameters_;
         std::string gadgetron_version_;
         std::shared_ptr<ChannelAdaptor> next_channel;
+
 
     };
 
@@ -497,9 +500,9 @@ namespace Gadgetron {
         virtual ~BasicPropertyGadget() = default;
 
     protected:
-        GADGET_PROPERTY(using_cloudbus, bool, "Indicates whether the cloudbus is in use and available", false);
+        GADGET_PROPERTY(using_cloudbus, bool, "Indicates whether the cloudbus is in use and available (ignored)", false);
         GADGET_PROPERTY(pass_on_undesired_data, bool,
-                        "If true, data not matching the process function will be passed to next Gadget", true);
+                        "If true, data not matching the process function will be passed to next Gadget (ignored)", true);
         GADGET_PROPERTY(threads, int, "Number of threads to run in this Gadget (ignored)", 1);
 #ifdef _WIN32
         GADGET_PROPERTY(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");
@@ -512,7 +515,7 @@ namespace Gadgetron {
     class Gadget1 : public BasicPropertyGadget {
 
     protected:
-        int process(ACE_Message_Block *mb) override {
+        int process(ACE_Message_Block *mb) final {
             GadgetContainerMessage<P1> *m = AsContainerMessage<P1>(mb);
 
             if (!m) {
@@ -530,7 +533,7 @@ namespace Gadgetron {
     class Gadget2 : public BasicPropertyGadget {
 
     protected:
-        int process(ACE_Message_Block *mb) override {
+        int process(ACE_Message_Block *mb) final {
             GadgetContainerMessage<P1> *m1 = AsContainerMessage<P1>(mb);
 
             GadgetContainerMessage<P2> *m2 = 0;
@@ -556,7 +559,7 @@ namespace Gadgetron {
     class Gadget3 : public BasicPropertyGadget {
 
     protected:
-        int process(ACE_Message_Block *mb) {
+        int process(ACE_Message_Block *mb) final {
 
             GadgetContainerMessage<P1> *m1 = AsContainerMessage<P1>(mb);
 
@@ -586,7 +589,7 @@ namespace Gadgetron {
     template<class P1, class P2>
     class Gadget1Of2 : public BasicPropertyGadget {
     protected:
-        int process(ACE_Message_Block *mb) {
+        int process(ACE_Message_Block *mb) final {
 
             GadgetContainerMessage<P1> *m1 = nullptr;
             GadgetContainerMessage<P2> *m2 = nullptr;
@@ -611,8 +614,8 @@ namespace Gadgetron {
     class LegacyGadgetNode : public Core::Node {
     public:
         LegacyGadgetNode(
-                std::unique_ptr<Gadget> &&gadget_ptr,
-                const ISMRMRD::IsmrmrdHeader &header,
+                std::unique_ptr<Gadget> gadget_ptr,
+                const Core::Context& context,
                 const std::unordered_map<std::string, std::string> &props
         );
 
@@ -636,7 +639,7 @@ std::unique_ptr<Gadgetron::Core::Node> legacy_gadget_factory_##GadgetClass(     
     auto gadget = std::make_unique<GadgetClass>();                                  \
     return std::make_unique<Gadgetron::LegacyGadgetNode>(                           \
             std::move(gadget),                                                      \
-            context.header,                                                         \
+            context,                                                                \
             props                                                                   \
     );                                                                              \
 }                                                                                   \
