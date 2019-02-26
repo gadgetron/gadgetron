@@ -22,7 +22,7 @@ target_include_directories(gadgetron_toolbox_cpunfft
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/.. )
-target_link_libraries(gadgetron_toolbox_cpunfft 
+target_link_libraries(gadgetron_toolbox_cpunfft
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_log
@@ -32,5 +32,5 @@ target_link_libraries(gadgetron_toolbox_cpunfft
 install(TARGETS gadgetron_toolbox_cpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
-    hoNFFT.h 
+    hoNFFT.h hoNFFT_sparseMatrix.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
