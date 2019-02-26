@@ -2,7 +2,6 @@
 
 # Mute the h5py import warning. TODO: Remove these lines when possible.
 import warnings
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
@@ -190,7 +189,7 @@ def ensure_gadgetron_instance(args, config):
 
     def start_gadgetron_action(cont, *, env=None, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=gadgetron.port,env=env) as instance:
+            with start_gadgetron_instance(log=log, port=gadgetron.port, env=env) as instance:
                 try:
                     return cont(gadgetron=gadgetron, **state)
                 finally:
@@ -290,6 +289,9 @@ def prepare_siemens_input_data(args, config):
 
 def start_additional_nodes(args, config):
 
+    if args.external:
+        return
+
     if not config.has_section('DISTRIBUTED'):
         return
 
@@ -297,30 +299,22 @@ def start_additional_nodes(args, config):
         env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
         return cont(env=env, **state)
 
-    if args.external:
-
-        yield functools.partial(set_distributed_environment,worker_list=['localhost:' + str(args.port)])
-        return
-
     base_port = int(config['DISTRIBUTED']['node_port_base'])
-
     nodes = int(config['DISTRIBUTED']['nodes'])
 
     def start_additional_nodes_action(port, cont, *, worker_list=[], **state):
         print('Starting additional nodes')
         with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
             with start_gadgetron_instance(log=log, port=port) as instance:
-                worker = 'localhost' + ':' + port
-                print("Starting instance",port)
+                print("Starting instance", port)
                 try:
-                    return cont(worker_list=worker_list + [worker], **state)
+                    return cont(worker_list=worker_list + ['localhost:' + port], **state)
                 finally:
                     instance.kill()
 
+    yield from (functools.partial(start_additional_nodes_action, str(base_port + id))
+                for id in range(nodes))
 
-
-    yield from (functools.partial(start_additional_nodes_action,str(base_port + id))
-                                  for id in range(nodes))
     yield set_distributed_environment
 
 
