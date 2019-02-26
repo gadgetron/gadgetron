@@ -152,6 +152,7 @@ void Gadgetron::Server::Connection::Stream::PureDistributed::process(Gadgetron::
             address, remote_config, context.header, readers, writers, available_workers);
     });
 
+    if (workers.empty()) throw std::runtime_error("No workers");
     for (int i = 0; i < 2; i++)
         for (auto& worker : workers)
             available_workers.push(worker);

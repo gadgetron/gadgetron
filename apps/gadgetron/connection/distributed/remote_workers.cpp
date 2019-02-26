@@ -47,7 +47,7 @@ optional<std::vector<Address>> parse_remote_workers(Iterator first, Iterator las
         space,
         result);
 
-    if (first != last) // fail if we did not get a full match
+    if (first != last || !r ) // fail if we did not get a full match
         return none;
     return result;
 }

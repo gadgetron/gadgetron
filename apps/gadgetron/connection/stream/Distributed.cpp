@@ -21,6 +21,7 @@ namespace {
         auto workers = std::vector<Worker>();
         std::transform(remote_workers.begin(), remote_workers.end(), std::back_inserter(workers),
             [](auto address) { return address; });
+        if (workers.empty()) workers.push_back(Local{});
         return workers;
     }
 

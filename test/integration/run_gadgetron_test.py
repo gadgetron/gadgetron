@@ -295,11 +295,10 @@ def start_additional_nodes(args, config):
 
     def set_distributed_environment(cont, *, worker_list=[], env=dict(os.environ), **state):
         env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+        print("GADGETRON REMOTE_WORKER_COMMAND", env["GADGETRON_REMOTE_WORKER_COMMAND"])
         return cont(env=env, **state)
 
     if args.external:
-
-        yield functools.partial(set_distributed_environment,worker_list=['localhost:' + str(args.port)])
         return
 
     base_port = int(config['DISTRIBUTED']['node_port_base'])
