@@ -50,5 +50,4 @@ install(FILES
         config/grappa_float_cpu.xml
         config/grappa_unoptimized.xml
         config/grappa_unoptimized_float.xml
-        config/grappa_uncombined_channel_example.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
