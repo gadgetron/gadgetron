@@ -8,13 +8,12 @@ namespace Gadgetron {
     class ACE_Message_Block {
 
     public:
-        ACE_Message_Block() {};
+        ACE_Message_Block() = default;
 
-        ACE_Message_Block(const std::string &s) : buffer(s) {
+        explicit ACE_Message_Block(std::string s) : buffer(std::move(s)) {
 
         }
 
-        [[deprecated]]
         const char *rd_ptr() { return buffer.c_str(); };
 
         virtual ~ACE_Message_Block() {

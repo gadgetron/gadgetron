@@ -8,6 +8,7 @@
 #include <set>
 #include "hoNDArray.h"
 #include <boost/optional.hpp>
+#include "Types.h"
 
 namespace Gadgetron 
 {
@@ -201,10 +202,10 @@ namespace Gadgetron
     std::vector< ISMRMRD::MetaContainer > meta_;
 
     // wave form
-    boost::optional<std::vector< ISMRMRD::Waveform>> waveform_;
+    Core::optional<std::vector< ISMRMRD::Waveform>> waveform_;
 
     // acquisition header, [Y, Z, N, S, LOC]
-    boost::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
+    Core::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
 
 
     ~IsmrmrdImageArray() = default;
