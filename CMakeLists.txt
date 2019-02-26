@@ -399,30 +399,14 @@ option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
 
-  option(BUILD_WITH_PYTHON3 "Build with Python 3.x" Off)
-
-  if (BUILD_WITH_PYTHON3)
-    find_package(Python3)
-  else()
-    find_package(PythonLibs 2)
-  endif ()
+  find_package(Python3 REQUIRED)
+  find_package(NumPy REQUIRED)
 
   string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
   list(GET PYTHON_VERSION_MAJOR 0 PYVER)
   add_definitions(-DPYVER=${PYVER})
 
-  find_package(NumPy)
-  if(NOT PYTHONLIBS_FOUND)
-    message(STATUS "Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
-    set(BUILD_PYTHON_SUPPORT OFF)
-  endif()
-  if(NOT NUMPY_FOUND)
-    message("NumPy NOT found, NOT compiling Python Gadgets")
-    set(BUILD_PYTHON_SUPPORT OFF)
-  else()
-    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
-  endif()
-
+  message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
 
   add_library(python INTERFACE IMPORTED)
   set_property(TARGET python PROPERTY

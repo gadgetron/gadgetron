@@ -1,7 +1,6 @@
 #pragma once
 
 #include <mutex>
-#include "gadgetron_home.h"
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
@@ -60,7 +59,7 @@ protected:
         debug_mode_  = debug_mode.value();
         path_        = matlab_path.value();
         classname_   = matlab_classname.value();
-	startcmd_    = matlab_startcmd.value();
+    	startcmd_    = matlab_startcmd.value();
 
         if (classname_.empty()) {
             GERROR("Missing Matlab Gadget classname in config!");
@@ -69,7 +68,6 @@ protected:
 
         GDEBUG("MATLAB Class Name : %s\n", classname_.c_str());
 
-
 		// Open the Matlab Engine on the current host
 		GDEBUG("Starting MATLAB engine with command: %s\n", startcmd_.c_str());
 		if (!(engine_ = engOpen(startcmd_.c_str()))) {
@@ -77,24 +75,24 @@ protected:
 			GDEBUG("Can't start MATLAB engine\n");
 		} else {
             // Prepare a buffer for collecting Matlab's output
+
             char matlab_buffer_[2049] = "\0";
             engOutputBuffer(engine_, matlab_buffer_, 2048);
 
-	    // Add the necessary paths to the matlab environment
-	    // Java matlab command server
-	    std::string gadgetron_matlab_path = get_gadgetron_home().string() + "/share/gadgetron/matlab";
-	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
+            // Add the necessary paths to the matlab environment
+            // Java matlab command server
+            auto gadgetron_matlab_path = context.paths.gadgetron_home / "/share/gadgetron/matlab";
+
+            std::stringstream add_path_command{};
+            add_path_command << "addpath('" << gadgetron_matlab_path << "');";
+
             // Gadgetron matlab scripts
-	    engEvalString(engine_, add_path_cmd.c_str());
+            engEvalString(engine_, add_path_command.str().c_str());
             // ISMRMRD matlab library
             engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
-  
-	    GDEBUG("%s", matlab_buffer_);
+
+            GDEBUG("%s", matlab_buffer_);
         }
-
-
-
-
 
         //char matlab_buffer_[2049] = "\0";
         char matlab_buffer_[20481] = "\0";
@@ -127,10 +125,11 @@ protected:
 
     int send_matlab_command(std::string& command)
     {
+        char matlab_buffer_[8193] = "\0";
 
-            char matlab_buffer_[8193] = "\0";
-            engOutputBuffer(engine_, matlab_buffer_, 8192);
-            engEvalString(engine_, command.c_str());
+        engOutputBuffer(engine_, matlab_buffer_, 8192);
+        engEvalString(engine_, command.c_str());
+
 	    if (debug_mode_) {
             GDEBUG("%s\n", matlab_buffer_);
 	    }
@@ -147,5 +146,4 @@ protected:
     Engine *engine_;
 };
 
-GADGET_FACTORY_DECLARE(MatlabBufferGadget);
 }

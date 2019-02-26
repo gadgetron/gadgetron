@@ -21,8 +21,10 @@ namespace Gadgetron::Server::Connection {
 
     boost::dll::shared_library Loader::load_library(const std::string &shared_library_name) {
 
+        auto new_shared_library_name = "lib" + shared_library_name + ".so";
+
         auto lib = boost::dll::shared_library(
-                make_library_path(shared_library_name),
+                make_library_path(new_shared_library_name),
                 boost::dll::load_mode::append_decorations
         );
 

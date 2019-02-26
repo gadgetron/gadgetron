@@ -22,7 +22,7 @@ namespace {
         void process(
                 InputChannel input,
                 OutputChannel output,
-                ErrorHandler &error_handler
+                ErrorHandler &
         ) override {
              node->process(input, output);
         }
