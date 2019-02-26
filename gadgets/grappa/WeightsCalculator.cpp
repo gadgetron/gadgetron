@@ -64,7 +64,7 @@ namespace {
             };
         }
 
-        std::array<uint16_t, 4> region_of_support(size_t slice) {
+        std::array<uint16_t, 4> region_of_support(size_t slice) const {
             return regions[slice];
         }
 
@@ -103,7 +103,7 @@ namespace {
             previous_line[slice_of(acquisition)] = line_of(acquisition);
         }
 
-        size_t acceleration_factor(size_t slice) {
+        size_t acceleration_factor(size_t slice) const {
             return acceleration[slice].get();
         }
 
@@ -161,6 +161,32 @@ namespace {
 namespace Gadgetron::Grappa {
 
     template<class WeightsCore>
+    Grappa::Weights create_weights(
+            uint16_t index,
+            const AcquisitionBuffer &buffer,
+            uint16_t n_combined_channels,
+            uint16_t n_uncombined_channels,
+            const SupportMonitor &support_monitor,
+            const AccelerationMonitor &acceleration_monitor,
+            WeightsCore &core
+    ) {
+        return Grappa::Weights{
+                {
+                        index,
+                        n_combined_channels,
+                        n_uncombined_channels
+                },
+                core.calculate_weights(
+                        buffer.view(index),
+                        support_monitor.region_of_support(index),
+                        acceleration_monitor.acceleration_factor(index),
+                        n_combined_channels,
+                        n_uncombined_channels
+                )
+        };
+    }
+
+    template<class WeightsCore>
     WeightsCalculator<WeightsCore>::WeightsCalculator(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
@@ -176,6 +202,7 @@ namespace Gadgetron::Grappa {
         SupportMonitor support_monitor{context};
         AccelerationMonitor acceleration_monitor{context};
 
+        buffer.add_pre_update_callback(DirectionMonitor{buffer, support_monitor, acceleration_monitor});
         buffer.add_post_update_callback([&](auto &acq) { updated_slices.insert(slice_of(acq)); });
         buffer.add_post_update_callback([&](auto &acq) { acceleration_monitor(acq); });
         buffer.add_post_update_callback([&](auto &acq) { support_monitor(acq); });
@@ -183,8 +210,6 @@ namespace Gadgetron::Grappa {
             n_combined_channels = combined_channels(acq);
             n_uncombined_channels = uncombined_channels(acq);
         });
-
-        buffer.add_pre_update_callback(DirectionMonitor{buffer, support_monitor, acceleration_monitor});
 
         WeightsCore core{
                 {coil_map_estimation_ks, coil_map_estimation_power},
@@ -199,21 +224,15 @@ namespace Gadgetron::Grappa {
 
                 if (!buffer.is_fully_sampled(index)) continue;
 
-                Grappa::Weights weights {
-                        {
-                            index,
-                            n_combined_channels,
-                            n_uncombined_channels
-                        },
-                        core.calculate_weights(
-                                buffer.view(index),
-                                support_monitor.region_of_support(index),
-                                acceleration_monitor.acceleration_factor(index),
-                                n_combined_channels,
-                                n_uncombined_channels
-                        )
-                };
-                out.push(std::move(weights));
+                out.push(create_weights(
+                        index,
+                        buffer,
+                        n_combined_channels,
+                        n_uncombined_channels,
+                        support_monitor,
+                        acceleration_monitor,
+                        core
+                ));
             }
             updated_slices.clear();
         }
