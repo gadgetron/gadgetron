@@ -1,7 +1,3 @@
-//
-// Created by dchansen on 2/7/19.
-//
-
 #pragma once
 
 #include "PureStream.h"

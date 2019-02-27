@@ -8,7 +8,6 @@
 
 namespace Gadgetron::Server::Connection::Stream {
 
-
     class Processable {
     public:
         virtual ~Processable() = default;
@@ -28,6 +27,4 @@ namespace Gadgetron::Server::Connection::Stream {
                 const ErrorHandler &errorHandler
         );
     };
-
-
 }

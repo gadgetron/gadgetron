@@ -1,22 +1,27 @@
-#include "Distributed.h"
-#include "connection/distributed/remote_workers.h"
 #include <algorithm>
-#include <cstdlib>
+
+#include "Distributed.h"
+
+#include "connection/distributed/remote_workers.h"
 
 namespace {
-    using Worker  = Gadgetron::Server::Connection::Stream::Distributed::Worker;
-    using Address = Gadgetron::Server::Distributed::Address;
-    using Local   = Gadgetron::Server::Distributed::Local;
+    using namespace Gadgetron;
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Distributed;
-    using namespace Gadgetron;
 
     std::vector<Worker> get_workers() {
-        auto remote_workers = get_remote_workers();
 
-        auto workers = std::vector<Worker>();
-        std::transform(remote_workers.begin(), remote_workers.end(), std::back_inserter(workers),
-            [](auto address) { return address; });
+        auto workers = get_remote_workers();
+
+        if (workers.empty()) {
+            GWARN_STREAM(
+                    "Remote worker list empty; adding local worker. " <<
+                    "This machine will perform reconstructions. " <<
+                    "This is probably not what you intended."
+            )
+            workers.emplace_back(Local{});
+        }
+
         return workers;
     }
 
@@ -28,7 +33,7 @@ namespace {
         return "Local";
     }
 
-    class WorkerChannelCreator : public Gadgetron::Core::Distributed::ChannelCreator {
+    class WorkerChannelCreator : public Core::Distributed::ChannelCreator {
     public:
         WorkerChannelCreator(
                 const Config::Distributed& distributed_config,
@@ -36,7 +41,7 @@ namespace {
                 Gadgetron::Server::Connection::Loader& loader,
                 Core::OutputChannel output_channel,
                 ErrorHandler& error_handler
-        ) : loader(loader),
+        ) : loader { loader },
             output_channel{ std::move(output_channel) },
             context{ std::move(context) },
             xml_config{ serialize_config(
@@ -98,9 +103,9 @@ namespace {
                 address, xml_config, context.header, readers, writers);
 
             worker_threads.emplace_back(
-                    ErrorHandler{ error_handler, "Distributed (Reader)" }.run(
+                    ErrorHandler{ error_handler, "Distributed (Remote Stream)" }.run(
                             [](auto input, auto output) {
-                                std::transform(begin(input), end(input), begin(output), [](auto&& m) { return std::forward(m); });
+                                std::transform(begin(input), end(input), begin(output), [](auto&& m) { return std::forward<decltype(m)>(m); });
                             },
                             std::move(channel.input),
                             Core::split(output_channel)
@@ -141,21 +146,23 @@ namespace Gadgetron::Server::Connection::Stream {
             Core::split(output),
             error_handler
         };
+
+
         distributor->process(std::move(input), channel_creator, std::move(output));
     }
 
     Distributed::Distributed(
             const Config::Distributed& distributed_config,
-            const Gadgetron::Core::Context& context,
-            Gadgetron::Server::Connection::Loader& loader
+            const Core::Context& context,
+            Loader& loader
     ) : context{ context },
         loader{ loader },
         config(distributed_config) {
         distributor = load_distributor(distributed_config.distributor);
     }
 
-    std::unique_ptr<Gadgetron::Core::Distributed::Distributor> Distributed::load_distributor(
-            const Gadgetron::Server::Connection::Config::Distributor& conf
+    std::unique_ptr<Core::Distributed::Distributor> Distributed::load_distributor(
+            const Config::Distributor& conf
     ) {
         auto factory = loader.load_factory<Loader::generic_factory<Core::Distributed::Distributor>>(
                 "distributor_factory_export_", conf.classname, conf.dll);

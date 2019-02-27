@@ -1,9 +1,5 @@
-try:
-    import GadgetronPythonMRI
-    import ismrmrd
-except ImportError:
-    pass
-
+import ismrmrd
+import GadgetronPythonMRI
 import time
 import numpy as np
 
@@ -26,7 +22,6 @@ class Gadget(object):
         return self.get_results()
 
     def set_next_gadget(self, gadget):
-        print("The penguins are comming")
         self.next_gadget = gadget
 
     def process_config(self, conf):

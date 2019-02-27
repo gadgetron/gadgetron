@@ -82,34 +82,18 @@ target_link_libraries(gadgetron_python
         gadgetron_core
         gadgetron_toolbox_python
         gadgetron_toolbox_log
-        ${ISMRMRD_LIBRARIES}
-        ${PYTHON_LIBRARIES}
-        ${Boost_LIBRARIES}
-        ${MKL_LIBRARIES})
 
-target_link_libraries(GadgetronPythonMRI
-        gadgetron_core
-        gadgetron_toolbox_log
-        gadgetron_toolbox_python
-        ${ISMRMRD_LIBRARIES}
-        ${PYTHON_LIBRARIES}
-        ${Boost_LIBRARIES}
-        ${MKL_LIBRARIES})
-
-target_include_directories(GadgetronPythonMRI
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${PYTHON_INCLUDE_PATH}
-        ${NUMPY_INCLUDE_DIRS}
         )
 
 target_include_directories(gadgetron_python
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${PYTHON_INCLUDE_PATH}
-        ${NUMPY_INCLUDE_DIRS}
         )
 
+target_link_libraries(GadgetronPythonMRI
+        gadgetron_python
+        boost
+        python )
 if (WIN32)
     set_target_properties(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
     set_target_properties(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs")

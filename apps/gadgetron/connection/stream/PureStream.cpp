@@ -1,7 +1,3 @@
-//
-// Created by dchansen on 2/7/19.
-//
-
 #include "PureStream.h"
 
 namespace {
@@ -11,24 +7,27 @@ namespace {
     std::unique_ptr<PureGadget> load_pure_gadget(const Config::Gadget& conf, const Context& context, Loader& loader) {
         auto factory
             = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname, conf.dll);
-        auto gadget          = factory(context, conf.properties);
-        auto pure_gadget_ptr = dynamic_cast<PureGadget*>(gadget.get());
-        if (!pure_gadget_ptr)
-            throw std::runtime_error("Non-pure Gadget \"" + conf.classname + "\" in PureStream");
-        gadget.release();
-        return std::unique_ptr<PureGadget>(pure_gadget_ptr);
+
+        auto gadget = factory(context, conf.properties);
+
+        if (dynamic_cast<PureGadget *>(gadget.get())) {
+            return std::unique_ptr<PureGadget>(dynamic_cast<PureGadget *>(gadget.release()));
+        }
+
+        throw std::runtime_error("Non-pure Gadget \"" + conf.classname + "\" in pure stream.");
     }
 
     std::vector<std::unique_ptr<PureGadget>> load_pure_gadgets(
-        const std::vector<Config::Gadget>& configs, const Context& context, Loader& loader) {
-
+        const std::vector<Config::Gadget>& configs,
+        const Context& context,
+        Loader& loader
+    ) {
         std::vector<std::unique_ptr<PureGadget>> gadgets;
         for (auto& config : configs) {
             gadgets.emplace_back(load_pure_gadget(config, context, loader));
         }
         return gadgets;
     }
-
 }
 
 Gadgetron::Server::Connection::Stream::PureStream::PureStream(

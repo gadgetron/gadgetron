@@ -29,7 +29,6 @@ namespace Gadgetron::Server::Connection::Stream {
 
         const std::string &name() override;
 
-
         class DecoratedBranch {
         public:
             DecoratedBranch(std::unique_ptr<Branch> branch, std::string key);

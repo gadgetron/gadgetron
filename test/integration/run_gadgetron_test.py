@@ -78,7 +78,7 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
 
 
 def start_gadgetron_instance(*, log, port, env=None):
-    print("Starting Gadgetron instance on port ",port)
+    print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
@@ -295,27 +295,31 @@ def start_additional_nodes(args, config):
     if not config.has_section('DISTRIBUTED'):
         return
 
-    def set_distributed_environment(cont, *, worker_list=[], env=dict(os.environ), **state):
+    def set_distributed_environment_action(cont, *, worker_list=[], env=dict(os.environ), **state):
         env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
         return cont(env=env, **state)
 
     base_port = int(config['DISTRIBUTED']['node_port_base'])
-    nodes = int(config['DISTRIBUTED']['nodes'])
+    number_of_nodes = int(config['DISTRIBUTED']['nodes'])
 
-    def start_additional_nodes_action(port, cont, *, worker_list=[], **state):
-        print('Starting additional nodes')
+    def create_worker_ports_action(ids, cont, **state):
+        print("Will start additional Gadgetron workers on ports:", *map(lambda id: base_port + id, ids))
+        return cont(**state)
+
+    def start_additional_worker_action(port, cont, *, worker_list=[], **state):
         with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
             with start_gadgetron_instance(log=log, port=port) as instance:
-                print("Starting instance", port)
                 try:
                     return cont(worker_list=worker_list + ['localhost:' + port], **state)
                 finally:
                     instance.kill()
 
-    yield from (functools.partial(start_additional_nodes_action, str(base_port + id))
-                for id in range(nodes))
+    yield functools.partial(create_worker_ports_action, range(number_of_nodes))
 
-    yield set_distributed_environment
+    yield from (functools.partial(start_additional_worker_action, str(base_port + id))
+                for id in range(number_of_nodes))
+
+    yield set_distributed_environment_action
 
 
 def run_gadgetron_client(args, config):
@@ -391,9 +395,9 @@ def output_stats(args, config):
 def build_actions(args, config):
     yield from error_handlers(args, config)
     yield from clear_test_folder(args, config)
-    yield from start_additional_nodes(args, config)
     yield from ensure_gadgetron_instance(args, config)
     yield from ensure_instance_satisfies_requirements(args, config)
+    yield from start_additional_nodes(args, config)
     yield from prepare_copy_input_data(args, config)
     yield from prepare_siemens_input_data(args, config)
     yield from run_gadgetron_client(args, config)

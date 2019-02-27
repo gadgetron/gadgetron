@@ -1,14 +1,13 @@
-//
-// Created by dchansen on 2/18/19.
-//
-
 #pragma once
+
+#include <map>
+
 #include "Processable.h"
-#include "connection/Config.h"
 #include "Reader.h"
 #include "Writer.h"
-#include <map>
+
 #include "connection/Loader.h"
+#include "connection/Config.h"
 
 namespace Gadgetron::Server::Connection::Stream {
 

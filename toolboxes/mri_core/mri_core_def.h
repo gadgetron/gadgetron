@@ -86,6 +86,13 @@ namespace Gadgetron
     #define GADGETRON_CMR_2D_ENDO_CONTOUR                   "ENDO"
     #define GADGETRON_CMR_2D_EPI_CONTOUR                    "EPI"
 
+    /// 2D closed region of interest contour
+    /// stored as 2*N_pts + 4 array
+    /// first three values: ROI color in tuple
+    /// the forth value: line thickness
+    /// then [px1 py1 px2 py2 ...] for N_Pts points
+    #define GADGETRON_2D_ROI                                "GT_ROI"
+
     //MSH: Interventional MRI (Interactive Real Time, IRT)
     #define GADGETRON_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
     #define GADGETRON_IMAGE_IRT_DEVICE                     "IRT_DEVICE"

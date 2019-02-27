@@ -1,7 +1,3 @@
-//
-// Created by dchansen on 2/20/19.
-//
-
 #pragma once
 
 #include "Types.h"
@@ -10,6 +6,7 @@
 #include <mutex>
 
 namespace Gadgetron::Core {
+
     template <class T> class MPMCChannel {
     public:
         void push(T);
@@ -84,5 +81,4 @@ namespace Gadgetron::Core {
         }
         cv.notify_one();
     }
-
 }

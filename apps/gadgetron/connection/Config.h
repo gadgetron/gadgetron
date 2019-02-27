@@ -10,11 +10,12 @@ namespace Gadgetron::Server::Connection {
     struct Config {
 
         struct Gadget;
+        struct External;
         struct Parallel;
         struct Distributed;
         struct ParallelProcess;
         struct PureDistributed;
-        using Node = boost::variant<Gadget, Parallel, Distributed, ParallelProcess, PureDistributed>;
+        using Node = boost::variant<Gadget, /* External, */ Parallel, Distributed, ParallelProcess, PureDistributed>;
 
         template<class CONFIG>
         static std::string name(CONFIG config) {
@@ -44,6 +45,8 @@ namespace Gadgetron::Server::Connection {
             std::unordered_map<std::string, std::string> properties;
         };
 
+        struct External {};
+
         struct Branch : Gadget {};
         struct Merge : Gadget {};
 
@@ -66,7 +69,6 @@ namespace Gadgetron::Server::Connection {
         };
 
         struct Distributor : Gadget {};
-
 
         struct Distributed {
             std::vector<Reader> readers;

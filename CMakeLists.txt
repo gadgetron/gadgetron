@@ -35,6 +35,12 @@ endif()
 if(EXISTS $ENV{ISMRMRD_HOME})
   list(APPEND CMAKE_PREFIX_PATH $ENV{ISMRMRD_HOME})
 endif()
+if(EXISTS $ENV{TORCH_HOME})
+  list(APPEND CMAKE_PREFIX_PATH $ENV{TORCH_HOME})
+endif()
+if (CMAKE_PREFIX_PATH)
+  list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+endif()
 message(STATUS "Looking for packages in : ${CMAKE_PREFIX_PATH}")
 # ---
 
@@ -60,8 +66,8 @@ else()
 endif()
 
 #VERSIONING AND INSTALL PATHS
-set(GADGETRON_VERSION_MAJOR 3)
-set(GADGETRON_VERSION_MINOR 17)
+set(GADGETRON_VERSION_MAJOR 4)
+set(GADGETRON_VERSION_MINOR 0)
 set(GADGETRON_VERSION_PATCH 0) 
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
@@ -262,9 +268,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED OPTIONAL_COMPONENTS python)
+  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
 else()
-  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED OPTIONAL_COMPONENTS python)
+  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
 endif()
 
 add_library(boost INTERFACE IMPORTED)
@@ -272,8 +278,8 @@ set_target_properties(boost PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 set_property(TARGET boost PROPERTY
         INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-#target_link_libraries(boost INTERFACE
-#        ${Boost_LIBRARIES})
+target_link_libraries(boost INTERFACE
+        ${Boost_LIBRARIES})
 
 option(USE_CUDA "Build with CUDA support" On)
 
@@ -394,17 +400,24 @@ if (LAPACK_FOUND)
   add_definitions(-DUSE_LAPACK)
 endif ()
 
+if(EXISTS $ENV{TORCH_HOME})
+  find_package(Torch)
+  if (TORCH_FOUND)
+    add_definitions(-DUSE_TORCH)
+    message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+  else()
+    message("Do not find Pytorch c++ library")
+  endif ()
+else()
+  message("Do not find TORCH_HOME")
+endif()
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
 
-  find_package(Python3 REQUIRED)
+  find_package(PythonLibs 3 REQUIRED)
   find_package(NumPy REQUIRED)
-
-  string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
-  list(GET PYTHON_VERSION_MAJOR 0 PYVER)
-  add_definitions(-DPYVER=${PYVER})
 
   message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
 
@@ -413,8 +426,12 @@ if (BUILD_PYTHON_SUPPORT)
          INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
   set_property(TARGET python PROPERTY
         INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
-  set_property(TARGET boost PROPERTY
-        INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
+
+  find_package(Boost 1.64.0 COMPONENTS python3 REQUIRED)
+  set_property(TARGET python PROPERTY
+          INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+  set_property(TARGET python PROPERTY
+          INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
 endif()
 
 option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)

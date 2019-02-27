@@ -13,9 +13,15 @@ IMG_OUT=$2
 
 DOCKERFOLDER=$(mktemp -d)
 DOCKER_ENV=$(docker inspect ${IMG_IN}|jq -c .[0].Config.Env[]| tr -d '"'|tr "\n" " ")
+echo $DOCKER_ENV
+
 DOCKER_CMD=$(docker inspect ${IMG_IN}|jq -c  .[0].Config.Cmd)
+echo $DOCKER_CMD
+
 DOCKER_LABELS=$(docker inspect ${IMG_IN}|jq -c .[0].Config.Labels|tr -d "{}"|tr "," " "|tr ":" "=")
 DOCKER_LABELS="${DOCKER_LABELS} \"io.gadgetron.imagetype\"=\"stripped\""
+echo $DOCKER_LABELS
+
 cat << EOF > ${DOCKERFOLDER}/Dockerfile
 FROM ${IMG_IN}
 

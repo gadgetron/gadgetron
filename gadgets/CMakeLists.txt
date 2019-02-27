@@ -60,8 +60,6 @@ if (BUILD_PYTHON_SUPPORT)
   endif ()
 endif () # BUILD_PYTHON_SUPPORT
 
-#add_subdirectory(distributed)
-#add_subdirectory(util)
 
 find_package(DCMTK)
 if(DCMTK_FOUND)
@@ -73,9 +71,7 @@ endif()
 
 add_subdirectory(cartesian)
 
-if(ARMADILLO_FOUND)
-    add_subdirectory(moco)
-endif()
+  add_subdirectory(moco)
 
 if(PLPLOT_FOUND)
     if (MKL_FOUND OR ARMADILLO_FOUND)

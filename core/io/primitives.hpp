@@ -89,7 +89,7 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::Core::optional<T
         opt = Core::none;
         return;
     }
-    *opt = IO::read<T>(stream);
+    opt = IO::read<T>(stream);
 }
 
 template<class T>
