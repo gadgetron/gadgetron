@@ -75,10 +75,16 @@ namespace Gadgetron {
         {
             GILLock lock;
             auto ref = std::make_shared<GadgetReference>(out);
-            boost::python::object set_next_gadget = class_.attr("set_next_gadget");
-
-            set_next_gadget(ref.get());
-
+            try {
+                boost::python::object set_next_gadget = class_.attr("set_next_gadget");
+                set_next_gadget(*ref);
+            } catch (boost::python::error_already_set const &) {
+                PyErr_Print();
+                 std::string err = pyerr_to_string();
+                if (!error_ignored_mode) {
+                    throw std::runtime_error(err);
+                }
+            }
         }
 
         for (auto message : in) {
@@ -125,7 +131,7 @@ namespace Gadgetron {
             throw std::runtime_error("Empty python class provided");
 
         GILLock lock;
-//        try {
+        try {
             module_ = boost::python::import(python_module.c_str());
             GDEBUG_STREAM("Successfully import module : " << python_module)
 
@@ -136,11 +142,8 @@ namespace Gadgetron {
             std::string tmp = std::string("reload(") +
                               std::string(python_module.c_str()) +
                               std::string(")\n");
-#if defined PYVER && PYVER == 3
-            // prefix reload call for Python 3
-            tmp = std::string("from importlib import reload;") + tmp;
-#endif
-            // GDEBUG("Reloading with command: %s\n", tmp.c_str());
+            tmp = std::string("from importlib import reload; ") + tmp;
+             GDEBUG("Reloading with command: %s\n", tmp.c_str());
             boost::python::exec(tmp.c_str(), boost::python::import("__main__").attr("__dict__"));
             GDEBUG_STREAM("Successfully reload module : " << python_module)
             // Create instance of class (passing gadget reference)
@@ -149,11 +152,14 @@ namespace Gadgetron {
             // destructor and the interpreter can decrement its reference count
             boost::python::incref(class_.ptr());
             GDEBUG_STREAM("Successfully declare class : " << python_class)
+            auto python_params = params;
+            python_params.erase("python_module");
+            python_params.erase("python_class");
 
 
             boost::python::object set_parameter_fn = class_.attr(
                     "set_parameter");        // Transfer all properties/parameters to Python gadget
-            for (auto &property : params) {
+            for (auto &property : python_params) {
                 set_parameter_fn(property.first, property.second);
             }
 
@@ -166,18 +172,18 @@ namespace Gadgetron {
             boost::python::object process_config_fn =
                     class_.attr("process_config");
 
-            boost::python::object ignored =
-                    process_config_fn(boost::python::object(sstream.str()));
+            auto xml = boost::python::object(sstream.str());
+            auto ignored = process_config_fn(xml);
 
 
             config_success_ = true;
-//        } catch (boost::python::error_already_set const &) {
-//            GERROR("Error loading python modules in Gadget ");
-//            std::string err = pyerr_to_string();
-//            GERROR(err.c_str());
-//            if (!error_ignored_mode)
-//                throw std::runtime_error("Python " + err);
-//        }
+        } catch (boost::python::error_already_set const &) {
+            GERROR("Error loading python modules in Gadget ");
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            if (!error_ignored_mode)
+                throw std::runtime_error("Python " + err);
+        }
         GDEBUG_STREAM("Call process_config completed without error ")
 
     }

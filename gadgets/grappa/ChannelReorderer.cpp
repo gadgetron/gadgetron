@@ -139,6 +139,5 @@ namespace Gadgetron::Grappa
         return reordering;
     }
 
-
     GADGETRON_GADGET_EXPORT(ChannelReorderer)
 }

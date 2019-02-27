@@ -98,7 +98,7 @@ namespace Gadgetron::Grappa {
         return std::move(buffer.data);
     }
 
-    const hoNDArray<std::complex<float>> &AcquisitionBuffer::view(size_t index) {
+    const hoNDArray<std::complex<float>> &AcquisitionBuffer::view(size_t index) const {
         return buffers.at(index).data;
     }
 
@@ -106,7 +106,7 @@ namespace Gadgetron::Grappa {
         buffers.erase(index);
     }
 
-    bool AcquisitionBuffer::is_fully_sampled(size_t index) {
+    bool AcquisitionBuffer::is_fully_sampled(size_t index) const {
         return internals.expected_lines == buffers.at(index).sampled_lines;
     }
 

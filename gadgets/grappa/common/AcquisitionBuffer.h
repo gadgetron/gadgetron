@@ -31,11 +31,11 @@ namespace Gadgetron::Grappa {
         take(size_t index);
 
         const hoNDArray<std::complex<float>> &
-        view(size_t index);
+        view(size_t index) const;
 
         void clear(size_t index);
 
-        bool is_fully_sampled(size_t index);
+        bool is_fully_sampled(size_t index) const;
 
         void add_pre_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
         void add_post_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);

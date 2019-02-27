@@ -77,7 +77,6 @@ void add_python_path(const std::string& path)
             add_path_cmd = std::string("import sys;\nif sys.path.count(\"") +
                     paths[i] + std::string("\") == 0:\n\tsys.path.insert(0, \"") +
                     paths[i] + std::string("\")\n");
-            //GDEBUG("Executing path command:\n%s\n", path_cmd.c_str());
             boost::python::exec(add_path_cmd.c_str(),
                     boost::python::import("__main__").attr("__dict__"));
         }
@@ -102,7 +101,7 @@ std::string pyerr_to_string(void)
         bp::object format_exception(traceback.attr("format_exception"));
         formatted_list = format_exception(hexc, hval, htb);
     }
-    formatted = bp::str("\n").join(formatted_list);
+    formatted = bp::str("").join(formatted_list);
     return bp::extract<std::string>(formatted);
 }
 
