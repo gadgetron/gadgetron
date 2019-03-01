@@ -20,10 +20,8 @@ endif()
 
 add_subdirectory(mri_image)
 
-if(ARMADILLO_FOUND)
   add_subdirectory(klt)
   add_subdirectory(fatwater)
-endif()
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)
@@ -33,13 +31,7 @@ add_subdirectory(image)
 add_subdirectory(pattern_recognition)
 add_subdirectory(denoise)
 
-
-
 add_subdirectory(image_io)
-
-find_package(BLAS)
-find_package(LAPACK)
-
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB toolbox")
@@ -49,26 +41,10 @@ endif()
 
 # Should we compile the python toolbox
 if (BUILD_PYTHON_SUPPORT AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
-
-  if(BUILD_WITH_PYTHON3)
-    find_package(Boost COMPONENTS python3 system thread)
-    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
-  else()
-    find_package(Boost COMPONENTS python system thread)
-    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
-  endif()
-
-  message("Boost_SYSTEM_FOUND is ${Boost_SYSTEM_FOUND}")
-  message("Boost_THREAD_FOUND is ${Boost_THREAD_FOUND}")
-  if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     message("Find python; build gadgetron toolbox python")
     add_subdirectory(python)
-  else()
-    message("Cannot find python; do not build gadgetron toolbox python")
-  endif ()
 else()
   message("Cannot find python; do not build gadgetron toolbox python")
-  set(BUILD_PYTHON_SUPPORT OFF)
 endif()
 
 if (ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
