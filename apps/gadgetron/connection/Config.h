@@ -15,7 +15,7 @@ namespace Gadgetron::Server::Connection {
         struct Distributed;
         struct ParallelProcess;
         struct PureDistributed;
-        using Node = boost::variant<Gadget, /* External, */ Parallel, Distributed, ParallelProcess, PureDistributed>;
+        using Node = boost::variant<Gadget, External, Parallel, Distributed, ParallelProcess, PureDistributed>;
 
         template<class CONFIG>
         static std::string name(CONFIG config) {
@@ -45,7 +45,19 @@ namespace Gadgetron::Server::Connection {
             std::unordered_map<std::string, std::string> properties;
         };
 
-        struct External {};
+        struct Module { std::string name, type; };
+        struct Connect { std::string port; };
+        using Action = boost::variant<Module, Connect>;
+
+        struct External {
+            Action action;
+
+            struct Configuration;
+            std::shared_ptr<Configuration> configuration;
+
+            std::vector<Reader> readers;
+            std::vector<Writer> writers;
+        };
 
         struct Branch : Gadget {};
         struct Merge : Gadget {};
@@ -84,4 +96,5 @@ namespace Gadgetron::Server::Connection {
 
     Config parse_config(std::istream &stream);
     std::string serialize_config(const Config& config);
+    std::string serialize_external_config(const Config::External& external_config);
 }

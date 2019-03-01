@@ -1,5 +1,5 @@
-#include "remote_workers.h"
-#include "RemoteChannel.h"
+#include "Worker.h"
+#include "connection/distributed/RemoteChannel.h"
 #include <boost/asio/io_service.hpp>
 #include <boost/process.hpp>
 #include <boost/process/async.hpp>
@@ -14,13 +14,13 @@
 #include <string>
 
 BOOST_FUSION_ADAPT_STRUCT(
-    Gadgetron::Server::Distributed::Address,
+    Gadgetron::Server::Connection::Stream::Address,
     (std::string, ip)(std::string, port)
 )
 
 namespace {
     using namespace Gadgetron::Server;
-    using namespace Gadgetron::Server::Distributed;
+    using namespace Gadgetron::Server::Connection::Stream;
 
     std::vector<Worker> parse_remote_workers(std::string input)
     {
@@ -61,18 +61,37 @@ namespace {
     }
 }
 
-std::vector<Worker> Distributed::get_remote_workers()
-{
-    auto worker_discovery_command = std::getenv("GADGETRON_REMOTE_WORKER_COMMAND");
-    if (!worker_discovery_command) return std::vector<Worker>{};
+namespace Gadgetron::Server::Connection::Stream {
 
-    std::future<std::string> output;
-    boost::process::system(
-            worker_discovery_command,
-            boost::process::std_out > output,
-            boost::process::std_err > boost::process::null,
-            boost::asio::io_service{}
-    );
+    std::vector<Worker> get_remote_workers()
+    {
+        auto worker_discovery_command = std::getenv("GADGETRON_REMOTE_WORKER_COMMAND");
+        if (!worker_discovery_command) return std::vector<Worker>{};
 
-    return parse_remote_workers(output.get());
+        std::future<std::string> output;
+        boost::process::system(
+                worker_discovery_command,
+                boost::process::std_out > output,
+                boost::process::std_err > boost::process::null,
+                boost::asio::io_service{}
+        );
+
+        return parse_remote_workers(output.get());
+    }
+
+    std::vector<Worker> get_workers() {
+
+        auto workers = Stream::get_remote_workers();
+
+        if (workers.empty()) {
+            GWARN_STREAM(
+                    "Remote worker list empty; adding local worker. " <<
+                    "This machine will perform reconstructions. " <<
+                    "This is probably not what you intended."
+            )
+            workers.emplace_back(Local{});
+        }
+
+        return workers;
+    }
 }

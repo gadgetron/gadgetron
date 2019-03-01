@@ -54,8 +54,7 @@ install(FILES
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES
-		config/example_branching_chain.xml
-		config/simple_chain.xml
+		config/external_example.xml
         config/distributed_default.xml
 		config/distributed_generic_default.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

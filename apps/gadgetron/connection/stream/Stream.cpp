@@ -47,10 +47,13 @@ namespace {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Parallel>(conf, context, loader);
     }
 
+    std::shared_ptr<Processable> load_node(const Config::External &conf, const Context &context, Loader &loader) {
+        return std::make_shared<Gadgetron::Server::Connection::Stream::External>(conf, context, loader);
+    }
+
     std::shared_ptr<Processable> load_node(const Config::Distributed &conf, const Context &context, Loader &loader) {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Distributed>(conf, context, loader);
     }
-
 
     std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const Context& context, Loader& loader){
         return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);

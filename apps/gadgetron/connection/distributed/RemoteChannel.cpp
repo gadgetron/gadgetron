@@ -19,7 +19,6 @@ namespace {
     }
 
     void send_header(std::ostream& stream, const ISMRMRD::IsmrmrdHeader& header) {
-
         std::stringstream sstream;
         ISMRMRD::serialize(header, sstream);
         IO::write(stream, HEADER);
@@ -58,7 +57,6 @@ namespace Gadgetron::Server::Distributed {
     void RemoteChannel::push_message(Gadgetron::Core::Message message) {
 
         std::lock_guard guard(closed_mutex);
-
         if (closed_input) throw Core::ChannelClosed();
 
         try {
@@ -122,18 +120,6 @@ namespace Gadgetron::Server::Distributed {
     }
 }
 
-namespace {
-    std::string make_error_message(
-        const Gadgetron::Server::Distributed::Address& address, const std::vector<std::string>& errors) {
-        std::stringstream error_maker;
-        error_maker << "Error received from " << address.ip << ":" << address.port << std::endl;
-        error_maker << "Errors received: " << std::endl;
-        for (auto& error : errors) {
-            error_maker << error << std::endl;
-        }
-        return error_maker.str();
-    }
-}
 
 Gadgetron::Server::Distributed::RemoteError::RemoteError(
         const Address& address,

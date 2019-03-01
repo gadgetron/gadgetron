@@ -5,7 +5,7 @@
 
 
 
-#include "../apps/gadgetron/connection/distributed/remote_workers.h"
+#include "connection/stream/distributed/Worker.h"
 
 
 #include <stdlib.h>

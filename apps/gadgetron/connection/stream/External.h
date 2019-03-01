@@ -24,5 +24,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 Core::OutputChannel output,
                 ErrorHandler &error_handler
         ) override;
+
+        const std::string& name() override;
    };
 }

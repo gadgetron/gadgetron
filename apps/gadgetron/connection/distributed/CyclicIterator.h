@@ -6,13 +6,11 @@ public:
     CyclicIterator(const Iter &start, const Iter &end) : start(start), current(start), end(end) {};
 
     auto operator*() { return *current; }
-
     bool operator==(const CyclicIterator &other) { return current == other.current; }
 
     CyclicIterator &operator++() {
         current++;
         if (current == end) current = start;
-
         return *this;
     }
 

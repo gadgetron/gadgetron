@@ -6,7 +6,7 @@
 #include "MPMCChannel.h"
 
 #include "connection/distributed/RemoteChannel.h"
-#include "connection/distributed/remote_workers.h"
+#include "connection/stream/distributed/Worker.h"
 
 namespace {
     using namespace Gadgetron::Core;

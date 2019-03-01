@@ -1,25 +1,21 @@
 #pragma once
 
-#include "Channel.h"
-#include "Reader.h"
-#include "Writer.h"
-
 #include <map>
 #include <vector>
 #include <atomic>
 #include <iostream>
 #include <boost/asio/ip/tcp.hpp>
 
+#include "Channel.h"
+#include "Reader.h"
+#include "Writer.h"
 
 namespace Gadgetron::Server::Distributed {
 
-    struct Local   { };
-    struct Address { std::string ip, port; };
-
-    using  Worker = Core::variant<Address, Local>;
-
     class RemoteChannel : public Core::Channel {
     public:
+
+
         RemoteChannel(
                 const Address& address,
                 const std::string& xml_config,

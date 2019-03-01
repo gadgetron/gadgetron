@@ -2,28 +2,12 @@
 
 #include "Distributed.h"
 
-#include "connection/distributed/remote_workers.h"
+#include "connection/stream/distributed/Worker.h"
 
 namespace {
     using namespace Gadgetron;
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Distributed;
-
-    std::vector<Worker> get_workers() {
-
-        auto workers = get_remote_workers();
-
-        if (workers.empty()) {
-            GWARN_STREAM(
-                    "Remote worker list empty; adding local worker. " <<
-                    "This machine will perform reconstructions. " <<
-                    "This is probably not what you intended."
-            )
-            workers.emplace_back(Local{});
-        }
-
-        return workers;
-    }
 
     std::string print_worker(const Address& address) {
         return address.ip + ":" + address.port;
@@ -47,7 +31,7 @@ namespace {
             xml_config{ serialize_config(
                   Config{ distributed_config.readers, distributed_config.writers, distributed_config.stream })
             },
-            workers{ get_workers() },
+            workers{ Stream::get_workers() },
             error_handler{ error_handler },
             current_worker{ make_cyclic(workers.begin(), workers.end()) },
             stream_config{ distributed_config.stream } {
@@ -174,5 +158,4 @@ namespace Gadgetron::Server::Connection::Stream {
         return n;
     }
 }
-
 
