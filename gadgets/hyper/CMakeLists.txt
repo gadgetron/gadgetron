@@ -15,7 +15,9 @@ add_library(gadgetron_hyper SHARED
 set_target_properties(gadgetron_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_hyper
-  gadgetron_gadgetbase
+  gadgetron_core
+  gadgetron_mricore
+  gadgetron_gpuparallelmri
   gadgetron_toolbox_gpunfft
   gadgetron_toolbox_gpucore
   gadgetron_toolbox_cpucore
@@ -25,11 +27,8 @@ target_link_libraries(gadgetron_hyper
   gadgetron_toolbox_gpusolvers
   gadgetron_toolbox_gpuoperators
   gadgetron_toolbox_gpuparallelmri
-  gadgetron_toolbox_hyper
-  ${ISMRMRD_LIBRARIES}  
-  ${FFTW3_LIBRARIES} 
-  ${BOOST_LIBRARIES}
-  )
+  gadgetron_toolbox_hyper)
+
 
 install(FILES 
   NFFT2DGadget.h

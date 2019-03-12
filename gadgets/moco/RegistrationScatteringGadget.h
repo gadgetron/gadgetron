@@ -6,7 +6,6 @@
 #include "hoNDArray.h"
 #include "complext.h"
 #include "PhysioInterpolationGadget.h"
-#include "GadgetStreamInterface.h"
 #include "GadgetronTimer.h"
 #include "gadgetron_moco_export.h"
 #include "hoNDArray_fileio.h"
@@ -52,6 +51,7 @@ namespace Gadgetron{
     GADGET_PROPERTY(num_multiresolution_levels, int, "Number of multiresolution levels", 3);
     GADGET_PROPERTY(max_iterations_per_level, int, "Maximum number of iterations per level", 500);
     GADGET_PROPERTY(output_convergence, bool, "Output convergence", false);
+    GADGET_PROPERTY(phases, unsigned short, "Number of cardiac phases", 30);
 
     virtual int process_config(ACE_Message_Block *mb)
     {
@@ -62,26 +62,7 @@ namespace Gadgetron{
       this->num_multires_levels_ = num_multiresolution_levels.value();
       this->max_iterations_per_level_ = max_iterations_per_level.value();
       
-      // Fow now we require the existence of a gadget named "PhysioInterpolationGadget" upstream,
-      // to determine the number of incoming phases.
-      //
-      
-      GadgetStreamInterface *controller = this->get_controller();
-    
-      if( controller == 0x0 ){
-        GDEBUG("Failed to get controller\n");
-        return GADGET_FAIL;
-      }
-      
-      PhysioInterpolationGadget *physio = 
-        dynamic_cast<PhysioInterpolationGadget*>( controller->find_gadget(std::string("PhysioInterpolationGadget")) );
-      
-      if( physio == 0x0 ){
-        GDEBUG("Could not find (or cast) PhysioInterpolationGadget in gadget stream\n");
-        return GADGET_FAIL;
-      }
-      
-      this->number_of_phases_ = physio->get_number_of_phases();      
+      this->number_of_phases_ = phases.value();
       
       GDEBUG("Configured for %d phases\n", this->number_of_phases_); 
       return GADGET_OK;

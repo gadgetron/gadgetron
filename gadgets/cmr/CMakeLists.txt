@@ -43,7 +43,7 @@ source_group(config/Mapping FILES ${config_Mapping_files})
 
 set( config_cmr_files 
     ${config_BinningCine_files} 
-    ${config_Mapping_files} )
+    ${config_Mapping_files} PureCmrCartesianKSpaceBinningCineGadget.cpp PureCmrCartesianKSpaceBinningCineGadget.h)
 
 add_library(gadgetron_cmr SHARED 
     ${gadgetron_cmr_header_files} 

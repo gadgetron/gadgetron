@@ -15,7 +15,6 @@ The dicom image is sent out with message id -> dicom image -> dicom image name -
 #include "ismrmrd/meta.h"
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd/ismrmrd.h"
-#include "GadgetStreamController.h"
 
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"
@@ -54,10 +53,6 @@ namespace Gadgetron
 
         virtual int process_config(ACE_Message_Block * mb);
         virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
-        virtual int send_message(ACE_Message_Block *mb)
-        {
-            return this->controller_->output_ready(mb);
-        }
 
         template <typename T>
         int write_data_attrib(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2)
@@ -168,13 +163,6 @@ namespace Gadgetron
             GadgetContainerMessage<DcmFileFormat>* mdcm = new GadgetContainerMessage<DcmFileFormat>();
 
             *mdcm->getObjectPtr() = dcmFile;
-
-            GadgetContainerMessage<GadgetMessageIdentifier>* mb =
-                new GadgetContainerMessage<GadgetMessageIdentifier>();
-
-            mb->getObjectPtr()->id = GADGET_MESSAGE_DICOM_WITHNAME;
-
-            mb->cont(mdcm);
             mdcm->cont(mfilename);
 
             if (m3)
@@ -182,13 +170,7 @@ namespace Gadgetron
                 mfilename->cont(m3);
             }
 
-            int ret = this->send_message(mb);
-
-            if ((ret < 0))
-            {
-                GDEBUG("Failed to return message to controller\n");
-                return GADGET_FAIL;
-            }
+            this->next()->putq(mdcm);
 
             return GADGET_OK;
         }

@@ -35,6 +35,12 @@ endif()
 if(EXISTS $ENV{ISMRMRD_HOME})
   list(APPEND CMAKE_PREFIX_PATH $ENV{ISMRMRD_HOME})
 endif()
+if(EXISTS $ENV{TORCH_HOME})
+  list(APPEND CMAKE_PREFIX_PATH $ENV{TORCH_HOME})
+endif()
+if (CMAKE_PREFIX_PATH)
+  list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+endif()
 message(STATUS "Looking for packages in : ${CMAKE_PREFIX_PATH}")
 # ---
 
@@ -60,8 +66,8 @@ else()
 endif()
 
 #VERSIONING AND INSTALL PATHS
-set(GADGETRON_VERSION_MAJOR 3)
-set(GADGETRON_VERSION_MINOR 17)
+set(GADGETRON_VERSION_MAJOR 4)
+set(GADGETRON_VERSION_MINOR 0)
 set(GADGETRON_VERSION_PATCH 0) 
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
@@ -262,9 +268,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED OPTIONAL_COMPONENTS python)
+  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
 else()
-  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED OPTIONAL_COMPONENTS python)
+  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
 endif()
 
 add_library(boost INTERFACE IMPORTED)
@@ -366,27 +372,21 @@ endif()
 option(USE_MKL OFF)
 if (USE_MKL)
   find_package(MKL REQUIRED)
-  add_library(mkl INTERFACE IMPORTED)
-  set_property(TARGET mkl PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-  set_property(TARGET mkl PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-  set_property(TARGET mkl PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+  add_library(BLAS INTERFACE IMPORTED)
+  set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
+  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
+  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+
+  add_definitions(-DUSE_MKL)
+  else()
+  find_package(CBLAS)
 endif()
 
 if (MKL_FOUND)
   if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
     message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
   endif ()
-  add_definitions(-DUSE_MKL)
 endif ()
-find_package(BLAS)
-
-if(MKL_FOUND)
-  set(CBLAS_LIBRARY ${MKL_LIBRARIES})
-  set(CBLAS_INCLUDE_DIR ${MKL_INCLUDE_DIR})
-  set(CBLAS_FOUND 1)
-else(MKL_FOUND)
-  find_package(CBLAS)
-endif (MKL_FOUND)
 
 find_package(LAPACK)
 if (LAPACK_FOUND)
@@ -394,22 +394,23 @@ if (LAPACK_FOUND)
   add_definitions(-DUSE_LAPACK)
 endif ()
 
+if(EXISTS $ENV{TORCH_HOME})
+  find_package(Torch)
+  if (TORCH_FOUND)
+    add_definitions(-DUSE_TORCH)
+    message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+  else()
+    message("Do not find Pytorch c++ library")
+  endif ()
+else()
+  message("Do not find TORCH_HOME")
+endif()
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
 
-  option(BUILD_WITH_PYTHON3 "Build with Python 3.x" Off)
-
-  if (BUILD_WITH_PYTHON3)
-    find_package(Python3)
-  else()
-    find_package(PythonLibs 2)
-  endif ()
-
-  string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
-  list(GET PYTHON_VERSION_MAJOR 0 PYVER)
-  add_definitions(-DPYVER=${PYVER})
+  find_package(PythonLibs 3  REQUIRED)
 
   find_package(NumPy)
   if(NOT PYTHONLIBS_FOUND)
@@ -429,8 +430,12 @@ if (BUILD_PYTHON_SUPPORT)
          INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
   set_property(TARGET python PROPERTY
         INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
-  set_property(TARGET boost PROPERTY
-        INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
+
+  find_package(Boost 1.64.0 COMPONENTS python3 REQUIRED)
+  set_property(TARGET python PROPERTY
+          INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+  set_property(TARGET python PROPERTY
+          INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
 endif()
 
 option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)

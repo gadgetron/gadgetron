@@ -12,6 +12,8 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include "hoNDArray_fileio.h"
+
 namespace Gadgetron {
 
     namespace {
@@ -70,6 +72,8 @@ namespace Gadgetron {
 
     int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1,
                                GadgetContainerMessage<hoNDArray<std::complex<float>>> *m2) {
+
+        write_nd_array(m2->getObjectPtr(), "extract_input.cplx");
 
         float min_val = minimum_component(*m2->getObjectPtr());
 

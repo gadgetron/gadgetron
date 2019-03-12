@@ -21,38 +21,23 @@ RUN apt-get update --quiet && \
 #Python stuff
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+# numpy 1.16 has conflicts with skimage 0.14.1
+RUN pip3 install numpy==1.15.4 Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp35-cp35m-linux_x86_64.whl 
+RUN pip3 install https://download.pytorch.org/whl/cpu/torch-1.0.0-cp35-cp35m-linux_x86_64.whl
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
 RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
-
-#OpenBLAS with OpenMP
-RUN cd /opt && \
-    mkdir debsource && \
-    cd debsource && \
-    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
-    apt-get source libopenblas-base && \
-    cd openblas-0.2.18/ && \
-    sed -i "s/NO_WARMUP=1/NO_WARMUP=1 OPENMP=1/g" debian/rules && \
-    debchange -i "Compiling with OpenMP support" && \
-    debuild -us -uc -i -I && \
-    debi && \
-    update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 && \
-    cd /opt && \
-    rm -rf debsource
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test

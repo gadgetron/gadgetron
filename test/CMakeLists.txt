@@ -30,7 +30,7 @@ set(test_src_files tests.cpp
       core_test.cpp
 
       ../apps/gadgetron/connection/distributed/remote_workers.cpp
-        distributed_test.cpp)
+        distributed_test.cpp from_string_test.cpp)
 #
 if (PYTHONLIBS_FOUND)
     set(test_src_files ${test_src_files} python_converter_test.cpp )

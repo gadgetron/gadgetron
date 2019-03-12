@@ -1,5 +1,6 @@
 
 #include <ismrmrd/meta.h>
+#include <ismrmrd/ismrmrd.h>
 #include <boost/optional.hpp>
 #include <io/primitives.h>
 
@@ -9,6 +10,22 @@ namespace {
 
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
+
+    template<class T> inline constexpr uint16_t ismrmrd_data_type(){ return 0;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<unsigned short>(){return ISMRMRD::ISMRMRD_USHORT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<unsigned int>(){return ISMRMRD::ISMRMRD_UINT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<int>(){return ISMRMRD::ISMRMRD_INT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<float>(){return ISMRMRD::ISMRMRD_FLOAT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<double>(){return ISMRMRD::ISMRMRD_DOUBLE;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<complext<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<complext<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
+
+
+
+
+
 
     template<class T>
 class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, boost::optional<ISMRMRD::MetaContainer>> {
@@ -21,7 +38,9 @@ class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, 
         ) override {
             uint16_t message_id = 1022;
             IO::write(stream,message_id);
-            IO::write(stream,header);
+            auto corrected_header = header;
+            corrected_header.data_type = ismrmrd_data_type<T>();
+            IO::write(stream,corrected_header);
 
             std::string serialized_meta;
 

@@ -384,7 +384,7 @@ namespace Gadgetron {
                 float v = Gadgetron::asum(noise_covariance_matrixf_);
                 if (v <= 0)
                 {
-                    GDEBUG("Accumulated noise prewhietner is empty\n");
+                    GDEBUG("Accumulated noise prewhitener is empty\n");
                     for (size_t cha = 0; cha < c; cha++)
                     {
                         noise_prewhitener_matrixf_(cha, cha) = 1;
@@ -411,7 +411,6 @@ namespace Gadgetron {
         bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
         unsigned int channels = m1->getObjectPtr()->active_channels;
         unsigned int samples = m1->getObjectPtr()->number_of_samples;
-
         //TODO: Remove this
         if (measurement_id_.empty()) {
             unsigned int muid = m1->getObjectPtr()->measurement_uid;

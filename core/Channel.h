@@ -7,6 +7,7 @@
 
 #include "Message.h"
 #include "Types.h"
+#include "MPMCChannel.h"
 
 namespace Gadgetron::Core {
 class InputChannel;
@@ -115,12 +116,8 @@ protected:
 
     void push_message(Message) override;
 
-    Message pop_impl(std::unique_lock<std::mutex> lock);
+    MPMCChannel<Message> channel;
 
-    std::list<Message> queue;
-    std::mutex m;
-    std::condition_variable cv;
-    bool closed = false;
 };
 
 template <class... ARGS>
@@ -167,11 +164,6 @@ ChannelIterator<TypedInputChannel<ARGS...>> begin(TypedInputChannel<ARGS...>&);
 template <class... ARGS>
 ChannelIterator<TypedInputChannel<ARGS...>> end(TypedInputChannel<ARGS...>&);
 
-class ChannelClosed : public std::runtime_error {
-public:
-    ChannelClosed()
-        : std::runtime_error("Channel was closed") {};
-};
 
 }
 

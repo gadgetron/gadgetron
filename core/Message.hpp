@@ -12,8 +12,14 @@ namespace Gadgetron::Core {
 
 
     template<class T>
-    GadgetContainerMessageBase *TypedMessageChunk<T>::to_container_message() {
+    GadgetContainerMessageBase* TypedMessageChunk<T>::to_container_message() {
         return new GadgetContainerMessage<T>(std::move(data));
+    }
+
+
+    template<class T>
+    std::unique_ptr<MessageChunk> TypedMessageChunk<T>::clone() const {
+        return std::make_unique<TypedMessageChunk<T>>(data);
     }
 
     namespace {
@@ -109,9 +115,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class T, class ...TYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<optional < T>>
-
-                &,
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<optional < T>>&,
                 const hana::basic_type<TYPES> &... xs
                 ) {
                     if (convertible(it, it_end, hana::type_c<T>, xs...)) return true;
@@ -120,18 +124,14 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class... TTYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<tuple < TTYPES...>>
-
-                &) {
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<tuple < TTYPES...>>&) {
                     return convertible(it, it_end, hana::type_c<TTYPES>...);
                 }
 
 
                 template<class Iterator, class ...VTYPES, class ...TYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>
-
-                &) {
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>&) {
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;
                     return hana::fold(vtypes, false, [&](bool result, auto type) {
                         return result || convertible(it, it_end, type);
@@ -145,7 +145,7 @@ namespace Gadgetron::Core {
                 }
 
                 template<class Iterator, class T>
-                static T convert(Iterator &it, const Iterator &it_end, const hana::basic_type<T>) {
+                static T convert(Iterator &it, const Iterator &it_end, const hana::basic_type<T>&) {
                     return std::move(reinterpret_message<T>(**it).data);
                 }
 
@@ -158,7 +158,7 @@ namespace Gadgetron::Core {
                 }
 
                 template<class Iterator, class T, class... TYPES>
-                static hana::tuple<T, TYPES...> convert(Iterator &it, const Iterator &it_end, const hana::basic_type<T>,
+                static hana::tuple<T, TYPES...> convert(Iterator &it, const Iterator &it_end, const hana::basic_type<T>&,
                                                         const hana::basic_type<TYPES> &...xs) {
                     auto &value = reinterpret_message<T>(**it).data;
                     return combine(std::move(value), convert(++it, it_end, xs...));
@@ -167,11 +167,8 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class T, class... TYPES>
                 static hana::tuple<optional < T>, TYPES...>
-                convert(Iterator
-                & it,
-                const Iterator &it_end,
-                const hana::basic_type<boost::optional<T>> &,
-                const hana::basic_type<TYPES> &... xs
+                convert(Iterator & it,  const Iterator &it_end, const hana::basic_type<boost::optional<T>> &,
+                    const hana::basic_type<TYPES> &... xs
                 ) {
 
                     if (convertible(it, it_end, hana::basic_type<T>(), xs...)) {
@@ -183,9 +180,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class... TTYPES>
                 static tuple<TTYPES...>
-                convert(Iterator it, const Iterator &it_end, const hana::basic_type<tuple < TTYPES...>>
-
-                &) {
+                convert(Iterator it, const Iterator &it_end, const hana::basic_type<tuple < TTYPES...>>&) {
                     return hana::unpack(convert(it, it_end, hana::type_c<TTYPES>...), [](auto ...xs) {
                         return std::make_tuple(std::move(xs)...);
                     });
@@ -193,9 +188,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class... VTYPES>
                 static variant<VTYPES...>
-                convert(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>
-
-                &) {
+                convert(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>&) {
 
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;
                     variant < VTYPES...> variation;
@@ -291,3 +284,4 @@ Gadgetron::Core::Message::Message(ARGS &&... args) : messages_(
 
 
 }
+

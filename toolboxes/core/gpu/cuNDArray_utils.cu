@@ -4,7 +4,7 @@
 #include "setup_grid.h"
 #include "cuNDArray_math.h"
 
-#include <math_functions.h>
+#include <cuda_runtime.h>
 #include <cmath>
 
 namespace Gadgetron {

@@ -23,8 +23,7 @@ namespace {
         }
 
 
-        void send_errors(std::iostream &stream) {
-
+        void send_error_to_client(std::iostream &stream) {
             Writers::TextWriter writer{};
 
             for (auto &error : errors) {
@@ -61,15 +60,21 @@ namespace Gadgetron::Server::Connection {
             ConfigConnection::process(*stream, paths, error_handler);
         });
 
-        sender.send_errors(*stream);
-        send_close(*stream);
+        try {
+            sender.send_error_to_client(*stream);
+            send_close(*stream);
+        }
+        catch (std::runtime_error &e) {
+            GERROR_STREAM("Finalizing connection to client failed with the following error: " << e.what());
+        }
+        catch (...) {}
     }
 
     std::vector<std::unique_ptr<Core::Writer>> default_writers() {
         std::vector<std::unique_ptr<Writer>> writers{};
 
         writers.emplace_back(std::make_unique<Writers::TextWriter>());
-        // writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
+        // TODO: writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
         writers.emplace_back(std::make_unique<Writers::ResponseWriter>());
 
         return std::move(writers);

@@ -28,7 +28,7 @@ namespace Gadgetron::Core::Readers {
                                                    header.active_channels);
         IO::read(stream, data.data(),data.size());
 
-        return Core::Message(header, trajectory, data);
+        return Core::Message(header, data, trajectory);
     }
 
     uint16_t AcquisitionReader::slot() {

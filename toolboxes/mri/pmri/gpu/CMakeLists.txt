@@ -46,13 +46,10 @@ set_target_properties(gadgetron_toolbox_gpuparallelmri PROPERTIES VERSION ${GADG
 target_link_libraries(gadgetron_toolbox_gpuparallelmri 
   gadgetron_toolbox_gpucore
   gadgetron_toolbox_log
+  gadgetron_toolbox_gpusolvers
   gadgetron_toolbox_gpunfft 
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
-  ${FFTW3_LIBRARIES} 
-  ${CUDA_LIBRARIES} 
-  ${CUDA_CUFFT_LIBRARIES} 
-  ${CUDA_CUBLAS_LIBRARIES} 
   )
 
 

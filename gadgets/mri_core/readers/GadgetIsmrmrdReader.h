@@ -2,7 +2,6 @@
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
-#include "url_encode.h"
 #include "gadgetron_mricore_export.h"
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/waveform.h>

@@ -38,7 +38,7 @@ namespace Gadgetron::Core::IO {
         return val;
     }
 
-    template<class T>
+    template<class T = uint64_t >
     std::string read_string_from_stream(std::istream &stream);
 
     template<class T, class V = std::enable_if_t<std::is_trivially_copyable_v<T>>>
@@ -64,7 +64,7 @@ namespace Gadgetron::Core::IO {
     template<class T>
     void write(std::ostream &stream, const hoNDArray<T> &array);
 
-    template<class T>
+    template<class T = uint64_t>
     void write_string_to_stream(std::ostream &stream, const std::string &str);
 }
 

@@ -211,6 +211,9 @@ namespace Gadgetron {
     };
 
     template<class T>
+    using realType_t = typename realType<T>::Type;
+
+    template<class T>
     struct stdType {
         typedef T Type;
     };
@@ -238,6 +241,8 @@ namespace Gadgetron {
     struct stdType<float> {
         typedef float Type;
     };
+
+
 
     __inline__ __host__ __device__ double sgn(double x) {
         return (double(0) < x) - (x < double(0));

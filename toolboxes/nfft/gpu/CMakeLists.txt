@@ -18,7 +18,9 @@ target_include_directories(gadgetron_toolbox_gpunfft
 
 set_target_properties(gadgetron_toolbox_gpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_gpunfft 
+target_link_libraries(gadgetron_toolbox_gpunfft
+  gadgetron_toolbox_nfft
+  gadgetron_toolbox_operator
   gadgetron_toolbox_gpufft
   gadgetron_toolbox_gpucore
   gadgetron_toolbox_log
@@ -32,6 +34,5 @@ install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
   cuNFFT.h 
-  cuNFFTOperator.h 
-  gpunfft_export.h 
+  gpunfft_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
