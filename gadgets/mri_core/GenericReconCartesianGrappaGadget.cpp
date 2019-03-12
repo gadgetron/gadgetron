@@ -135,6 +135,11 @@ namespace Gadgetron {
                                                                     recon_obj_[e].ref_calib_dst_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
+                if (!debug_folder_full_path_.empty()) {
+                    this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_dst_,
+                        debug_folder_full_path_ + "ref_calib_dst" + os.str());
+                }
+
                 // ---------------------------------------------------------------
 
                 // after this step, coil map is computed and stored in recon_obj_[e].coil_map_
