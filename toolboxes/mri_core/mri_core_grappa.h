@@ -105,6 +105,9 @@ namespace Gadgetron {
     /// perform ksapce recon
     template <typename T> EXPORTMRICORE void grappa2d_recon(hoNDArray<T>& kspace, const hoNDArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition);
 
+    /// in case the recon=A*ker has already been computed, assign them back to res
+    template <typename T> EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray<T>& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray<T>& res);
+
     /// ---------------------------------------------------------------------
     /// 3D grappa
     /// ---------------------------------------------------------------------
