@@ -416,16 +416,34 @@ void grappa2d_perform_recon(const hoNDArray<T>& A, const hoNDArray<T>& ker, cons
         x.create(K, KB, const_cast<T*>(ker.begin()));
 
         hoNDArray<T> recon;
-
         Gadgetron::gemm(recon, A, false, x, false);
 
-        // recon is M by N array
+        Gadgetron::grappa2d_fill_reconed_kspace(AInd, recon, oE1, RO, E1, res);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_perform_recon(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
+template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray<T>& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray<T>& res)
+{
+    try
+    {
+        size_t M = recon.get_size(0);
+        size_t KB = recon.get_size(1);
 
         // for every row in data matrix, assign the recon data back to kspace
         size_t oNE1 = oE1.size();
         size_t dstCHA = KB / oNE1;
 
-        if(res.get_size(0)!=RO || res.get_size(1) != E1 || res.get_size(2) != dstCHA)
+        if (res.get_size(0) != RO || res.get_size(1) != E1 || res.get_size(2) != dstCHA)
         {
             res.create(RO, E1, dstCHA);
             Gadgetron::clear(res);
@@ -437,7 +455,7 @@ void grappa2d_perform_recon(const hoNDArray<T>& A, const hoNDArray<T>& ker, cons
             ro = AInd(r, 0);
             e1 = AInd(r, 1);
 
-            for (oe1=0; oe1<oNE1; oe1++)
+            for (oe1 = 0; oe1<oNE1; oe1++)
             {
                 de1 = e1 + oE1[oe1];
                 if (de1 > E1) de1 -= E1;
@@ -451,12 +469,12 @@ void grappa2d_perform_recon(const hoNDArray<T>& A, const hoNDArray<T>& ker, cons
     }
     catch (...)
     {
-        GADGET_THROW("Errors in grappa2d_perform_recon(...) ... ");
+        GADGET_THROW("Errors in grappa2d_fill_reconed_kspace(...) ... ");
     }
 }
 
-template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
-template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
+template EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<float> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
+template EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<double> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
 
 // ------------------------------------------------------------------------
 

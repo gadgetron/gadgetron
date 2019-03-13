@@ -22,7 +22,14 @@ namespace Gadgetron
 
         int initialize(size_t accelFactor, size_t kRO, size_t kNE1, bool fitItself, double thres);
         int calib(hoNDArray<T> acsSrc, hoNDArray<T> acsDst);
+
+        // kspace [RO, E1, srcCHA], perform recon using ker_
         hoNDArray<T> recon(hoNDArray<T> kspace, bool periodic_boundary_condition);
+
+        // if kspace is already converted to data matrix (dataA and dataAInd), perform recon using ker_
+        hoNDArray<T> recon_data_matrix(hoNDArray<T> dataA, hoNDArray<unsigned short> dataAInd, size_t RO, size_t E1, bool periodic_boundary_condition);
+        // if recon = dataA*ker_, fill back recon points to result kspace
+        hoNDArray<T> recon_fill_back_kspace(hoNDArray<T> recon, hoNDArray<unsigned short> dataAInd, size_t RO, size_t E1);
 
         hoNDArray<T> get_A() 
         {

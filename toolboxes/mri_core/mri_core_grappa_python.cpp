@@ -92,6 +92,38 @@ namespace Gadgetron
         return res;
     }
 
+    hoNDArray< std::complex<float> > grappa2D::recon_data_matrix(hoNDArray<T> dataA, hoNDArray<unsigned short> dataAInd, size_t RO, size_t E1, bool periodic_boundary_condition)
+    {
+        hoNDArray<T> res;
+        try
+        {
+            Gadgetron::grappa2d_perform_recon(dataA, this->ker_, dataAInd, this->oE1_, RO, E1, res);
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Exceptions happened in grappa2D::recon_data_matrix(...) ... ");
+            throw;
+        }
+
+        return res;
+    }
+
+    hoNDArray< std::complex<float> > grappa2D::recon_fill_back_kspace(hoNDArray<T> recon, hoNDArray<unsigned short> dataAInd, size_t RO, size_t E1)
+    {
+        hoNDArray<T> res;
+        try
+        {
+            Gadgetron::grappa2d_fill_reconed_kspace(dataAInd, recon, this->oE1_, RO, E1, res);
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Exceptions happened in grappa2D::recon_fill_back_kspace(...) ... ");
+            throw;
+        }
+
+        return res;
+    }
+
     void grappa2D::help()
     {
         GDEBUG_STREAM("This class is to provide python binding for 2D grappa functionalities in Gadgetron");
