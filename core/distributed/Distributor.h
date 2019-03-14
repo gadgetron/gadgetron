@@ -14,7 +14,7 @@ namespace Gadgetron::Core::Distributed {
         virtual ~Distributor() = default;
 
     private:
-        Distributor(const GadgetProperties &properties);
+        explicit Distributor(const GadgetProperties &properties);
 
         template<class...> friend class TypedDistributor;
     };
@@ -24,7 +24,7 @@ namespace Gadgetron::Core::Distributed {
 
     public:
 
-        TypedDistributor(const GadgetProperties &properties);
+        explicit TypedDistributor(const GadgetProperties &properties);
 
     void process(InputChannel input, ChannelCreator &creator, OutputChannel bypass) final;
 

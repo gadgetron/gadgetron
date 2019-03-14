@@ -11,7 +11,9 @@ namespace Gadgetron::Server::Connection::Stream {
             const Core::Context &context,
             Loader &loader
     ) {
-        GINFO_STREAM("Configuration:\n" << serialize_external_config(config));
+
+
+
     }
 
     void External::process(

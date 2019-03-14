@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <list>
 
 #include "connection/Config.h"
 
@@ -9,66 +10,55 @@
 #include "Reader.h"
 #include "Writer.h"
 
+#include "Serialization.h"
+#include "Configuration.h"
+
 namespace Gadgetron::Server::Connection::Stream {
-
-    class RemoteError : public std::runtime_error {
-    public:
-        explicit RemoteError(std::vector<std::string> messages);
-
-    private:
-        const std::vector<std::string> messages;
-    };
-
-    class Serialization {
-    public:
-        using Readers = std::map<uint16_t,std::unique_ptr<Core::Reader>>;
-        using Writers = std::vector<std::unique_ptr<Core::Writer>>;
-
-        const Readers readers;
-        const Writers writers;
-
-        Serialization(Readers readers, Writers writers);
-
-        void write(std::iostream &stream, Core::Message message) const;
-        Core::Message read(
-                std::iostream &stream,
-                std::function<void()> on_close,
-                std::function<void(std::string message)> on_error
-        ) const;
-    };
-
-    class Configuration {
-    public:
-        const Core::Context context;
-        const Config::External external;
-
-        Configuration(Core::Context context, Config::External external);
-    };
 
     class ExternalChannel {
     public:
         ExternalChannel(
                 std::unique_ptr<std::iostream> stream,
-                Serialization serialization,
-                Configuration configuration
+                std::shared_ptr<Serialization> serialization
+        );
+
+        ExternalChannel(
+                std::unique_ptr<std::iostream> stream,
+                std::shared_ptr<Serialization> serialization,
+                std::shared_ptr<Configuration> configuration
         );
 
         Core::Message pop();
-
         void push_message(Core::Message message);
         void close();
 
     private:
-        std::mutex mutex;
         std::unique_ptr<std::iostream> stream;
-        std::vector<std::string> remote_errors;
+        std::list<std::string> remote_errors;
 
-        const Serialization serialization;
-        const Configuration configuration;
+        std::shared_ptr<Serialization> serialization;
 
-        class Outbound; class Inbound;
+        class Outbound {
+        public:
+            virtual ~Outbound() = default;
+            virtual void push(Core::Message message) = 0;
+            virtual void close() = 0;
+
+            class Open; class Closed;
+        };
+
+        class Inbound {
+        public:
+            virtual ~Inbound() = default;
+            virtual Core::Message pop() = 0;
+            virtual void close() = 0;
+
+            class Open; class Closed;
+        };
+
         friend Outbound; friend Inbound;
 
+        std::mutex mutex;
         std::unique_ptr<Outbound> outbound;
         std::unique_ptr<Inbound>  inbound;
     };

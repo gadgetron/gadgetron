@@ -2,13 +2,16 @@
 #define GADGETRON_CONTEXT_H
 
 #include <boost/filesystem.hpp>
-#include <ismrmrd/ismrmrd.h>
+#include <boost/program_options.hpp>
 
+#include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
 
 namespace Gadgetron::Core {
 
     struct Context {
+
+        using Args = boost::program_options::variables_map;
 
         using Header =
                 ISMRMRD::IsmrmrdHeader;
@@ -20,6 +23,7 @@ namespace Gadgetron::Core {
 
         Header header;
         Paths  paths;
+        Args   args;
     };
 }
 

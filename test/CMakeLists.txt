@@ -29,7 +29,7 @@ set(test_src_files tests.cpp
       hoNDArray_linalg_test.cpp
       core_test.cpp
 
-        ../apps/gadgetron/connection/stream/distributed/Worker.cpp
+        ../apps/gadgetron/connection/stream/distributed/Discovery.cpp
         distributed_test.cpp from_string_test.cpp)
 #
 if (PYTHONLIBS_FOUND)

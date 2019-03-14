@@ -1,97 +1,134 @@
+
 #include "Worker.h"
-#include "connection/distributed/RemoteChannel.h"
-#include <boost/asio/io_service.hpp>
-#include <boost/process.hpp>
-#include <boost/process/async.hpp>
 
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/fusion/include/io.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/qi.hpp>
+#include <chrono>
+#include <future>
 
-#include <string>
+#include "connection/stream/common/External.h"
+#include "connection/stream/common/ExternalChannel.h"
 
-BOOST_FUSION_ADAPT_STRUCT(
-    Gadgetron::Server::Connection::Stream::Address,
-    (std::string, ip)(std::string, port)
-)
+using namespace Gadgetron::Core;
+using namespace Gadgetron::Server::Connection::Stream;
 
 namespace {
-    using namespace Gadgetron::Server;
-    using namespace Gadgetron::Server::Connection::Stream;
 
-    std::vector<Worker> parse_remote_workers(std::string input)
-    {
-        namespace qi = boost::spirit::qi;
-        namespace ascii = boost::spirit::ascii;
-        using ascii::space;
-        using qi::_1;
-        using qi::char_;
-        using qi::double_;
-        using qi::lexeme;
-        using qi::phrase_parse;
-
-        auto first = input.begin(), last = input.end();
-
-        qi::rule<decltype(first), std::string(), ascii::space_type> ipv6 = '[' >> lexeme[+(char_ - ']')] >> ']';
-        qi::rule<decltype(first), Address(), ascii::space_type> address_rule =
-                '"' >>
-                (lexeme[+(char_ - (lexeme[':'] | lexeme[']'] | lexeme['[']))] | ipv6) >>
-                ':' >>
-                (lexeme[+(char_ - '"')]) >>
-                '"';
-
-        auto result = std::vector<Worker>{};
-        bool r = phrase_parse(
-                first,
-                last,
-                ( '[' >> address_rule % ',' >> ']' ),
-                space,
-                result
-        );
-
-        if (first != last || !r ) {
-            GWARN_STREAM("Failed to parse worker list from discovery command: " << input);
-            return std::vector<Worker>{};
-        }
-
-        return result;
+    Remote as_remote(Local, const std::shared_ptr<Configuration> &configuration) {
+        return Remote {
+            "localhost",
+            std::to_string(configuration->context.args["port"].as<unsigned short>())
+        };
     }
+
+    Remote as_remote(Remote remote, const std::shared_ptr<Configuration> &) {
+        return remote;
+    }
+
+    template<class T>
+    std::chrono::milliseconds time_since(std::chrono::time_point<T> instance) {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() -
+                instance
+        );
+    }
+
 }
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    std::vector<Worker> get_remote_workers()
-    {
-        auto worker_discovery_command = std::getenv("GADGETRON_REMOTE_WORKER_COMMAND");
-        if (!worker_discovery_command) return std::vector<Worker>{};
-
-        std::future<std::string> output;
-        boost::process::system(
-                worker_discovery_command,
-                boost::process::std_out > output,
-                boost::process::std_err > boost::process::null,
-                boost::asio::io_service{}
+    Worker::Worker(
+            const Address &address,
+            std::shared_ptr<Serialization> serialization,
+            std::shared_ptr<Configuration> configuration
+    ) : address(address) {
+        channel = std::make_unique<ExternalChannel>(
+                connect(boost::apply_visitor(
+                        [&](auto address) { return as_remote(address, configuration); },
+                        address
+                )),
+                std::move(serialization),
+                std::move(configuration)
         );
-
-        return parse_remote_workers(output.get());
     }
 
-    std::vector<Worker> get_workers() {
+    void Worker::load_changed() { for (auto &f : callbacks) { f(); } }
 
-        auto workers = Stream::get_remote_workers();
+    void Worker::on_load_change(std::function<void()> callback) {
+        callbacks.push_back(std::move(callback));
+    }
 
-        if (workers.empty()) {
-            GWARN_STREAM(
-                    "Remote worker list empty; adding local worker. " <<
-                    "This machine will perform reconstructions. " <<
-                    "This is probably not what you intended."
-            )
-            workers.emplace_back(Local{});
+    long long Worker::current_load() const {
+        std::lock_guard guard(mutex);
+
+        auto current_job_duration_estimate = std::max(
+                timing.latest.count(),
+                time_since(jobs.front().start).count()
+        );
+
+        return current_job_duration_estimate * jobs.size();
+    }
+
+    std::future<Message> Worker::push(Message message) {
+
+        Job job {
+            std::chrono::steady_clock::now(),
+            std::promise<Message>()
+        };
+
+        auto future = job.response.get_future();
+
+        {
+            std::lock_guard guard(mutex);
+            channel->push_message(std::move(message));
+            jobs.push_back(std::move(job));
         }
 
-        return workers;
+        load_changed();
+
+        return future;
+    }
+
+
+    std::thread Worker::start(ErrorHandler &error_handler) {
+
+        ErrorHandler nested_handler{
+            error_handler,
+            boost::apply_visitor([](auto a) { return to_string(a); }, address)
+        };
+
+        return nested_handler.run([=]() { handle_inbound_messages(); });
+    }
+
+    void Worker::close() {
+        channel->close();
+    }
+
+    void Worker::handle_inbound_messages() {
+
+        while(true) {
+            try {
+                process_inbound_message(channel->pop());
+            }
+            catch (ChannelClosed &) {
+                break;
+            }
+            catch (std::exception &e) {
+                // Things!
+            }
+        }
+    }
+
+    void Worker::process_inbound_message(Core::Message message) {
+
+        Job job;
+        {
+            std::lock_guard guard(mutex);
+
+            job = std::move(jobs.front()); jobs.pop_front();
+            timing.latest = time_since(job.start);
+        }
+
+        load_changed();
+
+        job.response.set_value(std::move(message));
     }
 }

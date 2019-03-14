@@ -18,7 +18,6 @@ namespace Gadgetron::Server::Connection::Stream {
 
     class Stream : public Processable {
     public:
-
         const std::string key;
         Stream(const Config::Stream &, const Core::Context &, Loader &);
 
@@ -30,9 +29,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         const std::string &name() override;
 
-
     private:
-
         std::vector<std::shared_ptr<Processable>> nodes;
     };
 }

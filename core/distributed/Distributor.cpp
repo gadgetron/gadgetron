@@ -1,8 +1,6 @@
 #include "Distributor.h"
 
 
-Gadgetron::Core::Distributed::Distributor::Distributor(const GadgetProperties &properties) : PropertyMixin(properties) {
-
-}
+Gadgetron::Core::Distributed::Distributor::Distributor(const GadgetProperties &properties) : PropertyMixin(properties) {}
 
 

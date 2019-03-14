@@ -5,7 +5,7 @@
 
 
 
-#include "connection/stream/distributed/Worker.h"
+#include "connection/stream/distributed/Discovery.h"
 
 
 #include <stdlib.h>

@@ -75,6 +75,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
     void process(
             std::iostream &stream,
             const Core::Context::Paths &paths,
+            const Core::Context::Args &args,
             const Config &config,
             ErrorHandler &error_handler
     ) {
@@ -105,7 +106,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
         output_thread.join();
 
         if (context.header) {
-            StreamConnection::process(stream, Context{context.header.get(), paths}, config, error_handler);
+            StreamConnection::process(stream, Context{context.header.get(), paths, args}, config, error_handler);
         }
         else {
             VoidConnection::process(stream, paths, config, error_handler);

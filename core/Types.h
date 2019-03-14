@@ -20,7 +20,6 @@ namespace Gadgetron::Core {
     template<class... ARGS>
     using tuple = std::tuple<ARGS...>;
 
-
     using Acquisition = tuple<ISMRMRD::AcquisitionHeader,  hoNDArray<std::complex<float>>,optional<hoNDArray<float>>>;
     using Waveform    = tuple<ISMRMRD::WaveformHeader, hoNDArray<uint32_t>>;
 }

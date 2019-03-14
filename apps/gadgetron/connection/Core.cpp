@@ -49,7 +49,11 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    void handle_connection(std::unique_ptr<std::iostream> stream, Gadgetron::Core::Context::Paths paths) {
+    void handle_connection(
+            std::unique_ptr<std::iostream> stream,
+            Gadgetron::Core::Context::Paths paths,
+            Gadgetron::Core::Context::Args args
+    ) {
 
         stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
         ErrorSender sender;
@@ -57,7 +61,7 @@ namespace Gadgetron::Server::Connection {
         ErrorHandler error_handler(sender,"Connection Main Thread");
 
         error_handler.handle([&]() {
-            ConfigConnection::process(*stream, paths, error_handler);
+            ConfigConnection::process(*stream, paths, args, error_handler);
         });
 
         try {

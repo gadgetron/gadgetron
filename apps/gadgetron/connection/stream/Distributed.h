@@ -7,9 +7,7 @@
 
 #include "distributed/Distributor.h"
 
-#include "connection/stream/Processable.h"
-#include "connection/distributed/RemoteChannel.h"
-#include "connection/distributed/CyclicIterator.h"
+#include "Processable.h"
 
 #include "Channel.h"
 #include "Stream.h"
