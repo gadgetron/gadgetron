@@ -37,7 +37,7 @@ class ImageViewWindow:
         self.window.show_all()
 
     def delete_event(self, widget, event, data=None):
-        gtk.main_quit()
+        Gtk.main_quit()
         return False
    
     def on_key_press_event(self, widget, event, data=None):
@@ -48,7 +48,7 @@ class ImageViewWindow:
             return False
 
     def main(self):
-        gtk.main()
+        Gtk.main()
 
 
 class ImageViewer(Gadget):
