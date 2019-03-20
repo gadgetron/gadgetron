@@ -129,7 +129,7 @@ namespace Gadgetron::Core {
                 }
 
 
-                template<class Iterator, class ...VTYPES, class ...TYPES>
+                template<class Iterator, class ...VTYPES >
                 static bool
                 convertible(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>&) {
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;

@@ -1,4 +1,5 @@
 
+#include "MessageID.h"
 #include "RemoteChannel.h"
 #include <io/primitives.h>
 
@@ -9,7 +10,6 @@
 using boost::asio::ip::tcp;
 using namespace Gadgetron::Core;
 
-#include "MessageID.h"
 
 namespace {
 

@@ -5,6 +5,7 @@ add_library(gadgetron_core_distributed SHARED
 
 target_link_libraries(gadgetron_core_distributed
         gadgetron_core
+        ismrmrd
 )
 
 

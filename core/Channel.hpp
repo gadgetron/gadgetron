@@ -13,11 +13,23 @@ namespace Gadgetron::Core {
         }
 
         ChannelIterator() : channel(nullptr) {}
+        ChannelIterator(const ChannelIterator& ) = default;
 
+    private:
+        INPUTCHANNEL *channel;
+    public:
+        using difference_type = long long;
+        using value_type = decltype(channel->pop());
+        using pointer = value_type *;
+        using reference = value_type;
+        using iterator_category = std::input_iterator_tag;
+    private:
+        std::shared_ptr<value_type> element;
+    public:
         ChannelIterator &operator++() {
             try {
-                element = channel->pop();
-            } catch (const ChannelClosed& err) {
+                element = std::make_shared<value_type>(channel->pop());
+            } catch (const ChannelClosed &err) {
                 channel = nullptr;
             }
             return *this;
@@ -32,13 +44,10 @@ namespace Gadgetron::Core {
             return this->channel != other.channel;
         }
 
-        auto operator*() {
-            return std::move(element);
+        reference operator*() {
+            return std::move(*element);
         }
 
-    private:
-        INPUTCHANNEL *channel;
-        decltype(channel->pop()) element;
     };
 
 
@@ -62,7 +71,7 @@ namespace Gadgetron::Core {
             channel->push(std::forward<T>(data));
         }
 
-        void operator=(Message&& message) {
+        void operator=(Message &&message) {
             channel->push_message(std::move(message));
         }
 
@@ -84,25 +93,24 @@ namespace Gadgetron::Core {
         OutputChannel *channel;
 
 
-
     };
 
     inline ChannelIterator<OutputChannel> begin(OutputChannel &channel) {
         return ChannelIterator<OutputChannel>(&channel);
     }
 
-template<class ...ARGS>
-inline void OutputChannel::push(ARGS&& ... ptr) {
-    this->push_message(Message(std::forward<ARGS>(ptr)...));
-}
-
-
+    template<class ...ARGS>
+    inline void OutputChannel::push(ARGS &&... ptr) {
+        this->push_message(Message(std::forward<ARGS>(ptr)...));
+    }
 
 
     template<class... ARGS>
-ChannelIterator<TypedInputChannel<ARGS...>> begin(
-        TypedInputChannel<ARGS...> &channel) {
-    return ChannelIterator < TypedInputChannel < ARGS...>>(&channel);
+    ChannelIterator<TypedInputChannel < ARGS...>>
+    begin(
+            TypedInputChannel<ARGS...>
+    &channel) {
+    return ChannelIterator<TypedInputChannel < ARGS...>>(&channel);
 }
 
 template<class... ARGS>
@@ -111,3 +119,5 @@ ChannelIterator <TypedInputChannel<ARGS...>> end(
     return ChannelIterator < TypedInputChannel < ARGS...>>();
 }
 }
+
+

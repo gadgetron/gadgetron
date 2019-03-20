@@ -12,6 +12,7 @@ add_library(gadgetron_core SHARED
 		Channel.h
 		Channel.hpp
 		Channel.cpp
+		Gadget.h
 		Gadget.cpp
 		Reader.h
 		Writer.h
@@ -24,7 +25,8 @@ add_library(gadgetron_core SHARED
 		io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp io/ismrmrd_types.h)
 
 target_link_libraries(gadgetron_core
-		gadgetron_toolbox_cpucore)
+		gadgetron_toolbox_cpucore
+		boost )
 
 target_include_directories(
     gadgetron_core
@@ -49,8 +51,6 @@ install(FILES
 		LegacyACE.h
         PropertyMixin.h
 		Channel.h
-		gadgetcore_export.h
-		GadgetronExport.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES

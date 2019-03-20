@@ -3,6 +3,10 @@
 #include "log.h"
 #include "paths.h"
 
+#if defined _WIN32 || _WIN64
+#include <libloaderapi.h>
+#endif
+
 namespace {
 
     namespace fs = boost::filesystem;

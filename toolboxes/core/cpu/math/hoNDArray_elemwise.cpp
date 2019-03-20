@@ -26,7 +26,7 @@ namespace {
     template <class T, class R, class F> void omp_transform(const T* t, size_t N, R* r, F f) {
 
 #pragma omp parallel for if (N > NumElementsUseThreading)
-        for (size_t i = 0; i < N; i++) {
+        for (long long i = 0; i < N; i++) {
             r[i] = f(t[i]);
         }
     }

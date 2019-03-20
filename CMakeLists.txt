@@ -134,19 +134,17 @@ else ()
 endif ()
 
 if (WIN32)
-  add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS)
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS -DWIN -D_AMD64_) 
+  add_definitions(-D_WIN32_WINNT=0x0602 -Zc:__cplusplus)
   #add_definitions(-DUNICODE -D_UNICODE)
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-  add_definitions(-D_VARIADIC_MAX=10) #to fix compiler limitations in Visual Studio Express
-  add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
-  add_definitions("/wd4344") #disable warnings, 4344: behavior change: use of explicit template arguments
-  add_definitions("/wd4996") #disable warnings, 4996: the POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name
+    add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
   if ( HAS_64_BIT )
     add_definitions(-DWIN64 -D_WIN64)
   endif ()
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w3")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w1")
   set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
   set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} /INCREMENTAL:NO")
   set (CMAKE_EXE_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
@@ -276,11 +274,8 @@ endif()
 add_library(boost INTERFACE IMPORTED)
 set_target_properties(boost PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-set_property(TARGET boost PROPERTY
-        INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-#target_link_libraries(boost INTERFACE
-#        ${Boost_LIBRARIES})
-
+        message(${Boost_LIBRARIES})
+target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
@@ -338,31 +333,20 @@ if (NOT GTEST_FOUND)
   endif ()
 endif ()
 
-find_package(Armadillo 4.600 REQUIRED)
+find_package(Armadillo REQUIRED CONFIG )
 # check whether ILP64 MKL should is used
 if(ARMADILLO_FOUND)
-  set(ARMADILLO_BLAS_LONG_LONG FALSE)
-  if(EXISTS "${ARMADILLO_INCLUDE_DIR}/armadillo_bits/config.hpp")
-    # Read and parse armadillo config.hpp to find out whether BLAS uses long long
-    file(STRINGS "${ARMADILLO_INCLUDE_DIR}/armadillo_bits/config.hpp" _armadillo_blas_long_long REGEX "// #define ARMA_BLAS_LONG_LONG")
-    if ( NOT _armadillo_blas_long_long )
-      set(ARMADILLO_BLAS_LONG_LONG TRUE)
-      message("Armadillo is found to use long long for BLAS calls")
-    else ()
-      message("Armadillo found. Note that ARMADILLO_BLAS_LONG_LONG _must_ be defined in ${ARMADILLO_INCLUDE_DIR}/armadillo_bits/config.hpp to link against the MKL ILP64 interface.")
-    endif ()
-    unset(_armadillo_blas_long_long)
-  endif()
-
   add_library(armadillo INTERFACE IMPORTED)
   set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
 
 endif()
 
-find_package(HDF5 1.8 COMPONENTS C CXX HL REQUIRED)
-find_package(FFTW3 COMPONENTS single double REQUIRED)
-find_package(PUGIXML REQUIRED)
+find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
+find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
+find_package(FFTW3 REQUIRED COMPONENTS single double)
+
+
 link_directories(${ISMRMRD_LIBRARY_DIRS})
 if (CUDA_FOUND AND USE_CUDA)
 	# bart needs cuda
@@ -379,19 +363,19 @@ if (USE_MKL)
 
   add_definitions(-DUSE_MKL)
   else()
-  find_package(CBLAS)
+  find_package(CBLAS REQUIRED)  
+	find_package(LAPACK REQUIRED)
+	if (LAPACK_FOUND)
+		message("LAPACK Found")
+	endif ()
+
+
 endif()
 
 if (MKL_FOUND)
   if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
     message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
   endif ()
-endif ()
-
-find_package(LAPACK)
-if (LAPACK_FOUND)
-  message("LAPACK Found")
-  add_definitions(-DUSE_LAPACK)
 endif ()
 
 if(EXISTS $ENV{TORCH_HOME})

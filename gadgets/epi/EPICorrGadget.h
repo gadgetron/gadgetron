@@ -71,8 +71,7 @@ namespace Gadgetron {
         // variables for navigator parameter computation
         // --------------------------------------------------
 
-        float RefNav_to_Echo0_time_ES_; // Time (in echo-spacing uints) between the reference navigator and the f\
-irst RO echo (used for B0 correction)                                                                                   
+        float RefNav_to_Echo0_time_ES_; // Time (in echo-spacing uints) between the reference navigator and the first RO echo (used for B0 correction)                                                                                   
         arma::cx_fvec corrB0_;      // B0 correction
         arma::cx_fvec corrpos_;     // Odd-Even correction -- positive readouts
         arma::cx_fvec corrneg_;     // Odd-Even correction -- negative readouts

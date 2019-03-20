@@ -5,9 +5,9 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
+basic_environment = dict(os.environ) #Need to save the path because Numpy and h5py will change it, because reason
 import sys
 import shutil
-import subprocess
 
 import argparse
 import configparser
@@ -15,10 +15,11 @@ import configparser
 import re
 import time
 import functools
-
+#
 import json
 import h5py
 import numpy
+import subprocess
 
 default_config_values = {
     "DEFAULT": {
@@ -60,6 +61,7 @@ def send_dependency_to_gadgetron(gadgetron, dependency):
                     "-c", "default_measurement_dependencies.xml"],
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
+                   env=basic_environment,
                    check=True)
 
 
@@ -72,12 +74,13 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
                     "-o", output,
                     "-c", configuration,
                     "-G", configuration],
+                   env=basic_environment,
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
                    check=True)
 
 
-def start_gadgetron_instance(*, log, port, env=None):
+def start_gadgetron_instance(*, log, port, env=basic_environment):
     print("Starting Gadgetron instance on port ",port)
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
@@ -187,7 +190,7 @@ def ensure_gadgetron_instance(args, config):
 
     gadgetron = Gadgetron(host=str(args.host), port=str(args.port))
 
-    def start_gadgetron_action(cont, *, env=None, **state):
+    def start_gadgetron_action(cont, *, env=basic_environment, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
             with start_gadgetron_instance(log=log, port=gadgetron.port, env=env) as instance:
                 try:
@@ -209,10 +212,13 @@ def ensure_instance_satisfies_requirements(args, config):
         return
 
     def action(cont, *, gadgetron, **state):
+
+
         info = subprocess.check_output(["gadgetron_ismrmrd_client",
                                         "-a", gadgetron.host,
                                         "-p", gadgetron.port,
                                         "-q", "-Q", "gadgetron::info"],
+                                       env=basic_environment,
                                        universal_newlines=True)
 
         failed_rules = [rule for rule in build_rules(config.items('REQUIREMENTS'))
@@ -295,7 +301,7 @@ def start_additional_nodes(args, config):
     if not config.has_section('DISTRIBUTED'):
         return
 
-    def set_distributed_environment(cont, *, worker_list=[], env=dict(os.environ), **state):
+    def set_distributed_environment(cont, *, worker_list=[], env=dict(basic_environment), **state):
         env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
         return cont(env=env, **state)
 
@@ -444,6 +450,7 @@ def main():
     print("  -- ISMRMRD_HOME    : {}".format(args.ismrmrd_home))
     print("  -- GADGETRON_HOME  : {}".format(args.gadgetron_home))
     print("  -- TEST CASE       : {}".format(args.test))
+
 
     config_parser = configparser.ConfigParser()
     config_parser.read_dict(default_config_values)
