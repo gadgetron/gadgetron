@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/meta.h>
 #include <ismrmrd/waveform.h>
 
 #include <boost/optional.hpp>
@@ -22,6 +23,9 @@ namespace Gadgetron::Core {
 
     using Acquisition = tuple<ISMRMRD::AcquisitionHeader,  hoNDArray<std::complex<float>>,optional<hoNDArray<float>>>;
     using Waveform    = tuple<ISMRMRD::WaveformHeader, hoNDArray<uint32_t>>;
+
+    template<class T>
+    using Image = tuple<ISMRMRD::ImageHeader,  hoNDArray<T>, optional<ISMRMRD::MetaContainer>>;
 }
 
 

@@ -57,4 +57,5 @@ install(FILES
 		config/external_example.xml
         config/distributed_default.xml
 		config/distributed_generic_default.xml
+		config/distributed_image_default.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

@@ -278,8 +278,8 @@ set_target_properties(boost PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 set_property(TARGET boost PROPERTY
         INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-target_link_libraries(boost INTERFACE
-        ${Boost_LIBRARIES})
+#target_link_libraries(boost INTERFACE
+#        ${Boost_LIBRARIES})
 
 option(USE_CUDA "Build with CUDA support" On)
 
@@ -372,27 +372,21 @@ endif()
 option(USE_MKL OFF)
 if (USE_MKL)
   find_package(MKL REQUIRED)
-  add_library(mkl INTERFACE IMPORTED)
-  set_property(TARGET mkl PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-  set_property(TARGET mkl PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-  set_property(TARGET mkl PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+  add_library(BLAS INTERFACE IMPORTED)
+  set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
+  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
+  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+
+  add_definitions(-DUSE_MKL)
+  else()
+  find_package(CBLAS)
 endif()
 
 if (MKL_FOUND)
   if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
     message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
   endif ()
-  add_definitions(-DUSE_MKL)
 endif ()
-find_package(BLAS)
-
-if(MKL_FOUND)
-  set(CBLAS_LIBRARY ${MKL_LIBRARIES})
-  set(CBLAS_INCLUDE_DIR ${MKL_INCLUDE_DIR})
-  set(CBLAS_FOUND 1)
-else(MKL_FOUND)
-  find_package(CBLAS)
-endif (MKL_FOUND)
 
 find_package(LAPACK)
 if (LAPACK_FOUND)
@@ -416,10 +410,20 @@ option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
 
-  find_package(PythonLibs 3 REQUIRED)
-  find_package(NumPy REQUIRED)
+  find_package(PythonLibs 3  REQUIRED)
 
-  message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
+  find_package(NumPy)
+  if(NOT PYTHONLIBS_FOUND)
+    message(STATUS "Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
+    set(BUILD_PYTHON_SUPPORT OFF)
+  endif()
+  if(NOT NUMPY_FOUND)
+    message("NumPy NOT found, NOT compiling Python Gadgets")
+    set(BUILD_PYTHON_SUPPORT OFF)
+  else()
+    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
+  endif()
+
 
   add_library(python INTERFACE IMPORTED)
   set_property(TARGET python PROPERTY
