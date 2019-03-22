@@ -22,7 +22,7 @@ add_library(gadgetron_plplot SHARED
 set_target_properties(gadgetron_plplot PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_plplot 
-    gadgetron_gadgetbase
+    gadgetron_core
     gadgetron_mricore
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore

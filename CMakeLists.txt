@@ -407,17 +407,8 @@ if (BUILD_PYTHON_SUPPORT)
 
   find_package(PythonLibs 3  REQUIRED)
 
-  find_package(NumPy)
-  if(NOT PYTHONLIBS_FOUND)
-    message(STATUS "Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
-    set(BUILD_PYTHON_SUPPORT OFF)
-  endif()
-  if(NOT NUMPY_FOUND)
-    message("NumPy NOT found, NOT compiling Python Gadgets")
-    set(BUILD_PYTHON_SUPPORT OFF)
-  else()
-    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
-  endif()
+  find_package(NumPy REQUIRED)
+  message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
 
 
   add_library(python INTERFACE)

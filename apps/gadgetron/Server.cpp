@@ -40,7 +40,7 @@ void Server::connection_handler(const boost::system::error_code &error) {
 
     GINFO_STREAM("Accepting connection from: " << stream->rdbuf()->remote_endpoint().address());
 
-//    stream->tie(nullptr);
+    stream->tie(nullptr);
     auto paths = Gadgetron::Core::Context::Paths{args_["home"].as<path>(), args_["dir"].as<path>()};
     Connection::handle(paths, std::move(stream));
 }
