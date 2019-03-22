@@ -9,10 +9,11 @@
 
 
 #ifndef lapack_int
-#ifdef ARMA_BLAS_LONG_LONG
-    #define lapack_int long long
-#else #define lapack_int long
-#endif
+    #ifdef ARMA_BLAS_LONG_LONG
+        #define lapack_int long long
+    #else
+        #define lapack_int long
+    #endif
 #endif // lapack_int
 
 /// ----------------------------------------------------------------------

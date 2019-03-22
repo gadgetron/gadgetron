@@ -13,7 +13,7 @@ target_link_libraries(gadgetron_toolbox_denoise
         gadgetron_toolbox_log
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_cpucore_math
-        ${ARMADILLO_LIBRARIES}
+        armadillo
         ${Boost_LIBRARIES}
         )
 target_include_directories(gadgetron_toolbox_denoise

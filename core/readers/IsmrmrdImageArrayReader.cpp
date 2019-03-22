@@ -8,8 +8,9 @@
 
 #include "io/ismrmrd_types.h"
 #include "mri_core_data.h"
-/*
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::IsmrmrdImageArray, data_, headers_, meta_, waveform_, acq_headers_);
+#include "io/adapt_struct.h"
+
+GADGETRON_ADAPT_STRUCT(Gadgetron::IsmrmrdImageArray, GADGETRON_ACCESS_ELEMENT(data_), GADGETRON_ACCESS_ELEMENT(headers_), GADGETRON_ACCESS_ELEMENT(meta_), GADGETRON_ACCESS_ELEMENT(waveform_), GADGETRON_ACCESS_ELEMENT(acq_headers_))
 
 Gadgetron::Core::Message Gadgetron::Core::Readers::IsmrmrdImageArrayReader::read(std::istream& stream) {
     return Message(IO::read<IsmrmrdImageArray>(stream));
@@ -21,4 +22,3 @@ uint16_t Gadgetron::Core::Readers::IsmrmrdImageArrayReader::slot() {
 namespace Gadgetron::Core::Readers{
     GADGETRON_READER_EXPORT(IsmrmrdImageArrayReader)
 }
-*/

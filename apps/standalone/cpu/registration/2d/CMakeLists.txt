@@ -13,7 +13,7 @@ target_link_libraries(register_HS_2d_cpu
   gadgetron_toolbox_cpureg 
   gadgetron_toolbox_cpucore 
   gadgetron_toolbox_cpucore_math
-  ${ARMADILLO_LIBRARIES}
+  armadillo
   )
 
 target_link_libraries(register_CK_2d_cpu 
@@ -21,7 +21,7 @@ target_link_libraries(register_CK_2d_cpu
   gadgetron_toolbox_cpureg 
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
-  ${ARMADILLO_LIBRARIES}
+  armadillo
   )
 
 install(TARGETS 

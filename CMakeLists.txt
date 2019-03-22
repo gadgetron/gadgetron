@@ -7,6 +7,7 @@ else()
 endif()
 
 foreach(p
+  CMP0022
   CMP0025 # CMake 3.0 Compiler id for Apple Clang is now ``AppleClang``.
   CMP0042 # CMake 3.0 ``MACOSX_RPATH`` is enabled by default.
   CMP0046 # CMake 3.0 Error on non-existent dependency in add_dependencies.
@@ -271,10 +272,11 @@ else()
   find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
 endif()
 
-add_library(boost INTERFACE IMPORTED)
+add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
         message(${Boost_LIBRARIES})
+#set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
 option(USE_CUDA "Build with CUDA support" On)
 
@@ -333,18 +335,20 @@ if (NOT GTEST_FOUND)
   endif ()
 endif ()
 
-find_package(Armadillo REQUIRED CONFIG )
+find_package(Armadillo REQUIRED )
 # check whether ILP64 MKL should is used
 if(ARMADILLO_FOUND)
-  add_library(armadillo INTERFACE IMPORTED)
+  add_library(armadillo INTERFACE )
   set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
+  if (ARMADILLO_LIBRARY)
+    target_link_libraries(armadillo INTERFACE ${ARMADILLO_LIBRARY})
+    endif()
 
 endif()
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
-find_package(FFTW3 REQUIRED COMPONENTS single double)
 
 
 link_directories(${ISMRMRD_LIBRARY_DIRS})
@@ -352,6 +356,7 @@ if (CUDA_FOUND AND USE_CUDA)
 	# bart needs cuda
 	find_package(BART)
 endif()
+add_library(FFTW INTERFACE)
 
 option(USE_MKL OFF)
 if (USE_MKL)
@@ -360,14 +365,20 @@ if (USE_MKL)
   set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+  
+  target_link_libraries(FFTW INTERFACE BLAS)
 
   add_definitions(-DUSE_MKL)
   else()
+  find_package(FFTW3 REQUIRED COMPONENTS single double)
   find_package(CBLAS REQUIRED)  
 	find_package(LAPACK REQUIRED)
 	if (LAPACK_FOUND)
 		message("LAPACK Found")
 	endif ()
+  target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})		
+    set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
+  
 
 
 endif()
@@ -409,17 +420,16 @@ if (BUILD_PYTHON_SUPPORT)
   endif()
 
 
-  add_library(python INTERFACE IMPORTED)
+  add_library(python INTERFACE)
   set_property(TARGET python PROPERTY
          INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-  set_property(TARGET python PROPERTY
-        INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES})
 
   find_package(Boost 1.64.0 COMPONENTS python3 REQUIRED)
   set_property(TARGET python PROPERTY
           INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-  set_property(TARGET python PROPERTY
-          INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
+  target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
+  target_link_libraries(boost INTERFACE python)
+
 endif()
 
 option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)

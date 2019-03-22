@@ -4,7 +4,8 @@ add_library(gadgetron_core_readers SHARED
         AcquisitionReader.cpp
         WaveformReader.h
         WaveformReader.cpp 
-		#BufferReader.cpp BufferReader.h IsmrmrdImageArrayReader.cpp IsmrmrdImageArrayReader.h
+		BufferReader.cpp BufferReader.h 
+		IsmrmrdImageArrayReader.cpp IsmrmrdImageArrayReader.h
 		)
 
 target_link_libraries(gadgetron_core_readers

@@ -10,30 +10,22 @@ add_library(gadgetron_toolbox_cpufft SHARED
         )
 
 set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_include_directories(
         gadgetron_toolbox_cpufft
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${FFTW3_INCLUDE_DIR}
 )
-if (MKL_FOUND)
-    target_link_libraries(gadgetron_toolbox_cpufft
-            gadgetron_toolbox_cpucore
-            gadgetron_toolbox_log
-            gadgetron_toolbox_cpucore_math
-            ${MKL_LIBRARIES}
-            boost
-            )
-else ()
-    target_link_libraries(gadgetron_toolbox_cpufft
-            gadgetron_toolbox_cpucore
-            gadgetron_toolbox_log
-            gadgetron_toolbox_cpucore_math
-            ${FFTW3_LIBRARIES}
-            armadillo
-            boost
-            )
-endif ()
+
+target_link_libraries(gadgetron_toolbox_cpufft
+        gadgetron_toolbox_cpucore
+        gadgetron_toolbox_log
+        gadgetron_toolbox_cpucore_math
+        FFTW
+        armadillo
+        boost
+        )
+
 
 install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
 
