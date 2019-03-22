@@ -50,10 +50,14 @@ namespace Gadgetron::Server::Connection::Stream {
         );
     }
 
-    void Worker::load_changed() { for (auto &f : callbacks) { f(); } }
+    void Worker::load_changed() { for (auto &f : load_callbacks) { f(); } }
+
+    void Worker::on_failure(std::function<void()> callback) {
+        fail_callbacks.push_back(std::move(callback));
+    }
 
     void Worker::on_load_change(std::function<void()> callback) {
-        callbacks.push_back(std::move(callback));
+        load_callbacks.push_back(std::move(callback));
     }
 
     long long Worker::current_load() const {
@@ -104,16 +108,11 @@ namespace Gadgetron::Server::Connection::Stream {
 
     void Worker::handle_inbound_messages() {
 
-        while(true) {
-            try {
-                process_inbound_message(channel->pop());
-            }
-            catch (ChannelClosed &) {
-                break;
-            }
-            catch (std::exception &e) {
-                // Things!
-            }
+        try {
+            while(true) process_inbound_message(channel->pop());
+        }
+        catch (std::exception) {
+            fail_pending_messages(std::current_exception());
         }
     }
 
@@ -122,7 +121,6 @@ namespace Gadgetron::Server::Connection::Stream {
         Job job;
         {
             std::lock_guard guard(mutex);
-
             job = std::move(jobs.front()); jobs.pop_front();
             timing.latest = time_since(job.start);
         }
@@ -130,5 +128,13 @@ namespace Gadgetron::Server::Connection::Stream {
         load_changed();
 
         job.response.set_value(std::move(message));
+    }
+
+    void Worker::fail_pending_messages(std::exception_ptr e) {
+
+        for (auto &f : fail_callbacks) { f(); }
+        for (auto &job : jobs) {
+            job.response.set_exception(e);
+        }
     }
 }

@@ -35,10 +35,12 @@ namespace Gadgetron::Server::Connection::Stream {
 
         const std::string& name() override;
 
-
     private:
         struct Job;
         using Queue = Core::MPMCChannel<Job>;
+
+        Job send_message_to_worker(Core::Message message, std::shared_ptr<Worker> worker);
+        Core::Message get_message_from_worker(Job job, size_t retries = 3);
 
         void process_outbound(Core::InputChannel, Queue &);
         void process_inbound(Core::OutputChannel, Queue &);

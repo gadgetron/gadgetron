@@ -26,6 +26,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 std::shared_ptr<Configuration> configuration
         );
 
+        void on_failure(std::function<void()> callback);
         void on_load_change(std::function<void()> callback);
         long long current_load() const;
 
@@ -44,7 +45,8 @@ namespace Gadgetron::Server::Connection::Stream {
         };
 
         std::list<Job> jobs;
-        std::list<std::function<void()>> callbacks;
+        std::list<std::function<void()>> load_callbacks;
+        std::list<std::function<void()>> fail_callbacks;
 
         struct {
             std::chrono::milliseconds latest = std::chrono::seconds(5);
@@ -53,6 +55,8 @@ namespace Gadgetron::Server::Connection::Stream {
         void load_changed();
         void handle_inbound_messages();
         void process_inbound_message(Core::Message message);
+
+        void fail_pending_messages(std::exception_ptr e);
     };
 
     std::unique_ptr<Worker> create_worker(

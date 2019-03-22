@@ -55,7 +55,14 @@ add_executable(gadgetron
         connection/stream/PureDistributed.cpp
         connection/stream/PureDistributed.h
         connection/stream/common/External.h
-        connection/stream/common/External.cpp connection/stream/common/Serialization.cpp connection/stream/common/Serialization.h connection/stream/common/Configuration.cpp connection/stream/common/Configuration.h connection/stream/distributed/Pool.h connection/stream/distributed/Worker.cpp connection/stream/distributed/Worker.h)
+        connection/stream/common/External.cpp
+        connection/stream/common/Serialization.cpp
+        connection/stream/common/Serialization.h
+        connection/stream/common/Configuration.cpp
+        connection/stream/common/Configuration.h
+        connection/stream/distributed/Pool.h
+        connection/stream/distributed/Worker.cpp
+        connection/stream/distributed/Worker.h)
 
 target_link_libraries(gadgetron
         gadgetron_core

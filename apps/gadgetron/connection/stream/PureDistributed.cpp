@@ -32,34 +32,52 @@ namespace Gadgetron::Server::Connection::Stream {
         Message message;
         std::shared_ptr<Worker> worker;
         std::future<Message> response;
-
-        Job(Message message, std::shared_ptr<Worker> worker) :
-            message(message.clone()),
-            worker(worker) {
-            response = worker->push(std::move(message));
-        }
     };
+
+    PureDistributed::Job PureDistributed::send_message_to_worker(Message message, std::shared_ptr<Worker> worker) {
+        return Job {
+            message.clone(),
+            worker,
+            worker->push(std::move(message))
+        };
+    }
+
+    Message PureDistributed::get_message_from_worker(Job job, size_t retries) {
+        try {
+            return job.response.get();
+        }
+        catch (std::exception &e) {
+            GWARN_STREAM("Worker " << job.worker->address << " reported error: " << e.what());
+
+            if (!retries) throw std::runtime_error("Multiple workers failed processing job. Assuming terminal problem. Closing stream.");
+
+            auto worker = workers->best();
+            GWARN_STREAM("Job will be retried on worker: " << worker->address << " (" << retries << " retries left)");
+
+            return get_message_from_worker(
+                    send_message_to_worker(
+                        std::move(job.message),
+                        worker
+                    ),
+                    retries - 1
+            );
+        }
+    }
 
     void PureDistributed::process_outbound(InputChannel input, Queue &jobs) {
         for (auto message : input) {
-            jobs.emplace(
+            jobs.push(send_message_to_worker(
                     std::move(message),
                     workers->best()
-            );
+            ));
         }
         workers->close();
         jobs.close();
     }
 
     void PureDistributed::process_inbound(OutputChannel output, Queue &jobs) {
-
         while(true) {
-            auto job = jobs.pop();
-
-
-
-            output.push_message(job.response.get());
-            GINFO_STREAM("AN ANSWER! WE RECEIVED A THING!");
+            output.push(get_message_from_worker(jobs.pop()));
         }
     }
 

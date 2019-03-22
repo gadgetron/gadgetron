@@ -6,8 +6,19 @@
 
 namespace {
     using namespace Gadgetron;
+    using namespace Gadgetron::Core;
+    using namespace Gadgetron::Core::Distributed;
     using namespace Gadgetron::Server::Connection;
+    using namespace Gadgetron::Server::Connection::Stream;
 
+    class WorkerCreator : public ChannelCreator {
+    public:
+        OutputChannel create() override;
+    };
+
+    OutputChannel WorkerCreator::create() {
+
+    }
 }
 
 namespace Gadgetron::Server::Connection::Stream {
@@ -17,16 +28,15 @@ namespace Gadgetron::Server::Connection::Stream {
             Core::OutputChannel output,
             ErrorHandler& error_handler
     ) {
-//        auto channel_creator = WorkerChannelCreator{
-//            config,
-//            context,
-//            loader,
-//            Core::split(output),
-//            error_handler
-//        };
-//
-//
-//        distributor->process(std::move(input), channel_creator, std::move(output));
+        auto channel_creator = WorkerCreator {
+            config,
+            context,
+            loader,
+            Core::split(output),
+            error_handler
+        };
+
+        distributor->process(std::move(input), channel_creator, std::move(output));
     }
 
     Distributed::Distributed(
