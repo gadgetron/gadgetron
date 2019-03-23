@@ -21,7 +21,7 @@ RUN pip3 install -U pip setuptools
 # tensorflow does not work with cuda92
 RUN pip3 install --upgrade tensorflow 
 # use pytorch 1.0
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install torchvision
 RUN pip3 install tensorboardx visdom
 

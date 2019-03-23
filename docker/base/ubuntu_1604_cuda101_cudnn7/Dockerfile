@@ -37,7 +37,7 @@ RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install torch
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
