@@ -32,6 +32,9 @@ docker build --network=host -t gadgetron/ubuntu_1604_cuda92_cudnn7_base .
 cd ${base_dir}/base/ubuntu_1604_cuda100_cudnn7
 docker build --network=host -t gadgetron/ubuntu_1604_cuda100_cudnn7_base .
 
+cd ${base_dir}/base/ubuntu_1604_cuda101_cudnn7
+docker build --network=host -t gadgetron/ubuntu_1604_cuda101_cudnn7_base .
+
 cd ${base_dir}/base/ubuntu_1804
 docker build --network=host -t gadgetron/ubuntu_1804_base .
 
@@ -43,3 +46,6 @@ docker build --network=host -t gadgetron/ubuntu_1804_cuda92_cudnn7_base .
 
 cd ${base_dir}/base/ubuntu_1804_cuda100_cudnn7
 docker build --network=host -t gadgetron/ubuntu_1804_cuda100_cudnn7_base .
+
+cd ${base_dir}/base/ubuntu_1804_cuda101_cudnn7
+docker build --network=host -t gadgetron/ubuntu_1804_cuda101_cudnn7_base .
