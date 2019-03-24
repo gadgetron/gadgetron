@@ -10,46 +10,6 @@
 
 namespace Gadgetron {
 
-#if PY_VERSION_HEX > 0x3000000
-
-    template<> struct python_converter<char>
-    {
-        static void* convert_to_cstring(PyObject* obj)
-        {
-            return PyBytes_Check(obj) ? PyBytes_AsString(obj) : 0;
-        }
-
-        static void create()
-        {
-            bp::type_info info = bp::type_id<char>();
-            const bp::converter::registration* reg = bp::converter::registry::query(info);
-
-            bp::converter::convertible_function func_py_to_c= &convert_to_cstring;
-
-            // only register if not already registered!
-            bool has_register=false;
-            if (nullptr != reg)
-            {
-                bp::converter::lvalue_from_python_chain* lvalue_chain=reg->lvalue_chain;
-                while(nullptr != lvalue_chain)
-                {
-                    if (lvalue_chain->convert == func_py_to_c)
-                    {
-                        has_register=true;
-                        break;
-                    }
-                    lvalue_chain=lvalue_chain->next;
-                }
-            }
-
-            if(!has_register){
-                bp::converter::registry::insert(func_py_to_c, bp::type_id<char>(),&bp::converter::wrap_pytype<&PyBytes_Type>::get_pytype);
-            }
-        }
-    };
-
-#endif
-
     class GadgetInstrumentationStreamController
         : public GadgetStreamInterface
     {
@@ -112,12 +72,6 @@ namespace Gadgetron {
 
             register_converter<IsmrmrdReconData>();
             register_converter<IsmrmrdImageArray>();
-
-#if PY_VERSION_HEX > 0x3000000
-
-            register_converter<char>();
-
-#endif
 
             cntrl_ = new GadgetInstrumentationStreamController;
         }
