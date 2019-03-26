@@ -1,8 +1,6 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
 
-
-
 add_executable(gadgetron
         main.cpp
         connection/Config.cpp
@@ -42,7 +40,15 @@ add_executable(gadgetron
         connection/distributed/RemoteChannel.cpp
         connection/distributed/RemoteChannel.h
         connection/distributed/remote_workers.cpp
-        connection/stream/Processable.cpp connection/stream/ParallelProcess.cpp connection/stream/ParallelProcess.h connection/stream/PureStream.cpp connection/stream/PureStream.h connection/stream/PureDistributed.cpp connection/stream/PureDistributed.h)
+        connection/stream/Processable.cpp
+        connection/stream/ParallelProcess.cpp
+        connection/stream/ParallelProcess.h
+        connection/stream/PureStream.cpp
+        connection/stream/PureStream.h
+        connection/stream/PureDistributed.cpp
+        connection/stream/PureDistributed.h
+        connection/SocketStreamBuf.cpp
+        connection/SocketStreamBuf.h)
 
 target_link_libraries(gadgetron
         gadgetron_core

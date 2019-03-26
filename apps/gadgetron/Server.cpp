@@ -12,6 +12,7 @@
 
 using namespace boost::filesystem;
 using namespace Gadgetron::Server;
+#include "connection/SocketStreamBuf.h"
 
 Server::Server(boost::asio::io_service &io_service, const boost::program_options::variables_map &args)
     : args_(args) , acceptor_(io_service, tcp::endpoint(tcp::v6(), args["port"].as<unsigned short>())) {
@@ -21,9 +22,9 @@ Server::Server(boost::asio::io_service &io_service, const boost::program_options
 void Server::accept() {
     // Function accept recurses infinitely: Yes it does.
 
-    stream = std::make_unique<tcp::iostream>();
+    socket = std::make_unique<tcp::socket>(acceptor_.get_io_context());
     acceptor_.async_accept(
-            *stream->rdbuf(),
+            *socket,
             [this](const boost::system::error_code &error) {
                 this->connection_handler(error);
                 this->accept();
@@ -38,9 +39,8 @@ void Server::connection_handler(const boost::system::error_code &error) {
         return;
     }
 
-    GINFO_STREAM("Accepting connection from: " << stream->rdbuf()->remote_endpoint().address());
+    GINFO_STREAM("Accepting connection from: " << socket->remote_endpoint().address());
 
-    stream->tie(nullptr);
     auto paths = Gadgetron::Core::Context::Paths{args_["home"].as<path>(), args_["dir"].as<path>()};
-    Connection::handle(paths, std::move(stream));
+    Connection::handle(paths,Gadgetron::Connection::stream_from_socket(std::move(socket)));
 }
