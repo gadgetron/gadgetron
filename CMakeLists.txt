@@ -452,11 +452,7 @@ add_subdirectory(core)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 
-if (ISMRMRD_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
-  add_subdirectory(gadgets)
-else()
-  message("Required dependencies for gadget compilation not found ( ISMRMRD, FFTW3, HDF5).")
-endif()
+add_subdirectory(gadgets)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)

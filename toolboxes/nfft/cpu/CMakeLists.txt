@@ -3,13 +3,7 @@ if (WIN32)
   add_definitions(-D_USE_MATH_DEFINES)
 endif ()
 
-if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
-
-
-add_library(gadgetron_toolbox_cpunfft SHARED 
+add_library(gadgetron_toolbox_cpunfft SHARED
     hoNFFT.h
     hoNFFT.cpp
     hoNFFT_sparseMatrix.h
