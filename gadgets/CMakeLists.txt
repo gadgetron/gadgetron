@@ -1,6 +1,5 @@
 if (WIN32)
   add_definitions(-D__BUILD_GADGETS__)
-  link_directories(${Boost_LIBRARY_DIRS})
 endif ()
 
 add_subdirectory(mri_core)
@@ -35,29 +34,8 @@ if (MATLAB_FOUND)
 endif()
 
 if (BUILD_PYTHON_SUPPORT)
-  if(BUILD_WITH_PYTHON3)
-    find_package(Boost COMPONENTS python3 system thread)
-    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
-  else()
-    find_package(Boost COMPONENTS python system thread)
-    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
-  endif()
-
-  # Note: main CMakeLists.txt already finds PythonLibs and NumPy
-
-  if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
-    message(STATUS "PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
-    message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
-    message(STATUS "NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
-    message(STATUS "Compiling Python Gadgets")
     add_subdirectory(python)
     add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
-  else ()
-    if(NOT Boost_PYTHON_FOUND)
-        message(STATUS "Boost Python NOT found, NOT compiling Python Gadgets")
-    endif()
-    set(BUILD_PYTHON_SUPPORT OFF)
-  endif ()
 endif () # BUILD_PYTHON_SUPPORT
 
 

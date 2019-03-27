@@ -178,7 +178,6 @@ target_link_libraries(gadgetron_mricore
         gadgetron_toolbox_cpuklt
         gadgetron_toolbox_mri_core
         ${ISMRMRD_LIBRARIES}
-        ${FFTW3_LIBRARIES}
         boost
         )
 
@@ -199,20 +198,6 @@ else ()
     message("ZFP NOT Found")
 endif ()
 
-
-if (MKL_FOUND)
-    # This is a fix for the bug in SVD when MKL is multi-threaded
-    message("MKL Found, enabling MKL for mri_core gadgets.")
-    add_definitions(-DHAVE_MKL)
-    # These are needed to get the linking to work properly when
-    # MKL is installed, but Armadillo is NOT using it.
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    target_include_directories(gadgetron_mricore
-            PUBLIC
-            ${MKL_INCLUDE_DIR})
-    link_directories(${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR})
-endif ()
 
 install(FILES
         gadgetron_mricore_export.h
