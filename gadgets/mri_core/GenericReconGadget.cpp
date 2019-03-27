@@ -385,18 +385,18 @@ namespace Gadgetron {
 
             if (coil_map_algorithm.value() == "Inati")
             {
-                size_t ks = 7;
-                size_t kz = 5;
+                size_t ks = this->coil_map_kernel_size_readout.value();
+                size_t kz = this->coil_map_kernel_size_phase.value();
                 size_t power = 3;
 
                 Gadgetron::coil_map_Inati(complex_im_recon_buf_, coil_map, ks, kz, power);
             }
             else
             {
-                size_t ks = 7;
-                size_t kz = 5;
-                size_t iterNum = 5;
-                float thres = 0.001;
+                size_t ks = this->coil_map_kernel_size_readout.value();
+                size_t kz = this->coil_map_kernel_size_phase.value();
+                size_t iterNum = this->coil_map_num_iter.value();
+                float thres = this->coil_map_thres_iter.value();
 
                 Gadgetron::coil_map_Inati_Iter(complex_im_recon_buf_, coil_map, ks, kz, iterNum, thres);
             }
