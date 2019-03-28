@@ -71,8 +71,30 @@ namespace {
     private:
         std::unique_ptr<SocketStreamBuf> buffer;
     };
+
+    using boost::asio::ip::tcp;
+    class DirectSocketStream : public SocketStream{
+    public:
+        explicit DirectSocketStream(const std::string& host, const std::string& service, std::unique_ptr<boost::asio::io_service> context = std::make_unique<boost::asio::io_service>()) :
+        SocketStream(connect_socket(host,service,*context)), io_service(std::move(context)) {
+
+        }
+
+
+    private:
+        std::unique_ptr<boost::asio::io_service> io_service;
+        static std::unique_ptr<tcp::socket> connect_socket(const std::string& host, const std::string& service, boost::asio::io_service& context){
+            auto resolver = tcp::resolver(context);
+            auto endpoint = *resolver.resolve(tcp::resolver::query(host,service));
+            return std::make_unique<tcp::socket>(context, endpoint);
+        }
+    };
 }
 
 std::unique_ptr<std::iostream> Gadgetron::Connection::stream_from_socket(std::unique_ptr<boost::asio::ip::tcp::socket> socket) {
     return std::make_unique<SocketStream>(std::move(socket));
+}
+
+std::unique_ptr<std::iostream> Gadgetron::Connection::remote_stream(const std::string &host, const std::string &service) {
+    return std::make_unique<DirectSocketStream>(host,service);
 }

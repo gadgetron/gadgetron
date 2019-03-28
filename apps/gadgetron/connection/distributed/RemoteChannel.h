@@ -37,7 +37,7 @@ class RemoteChannel : public Core::Channel {
         void handle_close();
         void save_error(const std::string& error_message);
 
-        std::unique_ptr<boost::asio::ip::tcp::iostream> stream;
+        std::unique_ptr<std::iostream> stream;
         const Address address;
         const std::map<uint16_t,std::unique_ptr<Core::Reader>>& readers;
         const std::vector<std::unique_ptr<Core::Writer>>& writers;
