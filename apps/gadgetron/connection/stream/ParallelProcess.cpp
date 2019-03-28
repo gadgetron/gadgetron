@@ -9,17 +9,22 @@ void Gadgetron::Server::Connection::Stream::ParallelProcess::process(Gadgetron::
     Gadgetron::Core::OutputChannel output, Gadgetron::Server::Connection::ErrorHandler& error_handler) {
 
     const size_t n_threads = workers ? workers : omp_get_num_threads();
+    GDEBUG("Starting parallel process with %d workers\n", n_threads);
     std::vector<std::thread> threads;
     for (size_t worker = 0; worker < n_threads; worker++) {
         threads.push_back(error_handler.run([&]() {
-            for (auto message : input) {
-                output.push_message(pureStream.process_function(std::move(message)));
+            try {
+                for (;;) {
+                    output.push_message(pureStream.process_function(input.pop()));
+                }
+
+            } catch (const Core::ChannelClosed&) {
             }
         }));
     }
 
-    for (auto& t : threads) t.join();
-
+    for (auto& t : threads)
+        t.join();
 }
 
 Gadgetron::Server::Connection::Stream::ParallelProcess::ParallelProcess(

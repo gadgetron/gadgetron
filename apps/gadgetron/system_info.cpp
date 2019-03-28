@@ -107,13 +107,7 @@ namespace Gadgetron::Server::Info {
             int deviceCount = 0;
             auto error = cudaGetDeviceCount(&deviceCount);
 
-            if (error == cudaErrorNoDevice) return 0;
-            if (error) {
-                std::stringstream message;
-                message << "Failed to get number of CUDA devices: " << cudaGetErrorString(error);
-                throw std::runtime_error(message.str());
-            }
-
+            if (error ) return 0;
             return deviceCount;
         }
 
