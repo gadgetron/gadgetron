@@ -125,9 +125,9 @@ namespace Gadgetron {
             add_python_path(path);
         }
 
-        if (std::empty(python_module))
+        if (python_module.empty())
             throw std::runtime_error("Empty python module provided");
-        if (std::empty(python_class))
+        if (python_class.empty())
             throw std::runtime_error("Empty python class provided");
 
         GILLock lock;

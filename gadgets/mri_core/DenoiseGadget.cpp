@@ -21,7 +21,7 @@ namespace Gadgetron {
 
     DenoiseSupportedTypes DenoiseGadget::process_function(DenoiseSupportedTypes input) const {
         return boost::apply_visitor(
-            [&](auto& image) { return DenoiseSupportedTypes(denoise(std::move(image))); }, input);
+            [&,this](auto& image) { return DenoiseSupportedTypes(this->denoise(std::move(image))); }, input);
     }
 
     template <class T> DenoiseImage<T> DenoiseGadget::denoise(DenoiseImage<T> image) const {

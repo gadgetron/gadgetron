@@ -77,6 +77,8 @@ namespace {
                 wt.join();
         }
 
+        WorkerChannelCreator(WorkerChannelCreator&& other) = default;
+
     private:
         Core::OutputChannel create_channel(Local) {
 

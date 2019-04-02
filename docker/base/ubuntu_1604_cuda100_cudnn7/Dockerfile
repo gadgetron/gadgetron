@@ -15,7 +15,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    libceres-dev supervisor net-tools cpio
+    libceres-dev supervisor cpio net-tools
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
@@ -47,9 +47,9 @@ RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
 
 # Compile boost
 RUN cd /opt && \
-    wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz && \
-    tar -xzvf boost_1_67_0.tar.gz && \
-    cd boost_1_67_0 && \
+    wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz && \
+    tar -xzvf boost_1_69_0.tar.gz && \
+    cd boost_1_69_0 && \
     ./bootstrap.sh --with-python=/usr/bin/python3 --prefix=/usr && \
     ./b2 -j$(nproc) address-model=64 stage && \
     ./b2 install
@@ -66,7 +66,15 @@ RUN cd /opt && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
     make -j$(nproc) && \
     make install
-    
+
+
+RUN cd /opt && \
+    git clone https://github.com/zeux/pugixml.git --branch v1.9 && cd pugixml && \
+    mkdir build && cd build &&\
+    cmake -DCMAKE_BUILD_TYPE=Release .. &&  \
+    make -j$(nproc) && \
+    make install
+
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
 

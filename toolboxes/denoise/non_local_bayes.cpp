@@ -207,7 +207,7 @@ namespace Gadgetron {
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
                         from_std_vector<size_t, 2>(*image.get_dimensions()));
 
-#pragma omp parallel for num_threads(4)
+//#pragma omp parallel for num_threads(4)
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
@@ -254,7 +254,7 @@ namespace Gadgetron {
 
                 hoNDArray<T> result_view;
                 result_view.create(image_dims);
-                #pragma omp parallel for
+//                #pragma omp parallel for
                 for (int i = 0; i < n_images; i++) {
 
                     auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));

@@ -46,7 +46,7 @@ namespace {
 
 void Gadgetron::Server::Distributed::RemoteChannel::close() {
 
-    std::lock_guard guard(closed_mutex);
+    std::lock_guard<std::mutex> guard(closed_mutex);
 
     if (!closed_input)
         IO::write(*stream, CLOSE);
@@ -55,7 +55,7 @@ void Gadgetron::Server::Distributed::RemoteChannel::close() {
 
 void Gadgetron::Server::Distributed::RemoteChannel::push_message(Gadgetron::Core::Message message) {
 
-    std::lock_guard guard(closed_mutex);
+    std::lock_guard<std::mutex> guard(closed_mutex);
     if (closed_input)
         throw Core::ChannelClosed();
 
@@ -91,7 +91,7 @@ Gadgetron::Server::Distributed::RemoteChannel::RemoteChannel(const Address& addr
 
 Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
     {
-        std::lock_guard guard(closed_mutex);
+        std::lock_guard<std::mutex> guard(closed_mutex);
         if (closed_output)
             throw ChannelClosed();
     }
@@ -104,7 +104,7 @@ Gadgetron::Core::Message Gadgetron::Server::Distributed::RemoteChannel::pop() {
 }
 
 void Gadgetron::Server::Distributed::RemoteChannel::handle_close() {
-    std::lock_guard guard(closed_mutex);
+    std::lock_guard<std::mutex> guard(closed_mutex);
     closed_input  = true;
     closed_output = true;
     if (error_messages.empty())

@@ -17,6 +17,6 @@ namespace Gadgetron::Core {
     constexpr decltype(auto) apply(F &&f, Tuple &&t) {
         return gadgetron_detail::apply_impl(
                 std::forward<F>(f), std::forward<Tuple>(t),
-                std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
+                std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
     }
 }

@@ -31,13 +31,13 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const T &value) {
 }
 
 template<class T>
-std::enable_if_t<std::is_trivially_copyable_v<T>>
+std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>>
 Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of_elements) {
     stream.write(reinterpret_cast<const char *>(data), number_of_elements * sizeof(T));
 }
 
 template<class T>
-std::enable_if_t<!std::is_trivially_copyable_v<T>>
+std::enable_if_t<!Gadgetron::Core::is_trivially_copyable_v<T>>
 Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of_elements) {
     for (size_t i = 0; i < number_of_elements; i++) {
         write(stream, data[i]);
@@ -61,24 +61,25 @@ void Gadgetron::Core::IO::write_string_to_stream(std::ostream &stream, const std
 
 
 template<class T>
-std::enable_if_t<std::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
+std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
     stream.read(reinterpret_cast<char *>(data), elements*sizeof(T));
     }
 template<class T>
-std::enable_if_t<!std::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
+std::enable_if_t<!Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
     for (size_t i = 0; i < elements; i++) read(stream,data[i]);
 }
 
 template<class T>
 std::string Gadgetron::Core::IO::read_string_from_stream(std::istream &stream) {
     auto n = IO::read<T>(stream);
-    std::string str(n, 0);
-    stream.read(str.data(), n);
-    return str;
+    std::vector<char> data(n);
+    stream.read(data.data(), n);
+
+    return std::string(data.data(),data.size());
 }
 
 template<class T>
-std::enable_if_t<std::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T &value) {
+std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T &value) {
     stream.read(reinterpret_cast<char *>(&value), sizeof(value));
 }
 
