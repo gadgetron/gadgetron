@@ -17,6 +17,7 @@ namespace Gadgetron::Server::Connection::Stream {
         void process_input(Core::InputChannel input, Queue &queue);
         void process_output(Core::OutputChannel output, Queue &queue);
 
+        const size_t workers;
         const PureStream pureStream;
     };
 }

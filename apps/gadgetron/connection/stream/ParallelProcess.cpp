@@ -45,7 +45,7 @@ namespace Gadgetron::Server::Connection::Stream {
             const Config::ParallelProcess& conf,
             const Context& context,
             Loader& loader
-    ) : pureStream{ conf.stream, context, loader } {}
+    ) : pureStream{ conf.stream, context, loader }, workers{ conf.workers } {}
 
     const std::string& ParallelProcess::name() {
         const static std::string n = "ParallelProcess";

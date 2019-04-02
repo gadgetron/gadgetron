@@ -283,6 +283,7 @@ namespace {
             node_parsers["distributed"] = [&](const pugi::xml_node &n) { return this->parse_distributed(n); };
             node_parsers["parallelprocess"] = [&](const pugi::xml_node &n) { return this->parse_parallelprocess(n); };
             node_parsers["puredistributed"] = [&](const pugi::xml_node &n) { return this->parse_puredistributed(n); };
+
         }
 
         std::unordered_map<std::string, std::function<Config::Node(const pugi::xml_node &)>> node_parsers;
@@ -325,7 +326,8 @@ namespace {
 
         Config::ParallelProcess parse_parallelprocess(const pugi::xml_node& parallelprocess_node)
         {
-            return Config::ParallelProcess{parse_purestream(parallelprocess_node.child("purestream"))};
+            size_t workers = std::stoul(parallelprocess_node.attribute("workers").value());
+            return Config::ParallelProcess{workers,parse_purestream(parallelprocess_node.child("purestream"))};
         }
 
         Config::PureDistributed parse_puredistributed(const pugi::xml_node& puredistributedprocess_node){
@@ -426,6 +428,7 @@ namespace {
 
         static pugi::xml_node add_node(const Config::ParallelProcess& parallelProcess, pugi::xml_node & node){
             auto parallel_node = node.append_child("parallelprocess");
+            parallel_node.append_attribute("workers").set_value((long long unsigned int)parallelProcess.workers);
             add_node(parallelProcess.stream, parallel_node);
             return parallel_node;
         }

@@ -67,6 +67,8 @@ namespace Gadgetron::Server::Connection {
         };
 
         struct ParallelProcess {
+
+            size_t workers = 0;
             PureStream stream;
         };
 
