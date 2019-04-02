@@ -210,7 +210,7 @@ set( gadgetron_mricore_config_files
     config/Generic_Cartesian_Grappa.xml
     config/Generic_Cartesian_Grappa_SNR.xml
     config/Generic_Cartesian_Grappa_T2W.xml
-        config/Generic_Cartesian_Grappa_RealTimeCine.xml
+    config/Generic_Cartesian_Grappa_RealTimeCine.xml
     config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
     config/Generic_Cartesian_Grappa_EPI.xml
     config/Generic_Cartesian_Grappa_EPI_AVE.xml
@@ -225,6 +225,22 @@ set( gadgetron_mricore_config_files
     config/ismrmrd_dump.xml
 )
 
+# if there is python, add gadgets using python
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+
+    message("Build python generic gadgets ... ")
+    include_directories(
+      ${CMAKE_SOURCE_DIR}/toolboxes/python
+      ${PYTHON_INCLUDE_PATH}
+      ${NUMPY_INCLUDE_DIRS}
+      )
+
+      set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} GenericReconCartesianGrappaAIGadget.h)
+      set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} GenericReconCartesianGrappaAIGadget.cpp)
+      set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} config/Generic_Cartesian_Grappa_AI.xml)
+
+endif ()
+
 add_library(gadgetron_mricore SHARED 
     gadgetron_mricore_export.h 
     ${gadgetron_mricore_header_files} 
@@ -232,8 +248,7 @@ add_library(gadgetron_mricore SHARED
     ${gadgetron_mricore_config_files}
     ${OPTIMIZED_GADGETS}
     ${OPTIMIZED_GADGET_HEADERS}
-        DenoiseGadget.cpp DenoiseGadget.h)
-# Above: Whitespace misaligned, and one file on each line please.
+    DenoiseGadget.cpp DenoiseGadget.h)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -251,16 +266,22 @@ target_link_libraries(gadgetron_mricore
     ${OPTIMIZED_GADGET_LIBS}
     ${Boost_LIBRARIES}
 )
+
 if(ARMADILLO_FOUND)
    target_link_libraries(gadgetron_mricore
-    gadgetron_toolbox_cpuoperator
-    gadgetron_toolbox_cpuklt
-    gadgetron_toolbox_mri_core
-)
+                        gadgetron_toolbox_cpuoperator
+                        gadgetron_toolbox_cpuklt
+                        gadgetron_toolbox_mri_core )
 endif()
 
 if (ZFP_FOUND)
    target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
+endif ()
+
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+   target_link_libraries(gadgetron_mricore 
+                        gadgetron_toolbox_python 
+                        ${PYTHON_LIBRARIES} )
 endif ()
 
 install(FILES 

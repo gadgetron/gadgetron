@@ -23,49 +23,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
-add_subdirectory(mri_core)
-
-add_subdirectory(interventional_mri)
-if (ARMADILLO_FOUND)
-  add_subdirectory(cmr)
-endif()
-
-
-if(BART_FOUND)
-  add_subdirectory(bart)
-else()
-  message("BART not found, NOT compiling bartgadget")
-endif()
-
-
-if (ARMADILLO_FOUND)
-  add_subdirectory(epi)
-  add_subdirectory(fatwater)
-elseif (ARMADILLO_FOUND)
-  message("Armadillo not found, NOT compiling EPI or Fat/water Gadgets")
-endif ()
-
-
-if (CUDA_FOUND)
-  message("Cuda found, compiling gpu accelerated gadgets")
-  add_subdirectory(pmri)
-  add_subdirectory(radial)  
-  add_subdirectory(hyper)
-  add_subdirectory(gpu)
-else ()
-  message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
-endif()
-
-add_subdirectory(mri_noncartesian)
-add_subdirectory(spiral)
-add_subdirectory(grappa)
-add_subdirectory(distributed)
-
-if (MATLAB_FOUND)
-  message("Compiling MATLAB gadgets")
-  add_subdirectory(matlab)
-endif()
-
 if (BUILD_PYTHON_SUPPORT)
   if(BUILD_WITH_PYTHON3)
     find_package(Boost COMPONENTS python3 system thread REQUIRED)
@@ -91,6 +48,46 @@ if (BUILD_PYTHON_SUPPORT)
     set(BUILD_PYTHON_SUPPORT OFF)
   endif ()
 endif () # BUILD_PYTHON_SUPPORT
+
+add_subdirectory(mri_core)
+
+add_subdirectory(interventional_mri)
+if (ARMADILLO_FOUND)
+  add_subdirectory(cmr)
+endif()
+
+if(BART_FOUND)
+  add_subdirectory(bart)
+else()
+  message("BART not found, NOT compiling bartgadget")
+endif()
+
+if (ARMADILLO_FOUND)
+  add_subdirectory(epi)
+  add_subdirectory(fatwater)
+elseif (ARMADILLO_FOUND)
+  message("Armadillo not found, NOT compiling EPI or Fat/water Gadgets")
+endif ()
+
+if (CUDA_FOUND)
+  message("Cuda found, compiling gpu accelerated gadgets")
+  add_subdirectory(pmri)
+  add_subdirectory(radial)  
+  add_subdirectory(hyper)
+  add_subdirectory(gpu)
+else ()
+  message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
+endif()
+
+add_subdirectory(mri_noncartesian)
+add_subdirectory(spiral)
+add_subdirectory(grappa)
+add_subdirectory(distributed)
+
+if (MATLAB_FOUND)
+  message("Compiling MATLAB gadgets")
+  add_subdirectory(matlab)
+endif()
 
 add_subdirectory(util)
 

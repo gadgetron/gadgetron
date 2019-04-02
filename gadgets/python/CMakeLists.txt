@@ -67,6 +67,10 @@ set(gadgetron_python_gadgets_files
                             gadgets/image_array_recon_rtcine_plotting.py
         )
 
+set(gadgetron_python_models_files 
+                            models/grappa_ai.py
+        )
+
 set(gadgetron_python_examples_files 
                             examples/mixed_gadgets.py
                             examples/mixed_gadgets_gpu.py
@@ -76,6 +80,7 @@ source_group(config             FILES      ${gadgetron_python_config_files})
 source_group(utils              FILES      ${gadgetron_python_utils_files})
 source_group(gadgets            FILES      ${gadgetron_python_gadgets_files})
 source_group(examples           FILES      ${gadgetron_python_examples_files})
+source_group(models             FILES      ${gadgetron_python_models_files})
 
 add_library(GadgetronPythonMRI MODULE 
                 GadgetronPythonMRI.cpp 
@@ -93,7 +98,8 @@ add_library(gadgetron_python SHARED
     ${gadgetron_python_config_files} 
     ${gadgetron_python_utils_files} 
     ${gadgetron_python_gadgets_files} 
-    ${gadgetron_python_examples_files} )
+    ${gadgetron_python_examples_files} 
+    ${gadgetron_python_models_files} )
 
 set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -131,6 +137,7 @@ install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE
 
 install(FILES
     ${gadgetron_python_gadgets_files}
+    ${gadgetron_python_models_files}
     DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(FILES ${gadgetron_python_config_files} 
