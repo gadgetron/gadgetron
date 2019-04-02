@@ -472,7 +472,7 @@ namespace Gadgetron::Server::Connection {
     }
 
     std::string serialize_config(const Config &config) {
-        auto doc = pugi::xml_document{};
+        pugi::xml_document doc{};
         auto config_node = doc.append_child("configuration");
         config_node.append_child("version").set_value("2");
         XMLSerializer::add_readers(config.readers, config_node);

@@ -368,8 +368,8 @@
             <classname>ImageArraySplitGadget</classname>
         </gadget>
 
-<!--        <parallelprocess workers="6">-->
-<!--            <purestream>-->
+        <parallelprocess workers="6">
+            <purestream>
                 <gadget>
                     <name>Denoiser</name>
                     <dll>gadgetron_mricore</dll>
@@ -377,8 +377,8 @@
                     <property name="image_std" value="10"/>
                     <property name="search_radius" value="5"/>
                 </gadget>
-<!--            </purestream>-->
-<!--        </parallelprocess>-->
+            </purestream>
+        </parallelprocess>
 
 
         <!-- after recon processing -->
