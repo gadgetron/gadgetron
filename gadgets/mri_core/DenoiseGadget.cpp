@@ -1,11 +1,9 @@
-//
-// Created by dchansen on 6/19/18.
-//
 
 #include "DenoiseGadget.h"
 #include "GadgetronTimer.h"
 #include "non_local_bayes.h"
 #include "non_local_means.h"
+
 namespace Gadgetron {
     template <class T>
     Gadgetron::hoNDArray<T> Gadgetron::DenoiseGadget::denoise_function(const Gadgetron::hoNDArray<T>& input) const {
@@ -28,11 +26,13 @@ namespace Gadgetron {
         return DenoiseImage<T>{ std::move(std::get<ISMRMRD::ImageHeader>(image)),
             denoise_function(std::get<hoNDArray<T>>(image)) };
     }
+
     IsmrmrdImageArray DenoiseGadget::denoise(IsmrmrdImageArray image_array) const {
         auto& input = image_array.data_;
         input       = denoise_function(input);
         return std::move(image_array);
     }
+
     DenoiseGadget::DenoiseGadget(const Core::Context& context, const Core::GadgetProperties& props)
         : Core::TypedPureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes>{ props } {}
     GADGETRON_GADGET_EXPORT(DenoiseGadget)

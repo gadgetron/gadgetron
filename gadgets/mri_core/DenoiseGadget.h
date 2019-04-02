@@ -1,6 +1,3 @@
-//
-// Created by dchansen on 6/19/18.
-//
 
 #ifndef GADGETRON_DENOISEGADGET_H
 #define GADGETRON_DENOISEGADGET_H
@@ -30,8 +27,7 @@ namespace Gadgetron {
         DenoiseSupportedTypes process_function(DenoiseSupportedTypes input) const;
         NODE_PROPERTY(image_std, float, "Standard deviation of the noise in the produced image", 1);
         NODE_PROPERTY(search_radius, int, "Standard deviation of the noise in the produced image", 25);
-        NODE_PROPERTY(
-            denoiser, std::string, "Type of denoiser - non_local_means or non_local_bayes", "non_local_bayes");
+        NODE_PROPERTY(denoiser, std::string, "Type of denoiser - non_local_means or non_local_bayes", "non_local_bayes");
 
     protected:
         template <class T>

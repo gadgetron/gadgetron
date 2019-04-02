@@ -1,6 +1,3 @@
-//
-// Created by dchansen on 2/7/19.
-//
 
 #include "PureStream.h"
 
@@ -39,6 +36,12 @@ Gadgetron::Server::Connection::Stream::PureStream::PureStream(
 Gadgetron::Core::Message Gadgetron::Server::Connection::Stream::PureStream::process_function(
     Gadgetron::Core::Message message) const {
 
-    return std::accumulate(pure_gadgets.begin(), pure_gadgets.end(), std::move(message),
-        [](auto& message, auto& gadget) { return gadget->process_function(std::move(message)); });
+    return std::accumulate(
+            pure_gadgets.begin(),
+            pure_gadgets.end(),
+            std::move(message),
+            [](auto& message, auto& gadget) {
+                return gadget->process_function(std::move(message));
+            }
+    );
 }

@@ -59,9 +59,9 @@ RUN ln -s /usr/lib/libboost_python35.so /usr/lib/libboost_python3.so
 
 # Compile armadillo
 RUN cd /opt && \
-    wget http://sourceforge.net/projects/arma/files/armadillo-8.600.0.tar.xz && \
-    tar xvf armadillo-8.600.0.tar.xz && \
-    cd armadillo-8.600.0 && \
+    wget http://sourceforge.net/projects/arma/files/armadillo-9.200.8.tar.xz && \
+    tar xvf armadillo-9.200.8.tar.xz && \
+    cd armadillo-9.200.8 && \
     mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
     make -j$(nproc) && \
