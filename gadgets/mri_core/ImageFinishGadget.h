@@ -5,12 +5,12 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE ImageFinishGadget : public Core::GadgetNode {
+    class EXPORTGADGETSMRICORE ImageFinishGadget : public Core::ChannelGadget {
     public:
         ImageFinishGadget(
                 const Core::Context &context,
                 const Core::GadgetProperties &properties
-        ) : GadgetNode(properties) {};
+        ) : ChannelGadget(properties) {};
 
     protected:
         void process(Core::InputChannel& in,

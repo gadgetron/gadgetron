@@ -7,7 +7,6 @@ ARG BART_BRANCH=master
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
-RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
@@ -15,7 +14,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    libceres-dev supervisor cpio net-tools
+    supervisor cpio net-tools
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
@@ -59,9 +58,9 @@ RUN ln -s /usr/lib/libboost_python35.so /usr/lib/libboost_python3.so
 
 # Compile armadillo
 RUN cd /opt && \
-    wget http://sourceforge.net/projects/arma/files/armadillo-8.600.0.tar.xz && \
-    tar xvf armadillo-8.600.0.tar.xz && \
-    cd armadillo-8.600.0 && \
+    wget http://sourceforge.net/projects/arma/files/armadillo-9.200.8.tar.xz && \
+    tar xvf armadillo-9.200.8.tar.xz && \
+    cd armadillo-9.200.8 && \
     mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
     make -j$(nproc) && \
