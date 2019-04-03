@@ -186,7 +186,7 @@ namespace Gadgetron::Grappa {
     WeightsCalculator<WeightsCore>::WeightsCalculator(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : TypedGadgetNode<Slice>(props), context(context) {}
+    ) : TypedChannelGadget<Slice>(props), context(context) {}
 
     template<class WeightsCore>
     void WeightsCalculator<WeightsCore>::process(TypedInputChannel<Slice> &in, OutputChannel &out) {

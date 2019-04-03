@@ -7,7 +7,7 @@
 
 namespace Gadgetron::Grappa {
 
-    class ImageAccumulator : public Core::TypedGadgetNode<Slice> {
+    class ImageAccumulator : public Core::TypedChannelGadget<Slice> {
     public:
         ImageAccumulator(const Core::Context &, const std::unordered_map<std::string, std::string> &);
 

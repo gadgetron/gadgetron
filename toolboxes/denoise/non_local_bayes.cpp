@@ -239,7 +239,7 @@ namespace Gadgetron {
 
                 hoNDArray<T> result_view;
                 result_view.create(image_dims);
-//                #pragma omp parallel for
+                #pragma omp parallel for
                 for (int i = 0; i < n_images; i++) {
 
                     auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));

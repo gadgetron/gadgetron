@@ -51,14 +51,13 @@ RUN cd /opt/code && \
     make install
 
 RUN apt-get install clang -y
-
+RUN apt-get install google-perftools libgoogle-perftools-dev -y
 
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
 
 
-RUN mkdir /var/run/sshd
 #RUN echo 'root:root' | chpasswd
 #RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 #
