@@ -1,20 +1,26 @@
+
 #include "ParallelProcess.h"
-#include "omp.h"
+
+#include "Types.h"
 
 using namespace Gadgetron::Core;
 
 namespace Gadgetron::Server::Connection::Stream {
 
     void ParallelProcess::process_input(InputChannel input, Queue &queue) {
+
+        ThreadPool pool(workers ? workers : std::thread::hardware_concurrency());
+
         for (auto message : input) {
             queue.push(
-                    std::async(
-                            [&](auto message) { return pureStream.process_function(std::move(message)); },
-                            std::move(message)
-                    )
+                pool.async(
+                        [&](auto message) { return pureStream.process_function(std::move(message)); },
+                        std::move(message)
+                )
             );
         }
-        queue.close();
+
+        pool.join(); queue.close();
     }
 
     void ParallelProcess::process_output(OutputChannel output, Queue &queue) {
