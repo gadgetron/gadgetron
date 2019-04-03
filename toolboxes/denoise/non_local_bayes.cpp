@@ -198,7 +198,7 @@ namespace Gadgetron {
                         from_std_vector<size_t, 2>(*image.get_dimensions())
                 );
 
-//#pragma omp parallel for num_threads(4)
+#pragma omp parallel for num_threads(4)
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
@@ -210,7 +210,7 @@ namespace Gadgetron {
                             denoise_patches(patches, noise_std);
 
                             for (auto &patch : patches) {
-//                                #pragma omp critical
+                                #pragma omp critical
                                 add_patch(patch, result, count, patch_size, image_dims);
                                 mask(patch.center_x, patch.center_y) = false;
                             }

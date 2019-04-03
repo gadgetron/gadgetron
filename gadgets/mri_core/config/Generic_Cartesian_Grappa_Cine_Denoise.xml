@@ -368,7 +368,7 @@
             <classname>ImageArraySplitGadget</classname>
         </gadget>
 
-        <parallelprocess workers="1024">
+        <parallelprocess workers="6">
             <purestream>
                 <gadget>
                     <name>Denoiser</name>

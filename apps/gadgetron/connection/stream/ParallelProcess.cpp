@@ -1,7 +1,7 @@
 
 #include "ParallelProcess.h"
 
-#include "Types.h"
+#include "ThreadPool.h"
 
 using namespace Gadgetron::Core;
 

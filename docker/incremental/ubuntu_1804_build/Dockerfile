@@ -50,8 +50,8 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install
 
-RUN apt-get install clang -y
-RUN apt-get install google-perftools libgoogle-perftools-dev -y
+#RUN apt-get install clang -y
+#RUN apt-get install google-perftools libgoogle-perftools-dev -y
 
 # Clean up packages.
 RUN  apt-get clean && \

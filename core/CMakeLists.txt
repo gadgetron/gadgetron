@@ -28,12 +28,9 @@ target_link_libraries(gadgetron_core
 		gadgetron_toolbox_cpucore
 		boost )
 
-target_include_directories(
-    gadgetron_core
-    PUBLIC
-		.
-    ${ISMRMRD_INCLUDE_DIR})
-
+target_include_directories(gadgetron_core PUBLIC
+	.
+	${ISMRMRD_INCLUDE_DIR})
 
 install(TARGETS gadgetron_core DESTINATION lib COMPONENT main)
 
