@@ -267,9 +267,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
+  find_package(Boost 1.65.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
 else()
-  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
+  find_package(Boost 1.65.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
 endif()
 
 add_library(boost INTERFACE)
@@ -357,7 +357,10 @@ if (CUDA_FOUND AND USE_CUDA)
 	find_package(BART)
 endif()
 add_library(FFTW INTERFACE)
-
+ find_package(FFTW3 REQUIRED COMPONENTS single double)
+target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})		
+set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
+  
 option(USE_MKL OFF)
 if (USE_MKL)
   find_package(MKL REQUIRED)
@@ -365,20 +368,19 @@ if (USE_MKL)
   set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+
+
   
-  target_link_libraries(FFTW INTERFACE BLAS)
 
   add_definitions(-DUSE_MKL)
   else()
-  find_package(FFTW3 REQUIRED COMPONENTS single double)
+ 
   find_package(CBLAS REQUIRED)  
 	find_package(LAPACK REQUIRED)
 	if (LAPACK_FOUND)
 		message("LAPACK Found")
 	endif ()
-  target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})		
-    set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
-  
+
 
 
 endif()
