@@ -3,7 +3,7 @@ FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04
 ARG BART_URL=https://github.com/mrirecon/bart
 ARG BART_BRANCH=master
 
-#Fix default ceres package on 16.04 is broken
+RUN  sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
@@ -17,6 +17,15 @@ RUN apt-get update --quiet && \
     supervisor cpio net-tools
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
+
+# Compile OpenBLAS
+RUN cd /opt && \
+    apt-get build-dep --no-install-recommends --no-install-suggests --yes libopenblas-base && \
+    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts gfortran && \
+    git clone https://github.com/xianyi/OpenBLAS.git --branch v0.3.5 && \
+    cd OpenBLAS && \
+    make -j USE_OPENMP=0 USE_THREAD=0 DYNAMIC_ARCH=1 && \
+    make -j USE_OPENMP=0 USE_THREAD=0 DYNAMIC_ARCH=1 PREFIX=/usr/lib/x86_64-linux-gnu install
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -64,9 +73,9 @@ RUN cd /opt && \
     mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
     make -j$(nproc) && \
-    make install
+    make PREFIX=/usr/lib/x86_64-linux-gnu install
 
-
+# Compile PugiXML
 RUN cd /opt && \
     git clone https://github.com/zeux/pugixml.git --branch v1.9 && cd pugixml && \
     mkdir build && cd build &&\
@@ -74,10 +83,7 @@ RUN cd /opt && \
     make -j$(nproc) && \
     make install
 
-# fix the  qhull reentrant problem
-# RUN pip uninstall -y scipy
-
-#ZFP
+# ZFP
 RUN cd /opt && \
     git clone https://github.com/hansenms/ZFP.git && \
     cd ZFP && \
@@ -96,6 +102,8 @@ RUN cd /opt && \
     make -j $(nproc) && \
     make install
 
+RUN apt-get clean
+
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
     ISMRMRD_HOME=/usr/local
@@ -105,6 +113,3 @@ ENV PATH=$PATH:/usr/local/cuda/bin;$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
 
 ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs:${LIBRARY_PATH}
 
-# Clean up packages.
-#RUN  apt-get clean && \
-#   rm -rf /var/lib/apt/lists/*

@@ -53,8 +53,5 @@ RUN cd /opt/code && \
 
 RUN apt-get install clang -y
 
-
 # Clean up packages.
-RUN  apt-get clean && \
-   rm -rf /var/lib/apt/lists/*
-
+RUN  apt-get clean

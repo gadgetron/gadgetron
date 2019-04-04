@@ -51,16 +51,6 @@ RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
 
 RUN mkdir /opt/code
 
-RUN cd /opt && \
-    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
-    git clone https://github.com/xianyi/OpenBLAS.git --branch v0.3.5 && \
-    cd OpenBLAS && \
-    make -j USE_OPENMP=1 DYNAMIC_ARCH=1 && \
-    make -j USE_OPENMP=1 DYNAMIC_ARCH=1 install && \
-    update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so.3 libblas.so.3-x86_64-linux-gnu /opt/OpenBLAS/lib/libopenblas.so.0 41 && \
-    update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so.3 liblapack.so.3-x86_64-linux-gnu /opt/OpenBLAS/lib/libopenblas.so.0 41
-
 # Compile armadillo
 RUN cd /opt && \
     wget http://sourceforge.net/projects/arma/files/armadillo-9.200.8.tar.xz && \
