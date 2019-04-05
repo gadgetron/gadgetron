@@ -4,7 +4,7 @@ RUN dnf update -y
 RUN dnf install -y \
     git-core wget make cmake gcc gcc-c++ \
     boost-devel boost-python3-devel armadillo-devel libxml2-devel libxslt-devel pugixml-devel fftw-devel \
-    python3-devel python3-scipy python3-PyXB
+    python3-devel python3-h5py python3-scipy python3-PyXB
 
 RUN mkdir /opt/code
 
