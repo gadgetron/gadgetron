@@ -23,7 +23,7 @@ namespace Gadgetron::Server::Connection {
 
         auto lib = boost::dll::shared_library(
                 make_library_path(shared_library_name),
-                boost::dll::load_mode::append_decorations
+                boost::dll::load_mode::append_decorations | boost::dll::load_mode::rtld_global
         );
 
         libraries.push_back(lib);
