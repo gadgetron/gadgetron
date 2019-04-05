@@ -28,6 +28,7 @@ set(test_src_files tests.cpp
       cmr_mapping_test.cpp
       hoNDArray_linalg_test.cpp
       core_test.cpp
+        threadpool_test.cpp
 
       ../apps/gadgetron/connection/distributed/remote_workers.cpp
         distributed_test.cpp from_string_test.cpp)

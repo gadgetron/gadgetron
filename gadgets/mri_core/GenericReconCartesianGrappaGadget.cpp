@@ -67,7 +67,7 @@ namespace Gadgetron {
         // for every encoding space
         for (size_t e = 0; e < recon_bit_->rbit_.size(); e++) {
             std::stringstream os;
-            os << "_encoding_" << e;
+            os << "_encoding_" << e << "_" << process_called_times_;
 
             GDEBUG_CONDITION_STREAM(verbose.value(),
                                     "Calling " << process_called_times_ << " , encoding space : " << e);
@@ -134,6 +134,16 @@ namespace Gadgetron {
                                                                     recon_obj_[e].ref_coil_map_,
                                                                     recon_obj_[e].ref_calib_dst_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
+
+                if (!debug_folder_full_path_.empty()) {
+                    this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_dst_,
+                        debug_folder_full_path_ + "ref_calib_dst" + os.str());
+                }
+
+                if (!debug_folder_full_path_.empty()) {
+                    this->gt_exporter_.export_array_complex(recon_obj_[e].ref_coil_map_,
+                        debug_folder_full_path_ + "ref_coil_map_dst" + os.str());
+                }
 
                 // ---------------------------------------------------------------
 
@@ -398,15 +408,15 @@ namespace Gadgetron {
 
             size_t convKRO(1), convKE1(1), convKE2(1);
 
+            bool fitItself = this->downstream_coil_compression.value();
+
             if (E2 > 1) {
                 std::vector<int> kE1, oE1;
                 std::vector<int> kE2, oE2;
-                bool fitItself = true;
                 grappa3d_kerPattern(kE1, oE1, kE2, oE2, convKRO, convKE1, convKE2, (size_t) acceFactorE1_[e],
                                     (size_t) acceFactorE2_[e], kRO, kNE1, kNE2, fitItself);
             } else {
                 std::vector<int> kE1, oE1;
-                bool fitItself = true;
                 Gadgetron::grappa2d_kerPattern(kE1, oE1, convKRO, convKE1, (size_t) acceFactorE1_[e], kRO, kNE1,
                                                fitItself);
                 recon_obj.kernelIm_.create(RO, E1, 1, srcCHA, dstCHA, ref_N, ref_S, ref_SLC);
@@ -422,7 +432,7 @@ namespace Gadgetron {
             long long ii;
 
             // only allow this for loop openmp if num>1 and 2D recon
-#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2) if(num>1)
+#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2, fitItself) if(num>1)
             for (ii = 0; ii < num; ii++) {
                 size_t slc = ii / (ref_N * ref_S);
                 size_t s = (ii - slc * ref_N * ref_S) / (ref_N);
@@ -443,10 +453,21 @@ namespace Gadgetron {
                 if (E2 > 1) {
                     hoNDArray<std::complex<float> > ker(convKRO, convKE1, convKE2, srcCHA, dstCHA,
                                                         &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
-                    Gadgetron::grappa3d_calib_convolution_kernel(ref_src, ref_dst, (size_t) acceFactorE1_[e],
-                                                                 (size_t) acceFactorE2_[e], grappa_reg_lamda.value(),
-                                                                 grappa_calib_over_determine_ratio.value(), kRO, kNE1,
-                                                                 kNE2, ker);
+
+                    if (fitItself)
+                    {
+                        Gadgetron::grappa3d_calib_convolution_kernel(ref_src, ref_dst, (size_t)acceFactorE1_[e],
+                            (size_t)acceFactorE2_[e], grappa_reg_lamda.value(),
+                            grappa_calib_over_determine_ratio.value(), kRO, kNE1,
+                            kNE2, ker);
+                    }
+                    else
+                    {
+                        Gadgetron::grappa3d_calib_convolution_kernel(ref_src, ref_src, (size_t)acceFactorE1_[e],
+                            (size_t)acceFactorE2_[e], grappa_reg_lamda.value(),
+                            grappa_calib_over_determine_ratio.value(), kRO, kNE1,
+                            kNE2, ker);
+                    }
 
                     //if (!debug_folder_full_path_.empty())
                     //{
@@ -481,8 +502,16 @@ namespace Gadgetron {
                     hoNDArray<std::complex<float> > kIm(RO, E1, srcCHA, dstCHA,
                                                         &(recon_obj.kernelIm_(0, 0, 0, 0, 0, n, s, slc)));
 
-                    Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t) acceFactorE1_[e],
-                                                                 grappa_reg_lamda.value(), kRO, kNE1, convKer);
+                    if (fitItself)
+                    {
+                        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)acceFactorE1_[e],
+                            grappa_reg_lamda.value(), kRO, kNE1, convKer);
+                    }
+                    else
+                    {
+                        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsSrc, (size_t)acceFactorE1_[e],
+                            grappa_reg_lamda.value(), kRO, kNE1, convKer);
+                    }
                     Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
 
                     /*if (!debug_folder_full_path_.empty())
