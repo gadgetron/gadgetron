@@ -7,7 +7,6 @@ add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
 add_subdirectory(epi)
 add_subdirectory(fatwater)
-
 if(BART_FOUND)
   add_subdirectory(bart)
 else()

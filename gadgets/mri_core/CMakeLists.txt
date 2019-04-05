@@ -113,6 +113,7 @@ set(gadgetron_mricore_src_files
         GenericReconPartialFourierHandlingGadget.cpp
         GenericReconPartialFourierHandlingFilterGadget.cpp
         GenericReconPartialFourierHandlingPOCSGadget.cpp
+        GenericReconReferenceKSpaceDelayedBufferGadget.cpp
         GenericReconKSpaceFilteringGadget.cpp
         GenericReconFieldOfViewAdjustmentGadget.cpp
         GenericReconImageArrayScalingGadget.cpp
@@ -157,11 +158,30 @@ set(gadgetron_mricore_config_files
         config/ismrmrd_dump.xml
         )
 
+# if there is python, add gadgets using python
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+
+    message("Build python generic gadgets ... ")
+    include_directories(
+      ${CMAKE_SOURCE_DIR}/toolboxes/python
+      ${PYTHON_INCLUDE_PATH}
+      ${NUMPY_INCLUDE_DIRS}
+      )
+
+      set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} GenericReconCartesianGrappaAIGadget.h)
+      set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} GenericReconCartesianGrappaAIGadget.cpp)
+      set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} config/Generic_Cartesian_Grappa_AI.xml)
+
+endif ()
+
 add_library(gadgetron_mricore SHARED
-        gadgetron_mricore_export.h
-        ${gadgetron_mricore_header_files}
-        ${gadgetron_mricore_src_files}
-        ${gadgetron_mricore_config_files})
+    gadgetron_mricore_export.h
+    ${gadgetron_mricore_header_files}
+    ${gadgetron_mricore_src_files}
+    ${gadgetron_mricore_config_files}
+    ${OPTIMIZED_GADGETS}
+    ${OPTIMIZED_GADGET_HEADERS}
+    DenoiseGadget.cpp DenoiseGadget.h)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -196,6 +216,12 @@ if (ZFP_FOUND)
     target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
 else ()
     message("ZFP NOT Found")
+endif ()
+
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+   target_link_libraries(gadgetron_mricore
+                        gadgetron_toolbox_python
+                         )
 endif ()
 
 
