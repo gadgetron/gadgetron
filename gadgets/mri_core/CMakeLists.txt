@@ -113,6 +113,7 @@ set(gadgetron_mricore_src_files
         GenericReconPartialFourierHandlingGadget.cpp
         GenericReconPartialFourierHandlingFilterGadget.cpp
         GenericReconPartialFourierHandlingPOCSGadget.cpp
+        GenericReconReferenceKSpaceDelayedBufferGadget.cpp
         GenericReconKSpaceFilteringGadget.cpp
         GenericReconFieldOfViewAdjustmentGadget.cpp
         GenericReconImageArrayScalingGadget.cpp
