@@ -212,8 +212,6 @@ def ensure_instance_satisfies_requirements(args, config):
         return
 
     def action(cont, *, gadgetron, **state):
-
-
         info = subprocess.check_output(["gadgetron_ismrmrd_client",
                                         "-a", gadgetron.host,
                                         "-p", gadgetron.port,

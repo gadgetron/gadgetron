@@ -270,7 +270,6 @@ endif ()
 find_package(GTest)
 #Add support for the default ubuntu package of gtest (which is not compiled
 if (NOT GTEST_FOUND)
-    message(GTest not found.)
     find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
     find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
     if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)

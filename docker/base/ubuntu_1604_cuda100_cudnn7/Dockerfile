@@ -13,19 +13,11 @@ RUN apt-get update --quiet && \
     libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
     supervisor cpio net-tools
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
-
-# Compile OpenBLAS
-RUN cd /opt && \
-    apt-get build-dep --no-install-recommends --no-install-suggests --yes libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts gfortran && \
-    git clone https://github.com/xianyi/OpenBLAS.git --branch v0.3.5 && \
-    cd OpenBLAS && \
-    make -j USE_OPENMP=0 USE_THREAD=0 DYNAMIC_ARCH=1 && \
-    make -j USE_OPENMP=0 USE_THREAD=0 DYNAMIC_ARCH=1 PREFIX=/usr/lib/x86_64-linux-gnu install
+RUN apt-get install --no-install-recommends --no-install-suggests --yes \
+    libopenblas-base libopenblas-dev
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test

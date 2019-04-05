@@ -21,15 +21,17 @@ else ()
     else ()
         unset(BLA_VENDOR)
         find_package(BLAS REQUIRED)
-        find_library(CBLAS_LIBRARIES cblas libcblas
-                PATHS /usr/lib/ /usr/lib64)
-        find_path(CBLAS_INCLUDE_DIR cblas.h
-                PATHS /usr/include /usr/local/include)
         find_package(LAPACK REQUIRED)
+
+        set(CBLAS_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+        find_path(CBLAS_INCLUDE_DIR cblas.h
+                  PATHS /usr/include /usr/local/include)
     endif ()
-        message("CBLAS ${CBLAS_LIBRARIES} FNAF ${CBLAS_INCLUDE_DIR} BLAS ${BLAS_LIBRARIES} LAPACK ${LAPACK_LIBRARIES}" )
+
+    message("BLAS ${BLAS_LIBRARIES} LAPACK ${LAPACK_LIBRARIES}" )
+
     find_package_handle_standard_args(CBLAS FOUND_VAR CBLAS_FOUND REQUIRED_VARS CBLAS_LIBRARIES CBLAS_INCLUDE_DIR)
     add_library(BLAS INTERFACE IMPORTED)
-    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${BLAS_INCLUDE_DIR} ${CBLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
-    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${BLAS_LIBRARIES} ${CBLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
+    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif ()
