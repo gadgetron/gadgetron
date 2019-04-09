@@ -8,13 +8,11 @@
 #include <boost/variant.hpp>
 #include <tuple>
 
+
 #include "hoNDArray.h"
+#include "TypeTraits.h"
 
 namespace Gadgetron::Core {
-
-    template<class T>
-    constexpr bool is_trivially_copyable_v = std::is_trivially_copyable<T>::value;
-
     template<class T>
     using optional = boost::optional<T>;
     static const auto none = boost::none;

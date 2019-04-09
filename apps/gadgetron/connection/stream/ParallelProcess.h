@@ -2,6 +2,7 @@
 
 #include "PureStream.h"
 #include "connection/stream/Processable.h"
+#include <future>
 
 namespace Gadgetron::Server::Connection::Stream {
     class ParallelProcess : public Processable {

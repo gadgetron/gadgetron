@@ -27,15 +27,13 @@ namespace Gadgetron
         this->create(dimensions);
     }
 
-#if __cplusplus > 199711L
     template<class T> hoNDArray<T>::hoNDArray(std::initializer_list<size_t> dimensions){
     	this->create(dimensions);
     }
     template<class T> hoNDArray<T>::hoNDArray(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct ){
     	this->create(dimensions,data,delete_data_on_destruct);
     }
-#endif
-    template <typename T> 
+    template <typename T>
     hoNDArray<T>::hoNDArray(size_t len) : NDArray<T>::NDArray()
     {
         std::vector<size_t> dim(1);
@@ -734,7 +732,7 @@ namespace Gadgetron
     }
 
     //template <typename T> 
-    //inline T& hoNDArray<T>::operator()( size_t idx )
+    //inline T& hohoNDArray<T>::operator()( size_t idx )
     //{
     //    /*if( idx >= this->get_number_of_elements() )
     //    {
@@ -745,7 +743,7 @@ namespace Gadgetron
     //}
 
     //template <typename T> 
-    //inline const T& hoNDArray<T>::operator()( size_t idx ) const
+    //inline const T& hohoNDArray<T>::operator()( size_t idx ) const
     //{
     //    /*if( idx >= this->get_number_of_elements() )
     //    {
@@ -756,7 +754,7 @@ namespace Gadgetron
     //}
 
     //template <typename T> 
-    //inline T& hoNDArray<T>::operator()( const std::vector<size_t>& ind )
+    //inline T& hohoNDArray<T>::operator()( const std::vector<size_t>& ind )
     //{
     //    size_t idx = this->calculate_offset(ind);
     //    /*if( idx >= this->get_number_of_elements() )
@@ -768,7 +766,7 @@ namespace Gadgetron
     //}
 
     //template <typename T> 
-    //inline const T& hoNDArray<T>::operator()( const std::vector<size_t>& ind ) const
+    //inline const T& hohoNDArray<T>::operator()( const std::vector<size_t>& ind ) const
     //{
     //    size_t idx = this->calculate_offset(ind);
     //    /*if( idx >= this->get_number_of_elements() )
@@ -1002,8 +1000,8 @@ namespace Gadgetron
         free( data );
     }
 
-    template <typename T> 
-    bool hoNDArray<T>::serialize(char*& buf, size_t& len) const 
+    template <typename T>
+    bool hoNDArray<T>::serialize(char*& buf, size_t& len) const
     {
         if ( buf != NULL ) delete[] buf;
 
@@ -1024,7 +1022,7 @@ namespace Gadgetron
         return true; // Temporary. Should not be a boolean function.
     }
 
-    template <typename T> 
+    template <typename T>
     bool hoNDArray<T>::deserialize(char* buf, size_t& len)
     {
         size_t NDim;
@@ -1057,5 +1055,210 @@ namespace Gadgetron
         for (size_t i = 0; i < this->size(); i++)
             result &= this->data_[i] == rhs[i];
         return result;
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( const std::vector<size_t>& ind )
+    {
+        size_t idx = this->calculate_offset(ind);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( const std::vector<size_t>& ind ) const
+    {
+        size_t idx = this->calculate_offset(ind);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x )
+    {
+        GADGET_DEBUG_CHECK_THROW(x < this->get_number_of_elements());
+        return this->data_[x];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x ) const
+    {
+        GADGET_DEBUG_CHECK_THROW(x < this->get_number_of_elements());
+        return this->data_[x];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y )
+    {
+        size_t idx = this->calculate_offset(x, y);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y ) const
+    {
+        size_t idx = this->calculate_offset(x, y);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z )
+    {
+        size_t idx = this->calculate_offset(x, y, z);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s )
+    {
+        size_t idx = this->calculate_offset(x, y, z, s);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z, s);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p )
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r )
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a )
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r, a);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r, a);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q )
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u )
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q, u);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+    template <typename T>
+    inline const T& hoNDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const
+    {
+        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q, u);
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->data_[idx];
+    }
+
+
+    namespace hondarray_detail {
+
+            template<size_t count, class... ARGS>
+            struct count_slices{
+                static constexpr size_t value = count;
+            };
+
+            template<size_t count, class...ARGS>
+            struct count_slices<count,Slice,ARGS...> : count_slices<count+1,ARGS...> {};
+
+
+
+            template<class... ARGS> auto extract_indices(size_t, const ARGS&...);
+
+            template<class ... ARGS> auto extract_indices(const Slice&, const ARGS&... args){
+                return extract_indices(args...);
+            }
+
+            template<class... ARGS> auto extract_indices(size_t index0, const ARGS&... args){
+                return std::array<size_t,sizeof...(ARGS)+1>{index0, args...};
+            }
+
+
+
+
+    }
+
+    template<class T>
+     template<class... INDICES>
+    std::enable_if_t<ValidIndex<INDICES...>::value ,
+    hoNDArray<T>>
+    hoNDArray<T>::operator()(const INDICES& ... indices ){
+        constexpr size_t nsubdims = hondarray_detail::count_slices<0,INDICES...>::value;
+        auto index_array = hondarray_detail::extract_indices(indices...);
+        auto subdimensions = std::vector<size_t>(nsubdims);
+        std::copy_n(this->dimensions_.begin(), nsubdims, subdimensions.begin());
+
+        T* sub_data = this->data();
+        for (size_t i = 0; i < sizeof...(INDICES); i++){
+            sub_data += index_array[i]*this->dimensions_[i+sizeof...(SLICES)];
+        }
+
+        return hoNDArray<T>(subdimensions,sub_data);
+
     }
 }
