@@ -17,7 +17,7 @@ namespace Gadgetron {
         if (perform_timing) { gt_timer = GadgetronTimer("GenericReconPartialFourierHandlingFilterGadget, partial_fourier_filter"); }
 
 
-        std::lock_guard guard(filter_mutex);
+        std::lock_guard<std::mutex> guard(filter_mutex);
 
         hoNDArray<std::complex<float>> pf_res;
 

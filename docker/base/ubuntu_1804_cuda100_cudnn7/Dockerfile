@@ -4,10 +4,12 @@ ARG BART_URL=https://github.com/mrirecon/bart
 ARG BART_BRANCH=master
 
 RUN rm -rf /var/lib/apt/lists/*
+
+RUN  sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
-5-tools libatlas-base-dev liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
+5-tools libatlas-base-dev liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
 ervisor cmake-curses-gui neofetch supervisor net-tools cpio gpg-agent libpugixml-dev
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
@@ -33,6 +35,19 @@ RUN pip3 install numpy==1.15.4 Cython tk-tools matplotlib==2.2.3 scikit-image op
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
+
+#Get source for openblas
+#
+#RUN cd /opt && \
+#    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
+#    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
+#    git clone https://github.com/xianyi/OpenBLAS.git --branch v0.3.5 && \
+#    cd OpenBLAS && \
+#    make -j USE_OPENMP=1 DYNAMIC_ARCH=1 && \
+#    make -j USE_OPENMP=1 DYNAMIC_ARCH=1 PREFIX=/usr/local/ install && \
+#    update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so.3 libblas.so.3-x86_64-linux-gnu /opt/OpenBLAS/lib/libopenblas.so.0 41 && \
+#    update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so.3 liblapack.so.3-x86_64-linux-gnu /opt/OpenBLAS/lib/libopenblas.so.0 41
+
 
 # since cmake has problems to find python3 and boost-python3
 # RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so

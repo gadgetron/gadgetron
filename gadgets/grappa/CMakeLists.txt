@@ -22,9 +22,9 @@ if (CUDA_FOUND)
 endif()
 
 add_library(gadgetron_grappa SHARED ${RTGRAPPA_SOURCES})
-set_target_properties(gadgetron_grappa PROPERTIES
-        VERSION ${GADGETRON_VERSION_STRING}
-        SOVERSION ${GADGETRON_SOVERSION})
+#set_target_properties(gadgetron_grappa PROPERTIES
+#        VERSION ${GADGETRON_VERSION_STRING}
+#        SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_grappa
         gadgetron_core

@@ -70,8 +70,7 @@ namespace Gadgetron::Server::Connection::Handlers {
 
     QueryHandler::QueryHandler(
             std::map<std::string, std::string> additional_answers
-    ) {
-        answers.merge(additional_answers);
+    ) : answers(std::move(additional_answers)) {
     }
 
     void QueryHandler::handle(std::istream &stream, Gadgetron::Core::OutputChannel& channel) {

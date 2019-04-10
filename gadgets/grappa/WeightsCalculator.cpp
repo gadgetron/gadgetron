@@ -51,7 +51,7 @@ namespace {
             auto e_limits = context.header.encoding[0].encodingLimits;
             auto slices = e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
 
-            regions = std::vector<std::array<uint16_t, 4>>(slices, clear_region);
+            regions = std::vector<std::array<uint16_t, 4>>(slices, {0,0,std::numeric_limits<uint16_t>::max(),0});
         }
 
         void operator()(const AnnotatedAcquisition &acquisition) {
@@ -69,15 +69,11 @@ namespace {
         }
 
         void clear(size_t slice) {
-            regions[slice] = clear_region;
+            regions[slice] = {0,0,std::numeric_limits<uint16_t>::max(),0};
         }
 
     private:
         std::vector<std::array<uint16_t, 4>> regions;
-
-        static constexpr std::array<uint16_t, 4> clear_region = {
-            0, 0, std::numeric_limits<uint16_t>::max(), 0
-        };
     };
 
     class AccelerationMonitor {
@@ -190,7 +186,7 @@ namespace Gadgetron::Grappa {
     WeightsCalculator<WeightsCore>::WeightsCalculator(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : TypedGadgetNode<Slice>(props), context(context) {}
+    ) : TypedChannelGadget<Slice>(props), context(context) {}
 
     template<class WeightsCore>
     void WeightsCalculator<WeightsCore>::process(TypedInputChannel<Slice> &in, OutputChannel &out) {

@@ -29,7 +29,7 @@ namespace {
         }
 
         std::future<Message> remote_process(Message message) {
-            std::lock_guard guard(write_lock);
+            std::lock_guard<std::mutex> guard(write_lock);
             work.push(std::move(message));
             return get_output();
         }
@@ -50,7 +50,7 @@ namespace {
             try {
                 for (auto message : remoteInput) {
 
-                    std::lock_guard guard(write_lock);
+                    std::lock_guard<std::mutex> guard(write_lock);
                     outputs.front().set_value(std::move(message));
                     outputs.pop_front();
                     worker_queue.push(this->shared_from_this());
@@ -72,7 +72,7 @@ namespace {
         }
 
         void handle_error(std::exception_ptr exception) {
-            std::lock_guard guard(write_lock);
+            std::lock_guard<std::mutex> guard(write_lock);
             for (auto& promises : outputs) {
                 promises.set_exception(exception);
             }

@@ -14,8 +14,8 @@ TEST(distributed,get_remote_workers){
 
 
     std::string test_string = R"(GADGETRON_REMOTE_WORKER_COMMAND= echo ["localhost:9002", "[::1]:9003"])";
-
-    putenv(test_string.data());
+    std::vector<char> string_copy(test_string.data(),test_string.data()+test_string.size());
+    putenv(string_copy.data());
 
     auto workers = Gadgetron::Server::Distributed::get_remote_workers();
 

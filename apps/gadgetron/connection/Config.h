@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
 
@@ -42,10 +43,16 @@ namespace Gadgetron::Server::Connection {
         struct Gadget {
             std::string name, dll, classname;
             std::unordered_map<std::string, std::string> properties;
+            Gadget(std::string name, std::string dll, std::string classname, std::unordered_map<std::string, std::string> properties):
+            name(std::move(name)), dll(std::move(dll)), classname(std::move(classname)), properties(std::move(properties))
+            {
+
+            }
         };
 
-        struct Branch : Gadget {};
-        struct Merge : Gadget {};
+
+        struct Branch : Gadget { using Gadget::Gadget;};
+        struct Merge : Gadget { using Gadget::Gadget;};
 
         struct Parallel {
             Branch branch;
@@ -65,7 +72,7 @@ namespace Gadgetron::Server::Connection {
             PureStream stream;
         };
 
-        struct Distributor : Gadget {};
+        struct Distributor : Gadget { using Gadget::Gadget;};
 
 
         struct Distributed {

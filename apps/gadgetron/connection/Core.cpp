@@ -17,7 +17,7 @@ namespace {
             std::string error("[" + location + "] ERROR: " + message);
             GERROR_STREAM(error);
             {
-                std::lock_guard guard(error_lock);
+                std::lock_guard<std::mutex> guard(error_lock);
                 errors.push_back(error);
             }
         }

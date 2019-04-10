@@ -320,7 +320,7 @@ namespace {
         Config::PureStream parse_purestream(const pugi::xml_node &purestream_node){
             std::vector<Config::Gadget> gadgets;
             boost::transform(purestream_node.children(), std::back_inserter(gadgets),
-                [&](auto node) { return parse_node<Config::Gadget>(node); });
+                [&,this](auto node) { return this->parse_node<Config::Gadget>(node); });
             return {gadgets};
         }
 
@@ -428,7 +428,7 @@ namespace {
 
         static pugi::xml_node add_node(const Config::ParallelProcess& parallelProcess, pugi::xml_node & node){
             auto parallel_node = node.append_child("parallelprocess");
-            parallel_node.append_attribute("workers").set_value(parallelProcess.workers);
+            parallel_node.append_attribute("workers").set_value((long long unsigned int)parallelProcess.workers);
             add_node(parallelProcess.stream, parallel_node);
             return parallel_node;
         }
@@ -472,7 +472,7 @@ namespace Gadgetron::Server::Connection {
     }
 
     std::string serialize_config(const Config &config) {
-        auto doc = pugi::xml_document{};
+        pugi::xml_document doc{};
         auto config_node = doc.append_child("configuration");
         config_node.append_child("version").set_value("2");
         XMLSerializer::add_readers(config.readers, config_node);

@@ -84,7 +84,7 @@ namespace {
     private:
         std::unique_ptr<boost::asio::io_service> io_service;
         static std::unique_ptr<tcp::socket> connect_socket(const std::string& host, const std::string& service, boost::asio::io_service& context){
-            auto resolver = tcp::resolver(context);
+            tcp::resolver resolver{context};
             auto endpoint = *resolver.resolve(tcp::resolver::query(host,service));
             auto socket = std::make_unique<tcp::socket>(context);
             socket->connect(endpoint);
