@@ -1245,17 +1245,17 @@ namespace Gadgetron
 
     template<class T>
      template<class... INDICES>
-    std::enable_if_t<ValidIndex<INDICES...>::value ,
+    std::enable_if_t<ValidIndex<Slice,INDICES...>::value ,
     hoNDArray<T>>
-    hoNDArray<T>::operator()(const INDICES& ... indices ){
-        constexpr size_t nsubdims = hondarray_detail::count_slices<0,INDICES...>::value;
+    hoNDArray<T>::operator()(const Slice&, const INDICES& ... indices ){
+        constexpr size_t nsubdims = hondarray_detail::count_slices<0,INDICES...>::value+1;
         auto index_array = hondarray_detail::extract_indices(indices...);
         auto subdimensions = std::vector<size_t>(nsubdims);
         std::copy_n(this->dimensions_.begin(), nsubdims, subdimensions.begin());
 
         T* sub_data = this->data();
         for (size_t i = 0; i < sizeof...(INDICES); i++){
-            sub_data += index_array[i]*this->dimensions_[i+sizeof...(SLICES)];
+            sub_data += index_array[i]*this->dimensions_[i+nsubdims];
         }
 
         return hoNDArray<T>(subdimensions,sub_data);

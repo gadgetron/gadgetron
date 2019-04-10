@@ -150,8 +150,8 @@ namespace Gadgetron{
     const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
 
     template<class... INDICES>
-    std::enable_if_t<ValidIndex<INDICES...>::value, hoNDArray<T>>
-    operator()(const INDICES&... );
+    std::enable_if_t<ValidIndex<Slice,INDICES...>::value, hoNDArray<T>>
+    operator()(const Slice&, const INDICES&... );
 
 
     void fill(T value);
