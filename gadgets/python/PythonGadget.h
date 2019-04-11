@@ -195,7 +195,7 @@ namespace Gadgetron {
                 return err_ret;
             }
 
-            GDEBUG_STREAM("Call process_config completed without error ")
+            GDEBUG_STREAM("Call process_config completed - success ")
 
             config_success_ = true;
 
