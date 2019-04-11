@@ -1259,6 +1259,25 @@ namespace Gadgetron
         }
 
         return hoNDArray<T>(subdimensions,sub_data);
+    }
+
+    namespace hondarray_detail {
+
+            template<unsigned int DIM, class T, class...INDICES>
+            auto calculate_strides(const hoNDArray<T>& base, size_t x, const INDICES&... indices){
+                auto stride = calculate_stride<DIM+1>(base, indices);
+                stride[0] *= ;
+
+            }
+    }
+
+    template<typename T>
+    template<class... INDICES>
+    auto hoNDArray<T>::operator()(size_t x, const INDICES &...) {
+
 
     }
+
+
+
 }

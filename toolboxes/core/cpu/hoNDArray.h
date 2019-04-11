@@ -30,6 +30,28 @@ namespace Gadgetron{
    struct ValidIndex<Slice,ARGS...> : ValidIndex<ARGS...> {};
 
 
+   template<class T> class hoNDArray;
+
+
+   template<class T, size_t D>
+   class hoNDArrayView {
+   public:
+       hoNDArrayView& operator=(const hoNDArrayView&);
+       hoNDArrayView operator=(const hoNDArray<T>&);
+
+        template<class.... INDICES>
+       std::enable_if<all_of_t<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
+       operator(INDICES... indices);
+   private:
+       friend template<class T> class hoNDArray;
+       hoNDArrayView(std::array<size_t,D> strides,std::array<size_t,D>, T*);
+
+       std::array<size_t, D> strides;
+       std::array<size_t, D> dimensions;
+
+   };
+
+
 
   template <typename T> class hoNDArray : public NDArray<T>
   {
@@ -153,6 +175,10 @@ namespace Gadgetron{
     std::enable_if_t<ValidIndex<Slice,INDICES...>::value, hoNDArray<T>>
     operator()(const Slice&, const INDICES&... );
 
+
+
+  template<class... INDICES>
+  auto operator()(size_t x, const INDICES&... );
 
     void fill(T value);
 
