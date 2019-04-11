@@ -1103,8 +1103,7 @@ namespace Gadgetron {
              template <unsigned int DIMS, unsigned int CUR_DIM, class T, class OTHER> struct looper {
                 static void assign_loop(const vector_td<size_t, DIMS>& dims, vector_td<size_t, DIMS>& idx,
                     hoNDArrayView<T, DIMS>& self, const OTHER& other) {
-                    for (size_t i = 0; i < dims[CUR_DIM]; i++){
-                        dims[i] = i;
+                    for (idx[CUR_DIM] = 0; idx[CUR_DIM] < dims[CUR_DIM]; idx[CUR_DIM]++){
                         looper<DIMS,CUR_DIM-1,T,OTHER>::assign_loop(dims,idx,self,other);
                     }
                 }
@@ -1113,8 +1112,7 @@ namespace Gadgetron {
             template <unsigned int DIMS, class T, class OTHER> struct looper<DIMS, 0, T, OTHER> {
                 static void assign_loop(const vector_td<size_t, DIMS>& dims, vector_td<size_t, DIMS>& idx,
                     hoNDArrayView<T, DIMS>& self, const OTHER& other) {
-                    for (size_t i = 0; i < dims[0]; i++) {
-                        dims[0] = i;
+                    for (idx[0] = 0; idx[0] < dims[0]; idx[0]++){
                         Core::apply([&](auto&&... indices) { self(indices...) = other(indices...); });
                     }
                 }
@@ -1190,13 +1188,15 @@ namespace Gadgetron {
     }
 
     template <class T, size_t D> hoNDArrayView<T,D>& hoNDArrayView<T, D>::operator=(const hoNDArrayView& other) {
-        hondarray_detail::looper<D,D-1,T,hoNDArrayView<T,D>>::assign_loop(dimensions,vector_td<size_t,D>{},*this,other);
+        auto idx = vector_td<size_t,D>{};
+        hondarray_detail::looper<D,D-1,T,hoNDArrayView<T,D>>::assign_loop(dimensions,idx,*this,other);
         return *this;
 
     }
 
     template <class T, size_t D> hoNDArrayView<T,D>& hoNDArrayView<T, D>::operator=(const hoNDArray<T>& other) {
-        hondarray_detail::looper<D,D-1,T,hoNDArray<T>>::assign_loop(dimensions,vector_td<size_t,D>{},*this,other);
+        auto idx = vector_td<size_t,D>{};
+        hondarray_detail::looper<D,D-1,T,hoNDArray<T>>::assign_loop(dimensions,idx,*this,other);
         return *this;
     }
 
