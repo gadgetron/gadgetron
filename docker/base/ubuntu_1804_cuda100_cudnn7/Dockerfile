@@ -17,22 +17,14 @@ RUN apt-get update && apt-get install -y libgtk2.0-dev
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
+RUN pip3 install h5py psutil pyxb lxml Pillow configargparse numpy==1.15.4 Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 
-# tensorflow does not work with cuda92
-RUN pip3 install --upgrade tensorflow 
-# use pytorch 1.0
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.0-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install torchvision
+RUN apt-get install -y python3.6-tk
+
+RUN pip3 install --upgrade tensorflow
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
-
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install numpy==1.15.4 Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
-RUN pip3 uninstall -y h5py
-RUN apt-get install -y python3-h5py
 
 # since cmake has problems to find python3 and boost-python3
 # RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
