@@ -15,7 +15,8 @@
 #include "core_defines.h"
 
 #include <stdlib.h> // for size_t
-
+#include <type_traits>
+#include <algorithm>
 #ifdef max
 #undef max
 #endif // max
@@ -27,26 +28,28 @@ namespace Gadgetron{
   public:
 
     T vec[D];
-    __inline__ __host__ __device__ vector_td(){};
+    __inline__ __host__ __device__ vector_td() = default;
 
-#if __cplusplus > 199711L
     template <typename... X>
-    constexpr __inline__ __host__ __device__ vector_td(X... xs) : vec{xs...} { }
-#endif
-    __inline__ __host__ __device__ vector_td(const vector_td & other){
-       	for (unsigned int i = 0; i < D; i++)
-           	vec[i] = other[i];
-        }
+    constexpr __inline__ __host__ __device__ explicit vector_td(X... xs) : vec{xs...} { }
 
-    template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,D> & other){
-    	for (unsigned int i = 0; i < D; i++)
-        	vec[i] = (T) other[i];
-     }
+    __inline__ __host__ __device__ vector_td(const vector_td & other) = default;
 
-    __inline__ __host__ __device__ explicit vector_td(T x){
-    	for (unsigned int i = 0; i < D; i++)
-               	vec[i] = x;
-		 }
+    template <class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2, D>& other) {
+        for (unsigned int i = 0; i < D; i++)
+            vec[i] = (T)other[i];
+    }
+
+
+    __inline__ __host__ __device__ explicit vector_td(T x) {
+        for (unsigned int i = 0; i < D; i++)
+            vec[i] = x;
+    }
+
+    template<class STATIC_CONTAINER,class SFINAE = std::enable_if_t<STATIC_CONTAINER().size() == D>>
+    explicit vector_td(const STATIC_CONTAINER& other){
+        std::copy(other.begin(),other.end(),this->begin());
+    }
     __inline__ __host__ __device__ T& operator[](const unsigned int i)
     {
       return vec[i];
@@ -66,7 +69,28 @@ namespace Gadgetron{
     {
       return vec[i];
     }
+
+    __inline__ __host__ __device__ T* begin() {
+        return vec;
+    }
+    __inline__ __host__ __device__ const T* begin() const {
+        return vec;
+    }
+    __inline__ __host__ __device__ T* end() {
+        return vec + D;
+    }
+    __inline__ __host__ __device__ const T* end() const {
+        return vec + D;
+    }
+
+    static constexpr size_t size(){return D;}
   };
+
+  template<class T, class... ARGS>
+  auto make_vector_td(ARGS&&... args){
+      return vector_td<T,sizeof...(args)>{std::forward<ARGS>(args)...};
+  }
+
 
   //
   // Some typedefs for convenience (templated typedefs are not (yet) available in C++)
@@ -318,4 +342,24 @@ namespace Gadgetron{
   typedef vector_td<double,2> doubled2;
   typedef vector_td<double,3> doubled3;
   typedef vector_td<double,4> doubled4;
+}
+
+
+template<class T, size_t N>
+class std::tuple_size<Gadgetron::vector_td<T,N>> : public integral_constant<size_t,N> {};
+
+template<std::size_t I, class T, std::size_t N>
+struct std::tuple_element<I,Gadgetron::vector_td<T,N>>{
+    using type = T;
+};
+
+
+template<size_t I, class T, size_t N>
+constexpr std::enable_if_t<I < N,T&> get(Gadgetron::vector_td<T,N>& a) noexcept {
+    return a[I];
+}
+
+template<size_t I, class T, size_t N>
+constexpr std::enable_if_t<I < N,const T&> get(const Gadgetron::vector_td<T,N>& a) noexcept {
+    return a[I];
 }

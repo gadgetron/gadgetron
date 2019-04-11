@@ -37,17 +37,18 @@ namespace Gadgetron{
    class hoNDArrayView {
    public:
        hoNDArrayView& operator=(const hoNDArrayView&);
-       hoNDArrayView operator=(const hoNDArray<T>&);
+       hoNDArrayView& operator=(const hoNDArray<T>&);
 
-        template<class.... INDICES>
-       std::enable_if<all_of_t<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
-       operator(INDICES... indices);
+        template<class... INDICES>
+       std::enable_if<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
+       operator()(INDICES... indices);
    private:
-       friend template<class T> class hoNDArray;
-       hoNDArrayView(std::array<size_t,D> strides,std::array<size_t,D>, T*);
+       friend class hoNDArray<T>;
+       hoNDArrayView(const std::array<size_t,D>& strides, const std::array<size_t,D>& dimensions, T*);
 
-       std::array<size_t, D> strides;
-       std::array<size_t, D> dimensions;
+       vector_td<size_t, D> strides;
+       vector_td<size_t, D> dimensions;
+       T* data;
 
    };
 
@@ -177,8 +178,8 @@ namespace Gadgetron{
 
 
 
-  template<class... INDICES>
-  auto operator()(size_t x, const INDICES&... );
+  template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Slice>...>> >
+  auto operator()(const INDICES&... );
 
     void fill(T value);
 
@@ -287,6 +288,7 @@ namespace Gadgetron{
       free( data );
     }
   };
+
 }
 
 #include "hoNDArray.hxx"

@@ -22,4 +22,15 @@ namespace Gadgetron::Core {
 
 
     template <bool... ARGS> constexpr bool all_of_v = all_of<ARGS...>::value;
+
+
+    template <bool... ARGS> struct any_of;
+    template <> struct any_of<> : std::false_type{};
+
+    template <bool... ARGS> struct any_of<true, ARGS...> : std::true_type {};
+
+    template <bool... ARGS> struct any_of<false, ARGS...> : any_of<ARGS...> {};
+
+
+    template <bool... ARGS> constexpr bool any_of_v = any_of<ARGS...>::value;
 }
