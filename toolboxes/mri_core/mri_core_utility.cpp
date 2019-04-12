@@ -1257,4 +1257,66 @@ namespace Gadgetron
     std::map<std::string, std::string> to_map(const std::vector<ISMRMRD::UserParameterString> & userparameters) {
         return to_map_internal(userparameters);
     }
+    ISMRMRD::ImageHeader image_header_from_acquisition(
+        const ISMRMRD::AcquisitionHeader& acq_header, const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data) {
+
+        ISMRMRD::ImageHeader im_header;
+
+        im_header.version         = acq_header.version;
+        im_header.data_type       = ISMRMRD::ISMRMRD_CXFLOAT;
+        im_header.flags           = acq_header.flags;
+        im_header.measurement_uid = acq_header.measurement_uid;
+
+        im_header.matrix_size[0] = (uint16_t)data.get_size(0);
+        im_header.matrix_size[1] = (uint16_t)data.get_size(1);
+        im_header.matrix_size[2] = (uint16_t)data.get_size(2);
+
+        im_header.field_of_view[0] = header.encoding[0].reconSpace.fieldOfView_mm.x;
+        im_header.field_of_view[1] = header.encoding[0].reconSpace.fieldOfView_mm.y;
+        im_header.field_of_view[2] = header.encoding[0].reconSpace.fieldOfView_mm.z;
+
+        im_header.channels = (uint16_t)acq_header.active_channels;
+
+        im_header.position[0] = acq_header.position[0];
+        im_header.position[1] = acq_header.position[1];
+        im_header.position[2] = acq_header.position[2];
+
+        im_header.read_dir[0] = acq_header.read_dir[0];
+        im_header.read_dir[1] = acq_header.read_dir[1];
+        im_header.read_dir[2] = acq_header.read_dir[2];
+
+        im_header.phase_dir[0] = acq_header.phase_dir[0];
+        im_header.phase_dir[1] = acq_header.phase_dir[1];
+        im_header.phase_dir[2] = acq_header.phase_dir[2];
+
+        im_header.slice_dir[0] = acq_header.slice_dir[0];
+        im_header.slice_dir[1] = acq_header.slice_dir[1];
+        im_header.slice_dir[2] = acq_header.slice_dir[2];
+
+        im_header.patient_table_position[0] = acq_header.patient_table_position[0];
+        im_header.patient_table_position[1] = acq_header.patient_table_position[1];
+        im_header.patient_table_position[2] = acq_header.patient_table_position[2];
+
+        im_header.average    = acq_header.idx.average;
+        im_header.slice      = acq_header.idx.slice;
+        im_header.contrast   = acq_header.idx.contrast;
+        im_header.phase      = acq_header.idx.phase;
+        im_header.repetition = acq_header.idx.repetition;
+        im_header.set        = acq_header.idx.set;
+
+        im_header.acquisition_time_stamp = acq_header.acquisition_time_stamp;
+
+        im_header.physiology_time_stamp[0] = acq_header.physiology_time_stamp[0];
+        im_header.physiology_time_stamp[1] = acq_header.physiology_time_stamp[1];
+        im_header.physiology_time_stamp[2] = acq_header.physiology_time_stamp[2];
+
+        im_header.image_type         = ISMRMRD::ISMRMRD_IMTYPE_COMPLEX;
+        im_header.image_series_index = 0;
+
+        memcpy(im_header.user_int, acq_header.user_int, sizeof(int32_t) * ISMRMRD::ISMRMRD_USER_INTS);
+        memcpy(im_header.user_float, acq_header.user_float, sizeof(float) * ISMRMRD::ISMRMRD_USER_FLOATS);
+
+        im_header.attribute_string_len = 0;
+        return im_header;
+    }
 }

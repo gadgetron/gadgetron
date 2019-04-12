@@ -100,4 +100,7 @@ namespace Gadgetron
     EXPORTMRICORE std::map<std::string,long> to_map(const std::vector<ISMRMRD::UserParameterLong>&);
     EXPORTMRICORE std::map<std::string,double> to_map(const std::vector<ISMRMRD::UserParameterDouble>&);
     EXPORTMRICORE std::map<std::string,std::string> to_map(const std::vector<ISMRMRD::UserParameterString>&);
+
+
+    ISMRMRD::ImageHeader image_header_from_acquisition(const ISMRMRD::AcquisitionHeader& acq_header,const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data );
 }

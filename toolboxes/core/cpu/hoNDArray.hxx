@@ -1,7 +1,7 @@
 // This file is not to be included by anyone else than hoNDArray.h
 // Contains the "private" implementation of the container
 //
-
+#include "vector_td_utilities.h"
 #include "Types.hpp"
 namespace Gadgetron {
     template <typename T> hoNDArray<T>::hoNDArray() : NDArray<T>::NDArray() {}
@@ -1067,6 +1067,10 @@ namespace Gadgetron {
             template <size_t count, class... ARGS>
             struct count_slices<count, Slice, ARGS...> : count_slices<count + 1, ARGS...> {};
 
+
+            template <size_t count, class T, class... ARGS>
+            struct count_slices<count, T, ARGS...> : count_slices<count, ARGS...> {};
+
             template <class... ARGS> static auto extract_indices(const Slice&, const ARGS&... args) {
                 return extract_indices(args...);
             }
@@ -1113,7 +1117,7 @@ namespace Gadgetron {
                 static void assign_loop(const vector_td<size_t, DIMS>& dims, vector_td<size_t, DIMS>& idx,
                     hoNDArrayView<T, DIMS>& self, const OTHER& other) {
                     for (idx[0] = 0; idx[0] < dims[0]; idx[0]++){
-                        Core::apply([&](auto&&... indices) { self(indices...) = other(indices...); });
+                        Core::apply([&](auto&&... indices) { self(indices...) = other(indices...); },idx);
                     }
                 }
             };
@@ -1123,7 +1127,7 @@ namespace Gadgetron {
                 class... INDICES>
             static void calculate_dims_internal(
                 std::array<size_t, DIMS>& dims, const hoNDArray<T>& base, const size_t&, const INDICES&... indices) {
-                calculate_strides_internal< DIMS, CUR_VIEW_DIM, CUR_ARRAY_DIM + 1>(dims, base, indices...);
+                calculate_dims_internal< DIMS, CUR_VIEW_DIM, CUR_ARRAY_DIM + 1>(dims, base, indices...);
             }
             template <unsigned int DIMS, unsigned int CUR_VIEW_DIM, unsigned int CUR_ARRAY_DIM, class T,
                 class... INDICES>
@@ -1131,27 +1135,31 @@ namespace Gadgetron {
                 std::array<size_t, DIMS>& dims, const hoNDArray<T>& base, const Slice&, const INDICES&... indices) {
                 dims[CUR_VIEW_DIM] = base.get_size(CUR_ARRAY_DIM);
                 if (CUR_VIEW_DIM + 1 < DIMS)
-                    calculate_strides_internal<DIMS, CUR_VIEW_DIM + 1, CUR_ARRAY_DIM + 1>(dims, base, indices...);
+                    calculate_dims_internal<DIMS, CUR_VIEW_DIM + 1, CUR_ARRAY_DIM + 1>(dims, base, indices...);
             }
+
+            template<unsigned int DIMS, unsigned int CUR_STRIDE_DIM, unsigned int CUR_ARRAY_DIM, class T>
+            static void calculate_dims_internal(std::array<size_t,DIMS>& strides,const hoNDArray<T>& base ){}
 
             template <unsigned int DIMS, unsigned int CUR_STRIDE_DIM, unsigned int CUR_ARRAY_DIM, class T,
                 class... INDICES>
             static void calculate_strides_internal(std::array<size_t, DIMS>& strides, const hoNDArray<T>& base,
                 const size_t& x, const INDICES&... indices) {
                 strides[CUR_STRIDE_DIM] *= base.get_size(CUR_ARRAY_DIM);
-                hondarray_detail::calculate_strides_internal<DIMS, CUR_STRIDE_DIM, CUR_ARRAY_DIM + 1>(base, indices...);
+                hondarray_detail::calculate_strides_internal<DIMS, CUR_STRIDE_DIM, CUR_ARRAY_DIM + 1>(strides,base, indices...);
             }
 
             template <unsigned int DIMS, unsigned int CUR_STRIDE_DIM, unsigned int CUR_ARRAY_DIM, class T,
                 class... INDICES>
             static void calculate_strides_internal(
                 std::array<size_t, DIMS>& strides, const hoNDArray<T>& base, const Slice&, const INDICES&... indices) {
-                strides[CUR_STRIDE_DIM] *= base.get_size(CUR_ARRAY_DIM);
                 if (CUR_STRIDE_DIM + 1 < DIMS) {
-                    strides[CUR_STRIDE_DIM + 1] = 1;
-                    hondarray_detail::calculate_strides_internal<DIMS, CUR_STRIDE_DIM + 1, CUR_ARRAY_DIM + 1>(base, indices...);
+                    strides[CUR_STRIDE_DIM + 1] = strides[CUR_STRIDE_DIM]*base.get_size(CUR_ARRAY_DIM);
+                    hondarray_detail::calculate_strides_internal<DIMS, CUR_STRIDE_DIM + 1, CUR_ARRAY_DIM + 1>(strides, base, indices...);
                 }
             }
+            template<unsigned int DIMS, unsigned int CUR_STRIDE_DIM, unsigned int CUR_ARRAY_DIM, class T>
+                static void calculate_strides_internal(std::array<size_t,DIMS>& strides,const hoNDArray<T>& base ){}
 
 
         };
@@ -1179,7 +1187,7 @@ namespace Gadgetron {
     auto hoNDArray<T>::operator()(const INDICES&... indices){
 
         auto strides = hondarray_detail::calculate_strides(*this, indices...);
-        auto dims    = hondarray_detail::calculate_strides(*this, indices...);
+        auto dims    = hondarray_detail::calculate_dimensions(*this, indices...);
 
             T* offset = &Core::apply([this](auto&&... indices) -> T& { return this->operator()(indices...); },
             std::make_tuple(hondarray_detail::slice_start_index(indices)...));
@@ -1202,10 +1210,10 @@ namespace Gadgetron {
 
     template <class T, size_t D>
     template <class... INDICES>
-    std::enable_if<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
+    std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
         hoNDArrayView<T,D>::operator()(INDICES... indices){
             auto index_vector = make_vector_td<size_t>(indices...);
-            size_t offset = index_vector*this->strides;
+            size_t offset = sum(index_vector*this->strides);
             return data[offset];
     }
 

@@ -8,7 +8,7 @@ namespace Gadgetron::Core {
         namespace gadgetron_detail {
             template<class F, class Tuple, std::size_t... I>
             inline constexpr decltype(auto) apply_impl(F &&f, Tuple &&t, std::index_sequence<I...>) {
-                return f(std::get<I>(std::forward<Tuple>(t))...);
+                return f(get<I>(std::forward<Tuple>(t))...);
             }
         }
     }
