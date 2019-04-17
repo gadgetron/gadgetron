@@ -14,7 +14,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools cpio
+    supervisor net-tools cpio libpugixml-dev
 
 # RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
