@@ -22,7 +22,7 @@ add_library(gadgetron_core SHARED
 		Response.h
 		Response.cpp
 		PureGadget.h
-		io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp io/ismrmrd_types.h io/adapt_struct.h TypeTraits.h)
+		io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp io/ismrmrd_types.h io/adapt_struct.h TypeTraits.h  ChannelAlgorithms.h)
 
 target_link_libraries(gadgetron_core
 		gadgetron_toolbox_cpucore
@@ -52,6 +52,7 @@ install(FILES
 		LegacyACE.h
         PropertyMixin.h
 		GadgetContainerMessage.h
+		ChannelAlgorithms.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES
