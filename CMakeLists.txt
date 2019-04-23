@@ -114,6 +114,10 @@ else ()
     set(HAS_64_BIT Off CACHE BOOL "64bit build")
 endif ()
 
+
+set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
+
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 
