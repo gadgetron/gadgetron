@@ -9,12 +9,13 @@ RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
+    apt-utils wget build-essential emacs python-dev python-pip libhdf5-serial-dev cmake git-core \
     libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
     supervisor cpio net-tools
+
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes \
     libopenblas-base libopenblas-dev
@@ -25,19 +26,27 @@ RUN apt-get update
 RUN apt-get -y install gcc-6 g++-6
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
+RUN add-apt-repository ppa:jonathonf/python-3.6
+RUN apt update
+RUN apt install -y python3.6
+RUN apt install -y python3.6-dev
+RUN apt install -y python3.6-venv
+
+RUN cd /tmp
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.6 get-pip.py
+RUN rm /usr/bin/python3
+RUN ln -s /usr/bin/python3.6 /usr/bin/python3
+
 #Python stuff
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install numpy==1.15.4 Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
-RUN pip3 uninstall h5py
-RUN apt-get install -y python3-h5py
+RUN pip3 install h5py psutil pyxb lxml Pillow configargparse numpy==1.15.4 Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+
+RUN apt-get install -y python3.6-tk
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.0-cp35-cp35m-linux_x86_64.whl
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
@@ -55,7 +64,7 @@ RUN cd /opt && \
     ./b2 install
 
 # since cmake has problems to find python3 and boost-python3
-RUN ln -s /usr/lib/libboost_python35.so /usr/lib/libboost_python3.so
+RUN ln -s /usr/lib/libboost_python36.so /usr/lib/libboost_python3.so
 
 # Compile armadillo
 RUN cd /opt && \
