@@ -115,7 +115,7 @@ else ()
 endif ()
 
 
-set(CMAKE_MACOSX_RPATH 1)
+#set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
 
 # whether to install dependencies
@@ -189,7 +189,7 @@ else ()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--enable-new-dtags")
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--enable-new-dtags")
 
 
 endif ()
