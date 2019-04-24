@@ -1275,7 +1275,7 @@ namespace Gadgetron
         im_header.field_of_view[1] = header.encoding[0].reconSpace.fieldOfView_mm.y;
         im_header.field_of_view[2] = header.encoding[0].reconSpace.fieldOfView_mm.z;
 
-        im_header.channels = (uint16_t)acq_header.active_channels;
+        im_header.channels = (uint16_t)data.get_size(3);
 
         im_header.position[0] = acq_header.position[0];
         im_header.position[1] = acq_header.position[1];
