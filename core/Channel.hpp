@@ -21,7 +21,7 @@ namespace Gadgetron::Core {
         using difference_type = long long;
         using value_type = decltype(channel->pop());
         using pointer = value_type *;
-        using reference = value_type;
+        using reference = value_type&&;
         using iterator_category = std::input_iterator_tag;
     private:
         std::shared_ptr<value_type> element;

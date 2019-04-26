@@ -19,7 +19,7 @@
 namespace {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
-    using namespace Gadgetron::Grappa;
+    namespace Grappa = Gadgetron::Grappa;
 
     // A similar function should be available in the std library at some point.
     template <class T, std::size_t N>
@@ -30,9 +30,9 @@ namespace {
         return array;
     }
 
-    std::vector<Slice> take_available_slices(TypedInputChannel<Slice> &input) {
+    std::vector<Grappa::Slice> take_available_slices(TypedInputChannel<Grappa::Slice> &input) {
 
-        std::vector<Slice> slices{};
+        std::vector<Grappa::Slice> slices{};
 
         slices.emplace_back(input.pop());
 
@@ -54,7 +54,7 @@ namespace {
             regions = std::vector<std::array<uint16_t, 4>>(slices, {0,0,std::numeric_limits<uint16_t>::max(),0});
         }
 
-        void operator()(const AnnotatedAcquisition &acquisition) {
+        void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
             auto old_region = regions[slice_of(acquisition)];
             regions[slice_of(acquisition)] = std::array<uint16_t, 4> {
                 0,
@@ -86,7 +86,7 @@ namespace {
             acceleration = std::vector<optional<size_t>>(slices, none);
         }
 
-        void operator()(const AnnotatedAcquisition &acquisition) {
+        void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
 
             if(previous_line[slice_of(acquisition)]) {
                 if (line_of(acquisition) < previous_line[slice_of(acquisition)].get()) {
@@ -114,12 +114,12 @@ namespace {
 
     class DirectionMonitor {
     public:
-        explicit DirectionMonitor(AcquisitionBuffer &buffer, SupportMonitor &support, AccelerationMonitor &acceleration)
+        explicit DirectionMonitor(Grappa::AcquisitionBuffer &buffer, SupportMonitor &support, AccelerationMonitor &acceleration)
         : buffer(buffer), support(support), acceleration(acceleration) {
             position = read_dir = phase_dir = slice_dir = {0.0, 0.0, 0.0};
         }
 
-        void operator()(const AnnotatedAcquisition &acquisition) {
+        void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
 
             auto header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
 
@@ -146,7 +146,7 @@ namespace {
 
 
     private:
-        AcquisitionBuffer &buffer;
+        Grappa::AcquisitionBuffer &buffer;
         SupportMonitor &support;
         AccelerationMonitor &acceleration;
 
@@ -186,10 +186,10 @@ namespace Gadgetron::Grappa {
     WeightsCalculator<WeightsCore>::WeightsCalculator(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : TypedChannelGadget<Slice>(props), context(context) {}
+    ) : TypedChannelGadget<Grappa::Slice>(props), context(context) {}
 
     template<class WeightsCore>
-    void WeightsCalculator<WeightsCore>::process(TypedInputChannel<Slice> &in, OutputChannel &out) {
+    void WeightsCalculator<WeightsCore>::process(TypedInputChannel<Grappa::Slice> &in, OutputChannel &out) {
 
         std::set<uint16_t> updated_slices{};
         uint16_t n_combined_channels = 0, n_uncombined_channels = 0;

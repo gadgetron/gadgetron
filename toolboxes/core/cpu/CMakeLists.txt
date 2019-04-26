@@ -54,6 +54,7 @@ add_library(gadgetron_toolbox_cpucore SHARED
 target_include_directories(
         gadgetron_toolbox_cpucore
     PUBLIC
+    ${CMAKE_SOURCE_DIR}/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_BINARY_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -62,6 +63,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
+    ${ISMRMRD_INCLUDE_DIR}
 )
 
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -69,7 +71,7 @@ set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_
 target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
-    FFTW
+  ismrmrd
   )
 
 install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)

@@ -1,11 +1,6 @@
 #pragma once
 
 #include "Channel.h"
-#include <thread>
-#include <memory>
-#include <future>
-#include "log.h"
-#include <ismrmrd/xml.h>
 #include "PropertyMixin.h"
 #include "Context.h"
 #include <boost/dll/alias.hpp>
@@ -21,13 +16,15 @@ namespace Gadgetron::Core {
     class ChannelGadget : public Node, public PropertyMixin {
     public:
             using PropertyMixin::PropertyMixin;
-            virtual ~ChannelGadget() = default;
     };
 
     template<class ...ARGS >
     class TypedChannelGadget : public ChannelGadget {
     public:
-        TypedChannelGadget(const GadgetProperties& properties): ChannelGadget(properties) {
+
+        explicit TypedChannelGadget(const GadgetProperties& properties): ChannelGadget(properties) {}
+
+        TypedChannelGadget(const Context& context, const GadgetProperties& properties): ChannelGadget(properties) {
 
         }
 

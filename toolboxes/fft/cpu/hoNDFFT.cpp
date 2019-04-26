@@ -111,13 +111,13 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 template<typename T>
 inline size_t hoNDFFT<T>::fftshiftPivot(size_t x)
 {
-	return (size_t)(ceil(x*0.5));
+	return (size_t)(std::ceil(x*0.5));
 }
 
 template<typename T>
 inline size_t hoNDFFT<T>::ifftshiftPivot(size_t x)
 {
-	return (size_t)(floor(x*0.5));
+	return (size_t)(std::floor(x*0.5));
 }
 
 template<typename T>

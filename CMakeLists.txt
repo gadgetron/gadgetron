@@ -114,6 +114,10 @@ else ()
     set(HAS_64_BIT Off CACHE BOOL "64bit build")
 endif ()
 
+
+#set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
+
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 
@@ -142,7 +146,7 @@ if (WIN32)
     if (HAS_64_BIT)
         add_definitions(-DWIN64 -D_WIN64)
     endif ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w1")
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
@@ -172,20 +176,22 @@ else ()
         message(STATUS "Compiling using C++${CXX_STANDARD} standard")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${CXX_STANDARD}")
     endif ()
+    check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
+    if (COMPILER_SUPPORTS_WRETURNTYPE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
+    endif ()
+    check_cxx_compiler_flag(-Werror=terminate COMPILER_SUPPORTS_WTERMINATE)
+    if (COMPILER_SUPPORTS_WTERMINATE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=terminate")
+    endif ()
+    check_cxx_compiler_flag(-Werror=non-virtual-dtor COMPILER_SUPPORT_WNON_VIRTUAL)
+    if (COMPILER_SUPPORT_WNON_VIRTUAL)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
+    endif ()
 
-endif ()
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--enable-new-dtags")
 
-check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
-if (COMPILER_SUPPORTS_WRETURNTYPE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
-endif ()
-check_cxx_compiler_flag(-Werror=terminate COMPILER_SUPPORTS_WTERMINATE)
-if (COMPILER_SUPPORTS_WTERMINATE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=terminate")
-endif ()
-check_cxx_compiler_flag(-Werror=non-virtual-dtor COMPILER_SUPPORT_WNON_VIRTUAL)
-if (COMPILER_SUPPORT_WNON_VIRTUAL)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
+
 endif ()
 
 
@@ -303,28 +309,29 @@ if (CUDA_FOUND AND USE_CUDA)
 find_package(BART)
 endif()
 add_library(FFTW INTERFACE)
-
-option(USE_MKL OFF)
-if (USE_MKL)
-find_package(MKL REQUIRED)
-add_library(BLAS INTERFACE IMPORTED)
-set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
-
-target_link_libraries(FFTW INTERFACE BLAS)
-
-add_definitions(-DUSE_MKL)
-else()
-find_package(FFTW3 REQUIRED COMPONENTS single double)
-find_package(CBLAS REQUIRED)
-find_package(LAPACK REQUIRED)
-if (LAPACK_FOUND)
-message("LAPACK Found")
-endif ()
+ find_package(FFTW3 REQUIRED COMPONENTS single double)
 target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})
 set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 
+option(USE_MKL OFF)
+if (USE_MKL)
+  find_package(MKL REQUIRED)
+  add_library(BLAS INTERFACE IMPORTED)
+  set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
+  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
+  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+
+
+
+
+  add_definitions(-DUSE_MKL)
+  else()
+
+  find_package(CBLAS REQUIRED)
+	find_package(LAPACK REQUIRED)
+	if (LAPACK_FOUND)
+		message("LAPACK Found")
+	endif ()
 
 
 endif()

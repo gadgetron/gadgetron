@@ -1,4 +1,4 @@
-
+#pragma once
 
 namespace Gadgetron::Core {
 
@@ -7,16 +7,17 @@ namespace Gadgetron::Core {
     namespace {
         namespace gadgetron_detail {
             template<class F, class Tuple, std::size_t... I>
-            constexpr decltype(auto) apply_impl(F &&f, Tuple &&t, std::index_sequence<I...>) {
-                return f(std::get<I>(std::forward<Tuple>(t))...);
+            inline constexpr decltype(auto) apply_impl(F &&f, Tuple &&t, std::index_sequence<I...>) {
+                return f(get<I>(std::forward<Tuple>(t))...);
             }
         }
     }
 
-    template<class F, class Tuple>
-    constexpr decltype(auto) apply(F &&f, Tuple &&t) {
+    template<class F, class TupleLike>
+    constexpr decltype(auto) apply(F &&f, TupleLike &&t) {
         return gadgetron_detail::apply_impl(
-                std::forward<F>(f), std::forward<Tuple>(t),
-                std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
+                std::forward<F>(f), std::forward<TupleLike>(t),
+                std::make_index_sequence<std::tuple_size<std::remove_reference_t<TupleLike>>::value>{});
     }
+
 }
