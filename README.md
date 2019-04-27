@@ -30,5 +30,8 @@ To deploy Gadgetron, it is convenient to use docker
 -------------------------------------------------
 Please follow instructionst at [Deploy Gadgetron via Docker](https://github.com/gadgetron/gadgetron/wiki/Using-Docker)
 
+Gadgetron does support cluster/cloud deployment
+-------------------------------------------------
+If you have multiple computers, they can be assembled as a cluster to run distributed Gadgetron. Please check instructions [Set up Gadgetron Cluster in your LAN](https://github.com/gadgetron/gadgetron/wiki/How-to-set-up-Gadgetron-cloud-in-the-LAN-environment)
 
 Please read LICENSE file for licensing details.
