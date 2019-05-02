@@ -1,6 +1,8 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUCORE_MATH__)
-endif ()
+elseif(WIN32)
+    set(CMAKE_CXX_FLAGS -fpermissive)
+endif (WIN32)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -8,7 +10,10 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${ARMADILLO_INCLUDE_DIRS} )
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${CBLAS_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
+    )
 
 if (MKL_FOUND)
     include_directories( ${MKL_INCLUDE_DIR} )
@@ -30,21 +35,21 @@ if (ARMADILLO_FOUND)
     set(cpucore_math_header_files 
         ${cpucore_math_header_files}
         hoNDArray_reductions.h
+        hoNDArray_reductions.hxx
         hoArmadillo.h
         hoNDArray_elemwise.h
+        cpp_blas.h
          )
 
     set(cpucore_math_src_files 
         ${cpucore_math_src_files} 
         hoNDArray_reductions.cpp
         hoNDArray_elemwise.cpp
-        )
+        cpp_blas.cpp)
 
 endif ()
-
-add_library(gadgetron_toolbox_cpucore_math SHARED ${cpucore_math_header_files} ${cpucore_math_src_files})
+add_library(gadgetron_toolbox_cpucore_math SHARED  ${cpucore_math_src_files} ${cpucore_math_header_files})
 set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-
 if (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpucore_math 
         gadgetron_toolbox_cpucore
@@ -52,6 +57,8 @@ if (MKL_FOUND)
         ${ARMADILLO_LIBRARIES}
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
+        ${CBLAS_LIBRARY}
+        ${Boost_LIBRARIES}
     )
 else ()
     target_link_libraries(gadgetron_toolbox_cpucore_math 
@@ -61,6 +68,8 @@ else ()
         ${BLAS_LIBRARIES}
         ${LAPACK_LIBRARIES}
         ${FFTW3_LIBRARIES}
+        ${CBLAS_LIBRARY}
+        ${Boost_LIBRARIES}
     )
 endif ()
 

@@ -35,7 +35,7 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array containing the element-wise absolute values of the input.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > abs( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > abs( const cuNDArray<T> *x );
 
   /**
    * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
@@ -48,14 +48,14 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array containing the element-wise absolute values of the input.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > abs_square( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > abs_square( const cuNDArray<T> *x );
 
   /**
    * @brief Calculates the element-wise sqrt of the array entries.
    * @param[in] x Input array.
    * @return A new array containing the element-wise sqrt of the input.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > sqrt( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > sqrt( const cuNDArray<T> *x );
 
   /**
    * @brief Calculates the element-wise sqrt of the array entries (in place).
@@ -71,7 +71,7 @@ namespace Gadgetron{
    * For real numbers this functions is equivalent to square. 
    * For complex arrays abs_square() and square() differ however.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > square( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > square( const cuNDArray<T> *x );
     
   /**
    * @brief Calculates the element-wise square of the array entries (in place).
@@ -84,7 +84,7 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array containing the element-wise reciprocal of the input.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > reciprocal( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > reciprocal( const cuNDArray<T> *x );
   
   /**
    * @brief Calculates the element-wise reciprocal of the array entries (in place).
@@ -97,7 +97,7 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array containing the element-wise reciprocal sqrt of the input.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > reciprocal_sqrt( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > reciprocal_sqrt( const cuNDArray<T> *x );
   
   /**
    * @brief Calculates the element-wise reciprocal sqrt of the array entries (in place).
@@ -110,7 +110,7 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array containing the element-wise sgn of the input.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > sgn( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > sgn( const cuNDArray<T> *x );
   
   /**
    * @brief Calculates the elementwise signum function on the array (in place).
@@ -123,35 +123,35 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array of the real component of the complex array.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > real( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > real( const cuNDArray<T> *x );
 
   /**
    * @brief Extract the imaginary component from a complex array.
    * @param[in] x Input array.
    * @return A new array of the imaginary component of the complex array.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > imag( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > imag( const cuNDArray<T> *x );
 
   /**
    * @brief Create a new array of the complex conjugate of the input array. For real arrays a copy of the input array is return.
    * @param[in] x Input array.
    * @return A new array of the complex conjugate of the input array.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > conj( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > conj( const cuNDArray<T> *x );
 
   /**
    * @brief Construct a complex array from a real array.
    * @param[in] x Input array.
    * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > real_to_complex( cuNDArray<typename realType<T>::Type> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > real_to_complex( const cuNDArray<typename realType<T>::Type> *x );
   
   /**
    * Converts array from type T to type T2
    * @param[in] x Input array
    * @return A copy of x with the type T2
    */
-  template<class T,class T2> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T2> > convert_to( cuNDArray<T> *x );
+  template<class T,class T2> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T2> > convert_to( const cuNDArray<T> *x );
 
   /**
    * Converts array from type T to type T2. Input and output array must be same size.

@@ -2,6 +2,7 @@
 #include "hoNDArray_reductions.h"
 #include "complext.h"
 #include "hoArmadillo.h"
+#include "cpp_blas.h"
 
 #ifdef USE_OMP
     #include <omp.h>
@@ -27,12 +28,8 @@ namespace Gadgetron{
   // Math internal complex types
   // this replaces std::complex<T> with complext<T>
   //
-  template <class T> struct mathInternalType {};
+  template <class T> struct mathInternalType {typedef T type;};
   template <class T> struct mathInternalType<std::complex<T> > {typedef complext<T> type;};
-  template <> struct mathInternalType<float> {typedef float type;};
-  template <> struct mathInternalType<double> {typedef double type;};
-  template <> struct mathInternalType<complext<float> > {typedef complext<float> type;};
-  template <> struct mathInternalType<complext<double> > {typedef complext<double> type;};
 
   // --------------------------------------------------------------------------------
 
@@ -161,6 +158,8 @@ namespace Gadgetron{
   template EXPORTCPUCOREMATH void add(const hoNDArray< double >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
   template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
+
+  template EXPORTCPUCOREMATH void add(const hoNDArray<int>& x, const hoNDArray<int>& y, hoNDArray<int>& r);
   // --------------------------------------------------------------------------------
 
 
@@ -664,29 +663,19 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    inline void conjugate(size_t N, const  std::complex<float> * x,  std::complex<float> * r)
-    {
-        long long n;
 
-        #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            reinterpret_cast<float(&)[2]>(r[n])[0] = reinterpret_cast< const float(&)[2]>(x[n])[0];
-            reinterpret_cast<float(&)[2]>(r[n])[1] = -(reinterpret_cast< const float(&)[2]>(x[n])[1]);
+namespace {
+    template<class Complex> inline void conjugate(size_t N, const Complex *x, Complex *r) {
+        long long n;
+        using REAL = typename realType<Complex>::Type;
+
+#pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long) N; n++) {
+            reinterpret_cast<REAL (&)[2]>(r[n])[0] = reinterpret_cast< const REAL (&)[2]>(x[n])[0];
+            reinterpret_cast<REAL (&)[2]>(r[n])[1] = -(reinterpret_cast<const REAL (&)[2]>(x[n])[1]);
         }
     }
-
-    inline void conjugate(size_t N, const  std::complex<double> * x,  std::complex<double> * r)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            reinterpret_cast<double(&)[2]>(r[n])[0] = reinterpret_cast< const double(&)[2]>(x[n])[0];
-            reinterpret_cast<double(&)[2]>(r[n])[1] = -(reinterpret_cast<const double(&)[2]>(x[n])[1]);
-        }
-    }
+}
 
     template <typename T> 
     void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r)
@@ -702,6 +691,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void conjugate(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void conjugate(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
+    template EXPORTCPUCOREMATH void conjugate(const hoNDArray< complext<float> >& x, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void conjugate(const hoNDArray< complext<double> >& x, hoNDArray< complext<double> >& r);
     // --------------------------------------------------------------------------------
 
     template <typename T> 
@@ -852,6 +843,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void inv(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void inv(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void inv(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray< complext<float> >& x, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray< complext<double> >& x, hoNDArray< complext<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -1097,6 +1090,7 @@ namespace Gadgetron{
     template <typename T> 
     void sqrt(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
+        using std::sqrt;
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r.create(x.get_dimensions());
@@ -1110,34 +1104,17 @@ namespace Gadgetron{
         #pragma omp parallel for default(none) private(n) shared(N, pX, pR) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            pR[n] = std::sqrt(pX[n]);
+            pR[n] = sqrt(pX[n]);
         }
     }
 
-    template <typename T> 
-    void sqrt(const hoNDArray< complext<T> >& x, hoNDArray< complext<T> >& r)
-    {
-        if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        {
-            r.create(x.get_dimensions());
-        }
 
-        size_t N = x.get_number_of_elements();
-        const complext<T>* pX = x.begin();
-        complext<T>* pR = r.begin();
-
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, pX, pR) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            pR[n] = Gadgetron::sqrt(pX[n]);
-        }
-    }
 
     template EXPORTCPUCOREMATH void sqrt(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH void sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void sqrt(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void sqrt(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
     template EXPORTCPUCOREMATH void sqrt(const hoNDArray< complext<float> >& x, hoNDArray< complext<float> >& r);
     template EXPORTCPUCOREMATH void sqrt(const hoNDArray< complext<double> >& x, hoNDArray< complext<double> >& r);
 
@@ -1279,57 +1256,57 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > real( hoNDArray<T> *x )
+    template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > real( const hoNDArray<T> *x )
     {
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::real(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
-        arma::Col<typename realType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = arma::real(as_arma_col(x));
+        arma::Col<typename realType<T>::Type> aRes = as_arma_col(*result);
+        aRes = arma::real(as_arma_col(*x));
         return result;
     }
 
     // --------------------------------------------------------------------------------
 
-    template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > imag( hoNDArray<T> *x )
+    template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > imag(const hoNDArray<T> *x )
     {
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::imag(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
-        arma::Col<typename realType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = arma::imag(as_arma_col(x));
+        arma::Col<typename realType<T>::Type> aRes = as_arma_col(*result);
+        aRes = arma::imag(as_arma_col(*x));
         return result;
     }
 
     // --------------------------------------------------------------------------------
 
-    template<class T> boost::shared_ptr< hoNDArray<T> > conj( hoNDArray<T> *x )
+    template<class T> boost::shared_ptr< hoNDArray<T> > conj( const hoNDArray<T> *x )
     {
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::conj(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = arma::conj(as_arma_col(x));
+        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(*result);
+        aRes = arma::conj(as_arma_col(*x));
         return result;
     }
 
     // --------------------------------------------------------------------------------
 
-    template<class T> boost::shared_ptr< hoNDArray<T> > real_to_complex( hoNDArray<typename realType<T>::Type> *x )
+    template<class T> boost::shared_ptr< hoNDArray<T> > real_to_complex(const  hoNDArray<typename realType<T>::Type> *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_to_complex(): Invalid input array"));
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = arma::Col<typename stdType<T>::Type>(as_arma_col(x), arma::Col<typename realType<T>::Type>(x->get_number_of_elements()).zeros());
+        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(*result);
+        aRes = arma::Col<typename stdType<T>::Type>(as_arma_col(*x), arma::Col<typename realType<T>::Type>(x->get_number_of_elements()).zeros());
         return result;
     }
 
@@ -1988,378 +1965,20 @@ namespace Gadgetron{
     }
 
     // --------------------------------------------------------------------------------
-
-    inline void axpy(float a, size_t N, const float* x, const float* y, float* r)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, r, a , x, y) if(N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; ++n)
-        {
-            r[n] = a*x[n] + y[n];
-        }
-    }
-
-    inline void axpy(double a, size_t N, const double* x, const double* y, double* r)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, r, a , x, y) if(N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; ++n)
-        {
-            r[n] = a*x[n] + y[n];
-        }
-    }
-
-    inline void axpy( std::complex<float>  a, size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; ++n)
-        {
-            const  std::complex<float> & vx = x[n];
-            const float re1 = vx.real();
-            const float im1 = vx.imag();
-
-            const  std::complex<float> & vy = y[n];
-            const float re2 = vy.real();
-            const float im2 = vy.imag();
-
-            const float ar = a.real();
-            const float ai = a.imag();
-
-            reinterpret_cast<float(&)[2]>(r[n])[0] = re2 + ar*re1 - ai*im1;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = im2 + ar*im1 + ai*re1;
-        }
-    }
-
-    inline void axpy( std::complex<double>  a, size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; ++n)
-        {
-            const  std::complex<double> & vx = x[n];
-            const double re1 = vx.real();
-            const double im1 = vx.imag();
-
-            const  std::complex<double> & vy = y[n];
-            const double re2 = vy.real();
-            const double im2 = vy.imag();
-
-            const double ar = a.real();
-            const double ai = a.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = re2 + ar*re1 - ai*im1;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = im2 + ar*im1 + ai*re1;
-        }
-    }
-
-    template <typename T> 
-    void axpy( complext<T>  a, size_t N, const  complext<T> * x, const  complext<T> * y,  complext<T> * r)
-    {
-        long long n;
-
-        #pragma omp parallel for private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; ++n)
-        {
-            const  complext<T> & vx = x[n];
-            const T re1 = vx.real();
-            const T im1 = vx.imag();
-
-            const  complext<T> & vy = y[n];
-            const T re2 = vy.real();
-            const T im2 = vy.imag();
-
-            const T ar = a.real();
-            const T ai = a.imag();
-
-            reinterpret_cast<T(&)[2]>(r[n])[0] = re2 + ar*re1 - ai*im1;
-            reinterpret_cast<T(&)[2]>(r[n])[1] = im2 + ar*im1 + ai*re1;
-        }
-    }
-
-    inline void axpy(float a, size_t N, const  std::complex<float> * x, const  std::complex<float> * y, std::complex<float> * r)
-    {
-        long long n;
-
-#pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
-        for (n = 0; n<(long long)N; ++n)
-        {
-            const  std::complex<float> & vx = x[n];
-            const float re1 = vx.real();
-            const float im1 = vx.imag();
-
-            const  std::complex<float> & vy = y[n];
-            const float re2 = vy.real();
-            const float im2 = vy.imag();
-
-            reinterpret_cast<float(&)[2]>(r[n])[0] = re2 + a*re1 + a*im1;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = im2 + a*im1 + a*re1;
-        }
-    }
-
-    inline void axpy(double a, size_t N, const  std::complex<double> * x, const  std::complex<double> * y, std::complex<double> * r)
-    {
-        long long n;
-
-#pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
-        for (n = 0; n<(long long)N; ++n)
-        {
-            const  std::complex<double> & vx = x[n];
-            const double re1 = vx.real();
-            const double im1 = vx.imag();
-
-            const  std::complex<double> & vy = y[n];
-            const double re2 = vy.real();
-            const double im2 = vy.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = re2 + a*re1 + a*im1;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = im2 + a*im1 + a*re1;
-        }
-    }
-
-    template <typename T> 
-    void axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
-
-        if ( r.get_number_of_elements() != x.get_number_of_elements() )
-        {
-            r = y;
-        }
-        else
-        {
-            if ( &r != &y )
-            {
-                memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-            }
-        }
-
-        axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-    }
-
-    template <typename T>
-    void axpy(T a, const hoNDArray< std::complex<T> >& x, const hoNDArray< std::complex<T> >& y, hoNDArray< std::complex<T> >& r)
-    {
-        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements() == y.get_number_of_elements());
-
-        if (r.get_number_of_elements() != x.get_number_of_elements())
-        {
-            r = y;
-        }
-        else
-        {
-            if (&r != &y)
-            {
-                memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-            }
-        }
-
-        axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-    }
-
-    template EXPORTCPUCOREMATH void axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH void axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH void axpy( std::complex<float>  a, const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH void axpy( std::complex<double>  a, const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-    template EXPORTCPUCOREMATH void axpy( complext<float>  a, const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
-    template EXPORTCPUCOREMATH void axpy( complext<double>  a, const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
-
-    template EXPORTCPUCOREMATH void axpy(float a, const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH void axpy(double a, const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-    template<class T> void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y )
-    {
-        if( x == 0x0 || y == 0x0 )
-            throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
-
-        if( x->get_number_of_elements() != y->get_number_of_elements() )
-            throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
-
-        axpy(a, *x, *y, *y);
-    }
-
-    template <class T> void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y )
-    {
-        axpy( complext<T>(a), x, y );
-    }
-
-    template <class T> void axpy(T a, hoNDArray< std::complex<T> > *x, hoNDArray< std::complex<T> > *y)
-    {
-        if (x == 0x0 || y == 0x0)
-            throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
-
-        if (x->get_number_of_elements() != y->get_number_of_elements())
-            throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
-
-        axpy(a, *x, *y, *y);
-    }
-
-    // --------------------------------------------------------------------------------
-
-    inline void scal(size_t N, float a, float* x)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            x[n] *= a;
-        }
-    }
-
-    inline void scal(size_t N, double a, double* x)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            x[n] *= a;
-        }
-    }
-
-    inline void scal(size_t N,  std::complex<float>  a,  std::complex<float> * x)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const  std::complex<float> & c = x[n];
-            const float re = c.real();
-            const float im = c.imag();
-
-            const float ar = a.real();
-            const float ai = a.imag();
-
-            reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
-            reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
-        }
-    }
-
-    inline void scal(size_t N,  std::complex<double>  a,  std::complex<double> * x)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const  std::complex<double> & c = x[n];
-            const double re = c.real();
-            const double im = c.imag();
-
-            const double ar = a.real();
-            const double ai = a.imag();
-
-            reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
-            reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
-        }
-    }
-
-    inline void scal(size_t N,  complext<float>  a,  complext<float> * x)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const  complext<float> & c = x[n];
-            const float re = c.real();
-            const float im = c.imag();
-
-            const float ar = a.real();
-            const float ai = a.imag();
-
-            reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
-            reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
-        }
-    }
-
-    inline void scal(size_t N,  complext<double>  a,  complext<double> * x)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const  complext<double> & c = x[n];
-            const double re = c.real();
-            const double im = c.imag();
-
-            const double ar = a.real();
-            const double ai = a.imag();
-
-            reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
-            reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
-        }
-    }
-
-    template <typename T> 
-    void scal(T a, hoNDArray<T>& x)
-    {
-        scal(x.get_number_of_elements(), a, x.begin());
-    }
-
-    template EXPORTCPUCOREMATH void scal(float a, hoNDArray<float>& x);
-    template EXPORTCPUCOREMATH void scal(double a, hoNDArray<double>& x);
-    template EXPORTCPUCOREMATH void scal( std::complex<float>  a, hoNDArray< std::complex<float> >& x);
-    template EXPORTCPUCOREMATH void scal( std::complex<double>  a, hoNDArray< std::complex<double> >& x);
-    template EXPORTCPUCOREMATH void scal( complext<float>  a, hoNDArray< complext<float> >& x);
-    template EXPORTCPUCOREMATH void scal( complext<double>  a, hoNDArray< complext<double> >& x);
-
-    // --------------------------------------------------------------------------------
-
-    inline void scal(size_t N, float a,  std::complex<float> * x)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const  std::complex<float> & c = x[n];
-            const float re = c.real();
-            const float im = c.imag();
-
-            reinterpret_cast<float(&)[2]>(x[n])[0] = re*a;
-            reinterpret_cast<float(&)[2]>(x[n])[1] = im*a;
-        }
-    }
-
-    inline void scal(size_t N, double a,  std::complex<double> * x)
-    {
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const  std::complex<double> & c = x[n];
-            const double re = c.real();
-            const double im = c.imag();
-
-            reinterpret_cast<double(&)[2]>(x[n])[0] = re*a;
-            reinterpret_cast<double(&)[2]>(x[n])[1] = im*a;
-        }
-    }
-
-    template <typename T> 
-    void scal(T a, hoNDArray< std::complex<T> >& x)
-    {
-        scal(x.get_number_of_elements(), a, x.begin());
-    }
-
-    template EXPORTCPUCOREMATH void scal(float a, hoNDArray< std::complex<float> >& x);
-    template EXPORTCPUCOREMATH void scal(double a, hoNDArray< std::complex<double> >& x);
-
-    template <typename T> 
-    void scal(T a, hoNDArray< complext<T> >& x)
-    {
-        scal(x.get_number_of_elements(), a, x.begin());
-    }
-
-    template EXPORTCPUCOREMATH void scal(float a, hoNDArray< complext<float> >& x);
-    template EXPORTCPUCOREMATH void scal(double a, hoNDArray< complext<double> >& x);
+    //template<class T> void axpy(T a, const hoNDArray<T> *x, hoNDArray<T> *y)
+    //{
+    //    BLAS::axpy(x->get_number_of_elements(), a, x->get_data_ptr(), 1, y->get_data_ptr(), 1);
+    //}
+
+    //template <typename T> void axpy(T a, const hoNDArray<T>& x, hoNDArray<T>& y)
+    //{
+    //    axpy(a, &x, &y);
+    //}
+
+    //template <typename R, typename T> void scal(R a, hoNDArray<T>& x)
+    //{
+    //    BLAS::scal(x.get_number_of_elements(), a, x.get_data_ptr(), 1);
+    //}
 
     // --------------------------------------------------------------------------------
 
@@ -2471,6 +2090,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void conv2(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
     template EXPORTCPUCOREMATH void conv2(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
 
+    template EXPORTCPUCOREMATH void conv2(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& z);
+    template EXPORTCPUCOREMATH void conv2(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& z);
     // --------------------------------------------------------------------------------
 
     template<typename T> 
@@ -2606,6 +2227,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void conv3(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
     template EXPORTCPUCOREMATH void conv3(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
 
+    template EXPORTCPUCOREMATH void conv3(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& z);
+    template EXPORTCPUCOREMATH void conv3(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& z);
     // --------------------------------------------------------------------------------
 
     template <typename T> 
@@ -2706,6 +2329,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& y, size_t dim);
     template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& y, size_t dim);
 
+    template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray< complext<float> >& x, hoNDArray< complext<float> >& y, size_t dim);
+    template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray< complext<double> >& x, hoNDArray< complext<double> >& y, size_t dim);
     // --------------------------------------------------------------------------------
 
     template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y)
@@ -2834,33 +2459,22 @@ namespace Gadgetron{
 
     template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y)
     {
-        //arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
-        //typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
-        //aRes *= aY;
 
-        scal(x.get_number_of_elements(), y, x.begin());
+        scal( y, x);
 
         return x;
     }
 
     template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y)
     {
-        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes *= aY;*/
-
-        scal(x.get_number_of_elements(), y, x.begin());
-
+        scal( y, x);
         return x;
     }
 
     template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y)
     {
-        //arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        //std::complex<T> aY( y, T(0) );
-        //aRes *= aY;
 
-        scal(x.get_number_of_elements(), y, reinterpret_cast< std::complex<T>* >(x.begin()) );
+        scal( y, x );
         return x;
     }
 
@@ -2868,37 +2482,26 @@ namespace Gadgetron{
 
     template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y)
     {
-        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
-        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
-        aRes /= aY;*/
 
         T ry = T(1)/y;
-        scal(x.get_number_of_elements(), ry, x.begin());
+        scal(ry, x);
 
         return x;
     }
 
     template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y)
     {
-        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes /= aY;*/
 
         T ry = T(1)/y;
-        scal(x.get_number_of_elements(), ry, x.begin());
+        scal( ry, x);
 
         return x;
     }
 
     template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y)
     {
-        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes /= aY;*/
-
         T ry = T(1)/y;
-        scal(x.get_number_of_elements(), ry, reinterpret_cast< std::complex<T>* >(x.begin()) );
-
+        scal( ry, x );
         return x;
     }
 
@@ -2908,7 +2511,7 @@ namespace Gadgetron{
     		const size_t elementsX = x.get_number_of_elements();
     		const size_t elementsY = y.get_number_of_elements();
     		bool* x_ptr = x.get_data_ptr();
-    		bool* y_ptr = y.get_data_ptr();
+    		const bool* y_ptr = y.get_data_ptr();
     		for (size_t i = 0; i < elementsX; i++)
     			x_ptr[i] &= y_ptr[i%elementsY];
     		return x;
@@ -2922,7 +2525,7 @@ namespace Gadgetron{
     		const size_t elementsX = x.get_number_of_elements();
     		const size_t elementsY = y.get_number_of_elements();
     		bool* x_ptr = x.get_data_ptr();
-    		bool* y_ptr = y.get_data_ptr();
+    		const bool* y_ptr = y.get_data_ptr();
     		for (size_t i = 0; i < elementsX; i++)
     			x_ptr[i] |= y_ptr[i%elementsY];
     		return x;
@@ -3058,36 +2661,42 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void shrinkd< complext<double> > ( hoNDArray< complext<double> >*, hoNDArray<double>*, double, hoNDArray< complext<double> >* );
     template EXPORTCPUCOREMATH void pshrinkd< complext<double> > ( hoNDArray< complext<double> >*, hoNDArray<double>*, double, double, hoNDArray< complext<double> >* );
 
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > real_to_complex< std::complex<float> >( hoNDArray<float>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > real_to_complex< std::complex<float> >( const hoNDArray<float>* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > real_imag_to_complex< std::complex<float> >( hoNDArray<float>*, hoNDArray<float>* );
 
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > real_to_complex<float_complext>( hoNDArray<float>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > real_to_complex<float_complext>( const hoNDArray<float>* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > real_imag_to_complex<float_complext>( hoNDArray<float>*, hoNDArray<float>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > real<float>( hoNDArray<float>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > real<std::complex<float> >( hoNDArray< std::complex<float> >* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > real<float_complext>( hoNDArray<float_complext>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > imag<float>( hoNDArray<float>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > imag<std::complex<float> >( hoNDArray< std::complex<float> >* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > imag<float_complext>( hoNDArray<float_complext>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > conj<float>( hoNDArray<float>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<std::complex<float> > > conj<std::complex<float> >( hoNDArray<std::complex<float> >* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > conj<float_complext>( hoNDArray<float_complext>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > real<float>(const  hoNDArray<float>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > real<std::complex<float> >(const hoNDArray< std::complex<float> >* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > real<float_complext>(const hoNDArray<float_complext>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > imag<float>(const  hoNDArray<float>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > imag<std::complex<float> >(const hoNDArray< std::complex<float> >* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > imag<float_complext>(const hoNDArray<float_complext>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > conj<float>( const hoNDArray<float>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<std::complex<float> > > conj<std::complex<float> >(const hoNDArray<std::complex<float> >* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > conj<float_complext>(const hoNDArray<float_complext>* );
 
 
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<double> > > real_to_complex< std::complex<double> >( hoNDArray<double>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<double> > > real_to_complex< std::complex<double> >(const hoNDArray<double>* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<double> > > real_imag_to_complex< std::complex<double> >( hoNDArray<double>*, hoNDArray<double>* );
 
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > real_to_complex<double_complext>( hoNDArray<double>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > real_to_complex<double_complext>( const hoNDArray<double>* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > real_imag_to_complex<double_complext>( hoNDArray<double>*, hoNDArray<double>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > real<double>( hoNDArray<double>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > real<std::complex<double> >( hoNDArray< std::complex<double> >* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > real<double_complext>( hoNDArray<double_complext>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > imag<std::complex<double> >( hoNDArray< std::complex<double> >* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > imag<double>( hoNDArray<double>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > imag<double_complext>( hoNDArray<double_complext>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > conj<double>( hoNDArray<double>* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<std::complex<double> > > conj<std::complex<double> >( hoNDArray<std::complex<double> >* );
-    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > conj<double_complext>( hoNDArray<double_complext>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > real<double>(const  hoNDArray<double>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > real<std::complex<double> >(const hoNDArray< std::complex<double> >* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > real<double_complext>(const hoNDArray<double_complext>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > imag<std::complex<double> >(const hoNDArray< std::complex<double> >* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > imag<double>(const hoNDArray<double>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > imag<double_complext>(const hoNDArray<double_complext>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > conj<double>(const hoNDArray<double>* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<std::complex<double> > > conj<std::complex<double> >(const hoNDArray<std::complex<double> >* );
+    template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > conj<double_complext>(const hoNDArray<double_complext>* );
+
+
+//    template EXPORTCPUCOREMATH hoNDArray<int>& operator+=<int>(hoNDArray<int>&, const int&);
+//    template EXPORTCPUCOREMATH hoNDArray<int>& operator-=<int>(hoNDArray<int>&, const int&);
+//    template EXPORTCPUCOREMATH hoNDArray<int>& operator*=<int>(hoNDArray<int>&, const int&);
+//    template EXPORTCPUCOREMATH hoNDArray<int>& operator/=<int>(hoNDArray<int>&, const int&);
 
     template EXPORTCPUCOREMATH hoNDArray<float>& operator+=<float>(hoNDArray<float>&, const float&);
     template EXPORTCPUCOREMATH hoNDArray<float>& operator-=<float>(hoNDArray<float>&, const float&);
@@ -3155,15 +2764,4 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator*=<double>(hoNDArray< complext<double> >&, const double&);
     template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator/=<double>(hoNDArray< complext<double> >&, const double&);
 
-
-    template EXPORTCPUCOREMATH void axpy<float>( float, hoNDArray<float>*, hoNDArray<float>* );
-    template EXPORTCPUCOREMATH void axpy<double>( double, hoNDArray<double>*, hoNDArray<double>* );
-    template EXPORTCPUCOREMATH void axpy<float>( float, hoNDArray<complext<float>>*, hoNDArray<complext<float>>* );
-    template EXPORTCPUCOREMATH void axpy<double>( double, hoNDArray<complext<double>>*, hoNDArray<complext<double>>* );
-    template EXPORTCPUCOREMATH void axpy< std::complex<float> >( std::complex<float> , hoNDArray< std::complex<float> >*, hoNDArray< std::complex<float> >* );
-    template EXPORTCPUCOREMATH void axpy< std::complex<double> >( std::complex<double> , hoNDArray< std::complex<double> >*, hoNDArray< std::complex<double> >* );
-    template EXPORTCPUCOREMATH void axpy< complext<float> >( complext<float> , hoNDArray< complext<float> >*, hoNDArray< complext<float> >* );
-    template EXPORTCPUCOREMATH void axpy< complext<double> >( complext<double> , hoNDArray< complext<double> >*, hoNDArray< complext<double> >* );
-    template EXPORTCPUCOREMATH void axpy(float a, hoNDArray< std::complex<float> >* x, hoNDArray< std::complex<float> >* y);
-    template EXPORTCPUCOREMATH void axpy(double a, hoNDArray< std::complex<double> >* x, hoNDArray< std::complex<double> >* y);
 }

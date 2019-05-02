@@ -7,6 +7,16 @@ ImageArraySplitGadget::ImageArraySplitGadget()
 
 }
 
+int ImageArraySplitGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1)
+{
+    if (this->next()->putq(m1) < 0)
+    {
+        m1->release();
+        return GADGET_FAIL;
+    }
+
+    return GADGET_OK;
+}
 
 int ImageArraySplitGadget::process( GadgetContainerMessage<IsmrmrdImageArray>* m1)
 {

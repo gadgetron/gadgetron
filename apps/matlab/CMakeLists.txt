@@ -14,6 +14,7 @@ if (MATLAB_FOUND)
         ${FFTW3_INCLUDE_DIR}
         ${MKL_INCLUDE_DIR}
         ${MATLAB_INCLUDE_DIR}
+        ${CMAKE_BINARY_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/matlab
         ${CMAKE_SOURCE_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu

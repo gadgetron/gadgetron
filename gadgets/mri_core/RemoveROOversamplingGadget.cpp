@@ -108,8 +108,8 @@ namespace Gadgetron{
 
         std::complex<float>* data_in, *data_out;
 
-        hoNDFFT<float>::instance()->ifft(m2->getObjectPtr(), 0);
-        data_in  = m2->getObjectPtr()->get_data_ptr();
+        hoNDFFT<float>::instance()->ifft1c(*m2->getObjectPtr(), ifft_res_, ifft_buf_);
+        data_in  = ifft_res_.get_data_ptr();
         data_out = m3->getObjectPtr()->get_data_ptr();
 
         for ( c=0; c<CHA; c++)
@@ -117,7 +117,9 @@ namespace Gadgetron{
             memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
         }
 
-        hoNDFFT<float>::instance()->fft(m3->getObjectPtr(), 0);
+        hoNDFFT<float>::instance()->fft1c(*m3->getObjectPtr(), fft_res_, fft_buf_);
+
+        memcpy(m3->getObjectPtr()->begin(), fft_res_.begin(), fft_res_.get_number_of_bytes());
 
         m2->release(); //We are done with this data
 
@@ -131,8 +133,8 @@ namespace Gadgetron{
 
       if (this->next()->putq(m1) == -1)
       {
-	GERROR("RemoveROOversamplingGadget::process, passing data on to next gadget");
-	return GADGET_FAIL;
+        GERROR("RemoveROOversamplingGadget::process, passing data on to next gadget");
+        return GADGET_FAIL;
       }
 
       return GADGET_OK;

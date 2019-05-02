@@ -6,6 +6,8 @@
 #ifndef hoImageRegParametricSolver_H_
 #define hoImageRegParametricSolver_H_
 
+#pragma once
+
 #include "hoImageRegSolver.h"
 
 namespace Gadgetron {

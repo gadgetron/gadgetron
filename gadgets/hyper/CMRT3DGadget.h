@@ -5,7 +5,8 @@
 #include "hoNDArray.h"
 #include "cuNDArray.h"
 #include "complext.h"
-#include "cuNFFTOperator.h"
+#include "cuNFFT.h"
+#include "NFFTOperator.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
@@ -34,7 +35,7 @@ namespace Gadgetron {
     virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation();
 
     boost::shared_ptr< cuNDArray< complext<float> > > buffer_;
-    boost::shared_ptr< cuNFFTOperator<float,2> > E_;
+    boost::shared_ptr< NFFTOperator<cuNDArray,float,2> > E_;
     std::vector<size_t> image_space_dimensions_3D_;
     unsigned int num_projections_expected_;
     unsigned int num_projections_to_use_;

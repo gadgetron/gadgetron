@@ -2,11 +2,10 @@
 #include "gadgetron_rest.h"
 
 #include "GadgetServerAcceptor.h"
-#include "FileInfo.h"
 #include "url_encode.h"
 #include "gadgetron_xml.h"
 #include "gadgetron_config.h"
-#include "gadgetron_paths.h"
+#include "gadgetron_home.h"
 #include "CloudBus.h"
 
 #include "gadgetron_system_info.h"
@@ -21,6 +20,7 @@
 #include <fstream>
 #include <streambuf>
 
+#include <boost/filesystem.hpp>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -31,7 +31,6 @@
 #include <sys/stat.h>
 #endif // _WIN32
 
-#include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
 
@@ -96,19 +95,13 @@ void print_usage()
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
-  std::string  gadgetron_home = get_gadgetron_home();
+  boost::filesystem::path gadgetron_home = get_gadgetron_home();
+  boost::filesystem::path config_file = gadgetron_home / GADGETRON_CONFIG_PATH / "gadgetron.xml";
 
-  if (gadgetron_home.size() == 0) {
-    GERROR("GADGETRON_HOME variable not set.\n");
+  if (!boost::filesystem::exists(config_file)) {
+    GERROR_STREAM("Gadgetron configuration file not found: " << config_file << std::endl);
     return -1;
   }
-
-  std::string gcfg = gadgetron_home + std::string("/") + std::string(GADGETRON_CONFIG_PATH) + std::string("/gadgetron.xml");
-  if (!FileInfo(gcfg).exists()) {
-    GERROR("Gadgetron configuration file %s not found.\n", gcfg.c_str());
-    return -1;
-  }
-
 
   ACE_TCHAR port_no[1024];
   ACE_TCHAR relay_host[1024];
@@ -126,11 +119,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   GadgetronXML::GadgetronConfiguration c;
   try
     {
-      std::ifstream t(gcfg.c_str());
-      std::string gcfg_text((std::istreambuf_iterator<char>(t)),
-			    std::istreambuf_iterator<char>());
-      
-      GadgetronXML::deserialize(gcfg_text.c_str(), c);
+      std::ifstream config_stream(config_file.c_str());
+
+      GadgetronXML::deserialize(config_stream, c);
       ACE_OS_String::strncpy(port_no, c.port.c_str(), 1024);
 
       if (c.cloudBus) {
@@ -158,7 +149,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         }
     }  catch (std::runtime_error& e) {
     GERROR("XML Parse Error: %s\n", e.what());
-    GERROR("Error parsing configuration file %s.\n", gcfg.c_str());
+    GERROR("Error parsing configuration file %s.\n", config_file.c_str());
     return -1;
   }
 
@@ -259,14 +250,14 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
   GINFO("Configuring services, Running on port %s\n", port_no);
 
+  auto reactor = ACE_Reactor::instance();
+
   ACE_INET_Addr port_to_listen (port_no);
-  GadgetServerAcceptor acceptor;
-  acceptor.global_gadget_parameters_ = gadget_parameters;
-  acceptor.reactor (ACE_Reactor::instance ());
+  GadgetServerAcceptor acceptor(gadget_parameters, reactor);
   if (acceptor.open (port_to_listen) == -1)
     return 1;
   
-  ACE_Reactor::instance()->run_reactor_event_loop ();
+  reactor->run_reactor_event_loop ();
 
   return 0;
 }

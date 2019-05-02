@@ -65,13 +65,12 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
         this->gt_ut_data_folder_ + "/spiral/data_spiral_imag");
     data.print(std::cout);
 
-    T v;
-    Gadgetron::norm2(data, v); GDEBUG_STREAM("data = " << v);
+    T v = Gadgetron::nrm2(data); GDEBUG_STREAM("data = " << v);
 
     hoNDArray< T > k_spiral;
     this->gt_io_.import_array(k_spiral, this->gt_ut_data_folder_ + "/spiral/k_spiral");
     k_spiral.print(std::cout);
-    Gadgetron::norm2(k_spiral, v); GDEBUG_STREAM("k_spiral = " << v);
+    v = Gadgetron::nrm2(k_spiral); GDEBUG_STREAM("k_spiral = " << v);
 
     size_t num = data.get_size(0);
     size_t CHA = data.get_size(1);
@@ -89,7 +88,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     hoNDArray< T > w_spiral;
     this->gt_io_.import_array(w_spiral, this->gt_ut_data_folder_ + "/spiral/w_spiral");
     w_spiral.print(std::cout);
-    Gadgetron::norm2(w_spiral, v); GDEBUG_STREAM("w_spiral = " << v);
+    v = Gadgetron::nrm2(w_spiral); GDEBUG_STREAM("w_spiral = " << v);
 
     // test the simple gridding
 
@@ -102,7 +101,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     res.create(2* dims[0], 2* dims[1], CHA);
     Gadgetron::clear(res);
 
-    hoNFFT_plan<T, 2> plan(dims, 2.0, 3.0);
+    hoNFFT_plan<T, 2> plan(dims, dims*size_t(2), 3.0);
     plan.preprocess(traj);
 
     hoNDArray< std::complex<T> > dataCha;
@@ -114,7 +113,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
         dataCha.create(num, data.begin()+cha*num);
         resCha.create(res.get_size(0), res.get_size(1), res.begin()+cha*res.get_size(0)*res.get_size(1));
 
-        plan.compute(dataCha, resCha, w_spiral, hoNFFT_plan<T, 2>::NFFT_BACKWARDS_NC2C);
+        plan.compute(dataCha, resCha, &w_spiral,NFFT_comp_mode::BACKWARDS_NC2C);
     }
     this->timer_.stop();
 
@@ -131,10 +130,9 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     hoNDArray< std::complex<T> > diff;
     Gadgetron::subtract(res, ref, diff);
 
-    Gadgetron::norm2(diff, v);
+    v = Gadgetron::nrm2(diff);
 
-    T norm_ref;
-    Gadgetron::norm2(ref, norm_ref);
+    T norm_ref = Gadgetron::nrm2(ref);
 
     EXPECT_LE(v/norm_ref, 0.00001);
 }

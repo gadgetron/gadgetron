@@ -43,7 +43,7 @@ namespace Gadgetron{
 
     }
 
-    virtual const char* name()
+    virtual const char* name() const
     {
       return name_.c_str();
     }
@@ -241,19 +241,25 @@ namespace Gadgetron{
           continue;
         }
 
+
         int success;
+#ifdef NDEBUG //We actually want a full stack trace in debug mode, so only catch in release.
         try{ success = this->process(m); }
         catch (std::runtime_error& err){
           GEXCEPTION(err,"Gadget::process() failed\n");
           success = -1;
         }
-
-        if (success == -1) {
+#else
+        success = this->process(m);
+#endif
+        if (success == -1){
           m->release();
           this->flush();
           GERROR("Gadget (%s) process failed\n", this->module()->name());
           return GADGET_FAIL;
         }
+
+
       }
       return 0;
     }
@@ -493,7 +499,7 @@ namespace Gadgetron{
         this->value(default_value);
       }
 
-      T value()
+      T value() const
       {
         if (is_reference_) {
           boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
@@ -524,7 +530,7 @@ namespace Gadgetron{
           T tmp;
 //          std::stringstream(val) >> std::boolalpha >> tmp;
       	  GadgetProperty_extract_value(val,tmp);
-	  this->value(tmp);
+	      this->value(tmp);
         }
       }
 
@@ -533,13 +539,15 @@ namespace Gadgetron{
         return this->value() == v;
       }
 
+     operator T() const { return this->value(); }
+
       virtual const char* limits_description()
       {
         return limits_.limits_description();
       }
 
    protected:
-      T value_;
+      mutable T value_;
       Gadget* g_;
       L limits_;
     };
@@ -558,7 +566,7 @@ namespace Gadgetron{
           this->value(default_value);
         }
 
-        std::vector<T> value()
+        std::vector<T> value() const
         {
           if (is_reference_) {
             boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
@@ -570,6 +578,8 @@ namespace Gadgetron{
           }
           return values_;
         }
+
+        operator std::vector<T>() const { return this->value();}
 
         void value(std::vector<T> v)
         {
@@ -613,7 +623,7 @@ namespace Gadgetron{
         }
 
       protected:
-        std::vector<T> values_;
+          mutable std::vector<T> values_;
         L limits_;
         Gadget* g_;
       };
@@ -635,7 +645,7 @@ namespace Gadgetron{
 
       protected:
         GADGET_PROPERTY(using_cloudbus,bool,"Indicates whether the cloudbus is in use and available", false);
-        GADGET_PROPERTY(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", false);
+        GADGET_PROPERTY(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", true);
         GADGET_PROPERTY(threads,int, "Number of threads to run in this Gadget", 1);
         #ifdef _WIN32
         GADGET_PROPERTY(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");
@@ -754,6 +764,48 @@ namespace Gadgetron{
 
         virtual int process(GadgetContainerMessage<P1>* m1, GadgetContainerMessage<P2>* m2, GadgetContainerMessage<P3>* m3) = 0;
 
+      };
+
+      template <class P1, class P2> class Gadget1Of2 : public BasicPropertyGadget
+      {
+      protected:
+          int process(ACE_Message_Block* mb)
+          {
+              GadgetContainerMessage<P1>* m1 = nullptr;
+              GadgetContainerMessage<P2>* m2 = nullptr;
+
+              if ((m1 = AsContainerMessage<P1>(mb)))
+              {
+                  return this->process(m1);
+              }
+              else if ( (m2 = AsContainerMessage<P2>(mb))){
+                      return this->process(m2);
+              } else {
+                  if (!pass_on_undesired_data_)
+                  {
+                      GERROR("%s -> %s, (%s, %s, %p, %p), (%s, %s, %p, %p)\n",
+                          this->module()->name(),
+                          "Gadget1Of2::process, Conversion of Message Block Failed, must be one of two types",
+                          typeid(GadgetContainerMessage<P1>*).name(),
+                          typeid(m1).name(),
+                          mb,
+                          m1,
+                          typeid(GadgetContainerMessage<P2>*).name(),
+                          typeid(m2).name(),
+                          mb->cont(),
+                          m2);
+                      return -1;
+                  }
+                  else
+                  {
+                      return (this->next()->putq(mb));
+                  }
+              }
+
+          }
+
+          virtual int process(GadgetContainerMessage<P1>* m1) = 0;
+          virtual int process(GadgetContainerMessage<P2>* m1) = 0;
       };
 
       /* Macros for handling dyamic linking */

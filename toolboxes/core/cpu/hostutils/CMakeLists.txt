@@ -6,8 +6,7 @@ set(hostutils_scr_files
     network_utils.cpp
     parameterparser.cpp )
 
-set(hostutils_header_files 
-    FileInfo.h
+set(hostutils_header_files
     hostutils_export.h
     network_utils.h
     parameterparser.h

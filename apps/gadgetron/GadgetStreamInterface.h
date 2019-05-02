@@ -1,11 +1,15 @@
 #ifndef GADGETSTREAMINTERFACE_H
 #define GADGETSTREAMINTERFACE_H
 
+#include <boost/filesystem.hpp>
+
 #include "ace/Stream.h"
 #include "ace/DLL.h"
 #include "ace/DLL_Manager.h"
 
-#include "gadgetron_paths.h"
+#include "gadgetbase_export.h"
+#include "gadgetron_home.h"
+#include "gadgetron_xml.h"
 #include "Gadget.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
@@ -16,41 +20,19 @@ typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
  */
 namespace Gadgetron {
 
-  class GadgetStreamInterface
+  class EXPORTGADGETBASE GadgetStreamInterface
   {
   public:
-    GadgetStreamInterface()
-      : stream_configured_(false)
-    {  
-      gadgetron_home_ = get_gadgetron_home();
-    } 
+    GadgetStreamInterface();
 
     virtual int output_ready(ACE_Message_Block* mb) = 0;
 
-    virtual Gadget* find_gadget(std::string gadget_name)
-    {
-      GadgetModule* gm = stream_.find(gadget_name.c_str());
-      
-      if (gm) {
-	Gadget* g = dynamic_cast<Gadget*>(gm->writer());
-	return g;
-      } else {
-	GDEBUG("Gadget with name %s not found! Returning null pointer\n", gadget_name.c_str());
-      }
-      
-      return 0;
-    }
+    virtual Gadget* find_gadget(std::string gadget_name);
 
-    void set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara)
-    {
-      global_gadget_parameters_ = globalGadgetPara;
-    }
+    void set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara);
 
-    std::string get_xml_configuration()
-    {
-      return config_xml_;
-    }
-    
+    const GadgetronXML::GadgetStreamConfiguration& get_stream_configuration();
+
     template <class T>  T* load_dll_component(const char* DLL, const char* component_name)
     {
       ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
@@ -67,6 +49,7 @@ namespace Gadgetron {
 
       ACE_TCHAR factoryname[1024];
       ACE_OS::sprintf(factoryname, "make_%s", component_name);
+
       
       dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
       
@@ -107,29 +90,13 @@ namespace Gadgetron {
     bool stream_configured_;  
     std::vector<ACE_DLL_Handle*> dll_handles_;
     std::map<std::string, std::string> global_gadget_parameters_;
-    std::string gadgetron_home_;
-    std::string config_xml_; //Copy of the original XML configuration
+    boost::filesystem::path gadgetron_home_;
+    GadgetronXML::GadgetStreamConfiguration stream_configuration_;
 
-    virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
-    {
+    virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
 
-      Gadget* g = load_dll_component<Gadget>(DLL,gadget);
-      
-      if (!g) {
-	GERROR("Failed to load gadget using factory\n");
-	return 0;
-      }
-      
-      g->set_controller(this);
-      
-      GadgetModule *module = 0;
-      ACE_NEW_RETURN (module,
-		      GadgetModule (gadget_module_name, g),
-		      0);
-      
-      return module;
-    }
-
+  private:
+      GadgetModule *default_end_module(void);
   };
 }
 

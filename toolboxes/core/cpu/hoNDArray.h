@@ -24,15 +24,17 @@ namespace Gadgetron{
     typedef NDArray<T> BaseClass;
     typedef float coord_type;
     typedef T value_type;
+    using iterator = T*;
+    using const_iterator = const T*;
 
     hoNDArray();
 
-    explicit hoNDArray(std::vector<size_t> &dimensions);
-    explicit hoNDArray(std::vector<size_t> *dimensions);
+    explicit hoNDArray(const std::vector<size_t> &dimensions);
+    explicit hoNDArray(const std::vector<size_t> *dimensions);
     explicit hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
 
-    hoNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
-    hoNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
 #if __cplusplus > 199711L
@@ -75,8 +77,8 @@ namespace Gadgetron{
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
-    virtual void create(std::vector<size_t>& dimensions);
-    virtual void create(std::vector<size_t> *dimensions);
+    virtual void create(const std::vector<size_t>& dimensions);
+    virtual void create(const std::vector<size_t> *dimensions);
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
 #if __cplusplus > 199711L
@@ -84,8 +86,8 @@ namespace Gadgetron{
     virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
 #endif
 
-    virtual void create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
-    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(size_t len);
@@ -120,7 +122,7 @@ namespace Gadgetron{
     const T& at( size_t idx ) const;
 
     T& operator[]( size_t idx );
-
+    const T& operator[]( size_t idx ) const;
     //T& operator()( size_t idx );
     //const T& operator()( size_t idx ) const;
 
@@ -128,23 +130,31 @@ namespace Gadgetron{
     //const T& operator()( const std::vector<size_t>& ind ) const;
 
     template<typename T2> 
-    bool copyFrom(const hoNDArray<T2>& aArray) // Should be a void function
+    bool copyFrom(const hoNDArray<T2>& aArray)
     {
-      if ( !this->dimensions_equal(&aArray) )
-      {
-        this->create(aArray.get_dimensions());
-      }
+        try
+        {
+            if (!this->dimensions_equal(&aArray))
+            {
+                this->create(aArray.get_dimensions());
+            }
 
-      long long i;
-      #pragma omp parallel for default(none) private(i) shared(aArray)
-      for ( i=0; i<(long long)elements_; i++ )
-      {
-        data_[i] = static_cast<T>(aArray(i));
-      }
-      return true;
+            long long i;
+#pragma omp parallel for default(none) private(i) shared(aArray)
+            for (i = 0; i < (long long)elements_; i++)
+            {
+                data_[i] = static_cast<T>(aArray(i));
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Exceptions happened in hoNDArray::copyFrom(...) ... ");
+            return false;
+        }
+        return true;
     }
 
-    void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
+    void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out) const;
 
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;

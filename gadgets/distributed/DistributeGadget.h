@@ -5,6 +5,8 @@
 #include "gadgetron_distributed_gadgets_export.h"
 #include "GadgetronConnector.h"
 
+#include "gadgetron_xml.h"
+
 #include <complex>
 
 namespace Gadgetron{
@@ -30,14 +32,12 @@ namespace Gadgetron{
     virtual int collector_putq(ACE_Message_Block* m);
 
   protected:
-    GADGET_PROPERTY(collector, std::string,
-      "Name of collection Gadget", "Collect");
-    GADGET_PROPERTY(single_package_mode, bool,
-      "Indicates that only one package is sent to each node", false);
-    GADGET_PROPERTY(nodes_used_sequentially, bool,
-      "Indicates that data is distributed to one node at a time. When new node becomes active, previous receives close message.", true);
-    GADGET_PROPERTY(use_this_node_for_compute, bool,
-      "This node can also be used for computation", true);
+    GADGET_PROPERTY(collector, std::string,"Name of collection Gadget", "Collect");
+    GADGET_PROPERTY(single_package_mode, bool,"Indicates that only one package is sent to each node", false);
+    GADGET_PROPERTY(nodes_used_sequentially, bool,"Indicates that data is distributed to one node at a time. When new node becomes active, previous receives close message.", true);
+    GADGET_PROPERTY(use_this_node_for_compute, bool,"This node can also be used for computation", true);
+    GADGET_PROPERTY(check_node_alive, bool,"Check nodes for whether it is alive before sending data through", true);
+    GADGET_PROPERTY(check_node_alive_time_out, double, "Time out period in seconds for checkign nodes alive", 5.0);
 
     virtual int process(ACE_Message_Block* m);
     virtual int process_config(ACE_Message_Block* m);
@@ -59,7 +59,7 @@ namespace Gadgetron{
       return 0; //This is an invalid ID.
     }
 
-    const char* get_node_xml_config();
+    const GadgetronXML::GadgetStreamConfiguration& get_node_stream_configuration();
 
     Gadget* collect_gadget_;
 
@@ -67,7 +67,7 @@ namespace Gadgetron{
     ACE_Thread_Mutex mtx_;
 
   private:
-    std::string node_xml_config_;
+    GadgetronXML::GadgetStreamConfiguration node_stream_configuration_;
     std::string node_parameters_;
     std::map<int,GadgetronConnector*> node_map_;
     std::vector<GadgetronConnector*> closed_connectors_;

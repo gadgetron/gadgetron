@@ -38,5 +38,5 @@ install(FILES
 install(TARGETS gadgetron_fatwater DESTINATION lib COMPONENT main)
 
 install(FILES
-  config/Generic_Cartesian_Grappa_FatWater_Proto.xml
+        config/Generic_Cartesian_Grappa_FatWater.xml
   DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

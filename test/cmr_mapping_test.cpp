@@ -65,8 +65,7 @@ TYPED_TEST(cmr_mapping_test, T2Mapping)
     this->gt_io_.import_array(data, this->gt_ut_data_folder_ + "/T2Mapping/MultiEcho_Image_Mag_REP0_SLC0");
     data.print(std::cout);
 
-    T v;
-    Gadgetron::norm2(data, v); GDEBUG_STREAM("data = " << v);
+    T v = Gadgetron::nrm2(data); GDEBUG_STREAM("data = " << v);
 
     size_t RO = data.get_size(0);
     size_t E1 = data.get_size(1);
@@ -113,13 +112,13 @@ TYPED_TEST(cmr_mapping_test, T2Mapping)
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/T2Mapping/ref_t2_map");
     Gadgetron::subtract(t2mapper.map_, ref, diff);
-    Gadgetron::norm2(diff, v);
-    Gadgetron::norm2(ref, norm_ref);
+    v = Gadgetron::nrm2(diff);
+    norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(v/norm_ref, 0.002);
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/T2Mapping/ref_sd_t2_map");
     Gadgetron::subtract(t2mapper.sd_map_, ref, diff);
-    Gadgetron::norm2(diff, v);
-    Gadgetron::norm2(ref, norm_ref);
+    v =  Gadgetron::nrm2(diff);
+    norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(v / norm_ref, 0.002);
 }

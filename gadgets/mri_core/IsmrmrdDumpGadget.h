@@ -8,16 +8,17 @@
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/dataset.h>
 #include <ismrmrd/xml.h>
+#include <ismrmrd/waveform.h>
 
 #include <complex>
 
 namespace Gadgetron {
 
     class EXPORTGADGETSMRICORE IsmrmrdDumpGadget :
-        public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+        public Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::ISMRMRD_WaveformHeader >
     {
     public:
-        typedef Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > > BaseClass;
+        typedef Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::ISMRMRD_WaveformHeader > BaseClass;
 
         GADGET_DECLARE(IsmrmrdDumpGadget);
 
@@ -26,7 +27,7 @@ namespace Gadgetron {
 
     protected:
 
-#ifdef WIN32
+#ifndef WIN32
         GADGET_PROPERTY(folder, std::string, "Folder for save dump file", "/tmp/gadgetron_data");
 #else
         GADGET_PROPERTY(folder, std::string, "Folder for save dump file", "c:/temp/gadgetron_data");
@@ -46,8 +47,13 @@ namespace Gadgetron {
         // if true, only save the xml header
         GADGET_PROPERTY(save_xml_header_only, bool, "If true, only save the xml header", false);
 
+        // since the support to waveform is not fully implemented, this option is added for not passing waveform downstream
+        // TODO: remove this option
+        GADGET_PROPERTY(pass_waveform_downstream, bool, "If true, waveform data is passed downstream", false);
+
         virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+        virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1);
+        virtual int process(GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1);
 
     private:
 
@@ -57,7 +63,7 @@ namespace Gadgetron {
         std::string ismrmrd_xml_;
         boost::shared_ptr<ISMRMRD::Dataset>  ismrmrd_dataset_;
 
-        int create_ismrmrd_dataset(ISMRMRD::AcquisitionHeader* acq = NULL);
+        int create_ismrmrd_dataset();
     };
 }
 #endif //ISMRMRDDUMPGADGET_H

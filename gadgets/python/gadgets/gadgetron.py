@@ -58,17 +58,26 @@ class Gadget(object):
                     header = args[0]
                     if (args[1].dtype == np.uint16):
                         if len(args) == 3:
-                            self.next_gadget.return_image_ushort_attr(header,args[1], args[2].serialize())
+                            if isinstance(args[2], ismrmrd.Meta):
+                                self.next_gadget.return_image_ushort_attr(header,args[1], args[2].serialize())
+                            else:
+                                self.next_gadget.return_image_ushort_attr(header,args[1], str(args[2]))
                         else:
                             self.next_gadget.return_image_ushort(header,args[1])
                     elif (args[1].dtype == np.float32):
                         if len(args) == 3:
-                            self.next_gadget.return_image_float_attr(header, args[1], args[2].serialize())
+                            if isinstance(args[2], ismrmrd.Meta):
+                                self.next_gadget.return_image_float_attr(header, args[1], args[2].serialize())
+                            else:
+                                self.next_gadget.return_image_float_attr(header, args[1], str(args[2]))
                         else:
                             self.next_gadget.return_image_float(header,args[1])
                     else:
                         if len(args) == 3:
-                            self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
+                            if isinstance(args[2], ismrmrd.Meta):
+                                self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), str(args[2].serialize()))
+                            else:
+                                self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), str(args[2]))
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
                 elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
@@ -186,33 +195,37 @@ def get_last_gadget(first_gadget):
     return g
 
 class SamplingLimit:
-	def __init__(self):
-		self.min = 0
-		self.center = 0
-		self.max = 0
+    def __init__(self):
+        self.min = 0
+        self.center = 0
+        self.max = 0
 
 class SamplingDescription:
-	def __init__(self):
-		self.encoded_FOV = (0.0,0.0,0.0)
-		self.recon_FOV = (0.0,0.0,0.0)
-		self.encoded_matrix = (0,0,0)
-		self.recon_matrix = (0,0,0)
-		self.sampling_limits = (SamplingLimit(),SamplingLimit(),SamplingLimit())
+    def __init__(self):
+        self.encoded_FOV = (0.0,0.0,0.0)
+        self.recon_FOV = (0.0,0.0,0.0)
+        self.encoded_matrix = (0,0,0)
+        self.recon_matrix = (0,0,0)
+        self.sampling_limits = (SamplingLimit(),SamplingLimit(),SamplingLimit())
 
 class IsmrmrdDataBuffered:
-	def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
-		self.data = data 
-                if (trajectory is not None): self.trajectory =trajectory 
-		self.headers =headers 
-		self.sampling = sampling
-	
+    def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
+        self.data = data 
+        if (trajectory is not None): 
+            self.trajectory =trajectory 
+        self.headers =headers 
+        self.sampling = sampling
+
 class IsmrmrdReconBit:
-	def __init__(self,data,ref=None):
-		self.data = data
-		if (ref != None): self.ref = ref
+    def __init__(self,data,ref=None):
+        self.data = data
+        if (ref != None): 
+            self.ref = ref
 
 class IsmrmrdImageArray: 
-    def __init__(self,data=None,headers=None,meta=None):
+    def __init__(self,data=None,headers=None,meta=None,waveform=None,acq_headers=None):
         self.data=data
         self.headers=headers
         self.meta=meta
+        self.waveform=waveform
+        self.acq_headers=acq_headers

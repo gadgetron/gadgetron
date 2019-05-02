@@ -10,6 +10,8 @@
 #ifndef hoImageRegSolver_H_
 #define hoImageRegSolver_H_
 
+#pragma once
+
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoNDInterpolator.h"

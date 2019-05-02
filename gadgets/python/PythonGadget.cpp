@@ -27,7 +27,7 @@ namespace Gadgetron {
         {
             auto recon_data = AsContainerMessage<IsmrmrdReconData>(mb);
             if (recon_data) {
-                GDEBUG("Calling into python gadget with IsmrmrdReconData");
+                GDEBUG("Calling into python gadget with IsmrmrdReconData\n");
                 return this->process(recon_data);
             }
         }
@@ -36,8 +36,21 @@ namespace Gadgetron {
             auto array_data = AsContainerMessage<IsmrmrdImageArray>(mb);
             if (array_data)
             {
-                GDEBUG("Calling into python gadget with IsmrmrdImageArray");
+                GDEBUG("Calling into python gadget with IsmrmrdImageArray\n");
                 return this->process(array_data);
+            }
+        }
+
+        // since most python gadgets do not handle waveform yet 
+        // and by default, waveform is passed down the chain (this is special), 
+        // these lines can cause failure of python recon
+        // TODO: a better solution for python waveform handling
+        {
+            if (auto waveform_header = AsContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>(mb)){
+                if (auto waveform_data = AsContainerMessage<hoNDArray<uint32_t>>(mb->cont())){
+                    return this->process(waveform_header,waveform_data);
+                }
+
             }
         }
 

@@ -15,6 +15,7 @@ include_directories(
   ${ISMRMRD_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron 
   ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_BINARY_DIR}/toolboxes/core/
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -22,50 +23,18 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
-add_subdirectory(mri_core)
-add_subdirectory(fatwater)
-add_subdirectory(interventional_mri)
-if (ARMADILLO_FOUND)
-  add_subdirectory(cmr)
-endif()
-
-find_program(BARTCMD bart)
-if (BARTCMD)
-	add_subdirectory(bart)
-endif()
-
-if (ARMADILLO_FOUND)
-    add_subdirectory(epi)
-elseif (ARMADILLO_FOUND)
-    message("Armadillo not found, NOT compiling EPI Gadgets")
-endif ()
-
-if (CUDA_FOUND)
-  message("Cuda found, compiling gpu accelerated gadgets")
-  add_subdirectory(pmri)
-  add_subdirectory(radial)  
-  add_subdirectory(hyper)
-  add_subdirectory(gpu)
-  add_subdirectory(mri_noncartesian)
-else ()
-  message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
-endif()
-
-add_subdirectory(spiral)
-add_subdirectory(grappa)
-add_subdirectory(distributed)
-
-if (MATLAB_FOUND)
-  message("Compiling MATLAB gadgets")
-  add_subdirectory(matlab)
-endif()
-
 if (BUILD_PYTHON_SUPPORT)
-  find_package(Boost COMPONENTS python system thread)
+  if(BUILD_WITH_PYTHON3)
+    find_package(Boost COMPONENTS python3 system thread REQUIRED)
+        message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
+  else()
+    find_package(Boost COMPONENTS python system thread REQUIRED)
+    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
+  endif()
 
   # Note: main CMakeLists.txt already finds PythonLibs and NumPy
 
-  if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+  if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     message(STATUS "PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
     message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
     message(STATUS "NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
@@ -79,6 +48,46 @@ if (BUILD_PYTHON_SUPPORT)
     set(BUILD_PYTHON_SUPPORT OFF)
   endif ()
 endif () # BUILD_PYTHON_SUPPORT
+
+add_subdirectory(mri_core)
+
+add_subdirectory(interventional_mri)
+if (ARMADILLO_FOUND)
+  add_subdirectory(cmr)
+endif()
+
+if(BART_FOUND)
+  add_subdirectory(bart)
+else()
+  message("BART not found, NOT compiling bartgadget")
+endif()
+
+if (ARMADILLO_FOUND)
+  add_subdirectory(epi)
+  add_subdirectory(fatwater)
+elseif (ARMADILLO_FOUND)
+  message("Armadillo not found, NOT compiling EPI or Fat/water Gadgets")
+endif ()
+
+if (CUDA_FOUND)
+  message("Cuda found, compiling gpu accelerated gadgets")
+  add_subdirectory(pmri)
+  add_subdirectory(radial)  
+  add_subdirectory(hyper)
+  add_subdirectory(gpu)
+else ()
+  message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
+endif()
+
+add_subdirectory(mri_noncartesian)
+add_subdirectory(spiral)
+add_subdirectory(grappa)
+add_subdirectory(distributed)
+
+if (MATLAB_FOUND)
+  message("Compiling MATLAB gadgets")
+  add_subdirectory(matlab)
+endif()
 
 add_subdirectory(util)
 

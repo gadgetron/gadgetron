@@ -56,6 +56,15 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
+        GadgetContainerMessage< std::vector<ISMRMRD::Waveform> > * wav = AsContainerMessage< std::vector<ISMRMRD::Waveform>  >(m1->cont());
+        if (wav)
+        {
+            if(verbose.value())
+            {
+                GDEBUG_STREAM("Incoming recon_bit with " << wav->getObjectPtr()->size() << " wave form samples ");
+            }
+        }
+
         // for every encoding space
         for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
         {
@@ -121,6 +130,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
+                recon_bit_->rbit_[e].ref_->clear();
                 recon_bit_->rbit_[e].ref_ = boost::none;
             }
 
@@ -158,12 +168,16 @@ namespace Gadgetron {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str());
                 }
 
+                if (wav)
+                {
+                    recon_obj_[e].recon_res_.waveform_ = *(wav->getObjectPtr());
+                }
+
+                recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
+
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianFFTGadget::send_out_image_array"); }
-                this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
+                this->send_out_image_array(recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
-
-              
-
             }
 
             recon_obj_[e].recon_res_.data_.clear();

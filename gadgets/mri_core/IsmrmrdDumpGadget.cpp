@@ -129,7 +129,7 @@ namespace Gadgetron
         return GADGET_OK;
     }
 
-    int IsmrmrdDumpGadget::create_ismrmrd_dataset(ISMRMRD::AcquisitionHeader* acq)
+    int IsmrmrdDumpGadget::create_ismrmrd_dataset()
     {
         try {
             std::string measurement_id = "";
@@ -236,13 +236,13 @@ namespace Gadgetron
         return GADGET_OK;
     }
 
-    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1)
     {
         if (first_call_)
         {
             if (this->save_ismrmrd_data_)
             {
-                this->create_ismrmrd_dataset(m1->getObjectPtr());
+                this->create_ismrmrd_dataset();
 
                 try
                 {
@@ -268,6 +268,14 @@ namespace Gadgetron
         {
             ISMRMRD::Acquisition ismrmrd_acq;
             ismrmrd_acq.setHead(*m1->getObjectPtr());
+
+            GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2 = AsContainerMessage< hoNDArray< std::complex<float> > >(m1->cont());
+            if (!m2)
+            {
+                GDEBUG("Error casting acquisition data package");
+                return GADGET_FAIL;
+            }
+
             memcpy((void *)ismrmrd_acq.getDataPtr(), m2->getObjectPtr()->get_data_ptr(), sizeof(float)*m2->getObjectPtr()->get_number_of_elements() * 2);
 
             if (m2->cont())
@@ -318,6 +326,79 @@ namespace Gadgetron
             m1->release();
             GERROR("IsmrmrdDumpGadget::process, passing data on to next gadget");
             return -1;
+        }
+
+        return 0;
+    }
+
+    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1)
+    {
+        if (first_call_)
+        {
+            if (this->save_ismrmrd_data_)
+            {
+                this->create_ismrmrd_dataset();
+
+                try
+                {
+                    ismrmrd_dataset_->writeHeader(ismrmrd_xml_);
+                }
+                catch (...)
+                {
+                    GDEBUG("Failed to write XML header to HDF file\n");
+                    return GADGET_FAIL;
+                }
+
+                GDEBUG_STREAM("IsmrmrdDumpGadget, first call is on waveform, save ismrmrd xml header ... ");
+            }
+            else
+            {
+                GDEBUG_STREAM("IsmrmrdDumpGadget, first call is on waveform, do NOT save ismrmrd data ... ");
+            }
+
+            first_call_ = false;
+        }
+
+        if (this->save_ismrmrd_data_ && !this->save_xml_header_only.value())
+        {
+            ISMRMRD::Waveform ismrmrd_wav;
+            ismrmrd_wav.head = *m1->getObjectPtr();
+
+            GadgetContainerMessage< hoNDArray< uint32_t > >* m2 = AsContainerMessage< hoNDArray< uint32_t > >(m1->cont());
+            if (!m2)
+            {
+                GDEBUG("Error casting waveform data package");
+                return GADGET_FAIL;
+            }
+
+            ismrmrd_wav.data = m2->getObjectPtr()->begin();
+
+            try
+            {
+                ismrmrd_dataset_->appendWaveform(ismrmrd_wav);
+            }
+            catch (...)
+            {
+                GDEBUG("Error appending ISMRMRD Waveform\n");
+                return GADGET_FAIL;
+            }
+
+            ismrmrd_wav.data = NULL;
+        }
+
+        // TODO: remove this check
+        if(this->pass_waveform_downstream.value())
+        {
+            if (this->next()->putq(m1) == -1)
+            {
+                m1->release();
+                GERROR("IsmrmrdDumpGadget::process, passing waveform on to next gadget");
+                return -1;
+            }
+        }
+        else
+        {
+            m1->release();
         }
 
         return 0;

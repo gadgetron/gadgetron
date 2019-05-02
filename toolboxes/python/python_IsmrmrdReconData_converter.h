@@ -35,11 +35,17 @@ private:
   static bp::object DataBufferedToPython( const IsmrmrdDataBuffered & dataBuffer){
     bp::object pygadgetron = bp::import("gadgetron");
     auto data = bp::object(dataBuffer.data_);
-       auto headers = boost::python::object(dataBuffer.headers_);
+    auto headers = boost::python::object(dataBuffer.headers_);
     auto trajectory = dataBuffer.trajectory_ ? bp::object(*dataBuffer.trajectory_) : bp::object();
     auto sampling = SamplingDescriptionToPython(dataBuffer.sampling_);
     auto buffer = pygadgetron.attr("IsmrmrdDataBuffered")(data,headers,sampling,trajectory);
-        return buffer;
+
+    bp::incref(data.ptr());
+    bp::incref(headers.ptr());
+    bp::incref(trajectory.ptr());
+    bp::incref(sampling.ptr());
+
+    return buffer;
   }
 
   static bp::object SamplingDescriptionToPython(const SamplingDescription & sD){

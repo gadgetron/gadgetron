@@ -27,7 +27,7 @@ class RemOS(Gadget):
             acq.center_sample = padded_ro_length>>2
             acq.number_of_samples = data2.shape[1]
             self.put_next(acq,data2,*args)
-        return 0                                                                                     
+        return 0
 
 class NoiseAdj(Gadget):
     def __init__(self, next_gadget = None):

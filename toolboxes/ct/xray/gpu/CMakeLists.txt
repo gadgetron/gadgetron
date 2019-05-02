@@ -17,6 +17,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  ${CMAKE_BINARY_DIR}/toolboxes/core
   ${CUDA_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}

@@ -6,6 +6,8 @@
 #ifndef hoImageRegRegister_H_
 #define hoImageRegRegister_H_
 
+#pragma once
+
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoNDInterpolator.h"

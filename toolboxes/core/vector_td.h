@@ -203,11 +203,15 @@ namespace Gadgetron{
      }
     __inline__ __host__ __device__ vector_td(){}
 
-    __inline__ __host__ __device__ vector_td(T x, T y,T z){
-      vec[0]=x;
-      vec[1]=y;
-      vec[2]=z;
+#if __cplusplus > 199711L
+      constexpr __inline__ __host__ __device__ vector_td( T x, T y, T z) : vec{x,y,z} { }
+#else
+      __inline__ __host__ __device__ vector_td(T x, T y, T z){
+    	vec[0] = x;
+    	vec[1] = y;
+    	vec[2] = z;
     }
+#endif
 
     __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;

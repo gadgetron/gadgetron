@@ -1,8 +1,9 @@
 include_directories(
-    ${CMAKE_SOURCE_DIR}/apps/gadgetron
     ${CMAKE_BINARY_DIR}/apps/gadgetron
+    ${CMAKE_BINARY_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
@@ -24,6 +25,11 @@ set(gadgetron_toolbox_python_header_files python_converters.h
 add_library(gadgetron_toolbox_python SHARED
     python_toolbox.cpp
     ${gadgetron_toolbox_python_header_files})
+
+message("PYTHON_INCLUDE_PATH is ${PYTHON_INCLUDE_PATH}")
+message("PYTHON_LIBRARIES is ${PYTHON_LIBRARIES}")
+message("NUMPY_INCLUDE_DIRS is ${NUMPY_INCLUDE_DIRS}")
+message("Boost_LIBRARIES is ${Boost_LIBRARIES}")
 
 target_link_libraries(gadgetron_toolbox_python
     gadgetron_toolbox_cpucore

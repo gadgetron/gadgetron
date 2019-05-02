@@ -1,83 +1,95 @@
+#!/usr/bin/python3
+
 import os
+import os.path
+
 import sys
+import time
+import json
 import hashlib
+import argparse
+import functools
 
-if sys.version_info[0] >= 3:
-    import urllib.request
-    import urllib.error
-    HTTPError = urllib.error.HTTPError
-    URLError = urllib.error.URLError
-    urlopen = urllib.request.urlopen
-else:
-    import urllib2
-    HTTPError = urllib2.HTTPError
-    URLError = urllib2.URLError
-    urlopen = urllib2.urlopen
-
-DATAFILE = "data.txt"
-DATADIR = "data"
-HOST = 'http://gadgetrondata.blob.core.windows.net/gadgetrontestdata'
+import urllib.request
 
 
-def md5sum(filename, blocksize=64*1024):
-    hsh = hashlib.md5()
-    with open(filename, "r+b") as f:
-        buf = f.read(blocksize)
-        while len(buf) > 0:
-            hsh.update(buf)
-            buf = f.read(blocksize)
-    return hsh.hexdigest()
+def __update_handler(current_size, total_size):
+    print(' ' * 64, end='\r')
+    print("\t{:n} of {:n} bytes [{:.2%}]".format(current_size, total_size, current_size / total_size), end='\r')
 
 
-def load_checksums(datafile):
-    checksums = {}
-    with open(datafile) as f:
-        for line in f:
-            filepath, checksum = line.split(':')
-            checksums[filepath.strip()] = checksum.strip()
-    return checksums
+def __finish_handler(total_size, duration):
+    print(' ' * 64, end='\r')
+    print("Downloaded {:n} bytes at {:n} bytes per second.".format(total_size, int(total_size / duration)))
 
 
-def download(url, dest):
-    furl = urlopen(url)
-    with open(dest, 'wb') as fdest:
-        fdest.write(furl.read())
+def __progress_notification_handler(on_update, on_finish, start, blocks, block_size, total_size):
+    current_size = blocks * block_size
+
+    if total_size <= current_size:
+        on_finish(total_size, time.time() - start)
+    else:
+        on_update(current_size, total_size)
+
+
+def is_valid(file, digest):
+
+    if not os.path.isfile(file):
+        return False
+
+    md5 = hashlib.new('md5')
+
+    with open(file, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            md5.update(chunk)
+
+    return digest == md5.hexdigest()
 
 
 def main():
-    # determine test dir from full path to this script
-    testdir = os.path.dirname(os.path.realpath(sys.argv[0]))
-    datadir = os.path.join(testdir, DATADIR)
-    datafile = os.path.join(testdir, DATAFILE)
-    if not os.path.isdir(datadir):
-        os.mkdir(datadir)
 
-    print("Reading list of data from %s" % datafile)
-    try:
-        checksums = load_checksums(datafile)
-    except IOError:
-        print("Failed to read %s" % datafile)
-        return
+    parser = argparse.ArgumentParser(description="Gadgetron Integration Test Data Download Script",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    print("Storing test data in %s" % datadir)
+    parser.add_argument('-l', '--list', type=str, default='data.json',
+                        help="List of data files to download.")
 
-    for dataname, checksum in checksums.items():
-        datapath = os.path.join(datadir, dataname)
-        parent = os.path.dirname(datapath)
-        if not os.path.isdir(parent):
-            os.makedirs(parent)
-        url = '%s/%s' % (HOST, dataname)
+    parser.add_argument('-d', '--destination', type=str, default='data',
+                        help="Folder in which to write downloaded data.")
 
-        print("Verifying: %s..." % dataname)
-        # if file is missing or its checksum doesn't match, download it
-        if not os.path.isfile(datapath) or md5sum(datapath) != checksum:
-            print("Downloading: %s..." % dataname)
-            try:
-                download(url, datapath)
-            except HTTPError as e:
-                print("HTTP Error: %d %s" % (e.code, url))
-            except URLError as e:
-                print("URL Error: %s - %s" % (e.reason, url))
+    parser.add_argument('-H', '--host', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/',
+                        help="Host from which to download the data.")
+
+    parser.add_argument('--mute-download-progress', dest='progress', action='store_const',
+                        const=functools.partial(__progress_notification_handler, lambda *_: None, __finish_handler),
+                        default=functools.partial(__progress_notification_handler, __update_handler, __finish_handler),
+                        help="Mute download progress messages.")
+
+    args = parser.parse_args()
+
+    with open(args.list, 'r') as list:
+        entries = json.load(list)
+
+    for entry in entries:
+
+        url = "{}{}".format(args.host, entry['file'])
+        destination = os.path.join(args.destination, entry['file'])
+
+        if is_valid(destination, entry['md5']):
+            print("Verified: {}".format(destination))
+            continue
+
+        print("Downloading file: {}".format(destination))
+
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        urllib.request.urlretrieve(url, destination, reporthook=functools.partial(args.progress, time.time()))
+
+        if not is_valid(destination, entry['md5']):
+            print("Downloaded file {} failed validation.".format(destination))
+            sys.exit(1)
+
+    sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

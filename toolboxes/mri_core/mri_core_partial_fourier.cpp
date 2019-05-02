@@ -392,11 +392,10 @@ namespace Gadgetron
 
                 // compute threshold to stop the iteration
                 Gadgetron::subtract(complexImPOCS, complexIm, buffer_partial_fourier);
-                typename realType<T>::Type diff, prev;
-                Gadgetron::norm2(complexIm, prev);
-                Gadgetron::norm2(buffer_partial_fourier, diff);
+                auto prev = Gadgetron::nrm2(complexIm);
+                auto diff = Gadgetron::nrm2(buffer_partial_fourier);
 
-                typename realType<T>::Type t = diff / prev;
+                auto t = diff / prev;
 
                 if (t < thres)
                 {
@@ -453,13 +452,13 @@ namespace Gadgetron
                 {
                     hoNDArray<T> fil(len_end);
                     Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_end*filter_pf_width), filter_pf_density_comp);
-                    Gadgetron::pad(len, &fil, &filter_pf);
+                    Gadgetron::pad(len, fil, filter_pf);
                 }
                 else
                 {
                     hoNDArray<T> fil(len_start);
                     Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_start*filter_pf_width), filter_pf_density_comp);
-                    Gadgetron::pad(len, &fil, &filter_pf);
+                    Gadgetron::pad(len, fil, filter_pf);
                 }
             }
         }

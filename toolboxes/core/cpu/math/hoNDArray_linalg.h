@@ -4,9 +4,9 @@
 #include "cpucore_math_export.h"
 #include "hoNDArray.h"
 
-#ifdef USE_ARMADILLO
-    #include "hoArmadillo.h"
-#endif // USE_ARMADILLO
+
+#include "hoArmadillo.h"
+
 
 #ifndef lapack_int
     #define lapack_int int
@@ -87,5 +87,13 @@ void getrf(hoNDArray<T>& A, hoNDArray<lapack_int>& ipiv);
 /// Computes the inverse of an LU-factored general matrix
 template<typename T> EXPORTCPUCOREMATH 
 void getri(hoNDArray<T>& A);
+
+
+
+/**
+* @brief linear fitting, y = a*x + b
+  compute linear fit for y to x
+*/
+template <typename T> EXPORTCPUCOREMATH void linFit(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b);
 
 }

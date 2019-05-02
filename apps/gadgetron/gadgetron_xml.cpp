@@ -1,14 +1,16 @@
 #include "gadgetron_xml.h"
+#include "log.h"
 #include "pugixml.hpp"
 #include <stdexcept>
 #include <cstdlib>
+#include <iostream>
 
 namespace GadgetronXML
 {
-  void deserialize(const char* xml_config, GadgetronConfiguration& h)
+  void deserialize(std::istream& stream, GadgetronConfiguration& h)
   {
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load(xml_config);
+    pugi::xml_parse_result result = doc.load(stream);
     pugi::xml_node root = doc.child("gadgetronConfiguration");
 
     if (!root) {
@@ -58,10 +60,17 @@ namespace GadgetronXML
     }
   }
 
-  void deserialize(const char* xml_config, GadgetStreamConfiguration& cfg)
+  void deserialize(std::istream& stream, GadgetStreamConfiguration& cfg)
   {
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load(xml_config);
+    pugi::xml_parse_result result = doc.load(stream);
+
+
+    if (result.status != pugi::status_ok) {
+        GERROR("Loading config file failed with following error: %s (%d)\n", result.description(), result.status);
+        throw std::invalid_argument(result.description());
+    }
+
     pugi::xml_node root = doc.child("gadgetronStreamConfiguration");
 
     if (!root) {

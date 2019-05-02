@@ -281,7 +281,7 @@ namespace Gadgetron{
   //
 
   template<class T, unsigned int D> inline
-  std::vector<T> to_std_vector( vector_td<T,D> vec )
+  std::vector<T> to_std_vector(const vector_td<T,D>& vec )
   {
     std::vector<T> out(D);
     for(unsigned int i=0; i<D; i++ )
@@ -290,7 +290,7 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> inline
-  vector_td<T,D> from_std_vector( std::vector<T> &_vector )
+  vector_td<T,D> from_std_vector(const std::vector<T> &_vector )
   {
     vector_td<T,D> out;
     for( unsigned int i=0; i<D; i++ ){
@@ -477,17 +477,17 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __inline__ __host__ __device__ 
-  REAL norm_squared( const vector_td<REAL,D> vec )
+  typename realType<REAL>::Type norm_squared( const vector_td<REAL,D> vec )
   {
-    REAL res = REAL(0);
+    typename realType<REAL>::Type res(0);
     for (unsigned int i=0; i<D; i++){
-      res += (vec[i]*vec[i]);
+      res += norm(vec[i]);
     }
     return res;
   }
 
   template<class REAL, unsigned int D> __inline__ __host__ __device__ 
-  REAL norm( const vector_td<REAL,D> vec )
+  typename realType<REAL>::Type norm( const vector_td<REAL,D> vec )
   {
     return ::sqrt(norm_squared<REAL,D>(vec));
   }

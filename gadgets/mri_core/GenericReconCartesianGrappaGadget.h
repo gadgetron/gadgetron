@@ -16,7 +16,21 @@ namespace Gadgetron {
     public:
 
         GenericReconCartesianGrappaObj() {}
-        virtual ~GenericReconCartesianGrappaObj() {}
+        virtual ~GenericReconCartesianGrappaObj()
+        {
+            if (this->recon_res_.data_.delete_data_on_destruct()) this->recon_res_.data_.clear();
+            if (this->recon_res_.headers_.delete_data_on_destruct()) this->recon_res_.headers_.clear();
+            this->recon_res_.meta_.clear();
+
+            if (this->gfactor_.delete_data_on_destruct()) this->gfactor_.clear();
+            if (this->ref_calib_.delete_data_on_destruct()) this->ref_calib_.clear();
+            if (this->ref_calib_dst_.delete_data_on_destruct()) this->ref_calib_dst_.clear();
+            if (this->ref_coil_map_.delete_data_on_destruct()) this->ref_coil_map_.clear();
+            if (this->kernel_.delete_data_on_destruct()) this->kernel_.clear();
+            if (this->kernelIm_.delete_data_on_destruct()) this->kernelIm_.clear();
+            if (this->unmixing_coeff_.delete_data_on_destruct()) this->unmixing_coeff_.clear();
+            if (this->coil_map_.delete_data_on_destruct()) this->coil_map_.clear();
+        }
 
         // ------------------------------------
         /// recon outputs
@@ -121,5 +135,7 @@ namespace Gadgetron {
 
         // compute snr map
         virtual void compute_snr_map(ReconObjType& recon_obj, hoNDArray< std::complex<float> >& snr_map);
+
+        virtual int close(unsigned long flags);
     };
 }

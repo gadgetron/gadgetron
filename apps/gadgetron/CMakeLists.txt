@@ -27,10 +27,12 @@ add_executable(gadgetron
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp 
   GadgetStreamController.h
-  EndGadget.h 
+  # EndGadget.h
+  # EndGadget.cpp
+  # GadgetStreamInterface.cpp
   Gadget.h 
   GadgetContainerMessage.h 
-  GadgetMessageInterface.h 
+  GadgetMessageInterface.h
   GadgetronExport.h 
   gadgetron_xml.h
   )
@@ -44,17 +46,13 @@ target_link_libraries(gadgetron
  )
 
 if (BUILD_PYTHON_SUPPORT)
-  find_package(PythonLibs)
-  find_package(NumPy)
-  find_package(Boost COMPONENTS python)
-
-  if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
-  endif()
 endif()
 
 add_executable(gadgetron_info
   gadgetron_info.cpp
+  EndGadget.cpp
+  GadgetStreamInterface.cpp
 )
 
 target_link_libraries(gadgetron_info 
@@ -69,10 +67,19 @@ if (CUDA_FOUND)
 endif()
 
 add_library(gadgetron_gadgetbase SHARED
+  Gadget.h
   Gadget.cpp
+  GadgetStreamController.h
   GadgetStreamController.cpp
+  gadgetron_xml.h
   gadgetron_xml.cpp
+  gadgetron_home.h
+  gadgetron_home.cpp
   pugixml.cpp  
+  GadgetStreamInterface.h 
+  GadgetStreamInterface.cpp 
+  EndGadget.h
+  EndGadget.cpp
 )
 
 target_link_libraries(gadgetron_gadgetbase
@@ -81,6 +88,12 @@ target_link_libraries(gadgetron_gadgetbase
   gadgetron_toolbox_cloudbus
   gadgetron_toolbox_log
 )
+
+if (GPERFTOOLS_PROFILER)
+  message("Adding gperftools cpu profiler to gadgetron link assemblage.")
+  target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
+endif()
+
 
 set_target_properties(gadgetron_gadgetbase PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")
@@ -95,11 +108,12 @@ install(FILES
   GadgetContainerMessage.h
   GadgetMessageInterface.h
   GadgetronExport.h
-  gadgetron_paths.h
+  gadgetron_home.h
   gadgetron_xml.h
   GadgetServerAcceptor.h
   GadgetStreamController.h
   GadgetStreamInterface.h
+  gadgetron_home.h
   ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_config.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main) 
 
@@ -110,3 +124,4 @@ install(FILES
 install(FILES 
   schema/gadgetron.xsd
   DESTINATION ${GADGETRON_INSTALL_SCHEMA_PATH} COMPONENT main)
+

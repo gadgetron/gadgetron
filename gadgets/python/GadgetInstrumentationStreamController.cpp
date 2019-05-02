@@ -21,30 +21,11 @@ namespace Gadgetron
 
   GadgetInstrumentationStreamController::~GadgetInstrumentationStreamController()
   {
-    if (this->close() != GADGET_OK) {
-      throw std::runtime_error("Unable to shut down sream in  GadgetInstrumentationStreamController");
-    }
+    this->close();
   }
   
   int GadgetInstrumentationStreamController::open()
   {
-    GadgetModule *head = 0;
-    GadgetModule *tail = 0;
-    
-    if (tail == 0) {
-      Gadget* eg = new EndGadget();
-      if (eg) {
-	eg->set_controller(this);
-      }
-      
-      ACE_NEW_RETURN(tail,
-		     ACE_Module<ACE_MT_SYNCH>( ACE_TEXT("EndGadget"),
-					       eg ),
-		     -1);
-      
-      stream_.open(0,head,tail);
-    }
-
     //Adding some gadgets to "capture data and return to the stream"
     if (this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadget") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("ImageFinishFloat")->pass_on_undesired_data(true);
@@ -81,7 +62,7 @@ namespace Gadgetron
     Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
 
     //We will set this very high to prevent race conditions in "mixed environments" such as when using Python or Matlab in Gadgets
-    g->msg_queue()->high_water_mark(ACE_Message_Queue_Base::DEFAULT_HWM*100000);
+    g->msg_queue()->high_water_mark( (size_t)ACE_Message_Queue_Base::DEFAULT_HWM*1024*1024*100 );
     
     if (!m) {
       GERROR("Failed to create GadgetModule from %s:%s\n",

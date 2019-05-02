@@ -1,13 +1,26 @@
 FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 
+ARG BART_URL=https://github.com/mrirecon/bart
+ARG BART_BRANCH=master
+
+RUN apt-get update --quiet && \
+    apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
+RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    apt-utils wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
-    libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
+    apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
+    libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
-    libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools
+    libxslt-dev libace-dev gcc-multilib  \
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libplplot-dev libdcmtk-dev \
+    libceres-dev libopenblas-dev\
+    supervisor net-tools cpio
+
+#Update gcc to something remotely recent
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update
+RUN apt-get -y install gcc-6 g++-6
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
 #Python stuff
 RUN pip install --upgrade pip
@@ -17,29 +30,43 @@ RUN pip install numpy
 RUN pip install pyxb psutil lxml pydicom
 RUN pip install 'h5py==2.5.0' 
 
-RUN apt-get update && apt-get install -y python python-setuptools python-pip python-dev build-essential libgtk2.0-dev
-RUN easy_install -U pip
-RUN apt install --yes python-scipy
-RUN pip install tensorflow-gpu matplotlib opencv-python scikit-image
+RUN pip3 install --upgrade pip
+RUN pip3 install -U pip setuptools
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
+RUN pip3 install Cython scipy tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN pip3 uninstall h5py
+RUN apt-get install -y python3-h5py
+
+RUN pip3 install --upgrade tensorflow tensorflow-gpu
+RUN pip3 install torch torchvision
+RUN pip3 install tensorboardx visdom
+
+# Compile boost
+RUN cd /opt && \
+    wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz && \
+    tar -xzvf boost_1_67_0.tar.gz && \
+    cd boost_1_67_0 && \
+    ./bootstrap.sh --with-python=/usr/bin/python3 --prefix=/usr && \
+    ./b2 -j$(nproc) address-model=64 stage && \
+    ./b2 install
+
+# since cmake has problems to find python3 and boost-python3
+RUN ln -s /usr/lib/libboost_python35.so /usr/lib/libboost_python3.so
+
+# Compile armadillo
+RUN cd /opt && \
+    wget http://sourceforge.net/projects/arma/files/armadillo-8.600.0.tar.xz && \
+    tar xvf armadillo-8.600.0.tar.xz && \
+    cd armadillo-8.600.0 && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release ../ && \
+    make -j$(nproc) && \
+    make install
 
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
-
-#OpenBLAS with OpenMP
-RUN cd /opt && \
-    mkdir debsource && \
-    cd debsource && \
-    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
-    apt-get source libopenblas-base && \
-    cd openblas-0.2.18/ && \
-    sed -i "s/NO_WARMUP=1/NO_WARMUP=1 OPENMP=1/g" debian/rules && \
-    debchange -i "Compiling with OpenMP support" && \
-    debuild -us -uc -i -I && \
-    debi && \
-    update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 && \
-    cd /opt && \
-    rm -rf debsource
 
 #ZFP
 RUN cd /opt && \
@@ -48,15 +75,17 @@ RUN cd /opt && \
     mkdir lib && \
     make && \
     make shared && \
-    make -j 16 install
+    make -j $(nproc) install
 
-#BART
-RUN cd /opt && \
-    wget https://github.com/mrirecon/bart/archive/v0.3.01.tar.gz && \
-    tar -xzf v0.3.01.tar.gz && \
-    cd bart-0.3.01 && \
-    make -j 16 && \
-    ln -s /opt/bart-0.3.01/bart /usr/local/bin/bart 
+# BART
+RUN cd /opt/code && \
+    git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
+    cd bart && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
+    make -j $(nproc) && \
+    make install
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \

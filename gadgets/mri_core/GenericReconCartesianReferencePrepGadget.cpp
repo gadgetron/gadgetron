@@ -108,6 +108,9 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
+        // a data buffer for N and S selection
+        hoNDArray< std::complex<float> > ref_selected_N_S;
+
         // for every encoding space, prepare the recon_bit_->rbit_[e].ref_
         size_t e;
         for (e = 0; e < recon_bit_->rbit_.size(); e++)
@@ -136,6 +139,7 @@ namespace Gadgetron {
                     if (rbit.ref_)
                     {
                         // remove the ref
+                        rbit.ref_->clear();
                         rbit.ref_ = boost::none;
                     }
                 }
@@ -155,7 +159,7 @@ namespace Gadgetron {
 
             SamplingLimit sampling_limits[3];
             for (int i = 0; i < 3; i++)
-            	sampling_limits[i] = (*rbit.ref_).sampling_.sampling_limits_[i];
+                sampling_limits[i] = (*rbit.ref_).sampling_.sampling_limits_[i];
 
             size_t RO = ref.get_size(0);
             size_t E1 = ref.get_size(1);
@@ -168,18 +172,83 @@ namespace Gadgetron {
             // stored the ref data ready for calibration
             hoNDArray< std::complex<float> > ref_calib;
            // -----------------------------------------
-            // 1) average the ref according to the input parameters; 
+            // 1) average or pick the ref according to the input parameters; 
             //    if interleaved mode, sampling times for every E1/E2 location is detected and line by line averaging is performed 
             //    this is required when irregular cartesian sampling is used or number of frames cannot be divided in full by acceleration factor
             // 2) detect the sampled region and crop the ref data if needed
             // 3) update the sampling_limits
             // -----------------------------------------
 
+            // if embedded mode, fill back ref if required
+            if((calib_mode_[e] == ISMRMRD_embedded) && ref_fill_into_data_embedded.value())
+            {
+                hoNDArray< std::complex<float> >& data = rbit.data_.data_;
+
+                GADGET_CHECK_THROW(data.get_size(0) == RO);
+                GADGET_CHECK_THROW(data.get_size(1) == E1);
+                GADGET_CHECK_THROW(data.get_size(2) == E2);
+                GADGET_CHECK_THROW(data.get_size(3) == CHA);
+                GADGET_CHECK_THROW(data.get_size(6) == SLC);
+
+                size_t slc, n, s, cha, e2, e1, ro;
+                for (slc = 0; slc < SLC; slc++)
+                {
+                    for (s = 0; s < S; s++)
+                    {
+                        for (n = 0; n < N; n++)
+                        {
+                            for (e2 = 0; e2 < E2; e2++)
+                            {
+                                for (e1 = 0; e1 < E1; e1++)
+                                {
+                                    if (std::abs(ref(RO/2, e1, e2, 0, n, s, slc))>0 && std::abs(ref(RO/2, e1, e2, CHA-1, n, s, slc))>0)
+                                    {
+                                        for (cha = 0; cha < CHA; cha++)
+                                        {
+                                            std::complex<float>* pRef = &(ref(0, e1, e2, cha, n, s, slc));
+                                            std::complex<float>* pData = &(data(0, e1, e2, cha, n, s, slc));
+                                            memcpy(pData, pRef, sizeof(std::complex<float>)*RO);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //if (!debug_folder_full_path_.empty()) { this->gt_exporter_.exportArrayComplex(data, debug_folder_full_path_ + "data_after_ref_filled_back" + os.str()); }
+            }
+
             hoNDArray< std::complex<float> > ref_recon_buf;
 
             // step 1
             bool count_sampling_freq = (calib_mode_[e] == ISMRMRD_interleaved);
-            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::compute_averaged_data_N_S(ref, average_all_ref_N.value(), average_all_ref_S.value(), count_sampling_freq, ref_calib), GADGET_FAIL);
+
+            bool valid_N_for_ref = (N_for_ref.value()<N && N_for_ref.value() >= 0);
+            bool valid_S_for_ref = (S_for_ref.value()<S && S_for_ref.value() >= 0);
+
+            if (!valid_N_for_ref && !valid_S_for_ref)
+            {
+                // use average N S
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::compute_averaged_data_N_S(ref, average_all_ref_N.value(), average_all_ref_S.value(), count_sampling_freq, ref_calib), GADGET_FAIL);
+            }
+            else if(valid_N_for_ref && !valid_S_for_ref)
+            {
+                // pick N, average S if needed
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::select_data_N_S(ref, true, N_for_ref.value(), false, 0, ref_selected_N_S), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::compute_averaged_data_N_S(ref_selected_N_S, false, average_all_ref_S.value(), count_sampling_freq, ref_calib), GADGET_FAIL);
+            }
+            else if(!valid_N_for_ref && valid_S_for_ref)
+            {
+                // pick S, average N if needed
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::select_data_N_S(ref, false, 0, true, S_for_ref.value(), ref_selected_N_S), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::compute_averaged_data_N_S(ref_selected_N_S, false, average_all_ref_S.value(), count_sampling_freq, ref_calib), GADGET_FAIL);
+            }
+            else if (valid_N_for_ref && valid_S_for_ref)
+            {
+                // pick N and S
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::select_data_N_S(ref, true, N_for_ref.value(), true, S_for_ref.value(), ref_calib), GADGET_FAIL);
+            }
 
             if (!debug_folder_full_path_.empty())
             {
@@ -226,7 +295,7 @@ namespace Gadgetron {
                 crop_size[2] = ref_calib.get_size(2) - crop_offset[2];
             }
 
-            Gadgetron::crop(crop_offset, crop_size, &ref_calib, &ref_recon_buf);
+            Gadgetron::crop(crop_offset, crop_size, ref_calib, ref_recon_buf);
             ref_calib = ref_recon_buf;
 
             if (!debug_folder_full_path_.empty())

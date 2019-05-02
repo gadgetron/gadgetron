@@ -38,7 +38,7 @@ struct hoNDArray_to_numpy_array {
                 arr.get_number_of_elements() * sizeof(T));
 
         // increment the reference count so it exists after `return`
-        return bp::incref(obj);
+        return obj;
     }
 };
 
@@ -64,7 +64,7 @@ struct hoNDArray_to_numpy_array<ISMRMRD::AcquisitionHeader> {
                 pyobjects.size()* sizeof(PyObject*));
 
         // increment the reference count so it exists after `return`
-        return bp::incref(obj);
+        return obj;
     }
 };
 
@@ -94,7 +94,7 @@ struct hoNDArray_to_numpy_array<ISMRMRD::ImageHeader>
             pyobjects.size() * sizeof(PyObject*));
 
         // increment the reference count so it exists after `return`
-        return bp::incref(obj);
+        return obj;
     }
 };
 
@@ -136,7 +136,7 @@ struct hoNDArray_from_numpy_array {
         hoNDArray<T>* arr = new (storage) hoNDArray<T>(dims);
         memcpy(arr->get_data_ptr(), NumPyArray_DATA(obj),
                 sizeof(T) * arr->get_number_of_elements());
-        //PyObject_Del(obj);
+        bp::decref(obj);
     }
 };
 
@@ -181,7 +181,7 @@ struct hoNDArray_from_numpy_array<ISMRMRD::AcquisitionHeader> {
           data_ptr[i] = bp::extract<ISMRMRD::AcquisitionHeader>(bp::object(bp::borrowed(pyobjects[i])));
         }
 
-        //PyObject_Del(obj);
+        bp::decref(obj);
 
     }
 };
@@ -225,6 +225,8 @@ struct hoNDArray_from_numpy_array<ISMRMRD::ImageHeader>
         {
             data_ptr[i] = bp::extract<ISMRMRD::ImageHeader>(bp::object(bp::borrowed(pyobjects[i])));
         }
+
+        bp::decref(obj);
     }
 };
 

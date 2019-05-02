@@ -14,7 +14,7 @@ namespace Gadgetron{
 
 
   class EXPORTGADGETSMRICORE AcquisitionAccumulateTriggerGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  public Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::ISMRMRD_WaveformHeader >
     {
     public:
       GADGET_DECLARE(AcquisitionAccumulateTriggerGadget);
@@ -46,7 +46,7 @@ namespace Gadgetron{
 			     "user_5",
 			     "user_6",
 			     "user_7",
-                 "n_acquisitions",
+                 	     "n_acquisitions",
 			     "");
 
       GADGET_PROPERTY_LIMITS(sorting_dimension, std::string, "Dimension to sort by", "", 
@@ -68,7 +68,7 @@ namespace Gadgetron{
 			     "user_5",
 			     "user_6",
 			     "user_7",
-                 "n_acquisitions",
+			     "n_acquisitions",
 			     "");
       
       GADGET_PROPERTY(n_acquisitions_before_trigger, unsigned long, "Number of acquisition before first trigger", 40);
@@ -83,10 +83,12 @@ namespace Gadgetron{
       unsigned long n_acq_since_trigger_;
       unsigned long n_acquisitions_before_trigger_;
       unsigned long n_acquisitions_before_ongoing_trigger_;
+      std::vector<ISMRMRD::Waveform> wav_buf_;
+
       virtual int process_config(ACE_Message_Block* mb);
 
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1);
+      virtual int process(GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1);
 
       virtual int trigger();
 

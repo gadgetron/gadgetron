@@ -19,7 +19,7 @@
 #include "cuTvOperator.h"
 #include "cuTvPicsOperator.h"
 #include "osSenseOperator.h"
-#include "cuNFFTOperator.h"
+#include "../../toolboxes/nfft/NFFTOperator.h"
 #include "osMOMSolver.h"
 #include "osSPSSolver.h"
 #include "gpuSenseGadget.h"
@@ -70,7 +70,7 @@ namespace Gadgetron{
     osMOMSolver<cuNDArray<float_complext>> solver_;
 
     // Define non-Cartesian Sense Encoding operator
-    boost::shared_ptr< osSenseOperator<cuNDArray<float_complext>,2,cuNFFTOperator<float,2>>> E_;
+    boost::shared_ptr< osSenseOperator<cuNDArray<float_complext>,2,NFFTOperator<cuNDArray,float,2>>> E_;
 
     // Average image for regularization
     boost::shared_ptr< cuNDArray<float_complext> > reg_image_;

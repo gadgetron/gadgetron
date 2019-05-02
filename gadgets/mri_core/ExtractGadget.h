@@ -9,56 +9,44 @@
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 
-#define MAX_UNSIGNED_SHORT_IMAGE_VALUE
 
-//Extract flags
-#define GADGET_EXTRACT_NONE                   (0)      //0
-#define GADGET_EXTRACT_MAGNITUDE              (1 << 0) //1
-#define GADGET_EXTRACT_REAL                   (1 << 1) //2
-#define GADGET_EXTRACT_IMAG                   (1 << 2) //4
-#define GADGET_EXTRACT_PHASE                  (1 << 3) //8
-#define GADGET_EXTRACT_MAX                    (1 << 4) //16
 
-namespace Gadgetron{
+namespace Gadgetron {
 
-  class EXPORTGADGETSMRICORE ExtractGadget:
-  public Gadget2<ISMRMRD::ImageHeader,hoNDArray< std::complex<float> > >
-    {
+
+
+    class EXPORTGADGETSMRICORE ExtractGadget :
+        public Gadget2<ISMRMRD::ImageHeader, hoNDArray<std::complex<float>>>
+
+     {
 
     public:
-      GADGET_DECLARE(ExtractGadget);
+    GADGET_DECLARE(ExtractGadget);
 
-      ExtractGadget();
-      virtual ~ExtractGadget();
+    ExtractGadget();
 
-      void set_extract_mask(unsigned short mask) {
-	extract_mask_ = mask;
-      }
+    virtual ~ExtractGadget();
 
-      bool extract_magnitude() {
-	return (extract_mask_ & GADGET_EXTRACT_MAGNITUDE);
-      }
 
-      bool extract_real() {
-	return (extract_mask_ & GADGET_EXTRACT_REAL);
-      }
-
-      bool extract_imag() {
-	return (extract_mask_ & GADGET_EXTRACT_IMAG);
-      }
-
-      bool extract_phase() {
-	return (extract_mask_ & GADGET_EXTRACT_PHASE);
-      }
 
     protected:
-      GADGET_PROPERTY(extract_mask, int, "Extract mask, bitmask MAG=1, REAL=2, IMAG=4, PHASE=8", 1);
+    GADGET_PROPERTY(extract_mask, int, "(DEPRECATED) Extract mask, bitmask MAG=1, REAL=2, IMAG=4, PHASE=8", 0);
+    GADGET_PROPERTY(extract_magnitude, bool, "Extract absolute value", true);
+    GADGET_PROPERTY(extract_real, bool, "Extract real components", false);
+    GADGET_PROPERTY(extract_imag, bool, "Extract imaginary component", false);
+    GADGET_PROPERTY(extract_phase, bool, "Extract phase", false);
+    GADGET_PROPERTY(real_imag_offset, float, "Offset to add to real and imag images", 0.0f);
 
-      virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+    virtual int process(GadgetContainerMessage <ISMRMRD::ImageHeader> *m1,
+                        GadgetContainerMessage <hoNDArray<std::complex<float> >> *m2) override;
 
-      unsigned short extract_mask_;
-    };
+
+    virtual int process_config(ACE_Message_Block* mb) override;
+
+    float minimum_component(const hoNDArray<std::complex<float>>&);
+
+    std::vector<ISMRMRD::ISMRMRD_ImageTypes> image_types;
+};
 }
 
 #endif /* EXTRACTGADGET_H_ */

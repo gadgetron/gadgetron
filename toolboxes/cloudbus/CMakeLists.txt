@@ -8,6 +8,7 @@ endif()
 include_directories(${ACE_INCLUDE_DIR}
                     ${Boost_INCLUDE_DIR}
 		    ${CMAKE_SOURCE_DIR}/toolboxes/rest
+		    ${CMAKE_SOURCE_DIR}/toolboxes/node_discovery
                     )
 
 add_library(gadgetron_toolbox_cloudbus SHARED
@@ -19,7 +20,8 @@ add_library(gadgetron_toolbox_cloudbus SHARED
 )
 
 target_link_libraries(gadgetron_toolbox_cloudbus
-		     gadgetron_toolbox_log
+                      gadgetron_toolbox_log
+                      gadgetron_toolbox_node_discovery  
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 set_target_properties(gadgetron_toolbox_cloudbus PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_CLOUDBUS__")

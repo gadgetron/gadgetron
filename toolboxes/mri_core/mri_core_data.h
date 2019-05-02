@@ -2,6 +2,7 @@
 #define MRI_CORE_DATA_H
 
 #include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/waveform.h"
 #include "ismrmrd/meta.h"
 #include <vector>
 #include <set>
@@ -39,6 +40,26 @@ namespace Gadgetron
     N_ACQUISITIONS,
 	NONE
       };
+
+    // define the dimensions of ISMRMRD
+    enum IsmrmrdDIM
+    {
+        DIM_ReadOut = 32,
+        DIM_Encoding1,
+        DIM_Channel,
+        DIM_Slice,
+        DIM_Encoding2,
+        DIM_Contrast,
+        DIM_Phase,
+        DIM_Repetition,
+        DIM_Set,
+        DIM_Segment,
+        DIM_Average,
+        DIM_other1,
+        DIM_other2,
+        DIM_other3,
+        DIM_NONE
+    };
 
     // --------------------------------------------------------------------------
     /// define the calibration mode of ISMRMRD
@@ -102,6 +123,26 @@ namespace Gadgetron
         recon_matrix_[2] = 0;
     }
 
+    SamplingDescription(SamplingDescription& obj)
+    {
+        encoded_FOV_[0] = obj.encoded_FOV_[0];
+        encoded_FOV_[1] = obj.encoded_FOV_[1];
+        encoded_FOV_[2] = obj.encoded_FOV_[2];
+
+        recon_FOV_[0] = obj.recon_FOV_[0];
+        recon_FOV_[1] = obj.recon_FOV_[1];
+        recon_FOV_[2] = obj.recon_FOV_[2];
+
+        encoded_matrix_[0] = obj.encoded_matrix_[0];
+        encoded_matrix_[1] = obj.encoded_matrix_[1];
+        encoded_matrix_[2] = obj.encoded_matrix_[2];
+
+        recon_matrix_[0] = obj.recon_matrix_[0];
+        recon_matrix_[1] = obj.recon_matrix_[1];
+        recon_matrix_[2] = obj.recon_matrix_[2];
+    }
+
+    ~SamplingDescription() {}
   };
   
   struct IsmrmrdDataBuffered
@@ -112,13 +153,47 @@ namespace Gadgetron
     
     //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
     boost::optional<hoNDArray<float>> trajectory_;
-    
+
+    // 6D, density weights [E0, E1, E2, N, S, LOC]
+    boost::optional<hoNDArray<float> > density_;
+
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
-    
+
     SamplingDescription sampling_;
 
-    // function to check if it's empty
+    IsmrmrdDataBuffered() {}
+    IsmrmrdDataBuffered(const IsmrmrdDataBuffered& obj)
+    {
+        this->data_.copyFrom(obj.data_);
+
+        if (obj.trajectory_)
+        {
+            if (this->trajectory_) {
+                if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
+            } else {
+                this->trajectory_ = hoNDArray<float>();
+            }
+
+            this->trajectory_->copyFrom(*obj.trajectory_);
+        }
+        
+        this->headers_.copyFrom(obj.headers_);
+        this->sampling_ = obj.sampling_;
+    }
+
+    ~IsmrmrdDataBuffered() {}
+
+    void clear()
+    {
+        if (this->data_.delete_data_on_destruct()) this->data_.clear();
+        if (this->trajectory_)
+        {
+            if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
+        }
+
+        if (this->headers_.delete_data_on_destruct()) headers_.clear();
+    }
   };
   
 
@@ -130,6 +205,22 @@ namespace Gadgetron
   public:
     IsmrmrdDataBuffered data_;
     boost::optional<IsmrmrdDataBuffered> ref_;
+
+    IsmrmrdReconBit() {}
+    IsmrmrdReconBit(const IsmrmrdReconBit& obj)
+    {
+        this->data_= obj.data_;
+
+        if (obj.ref_)
+        {
+            if (!this->ref_)
+                this->ref_.reset(IsmrmrdDataBuffered());
+
+            *this->ref_ = *obj.ref_;
+        }
+    }
+
+    ~IsmrmrdReconBit() {}
   };
 
   /**
@@ -157,7 +248,15 @@ namespace Gadgetron
     //3D, fixed order [N, S, LOC]
     //This element is optional (length is 0 if not present)
     std::vector< ISMRMRD::MetaContainer > meta_;
-    
+
+    // wave form
+    boost::optional<std::vector< ISMRMRD::Waveform>> waveform_;
+
+    // acquisition header, [Y, Z, N, S, LOC]
+    boost::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
+
+
+    ~IsmrmrdImageArray() = default;
   };
 
 }

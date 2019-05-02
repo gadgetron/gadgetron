@@ -98,8 +98,9 @@
 
         target_link_libraries(gadgetron_toolbox_cpureg 
                 gadgetron_toolbox_cpucore
-		gadgetron_toolbox_log
+                gadgetron_toolbox_log
                 gadgetron_toolbox_cpucore_math 
+                gadgetron_toolbox_image_analyze_io
                 ${ARMADILLO_LIBRARIES}
                 optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 

@@ -1,9 +1,5 @@
 #include "python_toolbox.h"
 
-#include "Gadget.h"             // for GADGET_OK/FAIL
-#include "gadgetron_paths.h"    // for get_gadgetron_home()
-#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
-
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/numpyconfig.h>
 #include <numpy/arrayobject.h>
@@ -11,6 +7,10 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/algorithm/string.hpp>
 
+// #include "Gadget.h"             // for GADGET_OK/FAIL
+
+#define GADGET_FAIL -1
+#define GADGET_OK    0
 
 namespace Gadgetron
 {
@@ -22,7 +22,7 @@ static boost::mutex numpy_initialize_mtx;
 
 int initialize_python(void)
 {
-    // lock here so only one thread can initialize Python
+    // lock here so only one thread can initialize/finalize Python
     boost::mutex::scoped_lock lock(python_initialize_mtx);
 
     if (!python_initialized) {
@@ -43,17 +43,6 @@ int initialize_python(void)
 
         PyEval_ReleaseThread(tstate);
         python_initialized = true; // interpreter successfully initialized
-
-        //Let's first get the path set for the library folder
-        std::string gadgetron_home = get_gadgetron_home();
-        std::string path_name = gadgetron_home + std::string("/") + std::string(GADGETRON_PYTHON_PATH);
-
-        if (gadgetron_home.size() != 0) {
-            if (add_python_path(path_name) == GADGET_FAIL) {
-                GDEBUG("python_toolbox failed to add path %s\n", path_name.c_str());
-                return GADGET_FAIL;
-            }
-        }
     }
     return GADGET_OK;
 }
@@ -66,6 +55,18 @@ int initialize_numpy(void)
     if (!numpy_initialized) {
         _import_array();    // import NumPy
         numpy_initialized = true; // numpy successfully initialized
+    }
+    return GADGET_OK;
+}
+
+int finalize_python(void)
+{
+    // lock here so only one thread can initialize/finalize Python
+    boost::mutex::scoped_lock lock(python_initialize_mtx);
+
+    if (python_initialized) {
+        Py_Finalize();
+        python_initialized = false;
     }
     return GADGET_OK;
 }
@@ -162,4 +163,8 @@ PyObject* NumPyArray_EMPTY(int nd, npy_intp* dims, int typenum, int fortran)
     return PyArray_EMPTY(nd, dims, typenum,fortran);
 }
 
+}
+
+bool boost::python::hasattr(object o, const char* name) {
+    return PyObject_HasAttrString(o.ptr(), name);
 }

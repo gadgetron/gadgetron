@@ -8,6 +8,7 @@ endif()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_BINARY_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
@@ -31,6 +32,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
   ${CMAKE_SOURCE_DIR}/toolboxes/pattern_recognition
   ${CMAKE_SOURCE_DIR}/toolboxes/python
+  ${CMAKE_SOURCE_DIR}/toolboxes/node_discovery
   ${Boost_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
@@ -61,6 +63,7 @@ link_libraries(
     gadgetron_toolbox_cpu_image
     gadgetron_toolbox_cmr
     gadgetron_toolbox_pr
+    gadgetron_toolbox_node_discovery
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}
@@ -77,7 +80,10 @@ set(test_src_files tests.cpp
       curveFitting_test.cpp
       image_morphology_test.cpp 
       pattern_recognition_test.cpp 
-      cmr_mapping_test.cpp 
+      cmr_mapping_test.cpp
+      node_discovery_test.cpp
+      hoNDArray_linalg_test.cpp
+      parse_girf_test.cpp
       )
 
 if (PYTHONLIBS_FOUND)
@@ -123,6 +129,7 @@ endif ()
 
 add_test(test_all test_all)
 
-endif ()
+set_target_properties(test_all PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+install(TARGETS test_all DESTINATION bin COMPONENT main)
 
-add_subdirectory(integration)
+endif ()
