@@ -188,9 +188,8 @@ namespace Gadgetron
   /**
      This class is used to store an array of reconstructed data. 
    */
-  class IsmrmrdImageArray
+  struct IsmrmrdImageArray
   {
-  public:
     //7D, fixed order [X, Y, Z, CHA, N, S, LOC]
     hoNDArray< std::complex<float> > data_;
     
@@ -207,8 +206,6 @@ namespace Gadgetron
     // acquisition header, [Y, Z, N, S, LOC]
     Core::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
 
-
-    ~IsmrmrdImageArray() = default;
   };
 
 }

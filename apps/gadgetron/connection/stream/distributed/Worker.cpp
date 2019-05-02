@@ -12,25 +12,12 @@ using namespace Gadgetron::Server::Connection::Stream;
 
 namespace {
 
-    Remote as_remote(Local, const std::shared_ptr<Configuration> &configuration) {
-        return Remote {
-            "localhost",
-            std::to_string(configuration->context.args["port"].as<unsigned short>())
-        };
-    }
-
-    Remote as_remote(Remote remote, const std::shared_ptr<Configuration> &) {
-        return remote;
-    }
-
     template<class T>
     std::chrono::milliseconds time_since(std::chrono::time_point<T> instance) {
         return std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::steady_clock::now() -
-                instance
+                std::chrono::steady_clock::now() - instance
         );
     }
-
 }
 
 namespace Gadgetron::Server::Connection::Stream {
@@ -41,10 +28,7 @@ namespace Gadgetron::Server::Connection::Stream {
             std::shared_ptr<Configuration> configuration
     ) : address(address) {
         channel = std::make_unique<ExternalChannel>(
-                connect(boost::apply_visitor(
-                        [&](auto address) { return as_remote(address, configuration); },
-                        address
-                )),
+                connect(address, configuration),
                 std::move(serialization),
                 std::move(configuration)
         );
@@ -61,7 +45,7 @@ namespace Gadgetron::Server::Connection::Stream {
     }
 
     long long Worker::current_load() const {
-        std::lock_guard guard(mutex);
+        std::lock_guard<std::mutex> guard(mutex);
 
         auto current_job_duration_estimate = std::max(
                 timing.latest.count(),
@@ -81,7 +65,7 @@ namespace Gadgetron::Server::Connection::Stream {
         auto future = job.response.get_future();
 
         {
-            std::lock_guard guard(mutex);
+            std::lock_guard<std::mutex> guard(mutex);
             channel->push_message(std::move(message));
             jobs.push_back(std::move(job));
         }
@@ -120,7 +104,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         Job job;
         {
-            std::lock_guard guard(mutex);
+            std::lock_guard<std::mutex> guard(mutex);
             job = std::move(jobs.front()); jobs.pop_front();
             timing.latest = time_since(job.start);
         }

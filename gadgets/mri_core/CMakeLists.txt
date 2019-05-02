@@ -113,6 +113,7 @@ set(gadgetron_mricore_src_files
         GenericReconPartialFourierHandlingGadget.cpp
         GenericReconPartialFourierHandlingFilterGadget.cpp
         GenericReconPartialFourierHandlingPOCSGadget.cpp
+        GenericReconReferenceKSpaceDelayedBufferGadget.cpp
         GenericReconKSpaceFilteringGadget.cpp
         GenericReconFieldOfViewAdjustmentGadget.cpp
         GenericReconImageArrayScalingGadget.cpp
@@ -157,11 +158,30 @@ set(gadgetron_mricore_config_files
         config/ismrmrd_dump.xml
         )
 
+# if there is python, add gadgets using python
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+
+    message("Build python generic gadgets ... ")
+    include_directories(
+      ${CMAKE_SOURCE_DIR}/toolboxes/python
+      ${PYTHON_INCLUDE_PATH}
+      ${NUMPY_INCLUDE_DIRS}
+      )
+
+      set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} GenericReconCartesianGrappaAIGadget.h)
+      set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} GenericReconCartesianGrappaAIGadget.cpp)
+      set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} config/Generic_Cartesian_Grappa_AI.xml)
+
+endif ()
+
 add_library(gadgetron_mricore SHARED
-        gadgetron_mricore_export.h
-        ${gadgetron_mricore_header_files}
-        ${gadgetron_mricore_src_files}
-        ${gadgetron_mricore_config_files})
+    gadgetron_mricore_export.h
+    ${gadgetron_mricore_header_files}
+    ${gadgetron_mricore_src_files}
+    ${gadgetron_mricore_config_files}
+    ${OPTIMIZED_GADGETS}
+    ${OPTIMIZED_GADGET_HEADERS}
+    DenoiseGadget.cpp DenoiseGadget.h)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -178,7 +198,6 @@ target_link_libraries(gadgetron_mricore
         gadgetron_toolbox_cpuklt
         gadgetron_toolbox_mri_core
         ${ISMRMRD_LIBRARIES}
-        ${FFTW3_LIBRARIES}
         boost
         )
 
@@ -199,20 +218,12 @@ else ()
     message("ZFP NOT Found")
 endif ()
 
-
-if (MKL_FOUND)
-    # This is a fix for the bug in SVD when MKL is multi-threaded
-    message("MKL Found, enabling MKL for mri_core gadgets.")
-    add_definitions(-DHAVE_MKL)
-    # These are needed to get the linking to work properly when
-    # MKL is installed, but Armadillo is NOT using it.
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    target_include_directories(gadgetron_mricore
-            PUBLIC
-            ${MKL_INCLUDE_DIR})
-    link_directories(${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR})
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+   target_link_libraries(gadgetron_mricore
+                        gadgetron_toolbox_python
+                         )
 endif ()
+
 
 install(FILES
         gadgetron_mricore_export.h

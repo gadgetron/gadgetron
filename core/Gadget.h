@@ -6,8 +6,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "GadgetContainerMessage.h"
-#include "GadgetronExport.h"
-#include "gadgetcore_export.h"
 #include "log.h"
 #include <initializer_list>
 #include <mutex>
@@ -76,7 +74,7 @@ namespace Gadgetron {
         std::string reference_property_;
     };
 
-    class EXPORTGADGETCORE ChannelAdaptor {
+    class ChannelAdaptor {
     public:
 
         explicit ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
@@ -119,7 +117,7 @@ namespace Gadgetron {
         Core::OutputChannel& channel;
     };
 
-    class EXPORTGADGETCORE Gadget {
+    class Gadget {
 
     public:
 
@@ -191,7 +189,7 @@ namespace Gadgetron {
             return properties_[i];
         }
 
-        GadgetPropertyBase *find_property(const char *name) {
+        inline GadgetPropertyBase *find_property(const char *name) {
             GadgetPropertyBase *p = 0;
             std::lock_guard<std::mutex> guard(parameter_mutex_);
             for (std::vector<GadgetPropertyBase *>::iterator it = properties_.begin(); it != properties_.end(); it++) {

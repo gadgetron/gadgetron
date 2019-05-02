@@ -9,6 +9,8 @@ namespace Gadgetron::Core {
 
     template <class T> class MPMCChannel {
     public:
+        MPMCChannel() = default;
+        MPMCChannel(MPMCChannel&&) noexcept;
         void push(T);
 
         template <class... ARGS> void emplace(ARGS&&... args);
@@ -76,9 +78,16 @@ namespace Gadgetron::Core {
 
     template <class T> template <class... ARGS> void MPMCChannel<T>::emplace(ARGS&&... args) {
         {
-            std::lock_guard guard(m);
+            std::lock_guard<std::mutex> guard(m);
             queue.emplace_back(std::forward<ARGS>(args)...);
         }
         cv.notify_one();
     }
+    template <class T> MPMCChannel<T>::MPMCChannel(MPMCChannel&& other) noexcept {
+        std::lock_guard<std::mutex> guard(other.m);
+        this->queue = std::move(other.queue);
+        this->is_closed = other.is_closed;
+        other.is_closed = true;
+    }
+
 }

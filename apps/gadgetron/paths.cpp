@@ -3,6 +3,10 @@
 #include "log.h"
 #include "paths.h"
 
+#if defined _WIN32 || _WIN64
+#include <libloaderapi.h>
+#endif
+
 namespace {
 
     namespace fs = boost::filesystem;
@@ -63,8 +67,8 @@ namespace Gadgetron::Server {
 
 #ifdef _WIN32
     const boost::filesystem::path default_working_folder() {
-    return "c:/temp/gadgetron/";
-}
+        return "c:/temp/gadgetron/";
+    }
 #else
     const boost::filesystem::path default_working_folder() {
         return "/tmp/gadgetron/";

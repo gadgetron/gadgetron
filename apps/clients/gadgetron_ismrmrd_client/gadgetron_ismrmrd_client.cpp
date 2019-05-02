@@ -289,11 +289,11 @@ class GadgetronClientResponseReader : public GadgetronClientMessageReader
         boost::asio::read(*stream, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
         boost::asio::read(*stream, boost::asio::buffer(&response_length, sizeof(response_length)));
 
-        std::string response(response_length, 0);
+        std::vector<char> response(response_length,0);
 
         boost::asio::read(*stream, boost::asio::buffer(response.data(),response_length));
 
-        std::cout << response << std::endl;
+        std::cout << response.data() << std::endl;
     }
 };
 
@@ -1581,11 +1581,12 @@ public:
     size_t_type len(0);
     boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
 
-    result_ = std::string(len+1,0);
-    if (boost::asio::read(*stream, boost::asio::buffer(result_.data(), len)) != len)
+    std::vector<char> temp(len,0);
+    if (boost::asio::read(*stream, boost::asio::buffer(temp.data(), len)) != len)
     {
       throw GadgetronClientException("Incorrect number of bytes read for dependency query");
     }
+    result_ = std::string(temp.data(),len);
     
   }
   

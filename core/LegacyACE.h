@@ -2,6 +2,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 namespace Gadgetron {
 
@@ -51,13 +52,13 @@ namespace Gadgetron {
     }
 
     template<class T>
-    class [[deprecated]] ACE_Message_Queue {
+    class ACE_Message_Queue {
         virtual void not_implemented_ever() = 0;
     };
 
 
     template<>
-    class [[deprecated]] ACE_Message_Queue<ACE_MT_SYNCH> {
+    class ACE_Message_Queue<ACE_MT_SYNCH> {
 
     public:
 

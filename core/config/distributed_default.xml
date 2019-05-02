@@ -30,7 +30,6 @@
 
     <stream>
         <distributed>
-
             <readers>
                 <reader>
                     <dll>gadgetron_mricore</dll>
@@ -44,11 +43,11 @@
             <writers>
                 <writer>
                     <dll>gadgetron_mricore</dll>
-                    <classname>GadgetIsmrmrdAcquisitionMessageWriter</classname>
+                    <classname>MRIImageWriter</classname>
                 </writer>
                 <writer>
                     <dll>gadgetron_mricore</dll>
-                    <classname>MRIImageWriter</classname>
+                    <classname>GadgetIsmrmrdAcquisitionMessageWriter</classname>
                 </writer>
             </writers>
 
@@ -111,8 +110,6 @@
                     <classname>ImageArraySplitGadget</classname>
                 </gadget>
             </stream>
-
-
         </distributed>
 
 

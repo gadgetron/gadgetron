@@ -13,6 +13,7 @@ namespace Gadgetron::Server::Connection::Stream {
         void send(std::iostream &stream) const;
 
         Configuration(Core::Context context, Config config);
+        Configuration(Core::Context context, Config::Distributed config);
         Configuration(Core::Context context, Config::PureDistributed config);
 
         class Serializable {

@@ -34,12 +34,6 @@ endif()
 add_library(gadgetron_bart SHARED ${GADGET_FILES})
 target_link_libraries(gadgetron_bart BART::BARTMAIN)
 
-if(USE_CUDA)
-  find_package(CUDA)
-  CUDA_ADD_CUFFT_TO_TARGET(gadgetron_bart)
-  CUDA_ADD_CUBLAS_TO_TARGET(gadgetron_bart)
-  target_link_libraries(gadgetron_bart ${CUDA_LIBRARIES})
-endif()
 
 
 set_target_properties(gadgetron_bart

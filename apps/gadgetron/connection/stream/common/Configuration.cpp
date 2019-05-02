@@ -46,6 +46,18 @@ namespace Gadgetron::Server::Connection::Stream {
 
     Configuration::Configuration(
             Core::Context context,
+            Config::Distributed config
+    ) : Configuration(
+            std::move(context),
+            Config{
+                config.readers,
+                config.writers,
+                config.stream
+            }
+    ) {}
+
+    Configuration::Configuration(
+            Core::Context context,
             Config::PureDistributed config
     ) : Configuration(
             std::move(context),

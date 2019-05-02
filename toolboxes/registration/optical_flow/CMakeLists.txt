@@ -7,17 +7,14 @@ install(FILES
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_library(gadgetron_toolbox_registration_optical_flow INTERFACE)
+target_link_libraries(gadgetron_toolbox_registration_optical_flow INTERFACE
+        gadgetron_toolbox_cpu_solver)
 target_include_directories(gadgetron_toolbox_registration_optical_flow
         INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
-  message("Compiling cpu based optical flow registration toolbox.")
-  set(BUILD_CPU_OPTIMAL_FLOW_REG On)
-else ()
-  message("Armadillo (at least version 3.820) not found. Not compiling cpu-based optical flow registration toolbox. ")
-  set(BUILD_CPU_OPTIMAL_FLOW_REG Off)
-endif()
+message("Compiling cpu based optical flow registration toolbox.")
+set(BUILD_CPU_OPTIMAL_FLOW_REG On)
 
 add_subdirectory(cpu)
 

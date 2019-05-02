@@ -1,8 +1,5 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
-if (WIN32)
-    add_definitions(-DCROW_MSVC_WORKAROUND)
-endif ()
 
 add_executable(gadgetron
         main.cpp
@@ -31,6 +28,8 @@ add_executable(gadgetron
         connection/Loader.h
         connection/Core.cpp
         connection/Core.h
+        connection/SocketStreamBuf.cpp
+        connection/SocketStreamBuf.h
         connection/stream/Stream.cpp
         connection/stream/Stream.h
         connection/stream/Parallel.cpp

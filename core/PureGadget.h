@@ -2,9 +2,9 @@
 #include "Node.h"
 
 namespace Gadgetron::Core {
-class PureGadget : public GadgetNode {
+class PureGadget : public ChannelGadget {
 public:
-    using GadgetNode::GadgetNode;
+    using ChannelGadget::ChannelGadget;
 
         void process(InputChannel &in, OutputChannel &out) final {
             for (auto message : in)

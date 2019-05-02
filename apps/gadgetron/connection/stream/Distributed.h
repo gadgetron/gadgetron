@@ -5,6 +5,8 @@
 #include <string>
 #include <memory>
 
+#include "common/Configuration.h"
+#include "common/Serialization.h"
 #include "distributed/Distributor.h"
 
 #include "Processable.h"
@@ -31,13 +33,10 @@ namespace Gadgetron::Server::Connection::Stream {
         const std::string &name() override;
 
     private:
-        std::unique_ptr<Core::Distributed::Distributor> load_distributor(const Config::Distributor &);
         std::unique_ptr<Core::Distributed::Distributor> distributor;
 
-        const Core::Context context;
-        const Config::Distributed config;
-
-        Gadgetron::Server::Connection::Loader &loader;
+        const std::shared_ptr<Serialization> serialization;
+        const std::shared_ptr<Configuration> configuration;
     };
 }
 

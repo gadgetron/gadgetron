@@ -31,13 +31,20 @@ namespace {
 }
 
 Gadgetron::Server::Connection::Stream::PureStream::PureStream(
-    const Gadgetron::Server::Connection::Config::PureStream& conf, const Gadgetron::Core::Context& context,
+    const Gadgetron::Server::Connection::Config::PureStream& conf,
+    const Gadgetron::Core::Context& context,
     Loader& loader)
     : pure_gadgets{ load_pure_gadgets(conf.gadgets, context, loader) } {}
 
 Gadgetron::Core::Message Gadgetron::Server::Connection::Stream::PureStream::process_function(
     Gadgetron::Core::Message message) const {
 
-    return std::accumulate(pure_gadgets.begin(), pure_gadgets.end(), std::move(message),
-        [](auto& message, auto& gadget) { return gadget->process_function(std::move(message)); });
+    return std::accumulate(
+            pure_gadgets.begin(),
+            pure_gadgets.end(),
+            std::move(message),
+            [](auto& message, auto& gadget) {
+                return gadget->process_function(std::move(message));
+            }
+    );
 }

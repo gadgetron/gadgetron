@@ -1,8 +1,3 @@
-//
-// Created by dchansen on 6/20/18.
-//
-// Needless comment
-
 #include "non_local_bayes.h"
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
@@ -12,7 +7,6 @@
 
 namespace Gadgetron {
     namespace Denoise {
-
 
         namespace {
 
@@ -169,11 +163,9 @@ namespace Gadgetron {
                     return;
                 }
 
-
                 auto covariance_matrix = get_covariance_matrix(patches, mean_patch);
                 arma::Mat<T> noise_covariance = covariance_matrix + noise_std * noise_std * arma::eye<arma::Mat<T>>(
                         arma::size(covariance_matrix));
-
                 auto inv_cov = arma::Mat<T>(arma::size(covariance_matrix));
                 if (inv(inv_cov, noise_covariance)) {
                     for (auto &patch : patches) {
@@ -190,10 +182,8 @@ namespace Gadgetron {
                 if (image.get_number_of_dimensions() != 2)
                     throw std::invalid_argument("non_local_bayes: image must be 2 dimensional");
 
-
                 constexpr int patch_size = 5;
-
-                const int n_patches = 50;
+                constexpr int n_patches = 50;
 
                 hoNDArray<T> result(image.get_dimensions());
                 result.fill(0);
@@ -205,31 +195,26 @@ namespace Gadgetron {
                 count.fill(0);
 
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
-                        from_std_vector<size_t, 2>(*image.get_dimensions()));
+                        from_std_vector<size_t, 2>(*image.get_dimensions())
+                );
 
 #pragma omp parallel for num_threads(4)
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
                         if (mask(kx, ky)) {
-
                             auto reference_patch = get_patch(image, kx, ky, patch_size, image_dims);
                             auto patches = create_patches(image, kx, ky, patch_size, search_window, image_dims);
 
                             filter_patches(patches, n_patches, reference_patch);
-
-
                             denoise_patches(patches, noise_std);
 
-
                             for (auto &patch : patches) {
-//                                #pragma omp critical
+                                #pragma omp critical
                                 add_patch(patch, result, count, patch_size, image_dims);
                                 mask(patch.center_x, patch.center_y) = false;
                             }
-
                         }
-
                     }
                 }
 

@@ -28,10 +28,13 @@ set(test_src_files tests.cpp
       cmr_mapping_test.cpp
       hoNDArray_linalg_test.cpp
       core_test.cpp
+      threadpool_test.cpp
+      ../apps/gadgetron/connection/distributed/remote_workers.cpp
+      distributed_test.cpp
+      from_string_test.cpp
+      hoNDArrayView_test.cpp
+      ChannelAlgorithmsTest.cpp)
 
-        ../apps/gadgetron/connection/stream/distributed/Discovery.cpp
-        distributed_test.cpp from_string_test.cpp)
-#
 if (PYTHONLIBS_FOUND)
     set(test_src_files ${test_src_files} python_converter_test.cpp )
 endif ()

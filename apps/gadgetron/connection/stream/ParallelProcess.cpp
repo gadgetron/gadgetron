@@ -1,29 +1,61 @@
 #include "ParallelProcess.h"
-#include "omp.h"
 
-void Gadgetron::Server::Connection::Stream::ParallelProcess::process(Gadgetron::Core::InputChannel input,
-    Gadgetron::Core::OutputChannel output, Gadgetron::Server::Connection::ErrorHandler& error_handler) {
+#include "ThreadPool.h"
 
-    const size_t n_threads = workers ? workers : omp_get_num_threads();
-    std::vector<std::thread> threads;
-    for (size_t worker = 0; worker < n_threads; worker++) {
-        threads.push_back(error_handler.run([&]() {
-            for (auto message : input) {
-                output.push_message(pureStream.process_function(std::move(message)));
-            }
-        }));
+using namespace Gadgetron::Core;
+
+namespace Gadgetron::Server::Connection::Stream {
+
+    void ParallelProcess::process_input(InputChannel input, Queue &queue) {
+
+        ThreadPool pool(workers ? workers : std::thread::hardware_concurrency());
+
+        for (auto message : input) {
+            queue.push(
+                pool.async(
+                        [&](auto message) { return pureStream.process_function(std::move(message)); },
+                        std::move(message)
+                )
+            );
+        }
+
+        pool.join(); queue.close();
     }
 
-    for (auto& t : threads) t.join();
+    void ParallelProcess::process_output(OutputChannel output, Queue &queue) {
+        while(true) output.push_message(queue.pop().get());
+    }
 
+    void ParallelProcess::process(
+            InputChannel input,
+            OutputChannel output,
+            ErrorHandler& error_handler
+    ) {
+        Queue queue;
+
+        auto input_thread = error_handler.run(
+                [&](auto input) { this->process_input(std::move(input), queue); },
+                std::move(input)
+        );
+
+        auto output_thread = error_handler.run(
+                [&](auto output) { this->process_output(std::move(output), queue); },
+                std::move(output)
+        );
+
+        input_thread.join(); output_thread.join();
+    }
+
+    ParallelProcess::ParallelProcess(
+            const Config::ParallelProcess& conf,
+            const Context& context,
+            Loader& loader
+    ) : pureStream{ conf.stream, context, loader }, workers{ conf.workers } {}
+
+    const std::string& ParallelProcess::name() {
+        const static std::string n = "ParallelProcess";
+        return n;
+    }
 }
 
-Gadgetron::Server::Connection::Stream::ParallelProcess::ParallelProcess(
-    const Gadgetron::Server::Connection::Config::ParallelProcess& conf, const Gadgetron::Core::Context& context,
-    Gadgetron::Server::Connection::Loader& loader)
-    : pureStream{ conf.stream, context, loader }, workers{ conf.workers } {}
 
-const std::string& Gadgetron::Server::Connection::Stream::ParallelProcess::name() {
-    const static std::string n = "ParallelProcess";
-    return n;
-}

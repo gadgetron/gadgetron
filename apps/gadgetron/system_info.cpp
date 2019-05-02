@@ -103,13 +103,7 @@ namespace Gadgetron::Server::Info {
             int deviceCount = 0;
             auto error = cudaGetDeviceCount(&deviceCount);
 
-            if (error == cudaErrorNoDevice) return 0;
-            if (error) {
-                std::stringstream message;
-                message << "Failed to get number of CUDA devices: " << cudaGetErrorString(error);
-                throw std::runtime_error(message.str());
-            }
-
+            if (error ) return 0;
             return deviceCount;
         }
 
@@ -206,8 +200,8 @@ namespace Gadgetron::Server::Info {
 
     void print_system_information(std::ostream &os) {
         os << "Gadgetron Version Info" << std::endl;
-        os << "  -- Version            : " << gadgetron_version() << std::endl;
-        os << "  -- Git SHA1           : " << gadgetron_build() << std::endl;
+        os << "  -- Version            : " << gadgetron_version().c_str() << std::endl;
+        os << "  -- Git SHA1           : " << gadgetron_build().c_str() << std::endl;
         os << "  -- System Memory size : " << system_memory() / (1024 * 1024) << " MB" << std::endl;
         os << "  -- Python Support     : " << (python_support() ? "YES" : "NO") << std::endl;
         os << "  -- Matlab Support     : " << (matlab_support() ? "YES" : "NO") << std::endl;

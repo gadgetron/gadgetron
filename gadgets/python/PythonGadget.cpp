@@ -94,6 +94,7 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
+                PyErr_Print();
                 std::string err = pyerr_to_string();
                 GERROR(err.c_str());
                 if (!error_ignored_mode) {
@@ -106,7 +107,7 @@ namespace Gadgetron {
 
 
     PythonGadget::PythonGadget(const Core::Context &context, const Core::GadgetProperties &params)
-            : Core::TypedGadgetNode<Python::PythonTypes>(params) {
+            : Core::TypedChannelGadget<Python::PythonTypes>(params) {
 
         initialize_python();
 
@@ -125,9 +126,9 @@ namespace Gadgetron {
             add_python_path(path);
         }
 
-        if (std::empty(python_module))
+        if (python_module.empty())
             throw std::runtime_error("Empty python module provided");
-        if (std::empty(python_class))
+        if (python_class.empty())
             throw std::runtime_error("Empty python class provided");
 
         GILLock lock;

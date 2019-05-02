@@ -4,7 +4,7 @@
 #include "Message.h"
 #include "LegacyACE.h"
 #include <typeinfo>
-#include <log.h>
+#include "log.h"
 
 namespace Gadgetron {
 
@@ -30,7 +30,7 @@ namespace Gadgetron {
 
          ~GadgetContainerMessage() override = default;
 
-        virtual std::unique_ptr<Core::MessageChunk> take_message() override {
+        std::unique_ptr<Core::MessageChunk> take_message() override {
             data = nullptr;
             return std::move(message);
         }

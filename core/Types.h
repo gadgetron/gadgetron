@@ -9,10 +9,11 @@
 #include <tuple>
 
 #include "hoNDArray.h"
+#include "TypeTraits.h"
 
 namespace Gadgetron::Core {
-
-    template<class T> using optional = boost::optional<T>;
+    template<class T>
+    using optional = boost::optional<T>;
     static const auto none = boost::none;
 
     template<class... ARGS>

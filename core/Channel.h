@@ -40,6 +40,7 @@ OutputChannel split(const OutputChannel& channel);
 class InputChannel {
 public:
     InputChannel(InputChannel&& other) noexcept = default;
+    InputChannel& operator=(InputChannel&& other) noexcept = default;
 
     Message pop();
 
@@ -69,6 +70,7 @@ ChannelIterator<InputChannel> end(InputChannel&);
 class OutputChannel {
 public:
     OutputChannel(OutputChannel&& other) noexcept = default;
+    OutputChannel& operator=(OutputChannel&& other) noexcept = default;
 
     template <class... ARGS>
     void push(ARGS&&... ptrs);
@@ -124,6 +126,8 @@ public:
     TypedInputChannel(InputChannel& input, OutputChannel& bypass)
         : in(input)
         , bypass(bypass) {};
+    TypedInputChannel(TypedInputChannel&& other) noexcept = default;
+    TypedInputChannel& operator=(TypedInputChannel&& other) noexcept = default;
 
     decltype(auto) pop()
     {

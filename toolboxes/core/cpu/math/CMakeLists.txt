@@ -37,8 +37,7 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
     target_link_libraries(gadgetron_toolbox_cpucore_math
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_log
-        ${ARMADILLO_LIBRARIES}
-        ${FFTW3_LIBRARIES}
+        armadillo
         BLAS
             )
 

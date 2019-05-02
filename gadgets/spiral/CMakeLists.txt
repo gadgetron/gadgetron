@@ -17,6 +17,7 @@ set_target_properties(gadgetron_spiral PROPERTIES VERSION ${GADGETRON_VERSION_ST
 target_link_libraries(gadgetron_spiral
   gadgetron_core
   gadgetron_mricore
+  gadgetron_toolbox_mri_core
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore)
 

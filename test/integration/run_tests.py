@@ -71,13 +71,15 @@ def main():
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
+    base_args = ['python3', 'run_gadgetron_test.py','-a',str(args.host), '-p', str(args.port)] + args.external
+    if args.gadgetron_home is not None:
+        base_args += ['-G',args.gadgetron_home]
+    if args.ismrmrd_home is not None:
+        base_args += ['-I',args.ismrmrd_home]
+
     for i, test in enumerate(tests, start=1):
         print("\nTest {} of {}: {}\n".format(i, len(tests), test))
-        proc = subprocess.run(['python3', 'run_gadgetron_test.py',
-                               '-G', args.gadgetron_home,
-                               '-I', args.ismrmrd_home,
-                               '-a', str(args.host),
-                               '-p', str(args.port)] + args.external + [test])
+        proc = subprocess.run(base_args + [test])
 
         handlers.get(proc.returncode)(test)
 

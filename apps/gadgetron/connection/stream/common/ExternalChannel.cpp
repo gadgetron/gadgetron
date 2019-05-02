@@ -24,12 +24,12 @@ namespace Gadgetron::Server::Connection::Stream {
         explicit Open(ExternalChannel *channel) : channel(channel) {}
 
         void push(Core::Message message) override {
-            std::lock_guard guard{channel->mutex};
+            std::lock_guard<std::mutex> guard{channel->mutex};
             channel->serialization->write(*channel->stream, std::move(message));
         }
 
         void close() override {
-            std::lock_guard guard{channel->mutex};
+            std::lock_guard<std::mutex> guard{channel->mutex};
             channel->serialization->close(*channel->stream);
             channel->outbound = std::make_unique<Outbound::Closed>();
         }
@@ -58,7 +58,7 @@ namespace Gadgetron::Server::Connection::Stream {
         }
 
         void close() override {
-            std::lock_guard guard{channel->mutex};
+            std::lock_guard<std::mutex> guard{channel->mutex};
             channel->inbound = std::make_unique<Inbound::Closed>();
         }
     private:
@@ -73,7 +73,7 @@ namespace Gadgetron::Server::Connection::Stream {
             std::shared_ptr<Serialization> serialization
     ) : remote_errors(),
         stream(std::move(stream)),
-        serialization(serialization) {
+        serialization(std::move(serialization)) {
 
         inbound = std::make_unique<Inbound::Open>(this);
         outbound = std::make_unique<Outbound::Open>(this);
@@ -83,7 +83,7 @@ namespace Gadgetron::Server::Connection::Stream {
             std::unique_ptr<std::iostream> stream,
             std::shared_ptr<Serialization> serialization,
             std::shared_ptr<Configuration> configuration
-    ) : ExternalChannel(std::move(stream), serialization) {
+    ) : ExternalChannel(std::move(stream), std::move(serialization)) {
         configuration->send(*this->stream);
     }
 

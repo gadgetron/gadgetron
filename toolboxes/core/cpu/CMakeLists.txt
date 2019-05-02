@@ -3,16 +3,6 @@ if (WIN32)
 endif ()
 
 
-
-if(WIN32)
-    link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
-#if (MKL_FOUND)
-#    include_directories( ${MKL_INCLUDE_DIR} )
-#    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-#endif ()
-
 set(header_files ../NDArray.h
                 ../complext.h
                 ../GadgetronException.h
@@ -64,8 +54,7 @@ add_library(gadgetron_toolbox_cpucore SHARED
 target_include_directories(
         gadgetron_toolbox_cpucore
     PUBLIC
-    ${FFTW3_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_BINARY_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -74,6 +63,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
+    ${ISMRMRD_INCLUDE_DIR}
 )
 
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -81,6 +71,7 @@ set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_
 target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
+  ismrmrd
   )
 
 install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)

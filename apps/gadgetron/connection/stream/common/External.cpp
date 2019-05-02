@@ -26,6 +26,21 @@ namespace {
     }
 }
 
+namespace {
+    using namespace Gadgetron::Server::Connection::Stream;
+
+    Remote as_remote(Local, const std::shared_ptr<Configuration> &configuration) {
+        return Remote {
+                "localhost",
+                std::to_string(configuration->context.args["port"].as<unsigned short>())
+        };
+    }
+
+    Remote as_remote(Remote remote, const std::shared_ptr<Configuration> &) {
+        return remote;
+    }
+}
+
 namespace Gadgetron::Server::Connection::Stream {
 
     RemoteError::RemoteError(std::list<std::string> messages) : std::runtime_error(make_error_message(messages)), messages(messages) {}
@@ -73,5 +88,9 @@ namespace Gadgetron::Server::Connection::Stream {
 
     std::unique_ptr<std::iostream> connect(const Remote &remote) {
         return connect(remote.address, remote.port);
+    }
+
+    std::unique_ptr<std::iostream> connect(const Address &address, std::shared_ptr<Configuration> configuration) {
+        return connect(boost::apply_visitor([&](auto address) { return as_remote(address, configuration); }, address));
     }
 }
