@@ -109,7 +109,7 @@ int MatlabBucketReconGadget::process_config(ACE_Message_Block* mb)
 
         // Add the necessary paths to the matlab environment
         // Java matlab command server
-        std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
+        std::string gadgetron_matlab_path = get_gadgetron_home().string() + "/share/gadgetron/matlab";
         std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
         // Gadgetron matlab scripts
         engEvalString(engine_, add_path_cmd.c_str());
@@ -351,15 +351,16 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     // recon data
     auto mxdata =  mxCreateUninitNumericArray(packet_ndim, packet_dims, mxSINGLE_CLASS, mxCOMPLEX);
     float* real_data=(float *)mxGetData(mxdata);
-    float* imag_data=(float *)mxGetImagData(mxdata);
+//OJ    float* imag_data=(float *)mxGetImagData(mxdata);
 
     //GDEBUG("xxx5\n");
 
     // Copy from C++ to matlab
     for(size_t i = 0; i<packet_n_elem; ++i)
     {
-        real_data[i] = real(raw_data[i]);
-        imag_data[i] = imag(raw_data[i]);
+        real_data[i*2] = real(raw_data[i]);
+// Handle new (for Matlab) interleaved data order
+        real_data[i*2+1] = imag(raw_data[i]);
     }
     delete[] raw_data;
     

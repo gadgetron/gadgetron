@@ -748,7 +748,7 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
         auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
         mxSetDimensions(mxdata, packet_dims, packet_ndim);
         mxSetData      (mxdata, real_data);
-        mxSetImagData  (mxdata, imag_data);
+//        mxSetImagData  (mxdata, imag_data);
         
         
         
@@ -861,7 +861,7 @@ mxArray* GetSplitReconData(IsmrmrdDataBuffered* buffer, size_t index_begin, size
     auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
     mxSetDimensions(mxdata, packet_dims, packet_ndim);
     mxSetData      (mxdata, real_data);
-    mxSetImagData  (mxdata, imag_data);
+//    mxSetImagData  (mxdata, imag_data);
     
     return mxdata;
 }
