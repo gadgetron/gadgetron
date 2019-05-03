@@ -83,7 +83,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
 	img_dims_ = {r_space.matrixSize.x,r_space.matrixSize.y,r_space.matrixSize.z};
 
-	matrix_size_ = {r_space.matrixSize.x,r_space.matrixSize.y};
+	matrix_size_ = vector_td<uint64_t,2>{r_space.matrixSize.x,r_space.matrixSize.y};
 
 	unsigned int warp_size = cudaDeviceManager::Instance()->warp_size(device_number_);
 
