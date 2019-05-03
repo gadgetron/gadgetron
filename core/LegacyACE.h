@@ -52,18 +52,20 @@ namespace Gadgetron {
     }
 
     template<class T>
-    class [[deprecated]] ACE_Message_Queue {
+    class ACE_Message_Queue {
         virtual void not_implemented_ever() = 0;
     };
 
 
     template<>
-    class [[deprecated]] ACE_Message_Queue<ACE_MT_SYNCH> {
+    class ACE_Message_Queue<ACE_MT_SYNCH> {
 
     public:
 
+        [[deprecated]]
         ACE_Message_Queue(int, int);
 
+        [[deprecated]]
         ACE_Message_Queue();
 
         void high_water_mark(size_t bsize) {};
@@ -88,10 +90,9 @@ namespace Gadgetron {
 
 
     public:
-
         class ITERATOR {
         public:
-            ITERATOR(ACE_Message_Queue &);
+            explicit ITERATOR(ACE_Message_Queue &);
 
             int advance();
 
@@ -105,7 +106,6 @@ namespace Gadgetron {
 
 
         friend ITERATOR;
-
 
     };
 
