@@ -31,7 +31,7 @@ namespace {
 
     Remote as_remote(Local, const std::shared_ptr<Configuration> &configuration) {
         return Remote {
-                "localhost",
+                "::1",
                 std::to_string(configuration->context.args["port"].as<unsigned short>())
         };
     }

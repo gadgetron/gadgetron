@@ -31,6 +31,9 @@ namespace {
         std::shared_ptr<Configuration> configuration;
 
         std::unique_ptr<std::iostream> stream;
+
+        InputChannel input;
+        OutputChannel output;
     };
 
     ChannelWrapper::ChannelWrapper(
@@ -39,10 +42,11 @@ namespace {
             std::shared_ptr<Configuration> configuration,
             InputChannel input,
             OutputChannel output
-
     ) : peer(std::move(peer)),
         serialization(std::move(serialization)),
-        configuration(std::move(configuration)) {
+        configuration(std::move(configuration)),
+        input(std::move(input)),
+        output(std::move(output)) {
 
         stream = connect(peer, configuration);
     }
