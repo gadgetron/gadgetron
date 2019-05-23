@@ -2,6 +2,7 @@
 
 #include <map>
 #include <list>
+#include <thread>
 
 #include "Processable.h"
 #include "Reader.h"
@@ -44,12 +45,18 @@ namespace Gadgetron::Server::Connection::Stream {
 
         void process_outbound(Core::InputChannel, Queue &);
         void process_inbound(Core::OutputChannel, Queue &);
-
-        void trigger_node_discovery();
+        void initialize_workers(
+                std::vector<Address> addresses,
+                const std::shared_ptr<Serialization> serialization,
+                const std::shared_ptr<Configuration> configuration,
+                ErrorHandler &error_handler
+        );
 
         const std::shared_ptr<Serialization> serialization;
         const std::shared_ptr<Configuration> configuration;
 
+        std::list<std::thread> threads;
         std::shared_ptr<Pool<Worker>> workers;
+        std::future<std::vector<Address>> addresses;
     };
 }

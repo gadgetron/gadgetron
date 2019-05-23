@@ -51,9 +51,8 @@ int main(int argc, char *argv[]) {
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
-        boost::asio::io_service io_service;
-        Server server(io_service, args);
-        io_service.run();
+        Server server(args);
+        server.serve();
     }
     catch (std::exception &e) {
         GERROR_STREAM(e.what() << std::endl);

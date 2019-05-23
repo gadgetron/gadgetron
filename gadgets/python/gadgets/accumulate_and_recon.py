@@ -17,7 +17,7 @@ class AccumulateAndRecon(Gadget):
         self.header = ismrmrd.xsd.CreateFromDocument(conf)
         self.enc = self.header.encoding[0]
 
-    def process(self, acq, data,*args):
+    def process(self, acq, data, *args):
         if self.myBuffer is None:
             channels = acq.active_channels
             if self.enc.encodingLimits.slice != None:

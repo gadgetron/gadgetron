@@ -19,42 +19,48 @@ namespace {
         ChannelWrapper(
                 Address peer,
                 std::shared_ptr<Serialization> serialization,
-                std::shared_ptr<Configuration> configuration,
-                InputChannel input,
-                OutputChannel output
+                std::shared_ptr<Configuration> configuration
         );
+
+        void process_input(InputChannel input);
+        void process_output(OutputChannel output);
 
     private:
         Address peer;
-
-        std::shared_ptr<Serialization> serialization;
-        std::shared_ptr<Configuration> configuration;
-
-        std::unique_ptr<std::iostream> stream;
-
-        InputChannel input;
-        OutputChannel output;
+        std::shared_ptr<ExternalChannel> external;
     };
 
     ChannelWrapper::ChannelWrapper(
             Address peer,
             std::shared_ptr<Serialization> serialization,
-            std::shared_ptr<Configuration> configuration,
-            InputChannel input,
-            OutputChannel output
-    ) : peer(std::move(peer)),
-        serialization(std::move(serialization)),
-        configuration(std::move(configuration)),
-        input(std::move(input)),
-        output(std::move(output)) {
+            std::shared_ptr<Configuration> configuration
+    ) : peer(std::move(peer)) {
 
-        stream = connect(peer, configuration);
+        GINFO_STREAM("Connecting to peer: " << peer);
+        external = std::make_shared<ExternalChannel>(
+                connect(peer, configuration),
+                std::move(serialization),
+                std::move(configuration)
+        );
     }
 
+    void ChannelWrapper::process_input(InputChannel input) {
+        for (auto message : input) {
+            external->push_message(std::move(message));
+        }
+        external->close();
+    }
+
+    void ChannelWrapper::process_output(OutputChannel output) {
+        while(true) {
+            output.push_message(external->pop());
+        }
+    }
 
     class ChannelCreatorImpl : public ChannelCreator {
     public:
         OutputChannel create() override;
+        void join();
 
         ChannelCreatorImpl(
                 std::shared_ptr<Serialization> serialization,
@@ -72,6 +78,7 @@ namespace {
         std::shared_ptr<Configuration> configuration;
 
         std::list<Address> peers;
+        std::list<std::thread> threads;
 
         ErrorHandler error_handler;
     };
@@ -94,15 +101,26 @@ namespace {
 
         auto pair = Core::make_channel<MessageChannel>();
 
-        auto channel = ChannelWrapper(
+        auto channel = std::make_shared<ChannelWrapper>(
                 next_peer(),
                 serialization,
-                configuration,
-                std::move(pair.input),
-                Core::split(output)
+                configuration
         );
 
+        threads.push_back(error_handler.run(
+                [=](auto input) { channel->process_input(std::move(input)); },
+                std::move(pair.input)
+        ));
+        threads.push_back(error_handler.run(
+                [=](auto output) { channel->process_output(std::move(output)); },
+                Core::split(output)
+        ));
+
         return std::move(pair.output);
+    }
+
+    void ChannelCreatorImpl::join() {
+        for (auto &thread : threads) thread.join();
     }
 
     Address ChannelCreatorImpl::next_peer() {
@@ -139,6 +157,7 @@ namespace Gadgetron::Server::Connection::Stream {
         };
 
         distributor->process(std::move(input), channel_creator, std::move(output));
+        channel_creator.join();
     }
 
     Distributed::Distributed(

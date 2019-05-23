@@ -56,7 +56,7 @@ namespace Gadgetron::Server::Connection::Stream {
     }
 
     std::future<Message> Worker::push(Message message) {
-
+        GDEBUG_STREAM("Pushing message to worker: " << address);
         Job job {
             std::chrono::steady_clock::now(),
             std::promise<Message>()
@@ -74,7 +74,6 @@ namespace Gadgetron::Server::Connection::Stream {
 
         return future;
     }
-
 
     std::thread Worker::start(ErrorHandler &error_handler) {
 

@@ -6,24 +6,8 @@
 #include "distributed/Pool.h"
 
 using namespace Gadgetron::Core;
+using namespace Gadgetron::Server::Connection;
 using namespace Gadgetron::Server::Connection::Stream;
-
-namespace {
-
-    void add_worker_to_pool(
-            Address address,
-            const std::shared_ptr<Serialization> serialization,
-            const std::shared_ptr<Configuration> configuration,
-            std::shared_ptr<Pool<Worker>> workers
-    ) {
-        try {
-            workers->add(std::make_unique<Worker>(address, serialization, configuration));
-        }
-        catch (std::exception &e) {
-            GWARN_STREAM("Failed to initialize worker with address: " << address << " (" << e.what() << ")");
-        }
-    }
-}
 
 namespace Gadgetron::Server::Connection::Stream {
 
@@ -86,6 +70,13 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler& error_handler
     ) {
+        initialize_workers(
+                addresses.get(),
+                serialization,
+                configuration,
+                error_handler
+        );
+
         auto queue = Queue();
 
         auto outbound = error_handler.run(
@@ -98,7 +89,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 std::move(output)
         );
 
-        outbound.join(); inbound.join();
+        outbound.join(); inbound.join(); for (auto &t : threads) t.join();
     }
 
     PureDistributed::PureDistributed(
@@ -113,21 +104,27 @@ namespace Gadgetron::Server::Connection::Stream {
                 context,
                 config
         )),
-        workers{
-            std::make_shared<Pool<Worker>>()
-        }{
-        trigger_node_discovery();
-    }
+        workers(std::make_shared<Pool<Worker>>()),
+        addresses(std::async(discover_peers)) {}
 
-    void PureDistributed::trigger_node_discovery() {
-        for (const auto &address : discover_peers()) {
-            std::thread{
-                [=](auto... args) { add_worker_to_pool(args...); },
-                address,
-                serialization,
-                configuration,
-                workers
-            }.detach();
+    void PureDistributed::initialize_workers(
+            std::vector<Address> addresses,
+            const std::shared_ptr<Serialization> serialization,
+            const std::shared_ptr<Configuration> configuration,
+            ErrorHandler &error_handler
+    ) {
+        for (auto address : addresses) {
+            // TODO: Opening connections to peers can be done in parallel.
+
+            try {
+                auto worker = std::make_unique<Worker>(address, serialization, configuration);
+
+                threads.push_back(worker->start(error_handler));
+                workers->add(std::move(worker));
+            }
+            catch (std::exception &e) {
+                GWARN_STREAM("Failed to initialize worker with address: " << address << " (" << e.what() << ")");
+            }
         }
     }
 

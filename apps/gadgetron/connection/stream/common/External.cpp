@@ -4,6 +4,7 @@
 
 #include <boost/asio.hpp>
 
+#include "connection/SocketStreamBuf.h"
 #include "log.h"
 
 namespace {
@@ -16,14 +17,6 @@ namespace {
         }
         return error_maker.str();
     }
-
-    void set_exception_bits(boost::asio::ip::tcp::iostream &stream) {
-        stream.exceptions(
-                boost::asio::ip::tcp::iostream::failbit |
-                boost::asio::ip::tcp::iostream::badbit |
-                boost::asio::ip::tcp::iostream::eofbit
-        );
-    }
 }
 
 namespace {
@@ -31,7 +24,7 @@ namespace {
 
     Remote as_remote(Local, const std::shared_ptr<Configuration> &configuration) {
         return Remote {
-                "::1",
+                "localhost",
                 std::to_string(configuration->context.args["port"].as<unsigned short>())
         };
     }
@@ -58,32 +51,23 @@ namespace Gadgetron::Server::Connection::Stream {
 
     std::unique_ptr<std::iostream> listen(unsigned short port) {
 
-        boost::asio::io_context context;
+        boost::asio::io_service service;
         boost::asio::ip::tcp::endpoint peer;
         boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), port);
-        boost::asio::ip::tcp::acceptor acceptor(context, local);
+        boost::asio::ip::tcp::acceptor acceptor(service, local);
 
-        auto stream = std::make_unique<boost::asio::ip::tcp::iostream>();
+        auto socket = std::make_unique<boost::asio::ip::tcp::socket>(service);
 
-        acceptor.accept(*stream->rdbuf(), peer);
+        acceptor.accept(*socket, peer);
         acceptor.close();
 
         GINFO_STREAM("Accepted connection from " << peer.address());
 
-        set_exception_bits(*stream);
-
-        return std::move(stream);
+        return Gadgetron::Connection::stream_from_socket(std::move(socket));
     }
 
-    std::unique_ptr<std::iostream> connect(std::string address, std::string service) {
-
-        auto stream = std::make_unique<boost::asio::ip::tcp::iostream>(boost::asio::ip::tcp::v6(), address, service);
-
-        GINFO_STREAM("Connected to " << address << ":" << service);
-
-        set_exception_bits(*stream);
-
-        return std::move(stream);
+    std::unique_ptr<std::iostream> connect(const std::string &address, const std::string &port) {
+        return Gadgetron::Connection::remote_stream(address, port);
     }
 
     std::unique_ptr<std::iostream> connect(const Remote &remote) {

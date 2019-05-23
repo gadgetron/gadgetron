@@ -72,14 +72,16 @@ namespace Gadgetron::Server::Connection {
             GERROR_STREAM("Finalizing connection to client failed with the following error: " << e.what());
         }
         catch (...) {}
+
+        GINFO_STREAM("Connection state: [FINISHED]");
     }
 
     std::vector<std::unique_ptr<Core::Writer>> default_writers() {
         std::vector<std::unique_ptr<Writer>> writers{};
 
         writers.emplace_back(std::make_unique<Writers::TextWriter>());
-        // TODO: writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
         writers.emplace_back(std::make_unique<Writers::ResponseWriter>());
+        // TODO: writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
 
         return std::move(writers);
     }

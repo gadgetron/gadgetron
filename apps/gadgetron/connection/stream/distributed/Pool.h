@@ -29,8 +29,8 @@ namespace Gadgetron::Server::Connection::Stream {
         std::shared_ptr<T> worker = std::move(t);
         auto self = this->shared_from_this();
 
-        t->on_failure([=]() { self->on_failure(worker); });
-        t->on_load_change([=]() { self->on_load_change(); });
+        worker->on_failure([=]() { self->on_failure(worker); });
+        worker->on_load_change([=]() { self->on_load_change(); });
 
         ts.push_back(std::move(worker));
     }

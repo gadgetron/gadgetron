@@ -351,10 +351,10 @@ namespace {
             return {readers,writers,purestream};
         }
 
-        static Config::Module parse_module(const pugi::xml_node &module_node) {
-            return Config::Module {
-                module_node.attribute("name").value(),
-                module_node.attribute("type").value()
+        static Config::Execute parse_execute(const pugi::xml_node &execute_node) {
+            return Config::Execute {
+                execute_node.attribute("name").value(),
+                execute_node.attribute("type").value()
             };
         }
 
@@ -365,7 +365,7 @@ namespace {
         }
 
         std::map<std::string, std::function<Config::Action(const pugi::xml_node &)>> action_parsers {
-                {"module", parse_module},
+                {"execute", parse_execute},
                 {"connect", parse_connect}
         };
 
@@ -470,16 +470,16 @@ namespace {
             return distributed_node;
         }
 
-        static pugi::xml_node add_node(const Config::Module &module, pugi::xml_node &node) {
-            auto module_node = node.append_child("module");
-            module_node.append_attribute("name").set_value(module.name.c_str());
-            module_node.append_attribute("type").set_value(module.type.c_str());
-            return module_node;
+        static pugi::xml_node add_node(const Config::Execute &execute, pugi::xml_node &node) {
+            auto execute_node = node.append_child("execute");
+            execute_node.append_attribute("name").set_value(execute.name.c_str());
+            execute_node.append_attribute("type").set_value(execute.type.c_str());
+            return execute_node;
         }
 
         static pugi::xml_node add_node(const Config::Connect &connect, pugi::xml_node &node) {
-            auto connect_node = node.append_child("module");
-            connect_node.append_attribute("name").set_value(connect.port.c_str());
+            auto connect_node = node.append_child("connect");
+            connect_node.append_attribute("port").set_value(connect.port.c_str());
             return connect_node;
         }
 

@@ -9,41 +9,30 @@
 
 #include "Server.h"
 #include "Connection.h"
+#include "connection/SocketStreamBuf.h"
 
 using namespace boost::filesystem;
 using namespace Gadgetron::Server;
 
-#include "connection/SocketStreamBuf.h"
 
 Server::Server(
-        boost::asio::io_service &io_service,
         const boost::program_options::variables_map &args
-) : args(args),
-    acceptor(io_service, tcp::endpoint(tcp::v6(), args["port"].as<unsigned short>())) {
-    accept();
-}
+) : args(args) {}
 
-void Server::accept() {
-    // Function accept recurses infinitely: Yes it does.
-    socket = std::make_unique<tcp::socket>(acceptor.get_io_service());
-    acceptor.async_accept(
-            *socket,
-            [this](const boost::system::error_code &error) {
-                this->connection_handler(error);
-                this->accept();
-            }
-    );
-}
-
-void Server::connection_handler(const boost::system::error_code &error) {
-
-    if (error) {
-        GERROR_STREAM("Failed to open connection: " << error);
-        return;
-    }
-
-    GINFO_STREAM("Accepting connection from: " << socket->remote_endpoint().address());
+void Server::serve() {
 
     Gadgetron::Core::Context::Paths paths{args["home"].as<path>(), args["dir"].as<path>()};
-    Connection::handle(paths, args, Gadgetron::Connection::stream_from_socket(std::move(socket)));
+
+    boost::asio::io_service service;
+    boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), args["port"].as<unsigned short>());
+    boost::asio::ip::tcp::acceptor acceptor(service, local);
+
+    while(true) {
+        auto socket = std::make_unique<boost::asio::ip::tcp::socket>(service);
+        acceptor.accept(*socket);
+
+        GINFO_STREAM("Accepted connection from: " << socket->remote_endpoint().address());
+
+        Connection::handle(paths, args, Gadgetron::Connection::stream_from_socket(std::move(socket)));
+    }
 }

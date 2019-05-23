@@ -85,13 +85,13 @@ namespace Gadgetron::Server {
 
         fs::path executable_path = get_executable_path();
 
-        GDEBUG_STREAM("Executable path: " << executable_path << std::endl);
+        GDEBUG_STREAM("Executable path: " << executable_path);
 
         fs::path gadgetron_home = executable_path
                 .parent_path()
                 .parent_path();
 
-        GDEBUG_STREAM("Gadgetron home: " << gadgetron_home << std::endl);
+        GDEBUG_STREAM("Gadgetron home: " << gadgetron_home);
 
         return gadgetron_home;
     }

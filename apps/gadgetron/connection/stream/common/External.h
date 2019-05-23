@@ -28,7 +28,7 @@ namespace Gadgetron::Server::Connection::Stream {
     std::string to_string(const Remote &);
 
     std::unique_ptr<std::iostream> listen(std::string port);
-    std::unique_ptr<std::iostream> connect(std::string address, std::string port);
+    std::unique_ptr<std::iostream> connect(const std::string &address, const std::string &port);
     std::unique_ptr<std::iostream> connect(const Remote &remote);
     std::unique_ptr<std::iostream> connect(const Address &address, std::shared_ptr<Configuration> configuration);
 }

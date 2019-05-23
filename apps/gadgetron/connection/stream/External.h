@@ -20,11 +20,14 @@ namespace Gadgetron::Server::Connection::Stream {
         External(const Config::External &, const Core::Context &, Loader &);
 
         void process(
-                Core::InputChannel input,
-                Core::OutputChannel output,
+                InputChannel input,
+                OutputChannel output,
                 ErrorHandler &error_handler
         ) override;
 
         const std::string& name() override;
+
+    private:
+
    };
 }

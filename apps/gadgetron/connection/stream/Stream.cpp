@@ -80,7 +80,6 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
-
         std::vector<InputChannel> input_channels;
         input_channels.emplace_back(std::move(input));
         std::vector<OutputChannel> output_channels{};
@@ -104,8 +103,6 @@ namespace Gadgetron::Server::Connection::Stream {
             thread.join();
         }
     }
-
-
 }
 
 const std::string &Gadgetron::Server::Connection::Stream::Stream::name() {

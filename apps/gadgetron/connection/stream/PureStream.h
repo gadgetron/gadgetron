@@ -5,12 +5,12 @@
 #include "connection/Config.h"
 
 namespace Gadgetron::Server::Connection::Stream {
-class PureStream {
-public:
-    PureStream(const Config::PureStream&, const Core::Context&, Loader&);
-    Core::Message process_function(Core::Message) const;
+    class PureStream {
+    public:
+        PureStream(const Config::PureStream&, const Core::Context&, Loader&);
+        Core::Message process_function(Core::Message) const;
 
-private:
-    const std::vector<std::unique_ptr<Core::PureGadget>> pure_gadgets;
-};
+    private:
+        const std::vector<std::unique_ptr<Core::PureGadget>> pure_gadgets;
+    };
 }
