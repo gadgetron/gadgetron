@@ -51,8 +51,15 @@ namespace Gadgetron::Server::Connection {
             }
         };
 
-        struct Execute { std::string name, type; };
-        struct Connect { std::string port; };
+        struct Execute {
+            std::string name, type;
+            boost::optional<std::string> target;
+        };
+
+        struct Connect {
+            std::string port;
+        };
+
         using Action = boost::variant<Execute, Connect>;
 
         struct External {

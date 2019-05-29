@@ -1,27 +1,34 @@
 #include "Python.h"
 
+#include <list>
 #include <boost/process.hpp>
+#include <boost/optional.hpp>
+
+#include "connection/Config.h"
 
 #include "log.h"
 
-#define MODE "GADGETRON_EXTERNAL_MODE"
-#define PORT "GADGETRON_EXTERNAL_PORT"
-#define PATH "PYTHONPATH"
-
 namespace Gadgetron::Server::Connection::Stream {
 
-    void start_python_module(std::string module, unsigned short port, const Gadgetron::Core::Context &context) {
+    void start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
 
         auto python_path = (context.paths.gadgetron_home / "share" / "gadgetron" / "python").string();
 
-        GINFO_STREAM("Starting Python module '" << module << "'");
+        std::list<std::string> args{
+                "-m", "gadgetron",
+                std::to_string(port),
+                execute.name
+        };
 
-        boost::process::spawn(
+        if(execute.target) args.push_back(execute.target.get());
+
+        boost::process::child module(
                 boost::process::search_path("python3"),
-                "-m", "gadgetron", module,
-                boost::process::env[MODE]="active",
-                boost::process::env[PORT]=std::to_string(port),
-                boost::process::env[PATH]+={python_path}
+                boost::process::args=args,
+                boost::process::env["PYTHONPATH"]+={python_path}
         );
+
+        module.detach();
+        GINFO_STREAM("Started external Python module (pid: " << module.id() << ").");
     }
 }

@@ -351,10 +351,16 @@ namespace {
             return {readers,writers,purestream};
         }
 
+        static boost::optional<std::string> parse_target(std::string s) {
+            if (s.empty()) return boost::none;
+            return s;
+        }
+
         static Config::Execute parse_execute(const pugi::xml_node &execute_node) {
             return Config::Execute {
                 execute_node.attribute("name").value(),
-                execute_node.attribute("type").value()
+                execute_node.attribute("type").value(),
+                parse_target(execute_node.attribute("target").value())
             };
         }
 

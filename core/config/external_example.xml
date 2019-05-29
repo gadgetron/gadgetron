@@ -40,7 +40,7 @@
         </gadget>
 
         <external>
-            <execute name="accumulate_and_recon" type="python"/>
+            <execute name="accumulate_and_recon" type="python" target="AccumulateAndRecon"/>
             <!-- External also accepts already running processes; use: <connect port="12345"/> -->
 
             <!-- The configuration is sent to the external process. It's left pretty empty here. -->

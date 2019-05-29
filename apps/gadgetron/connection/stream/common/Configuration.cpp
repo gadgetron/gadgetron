@@ -27,6 +27,18 @@ namespace Gadgetron::Server::Connection::Stream {
         send_header(stream, context.header);
     }
 
+    class ExternalSerializable : public Configuration::Serializable {
+    public:
+        const Config::External config;
+
+        explicit ExternalSerializable(Config::External config) : config(std::move(config)) {}
+
+        void write(std::iostream &stream) const override {
+            IO::write(stream, CONFIG);
+            IO::write_string_to_stream<uint32_t>(stream, serialize_external_config(config));
+        }
+    };
+
     class ConfigSerializable : public Configuration::Serializable {
     public:
         const Config config;
@@ -43,6 +55,11 @@ namespace Gadgetron::Server::Connection::Stream {
             Core::Context context,
             Config config
     ) : context(std::move(context)), config(std::make_unique<ConfigSerializable>(config)) {}
+
+    Configuration::Configuration(
+            Core::Context context,
+            Config::External config
+    ) : context(std::move(context)), config(std::make_unique<ExternalSerializable>(config)) {}
 
     Configuration::Configuration(
             Core::Context context,
