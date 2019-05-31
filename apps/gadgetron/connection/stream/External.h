@@ -35,7 +35,6 @@ namespace Gadgetron::Server::Connection::Stream {
 
     private:
         std::future<std::shared_ptr<ExternalChannel>> channel;
-
         std::shared_ptr<Serialization> serialization;
         std::shared_ptr<Configuration> configuration;
    };

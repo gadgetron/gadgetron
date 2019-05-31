@@ -50,7 +50,7 @@ namespace {
         return Gadgetron::Connection::stream_from_socket(std::move(socket));
     }
 
-    std::shared_ptr<ExternalChannel> connect(
+    std::shared_ptr<ExternalChannel> open_external_channel(
             const Config::External &config,
             const Context &context,
             const std::shared_ptr<Serialization> serialization,
@@ -67,8 +67,8 @@ namespace {
 
 namespace {
     void process_input(InputChannel input, std::shared_ptr<ExternalChannel> external) {
-        while(true) {
-            external->push_message(input.pop());
+        for (auto message : input) {
+            external->push_message(std::move(message));
         }
         external->close();
     }
@@ -94,9 +94,13 @@ namespace Gadgetron::Server::Connection::Stream {
                 context,
                 config
         )) {
-
-
-        channel = std::async([=]() { return connect(config, context, serialization, configuration); });
+        channel = std::async(
+                open_external_channel,
+                config,
+                context,
+                serialization,
+                configuration
+        );
     }
 
     void External::process(
@@ -104,7 +108,11 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
-        auto external = std::move(channel.get());
+        GINFO_STREAM("External process running.")
+
+        std::shared_ptr<ExternalChannel> external = channel.get();
+
+        GINFO_STREAM("External channel available.")
 
         auto input_thread = error_handler.run(
                 [=](auto input) { ::process_input(std::move(input), external); },
