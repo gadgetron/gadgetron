@@ -43,9 +43,9 @@
 
     message("Find numpy after python3")
     if(NumPy_FIND_REQUIRED)
-        find_package(Python3 REQUIRED)
+        find_package(Python3_compat REQUIRED)
     else()
-        find_package(Python3)
+        find_package(Python3_compat)
     endif()
 
     if(NOT PYTHONLIBS_FOUND)

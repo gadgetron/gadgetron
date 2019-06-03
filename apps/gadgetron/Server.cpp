@@ -21,8 +21,11 @@ Server::Server(boost::asio::io_service &io_service, const boost::program_options
 
 void Server::accept() {
     // Function accept recurses infinitely: Yes it does.
-
+#if(BOOST_VERSION >= 107000)
+    socket = std::make_unique<tcp::socket>(acceptor_.get_executor());
+#else
     socket = std::make_unique<tcp::socket>(acceptor_.get_io_service());
+#endif
     acceptor_.async_accept(
             *socket,
             [this](const boost::system::error_code &error) {

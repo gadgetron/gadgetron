@@ -215,6 +215,7 @@ if(WIN32)
 add_definitions( -DBOOST_ALL_NO_LIB )
 add_definitions( -DBOOST_ALL_DYN_LINK )
 add_definitions( -DBOOST_NO_EXCEPTIONS )
+add_definitions( -DHAVE_SNPRINTF)
 endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
@@ -292,13 +293,11 @@ find_package(Armadillo REQUIRED )
 if(ARMADILLO_FOUND)
 add_library(armadillo INTERFACE )
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
-if (ARMADILLO_LIBRARY)
-target_link_libraries(armadillo INTERFACE ${ARMADILLO_LIBRARY})
-endif()
+add_definitions( -DARMA_DONT_USE_WRAPPER)
 
 endif()
 
-find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
+#find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
 
@@ -368,7 +367,11 @@ add_library(python INTERFACE)
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-find_package(Boost 1.64.0 COMPONENTS python3 REQUIRED)
+if (${VCPKG_TARGET_TRIPLET})
+    find_package(Boost 1.65.0 COMPONENTS python37 REQUIRED)
+    else()
+    find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
+endif()
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
