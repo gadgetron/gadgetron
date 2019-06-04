@@ -62,6 +62,8 @@ execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
 
 if(NOT _NUMPY_SEARCH_SUCCESS MATCHES 0)
     if(NumPy_FIND_REQUIRED)
+		
+		message("Output was ${_NUMPY_VALUES_OUTPUT} SUCCESS WAS ${_NUMPY_SEARCH_SUCCESS}")
         message(FATAL_ERROR
             "NumPy import failure:\n${_NUMPY_ERROR_VALUE}")
     endif()

@@ -43,6 +43,12 @@ if (${CMAKE_VERSION}  VERSION_LESS "3.12.0")
     set(PYTHONLIBS_FOUND 1)
 
     else()
-    find_package(Python3)
+	if (Python3_compat_FIND_REQUIRED)
+		find_package(Python3 COMPONENTS Interpreter REQUIRED)
+	else()
+		find_package(Python3 COMPONENTS Interpreter REQUIRED)
+	endif()
+	set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+	
 endif ()
 
