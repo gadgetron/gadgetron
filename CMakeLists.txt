@@ -367,7 +367,7 @@ add_library(python INTERFACE)
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-if (${VCPKG_TARGET_TRIPLET})
+if (VCPKG_TARGET_TRIPLET)
     find_package(Boost 1.65.0 COMPONENTS python37 REQUIRED)
     else()
     find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
