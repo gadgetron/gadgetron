@@ -16,6 +16,7 @@
 
 #include <mutex>
 #include "engine.h"     // Matlab Engine header
+#include "/usr/local/MATLAB/R2017b/extern/version/c_mexapi_version.c" // For Interleaved / non-interleaved complex decision
 #include "gadgetron_home.h"
 
 
@@ -27,20 +28,7 @@
 using namespace std;
 using namespace std::chrono;
 
-
-/*
-
-#include "ismrmrd/ismrmrd.h"
-
-
-//#include "ace/Synch.h"  // For the MatlabCommandServer
-#include "ace/SOCK_Connector.h"
-#include "ace/INET_Addr.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <boost/lexical_cast.hpp>
-*/
+// matlab libraries are not thread safe so need mutex
 extern std::mutex mutex_MBRG_;
 
 namespace Gadgetron{

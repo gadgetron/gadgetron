@@ -108,7 +108,6 @@ int MatlabBucketReconGadget::process_config(ACE_Message_Block* mb)
         engOutputBuffer(engine_, matlab_buffer_, 2048);
 
         // Add the necessary paths to the matlab environment
-        // Java matlab command server
         std::string gadgetron_matlab_path = get_gadgetron_home().string() + "/share/gadgetron/matlab";
         std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
         // Gadgetron matlab scripts
@@ -119,7 +118,6 @@ int MatlabBucketReconGadget::process_config(ACE_Message_Block* mb)
         GDEBUG("%s", matlab_buffer_);
     }
 
-    //char matlab_buffer_[2049] = "\0";
     char matlab_buffer_[20481] = "\0";
     engOutputBuffer(engine_, matlab_buffer_, 20480);
 
@@ -165,7 +163,6 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     
        std::lock_guard<std::mutex> lock(mutex_MBRG_);
  
-//     std::clock_t time1 = std::clock();
     high_resolution_clock::time_point time1 = high_resolution_clock::now();
     
     IsmrmrdAcquisitionBucket* bucket = m1->getObjectPtr();
@@ -327,8 +324,6 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     
     high_resolution_clock::time_point time2 = high_resolution_clock::now();
     
-    // std::lock_guard<std::mutex> lock(mutex_MBRG_); 
-    
     //GDEBUG("xxx3\n");
     
     ///////////////////////// RAWDATA TO MXSTRUCT //////////////////////////
@@ -349,21 +344,36 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     //GDEBUG("xxx4\n");
 
     // recon data
+#if MX_HAS_INTERLEAVED_COMPLEX
+    GDEBUG("----------------- Interleaved Complex -----------------\n");
+#else
+    GDEBUG("--------------- Non-interleaved Complex ---------------\n");
+#endif
+
     auto mxdata =  mxCreateUninitNumericArray(packet_ndim, packet_dims, mxSINGLE_CLASS, mxCOMPLEX);
+
     float* real_data=(float *)mxGetData(mxdata);
-//OJ    float* imag_data=(float *)mxGetImagData(mxdata);
+#if MX_HAS_INTERLEAVED_COMPLEX
+    float* imag_data=real_data+1;
+#else
+    float* imag_data=(float *)mxGetImagData(mxdata);
+#endif
 
     //GDEBUG("xxx5\n");
 
     // Copy from C++ to matlab
     for(size_t i = 0; i<packet_n_elem; ++i)
     {
+#if MX_HAS_INTERLEAVED_COMPLEX
         real_data[i*2] = real(raw_data[i]);
-// Handle new (for Matlab) interleaved data order
-        real_data[i*2+1] = imag(raw_data[i]);
+        imag_data[i*2] = imag(raw_data[i]);
+#else
+        real_data[i] = real(raw_data[i]);
+        imag_data[i] = imag(raw_data[i]);
+#endif
     }
     delete[] raw_data;
-    
+
     mxSetField(mxstruct,0,"data",mxdata);
     
     //GDEBUG("xxx6\n");
