@@ -18,6 +18,7 @@ add_subdirectory(mri_image)
 
 add_subdirectory(klt)
 add_subdirectory(fatwater)
+add_subdirectory(deblur)
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)

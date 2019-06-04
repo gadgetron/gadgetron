@@ -3,7 +3,7 @@ FROM gadgetron/ubuntu_1804_cuda100_cudnn7_base
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master
 
-RUN apt-get -y install gcc-6 g++-6 gfortran
+# RUN apt-get -y install gcc-6 g++-6 gfortran
 
 #ISMRMRD
 RUN cd /opt/code && \

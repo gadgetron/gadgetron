@@ -672,7 +672,7 @@ namespace Gadgetron {
             sampling.sampling_limits_[0].center_ = encoding.encodedSpace.matrixSize.x / 2;
         }
 
-        // if the scan is cartesian  
+        // if the scan is cartesian
         if (((encoding.trajectory == ISMRMRD::TrajectoryType::CARTESIAN) && (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded"))))
             || ((encoding.trajectory == ISMRMRD::TrajectoryType::EPI) && !forref))
         {
@@ -891,4 +891,3 @@ namespace Gadgetron {
     GADGET_FACTORY_DECLARE(BucketToBufferGadget)
 
 }
-
