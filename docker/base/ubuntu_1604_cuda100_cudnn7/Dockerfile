@@ -45,8 +45,8 @@ RUN pip3 install h5py psutil pyxb lxml Pillow configargparse numpy==1.15.4 Cytho
 RUN apt-get install -y python3.6-tk
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install torchvision 
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
