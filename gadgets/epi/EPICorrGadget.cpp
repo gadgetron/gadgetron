@@ -214,7 +214,7 @@ namespace Gadgetron {
             //GDEBUG_STREAM("navMean = " << navMean);
 
             // for clarity, we'll use the following when filtering navigator parameters:
-            size_t set, slc, exc;
+            size_t set(hdr.idx.set), slc(hdr.idx.slice), exc(0);
             if (navigatorParameterFilterLength.value() > 1) {
                 set = hdr.idx.set;
                 slc = hdr.idx.slice;
