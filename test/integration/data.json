@@ -423,5 +423,13 @@
   {
     "file":"ut/spiral/w_spiral.img",
     "md5":"abb6820a558f30a8e22aa6c59ab01703"
+  },
+  {
+    "file":"spiral/meas_MID00080_FID16005_MiniIRT_B0.dat",
+    "md5":"31865ce197491bb675e095a1d6096d36"
+  },
+  {
+    "file":"spiral/spiral_rt_deblurring_out.h5",
+    "md5":"75cc7b2aec83ca854a5ad06e6afad76e"
   }
 ]
