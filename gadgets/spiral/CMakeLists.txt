@@ -24,13 +24,14 @@ if (CUDA_FOUND)
       ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
       ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
       ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
+      ${CMAKE_SOURCE_DIR}/toolboxes/deblur
       ${CUDA_INCLUDE_DIRS}
       )
 
-    set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h)
-    set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp )
+    set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h gpuSpiralDeblurGadget.h)
+    set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp gpuSpiralDeblurGadget.cpp)
 endif()
-  
+
 add_library(gadgetron_spiral SHARED ${SPIRAL_HEADER_FILES} ${SPIRAL_SRC_FILES})
 
 set_target_properties(gadgetron_spiral PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -41,19 +42,20 @@ target_link_libraries(gadgetron_spiral
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
-  ${ISMRMRD_LIBRARIES} 
-  ${FFTW3_LIBRARIES} 
+  ${ISMRMRD_LIBRARIES}
+  ${FFTW3_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
 if (CUDA_FOUND)
-    target_link_libraries(gadgetron_spiral 
-                                ${CUDA_LIBRARIES} 
-                                gadgetron_toolbox_gpucore 
-                                gadgetron_toolbox_gpunfft 
-                                gadgetron_toolbox_gpusolvers 
+    target_link_libraries(gadgetron_spiral
+                                ${CUDA_LIBRARIES}
+                                gadgetron_toolbox_gpucore
+                                gadgetron_toolbox_gpunfft
+                                gadgetron_toolbox_gpusolvers
                                 gadgetron_toolbox_gpuoperators
-                                gadgetron_toolbox_gpuparallelmri )
+                                gadgetron_toolbox_gpuparallelmri
+                                gadgetron_toolbox_deblur )
 endif()
 
 install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
