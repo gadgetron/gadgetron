@@ -1,5 +1,5 @@
 
-
+if (USE_CUDA)
 add_library(gadgetron_toolbox_deblur SHARED
         MFIOperator.h
         MFIOperator.cpp)
@@ -22,3 +22,4 @@ install(TARGETS gadgetron_toolbox_deblur DESTINATION lib COMPONENT main)
 install(FILES
         MFIOperator.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+endif()
