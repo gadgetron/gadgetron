@@ -2,6 +2,7 @@
 
 #include "connection/Config.h"
 #include "connection/SocketStreamBuf.h"
+#include "connection/stream/common/Closer.h"
 #include "connection/stream/common/ExternalChannel.h"
 
 #include "external/Python.h"
@@ -21,56 +22,11 @@ namespace {
             {"python", start_python_module}
     };
 
-    std::unique_ptr<std::iostream> open_connection(Config::Connect connect, const Context &context) {
-
-        GINFO_STREAM("Connecting to external module on port: " << connect.port);
-
-        return std::unique_ptr<std::iostream>(nullptr);
-    }
-
-    std::unique_ptr<std::iostream> open_connection(Config::Execute execute, const Context &context) {
-
-        boost::asio::io_service service;
-        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v6(), 0);
-        boost::asio::ip::tcp::acceptor acceptor(service, endpoint);
-
-        auto port = acceptor.local_endpoint().port();
-        boost::algorithm::to_lower(execute.type);
-
-        GINFO_STREAM("Waiting for external module '" << execute.name << "' on port: " << port);
-
-        modules.at(execute.type)(execute, port, context);
-
-        auto socket = std::make_unique<boost::asio::ip::tcp::socket>(service);
-        acceptor.accept(*socket);
-        acceptor.close();
-
-        GINFO_STREAM("Connected to external module '" << execute.name << "' on port: " << port);
-
-        return Gadgetron::Connection::stream_from_socket(std::move(socket));
-    }
-
-    std::shared_ptr<ExternalChannel> open_external_channel(
-            const Config::External &config,
-            const Context &context,
-            const std::shared_ptr<Serialization> serialization,
-            const std::shared_ptr<Configuration> configuration
-    ) {
-        auto stream = boost::apply_visitor([&](auto action) { return open_connection(action, context); }, config.action);
-        return std::make_shared<ExternalChannel>(
-                std::move(stream),
-                serialization,
-                configuration
-        );
-    }
-}
-
-namespace {
     void process_input(InputChannel input, std::shared_ptr<ExternalChannel> external) {
+        auto closer = make_closer(external);
         for (auto message : input) {
             external->push_message(std::move(message));
         }
-        external->close();
     }
 
     void process_output(OutputChannel output, std::shared_ptr<ExternalChannel> external) {
@@ -81,6 +37,46 @@ namespace {
 }
 
 namespace Gadgetron::Server::Connection::Stream {
+
+    std::unique_ptr<std::iostream> External::open_connection(Config::Connect connect, const Context &context) {
+
+        GINFO_STREAM("Connecting to external module on port: " << connect.port);
+
+        return std::unique_ptr<std::iostream>(nullptr);
+    }
+
+    std::unique_ptr<std::iostream> External::open_connection(Config::Execute execute, const Context &context) {
+
+        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v6(), 0);
+        boost::asio::ip::tcp::acceptor acceptor(io_service, endpoint);
+
+        auto port = acceptor.local_endpoint().port();
+        boost::algorithm::to_lower(execute.type);
+
+        GINFO_STREAM("Waiting for external module '" << execute.name << "' on port: " << port);
+
+        modules.at(execute.type)(execute, port, context);
+
+        auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
+        acceptor.accept(*socket);
+        acceptor.close();
+
+        GINFO_STREAM("Connected to external module '" << execute.name << "' on port: " << port);
+
+        return Gadgetron::Connection::stream_from_socket(std::move(socket));
+    }
+
+    std::shared_ptr<ExternalChannel> External::open_external_channel(
+            const Config::External &config,
+            const Context &context
+    ) {
+        auto stream = boost::apply_visitor([&](auto action) { return open_connection(action, context); }, config.action);
+        return std::make_shared<ExternalChannel>(
+                std::move(stream),
+                serialization,
+                configuration
+        );
+    }
 
     External::External(
             const Config::External &config,
@@ -95,11 +91,10 @@ namespace Gadgetron::Server::Connection::Stream {
                 config
         )) {
         channel = std::async(
-                open_external_channel,
+                std::launch::async,
+                [=](auto config, auto context) { return open_external_channel(config, context); },
                 config,
-                context,
-                serialization,
-                configuration
+                context
         );
     }
 
@@ -108,11 +103,7 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
-        GINFO_STREAM("External process running.")
-
         std::shared_ptr<ExternalChannel> external = channel.get();
-
-        GINFO_STREAM("External channel available.")
 
         auto input_thread = error_handler.run(
                 [=](auto input) { ::process_input(std::move(input), external); },

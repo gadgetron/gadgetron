@@ -4,6 +4,7 @@
 
 #include "Distributed.h"
 
+#include "connection/stream/common/Closer.h"
 #include "connection/stream/distributed/Discovery.h"
 #include "connection/stream/distributed/Worker.h"
 
@@ -45,10 +46,10 @@ namespace {
     }
 
     void ChannelWrapper::process_input(InputChannel input) {
+        auto closer = make_closer(external);
         for (auto message : input) {
             external->push_message(std::move(message));
         }
-        external->close();
     }
 
     void ChannelWrapper::process_output(OutputChannel output) {

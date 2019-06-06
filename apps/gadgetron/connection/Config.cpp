@@ -2,6 +2,7 @@
 
 #include <set>
 #include <map>
+#include <list>
 #include <memory>
 #include <string>
 
@@ -225,6 +226,37 @@ namespace {
         }
     };
 
+    bool is_legacy_python_gadget(const Config::Gadget &gadget) {
+        return gadget.dll == "gadgetron_python" && gadget.classname == "PythonGadget";
+    }
+
+    Config::Node transform_legacy_python_gadget(Config::Gadget gadget) {
+        GDEBUG_STREAM("Legacy Python Gadget detected: " << gadget.name);
+
+        pugi::xml_document document;
+        auto configuration = document.append_child("configuration");
+
+        return Config::External{
+            Config::Execute{
+                    gadget.properties.at("python_module"),
+                    "python",
+                    gadget.properties.at("python_class")
+            },
+            std::make_shared<Config::External::Configuration>(configuration),
+            std::vector<Config::Reader>(),
+            std::vector<Config::Writer>()
+        };
+    }
+
+    bool is_legacy_matlab_gadget(const Config::Gadget &gadget) {
+        return gadget.dll == "gadgetron_matlab" && gadget.classname == "MatlabBufferGadget";
+    }
+
+    Config::Node transform_legacy_matlab_gadget(Config::Gadget gadget) {
+        GDEBUG_STREAM("Legacy Matlab Gadget detected: " << gadget.name);
+        throw std::runtime_error("Currently not implemented.");
+    }
+
     class Legacy : public Parser<LegacySource> {
     public:
 
@@ -240,8 +272,30 @@ namespace {
             };
         }
 
+        static bool accepts(const pugi::xml_document &config) {
+            return config.child("gadgetronStreamConfiguration");
+        }
+
     private:
         explicit Legacy(const pugi::xml_document &config) : Parser<LegacySource>(config) {}
+
+        const std::list<std::pair<std::function<bool(const Config::Gadget &)>,
+                                  std::function<Config::Node(Config::Gadget)>>> node_transformations{
+            std::make_pair(is_legacy_python_gadget, transform_legacy_python_gadget),
+            std::make_pair(is_legacy_matlab_gadget, transform_legacy_matlab_gadget),
+            std::make_pair([](auto _) { return true; }, [=](auto c) { return Config::Node(c); })
+        };
+
+        Config::Node apply_transformation(Config::Gadget gadget) {
+
+            auto pair = *std::find_if(
+                    node_transformations.begin(),
+                    node_transformations.end(),
+                    [&](auto p) { return std::get<0>(p)(gadget); }
+            );
+
+            return std::get<1>(pair)(gadget);
+        }
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node &gadget_node) {
             std::vector<Config::Gadget> gadgets{};
@@ -256,9 +310,7 @@ namespace {
             boost::transform(
                     parse_gadgets(stream_node),
                     std::back_inserter(nodes),
-                    [](auto gadget) {
-                        return Config::Node(gadget);
-                    }
+                    [&](auto gadget) { return apply_transformation(gadget); }
             );
 
             return Config::Stream{"main", nodes};
@@ -277,6 +329,11 @@ namespace {
                     parse_writers(root.child("writers")),
                     parser.parse_stream(root.child("stream"))
             };
+        }
+
+        static bool accepts(const pugi::xml_document &config) {
+            auto configuration = config.child("configuration");
+            return std::string(configuration.child_value("version")) == "2";
         }
 
     private:
@@ -540,6 +597,11 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
+    static const std::list<std::pair<std::function<bool(const pugi::xml_document &)>, std::function<Config(const pugi::xml_document &)>>> parsers{
+        std::make_pair(Legacy::accepts, Legacy::parse),
+        std::make_pair(V2::accepts, V2::parse)
+    };
+
     Config parse_config(std::istream &stream) {
 
         pugi::xml_document doc;
@@ -550,10 +612,9 @@ namespace Gadgetron::Server::Connection {
             throw std::runtime_error(result.description());
         }
 
-        if (doc.child("gadgetronStreamConfiguration"))
-            return Legacy::parse(doc);
-
-        return V2::parse(doc);
+        auto parser = std::find_if(parsers.begin(), parsers.end(), [&](auto pair) { return std::get<0>(pair)(doc); });
+        if (parser == parsers.end()) throw std::runtime_error("Failed to find parsed accepting provided config file.");
+        return std::get<1>(*parser)(doc);
     }
 
     std::string serialize_config(const Config &config) {

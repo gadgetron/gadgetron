@@ -4,6 +4,8 @@
 
 #include "SocketStreamBuf.h"
 
+#include "Types.h"
+
 #include <boost/asio.hpp>
 namespace {
     class SocketStreamBuf : public std::streambuf {

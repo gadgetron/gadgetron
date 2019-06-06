@@ -44,5 +44,17 @@
             <dll>gadgetron_mricore</dll>
             <classname>ExtractGadget</classname>
         </gadget>
+
+        <gadget>
+            <name>Autoscale</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>AutoScaleGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>FloatToShort</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>FloatToUShortGadget</classname>
+        </gadget>
     </stream>
 </configuration>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <future>
+#include <boost/asio.hpp>
 
 #include "connection/Config.h"
 #include "connection/stream/Processable.h"
@@ -34,8 +35,14 @@ namespace Gadgetron::Server::Connection::Stream {
         const std::string& name() override;
 
     private:
+        std::unique_ptr<std::iostream> open_connection(Config::Execute, const Core::Context &);
+        std::unique_ptr<std::iostream> open_connection(Config::Connect, const Core::Context &);
+        std::shared_ptr<ExternalChannel> open_external_channel(const Config::External &, const Core::Context &);
+
         std::future<std::shared_ptr<ExternalChannel>> channel;
         std::shared_ptr<Serialization> serialization;
         std::shared_ptr<Configuration> configuration;
+
+        boost::asio::io_service io_service;
    };
 }
