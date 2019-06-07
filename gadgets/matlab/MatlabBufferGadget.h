@@ -38,8 +38,7 @@ public:
 
     ~MatlabBufferGadget()
     {
-    std::lock_guard<std::mutex> lock(mutex_);   
-       // Close the Matlab engine
+        std::lock_guard<std::mutex> lock(mutex_);   
         GDEBUG("Closing down Matlab\n");
         engClose(engine_);
     }
@@ -143,6 +142,8 @@ protected:
     std::string classname_;
     std::string startcmd_;
     bool debug_mode_;
+    
+    std::clock_t timer_out; //LA: timer for measurement of execution time outside this->process
 
     Engine *engine_;
 };
