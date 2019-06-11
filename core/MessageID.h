@@ -32,6 +32,9 @@ namespace Gadgetron::Core {
         GADGET_MESSAGE_DICOM_WITHNAME                      = 1018,
         GADGET_MESSAGE_DEPENDENCY_QUERY                    = 1019,
         GADGET_MESSAGE_ISMRMRD_BUFFER                      = 1020,
-        GADGET_MESSAGE_ISMRMRD_IMAGE_ARRAY                 = 1021
+        GADGET_MESSAGE_ISMRMRD_IMAGE_ARRAY                 = 1021,
+        GADGET_MESSAGE_ISMRMRD_IMAGE                       = 1022,
+        GADGET_MESSAGE_RECONDATA                           = 1023,
+        GADGET_MESSAGE_ISMRMRD_WAVEFORM                    = 1026,
     };
 }

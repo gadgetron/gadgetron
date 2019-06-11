@@ -1,4 +1,6 @@
 
+#include <iomanip>
+
 #include "Serialization.h"
 
 #include "io/primitives.h"
@@ -50,6 +52,22 @@ namespace Gadgetron::Server::Connection::Stream {
         };
 
         for (; handlers.count(id); id = IO::read<uint16_t>(stream)) handlers.at(id)(stream);
+
+        if (!readers.count(id)) {
+            GERROR_STREAM("Oh shit, someone gave us a retarded message id: " << id);
+
+            auto bytes = std::make_unique<char[]>(10);
+            stream.read(bytes.get(), 10);
+
+            std::stringstream output;
+            output << std::hex << std::setw(2) << std::setfill('0');
+
+            for (int i = 0; i < 10; i++) {
+                output << "0x" << int(uint8_t(bytes[i])) << " ";
+            }
+
+            GERROR_STREAM("Let's have a look at the next few bytes: " << output.str());
+        }
 
         return readers.at(id)->read(stream);
     }

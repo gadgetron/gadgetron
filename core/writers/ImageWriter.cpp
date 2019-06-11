@@ -4,6 +4,7 @@
 #include <boost/optional.hpp>
 #include <io/primitives.h>
 
+#include "MessageID.h"
 #include "ImageWriter.h"
 
 namespace {
@@ -32,24 +33,23 @@ namespace {
                 const hoNDArray<T>& data,
                 const optional<ISMRMRD::MetaContainer>& meta
         ) override {
-            uint16_t message_id = 1022;
-            IO::write(stream,message_id);
-            auto corrected_header = header;
-            corrected_header.data_type = ismrmrd_data_type<T>();
-            IO::write(stream,corrected_header);
 
             std::string serialized_meta;
-
             if(meta) {
                 std::stringstream meta_stream;
-
                 ISMRMRD::serialize(*meta, meta_stream);
-
                 serialized_meta = meta_stream.str();
             }
-
             uint64_t meta_size = serialized_meta.size();
-            IO::write(stream,meta_size);
+
+            auto corrected_header = header;
+            corrected_header.data_type = ismrmrd_data_type<T>();
+            corrected_header.attribute_string_len = meta_size;
+
+            auto message_id = GADGET_MESSAGE_ISMRMRD_IMAGE;
+            IO::write(stream, message_id);
+            IO::write(stream, corrected_header);
+            IO::write(stream, meta_size);
             stream.write(serialized_meta.c_str(), meta_size);
             IO::write(stream, data.get_data_ptr(), data.get_number_of_elements());
         }

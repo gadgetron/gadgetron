@@ -187,14 +187,6 @@ namespace Gadgetron {
                             for (n = 0; n < N; n++)
                             {
                                 KLT_[e][slc][s][n].eigen_value(E);
-
-                                GDEBUG_STREAM("GenericReconEigenChannelGadget - Number of modes kept: " << KLT_[e][slc][s][n].output_length() << " out of " << CHA << "; Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
-
-                                for (size_t c = 0; c < E.get_size(0); c++)
-                                {
-                                    GDEBUG_STREAM("        " << E(c));
-                                }
-                                GDEBUG_STREAM("]");
                             }
                         }
                     }

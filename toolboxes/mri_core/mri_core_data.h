@@ -79,7 +79,6 @@ namespace Gadgetron
     uint16_t min_ = 0;
     uint16_t center_ = 0;
     uint16_t max_ = 0;
-
   };
   
   struct SamplingDescription
