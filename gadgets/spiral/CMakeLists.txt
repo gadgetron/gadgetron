@@ -6,7 +6,7 @@ if (CUDA_FOUND)
 set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h gpuSpiralDeblurGadget.h)
 set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp gpuSpiralDeblurGadget.cpp)
 endif()
-  
+
 add_library(gadgetron_spiral SHARED ${SPIRAL_HEADER_FILES} ${SPIRAL_SRC_FILES})
 
 set_target_properties(gadgetron_spiral PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -26,7 +26,7 @@ if (CUDA_FOUND)
                                 gadgetron_toolbox_gpusolvers 
                                 gadgetron_toolbox_gpuoperators
                                 gadgetron_toolbox_gpuparallelmri
-                                gadgetron_toolbox_deblur)
+                                gadgetron_toolbox_deblur )
 endif()
 
 install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)

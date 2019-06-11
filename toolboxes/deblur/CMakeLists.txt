@@ -1,5 +1,6 @@
 
-if (USE_CUDA)
+
+if (CUDA_FOUND)
 add_library(gadgetron_toolbox_deblur SHARED
         MFIOperator.h
         MFIOperator.cpp)
@@ -17,6 +18,7 @@ target_include_directories(gadgetron_toolbox_deblur
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         )
+
 install(TARGETS gadgetron_toolbox_deblur DESTINATION lib COMPONENT main)
 
 install(FILES
