@@ -18,21 +18,18 @@ namespace Gadgetron::Server::Connection::Stream {
 
     class Stream : public Processable {
     public:
-
         const std::string key;
         Stream(const Config::Stream &, const Core::Context &, Loader &);
 
         void process(
                 Core::InputChannel input,
                 Core::OutputChannel output,
-                ErrorHandler &error_handler
+                ErrorHandler &
         ) override;
 
         const std::string &name() override;
 
-
     private:
-
         std::vector<std::shared_ptr<Processable>> nodes;
     };
 }

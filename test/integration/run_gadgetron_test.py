@@ -5,7 +5,12 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
-basic_environment = dict(os.environ) #Need to save the path because Numpy and h5py will change it, because reason
+
+# Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
+# child processes, they won't load properly. We're saving our environment here to spare our children from the
+# crimes of h5py.
+environment = dict(os.environ)
+
 import sys
 import shutil
 
@@ -15,7 +20,7 @@ import configparser
 import re
 import time
 import functools
-#
+
 import json
 import h5py
 import numpy
@@ -59,9 +64,9 @@ def send_dependency_to_gadgetron(gadgetron, dependency):
                     "-p", gadgetron.port,
                     "-f", dependency,
                     "-c", "default_measurement_dependencies.xml"],
+                   env=environment,
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
-                   env=basic_environment,
                    check=True)
 
 
@@ -74,14 +79,14 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
                     "-o", output,
                     "-c", configuration,
                     "-G", configuration],
-                   env=basic_environment,
+                   env=environment,
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
                    check=True)
 
 
-def start_gadgetron_instance(*, log, port, env=basic_environment):
-    print("Starting Gadgetron instance on port ",port)
+def start_gadgetron_instance(*, log, port, env=environment):
+    print("Starting Gadgetron instance on port",port)
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
@@ -190,7 +195,7 @@ def ensure_gadgetron_instance(args, config):
 
     gadgetron = Gadgetron(host=str(args.host), port=str(args.port))
 
-    def start_gadgetron_action(cont, *, env=basic_environment, **state):
+    def start_gadgetron_action(cont, *, env=environment, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
             with start_gadgetron_instance(log=log, port=gadgetron.port, env=env) as instance:
                 try:
@@ -216,7 +221,7 @@ def ensure_instance_satisfies_requirements(args, config):
                                         "-a", gadgetron.host,
                                         "-p", gadgetron.port,
                                         "-q", "-Q", "gadgetron::info"],
-                                       env=basic_environment,
+                                       env=environment,
                                        universal_newlines=True)
 
         failed_rules = [rule for rule in build_rules(config.items('REQUIREMENTS'))
@@ -299,30 +304,36 @@ def start_additional_nodes(args, config):
     if not config.has_section('DISTRIBUTED'):
         return
 
-    def set_distributed_environment(cont, *, worker_list=[], env=dict(basic_environment), **state):
+    def set_distributed_environment_action(cont, *, worker_list=[], env=dict(environment), **state):
         if sys.platform.startswith('win32'):
             env['GADGETRON_REMOTE_WORKER_COMMAND'] = 'cmd /k echo ' + json.dumps(worker_list) + ' & exit'
         else:
             env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+
+        print("Setting env to",env["GADGETRON_REMOTE_WORKER_COMMAND"])
         return cont(env=env, **state)
 
     base_port = int(config['DISTRIBUTED']['node_port_base'])
-    nodes = int(config['DISTRIBUTED']['nodes'])
+    number_of_nodes = int(config['DISTRIBUTED']['nodes'])
 
-    def start_additional_nodes_action(port, cont, *, worker_list=[], **state):
-        print('Starting additional nodes')
+    def create_worker_ports_action(ids, cont, **state):
+        print("Will start additional Gadgetron workers on ports:", *map(lambda id: base_port + id, ids))
+        return cont(**state)
+
+    def start_additional_worker_action(port, cont, *, worker_list=[], **state):
         with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
             with start_gadgetron_instance(log=log, port=port) as instance:
-                print("Starting instance", port)
                 try:
                     return cont(worker_list=worker_list + ['localhost:' + port], **state)
                 finally:
                     instance.kill()
 
-    yield from (functools.partial(start_additional_nodes_action, str(base_port + id))
-                for id in range(nodes))
+    yield functools.partial(create_worker_ports_action, range(number_of_nodes))
 
-    yield set_distributed_environment
+    yield from (functools.partial(start_additional_worker_action, str(base_port + id))
+                for id in range(number_of_nodes))
+
+    yield set_distributed_environment_action
 
 
 def run_gadgetron_client(args, config):
@@ -451,7 +462,6 @@ def main():
     print("  -- ISMRMRD_HOME    : {}".format(args.ismrmrd_home))
     print("  -- GADGETRON_HOME  : {}".format(args.gadgetron_home))
     print("  -- TEST CASE       : {}".format(args.test))
-
 
     config_parser = configparser.ConfigParser()
     config_parser.read_dict(default_config_values)

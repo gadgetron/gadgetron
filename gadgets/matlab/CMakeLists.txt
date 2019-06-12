@@ -18,8 +18,7 @@ else()
 endif()
 set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(
-    gadgetron_matlab
+target_link_libraries(gadgetron_matlab
     gadgetron_toolbox_log
     gadgetron_toolbox_matlab
     gadgetron_gadgetbase

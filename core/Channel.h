@@ -35,7 +35,6 @@ protected:
 };
 
 InputChannel split(const InputChannel& channel);
-
 OutputChannel split(const OutputChannel& channel);
 
 class InputChannel {
@@ -100,7 +99,6 @@ struct ChannelPair {
 template <class ChannelType, class... ARGS>
 ChannelPair make_channel(ARGS&&... args)
 {
-
     auto channel = std::make_shared<ChannelType>(std::forward<ARGS>(args)...);
     return { InputChannel(channel), OutputChannel(channel) };
 }

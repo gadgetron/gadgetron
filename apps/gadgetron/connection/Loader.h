@@ -41,32 +41,50 @@ namespace Gadgetron::Server::Connection {
             return library.get_alias<FACTORY>(prefix + classname);
         }
 
+        std::map<uint16_t, std::unique_ptr<Reader>> load_readers(const std::vector<Config::Reader> &);
+        std::vector<std::unique_ptr<Writer>> load_writers(const std::vector<Config::Writer> &);
+
         template<class CONFIG>
         std::map<uint16_t, std::unique_ptr<Reader>> load_readers(CONFIG config) {
+            return load_readers(config.readers);
+        }
 
-            std::map<uint16_t, std::unique_ptr<Reader>> readers{};
+        template<class CONFIG>
+        std::map<uint16_t, std::unique_ptr<Reader>> load_default_and_additional_readers(CONFIG config) {
 
-            for (auto &reader_config : config.readers) {
-                auto reader = load(reader_config);
-                uint16_t slot = reader_config.slot.value_or(reader->slot());
-                readers[slot] = std::move(reader);
-            }
+            static const std::vector<Config::Reader> default_readers{
+                    Config::Reader { "gadgetron_mricore", "GadgetIsmrmrdAcquisitionMessageReader", boost::none },
+                    Config::Reader { "gadgetron_mricore", "GadgetIsmrmrdWaveformMessageReader", boost::none },
+                    Config::Reader { "gadgetron_mricore", "MRIImageReader", boost::none },
+                    Config::Reader { "gadgetron_core_readers", "BufferReader", boost::none },
+                    Config::Reader { "gadgetron_core_readers", "IsmrmrdImageArrayReader", boost::none }
+            };
 
-            return std::move(readers);
+            auto configs = default_readers;
+            configs.insert(configs.end(), config.readers.begin(), config.readers.end());
+            return load_readers(configs);
         }
 
         template<class CONFIG>
         std::vector<std::unique_ptr<Writer>> load_writers(CONFIG config) {
-
-            std::vector<std::unique_ptr<Writer>> writers{};
-
-            for (auto &writer_config : config.writers) {
-                writers.emplace_back(load(writer_config));
-            }
-
-            return std::move(writers);
+            return load_writers(config.writers);
         }
 
+        template<class CONFIG>
+        std::vector<std::unique_ptr<Writer>> load_default_and_additional_writers(CONFIG config) {
+
+            static const std::vector<Config::Writer> default_writers{
+                    Config::Writer { "gadgetron_mricore", "GadgetIsmrmrdAcquisitionMessageWriter" },
+                    Config::Writer { "gadgetron_mricore", "GadgetIsmrmrdWaveformMessageWriter" },
+                    Config::Writer { "gadgetron_core_writers", "ImageWriter" },
+                    Config::Writer { "gadgetron_core_writers", "BufferWriter" },
+                    Config::Writer { "gadgetron_core_writers", "IsmrmrdImageArrayWriter" }
+            };
+
+            auto configs = default_writers;
+            configs.insert(configs.begin(), config.writers.begin(), config.writers.end());
+            return load_writers(configs);
+        }
 
     private:
         boost::dll::shared_library load_library(const std::string &shared_library_name);

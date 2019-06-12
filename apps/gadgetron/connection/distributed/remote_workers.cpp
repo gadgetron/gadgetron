@@ -56,9 +56,14 @@ optional<std::vector<Address>> parse_remote_workers(Iterator first, Iterator las
 
 std::vector<Gadgetron::Server::Distributed::Address> Gadgetron::Server::Distributed::get_remote_workers()
 {
-    namespace bp = boost::process;
+	namespace bp = boost::process;
 
-    std::string remote_worker_command = std::getenv("GADGETRON_REMOTE_WORKER_COMMAND");
+	char* remote_worker_command_ptr = std::getenv("GADGETRON_REMOTE_WORKER_COMMAND");
+	if (remote_worker_command_ptr == nullptr)
+		throw std::runtime_error("The environment variable GADGETRON_REMOTE_WORKER_COMMAND is undefined");
+	
+	std::string remote_worker_command = remote_worker_command_ptr;
+
 
     boost::asio::io_service ios;
     std::future<std::string> output;

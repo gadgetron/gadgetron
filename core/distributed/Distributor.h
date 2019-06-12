@@ -14,11 +14,9 @@ namespace Gadgetron::Core::Distributed {
         virtual ~Distributor() = default;
 
     private:
-        Distributor(const GadgetProperties &properties);
+        explicit Distributor(const GadgetProperties &properties);
 
-        template<class...> friend
-        class TypedDistributor;
-
+        template<class...> friend class TypedDistributor;
     };
 
     template<class... ARGS>
@@ -26,16 +24,14 @@ namespace Gadgetron::Core::Distributed {
 
     public:
 
-        TypedDistributor(const GadgetProperties &properties);
+        explicit TypedDistributor(const GadgetProperties &properties);
 
     void process(InputChannel input, ChannelCreator &creator, OutputChannel bypass) final;
 
         virtual void process(TypedInputChannel<ARGS...> &input, ChannelCreator &creator) = 0;
 
         ~TypedDistributor() override = default;
-
     };
-
 
     template<class... ARGS>
     void TypedDistributor<ARGS...>::process(InputChannel input, ChannelCreator &creator,
@@ -46,24 +42,21 @@ namespace Gadgetron::Core::Distributed {
 
     template<class... ARGS>
     Gadgetron::Core::Distributed::TypedDistributor<ARGS...>::TypedDistributor(const GadgetProperties &properties)
-            : Distributor(properties) {
-    }
-
-
+            : Distributor(properties) {}
 }
 
 
-#define GADGETRON_DISTRIBUTOR_EXPORT(DistributorClass)                                        \
+#define GADGETRON_DISTRIBUTOR_EXPORT(DistributorClass)                                                            \
 std::unique_ptr<Gadgetron::Core::Distributed::Distributor> distributor_factory_##DistributorClass(                \
-        const Gadgetron::Core::Context &context,                                    \
-        const Gadgetron::Core::GadgetProperties &props                   \
+        const Gadgetron::Core::Context &context,                                                                  \
+        const Gadgetron::Core::GadgetProperties &props                                                            \
 ) {                                                                                 \
-    return std::make_unique<DistributorClass>(context, props);                           \
+    return std::make_unique<DistributorClass>(context, props);                      \
 }                                                                                   \
                                                                                     \
 BOOST_DLL_ALIAS(                                                                    \
-        distributor_factory_##DistributorClass,                                               \
-        distributor_factory_export_##DistributorClass                                         \
+        distributor_factory_##DistributorClass,                                     \
+        distributor_factory_export_##DistributorClass                               \
 )                                                                                   \
 
 

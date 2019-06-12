@@ -289,7 +289,7 @@ class GadgetronClientResponseReader : public GadgetronClientMessageReader
         boost::asio::read(*stream, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
         boost::asio::read(*stream, boost::asio::buffer(&response_length, sizeof(response_length)));
 
-        std::vector<char> response(response_length,0);
+        std::vector<char> response(response_length + 1,0);
 
         boost::asio::read(*stream, boost::asio::buffer(response.data(),response_length));
 

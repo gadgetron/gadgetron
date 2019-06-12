@@ -1,148 +1,182 @@
-//
-// Created by dchansen on 1/16/19.
-//
+
+#include <list>
+#include <algorithm>
 
 #include "Distributed.h"
-#include "connection/distributed/remote_workers.h"
-#include <algorithm>
-#include <cstdlib>
+
+#include "connection/stream/common/Closer.h"
+#include "connection/stream/distributed/Discovery.h"
+#include "connection/stream/distributed/Worker.h"
 
 namespace {
-    using Worker  = Gadgetron::Server::Connection::Stream::Distributed::Worker;
-    using Address = Gadgetron::Server::Distributed::Address;
-    using Local   = Gadgetron::Server::Distributed::Local;
-    using namespace Gadgetron::Server::Connection;
-    using namespace Gadgetron::Server::Distributed;
     using namespace Gadgetron;
+    using namespace Gadgetron::Core;
+    using namespace Gadgetron::Core::Distributed;
+    using namespace Gadgetron::Server::Connection;
+    using namespace Gadgetron::Server::Connection::Stream;
 
-    std::vector<Worker> get_workers() {
-        auto remote_workers = get_remote_workers();
-
-        auto workers = std::vector<Worker>();
-        std::transform(remote_workers.begin(), remote_workers.end(), std::back_inserter(workers),
-            [](auto address) { return address; });
-        if (workers.empty()) workers.push_back(Local{});
-        return workers;
-    }
-
-    std::string print_worker(const Address& address) {
-        return address.ip + ":" + address.port;
-    }
-
-    std::string print_worker(const Local& local) {
-        return "Local";
-    }
-
-    class WorkerChannelCreator : public Gadgetron::Core::Distributed::ChannelCreator {
+    class ChannelWrapper {
     public:
-        WorkerChannelCreator(const Config::Distributed& distributed_config, Gadgetron::Core::Context context,
-            Gadgetron::Server::Connection::Loader& loader, Core::OutputChannel output_channel,
-            ErrorHandler& error_handler)
-            : loader(loader)
-            , output_channel{ std::move(output_channel) }
-            , context{ std::move(context) }
-            , xml_config{ serialize_config(
-                  Config{ distributed_config.readers, distributed_config.writers, distributed_config.stream }) }
-            , workers{ get_workers() }
-            , error_handler{ error_handler }
-            , current_worker{ make_cyclic(workers.begin(), workers.end()) }
-            , stream_config{ distributed_config.stream } {
+        ChannelWrapper(
+                Address peer,
+                std::shared_ptr<Serialization> serialization,
+                std::shared_ptr<Configuration> configuration
+        );
 
-            readers = loader.load_readers(distributed_config);
-            writers = loader.load_writers(distributed_config);
-        }
-
-        Core::OutputChannel create() override {
-
-            auto previous_worker = current_worker;
-            while (true) {
-                try {
-                    auto worker = *current_worker;
-                    GDEBUG_STREAM(boost::apply_visitor([](auto w) { return print_worker(w); }, worker))
-
-                    auto result = boost::apply_visitor([&](auto v) { return this->create_channel(v); }, worker);
-
-                    ++current_worker;
-                    return result;
-                } catch (const std::runtime_error&) {
-                    ++current_worker;
-                    if (current_worker == previous_worker)
-                        throw;
-                }
-            }
-        }
-
-        ~WorkerChannelCreator() override {
-            for (auto& wt : worker_threads)
-                wt.join();
-        }
-
-        WorkerChannelCreator(WorkerChannelCreator&& other) = default;
+        void process_input(InputChannel input);
+        void process_output(OutputChannel output);
 
     private:
-        Core::OutputChannel create_channel(Local) {
-
-            auto channel = Core::make_channel<Core::MessageChannel>();
-
-            worker_threads.emplace_back(Stream::Processable::process_async(
-                std::make_shared<Stream::Stream>(stream_config, context, loader), std::move(channel.input),
-                Core::split(output_channel), ErrorHandler{ error_handler, "Distributed local stream" }));
-
-            return std::move(channel.output);
-        }
-
-        Core::OutputChannel create_channel(Address address) {
-            auto channel = Core::make_channel<Gadgetron::Server::Distributed::RemoteChannel>(
-                address, xml_config, context.header, readers, writers);
-
-            worker_threads.emplace_back(ErrorHandler{ error_handler, "RemoteChannel reader" }.run(
-                [](auto input, auto output) {
-                    std::transform(begin(input), end(input), begin(output), [](auto&& m) { return std::move(m); });
-                },
-                std::move(channel.input), Core::split(output_channel)));
-            return std::move(channel.output);
-        }
-
-        const std::string xml_config;
-        const Config::Stream stream_config;
-        const Core::Context context;
-        const std::vector<Worker> workers;
-
-        CyclicIterator<decltype(workers)::const_iterator> current_worker;
-        std::map<uint16_t, std::unique_ptr<Core::Reader>> readers;
-        std::vector<std::unique_ptr<Core::Writer>> writers;
-        Gadgetron::Server::Connection::Loader& loader;
-
-        std::vector<std::thread> worker_threads;
-        Core::OutputChannel output_channel;
-        ErrorHandler& error_handler;
+        std::shared_ptr<ExternalChannel> external;
     };
 
+    ChannelWrapper::ChannelWrapper(
+            Address peer,
+            std::shared_ptr<Serialization> serialization,
+            std::shared_ptr<Configuration> configuration
+    ) {
+
+        GINFO_STREAM("Connecting to peer: " << peer);
+        external = std::make_shared<ExternalChannel>(
+                connect(peer, configuration),
+                std::move(serialization),
+                std::move(configuration)
+        );
+    }
+
+    void ChannelWrapper::process_input(InputChannel input) {
+        auto closer = make_closer(external);
+        for (auto message : input) {
+            external->push_message(std::move(message));
+        }
+    }
+
+    void ChannelWrapper::process_output(OutputChannel output) {
+        while(true) {
+            output.push_message(external->pop());
+        }
+    }
+
+    class ChannelCreatorImpl : public ChannelCreator {
+    public:
+        OutputChannel create() override;
+        void join();
+
+        ChannelCreatorImpl(
+                std::shared_ptr<Serialization> serialization,
+                std::shared_ptr<Configuration> configuration,
+                OutputChannel output_channel,
+                ErrorHandler& error_handler
+        );
+
+    private:
+        Address next_peer();
+
+        OutputChannel output;
+
+        std::shared_ptr<Serialization> serialization;
+        std::shared_ptr<Configuration> configuration;
+
+        std::list<Address> peers;
+        std::list<std::thread> threads;
+
+        ErrorHandler error_handler;
+    };
+
+    ChannelCreatorImpl::ChannelCreatorImpl(
+            std::shared_ptr<Serialization> serialization,
+            std::shared_ptr<Configuration> configuration,
+            OutputChannel output_channel,
+            ErrorHandler &error_handler
+    ) : serialization(std::move(serialization)),
+        configuration(std::move(configuration)),
+        output(std::move(output_channel)),
+        error_handler(error_handler, "Distributed") {
+
+        auto ps = discover_peers();
+        peers = std::list<Address>(ps.begin(),ps.end());
+    }
+
+    OutputChannel ChannelCreatorImpl::create() {
+
+        auto pair = Core::make_channel<MessageChannel>();
+
+        auto channel = std::make_shared<ChannelWrapper>(
+                next_peer(),
+                serialization,
+                configuration
+        );
+
+        threads.push_back(error_handler.run(
+                [=](auto input) { channel->process_input(std::move(input)); },
+                std::move(pair.input)
+        ));
+        threads.push_back(error_handler.run(
+                [=](auto output) { channel->process_output(std::move(output)); },
+                Core::split(output)
+        ));
+
+        return std::move(pair.output);
+    }
+
+    void ChannelCreatorImpl::join() {
+        for (auto &thread : threads) thread.join();
+    }
+
+    Address ChannelCreatorImpl::next_peer() {
+        auto peer = peers.front(); peers.pop_front();
+        peers.push_back(peer);
+        return peer;
+    }
 }
 
-void Gadgetron::Server::Connection::Stream::Distributed::process(
-    Core::InputChannel input, Core::OutputChannel output, Gadgetron::Server::Connection::ErrorHandler& error_handler) {
-
-    auto channelcreator = WorkerChannelCreator{ config, context, loader, Core::split(output), error_handler };
-
-    distributor->process(std::move(input), channelcreator, std::move(output));
+namespace {
+    std::unique_ptr<Core::Distributed::Distributor> load_distributor(
+            Loader &loader,
+            const Core::Context& context,
+            const Config::Distributor& conf
+    ) {
+        auto factory = loader.load_factory<Loader::generic_factory<Core::Distributed::Distributor>>(
+                "distributor_factory_export_", conf.classname, conf.dll);
+        return factory(context, conf.properties);
+    }
 }
 
-Gadgetron::Server::Connection::Stream::Distributed::Distributed(const Config::Distributed& distributed_config,
-    const Gadgetron::Core::Context& context, Gadgetron::Server::Connection::Loader& loader)
-    : context{ context }, loader{ loader }, config(distributed_config) {
-    distributor = load_distributor(distributed_config.distributor);
+namespace Gadgetron::Server::Connection::Stream {
+
+    void Distributed::process(
+            Core::InputChannel input,
+            Core::OutputChannel output,
+            ErrorHandler& error_handler
+    ) {
+        auto channel_creator = ChannelCreatorImpl {
+            serialization,
+            configuration,
+            Core::split(output),
+            error_handler
+        };
+
+        distributor->process(std::move(input), channel_creator, std::move(output));
+        channel_creator.join();
+    }
+
+    Distributed::Distributed(
+            const Config::Distributed& config,
+            const Core::Context& context,
+            Loader& loader
+    ) : serialization(std::make_shared<Serialization>(
+                loader.load_readers(config),
+                loader.load_writers(config)
+        )),
+        configuration(std::make_shared<Configuration>(
+                context,
+                config
+        )),
+        distributor(load_distributor(loader, context, config.distributor)) {}
+
+    const std::string& Distributed::name() {
+        static const std::string n = "Distributed";
+        return n;
+    }
 }
 
-std::unique_ptr<Gadgetron::Core::Distributed::Distributor>
-Gadgetron::Server::Connection::Stream::Distributed::load_distributor(
-    const Gadgetron::Server::Connection::Config::Distributor& conf) {
-    auto factory = loader.load_factory<Loader::generic_factory<Core::Distributed::Distributor>>(
-        "distributor_factory_export_", conf.classname, conf.dll);
-    return factory(context, conf.properties);
-}
-
-const std::string& Stream::Distributed::name() {
-    static const std::string n = "Distributed";
-    return n;
-}

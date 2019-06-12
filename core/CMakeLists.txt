@@ -63,8 +63,7 @@ install(FILES
 		io/primitives.hpp
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}/io COMPONENT main)
 install(FILES
-		config/example_branching_chain.xml
-		config/simple_chain.xml
+		config/external_example.xml
         config/distributed_default.xml
 		config/distributed_generic_default.xml
 		config/distributed_image_default.xml

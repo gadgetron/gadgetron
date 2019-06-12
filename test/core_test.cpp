@@ -159,7 +159,7 @@ TEST(TypeTests, varianttype2) {
         auto variation = force_unpack<variant<std::string, int>>(std::move(message));
         EXPECT_FALSE(variation.empty());
         std::cout << variation.type().name() << std::endl;
-        EXPECT_EQ(variation.which(), 1);
+        EXPECT_EQ(variation.which(), 0);
     }
 
 }

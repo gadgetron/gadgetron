@@ -148,8 +148,8 @@
                     <classname>IsmrmrdImageArrayWriter</classname>
                     <dll>gadgetron_core_writers</dll>
                 </writer>
-
             </writers>
+
             <purestream>
                 <!-- Recon -->
                 <gadget>

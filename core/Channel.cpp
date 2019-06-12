@@ -13,8 +13,6 @@ namespace Gadgetron::Core {
         std::shared_ptr<Channel> channel;
     };
 
-
-
     Message MessageChannel::pop() {
         return channel.pop();
     }
@@ -39,16 +37,13 @@ namespace Gadgetron::Core {
         return channel->try_pop();
     }
 
-
     InputChannel::InputChannel(std::shared_ptr<Channel> channel) : channel{channel},
                                                                    closer{std::make_shared<Channel::Closer>(channel)} {
     }
 
-
     void OutputChannel::push_message(Gadgetron::Core::Message message) {
         channel->push_message(std::move(message));
     }
-
 
     OutputChannel::OutputChannel(std::shared_ptr<Channel> channel) : channel{channel},
                                                                      closer{std::make_shared<Channel::Closer>(

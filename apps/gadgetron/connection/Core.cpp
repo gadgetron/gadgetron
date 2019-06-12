@@ -49,7 +49,11 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    void handle_connection(std::unique_ptr<std::iostream> stream, Gadgetron::Core::Context::Paths paths) {
+    void handle_connection(
+            std::unique_ptr<std::iostream> stream,
+            Gadgetron::Core::Context::Paths paths,
+            Gadgetron::Core::Context::Args args
+    ) {
 
         stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
         ErrorSender sender;
@@ -57,7 +61,7 @@ namespace Gadgetron::Server::Connection {
         ErrorHandler error_handler(sender,"Connection Main Thread");
 
         error_handler.handle([&]() {
-            ConfigConnection::process(*stream, paths, error_handler);
+            ConfigConnection::process(*stream, paths, args, error_handler);
         });
 
         try {
@@ -68,14 +72,16 @@ namespace Gadgetron::Server::Connection {
             GERROR_STREAM("Finalizing connection to client failed with the following error: " << e.what());
         }
         catch (...) {}
+
+        GINFO_STREAM("Connection state: [FINISHED]");
     }
 
     std::vector<std::unique_ptr<Core::Writer>> default_writers() {
         std::vector<std::unique_ptr<Writer>> writers{};
 
         writers.emplace_back(std::make_unique<Writers::TextWriter>());
-        // TODO: writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
         writers.emplace_back(std::make_unique<Writers::ResponseWriter>());
+        // TODO: writers.emplace_back(std::make_unique<Writers::ErrorWriter>());
 
         return std::move(writers);
     }

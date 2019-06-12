@@ -18,38 +18,36 @@ set( gadgetron_cmr_header_files
     CmrCartesianKSpaceBinningCineGadget.h 
     CmrParametricMappingGadget.h 
     CmrParametricT1SRMappingGadget.h 
-    CmrParametricT2MappingGadget.h )
+    CmrParametricT2MappingGadget.h
+    PureCmrCartesianKSpaceBinningCineGadget.h)
 
 set( gadgetron_cmr_src_files 
     CmrCartesianKSpaceBinningCineGadget.cpp 
     CmrParametricMappingGadget.cpp 
     CmrParametricT1SRMappingGadget.cpp 
-    CmrParametricT2MappingGadget.cpp )
+    CmrParametricT2MappingGadget.cpp
+    PureCmrCartesianKSpaceBinningCineGadget.cpp)
 
-set( config_BinningCine_files 
+set( config_BinningCine_files
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning.xml
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning_Cloud.xml 
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning_MultiSeries.xml
-    config/BinningCine/CMR_2DT_RTCine_KspaceBinning_MultiSeries_Cloud.xml 
-    )
+    config/BinningCine/CMR_2DT_RTCine_KspaceBinning_MultiSeries_Cloud.xml )
 
 source_group(config/BinningCine FILES ${config_BinningCine_files})
 
 set( config_Mapping_files 
-    config/Mapping/CMR_2DT_T1Mapping_SASHA.xml
-    )
+    config/Mapping/CMR_2DT_T1Mapping_SASHA.xml)
 
 source_group(config/Mapping FILES ${config_Mapping_files})
 
 set( config_cmr_files 
     ${config_BinningCine_files} 
-    ${config_Mapping_files} PureCmrCartesianKSpaceBinningCineGadget.cpp PureCmrCartesianKSpaceBinningCineGadget.h)
+    ${config_Mapping_files})
 
 add_library(gadgetron_cmr SHARED 
     ${gadgetron_cmr_header_files} 
-    ${gadgetron_cmr_src_files}
-    ${config_cmr_files}
-)
+    ${gadgetron_cmr_src_files})
 
 set_target_properties(gadgetron_cmr PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

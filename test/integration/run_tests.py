@@ -57,7 +57,7 @@ def main():
     parser.add_argument('-e', '--external', action='store_const', const=['-e'], default=[],
                         help="Use external Gadgetron; don't start a new instance each test.")
 
-    parser.add_argument('--ignore-failures', dest='failure_handler',
+    parser.add_argument('-F', '--ignore-failures', dest='failure_handler',
                         action='store_const', const=ignore_failure, default=exit_on_failure,
                         help="Ignore a failing cases; keep running tests.")
     parser.add_argument('-s', '--stats', type=str, default=None,
@@ -71,7 +71,7 @@ def main():
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
-    base_args = ['python3', 'run_gadgetron_test.py','-a',str(args.host), '-p', str(args.port)] + args.external
+    base_args = [sys.executable, 'run_gadgetron_test.py','-a',str(args.host), '-p', str(args.port)] + args.external
     if args.gadgetron_home is not None:
         base_args += ['-G',args.gadgetron_home]
     if args.ismrmrd_home is not None:

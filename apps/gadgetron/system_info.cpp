@@ -93,10 +93,6 @@ namespace Gadgetron::Server::Info {
 #if defined USE_CUDA
     namespace CUDA {
 
-        bool cuda_support() {
-            return true;
-        }
-
         std::string format_version(int version) {
             std::stringstream stream;
             stream << (version / 1000)  << "." << (version % 100) / 10;
@@ -109,6 +105,10 @@ namespace Gadgetron::Server::Info {
 
             if (error ) return 0;
             return deviceCount;
+        }
+
+        bool cuda_support() {
+            return 0 < cuda_device_count();
         }
 
         std::string cuda_driver_version() {

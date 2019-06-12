@@ -15,7 +15,7 @@ RUN apt-get update --quiet && \
     libplplot-dev libdcmtk-dev supervisor cmake-curses-gui neofetch supervisor net-tools \
     cpio gpg-agent libpugixml-dev
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
+RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-dev libarmadillo-dev
 
 #Python stuff
 RUN apt-get update && apt-get install -y libgtk2.0-dev
@@ -31,27 +31,11 @@ RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-l
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
-# since cmake has problems to find python3 and boost-python3
-# RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
-
-# fix the  qhull reentrant problem
-# RUN pip uninstall -y scipy
-
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
 RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
 
 RUN mkdir /opt/code
-
-# Compile armadillo
-RUN cd /opt && \
-    wget http://sourceforge.net/projects/arma/files/armadillo-9.200.8.tar.xz && \
-    tar xvf armadillo-9.200.8.tar.xz && \
-    cd armadillo-9.200.8 && \
-    mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release ../ && \
-    make -j$(nproc) && \
-    make PREFIX=/usr/lib/x86_64-linux-gnu install
 
 # ZFP
 RUN cd /opt && \

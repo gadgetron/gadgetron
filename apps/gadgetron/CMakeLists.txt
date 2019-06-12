@@ -3,8 +3,6 @@ configure_file(gadgetron_config.in gadgetron_config.h)
 
 add_executable(gadgetron
         main.cpp
-        connection/Config.cpp
-        connection/Config.h
         Server.cpp
         Server.h
         Connection.cpp
@@ -12,6 +10,8 @@ add_executable(gadgetron
         paths.cpp
         paths.h
         system_info.cpp
+        connection/Config.cpp
+        connection/Config.h
         connection/ConfigConnection.cpp
         connection/ConfigConnection.h
         connection/StreamConnection.cpp
@@ -28,6 +28,8 @@ add_executable(gadgetron
         connection/Loader.h
         connection/Core.cpp
         connection/Core.h
+        connection/SocketStreamBuf.cpp
+        connection/SocketStreamBuf.h
         connection/stream/Stream.cpp
         connection/stream/Stream.h
         connection/stream/Parallel.cpp
@@ -37,9 +39,13 @@ add_executable(gadgetron
         connection/stream/External.cpp
         connection/stream/External.h
         connection/stream/Processable.h
-        connection/distributed/RemoteChannel.cpp
-        connection/distributed/RemoteChannel.h
-        connection/distributed/remote_workers.cpp
+        connection/stream/common/ExternalChannel.cpp
+        connection/stream/common/ExternalChannel.h
+        connection/stream/external/Matlab.cpp
+        connection/stream/external/Matlab.h
+        connection/stream/external/Python.cpp
+        connection/stream/external/Python.h
+        connection/stream/distributed/Discovery.cpp
         connection/stream/Processable.cpp
         connection/stream/ParallelProcess.cpp
         connection/stream/ParallelProcess.h
@@ -47,8 +53,15 @@ add_executable(gadgetron
         connection/stream/PureStream.h
         connection/stream/PureDistributed.cpp
         connection/stream/PureDistributed.h
-        connection/SocketStreamBuf.cpp
-        connection/SocketStreamBuf.h)
+        connection/stream/common/External.h
+        connection/stream/common/External.cpp
+        connection/stream/common/Serialization.cpp
+        connection/stream/common/Serialization.h
+        connection/stream/common/Configuration.cpp
+        connection/stream/common/Configuration.h
+        connection/stream/distributed/Pool.h
+        connection/stream/distributed/Worker.cpp
+        connection/stream/distributed/Worker.h connection/stream/common/Closer.h)
 
 target_link_libraries(gadgetron
         gadgetron_core
@@ -60,25 +73,20 @@ target_link_libraries(gadgetron
 target_include_directories(gadgetron
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        )
-
+        ${CMAKE_CURRENT_BINARY_DIR})
 
 if (BUILD_PYTHON_SUPPORT)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
 endif ()
 
-
 if (CUDA_FOUND)
     target_link_libraries(gadgetron ${CUDA_LIBRARIES})
 endif ()
-
 
 if (GPERFTOOLS_PROFILER)
     message("Adding gperftools cpu profiler to gadgetron link assemblage.")
     target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
 endif ()
-
 
 install(TARGETS gadgetron DESTINATION bin COMPONENT main)
 

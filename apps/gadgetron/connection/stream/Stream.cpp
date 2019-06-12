@@ -22,7 +22,7 @@ namespace {
         void process(
                 InputChannel input,
                 OutputChannel output,
-                ErrorHandler &error_handler
+                ErrorHandler &
         ) override {
              node->process(input, output);
         }
@@ -47,10 +47,13 @@ namespace {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Parallel>(conf, context, loader);
     }
 
+    std::shared_ptr<Processable> load_node(const Config::External &conf, const Context &context, Loader &loader) {
+        return std::make_shared<Gadgetron::Server::Connection::Stream::External>(conf, context, loader);
+    }
+
     std::shared_ptr<Processable> load_node(const Config::Distributed &conf, const Context &context, Loader &loader) {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Distributed>(conf, context, loader);
     }
-
 
     std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const Context& context, Loader& loader){
         return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);
@@ -77,7 +80,6 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
-
         std::vector<InputChannel> input_channels;
         input_channels.emplace_back(std::move(input));
         std::vector<OutputChannel> output_channels{};
@@ -101,8 +103,6 @@ namespace Gadgetron::Server::Connection::Stream {
             thread.join();
         }
     }
-
-
 }
 
 const std::string &Gadgetron::Server::Connection::Stream::Stream::name() {

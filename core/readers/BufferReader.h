@@ -8,7 +8,7 @@ namespace Gadgetron::Core::Readers {
     public:
         Message read(std::istream &stream) override;
 
-        uint16_t slot() override {return MessageID::GADGET_MESSAGE_ISMRMRD_BUFFER;}
+        uint16_t slot() override {return MessageID::GADGET_MESSAGE_RECONDATA;}
 
     };
 }

@@ -102,7 +102,12 @@ namespace {
 
 namespace Gadgetron::Server::Connection::ConfigConnection {
 
-    void process(std::iostream &stream, const Core::Context::Paths &paths, ErrorHandler &error_handler) {
+    void process(
+            std::iostream &stream,
+            const Core::Context::Paths &paths,
+            const Core::Context::Args &args,
+            ErrorHandler &error_handler
+    ) {
 
         GINFO_STREAM("Connection state: [CONFIG]");
 
@@ -131,7 +136,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         output_thread.join();
 
         if (context.config) {
-            HeaderConnection::process(stream, paths, context.config.get(), error_handler);
+            HeaderConnection::process(stream, paths, args, context.config.get(), error_handler);
         }
     }
 }

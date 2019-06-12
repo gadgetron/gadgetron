@@ -1,31 +1,62 @@
-//
-// Created by dchansen on 2/18/19.
-//
-
 #pragma once
+
+#include <map>
+#include <list>
+#include <thread>
+
 #include "Processable.h"
-#include "connection/Config.h"
 #include "Reader.h"
 #include "Writer.h"
-#include <map>
+
 #include "connection/Loader.h"
+#include "connection/Config.h"
+
+#include "common/Serialization.h"
+#include "common/Configuration.h"
+
+#include "distributed/Worker.h"
+#include "distributed/Pool.h"
 
 namespace Gadgetron::Server::Connection::Stream {
 
     class PureDistributed : public Processable {
 
     public:
-        PureDistributed(const Config::PureDistributed& config, const Core::Context& context, Loader& loader);
-        void process(Core::InputChannel input, Core::OutputChannel output, ErrorHandler& error_handler) override;
+        PureDistributed(
+                const Config::PureDistributed &,
+                const Core::Context &,
+                Loader &
+        );
+
+        void process(
+                Core::InputChannel,
+                Core::OutputChannel,
+                ErrorHandler &
+        ) override;
+
         const std::string& name() override;
 
     private:
-        std::map<uint16_t, std::unique_ptr<Core::Reader>> readers;
-        std::vector<std::unique_ptr<Core::Writer>> writers;
-        Loader& loader;
-        std::string remote_config;
-        const Core::Context context;
-        size_t nworkers=0;
-    };
+        struct Job;
+        using Queue = Core::MPMCChannel<Job>;
 
+        Job send_message_to_worker(Core::Message message, std::shared_ptr<Worker> worker);
+        Core::Message get_message_from_worker(Job job, size_t retries = 3);
+
+        void process_outbound(Core::InputChannel, Queue &);
+        void process_inbound(Core::OutputChannel, Queue &);
+        void initialize_workers(
+                std::vector<Address> addresses,
+                const std::shared_ptr<Serialization> serialization,
+                const std::shared_ptr<Configuration> configuration,
+                ErrorHandler &error_handler
+        );
+
+        const std::shared_ptr<Serialization> serialization;
+        const std::shared_ptr<Configuration> configuration;
+
+        std::list<std::thread> threads;
+        std::shared_ptr<Pool<Worker>> workers;
+        std::future<std::vector<Address>> addresses;
+    };
 }

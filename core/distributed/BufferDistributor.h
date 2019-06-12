@@ -1,8 +1,9 @@
 #pragma once
 
-#include <Context.h>
+#include "Context.h"
 #include "Distributor.h"
-#include "../../toolboxes/mri_core/mri_core_data.h"
+
+#include "mri_core_data.h"
 
 namespace Gadgetron::Core::Distributed {
     class BufferDistributor : public TypedDistributor<IsmrmrdReconData> {
@@ -15,8 +16,6 @@ namespace Gadgetron::Core::Distributed {
     private:
         const size_t encoding_spaces;
     };
-
-
 }
 
 

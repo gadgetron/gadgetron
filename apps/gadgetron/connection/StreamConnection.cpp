@@ -13,8 +13,8 @@
 #include "Context.h"
 #include "MessageID.h"
 
-#define CONFIG_ERROR "Received second config file. Only one allowed."
-#define HEADER_ERROR "Received second ISMRMRD header. Only one allowed."
+static constexpr const char* CONFIG_ERROR =  "Received second config file. Only one allowed.";
+static constexpr const char* HEADER_ERROR = "Received second ISMRMRD header. Only one allowed.";
 
 namespace {
 

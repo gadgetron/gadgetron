@@ -23,7 +23,9 @@ namespace Gadgetron::Server::Connection {
 
         auto lib = boost::dll::shared_library(
                 shared_library_name,
-                boost::dll::load_mode::append_decorations | boost::dll::load_mode::rtld_global | boost::dll::load_mode::search_system_folders
+                boost::dll::load_mode::append_decorations |
+                boost::dll::load_mode::rtld_global |
+                boost::dll::load_mode::search_system_folders
         );
 
         libraries.push_back(lib);
@@ -42,5 +44,29 @@ namespace Gadgetron::Server::Connection {
 
     std::unique_ptr<Stream::Stream> Loader::load(const Config::Stream &conf) {
         return std::make_unique<Stream::Stream>(conf, context, *this);
+    }
+
+    std::map<uint16_t, std::unique_ptr<Reader>> Loader::load_readers(const std::vector<Config::Reader> &configs) {
+
+        std::map<uint16_t, std::unique_ptr<Reader>> readers{};
+
+        for (auto &config : configs) {
+            auto reader = load(config);
+            uint16_t slot = config.slot.value_or(reader->slot());
+            readers[slot] = std::move(reader);
+        }
+
+        return std::move(readers);
+    }
+
+    std::vector<std::unique_ptr<Writer>> Loader::load_writers(const std::vector<Config::Writer> &configs) {
+
+        std::vector<std::unique_ptr<Writer>> writers{};
+
+        for (auto &writer_config : configs) {
+            writers.emplace_back(load(writer_config));
+        }
+
+        return std::move(writers);
     }
 }

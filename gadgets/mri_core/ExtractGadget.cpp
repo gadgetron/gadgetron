@@ -72,7 +72,7 @@ namespace Gadgetron {
 
     int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1,
                                GadgetContainerMessage<hoNDArray<std::complex<float>>> *m2) {
-
+		GDEBUG("Extracting zhe image\n");
         float min_val = minimum_component(*m2->getObjectPtr());
 
         for (IMTYPE image_type : image_types) {

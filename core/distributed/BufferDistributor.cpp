@@ -1,7 +1,3 @@
-//
-// Created by david on 2/12/2019.
-//
-
 #include "BufferDistributor.h"
 
 void Gadgetron::Core::Distributed::BufferDistributor::process(
