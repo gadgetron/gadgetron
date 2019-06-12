@@ -628,7 +628,6 @@ namespace Gadgetron::Server::Connection {
 
         std::stringstream stream;
         doc.save(stream);
-        GDEBUG("%s \n",stream.str().c_str());
         return stream.str();
     }
 
