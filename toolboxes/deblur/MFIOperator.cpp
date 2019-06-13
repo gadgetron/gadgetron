@@ -18,11 +18,7 @@ MFIOperator::MFIOperator()
 //Constructor that calls prepare
 MFIOperator::MFIOperator(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArray<floatd2>& gpu_traj, std::vector<size_t> &data_d,std::vector<size_t> &image_d, uint64d2 &image_d_os, double &st,float dTE)
 {
-<<<<<<< HEAD
     this->prepare(plan_, gpu_traj, data_d, image_d, image_d_os, st, dTE);
-=======
-    this->Prepare(plan_, gpu_traj, data_d, image_d, image_d_os, st, dTE);
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 }
 
 MFIOperator::~MFIOperator()
@@ -30,12 +26,8 @@ MFIOperator::~MFIOperator()
 
 }
 
-<<<<<<< HEAD
 bool MFIOperator::prepare(boost::shared_ptr<cuNFFT_plan<float, 2>> plan_, cuNDArray<floatd2>& gpu_traj,
     std::vector<size_t>& data_d, std::vector<size_t>& image_d, uint64d2& image_d_os, double& st, float dTE)
-=======
-bool MFIOperator::Prepare(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArray<floatd2>& gpu_traj, std::vector<size_t> &data_d,std::vector<size_t> &image_d, uint64d2 &image_d_os, double &st,float dTE)
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 {
 
   //Setup MFIoperator instance if not already prepared
@@ -59,15 +51,9 @@ bool MFIOperator::Prepare(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArr
     //nfft_plan_->preprocess(&gpu_traj, NFFT_prep_mode::ALL);
     nfft_plan_ = plan_;
 
-<<<<<<< HEAD
     this->calc_MFI_coeff();
     this->calc_kspace_filter(image_dims);
     this->calc_phase_mask();
-=======
-    this->Calc_MFI_Coeff();
-    this->Calc_Kspace_Filter(image_dims);
-    this->Calc_Phase_Mask();
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 
     is_prepared = true;
     return is_prepared;
@@ -77,11 +63,7 @@ bool MFIOperator::Prepare(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArr
 
     if(data_dims != data_d || image_dims != image_d){
       is_prepared = false;
-<<<<<<< HEAD
       this->prepare(plan_, gpu_traj, data_d, image_d, image_d_os, st, dTE);
-=======
-      this->Prepare(plan_, gpu_traj, data_d, image_d, image_d_os, st, dTE);
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
       return is_prepared;
     }
     else{
@@ -91,11 +73,7 @@ bool MFIOperator::Prepare(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArr
 
 }
 
-<<<<<<< HEAD
 void MFIOperator::calc_MFI_coeff()
-=======
-void MFIOperator::Calc_MFI_Coeff()
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 {
 
   //Compute MFI coefficients if not they do not already exist
@@ -110,47 +88,26 @@ void MFIOperator::Calc_MFI_Coeff()
     int j;
     int i;
     float f;
-<<<<<<< HEAD
     #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod)
-=======
-    #ifdef USE_OMP
-    #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod)
-    #endif
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
     for(j = 0; j<L; j++){
       f = -fmax+float(j)*fmax*2./float(L-1);
       for(i = 0; i < R0; i++) {
         demod(i,j) = exp(om*(float)i*(float)sample_time*f);
       }
     }
-<<<<<<< HEAD
 
     #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod, b, x)
-=======
-    #ifdef USE_OMP
-    #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod, b, x)
-    #endif
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
     for(j = 0; j<fmax*2+1; j++){
       f = -fmax+j;
       for(i = 0; i < R0; i++) {
         b(i,j) = exp(om*(float)i*(float)sample_time*f);
       }
       x.col(j) = arma::solve(demod, b.col(j));
-<<<<<<< HEAD
       std::copy_n(x.colptr(j),L, MFI_C.get_data_ptr()+j*L);
-=======
-      memcpy(MFI_C.get_data_ptr()+j*L, x.colptr(j), L*sizeof(std::complex<float>));
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
     }
-    //write_nd_array(&MFI_C,"MFI.cplx");
 }
 
-<<<<<<< HEAD
 void MFIOperator::calc_phase_mask()
-=======
-void MFIOperator::Calc_Phase_Mask()
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 {
   //Phase mask for fast demodulation in gridded domain (See MFI paper)
   hoNDArray<std::complex<float>> tau(data_dims[0],data_dims[1],data_dims[2]);
@@ -175,11 +132,7 @@ void MFIOperator::Calc_Phase_Mask()
   //write_nd_array(&phase_mask, "phase_mask.cplx");
 }
 
-<<<<<<< HEAD
 void MFIOperator::calc_kspace_filter(std::vector<size_t>& matrix_size)
-=======
-void MFIOperator::Calc_Kspace_Filter(std::vector<size_t> &matrix_size)
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 {
   //Setup circular k-space filter to get rid of spurious high-frequency data from forward and backward FFTs (Similar to CG-sense)
   hoNDArray<std::complex<float>> kspace_filter(&matrix_size);
@@ -193,15 +146,10 @@ void MFIOperator::Calc_Kspace_Filter(std::vector<size_t> &matrix_size)
     }
   }
   cu_kspace_filter = *(hoNDArray<float_complext>*)&kspace_filter;
-  //write_nd_array(&kspace_filter, "kspace_filter.cplx");
 
 }
 
-<<<<<<< HEAD
 hoNDArray<complext<float>> MFIOperator::MFI_apply(hoNDArray<complext<float>>& ho_image, hoNDArray<float> B0_map)
-=======
-hoNDArray<complext<float>> MFIOperator::MFI_Apply(hoNDArray<complext<float>> &ho_image,hoNDArray<float> B0_map)
->>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 {
 
   //Core MFI function - assumes MFI operator has already been prepared

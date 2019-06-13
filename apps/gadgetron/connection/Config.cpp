@@ -287,7 +287,7 @@ namespace {
         };
 
         Config::Node apply_transformation(Config::Gadget gadget) {
-
+/*
             auto pair = *std::find_if(
                     node_transformations.begin(),
                     node_transformations.end(),
@@ -295,6 +295,8 @@ namespace {
             );
 
             return std::get<1>(pair)(gadget);
+            */
+            return gadget;
         }
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node &gadget_node) {
