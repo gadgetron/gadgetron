@@ -2,7 +2,6 @@
 
 #include <set>
 #include <map>
-#include <list>
 #include <memory>
 #include <string>
 
@@ -21,17 +20,8 @@
 using namespace Gadgetron::Server::Connection;
 using namespace Gadgetron::Core;
 
-namespace Gadgetron::Server::Connection {
-    struct Config::External::Configuration {
-        pugi::xml_document document;
-
-        Configuration(const pugi::xml_node &configuration_node) : document() {
-            document.append_copy(configuration_node);
-        }
-    };
-}
-
 namespace {
+
 
     class ConfigNodeError : public std::runtime_error {
     public:
@@ -200,7 +190,7 @@ namespace {
 
         static PropertyMap dereference_map(const PropertyMap &propertyMap) {
             PropertyMap resultMap = propertyMap;
-            for (const auto &property : resultMap) {
+            for (auto property : resultMap) {
                 resultMap[property.first] = value_of(resultMap, property.first, std::set<std::string>());
             }
             return resultMap;
@@ -226,37 +216,6 @@ namespace {
         }
     };
 
-    bool is_legacy_python_gadget(const Config::Gadget &gadget) {
-        return gadget.dll == "gadgetron_python" && gadget.classname == "PythonGadget";
-    }
-
-    Config::Node transform_legacy_python_gadget(Config::Gadget gadget) {
-        GDEBUG_STREAM("Legacy Python Gadget detected: " << gadget.name);
-
-        pugi::xml_document document;
-        auto configuration = document.append_child("configuration");
-
-        return Config::External{
-            Config::Execute{
-                    gadget.properties.at("python_module"),
-                    "python",
-                    gadget.properties.at("python_class")
-            },
-            std::make_shared<Config::External::Configuration>(configuration),
-            std::vector<Config::Reader>(),
-            std::vector<Config::Writer>()
-        };
-    }
-
-    bool is_legacy_matlab_gadget(const Config::Gadget &gadget) {
-        return gadget.dll == "gadgetron_matlab" && gadget.classname == "MatlabBufferGadget";
-    }
-
-    Config::Node transform_legacy_matlab_gadget(Config::Gadget gadget) {
-        GDEBUG_STREAM("Legacy Matlab Gadget detected: " << gadget.name);
-        throw std::runtime_error("Currently not implemented.");
-    }
-
     class Legacy : public Parser<LegacySource> {
     public:
 
@@ -272,30 +231,10 @@ namespace {
             };
         }
 
-        static bool accepts(const pugi::xml_document &config) {
-            return config.child("gadgetronStreamConfiguration");
-        }
 
     private:
+
         explicit Legacy(const pugi::xml_document &config) : Parser<LegacySource>(config) {}
-
-        const std::list<std::pair<std::function<bool(const Config::Gadget &)>,
-                                  std::function<Config::Node(Config::Gadget)>>> node_transformations{
-            std::make_pair(is_legacy_python_gadget, transform_legacy_python_gadget),
-            std::make_pair(is_legacy_matlab_gadget, transform_legacy_matlab_gadget),
-            std::make_pair([](auto _) { return true; }, [=](auto c) { return Config::Node(c); })
-        };
-
-        Config::Node apply_transformation(Config::Gadget gadget) {
-
-            auto pair = *std::find_if(
-                    node_transformations.begin(),
-                    node_transformations.end(),
-                    [&](auto p) { return std::get<0>(p)(gadget); }
-            );
-
-            return std::get<1>(pair)(gadget);
-        }
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node &gadget_node) {
             std::vector<Config::Gadget> gadgets{};
@@ -310,15 +249,20 @@ namespace {
             boost::transform(
                     parse_gadgets(stream_node),
                     std::back_inserter(nodes),
-                    [&](auto gadget) { return apply_transformation(gadget); }
+                    [](auto gadget) {
+                        return Config::Node(gadget);
+                    }
             );
 
             return Config::Stream{"main", nodes};
         }
     };
 
+
     class V2 : public Parser<V2Source, LegacySource> {
     public:
+
+
         static Config parse(const pugi::xml_document &config) {
 
             auto parser = V2(config);
@@ -331,23 +275,19 @@ namespace {
             };
         }
 
-        static bool accepts(const pugi::xml_document &config) {
-            auto configuration = config.child("configuration");
-            return std::string(configuration.child_value("version")) == "2";
-        }
-
     private:
 
         V2(const pugi::xml_document &doc) : Parser<V2Source, LegacySource>(doc) {
             node_parsers["gadget"] = [&](const pugi::xml_node &n) { return this->parse_node<Config::Gadget>(n); };
             node_parsers["parallel"] = [&](const pugi::xml_node &n) { return this->parse_parallel(n); };
-            node_parsers["external"] = [&](const pugi::xml_node &n) { return this->parse_external(n); };
             node_parsers["distributed"] = [&](const pugi::xml_node &n) { return this->parse_distributed(n); };
             node_parsers["parallelprocess"] = [&](const pugi::xml_node &n) { return this->parse_parallelprocess(n); };
             node_parsers["puredistributed"] = [&](const pugi::xml_node &n) { return this->parse_puredistributed(n); };
+
         }
 
         std::unordered_map<std::string, std::function<Config::Node(const pugi::xml_node &)>> node_parsers;
+
 
         Config::Parallel parse_parallel(const pugi::xml_node &parallel_node) {
 
@@ -359,16 +299,6 @@ namespace {
                 streams.push_back(parse_stream(stream_node));
             }
             return Config::Parallel{branch, merge, streams};
-        }
-
-        Config::External parse_external(const pugi::xml_node &external_node) {
-
-            return Config::External{
-                parse_action(external_node),
-                parse_action_configuration(external_node),
-                parse_readers(external_node.child("readers")),
-                parse_writers(external_node.child("writers"))
-            };
         }
 
         Config::Distributed parse_distributed(const pugi::xml_node &distributed_node) {
@@ -407,46 +337,6 @@ namespace {
             auto writers = parse_writers(puredistributedprocess_node.child("writers"));
             return {readers,writers,purestream};
         }
-
-        static boost::optional<std::string> parse_target(std::string s) {
-            if (s.empty()) return boost::none;
-            return s;
-        }
-
-        static Config::Execute parse_execute(const pugi::xml_node &execute_node) {
-            return Config::Execute {
-                execute_node.attribute("name").value(),
-                execute_node.attribute("type").value(),
-                parse_target(execute_node.attribute("target").value())
-            };
-        }
-
-        static Config::Connect parse_connect(const pugi::xml_node &connect_node) {
-            return Config::Connect {
-                connect_node.attribute("port").value()
-            };
-        }
-
-        std::map<std::string, std::function<Config::Action(const pugi::xml_node &)>> action_parsers {
-                {"execute", parse_execute},
-                {"connect", parse_connect}
-        };
-
-        Config::Action parse_action(const pugi::xml_node &external_node) {
-
-            for (pugi::xml_node child : external_node) {
-                if (action_parsers.count(child.name())) {
-                    return action_parsers.at(child.name())(child);
-                }
-            }
-
-            throw ConfigNodeError("Unable to parse valid action for external node", external_node);
-        }
-
-        std::shared_ptr<Config::External::Configuration>
-        parse_action_configuration(const pugi::xml_node &external_node) {
-            return std::make_shared<Config::External::Configuration>(external_node.child("configuration"));
-        }
     };
 
     template<class ConfigNode>
@@ -472,12 +362,6 @@ namespace {
 
     struct XMLSerializer {
 
-        template<class ConfigNode>
-        static pugi::xml_node add_name(const ConfigNode &config, pugi::xml_node &node) {
-            auto name = node.append_child("name");
-            name.text().set(Config::name(config).c_str());
-            return name;
-        }
 
         template<class ConfigNode>
         static pugi::xml_node add_basenode(const ConfigNode &configNode, pugi::xml_node &node) {
@@ -504,7 +388,7 @@ namespace {
         template<class ConfigNode>
         static pugi::xml_node add_node(const ConfigNode &configNode, pugi::xml_node &node) {
             auto gadget_node = add_basenode(configNode, node);
-            add_name(configNode, gadget_node);
+            gadget_node.append_child("name").append_child(pugi::node_pcdata).set_value(configNode.name.c_str());
             for (auto property : configNode.properties) {
                 auto property_node = gadget_node.append_child("property");
                 property_node.append_attribute("name").set_value(property.first.c_str());
@@ -531,34 +415,6 @@ namespace {
             add_node(distributed.stream, distributed_node);
 
             return distributed_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Execute &execute, pugi::xml_node &node) {
-            auto execute_node = node.append_child("execute");
-            execute_node.append_attribute("name").set_value(execute.name.c_str());
-            execute_node.append_attribute("type").set_value(execute.type.c_str());
-            return execute_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Connect &connect, pugi::xml_node &node) {
-            auto connect_node = node.append_child("connect");
-            connect_node.append_attribute("port").set_value(connect.port.c_str());
-            return connect_node;
-        }
-
-        static pugi::xml_node add_node(const Config::External &external, pugi::xml_node &node) {
-
-            auto external_node = node.append_child("external");
-
-            add_readers(external.readers, external_node);
-            add_writers(external.writers, external_node);
-            boost::apply_visitor(
-                    [&](auto action) { add_node(action, external_node); },
-                    external.action
-            );
-            external_node.append_copy(external.configuration->document);
-
-            return external_node;
         }
 
         static pugi::xml_node add_node(const Config::Stream &stream, pugi::xml_node &node) {
@@ -593,14 +449,11 @@ namespace {
             return puredistributed_node;
         }
     };
+
+
 }
 
 namespace Gadgetron::Server::Connection {
-
-    static const std::list<std::pair<std::function<bool(const pugi::xml_document &)>, std::function<Config(const pugi::xml_document &)>>> parsers{
-        std::make_pair(Legacy::accepts, Legacy::parse),
-        std::make_pair(V2::accepts, V2::parse)
-    };
 
     Config parse_config(std::istream &stream) {
 
@@ -612,28 +465,22 @@ namespace Gadgetron::Server::Connection {
             throw std::runtime_error(result.description());
         }
 
-        auto parser = std::find_if(parsers.begin(), parsers.end(), [&](auto pair) { return std::get<0>(pair)(doc); });
-        if (parser == parsers.end()) throw std::runtime_error("Failed to find parsed accepting provided config file.");
-        return std::get<1>(*parser)(doc);
+        if (doc.child("gadgetronStreamConfiguration"))
+            return Legacy::parse(doc);
+
+        return V2::parse(doc);
     }
 
     std::string serialize_config(const Config &config) {
         pugi::xml_document doc{};
         auto config_node = doc.append_child("configuration");
-        config_node.append_child("version").text().set(2);
-
+        config_node.append_child("version").text().set("2");
         XMLSerializer::add_readers(config.readers, config_node);
         XMLSerializer::add_writers(config.writers, config_node);
         XMLSerializer::add_node(config.stream, config_node);
 
         std::stringstream stream;
         doc.save(stream);
-        return stream.str();
-    }
-
-    std::string serialize_config(const Config::External& external_config) {
-        std::stringstream stream;
-        external_config.configuration->document.save(stream);
         return stream.str();
     }
 }

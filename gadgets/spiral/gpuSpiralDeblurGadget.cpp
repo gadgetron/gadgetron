@@ -234,11 +234,18 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			host_image = *(reg_image.to_host());
 
 			gpu_traj = host_traj;
+<<<<<<< HEAD
 			if(MFI.prepare(nfft_plan_, gpu_traj, *host_data.get_dimensions(), image_dimensions_recon_,
                                 image_dimensions_recon_os_, sample_time, .001)){
 				output_image = MFI.MFI_apply(host_image, B0_map);
 			}
 			host_image = *(reg_image.to_host()); //caling MFI_apply corrupts host_image, Recall it from GPU;
+=======
+			if(MFI.Prepare(nfft_plan_, gpu_traj, *host_data.get_dimensions(), image_dimensions_recon_, image_dimensions_recon_os_, sample_time, .001)){
+				output_image = MFI.MFI_Apply(host_image, B0_map);
+			}
+			host_image = *(reg_image.to_host()); //caling MFI_Apply corrupts host_image, Recall it from GPU;
+>>>>>>> 78428447f8c051b458fbf61261aaddb589182734
 
 			//queue deblurred im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header = get_image_header(curr_header,1);
