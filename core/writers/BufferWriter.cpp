@@ -18,12 +18,11 @@ GADGETRON_ADAPT_STRUCT(Gadgetron::IsmrmrdReconData,GADGETRON_ACCESS_ELEMENT(rbit
 
 void
 Gadgetron::Core::Writers::BufferWriter::serialize(std::ostream &stream, const Gadgetron::IsmrmrdReconData &reconData) {
-
     static_assert(!Gadgetron::Core::is_trivially_copyable_v<IsmrmrdReconData>);
     IO::write(stream,MessageID::GADGET_MESSAGE_ISMRMRD_BUFFER);
     IO::write(stream, reconData);
-
 }
+
 namespace Gadgetron::Core::Writers {
     GADGETRON_WRITER_EXPORT(BufferWriter)
 }

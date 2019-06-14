@@ -1,7 +1,8 @@
 
 #include "PureDistributed.h"
 
-#include "distributed/Discovery.h"
+#include "connection/stream/common/Discovery.h"
+
 #include "distributed/Worker.h"
 #include "distributed/Pool.h"
 
@@ -9,59 +10,59 @@ using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection;
 using namespace Gadgetron::Server::Connection::Stream;
 
+
+namespace {
+
+    std::unique_ptr<Worker> connect_to_peer(
+            Address address,
+            std::shared_ptr<Serialization> serialization,
+            std::shared_ptr<Configuration> configuration
+    ) {
+        return std::make_unique<Worker>(std::move(address), std::move(serialization), std::move(configuration));
+    }
+
+    std::list<std::future<std::unique_ptr<Worker>>> begin_connecting_to_peers(
+            std::future<std::vector<Address>> addresses,
+            std::shared_ptr<Serialization> serialization,
+            std::shared_ptr<Configuration> configuration
+    ) {
+        std::list<std::future<std::unique_ptr<Worker>>> workers;
+        for (auto address : addresses.get()) {
+            workers.emplace_back(std::async(std::launch::async, connect_to_peer, address, serialization, configuration));
+        }
+        return std::move(workers);
+    }
+
+    std::list<std::unique_ptr<Worker>> finish_connecting_to_peers(
+            std::list<std::future<std::unique_ptr<Worker>>> pending_workers
+    ) {
+        std::list<std::unique_ptr<Worker>> workers;
+        for (auto &pending_worker : pending_workers) {
+            auto status = pending_worker.wait_for(std::chrono::seconds(5));
+            if (status == std::future_status::ready) {
+                workers.emplace_back(pending_worker.get());
+            }
+        }
+        return std::move(workers);
+    }
+}
+
 namespace Gadgetron::Server::Connection::Stream {
 
-    class PureDistributed::Job {
-    public:
-        Message message;
-        std::shared_ptr<Worker> worker;
-        std::future<Message> response;
-    };
-
-    PureDistributed::Job PureDistributed::send_message_to_worker(Message message, std::shared_ptr<Worker> worker) {
-        return Job {
-            message.clone(),
-            worker,
-            worker->push(std::move(message))
-        };
-    }
-
-    Message PureDistributed::get_message_from_worker(Job job, size_t retries) {
-        try {
-            return job.response.get();
-        }
-        catch (std::exception &e) {
-            GWARN_STREAM("Worker " << job.worker->address << " reported error: " << e.what());
-
-            if (!retries) throw std::runtime_error("Multiple workers failed processing job. Assuming terminal problem. Closing stream.");
-
-            auto worker = workers->best();
-            GWARN_STREAM("Job will be retried on worker: " << worker->address << " (" << retries << " retries left)");
-
-            return get_message_from_worker(
-                    send_message_to_worker(
-                        std::move(job.message),
-                        worker
-                    ),
-                    retries - 1
-            );
-        }
-    }
 
     void PureDistributed::process_outbound(InputChannel input, Queue &jobs) {
+        auto workers = Pool(finish_connecting_to_peers(std::move(pending_workers)));
+
         for (auto message : input) {
-            jobs.push(send_message_to_worker(
-                    std::move(message),
-                    workers->best()
-            ));
+            jobs.push(workers.push(std::move(message)));
         }
-        workers->close();
+
         jobs.close();
     }
 
     void PureDistributed::process_inbound(OutputChannel output, Queue &jobs) {
-        while(true) {
-            output.push(get_message_from_worker(jobs.pop()));
+        while (true) {
+            output.push_message(jobs.pop().get());
         }
     }
 
@@ -70,13 +71,6 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler& error_handler
     ) {
-        initialize_workers(
-                addresses.get(),
-                serialization,
-                configuration,
-                error_handler
-        );
-
         auto queue = Queue();
 
         auto outbound = error_handler.run(
@@ -89,7 +83,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 std::move(output)
         );
 
-        outbound.join(); inbound.join(); for (auto &t : threads) t.join();
+        outbound.join(); inbound.join();
     }
 
     PureDistributed::PureDistributed(
@@ -103,30 +97,10 @@ namespace Gadgetron::Server::Connection::Stream {
         configuration(std::make_shared<Configuration>(
                 context,
                 config
-        )),
-        workers(std::make_shared<Pool<Worker>>()),
-        addresses(std::async(discover_peers)) {}
-
-    void PureDistributed::initialize_workers(
-            std::vector<Address> addresses,
-            const std::shared_ptr<Serialization> serialization,
-            const std::shared_ptr<Configuration> configuration,
-            ErrorHandler &error_handler
-    ) {
-        for (auto address : addresses) {
-            // TODO: Opening connections to peers can be done in parallel.
-
-            try {
-                auto worker = std::make_unique<Worker>(address, serialization, configuration);
-
-                threads.push_back(worker->start(error_handler));
-                workers->add(std::move(worker));
-            }
-            catch (std::exception &e) {
-                GWARN_STREAM("Failed to initialize worker with address: " << address << " (" << e.what() << ")");
-            }
-        }
+        )) {
+        pending_workers = begin_connecting_to_peers(std::async(discover_peers), serialization, configuration);
     }
+
 
     const std::string& Gadgetron::Server::Connection::Stream::PureDistributed::name() {
         const static std::string n = "PureDistributed";

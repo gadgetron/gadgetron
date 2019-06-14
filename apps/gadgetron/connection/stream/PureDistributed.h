@@ -37,26 +37,15 @@ namespace Gadgetron::Server::Connection::Stream {
         const std::string& name() override;
 
     private:
-        struct Job;
+        using Job = std::future<Core::Message>;
         using Queue = Core::MPMCChannel<Job>;
-
-        Job send_message_to_worker(Core::Message message, std::shared_ptr<Worker> worker);
-        Core::Message get_message_from_worker(Job job, size_t retries = 3);
 
         void process_outbound(Core::InputChannel, Queue &);
         void process_inbound(Core::OutputChannel, Queue &);
-        void initialize_workers(
-                std::vector<Address> addresses,
-                const std::shared_ptr<Serialization> serialization,
-                const std::shared_ptr<Configuration> configuration,
-                ErrorHandler &error_handler
-        );
 
-        const std::shared_ptr<Serialization> serialization;
-        const std::shared_ptr<Configuration> configuration;
+        std::shared_ptr<Serialization> serialization;
+        std::shared_ptr<Configuration> configuration;
 
-        std::list<std::thread> threads;
-        std::shared_ptr<Pool<Worker>> workers;
-        std::future<std::vector<Address>> addresses;
+        std::list<std::future<std::unique_ptr<Worker>>> pending_workers;
     };
 }

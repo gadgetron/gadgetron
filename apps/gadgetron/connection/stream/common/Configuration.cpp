@@ -86,5 +86,5 @@ namespace Gadgetron::Server::Connection::Stream {
                     std::vector<Config::Node>(config.stream.gadgets.begin(), config.stream.gadgets.end())
                 }
             }
-        ) {}
+    ) {}
 }

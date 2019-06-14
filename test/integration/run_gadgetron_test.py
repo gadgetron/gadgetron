@@ -407,9 +407,9 @@ def output_stats(args, config):
 def build_actions(args, config):
     yield from error_handlers(args, config)
     yield from clear_test_folder(args, config)
+    yield from start_additional_nodes(args, config)
     yield from ensure_gadgetron_instance(args, config)
     yield from ensure_instance_satisfies_requirements(args, config)
-    yield from start_additional_nodes(args, config)
     yield from prepare_copy_input_data(args, config)
     yield from prepare_siemens_input_data(args, config)
     yield from run_gadgetron_client(args, config)

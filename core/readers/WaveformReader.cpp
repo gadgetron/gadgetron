@@ -2,8 +2,11 @@
 #include "io/primitives.h"
 #include "mri_core_data.h"
 
+#include "MessageID.h"
 #include "WaveformReader.h"
+
 #include <ismrmrd/waveform.h>
+
 namespace Gadgetron::Core::Readers {
 
     Core::Message WaveformReader::read(std::istream& stream) {
@@ -22,7 +25,7 @@ namespace Gadgetron::Core::Readers {
     }
 
     uint16_t WaveformReader::slot() {
-        return 1026;
+        return GADGET_MESSAGE_ISMRMRD_WAVEFORM;
     }
 
     GADGETRON_READER_EXPORT(WaveformReader)

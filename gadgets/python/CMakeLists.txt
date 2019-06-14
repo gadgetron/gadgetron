@@ -56,7 +56,8 @@ set(gadgetron_python_gadgets_files
 set(gadgetron_python_examples_files
         examples/mixed_gadgets.py
         examples/mixed_gadgets_gpu.py
-        examples/pure_python_demo.py)
+        examples/pure_python_demo.py
+        examples/simple_recon.py)
 
 source_group(config FILES ${gadgetron_python_config_files})
 source_group(utils FILES ${gadgetron_python_utils_files})
@@ -111,13 +112,12 @@ install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE
 
 install(FILES
         ${gadgetron_python_gadgets_files}
+        ${gadgetron_python_examples_files}
         ${gadgetron_python_models_files}
-    DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+        DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(FILES ${gadgetron_python_config_files}
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 add_subdirectory(config)
 add_subdirectory(utils)
-#add_subdirectory(examples)
-

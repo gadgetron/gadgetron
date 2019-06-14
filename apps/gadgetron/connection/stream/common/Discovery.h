@@ -1,6 +1,6 @@
 #pragma once
 
-#include "connection/stream/common/External.h"
+#include "External.h"
 
 #include "Types.h"
 
