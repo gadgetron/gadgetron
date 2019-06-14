@@ -9,8 +9,7 @@
 #include "connection/stream/common/Configuration.h"
 #include "connection/stream/common/ExternalChannel.h"
 
-#include "Discovery.h"
-#include "Pool.h"
+#include "connection/stream/common/Discovery.h"
 
 #include "Message.h"
 
@@ -20,49 +19,37 @@ namespace Gadgetron::Server::Connection::Stream {
     public:
         const Address address;
 
+        ~Worker();
         Worker(
-                const Address &address,
+                Address address,
                 std::shared_ptr<Serialization> serialization,
                 std::shared_ptr<Configuration> configuration
         );
 
-        void on_failure(std::function<void()> callback);
-        void on_load_change(std::function<void()> callback);
-        long long current_load() const;
-
         std::future<Core::Message> push(Core::Message message);
-
-        std::thread start(ErrorHandler &);
+        long long current_load() const;
         void close();
 
     private:
         mutable std::mutex mutex;
-        std::unique_ptr<ExternalChannel> channel;
 
-        struct Job {
-            std::chrono::time_point<std::chrono::steady_clock> start;
-            std::promise<Core::Message> response;
-        };
+        std::thread inbound_thread;
 
-        std::list<Job> jobs;
-        std::list<std::function<void()>> load_callbacks;
-        std::list<std::function<void()>> fail_callbacks;
-
-        struct {
+        struct Timing {
             std::chrono::milliseconds latest = std::chrono::seconds(5);
         } timing;
 
-        void load_changed();
+        struct Job;
+        std::list<Job> jobs;
+        std::unique_ptr<ExternalChannel> channel;
+
+        struct PushModule; struct LoadModule; struct ClosedPushModule; struct ClosedLoadModule;
+        std::unique_ptr<PushModule> push_module;
+        std::unique_ptr<LoadModule> load_module;
+        void switch_to_closed_modules();
+
         void handle_inbound_messages();
         void process_inbound_message(Core::Message message);
-
-        void fail_pending_messages(std::exception_ptr e);
+        void fail_pending_messages(const std::exception_ptr &e);
     };
-
-    std::unique_ptr<Worker> create_worker(
-            Address address,
-            std::shared_ptr<Serialization> serialization,
-            std::shared_ptr<Configuration> configuration
-    );
 }
-

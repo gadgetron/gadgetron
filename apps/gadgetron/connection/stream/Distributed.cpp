@@ -5,8 +5,8 @@
 #include "Distributed.h"
 
 #include "connection/stream/common/Closer.h"
-#include "connection/stream/distributed/Discovery.h"
-#include "connection/stream/distributed/Worker.h"
+#include "connection/stream/common/Discovery.h"
+#include "connection/stream/common/ExternalChannel.h"
 
 namespace {
     using namespace Gadgetron;
@@ -18,7 +18,7 @@ namespace {
     class ChannelWrapper {
     public:
         ChannelWrapper(
-                Address peer,
+                const Address &peer,
                 std::shared_ptr<Serialization> serialization,
                 std::shared_ptr<Configuration> configuration
         );
@@ -31,11 +31,10 @@ namespace {
     };
 
     ChannelWrapper::ChannelWrapper(
-            Address peer,
+            const Address &peer,
             std::shared_ptr<Serialization> serialization,
             std::shared_ptr<Configuration> configuration
     ) {
-
         GINFO_STREAM("Connecting to peer: " << peer);
         external = std::make_shared<ExternalChannel>(
                 connect(peer, configuration),
@@ -54,6 +53,7 @@ namespace {
     void ChannelWrapper::process_output(OutputChannel output) {
         while(true) {
             output.push_message(external->pop());
+            GDEBUG_STREAM("Pushed message to distributed output.");
         }
     }
 
@@ -94,7 +94,7 @@ namespace {
         error_handler(error_handler, "Distributed") {
 
         auto ps = discover_peers();
-        peers = std::list<Address>(ps.begin(),ps.end());
+        std::copy(ps.begin(), ps.end(), std::back_inserter(peers));
     }
 
     OutputChannel ChannelCreatorImpl::create() {
@@ -108,11 +108,11 @@ namespace {
         );
 
         threads.push_back(error_handler.run(
-                [=](auto input) { channel->process_input(std::move(input)); },
+                [=](auto in) { channel->process_input(std::move(in)); },
                 std::move(pair.input)
         ));
         threads.push_back(error_handler.run(
-                [=](auto output) { channel->process_output(std::move(output)); },
+                [=](auto out) { channel->process_output(std::move(out)); },
                 Core::split(output)
         ));
 

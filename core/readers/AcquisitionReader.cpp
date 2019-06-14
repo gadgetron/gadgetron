@@ -2,6 +2,7 @@
 #include "io/primitives.h"
 #include "mri_core_data.h"
 
+#include "MessageID.h"
 #include "AcquisitionReader.h"
 
 namespace Gadgetron::Core::Readers {
@@ -32,7 +33,7 @@ namespace Gadgetron::Core::Readers {
     }
 
     uint16_t AcquisitionReader::slot() {
-        return 1008;
+        return GADGET_MESSAGE_ISMRMRD_ACQUISITION;
     }
 
     GADGETRON_READER_EXPORT(AcquisitionReader)

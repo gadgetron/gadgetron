@@ -22,102 +22,136 @@ namespace {
 
 namespace Gadgetron::Server::Connection::Stream {
 
+    struct Worker::Job {
+        std::chrono::time_point<std::chrono::steady_clock> start;
+        std::promise<Core::Message> response;
+    };
+
+    struct Module {
+        Worker& worker;
+        explicit Module(Worker &worker) : worker(worker) {}
+        virtual ~Module() = default;
+    };
+
+    struct Worker::PushModule : public Module {
+        using Module::Module;
+
+        virtual std::future<Message> push(Message message) {
+            GDEBUG_STREAM("Pushing message to remote worker " << worker.address);
+
+            Job job {
+                    std::chrono::steady_clock::now(),
+                    std::promise<Message>()
+            };
+
+            auto future = job.response.get_future();
+            worker.channel->push_message(std::move(message));
+            worker.jobs.push_back(std::move(job));
+            return future;
+        };
+    };
+
+    struct Worker::LoadModule : public Module {
+        using Module::Module;
+
+        virtual long long current_load() {
+            auto current_job_duration_estimate = std::max(
+                    worker.timing.latest.count(),
+                    time_since(worker.jobs.front().start).count()
+            );
+
+            return current_job_duration_estimate * worker.jobs.size();
+        };
+    };
+
+    struct Worker::ClosedPushModule : public Worker::PushModule {
+        using Worker::PushModule::PushModule;
+        std::future<Message> push(Message message) override {
+            throw std::runtime_error("Cannot push message to closed/failed worker.");
+        }
+    };
+
+    struct Worker::ClosedLoadModule : public Worker::LoadModule {
+        using Worker::LoadModule::LoadModule;
+        long long current_load() override { return std::numeric_limits<long long>::max(); }
+    };
+}
+
+
+namespace Gadgetron::Server::Connection::Stream {
+
+    Worker::~Worker() {
+        channel->close();
+        inbound_thread.join();
+    }
+
     Worker::Worker(
-            const Address &address,
+            Address address,
             std::shared_ptr<Serialization> serialization,
             std::shared_ptr<Configuration> configuration
-    ) : address(address) {
+    ) : address(std::move(address)) {
+        GDEBUG_STREAM("Creating worker " << this->address);
+
         channel = std::make_unique<ExternalChannel>(
-                connect(address, configuration),
+                connect(this->address, configuration),
                 std::move(serialization),
                 std::move(configuration)
         );
-    }
 
-    void Worker::load_changed() { for (auto &f : load_callbacks) { f(); } }
+        load_module = std::make_unique<LoadModule>(*this);
+        push_module = std::make_unique<PushModule>(*this);
 
-    void Worker::on_failure(std::function<void()> callback) {
-        fail_callbacks.push_back(std::move(callback));
-    }
-
-    void Worker::on_load_change(std::function<void()> callback) {
-        load_callbacks.push_back(std::move(callback));
+        inbound_thread = std::thread([=]() { handle_inbound_messages(); });
     }
 
     long long Worker::current_load() const {
         std::lock_guard<std::mutex> guard(mutex);
-
-        auto current_job_duration_estimate = std::max(
-                timing.latest.count(),
-                time_since(jobs.front().start).count()
-        );
-
-        return current_job_duration_estimate * jobs.size();
+        return load_module->current_load();
     }
 
     std::future<Message> Worker::push(Message message) {
-        GDEBUG_STREAM("Pushing message to worker: " << address);
-        Job job {
-            std::chrono::steady_clock::now(),
-            std::promise<Message>()
-        };
-
-        auto future = job.response.get_future();
-
-        {
-            std::lock_guard<std::mutex> guard(mutex);
-            channel->push_message(std::move(message));
-            jobs.push_back(std::move(job));
-        }
-
-        load_changed();
-
-        return future;
-    }
-
-    std::thread Worker::start(ErrorHandler &error_handler) {
-
-        ErrorHandler nested_handler{
-            error_handler,
-            boost::apply_visitor([](auto a) { return to_string(a); }, address)
-        };
-
-        return nested_handler.run([=]() { handle_inbound_messages(); });
+        std::lock_guard<std::mutex> guard(mutex);
+        return push_module->push(std::move(message));
     }
 
     void Worker::close() {
+        std::lock_guard<std::mutex> guard(mutex);
         channel->close();
     }
 
     void Worker::handle_inbound_messages() {
-
         try {
             while(true) process_inbound_message(channel->pop());
         }
-        catch (std::exception) {
+        catch (const ChannelClosed &) {}
+        catch (const std::exception &e) {
+            GWARN_STREAM("Worker " << address << " failed: " << e.what());
             fail_pending_messages(std::current_exception());
         }
+        switch_to_closed_modules();
     }
 
     void Worker::process_inbound_message(Core::Message message) {
+        GDEBUG_STREAM("Received message from remote worker " << address);
 
-        Job job;
-        {
-            std::lock_guard<std::mutex> guard(mutex);
-            job = std::move(jobs.front()); jobs.pop_front();
-            timing.latest = time_since(job.start);
-        }
+        std::lock_guard<std::mutex> guard(mutex);
 
-        load_changed();
-
+        auto job = std::move(jobs.front()); jobs.pop_front();
+        timing.latest = time_since(job.start);
         job.response.set_value(std::move(message));
     }
 
-    void Worker::fail_pending_messages(std::exception_ptr e) {
+    void Worker::fail_pending_messages(const std::exception_ptr &e) {
+        std::lock_guard<std::mutex> guard(mutex);
 
-        for (auto &f : fail_callbacks) { f(); }
         for (auto &job : jobs) {
             job.response.set_exception(e);
         }
+    }
+
+    void Worker::switch_to_closed_modules() {
+        std::lock_guard<std::mutex> guard(mutex);
+        load_module = std::make_unique<ClosedLoadModule>(*this);
+        push_module = std::make_unique<ClosedPushModule>(*this);
     }
 }

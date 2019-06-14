@@ -33,7 +33,6 @@ namespace {
                 const hoNDArray<T>& data,
                 const optional<ISMRMRD::MetaContainer>& meta
         ) override {
-
             std::string serialized_meta;
             if(meta) {
                 std::stringstream meta_stream;

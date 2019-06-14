@@ -45,7 +45,7 @@ add_executable(gadgetron
         connection/stream/external/Matlab.h
         connection/stream/external/Python.cpp
         connection/stream/external/Python.h
-        connection/stream/distributed/Discovery.cpp
+        connection/stream/common/Discovery.cpp
         connection/stream/Processable.cpp
         connection/stream/ParallelProcess.cpp
         connection/stream/ParallelProcess.h
@@ -61,7 +61,7 @@ add_executable(gadgetron
         connection/stream/common/Configuration.h
         connection/stream/distributed/Pool.h
         connection/stream/distributed/Worker.cpp
-        connection/stream/distributed/Worker.h connection/stream/common/Closer.h)
+        connection/stream/distributed/Worker.h connection/stream/common/Closer.h connection/stream/distributed/Pool.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core

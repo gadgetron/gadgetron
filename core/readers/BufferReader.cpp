@@ -18,6 +18,10 @@ Gadgetron::Core::Message Gadgetron::Core::Readers::BufferReader::read(std::istre
     return Message(IO::read<IsmrmrdReconData>(stream));
 }
 
+uint16_t Gadgetron::Core::Readers::BufferReader::slot() {
+    return MessageID::GADGET_MESSAGE_ISMRMRD_BUFFER;
+}
+
 namespace Gadgetron::Core::Readers{
     GADGETRON_READER_EXPORT(BufferReader)
 }

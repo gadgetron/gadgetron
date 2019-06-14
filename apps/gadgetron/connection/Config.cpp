@@ -47,6 +47,153 @@ namespace {
         }
     };
 
+    template<class ConfigNode>
+    constexpr const char *xml_name();
+
+    template<>
+    constexpr const char *xml_name<Config::Reader>() { return "reader"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Writer>() { return "writer"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Gadget>() { return "gadget"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Branch>() { return "branch"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Merge>() { return "merge"; }
+
+    template<>
+    constexpr const char *xml_name<Config::Distributor>() { return "distributor"; }
+
+    struct XMLSerializer {
+
+        template<class ConfigNode>
+        static pugi::xml_node add_name(const ConfigNode &config, pugi::xml_node &node) {
+            auto name = node.append_child("name");
+            name.text().set(Config::name(config).c_str());
+            return name;
+        }
+
+        template<class ConfigNode>
+        static pugi::xml_node add_basenode(const ConfigNode &configNode, pugi::xml_node &node) {
+            auto child_node = node.append_child(xml_name<ConfigNode>());
+            auto dll = child_node.append_child("dll");
+            dll.append_child(pugi::node_pcdata).set_value(configNode.dll.c_str());
+            auto classname = child_node.append_child("classname");
+            classname.append_child(pugi::node_pcdata).set_value(configNode.classname.c_str());
+            return child_node;
+        }
+
+        static pugi::xml_node add_readers(const std::vector<Config::Reader> &readers, pugi::xml_node &node) {
+            auto readers_node = node.append_child("readers");
+            for (auto &reader : readers) add_basenode(reader, readers_node);
+            return readers_node;
+        }
+
+        static pugi::xml_node add_writers(const std::vector<Config::Writer> &writers, pugi::xml_node &node) {
+            auto writers_node = node.append_child("writers");
+            for (auto &writer : writers) add_basenode(writer, writers_node);
+            return writers_node;
+        }
+
+        static void add_property(const std::pair<std::string, std::string> &property, pugi::xml_node &node) {
+            auto property_node = node.append_child("property");
+            property_node.append_attribute("name").set_value(property.first.c_str());
+            property_node.append_attribute("value").set_value(property.second.c_str());
+        }
+
+        template<class ConfigNode>
+        static pugi::xml_node add_node(const ConfigNode &configNode, pugi::xml_node &node) {
+            auto gadget_node = add_basenode(configNode, node);
+            add_name(configNode, gadget_node);
+            for (auto property : configNode.properties) add_property(property, gadget_node);
+            return gadget_node;
+        }
+
+        static pugi::xml_node add_node(const Config::Parallel &parallel, pugi::xml_node &node) {
+            auto parallel_node = node.append_child("parallel");
+            add_node(parallel.merge, parallel_node);
+            add_node(parallel.branch, parallel_node);
+            for (auto &stream : parallel.streams) {
+                add_node(stream, parallel_node);
+            }
+            return parallel_node;
+        }
+
+        static pugi::xml_node add_node(const Config::Distributed &distributed, pugi::xml_node &node) {
+            auto distributed_node = node.append_child("distributed");
+            add_readers(distributed.readers, distributed_node);
+            add_writers(distributed.writers, distributed_node);
+            add_node(distributed.distributor, distributed_node);
+            add_node(distributed.stream, distributed_node);
+
+            return distributed_node;
+        }
+
+        static pugi::xml_node add_node(const Config::Execute &execute, pugi::xml_node &node) {
+            auto execute_node = node.append_child("execute");
+            execute_node.append_attribute("name").set_value(execute.name.c_str());
+            execute_node.append_attribute("type").set_value(execute.type.c_str());
+            return execute_node;
+        }
+
+        static pugi::xml_node add_node(const Config::Connect &connect, pugi::xml_node &node) {
+            auto connect_node = node.append_child("connect");
+            connect_node.append_attribute("port").set_value(connect.port.c_str());
+            return connect_node;
+        }
+
+        static pugi::xml_node add_node(const Config::External &external, pugi::xml_node &node) {
+
+            auto external_node = node.append_child("external");
+
+            add_readers(external.readers, external_node);
+            add_writers(external.writers, external_node);
+            boost::apply_visitor(
+                    [&](auto action) { add_node(action, external_node); },
+                    external.action
+            );
+            external_node.append_copy(external.configuration->document);
+
+            return external_node;
+        }
+
+        static pugi::xml_node add_node(const Config::Stream &stream, pugi::xml_node &node) {
+            auto stream_node = node.append_child("stream");
+            stream_node.append_attribute("key").set_value(stream.key.c_str());
+            for (auto node : stream.nodes) {
+                boost::apply_visitor([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
+            }
+            return stream_node;
+        }
+
+        static pugi::xml_node add_node(const Config::ParallelProcess& parallelProcess, pugi::xml_node & node){
+            auto parallel_node = node.append_child("parallelprocess");
+            parallel_node.append_attribute("workers").set_value((long long unsigned int)parallelProcess.workers);
+            add_node(parallelProcess.stream, parallel_node);
+            return parallel_node;
+        }
+
+        static pugi::xml_node add_node(const Config::PureStream& stream, pugi::xml_node& node){
+            auto purestream_node = node.append_child("purestream");
+            for (auto& gadget : stream.gadgets){
+                add_node(gadget,purestream_node);
+            }
+            return purestream_node;
+        }
+
+        static pugi::xml_node add_node(const Config::PureDistributed& distributed, pugi::xml_node& node){
+            auto puredistributed_node = node.append_child("puredistributed");
+            add_readers(distributed.readers,puredistributed_node);
+            add_writers(distributed.writers,puredistributed_node);
+            add_node(distributed.stream,puredistributed_node);
+            return puredistributed_node;
+        }
+    };
+
     struct Property {
         std::string name;
         std::string value;
@@ -236,6 +383,11 @@ namespace {
         pugi::xml_document document;
         auto configuration = document.append_child("configuration");
 
+        for (auto &property : gadget.properties) {
+            GDEBUG_STREAM("Appending property to configuration: " << property.first << ": " << property.second);
+            XMLSerializer::add_property(property, configuration);
+        }
+
         return Config::External{
             Config::Execute{
                     gadget.properties.at("python_module"),
@@ -287,7 +439,7 @@ namespace {
         };
 
         Config::Node apply_transformation(Config::Gadget gadget) {
-/*
+
             auto pair = *std::find_if(
                     node_transformations.begin(),
                     node_transformations.end(),
@@ -295,8 +447,6 @@ namespace {
             );
 
             return std::get<1>(pair)(gadget);
-            */
-            return gadget;
         }
 
         std::vector<Config::Gadget> parse_gadgets(const pugi::xml_node &gadget_node) {
@@ -450,151 +600,6 @@ namespace {
             return std::make_shared<Config::External::Configuration>(external_node.child("configuration"));
         }
     };
-
-    template<class ConfigNode>
-    constexpr const char *xml_name();
-
-    template<>
-    constexpr const char *xml_name<Config::Reader>() { return "reader"; }
-
-    template<>
-    constexpr const char *xml_name<Config::Writer>() { return "writer"; }
-
-    template<>
-    constexpr const char *xml_name<Config::Gadget>() { return "gadget"; }
-
-    template<>
-    constexpr const char *xml_name<Config::Branch>() { return "branch"; }
-
-    template<>
-    constexpr const char *xml_name<Config::Merge>() { return "merge"; }
-
-    template<>
-    constexpr const char *xml_name<Config::Distributor>() { return "distributor"; }
-
-    struct XMLSerializer {
-
-        template<class ConfigNode>
-        static pugi::xml_node add_name(const ConfigNode &config, pugi::xml_node &node) {
-            auto name = node.append_child("name");
-            name.text().set(Config::name(config).c_str());
-            return name;
-        }
-
-        template<class ConfigNode>
-        static pugi::xml_node add_basenode(const ConfigNode &configNode, pugi::xml_node &node) {
-            auto child_node = node.append_child(xml_name<ConfigNode>());
-            auto dll = child_node.append_child("dll");
-            dll.append_child(pugi::node_pcdata).set_value(configNode.dll.c_str());
-            auto classname = child_node.append_child("classname");
-            classname.append_child(pugi::node_pcdata).set_value(configNode.classname.c_str());
-            return child_node;
-        }
-
-        static pugi::xml_node add_readers(const std::vector<Config::Reader> &readers, pugi::xml_node &node) {
-            auto readers_node = node.append_child("readers");
-            for (auto &reader : readers) add_basenode(reader, readers_node);
-            return readers_node;
-        }
-
-        static pugi::xml_node add_writers(const std::vector<Config::Writer> &writers, pugi::xml_node &node) {
-            auto writers_node = node.append_child("writers");
-            for (auto &writer : writers) add_basenode(writer, writers_node);
-            return writers_node;
-        }
-
-        template<class ConfigNode>
-        static pugi::xml_node add_node(const ConfigNode &configNode, pugi::xml_node &node) {
-            auto gadget_node = add_basenode(configNode, node);
-            add_name(configNode, gadget_node);
-            for (auto property : configNode.properties) {
-                auto property_node = gadget_node.append_child("property");
-                property_node.append_attribute("name").set_value(property.first.c_str());
-                property_node.append_attribute("value").set_value(property.second.c_str());
-            }
-            return gadget_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Parallel &parallel, pugi::xml_node &node) {
-            auto parallel_node = node.append_child("parallel");
-            add_node(parallel.merge, parallel_node);
-            add_node(parallel.branch, parallel_node);
-            for (auto &stream : parallel.streams) {
-                add_node(stream, parallel_node);
-            }
-            return parallel_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Distributed &distributed, pugi::xml_node &node) {
-            auto distributed_node = node.append_child("distributed");
-            add_readers(distributed.readers, distributed_node);
-            add_writers(distributed.writers, distributed_node);
-            add_node(distributed.distributor, distributed_node);
-            add_node(distributed.stream, distributed_node);
-
-            return distributed_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Execute &execute, pugi::xml_node &node) {
-            auto execute_node = node.append_child("execute");
-            execute_node.append_attribute("name").set_value(execute.name.c_str());
-            execute_node.append_attribute("type").set_value(execute.type.c_str());
-            return execute_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Connect &connect, pugi::xml_node &node) {
-            auto connect_node = node.append_child("connect");
-            connect_node.append_attribute("port").set_value(connect.port.c_str());
-            return connect_node;
-        }
-
-        static pugi::xml_node add_node(const Config::External &external, pugi::xml_node &node) {
-
-            auto external_node = node.append_child("external");
-
-            add_readers(external.readers, external_node);
-            add_writers(external.writers, external_node);
-            boost::apply_visitor(
-                    [&](auto action) { add_node(action, external_node); },
-                    external.action
-            );
-            external_node.append_copy(external.configuration->document);
-
-            return external_node;
-        }
-
-        static pugi::xml_node add_node(const Config::Stream &stream, pugi::xml_node &node) {
-            auto stream_node = node.append_child("stream");
-            stream_node.append_attribute("key").set_value(stream.key.c_str());
-            for (auto node : stream.nodes) {
-                boost::apply_visitor([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
-            }
-            return stream_node;
-        }
-
-        static pugi::xml_node add_node(const Config::ParallelProcess& parallelProcess, pugi::xml_node & node){
-            auto parallel_node = node.append_child("parallelprocess");
-            parallel_node.append_attribute("workers").set_value((long long unsigned int)parallelProcess.workers);
-            add_node(parallelProcess.stream, parallel_node);
-            return parallel_node;
-        }
-
-        static pugi::xml_node add_node(const Config::PureStream& stream, pugi::xml_node& node){
-            auto purestream_node = node.append_child("purestream");
-            for (auto& gadget : stream.gadgets){
-                add_node(gadget,purestream_node);
-            }
-            return purestream_node;
-        }
-
-        static pugi::xml_node add_node(const Config::PureDistributed& distributed, pugi::xml_node& node){
-            auto puredistributed_node = node.append_child("puredistributed");
-            add_readers(distributed.readers,puredistributed_node);
-            add_writers(distributed.writers,puredistributed_node);
-            add_node(distributed.stream,puredistributed_node);
-            return puredistributed_node;
-        }
-    };
 }
 
 namespace Gadgetron::Server::Connection {
@@ -615,7 +620,7 @@ namespace Gadgetron::Server::Connection {
         }
 
         auto parser = std::find_if(parsers.begin(), parsers.end(), [&](auto pair) { return std::get<0>(pair)(doc); });
-        if (parser == parsers.end()) throw std::runtime_error("Failed to find parsed accepting provided config file.");
+        if (parser == parsers.end()) throw std::runtime_error("No parser accepted config file.");
         return std::get<1>(*parser)(doc);
     }
 
