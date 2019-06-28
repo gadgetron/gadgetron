@@ -157,6 +157,10 @@ def simple_recon(connection):
     iterable = combine_channels(iterable)
     iterable = create_ismrmrd_images(iterable)
 
+    # We're only interested in acquisitions in this example, so we filter the connection. Anything filtered out in
+    # this way will pass back to Gadgetron unchanged.
+    connection.filter(ismrmrd.Acquisition)
+
     for image in iterable:
         logging.debug("Sending image back to client.")
         connection.send(image)

@@ -18,8 +18,9 @@ using namespace Gadgetron::Server::Connection::Stream;
 
 namespace {
 
-    const std::map<std::string, std::function<void(const Config::Execute &, unsigned short, const Context &)>> modules{
-            {"python", start_python_module}
+    const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const Context &)>> modules{
+            {"python", start_python_module},
+            {"matlab", start_matlab_module}
     };
 
     void process_input(InputChannel input, std::shared_ptr<ExternalChannel> external) {
@@ -55,7 +56,8 @@ namespace Gadgetron::Server::Connection::Stream {
 
         GINFO_STREAM("Waiting for external module '" << execute.name << "' on port: " << port);
 
-        modules.at(execute.type)(execute, port, context);
+        auto child = modules.at(execute.type)(execute, port, context);
+        child.detach();
 
         auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
         acceptor.accept(*socket);

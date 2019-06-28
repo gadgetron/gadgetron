@@ -376,18 +376,19 @@ target_link_libraries(boost INTERFACE python)
 
 endif()
 
+option(ADD_MATLAB_SUPPORT "Install MATLAB libraries and examples." On)
 option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)
 if (BUILD_MATLAB_SUPPORT)
-find_package(GMatlab)
-if (MATLAB_FOUND)
-add_definitions(-DUSE_MATLAB)
+    find_package(GMatlab)
+    if (MATLAB_FOUND)
+        add_definitions(-DUSE_MATLAB)
+    else()
+        set(BUILD_MATLAB_SUPPORT OFF)
+    endif ()
 else()
-set(BUILD_MATLAB_SUPPORT OFF)
-endif ()
-else()
-# explicitly set it, just in case BUILD_MATLAB_SUPPORT was set to OFF
-# after Matlab was already found.
-set(MATLAB_FOUND OFF)
+    # explicitly set it, just in case BUILD_MATLAB_SUPPORT was set to OFF
+    # after Matlab was already found.
+    set(MATLAB_FOUND OFF)
 endif ()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")

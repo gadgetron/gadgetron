@@ -63,7 +63,8 @@ install(FILES
 		io/primitives.hpp
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}/io COMPONENT main)
 install(FILES
-		config/external_example.xml
+		config/external_python_example.xml
+		config/external_matlab_example.xml
         config/distributed_default.xml
 		config/distributed_generic_default.xml
 		config/distributed_image_default.xml
