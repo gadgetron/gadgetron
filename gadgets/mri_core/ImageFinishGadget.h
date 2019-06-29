@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Gadget.h"
 #include "Node.h"
 #include "gadgetron_mricore_export.h"
 

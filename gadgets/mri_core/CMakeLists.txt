@@ -163,6 +163,7 @@ if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
 
     message("Build python generic gadgets ... ")
     include_directories(
+      ${CMAKE_SOURCE_DIR}/core
       ${CMAKE_SOURCE_DIR}/toolboxes/python
       ${PYTHON_INCLUDE_PATH}
       ${NUMPY_INCLUDE_DIRS}

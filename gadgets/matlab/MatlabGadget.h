@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <complex>
 #include <boost/lexical_cast.hpp>
-#include "gadgetron_home.h"
+// #include "gadgetron_home.h"
 
 // TODO:
 //Make the port option work so that we can have multiple matlabs running, each with its own command server.
