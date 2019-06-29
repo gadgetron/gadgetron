@@ -53,7 +53,7 @@ add_executable(gadgetron
 target_link_libraries(gadgetron
         gadgetron_core
         gadgetron_toolbox_log
-        pugixml
+        ${PUGIXML_LIBRARIES}
         boost
         ${ISMRMRD_LIBRARIES})
 
