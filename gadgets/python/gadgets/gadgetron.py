@@ -36,7 +36,11 @@ class Gadget(object):
 
     def wait(self):
         pass
-    
+
+    def end(self):
+        return 0
+        pass
+
     def put_next(self, *args):
         if self.next_gadget is not None:
             if isinstance(self.next_gadget, Gadget):
