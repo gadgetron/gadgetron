@@ -398,9 +398,38 @@ namespace Gadgetron {
             return GADGET_OK;
         }
 
-
-
         virtual int process(ACE_Message_Block* mb);
+
+        virtual int svc(void)
+        {
+            auto orginal_result=BasicPropertyGadget::svc();
+            auto end_result=end();
+            return orginal_result==GADGET_OK&&end_result==GADGET_OK ? GADGET_OK: GADGET_FAIL;
+        }
+
+        virtual int end()
+        {
+            GINFO("call python gadget end procedure!");
+
+            GILLock lock;
+            try {
+                boost::python::object end_fn = class_.attr("end");
+                int res = boost::python::extract<int>(end_fn());
+                if (res != GADGET_OK) {
+                    GDEBUG("Gadget (%s) Returned from python call with error\n",
+                           this->module()->name());
+                    return GADGET_FAIL;
+                }
+            }
+            catch (boost::python::error_already_set const &) {
+                GDEBUG("Passing data on to python module failed\n");
+                std::string err = pyerr_to_string();
+                GERROR(err.c_str());
+                return GADGET_FAIL;
+            }
+            return GADGET_OK;
+        }
+
 
     protected:
         GADGET_PROPERTY(python_module, std::string, "Python module containing the Python Gadget class to be loaded", "");
