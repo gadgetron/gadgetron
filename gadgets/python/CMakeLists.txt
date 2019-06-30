@@ -34,6 +34,7 @@ set(gadgetron_python_src_files GadgetronPythonMRI.cpp
 set(gadgetron_python_config_files 
                             config/pseudoreplica.xml
                             config/python.xml
+                            config/python_realtime.xml
                             config/python_buckets.xml
                             config/python_ideal_cg.xml
                             config/python_short.xml
@@ -56,6 +57,7 @@ set(gadgetron_python_gadgets_files
                             gadgets/gadgetron.py
                             gadgets/IDEAL.py
                             gadgets/image_viewer.py
+                            gadgets/real_time_image_viewer.py
                             gadgets/passthrough.py
                             gadgets/pseudoreplicagather.py
                             gadgets/remove_2x_oversampling.py
