@@ -1656,7 +1656,7 @@ namespace Gadgetron
                 size_t sx = coeff.get_size(0);
                 size_t sy = coeff.get_size(1);
 
-#pragma omp parallel for default(none) private(n) shared(sx, sy, deriv, coeff, SplineDegree, weight, N)
+#pragma omp parallel for default(none) private(n) shared(sx, sy, deriv, coeff, SplineDegree, weight, N, pts)
                 for (n = 0; n < N; n++)
                 {
                     coord_type x = pts(n, 0);
@@ -1670,7 +1670,7 @@ namespace Gadgetron
                 size_t sy = coeff.get_size(1);
                 size_t sz = coeff.get_size(2);
 
-#pragma omp parallel for default(none) private(n) shared(sx, sy, sz, deriv, coeff, SplineDegree, weight, N)
+#pragma omp parallel for default(none) private(n) shared(sx, sy, sz, deriv, coeff, SplineDegree, weight, N, pts)
                 for (n = 0; n < N; n++)
                 {
                     coord_type x = pts(n, 0);
@@ -1686,7 +1686,7 @@ namespace Gadgetron
                 size_t sz = coeff.get_size(2);
                 size_t st = coeff.get_size(3);
 
-#pragma omp parallel for default(none) private(n) shared(sx, sy, sz, st, deriv, coeff, SplineDegree, weight, N)
+#pragma omp parallel for default(none) private(n) shared(sx, sy, sz, st, deriv, coeff, SplineDegree, weight, N, pts)
                 for (n = 0; n < N; n++)
                 {
                     coord_type x = pts(n, 0);
@@ -1699,7 +1699,7 @@ namespace Gadgetron
             else
             {
                 long long ii;
-#pragma omp parallel private(ii) shared(coeff, dimension, SplineDegree, weight, N)
+#pragma omp parallel private(ii) shared(coeff, dimension, SplineDegree, weight, N, pts)
                 {
                     std::vector<coord_type> pos(D);
 
