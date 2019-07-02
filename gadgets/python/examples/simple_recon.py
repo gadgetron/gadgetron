@@ -31,7 +31,7 @@ def noise_adjustment(connection):
     noise_matrix = None
 
     def calculate_whitening_transformation(noise, scale_factor=1.0):
-        # The whitening transformation is beyond the scope of these comments. Read more:
+        # The whitening transformation is beyond the scope of these comments. Read more at:
         # https://en.wikipedia.org/wiki/Whitening_transformation
 
         noise_int = noise.reshape((noise.shape[0], noise.size // noise.shape[0]))

@@ -2,6 +2,8 @@
 function simple_recon(connection)
     disp("Matlab reconstruction running.") 
 
+    tic
+    
     next = @connection.next; has_next = @connection.has_next;
     
     [next, has_next] = noise_adjust(next, has_next);
@@ -14,6 +16,8 @@ function simple_recon(connection)
     connection.filter('ismrmrd.Acquisition')
     
     while has_next(), connection.send(next()); end
+    
+    toc
 end
 
 
@@ -26,14 +30,10 @@ function [next, has_next] = noise_adjust(input, has_next)
         M = single(size(noise, 1));
         transformation = (1/(M-1)) * (noise * noise');
         transformation = inv(chol(transformation));
-        
-        disp("Transformation : ")
-        transformation
     end
 
     function data = apply_whitening_transformation(data)
         if isempty(noise_matrix), return; end
-
         shape = size(data);
         data = reshape(noise_matrix * reshape(data, shape(1), []), shape);
     end
@@ -53,8 +53,21 @@ end
 
 function [next, has_next] = remove_oversampling(input, has_next, header)
 
+    encoding_space = header.encoding.encodedSpace.matrixSize;
+    recon_space = header.encoding.reconSpace.matrixSize;
+
+    if encoding_space.x == recon_space.x, next = input; return, end
+
+    x0 = (encoding_space.x - recon_space.x) / 2;
+    x1 = (encoding_space.x - recon_space.x) / 2 + recon_space.x;
+    along_x_dimension = 2;
+    
     function acquisition = remove_oversampling(acquisition)
-        
+        xspace = cifft(acquisition.data, along_x_dimension); 
+        xspace = xspace(:, x0:x1);
+        acquisition.header.number_of_samples = recon_space.x;
+        acquisition.header.center_sample = recon_space.x / 2;
+        acquisition.data = cfft(xspace, along_x_dimension);
     end
 
     next = @() remove_oversampling(input());
@@ -62,27 +75,32 @@ end
 
 function [next, has_next] = accumulate_slice(input, has_next, header)
 
-    function [slice, acquisition] = slice_from_acquisitions(acquisitions)
+    matrix_size = header.encoding.encodedSpace.matrixSize;
 
-        acquisition = acquisitions{end}
-        
-        slice = zeros( ...
+    function [slice, acquisition] = slice_from_acquisitions(acquisitions)
+        disp("Assembling buffer from " + num2str(length(acquisitions)) + " acquisitions");
+
+        acquisition = head(acquisitions);
+       
+        slice = complex(zeros( ...
             size(acquisition.data, 1), ...
             size(acquisition.data, 2), ...
-            size(acquisition.data, 3), ...
-            length(acquisitions) ...
-        );
-        
-        size(slice)
+            matrix_size.y,             ...
+            matrix_size.z              ...
+        ));
+    
+        for acq = acquisitions
+            slice(:, :, acq.header.idx.kspace_encode_step_1 + 1, acq.header.idx.kspace_encode_step_2 + 1) = acq.data;
+        end
     end
 
     function slice = accumulate()
         
-        acquisitions = {};
+        acquisitions = gadgetron.util.List.empty;
         
         while has_next()
             acquisition = input();
-            acquisitions{end + 1} = acquisition;
+            acquisitions = cons(acquisitions, acquisition);
             if acquisition.is_flag_set(ismrmrd.Flags.ACQ_LAST_IN_SLICE), break; end
         end
         
@@ -94,28 +112,35 @@ end
 
 function [next, has_next] = reconstruct_slice(input, has_next)
     
-    function image = reconstruct(slice)
-        image = cifftn(slice, [1, 2, 3]);
+    function [image, acquisition] = reconstruct(slice, acquisition)
+        image = cifftn(slice);
     end
 
     next = @() reconstruct(input());
 end
 
 function [next, has_next] = combine_channels(input, has_next)
-    next = @() input();
+
+    function x = square(x), x = x .^ 2; end
+    function [image, acquisition] = combine_channels(image, acquisition)
+        image = sqrt(sum(square(abs(image)), 1));
+    end
+
+    next = @() combine_channels(input());
 end
 
 function [next, has_next] = create_ismrmrd_image(input, has_next)
     next = @() input();
 end
 
-
-function data = cfftn(data, dim)
-    % Centered fast fourier transform, n-dimensional.
-    data = ifftshift(fftn(fftshift(data, dim)));
+function data = cfft(data, dim)
+    data = ifftshift(fft(fftshift(data, dim), dim), dim);
 end
 
-function data = cifftn(data, dim)
-    % Centered inverse fast fourier transform, n-dimensional.
-    data = fftshift(ifftn(ifftshift(data, dim), dim));
+function data = cifft(data, dim)
+    data = fftshift(ifft(ifftshift(data, dim), dim), dim);
+end
+
+function data = cifftn(data)
+    data = fftshift(ifftn(ifftshift(data)));
 end
