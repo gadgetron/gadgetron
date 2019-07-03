@@ -80,8 +80,6 @@ target_link_libraries(gadgetron_dicom
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore 
     ${ISMRMRD_LIBRARIES}
-    optimized ${ACE_LIBRARIES}
-    debug ${ACE_DEBUG_LIBRARY}
     ${Boost_LIBRARIES}
     ${GT_DICOM_LIBRARIES} )
 

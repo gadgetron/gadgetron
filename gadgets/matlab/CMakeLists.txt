@@ -1,11 +1,5 @@
 include_directories(
     ${MATLAB_INCLUDE_DIR}
-    ${ACE_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     )
 
 if (UNIX)
