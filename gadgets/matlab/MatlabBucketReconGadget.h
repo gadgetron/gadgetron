@@ -13,11 +13,8 @@
 #include "mri_core_acquisition_bucket.h"
 
 
-
 #include <mutex>
 #include "engine.h"     // Matlab Engine header
-// #include "/usr/local/MATLAB/R2017b/extern/version/c_mexapi_version.c" // For Interleaved / non-interleaved complex decision
-// #include "gadgetron_home.h"
 
 
 // time measurement
