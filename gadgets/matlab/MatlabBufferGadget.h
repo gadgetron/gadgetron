@@ -1,17 +1,11 @@
 #pragma once
 
 #include <mutex>
-// #include "gadgetron_home.h"
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
 #include "engine.h"     // Matlab Engine header
-
-//#include "ace/Synch.h"  // For the MatlabCommandServer
-#include "ace/SOCK_Connector.h"
-#include "ace/INET_Addr.h"
-
 
 #include <stdio.h>
 #include <stdlib.h>
