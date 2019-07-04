@@ -7,16 +7,10 @@
 #include "log.h"
 #include "engine.h"     // Matlab Engine header
 
-#include "ace/Synch.h"  // For the MatlabCommandServer
-#include "ace/SOCK_Connector.h"
-#include "ace/INET_Addr.h"
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex>
 #include <boost/lexical_cast.hpp>
-// #include "gadgetron_home.h"
 
 // TODO:
 //Make the port option work so that we can have multiple matlabs running, each with its own command server.
