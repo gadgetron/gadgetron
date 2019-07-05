@@ -15,7 +15,11 @@ function simple_recon(connection)
     
     connection.filter('ismrmrd.Acquisition')
     
-    while has_next(), connection.send(next()); end
+    while has_next()
+        image = next();
+        disp("Sending image back to client.")
+        connection.send(image); 
+    end
     
     toc
 end
@@ -27,9 +31,9 @@ function [next, has_next] = noise_adjust(input, has_next)
 
     function transformation = calculate_whitening_transformation(data)
         noise = reshape(data, size(data, 1), []);
-        M = single(size(noise, 1));
-        transformation = (1/(M-1)) * (noise * noise');
-        transformation = inv(chol(transformation));
+        M = size(noise, 2);
+        transformation = (1/(M-1)) .* (noise * noise');
+        transformation = sqrt(2) .* inv(chol(transformation, 'lower'));
     end
 
     function data = apply_whitening_transformation(data)
@@ -38,13 +42,12 @@ function [next, has_next] = noise_adjust(input, has_next)
         data = reshape(noise_matrix * reshape(data, shape(1), []), shape);
     end
 
-    function out = handle_noise(acquisition)
+    function acquisition = handle_noise(acquisition)       
         if acquisition.is_flag_set(ismrmrd.Flags.ACQ_IS_NOISE_MEASUREMENT)
             noise_matrix = calculate_whitening_transformation(acquisition.data);
-            out = handle_noise(input()); % Recursive call; we output the next item.
+            acquisition = handle_noise(input()); % Recursive call; we output the next item.
         else
             acquisition.data = apply_whitening_transformation(acquisition.data);
-            out = acquisition;
         end
     end
 
@@ -58,7 +61,7 @@ function [next, has_next] = remove_oversampling(input, has_next, header)
 
     if encoding_space.x == recon_space.x, next = input; return, end
 
-    x0 = (encoding_space.x - recon_space.x) / 2;
+    x0 = (encoding_space.x - recon_space.x) / 2 + 1;
     x1 = (encoding_space.x - recon_space.x) / 2 + recon_space.x;
     along_x_dimension = 2;
     
@@ -89,12 +92,12 @@ function [next, has_next] = accumulate_slice(input, has_next, header)
             matrix_size.z              ...
         ));
     
-        for acq = acquisitions
+        for acq = acquisitions.asarray
             slice(:, :, acq.header.idx.kspace_encode_step_1 + 1, acq.header.idx.kspace_encode_step_2 + 1) = acq.data;
         end
     end
 
-    function slice = accumulate()
+    function image = accumulate()
         
         acquisitions = gadgetron.util.List.empty;
         
@@ -104,7 +107,7 @@ function [next, has_next] = accumulate_slice(input, has_next, header)
             if acquisition.is_flag_set(ismrmrd.Flags.ACQ_LAST_IN_SLICE), break; end
         end
         
-        slice = slice_from_acquisitions(acquisitions);
+        [image.data, image.acquisition] = slice_from_acquisitions(acquisitions);
     end
 
     next = @accumulate;
@@ -112,8 +115,8 @@ end
 
 function [next, has_next] = reconstruct_slice(input, has_next)
     
-    function [image, acquisition] = reconstruct(slice, acquisition)
-        image = cifftn(slice);
+    function image = reconstruct(image)
+        image.data = cifftn(image.data, [2, 3, 4]);
     end
 
     next = @() reconstruct(input());
@@ -122,25 +125,32 @@ end
 function [next, has_next] = combine_channels(input, has_next)
 
     function x = square(x), x = x .^ 2; end
-    function [image, acquisition] = combine_channels(image, acquisition)
-        image = sqrt(sum(square(abs(image)), 1));
+    function image = combine_channels(image)
+        image.data = sqrt(sum(square(abs(image.data)), 1));
     end
 
     next = @() combine_channels(input());
 end
 
 function [next, has_next] = create_ismrmrd_image(input, has_next)
-    next = @() input();
+
+    function image = create_image(image)
+        image = ismrmrd.Image.from_data(image.data, image.acquisition);
+        image.header.data_type = ismrmrd.Image.DOUBLE;
+        image.header.image_type = ismrmrd.Image.MAGNITUDE;
+    end
+
+    next = @() create_image(input());
 end
 
 function data = cfft(data, dim)
-    data = ifftshift(fft(fftshift(data, dim), dim), dim);
+    data = ifftshift(fft(fftshift(data, dim), [], dim), dim);
 end
 
 function data = cifft(data, dim)
-    data = fftshift(ifft(ifftshift(data, dim), dim), dim);
+    data = fftshift(ifft(ifftshift(data, dim), [], dim), dim);
 end
 
-function data = cifftn(data)
-    data = fftshift(ifftn(ifftshift(data)));
+function data = cifftn(data, dims)
+    for dim = dims, data = cifft(data, dim); end
 end

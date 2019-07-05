@@ -1,4 +1,5 @@
 
+import time
 import logging
 import ismrmrd
 
@@ -14,12 +15,12 @@ import gadgetron.external
 
 def cfftn(data, axes):
     # Centered fast fourier transform, n-dimensional
-    return fft.ifftshift(fft.fftn(fft.fftshift(data, axes=axes)))
+    return fft.ifftshift(fft.fftn(fft.fftshift(data, axes=axes), axes=axes), axes=axes)
 
 
 def cifftn(data, axes):
     # Centered inverse fast fourier transform, n-dimensional
-    return fft.fftshift(fft.ifftn(fft.ifftshift(data, axes), axes=axes))
+    return fft.fftshift(fft.ifftn(fft.ifftshift(data, axes=axes), axes=axes), axes=axes)
 
 
 def noise_adjustment(connection):
@@ -38,7 +39,6 @@ def noise_adjustment(connection):
         M = float(noise_int.shape[1])
         dmtx = (1/(M-1)) * np.asmatrix(noise_int) * np.asmatrix(noise_int).H
         dmtx = np.linalg.inv(np.linalg.cholesky(dmtx))
-
         return np.sqrt(2) * np.sqrt(scale_factor) * dmtx
 
     def apply_whitening_transformation(data, dmtx):
@@ -77,6 +77,7 @@ def remove_oversampling(iterable, header):
         acquisition.resize(number_of_samples=xspace.shape[1], active_channels=xspace.shape[0])
         acquisition.center_sample = recon_space.x // 2
         acquisition.data[:] = cfftn(xspace, axes=[1])
+
         return acquisition
 
     for acq in iterable:
@@ -145,6 +146,8 @@ def create_ismrmrd_images(iterable):
 def simple_recon(connection):
     logging.info("Python reconstruction running.")
 
+    start = time.time()
+
     # Connections are iterable - iterating them can be done once, and will yield the data sent from Gadgetron.
     # In this example, we use a nested sequence of generators (https://wiki.python.org/moin/Generators) each
     # responsible for part of the reconstruction. In this manner, we construct a succession of generators, each
@@ -164,3 +167,5 @@ def simple_recon(connection):
     for image in iterable:
         logging.debug("Sending image back to client.")
         connection.send(image)
+
+    logging.info(f"Python reconstruction done. Duration: {(time.time() - start):.2f} s")
