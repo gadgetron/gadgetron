@@ -87,23 +87,23 @@ if (MATLAB_FOUND)
     endif()
 
     add_library(Matlab_gt_compute_coil_map SHARED Matlab_gt_compute_coil_map.cpp)
-    set_target_properties(Matlab_gt_compute_coil_map PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+    set_target_properties(Matlab_gt_compute_coil_map PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_compute_coil_map DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
     add_library(Matlab_gt_deformation_field_reg_2D SHARED Matlab_gt_deformation_field_reg_2D.cpp)
-    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_2D PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_2D PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_deformation_field_reg_2D DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
     add_library(Matlab_gt_deformation_field_reg_2D_series SHARED Matlab_gt_deformation_field_reg_2D_series.cpp)
-    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_2D_series PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_2D_series PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_deformation_field_reg_2D_series DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
     add_library(Matlab_gt_deformation_field_reg_2D_series_pairwise SHARED Matlab_gt_deformation_field_reg_2D_series_pairwise.cpp)
-    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_2D_series_pairwise PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_2D_series_pairwise PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_deformation_field_reg_2D_series_pairwise DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
     add_library(Matlab_gt_apply_deformation_field_reg_2D_series SHARED Matlab_gt_apply_deformation_field_reg_2D_series.cpp)
-    SET_TARGET_PROPERTIES(Matlab_gt_apply_deformation_field_reg_2D_series PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+    SET_TARGET_PROPERTIES(Matlab_gt_apply_deformation_field_reg_2D_series PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_apply_deformation_field_reg_2D_series DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
 
