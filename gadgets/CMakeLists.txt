@@ -86,7 +86,7 @@ add_subdirectory(distributed)
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB gadgets")
-  # add_subdirectory(matlab)
+  add_subdirectory(matlab)
 endif()
 
 add_subdirectory(util)
