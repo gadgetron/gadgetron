@@ -48,7 +48,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_PERF_Gd_Extraction_MAP         "Gd_Extraction_Map"
     #define GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP "PS_Map"
     #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "Gd"
-    #define GADGETRON_IMAGE_PERF_AHA_SEGMENT_MODEL          "AHA"
+    #define GADGETRON_IMAGE_PERF_AHA_SEGMENT_MODEL         "AHA"
 
     // other images than the regular reconstruction results
     #define GADGETRON_IMAGE_OTHER                          "Image_Other"
@@ -81,6 +81,10 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_VASCULARVOLUMEMAP              "VASCULARVOLUME"
     #define GADGETRON_IMAGE_GD_EXTRACTIONMAP               "EXTRACTIONMAP"
     #define GADGETRON_IMAGE_PERMEABILITY_SURFACE_AREAMAP   "PSMAP"
+    #define GADGETRON_IMAGE_RADIAL_STRAINMAP               "RADIAL_STRAINMAP"
+    #define GADGETRON_IMAGE_CIRCUM_STRAINMAP               "CIRCUM_STRAINMAP"
+    #define GADGETRON_IMAGE_MAX_STRAINMAP                  "MAX_STRAINMAP"
+    #define GADGETRON_IMAGE_ACTIVATIONTIME_STRAINMAP       "TA_STRAINMAP"
 
     /// image annotation tags
     #define GADGETRON_CMR_2D_ENDO_CONTOUR                   "ENDO"
