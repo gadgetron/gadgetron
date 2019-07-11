@@ -60,7 +60,7 @@ namespace Gadgetron {
 			double Ce = (double)centroidE / counter;
 
 			int phs;
-			#pragma omp parallel for
+			// #pragma omp parallel for
 			for (phs = 0; phs < N; phs++)
 			{
 				ArrayType dx_2D(RO, E1, const_cast<T*>(&dx(0, 0, phs)));
