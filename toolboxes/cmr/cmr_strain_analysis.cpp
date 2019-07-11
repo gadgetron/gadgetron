@@ -1,6 +1,7 @@
 /** \file   cmr_stain_analysis.h
     \brief  Implement functionalities to handle cardiac time stamps
-    \author Hui Xue
+    \author Angela Gao
+    \date   July 9, 2019
 */
 
 #include "cmr_strain_analysis.h"

@@ -31,7 +31,7 @@ class cmr_strain_test : public ::testing::Test
             {
                 GDEBUG_STREAM("Unit Test for Gadgetron hoNFFT");
                 gt_ut_data_folder_ = gt_ut_folder_;
-                gt_ut_res_folder_ = gt_ut_folder_ + "/../result/";
+                gt_ut_res_folder_ = gt_ut_folder_ + "/result/";
                 GDEBUG_STREAM("gt_ut_data_folder_ is " << gt_ut_data_folder_);
                 GDEBUG_STREAM("gt_ut_res_folder_ is " << gt_ut_res_folder_);
             }
@@ -78,7 +78,6 @@ TYPED_TEST(cmr_strain_test, Cine)
 	bool compare_mask = true;
  	Gadgetron::compute_strain(dx, dy, mask, compare_mask, radial, circ, thetas);
 
-
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/Strain/radial_mask_6");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/Strain/circ_mask_6");
 	this->gt_io_.export_array(thetas, this->gt_ut_res_folder_ + "/Strain/theta_6");
@@ -104,11 +103,3 @@ TYPED_TEST(cmr_strain_test, Cine)
 	norm_ref = Gadgetron::nrm2(ref);
 	EXPECT_LE(q/norm_ref, 0.002);
 }
-
-
-
-
-
-
-
-
