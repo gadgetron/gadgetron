@@ -60,7 +60,7 @@ namespace Gadgetron {
 			double Ce = (double)centroidE / counter;
 
 			int phs;
-//#pragma omp parallel for
+			#pragma omp parallel for
 			for (phs = 0; phs < N; phs++)
 			{
 				ArrayType dx_2D(RO, E1, const_cast<T*>(&dx(0, 0, phs)));
@@ -110,9 +110,29 @@ namespace Gadgetron {
 						double b_x = x_out - x_in;
 						double b_y = y_out - y_in;
 						double comp_ab_rad = a_x*b_x + a_y*b_y;
-						double b_x_rot = b_y;
-						double b_y_rot = -b_x;
-						double comp_ab_circ = a_x * b_x_rot + a_y * b_y_rot;
+
+						double theta_rot = theta + M_PI / 2;
+
+						double x_in_rot = ro + 0.5 * cos(theta_rot);
+						double x_out_rot = ro - 0.5 * cos(theta_rot);
+						double y_in_rot = e1 - 0.5 * sin(theta_rot);
+						double y_out_rot = e1 + 0.5 * sin(theta_rot);
+
+						double dx_in_rot = interp_dx(x_in_rot, y_in_rot);
+						double dx_out_rot = interp_dx(x_out_rot, y_out_rot);
+						double dy_in_rot = interp_dy(x_in_rot, y_in_rot);
+						double dy_out_rot = interp_dy(x_out_rot, y_out_rot);
+
+						double x_prime_in_rot = dx_in_rot + x_in_rot;
+						double x_prime_out_rot = dx_out_rot + x_out_rot;
+						double y_prime_in_rot = dy_in_rot + y_in_rot;
+						double y_prime_out_rot = dy_out_rot + y_out_rot;
+
+						double a_x_rot = x_prime_out_rot - x_prime_in_rot;
+						double a_y_rot = y_prime_out_rot - y_prime_in_rot;
+						double b_x_rot = x_out_rot - x_in_rot;
+						double b_y_rot = y_out_rot - y_in_rot;
+						double comp_ab_circ = a_x_rot * b_x_rot + a_y_rot * b_y_rot;
 
 						if (compare_mask == true)
 						{
