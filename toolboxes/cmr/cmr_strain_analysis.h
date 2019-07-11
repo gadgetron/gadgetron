@@ -15,5 +15,5 @@ namespace Gadgetron {
 
     /// compute radial and circ strain map from deformation fields
 	/// dx, dy: [RO, E1, N], 2D+T array of deformation fields
-    template <typename T> EXPORTCMR void compute_strain(const hoNDArray<T>& dx, const hoNDArray<T>& dy, const hoNDArray<T>& mask, hoNDArray<T>& radial, hoNDArray<T>& circ);
+    template <typename T> EXPORTCMR void compute_strain(const hoNDArray<T>& dx, const hoNDArray<T>& dy, const hoNDArray<T>& mask, const bool compare_mask,  hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas);
 }
