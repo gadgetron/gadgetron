@@ -51,7 +51,7 @@ typedef Types<float> realImplementations;
 
 TYPED_TEST_CASE(cmr_strain_test, realImplementations);
 
-TYPED_TEST(cmr_strain_test, Cine_Const)
+TYPED_TEST(cmr_strain_test, Cine)
 {
     typedef float T;
 
@@ -62,44 +62,47 @@ TYPED_TEST(cmr_strain_test, Cine_Const)
     }
 
     hoNDArray< T > dx;
-    this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/RetroCine/grtr_dx");
+    this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/RetroCine/dx_6");
     dx.print(std::cout);
 
 	hoNDArray< T > dy;
-	this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/RetroCine/grtr_dy");
+	this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/RetroCine/dy_6");
 	dy.print(std::cout);
 
 	hoNDArray< T > mask;
-	this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/RetroCine/mask");
+	this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/RetroCine/mask_6");
 	T norm_mask = Gadgetron::nrm2(mask);
-	std::cout << norm_mask << std::endl;
 
 
-	hoNDArray<T> radial, circ;
- 	Gadgetron::compute_strain(dx, dy, mask, radial, circ);
+	hoNDArray<T> radial, circ, thetas;
+	bool compare_mask = true;
+ 	Gadgetron::compute_strain(dx, dy, mask, compare_mask, radial, circ, thetas);
 
-	std::cout << Gadgetron::nrm2(radial) << std::endl;
-	std::cout << Gadgetron::nrm2(circ) << std::endl;
 
-    this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/Strain/radial_quadratic");
-    this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/Strain/circ_quadratic");
+    this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/Strain/radial_mask_6");
+    this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/Strain/circ_mask_6");
+	this->gt_io_.export_array(thetas, this->gt_ut_res_folder_ + "/Strain/theta_6");
 
     // compare agains ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;
 
-    this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RetroCine/analytical_radial_strain");
+    this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RetroCine/rad_strain_mask_6");
+	std::cout << Gadgetron::nrm2(radial) << std::endl;
+	std::cout << Gadgetron::nrm2(ref) << std::endl;
     Gadgetron::subtract(ref, radial, diff);
     T v = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(v/norm_ref, 0.002);
 
-	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RetroCine/analytical_circ_strain");
+	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RetroCine/circ_strain_mask_6");
+	std::cout << Gadgetron::nrm2(circ) << std::endl;
+	std::cout << Gadgetron::nrm2(ref) << std::endl;
 	Gadgetron::subtract(ref, circ, diff);
 	T q = Gadgetron::nrm2(diff);
 	norm_ref = Gadgetron::nrm2(ref);
-	EXPECT_LE(q / norm_ref, 0.002);
+	EXPECT_LE(q/norm_ref, 0.002);
 }
 
 
