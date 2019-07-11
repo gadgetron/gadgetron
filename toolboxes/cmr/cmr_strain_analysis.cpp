@@ -1,6 +1,7 @@
 /** \file   cmr_stain_analysis.h
     \brief  Implement functionalities to handle cardiac time stamps
-    \author Hui Xue
+    \author Angela Gao
+    \date   July 9, 2019
 */
 
 #include "cmr_strain_analysis.h"
@@ -154,7 +155,6 @@ namespace Gadgetron {
         }
     }
 
-
-	template EXPORTCMR void compute_strain(const hoNDArray<float>& dx, const hoNDArray<float>& dy, const hoNDArray<float>& mask, const bool compare_mask, hoNDArray<float>& radial, hoNDArray<float>& circ, hoNDArray<float>& thetas);
+    template EXPORTCMR void compute_strain(const hoNDArray<float>& dx, const hoNDArray<float>& dy, const hoNDArray<float>& mask, const bool compare_mask, hoNDArray<float>& radial, hoNDArray<float>& circ, hoNDArray<float>& thetas);
     template EXPORTCMR void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<double>& mask, const bool compare_mask, hoNDArray<double>& radial, hoNDArray<double>& circ, hoNDArray<double>& thetas);
 }
