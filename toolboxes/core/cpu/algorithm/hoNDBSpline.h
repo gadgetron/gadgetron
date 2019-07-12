@@ -29,7 +29,7 @@ namespace Gadgetron
 
         typedef T element_type;
         typedef T value_type;
-        typedef float coord_type;
+        typedef double coord_type;
 
         /// type for bspline computation, can be 'float' or 'double'
         typedef typename realType<T>::Type bspline_float_type;

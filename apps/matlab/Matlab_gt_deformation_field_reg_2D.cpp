@@ -209,15 +209,15 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         interpBSpline.setBoundaryHandler(bhFixedValue);
 
         // warpper
-        hoImageRegWarper<Image2DType, Image2DType, float> warper;
+        hoImageRegWarper<Image2DType, Image2DType, double> warper;
         warper.setBackgroundValue(-1);
 
         Image2DType warped;
-        hoMRImage<float, 2> dx, dy, dxInv, dyInv;
+        hoMRImage<double, 2> dx, dy, dxInv, dyInv;
 
         if ( BidirectionalReg )
         {
-            Gadgetron::hoImageRegDeformationFieldBidirectionalRegister<Image2DType, float> reg(level, false, -1);
+            Gadgetron::hoImageRegDeformationFieldBidirectionalRegister<Image2DType, double> reg(level, false, -1);
 
             if ( !debugFolder.empty() )
             {
@@ -264,11 +264,11 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
             reg.performRegistration();
 
-            const hoMRImage<float, 2>& dx_reg = reg.transform_->getDeformationField(0);
-            const hoMRImage<float, 2>& dy_reg = reg.transform_->getDeformationField(1);
+            const hoMRImage<double, 2>& dx_reg = reg.transform_->getDeformationField(0);
+            const hoMRImage<double, 2>& dy_reg = reg.transform_->getDeformationField(1);
 
-            const hoMRImage<float, 2>& dxInv_reg = reg.transform_inverse_->getDeformationField(0);
-            const hoMRImage<float, 2>& dyInv_reg = reg.transform_inverse_->getDeformationField(1);
+            const hoMRImage<double, 2>& dxInv_reg = reg.transform_inverse_->getDeformationField(0);
+            const hoMRImage<double, 2>& dyInv_reg = reg.transform_inverse_->getDeformationField(1);
 
             dx = dx_reg;
             dy = dy_reg;
@@ -282,7 +282,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         }
         else
         {
-            Gadgetron::hoImageRegDeformationFieldRegister<Image2DType, float> reg(level, false, -1);
+            Gadgetron::hoImageRegDeformationFieldRegister<Image2DType, double> reg(level, false, -1);
 
             if ( !debugFolder.empty() )
             {
@@ -328,8 +328,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
             reg.performRegistration();
 
-            const hoMRImage<float, 2>& dx_reg = reg.transform_->getDeformationField(0);
-            const hoMRImage<float, 2>& dy_reg = reg.transform_->getDeformationField(1);
+            const hoMRImage<double, 2>& dx_reg = reg.transform_->getDeformationField(0);
+            const hoMRImage<double, 2>& dy_reg = reg.transform_->getDeformationField(1);
 
             dx = dx_reg;
             dy = dy_reg;
@@ -346,7 +346,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         // output parameter
         // ---------------------------------------------------------------
 
-        hoNDArray<float> deformField;
+        hoNDArray<double> deformField;
 
         mxArray* M0 = NULL;
         dx.to_NDArray(deformField);

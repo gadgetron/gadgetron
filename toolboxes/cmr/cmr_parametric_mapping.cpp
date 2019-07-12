@@ -86,7 +86,7 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
                     numOfControlPts = 2 * numOfControlPts - 1;
                 }
 
-                typedef typename Gadgetron::BSplineFFD2D<T, float, 1>::MaskArrayType MaskArrayType;
+                typedef typename Gadgetron::BSplineFFD2D<T, double, 1>::MaskArrayType MaskArrayType;
 
                 MaskArrayType mask;
                 mask.create(RO, E1);
@@ -112,7 +112,7 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
                 }
 
                 T totalResidual(0);
-                Gadgetron::BSplineFFD2D<T, float, 1> ffd(curr_map, gridSize[0], gridSize[1]);
+                Gadgetron::BSplineFFD2D<T, double, 1> ffd(curr_map, gridSize[0], gridSize[1]);
 
                 ffd.ffdApproxImage(&curr_map, mask, totalResidual, numOfRefinement);
 

@@ -80,7 +80,7 @@ public:
     bool change_coeffcients_third_dimension_boundary_;
 
     /// MOCO operator
-    hoMotionCompensation2DTOperator<T, float> mocoer_;
+    hoMotionCompensation2DTOperator<T, double> mocoer_;
 
     using BaseClass::input_in_kspace_;
     using BaseClass::no_null_space_;
