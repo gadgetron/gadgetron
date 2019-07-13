@@ -813,20 +813,20 @@ namespace Gadgetron {
             // e.g. the discrete fourier transform is exp(-j*2*pi*(kx*x/sx + ky*y/sy))
             if (D == 2)
             {
-                ValueType dx = (ValueType)( 2 * M_PI / sx );
-                ValueType dy = (ValueType)( 2 * M_PI / sy );
+                CoordType dx = (CoordType)( 2 * M_PI / sx );
+                CoordType dy = (CoordType)( 2 * M_PI / sy );
 
                 for (y = 0; y < sy; y++)
                 {
-                    ValueType ky = (y < sy/2) ? y : y - sy;
-                    ValueType fy = ky * dy;
+                    CoordType ky = (y < sy/2) ? y : y - sy;
+                    CoordType fy = ky * dy;
 
                     for (x = 0; x < sx; x++)
                     {
                         size_t offset = x + y*sx;
 
-                        ValueType kx = (x < sx / 2) ? x : x - sx;
-                        ValueType fx = kx * dx;
+                        CoordType kx = (x < sx / 2) ? x : x - sx;
+                        CoordType fx = kx * dx;
 
                         std::complex<CoordType> vx = deform_fft_cplx_[0](offset);
                         std::complex<CoordType> vy = deform_fft_cplx_[1](offset);
@@ -850,33 +850,33 @@ namespace Gadgetron {
             }
             else if (D == 3)
             {
-                ValueType dx = (ValueType)(2 * M_PI / sx);
-                ValueType dy = (ValueType)(2 * M_PI / sy);
-                ValueType dz = (ValueType)(2 * M_PI / sz);
+                CoordType dx = (CoordType)(2 * M_PI / sx);
+                CoordType dy = (CoordType)(2 * M_PI / sy);
+                CoordType dz = (CoordType)(2 * M_PI / sz);
 
 #pragma omp parallel for private(z, y, x) shared(sx, sy, sz)
                 for (z = 0; z < sz; z++)
                 {
-                    ValueType kz = z;
+                    CoordType kz = z;
                     if (z>=sz/2) kz = z - sz;
 
-                    ValueType fz = kz * dz;
+                    CoordType fz = kz * dz;
 
                     for (y = 0; y < sy; y++)
                     {
-                        ValueType ky = y;
+                        CoordType ky = y;
                         if (y >= sy / 2) ky = y - sy;
 
-                        ValueType fy = ky * dy;
+                        CoordType fy = ky * dy;
 
                         for (x = 0; x < sx; x++)
                         {
                             size_t offset = x + y*sx + z*sx*sy;
 
-                            ValueType kx = x;
+                            CoordType kx = x;
                             if (x >= sx / 2) kx = x - sx;
 
-                            ValueType fx = kx * dx;
+                            CoordType fx = kx * dx;
 
                             std::complex<CoordType> vx = deform_fft_cplx_[0](offset);
                             std::complex<CoordType> vy = deform_fft_cplx_[1](offset);
@@ -908,18 +908,18 @@ namespace Gadgetron {
 
                 long long n;
 
-                ValueType dd[D];
+                CoordType dd[D];
                 for (size_t ii = 0; ii<D; ii++)
                 {
-                    dd[ii] = (ValueType)(2 * M_PI / deform[0].get_size(ii));
+                    dd[ii] = (CoordType)(2 * M_PI / deform[0].get_size(ii));
                 }
 
 #pragma omp parallel default(none) private(n) shared(dd, N)
                 {
                     size_t ind[D];
-                    ValueType kk[D];
-                    ValueType ff[D];
-                    std::complex<ValueType> vv[D];
+                    CoordType kk[D];
+                    CoordType ff[D];
+                    std::complex<CoordType> vv[D];
 
                     #pragma omp for 
                     for (n = 0; n<(long long)N; n++)
@@ -936,7 +936,7 @@ namespace Gadgetron {
                             vv[ii] = deform_fft_cplx_[ii]( (size_t)n );
                         }
 
-                        std::complex<ValueType> s1(0), s2(0);
+                        std::complex<CoordType> s1(0), s2(0);
 
                         for (ii = 0; ii<D; ii++)
                         {
@@ -946,7 +946,7 @@ namespace Gadgetron {
 
                         if (s2.real()>0)
                         {
-                            std::complex<ValueType> s3 = s1 / s2;
+                            std::complex<CoordType> s3 = s1 / s2;
 
                             for (ii = 0; ii<D; ii++)
                             {
