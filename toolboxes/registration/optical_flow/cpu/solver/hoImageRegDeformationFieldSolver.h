@@ -828,14 +828,14 @@ namespace Gadgetron {
                         ValueType kx = (x < sx / 2) ? x : x - sx;
                         ValueType fx = kx * dx;
 
-                        std::complex<ValueType> vx = deform_fft_cplx_[0](offset);
-                        std::complex<ValueType> vy = deform_fft_cplx_[1](offset);
+                        std::complex<CoordType> vx = deform_fft_cplx_[0](offset);
+                        std::complex<CoordType> vy = deform_fft_cplx_[1](offset);
 
                         if ( (x!=0) || (y!=0))
                         {
-                            std::complex<ValueType> s1 = fx * vx + fy * vy;
-                            std::complex<ValueType> s2 = fx * fx + fy * fy;
-                            std::complex<ValueType> s3 = s1 / s2;
+                            std::complex<CoordType> s1 = fx * vx + fy * vy;
+                            std::complex<CoordType> s2 = fx * fx + fy * fy;
+                            std::complex<CoordType> s3 = s1 / s2;
 
                             deform_fft_buf_cplx_[0](offset) = vx - fx*s3;
                             deform_fft_buf_cplx_[1](offset) = vy - fy*s3;
@@ -878,15 +878,15 @@ namespace Gadgetron {
 
                             ValueType fx = kx * dx;
 
-                            std::complex<ValueType> vx = deform_fft_cplx_[0](offset);
-                            std::complex<ValueType> vy = deform_fft_cplx_[1](offset);
-                            std::complex<ValueType> vz = deform_fft_cplx_[2](offset);
+                            std::complex<CoordType> vx = deform_fft_cplx_[0](offset);
+                            std::complex<CoordType> vy = deform_fft_cplx_[1](offset);
+                            std::complex<CoordType> vz = deform_fft_cplx_[2](offset);
 
                             if ((x != 0) || (y != 0) || (z != 0))
                             {
-                                std::complex<ValueType> s1 = fx * vx + fy * vy + fz * vz;
-                                std::complex<ValueType> s2 = fx * fx + fy * fy + fz * fz;
-                                std::complex<ValueType> s3 = s1 / s2;
+                                std::complex<CoordType> s1 = fx * vx + fy * vy + fz * vz;
+                                std::complex<CoordType> s2 = fx * fx + fy * fy + fz * fz;
+                                std::complex<CoordType> s3 = s1 / s2;
 
                                 deform_fft_buf_cplx_[0](offset) = vx - fx*s3;
                                 deform_fft_buf_cplx_[1](offset) = vy - fy*s3;

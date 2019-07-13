@@ -43,6 +43,7 @@ if (MATLAB_FOUND)
         ${CMAKE_SOURCE_DIR}/toolboxes/image_io
         ${CMAKE_SOURCE_DIR}/toolboxes/image
         ${CMAKE_SOURCE_DIR}/toolboxes/image/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/cmr
     )
 
     link_directories(${Boost_LIBRARY_DIRS})
@@ -60,6 +61,7 @@ if (MATLAB_FOUND)
                     gadgetron_toolbox_cpufft 
                     gadgetron_toolbox_cpuklt 
                     gadgetron_toolbox_cpuoperator 
+                    gadgetron_toolbox_cmr 
                     gadgetron_toolbox_log )
 
     if (WIN32)
@@ -106,6 +108,9 @@ if (MATLAB_FOUND)
     SET_TARGET_PROPERTIES(Matlab_gt_apply_deformation_field_reg_2D_series PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_apply_deformation_field_reg_2D_series DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
+    add_library(Matlab_gt_concatenate_deform_fields SHARED Matlab_gt_concatenate_deform_fields.cpp)
+    SET_TARGET_PROPERTIES(Matlab_gt_concatenate_deform_fields PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
+    install(TARGETS Matlab_gt_concatenate_deform_fields DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
 else()
     message("MATLAB NOT FOUND: matlab wrapper for toolbox will not be compiled.")

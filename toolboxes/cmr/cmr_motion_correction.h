@@ -86,6 +86,11 @@ namespace Gadgetron {
     /// output: warpped image array
     template <typename T> EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<T>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<T>& output, Gadgetron::GT_BOUNDARY_CONDITION bh = GT_BOUNDARY_CONDITION_BORDERVALUE);
 
+    /// concatenate motion fields
+    /// dx, dy: [RO E1 N], starting from key_frame, store the deformation fields from direct neighor to current frame
+    /// dx_out, dy_out: [RO E1 N], store deformation fields from key_frame to current frame
+    template <typename T> EXPORTCMR void concatenate_deform_fields_2DT(const hoNDArray<T>& dx, const hoNDArray<T>& dy, size_t key_frame, hoNDArray<T>& dx_out, hoNDArray<T>& dy_out);
+
     /// find key frame by cross registration between two series (target and source)
     /// the goal is to find key frame for target series
     /// first, every image in source series is registered to target series

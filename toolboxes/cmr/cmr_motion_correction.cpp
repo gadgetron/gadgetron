@@ -651,6 +651,104 @@ template EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<doubl
 // ------------------------------------------------------------------------
 
 template <typename T>
+void concatenate_deform_fields_2DT(const hoNDArray<T>& dx, const hoNDArray<T>& dy, size_t key_frame, hoNDArray<T>& dx_out, hoNDArray<T>& dy_out)
+{
+    try
+    {
+        typedef hoNDArray<T> ArrayType;
+        typedef hoNDInterpolatorLinear<ArrayType> InterpType;
+        typedef hoNDBoundaryHandlerFixedValue<ArrayType> BHType;
+
+        size_t RO = dx.get_size(0);
+        size_t E1 = dx.get_size(1);
+        size_t N = dx.get_size(2);
+
+        GADGET_CHECK_THROW(dx.dimensions_equal(&dy));
+        GADGET_CHECK_THROW(key_frame >= 0);
+        GADGET_CHECK_THROW(key_frame < N);
+
+        dx_out = dx;
+        dy_out = dy;
+
+        std::vector<InterpType> interp_ro(N), interp_e1(N);
+        std::vector<BHType> bhFixedValue_ro(N), bhFixedValue_e1(N);
+        std::vector<ArrayType> curr_dx(N), curr_dy(N);
+
+        for (size_t n = 0; n < N; n++)
+        {
+            curr_dx[n].create(RO, E1, const_cast<T*>(dx.begin() + n * RO * E1));
+            curr_dy[n].create(RO, E1, const_cast<T*>(dy.begin() + n * RO * E1));
+
+            interp_ro[n].setBoundaryHandler(bhFixedValue_ro[n]);
+            interp_e1[n].setBoundaryHandler(bhFixedValue_e1[n]);
+
+            interp_ro[n].setArray(curr_dx[n]);
+            interp_e1[n].setArray(curr_dy[n]);
+
+            bhFixedValue_ro[n].setArray(curr_dx[n]);
+            bhFixedValue_e1[n].setArray(curr_dy[n]);
+        }
+
+        double p_ro, p_e1;
+
+        long long i;
+
+        #pragma parallel for default(none) private(i) shared(key_frame, N, dx_out, dy_out, RO, E1, interp_ro, interp_e1)
+        for (i = key_frame + 2; i < N; i++)
+        {
+            long ro, e1, j;
+            for (ro = 0; ro < RO; ro++)
+            {
+                for (e1 = 0; e1 < E1; e1++)
+                {
+                    // forward
+                    p_ro = ro; p_e1 = e1;
+                    for (j = key_frame + 1; j < i; j++)
+                    {
+                        p_ro += interp_ro[j](p_ro, p_e1);
+                        p_e1 += interp_e1[j](p_ro, p_e1);
+                    }
+
+                    dx_out(ro, e1, i) = p_ro + interp_ro[j](p_ro, p_e1) - ro;
+                    dy_out(ro, e1, i) = p_e1 + interp_e1[j](p_ro, p_e1) - e1;
+                }
+            }
+        }
+
+        #pragma parallel for default(none) private(i) shared(key_frame, N, dx_out, dy_out, RO, E1, interp_ro, interp_e1)
+        for (i = key_frame - 2; i >= 0; i--)
+        {
+            long ro, e1, j;
+            for (ro = 0; ro < RO; ro++)
+            {
+                for (e1 = 0; e1 < E1; e1++)
+                {
+                    p_ro = ro; p_e1 = e1;
+                    for (j = key_frame - 1; j > i; j--)
+                    {
+                        p_ro += interp_ro[j](p_ro, p_e1);
+                        p_e1 += interp_e1[j](p_ro, p_e1);
+                    }
+
+                    dx_out(ro, e1, i) = p_ro + interp_ro[j](p_ro, p_e1) - ro;
+                    dy_out(ro, e1, i) = p_e1 + interp_e1[j](p_ro, p_e1) - e1;
+                }
+            }
+        }
+
+    }
+    catch (...)
+    {
+        GADGET_THROW("Error happened in concatenate_deform_fields_2DT(...) ... ");
+    }
+}
+
+template EXPORTCMR void concatenate_deform_fields_2DT(const hoNDArray<float>& dx, const hoNDArray<float>& dy, size_t key_frame, hoNDArray<float>& dx_out, hoNDArray<float>& dy_out);
+template EXPORTCMR void concatenate_deform_fields_2DT(const hoNDArray<double>& dx, const hoNDArray<double>& dy, size_t key_frame, hoNDArray<double>& dx_out, hoNDArray<double>& dy_out);
+
+// ------------------------------------------------------------------------
+
+template <typename T>
 void find_key_frame_use_deformation_cross_series(const Gadgetron::hoNDArray<T>& target, const Gadgetron::hoNDArray<T>& source, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<T, 2>, Gadgetron::hoNDImage<T, 2>, double>& reg, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality, hoNDArray<double>& dx, hoNDArray<double>& dy)
 {
     try
