@@ -796,7 +796,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             // compute the mean deformation within the region
             hoNDArray<float> mean_deform_RO(num_RO, num_E1, N);
             hoNDArray<float> mean_deform_E1(num_RO, num_E1, N);
-            hoNDArray<float> deform_patch(patch_size_RO, patch_size_E1);
+            hoNDArray<double> deform_patch(patch_size_RO, patch_size_E1);
 
             size_t l, c;
             for ( n=0; n<N; n++ )
@@ -812,7 +812,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                         for ( pl=0; pl<patch_size_E1; pl++ )
                         {
                             long long offset = dx.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
-                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(float)*patch_size_RO);
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(double)*patch_size_RO);
                         }
 
                         // compute the mean deformation
@@ -829,7 +829,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                         for ( pl=0; pl<patch_size_E1; pl++ )
                         {
                             long long offset = dy.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
-                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(float)*patch_size_RO);
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(double)*patch_size_RO);
                         }
 
                         // compute the mean deformation
