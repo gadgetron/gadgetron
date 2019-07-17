@@ -258,9 +258,13 @@ namespace Gadgetron {
             for (slc=0; slc<SLC; slc++)
             {
                 std::stringstream os;
-                os << "_encoding_" << encoding << "_SLC_" << slc;
+                size_t curr_slc = recon_bit.data_.headers_[0].idx.slice;
 
-                GDEBUG_CONDITION_STREAM(verbose.value(), "Processing binning on SLC : " << slc << " , encoding space : " << encoding);
+                os << "_encoding_" << encoding << "_SLC_" << slc << "_SLCOrder_" << curr_slc;
+
+                std::string suffix = os.str();
+
+                GDEBUG_CONDITION_STREAM(verbose.value(), "Processing binning on SLC : " << slc << " - " << curr_slc << " , encoding space : " << encoding);
 
                 // set up the binning object
                 binning_reconer_.binning_obj_.data_.create(RO, E1, CHA, N, S, recon_bit.data_.data_.begin()+slc*RO*E1*CHA*N*S);
@@ -273,6 +277,8 @@ namespace Gadgetron {
                                                                 && calib_mode_[encoding]!=ISMRMRD_interleaved 
                                                                 && calib_mode_[encoding]!=ISMRMRD_separate 
                                                                 && calib_mode_[encoding]!=ISMRMRD_noacceleration);
+
+                binning_reconer_.suffix_ = suffix;
 
                 // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.data_, debug_folder_full_path_ + "binning_obj_data" + os.str()); }
 

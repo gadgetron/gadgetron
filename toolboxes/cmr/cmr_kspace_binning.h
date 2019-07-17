@@ -289,6 +289,7 @@ namespace Gadgetron {
         // ======================================================================================
         /// parameter for debugging
         // ======================================================================================
+        std::string suffix_;
         bool verbose_;
         std::string debug_folder_;
         bool perform_timing_;
