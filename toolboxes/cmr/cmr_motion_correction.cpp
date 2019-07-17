@@ -421,7 +421,7 @@ void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage
 
 template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<float, 2> >& input, const std::vector<unsigned int>& key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<double, 2> > & input, const std::vector<unsigned int>& key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
+template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<double, 2> > & input, const std::vector<unsigned int>& key_frame, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
 
 // ------------------------------------------------------------------------
 
