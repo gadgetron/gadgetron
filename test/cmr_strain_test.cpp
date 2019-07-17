@@ -76,7 +76,11 @@ TYPED_TEST(cmr_strain_test, Cine)
 
     hoNDArray<T> radial, circ, thetas;
     bool compare_mask = true;
-    Gadgetron::compute_strain(dx, dy, mask, compare_mask, radial, circ, thetas);
+
+    hoNDArray<double> dx_used, dy_used;
+    dx_used.copyFrom(dx);
+    dy_used.copyFrom(dy);
+    Gadgetron::compute_strain(dx_used, dy_used, mask, compare_mask, radial, circ, thetas);
 
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/Strain/radial_mask_6");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/Strain/circ_mask_6");
@@ -128,7 +132,11 @@ TYPED_TEST(cmr_strain_test, QuadarticStrain)
 
     hoNDArray<T> radial, circ, thetas;
     bool compare_mask = true;
-    Gadgetron::compute_strain(dx, dy, mask, compare_mask, radial, circ, thetas);
+
+    hoNDArray<double> dx_used, dy_used;
+    dx_used.copyFrom(dx);
+    dy_used.copyFrom(dy);
+    Gadgetron::compute_strain(dx_used, dy_used, mask, compare_mask, radial, circ, thetas);
 
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/QuadraticStrain/radial");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/QuadraticStrain/circ");
@@ -180,7 +188,11 @@ TYPED_TEST(cmr_strain_test, ConstStrain)
 
     hoNDArray<T> radial, circ, thetas;
     bool compare_mask = true;
-    Gadgetron::compute_strain(dx, dy, mask, compare_mask, radial, circ, thetas);
+
+    hoNDArray<double> dx_used, dy_used;
+    dx_used.copyFrom(dx);
+    dy_used.copyFrom(dy);
+    Gadgetron::compute_strain(dx_used, dy_used, mask, compare_mask, radial, circ, thetas);
 
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/ConstStrain/radial");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/ConstStrain/circ");

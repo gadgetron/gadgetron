@@ -350,7 +350,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     GDEBUG("--------------- Non-interleaved Complex ---------------\n");
 #endif
 
-    auto mxdata =  mxCreateUninitNumericArray(packet_ndim, packet_dims, mxSINGLE_CLASS, mxCOMPLEX);
+    auto mxdata =  mxCreateNumericArray(packet_ndim, packet_dims, mxSINGLE_CLASS, mxCOMPLEX);
 
     float* real_data=(float *)mxGetData(mxdata);
 #if MX_HAS_INTERLEAVED_COMPLEX
@@ -379,7 +379,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     //GDEBUG("xxx6\n");
 
     // encode
-    auto mxstep = mxCreateUninitNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
+    auto mxstep = mxCreateNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
     mxFree(mxGetData(mxstep));
     mxSetData(mxstep, phase_coordinates);
     mxSetField(mxstruct,0,"kspace_encode_step",mxstep);
@@ -415,7 +415,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     if(isFirstPacket)
 	{   isFirstPacket = 0;
         mwSize num_headers = 1; //headersToMatlab->size(); //= 1;
-        auto mxheaders = mxCreateUninitNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
+        auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
         memcpy(mxGetData(mxheaders),headersToMatlab->getObjectPtr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
 	mxSetField(mxstruct,0,"headers",mxheaders);
     }
@@ -423,7 +423,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     //GDEBUG("xxx8\n");
 
     // Create matlab boolean and set value to C++
-    auto mxIsLastPacket = mxCreateUninitNumericMatrix(1, 1, mxINT8_CLASS, mxREAL); // destroyed by recon_array destroy later
+    auto mxIsLastPacket = mxCreateNumericMatrix(1, 1, mxINT8_CLASS, mxREAL); // destroyed by recon_array destroy later
     *(uint8_t *)mxGetData(mxIsLastPacket)=isLastPacket;
         
     //GDEBUG("xxx9\n");

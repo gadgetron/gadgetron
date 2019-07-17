@@ -90,18 +90,18 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         hoNDArray<T> data;
         Gadgetron::MatlabToHoNDArray(const_cast<mxArray*>(prhs[ind++]), data);
 
-        hoNDArray<T> dx, dy;
+        hoNDArray<double> dx, dy;
 
-        if (!mxIsSingle(prhs[ind]))
+        if (!mxIsDouble(prhs[ind]))
         {
-            mexWarnMsgTxt("The second input parameter should be a single array ...");
+            mexWarnMsgTxt("The second input parameter should be a double array ...");
         }
 
         Gadgetron::MatlabToHoNDArray(const_cast<mxArray*>(prhs[ind++]), dx);
 
-        if (!mxIsSingle(prhs[ind]))
+        if (!mxIsDouble(prhs[ind]))
         {
-            mexWarnMsgTxt("The third input parameter should be a single array ...");
+            mexWarnMsgTxt("The third input parameter should be a double array ...");
         }
 
         Gadgetron::MatlabToHoNDArray(const_cast<mxArray*>(prhs[ind++]), dy);
@@ -119,7 +119,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         hoNDImageContainer2D<Image2DType> imageSeries;
         imageSeries.create(col);
 
-        hoNDImageContainer2D< hoNDImage<T, 2> > deformation_field[2];
+        hoNDImageContainer2D< hoNDImage<double, 2> > deformation_field[2];
         deformation_field[0].create(col);
         deformation_field[1].create(col);
 
@@ -134,7 +134,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
             deformation_field[1](0, p).create(dimIm, dy.begin() + p*RO*E1, false);
         }
 
-        Gadgetron::hoImageRegContainer2DRegistration<Image2DType, Image2DType, float> regContainer;
+        Gadgetron::hoImageRegContainer2DRegistration<Image2DType, Image2DType, double> regContainer;
 
         hoNDImageContainer2D< Image2DType > warppedContainer;
 

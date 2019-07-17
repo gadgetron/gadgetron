@@ -479,6 +479,9 @@ namespace Gadgetron {
 
             std::vector<coord_type> pixelSize(D);
 
+            coord_type pos_positive_vec[D];
+            coord_type pos_negative_vec[D];
+
             deform_field_[0].get_pixel_size(pixelSize);
 
             size_t din, dout;
@@ -492,8 +495,14 @@ namespace Gadgetron {
                     pos_positive[din] += delta;
                     pos_negative[din] -= delta;
 
-                    T v_positive = (*interp_default_[dout])(pos_positive.begin());
-                    T v_negative = (*interp_default_[dout])(pos_negative.begin());
+                    for (size_t dd = 0; dd < D; dd++)
+                    {
+                        pos_positive_vec[dd] = (coord_type)pos_positive[dd];
+                        pos_negative_vec[dd] = (coord_type)pos_negative[dd];
+                    }
+
+                    T v_positive = (*interp_default_[dout])(pos_positive_vec);
+                    T v_negative = (*interp_default_[dout])(pos_negative_vec);
 
                     jac(dout, din) = (v_positive-v_negative)*deltaReciprocal;
 

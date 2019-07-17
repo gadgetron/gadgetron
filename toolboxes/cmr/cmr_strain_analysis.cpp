@@ -15,7 +15,7 @@
 namespace Gadgetron {
 
     template <typename T>
-    void compute_strain(const hoNDArray<T>& dx, const hoNDArray<T>& dy, const hoNDArray<T>& mask, const bool compare_mask, hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas)
+    void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<T>& mask, const bool compare_mask, hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas)
     {
         try
         {
@@ -23,7 +23,7 @@ namespace Gadgetron {
             size_t E1 = dx.get_size(1);
             size_t N = dx.get_size(2);
 
-            typedef hoNDArray<T> ArrayType;
+            typedef hoNDArray<double> ArrayType;
 
             ArrayType& dx_used = const_cast<ArrayType&>(dx);
 
@@ -65,8 +65,8 @@ namespace Gadgetron {
 #pragma omp parallel for default(none) private(phs) shared(N, RO, E1, dx, dy, radial, circ, mask, Cr, Ce, thetas)
             for (phs = 0; phs < N; phs++)
             {
-                ArrayType dx_2D(RO, E1, const_cast<T*>(&dx(0, 0, phs)));
-                ArrayType dy_2D(RO, E1, const_cast<T*>(&dy(0, 0, phs)));
+                ArrayType dx_2D(RO, E1, const_cast<double*>(&dx(0, 0, phs)));
+                ArrayType dy_2D(RO, E1, const_cast<double*>(&dy(0, 0, phs)));
 
                 hoNDBoundaryHandlerBorderValue<ArrayType> bv_dx(dx_2D);
                 hoNDInterpolatorLinear<ArrayType> interp_dx(dx_2D, bv_dx);
@@ -153,6 +153,6 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCMR void compute_strain(const hoNDArray<float>& dx, const hoNDArray<float>& dy, const hoNDArray<float>& mask, const bool compare_mask, hoNDArray<float>& radial, hoNDArray<float>& circ, hoNDArray<float>& thetas);
+    template EXPORTCMR void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<float>& mask, const bool compare_mask, hoNDArray<float>& radial, hoNDArray<float>& circ, hoNDArray<float>& thetas);
     template EXPORTCMR void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<double>& mask, const bool compare_mask, hoNDArray<double>& radial, hoNDArray<double>& circ, hoNDArray<double>& thetas);
 }

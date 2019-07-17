@@ -721,7 +721,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
         NavigatorRoiType roi;
         roi.resize(S);
 
-        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double> reg;
 
         size_t s, n, e1;
         for (s=0; s<S; s++)
@@ -751,7 +751,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             Gadgetron:: perform_moco_fixed_key_frame_2DT(mag, key_frame, respiratory_navigator_moco_reg_strength_, respiratory_navigator_moco_iters_, bidirectional_moco, warp_images, reg);
 
             // get the moco results
-            hoNDArray<float> dx, dy;
+            hoNDArray<double> dx, dy;
             reg.deformation_field_[0].to_NDArray(0, dx);
             reg.deformation_field_[1].to_NDArray(0, dy);
 
@@ -796,7 +796,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             // compute the mean deformation within the region
             hoNDArray<float> mean_deform_RO(num_RO, num_E1, N);
             hoNDArray<float> mean_deform_E1(num_RO, num_E1, N);
-            hoNDArray<float> deform_patch(patch_size_RO, patch_size_E1);
+            hoNDArray<double> deform_patch(patch_size_RO, patch_size_E1);
 
             size_t l, c;
             for ( n=0; n<N; n++ )
@@ -812,7 +812,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                         for ( pl=0; pl<patch_size_E1; pl++ )
                         {
                             long long offset = dx.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
-                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(float)*patch_size_RO);
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(double)*patch_size_RO);
                         }
 
                         // compute the mean deformation
@@ -829,7 +829,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                         for ( pl=0; pl<patch_size_E1; pl++ )
                         {
                             long long offset = dy.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
-                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(float)*patch_size_RO);
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(double)*patch_size_RO);
                         }
 
                         // compute the mean deformation
@@ -1997,7 +1997,7 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
 
         std::vector<unsigned int> key_frame(dstN, 0);
 
-        Gadgetron::hoImageRegContainer2DRegistration<hoNDImage<float, 2>, hoNDImage<float, 2>, float> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<hoNDImage<float, 2>, hoNDImage<float, 2>, double> reg;
 
         GDEBUG_STREAM("Perform moco against best heart beat : " << this->kspace_binning_moco_reg_strength_);
         GDEBUG_STREAM("MOCO iterations : ");
@@ -2081,7 +2081,7 @@ void CmrKSpaceBinning<T>::perform_moco_warp_on_selected_images( const std::vecto
         ComplexImageContinerType output;
         output.copyFrom(input);
 
-        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double> reg;
         reg.warpContainer2D(input, input, deform, output);
 
         warpped_complex_images.resize(dstN);
