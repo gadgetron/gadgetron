@@ -271,7 +271,7 @@ namespace Gadgetron {
 
                 std::string suffix = os.str();
 
-                GDEBUG_STREAM("Processing binning on SLC : " << slc << " - " << curr_slc << " , encoding space : " << encoding);
+                GDEBUG_STREAM("Processing binning on SLC : " << slc << " - " << curr_slc << " , encoding space : " << encoding << " " << suffix);
 
                 // set up the binning object
                 binning_reconer_.binning_obj_.data_.create(RO, E1, CHA, N, S, recon_bit.data_.data_.begin()+slc*RO*E1*CHA*N*S);

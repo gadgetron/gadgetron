@@ -156,6 +156,8 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         size_t N = kspace.get_size(3);
         size_t S = kspace.get_size(4);
 
+        GDEBUG_STREAM("Processing suffix is " << suffix_)
+
         if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace, debug_folder_ + "binning_kspace" + suffix_);
 
         // -----------------------------------------------------
