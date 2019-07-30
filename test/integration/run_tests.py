@@ -44,6 +44,12 @@ def main():
 
     args = parser.parse_args()
 
+    failure_status_flag = False
+    stats = []
+    passed = []    
+    skipped = []
+    failed = []
+
     def pass_handler(test):
         passed.append(test)
         with open('test/stats.json') as f:
@@ -53,17 +59,12 @@ def main():
         skipped.append(test)
 
     def fail_handler(test):
-        failure_status_flag = True
+        failed.append(test)
         print("Failed - %s" % test)
 
-    stats = []
-    passed = []
-    skipped = []
     handlers = {0: pass_handler, 1: fail_handler, 2: skip_handler}
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
-
-    failure_status_flag = False
 
     for i, test in enumerate(tests, start=1):
         print("\n ----> Test {} of {}: {}\n".format(i, len(tests), test))
@@ -78,9 +79,12 @@ def main():
     if args.stats:
         output_csv(stats, args.stats)
 
-    print("\n{} tests passed. {} tests skipped.".format(len(passed), len(skipped)))
+        
+    print("\n{} tests passed. {} tests skipped. {} tests failed.".format(len(passed), len(skipped), len(failed)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
+    if(len(failed)>0):
+        sys.exit(1)    
 
 if __name__ == '__main__':
     main()
