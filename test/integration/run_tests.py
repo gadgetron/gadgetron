@@ -40,10 +40,13 @@ def main():
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
+    parser.add_argument('--run-all-cases', help='Whether to continue testing after encountering failtures', action='store_true')
+    
     parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
 
     args = parser.parse_args()
 
+    run_all_cases = args.run_all_cases
     failure_status_flag = False
     stats = []
     passed = []    
@@ -59,8 +62,11 @@ def main():
         skipped.append(test)
 
     def fail_handler(test):
-        failed.append(test)
-        print("Failed - %s" % test)
+        if(run_all_cases):
+            failed.append(test)
+            print("Failed - %s" % test)
+        else:
+            sys.exit(1)
 
     handlers = {0: pass_handler, 1: fail_handler, 2: skip_handler}
 
@@ -84,6 +90,10 @@ def main():
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
     if(len(failed)>0):
+        print("=========================================")
+        for test in failed:            
+            print("Failed case -- %s" % test)
+        print("=========================================")
         sys.exit(1)    
 
 if __name__ == '__main__':
