@@ -53,7 +53,8 @@ def main():
         skipped.append(test)
 
     def fail_handler(test):
-        sys.exit(1)
+        failure_status_flag = True
+        print("Failed - %s" % test)
 
     stats = []
     passed = []
@@ -62,8 +63,10 @@ def main():
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
+    failure_status_flag = False
+
     for i, test in enumerate(tests, start=1):
-        print("\nTest {} of {}: {}\n".format(i, len(tests), test))
+        print("\n ----> Test {} of {}: {}\n".format(i, len(tests), test))
         proc = subprocess.run(['python3', 'run_gadgetron_test.py',
                                '-G', args.gadgetron_home,
                                '-I', args.ismrmrd_home,
