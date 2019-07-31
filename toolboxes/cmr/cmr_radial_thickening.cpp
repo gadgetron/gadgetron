@@ -160,9 +160,9 @@ namespace Gadgetron {
 					{
 						double cr = centroidR(ref_phase);
 						double ce = centroidE(ref_phase);
-						float theta_pt = thetas(epi_r_ref, epi_e_ref, ref_phase);
-						int check_e = epi_e_ref - samples / 8 * sin(theta_pt);
-						int check_r = epi_r_ref + samples / 8 * cos(theta_pt);
+						double theta_pt = thetas(epi_r_ref, epi_e_ref, ref_phase);
+						double check_e = epi_e_ref - samples / 8 * sin(theta_pt);
+						double check_r = epi_r_ref + samples / 8 * cos(theta_pt);
 						
 						hoNDArray<T> test_r(samples), test_e(samples);
 						double r_stepsize = (check_r - centroidR(ref_phase))/samples;
@@ -184,15 +184,15 @@ namespace Gadgetron {
 							endo_ref_line(s) = interp_ref(test_r(s), test_e(s));
 						}
 						int endo_ind_ref = Gadgetron::amax(endo_ref_line);
-						int endo_e_ref = round(test_e(endo_ind_ref));
-						int endo_r_ref = round(test_r(endo_ind_ref));
+						double endo_e_ref = (test_e(endo_ind_ref));
+						double endo_r_ref = (test_r(endo_ind_ref));
 						double myo_dist_ref = std::sqrt(std::pow(epi_e_ref - endo_e_ref, 2) + std::pow(epi_r_ref - endo_r_ref, 2));
 
 						for (p = 0; p < PHS; p++)
 						{
 
-							ArrayType edge_epi_2D(RO, E1, const_cast<T*>(&edge_endo(0, 0, p)));
-							ArrayType edge_endo_2D(RO, E1, const_cast<T*>(&edge_epi(0, 0, p)));
+							ArrayType edge_endo_2D(RO, E1, const_cast<T*>(&edge_endo(0, 0, p)));
+							ArrayType edge_epi_2D(RO, E1, const_cast<T*>(&edge_epi(0, 0, p)));
 
 							hoNDBoundaryHandlerBorderValue<ArrayType> bv_endo(edge_endo_2D);
 							hoNDInterpolatorLinear<ArrayType> interp_endo(edge_endo_2D, bv_endo);
@@ -209,10 +209,10 @@ namespace Gadgetron {
 							int endo_ind = Gadgetron::amax(endo_line);
 							int epi_ind = Gadgetron::amax(epi_line);
 
-							int endo_e = round(test_e(endo_ind));
-							int endo_r = round(test_r(endo_ind));
-							int epi_e = round(test_e(epi_ind));
-							int epi_r = round(test_r(epi_ind));
+							double endo_e = test_e(endo_ind);
+							double endo_r = test_r(endo_ind);
+							double epi_e = test_e(epi_ind);
+							double epi_r = test_r(epi_ind);
 							double myo_dist = sqrt(std::pow(epi_e - endo_e, 2) + std::pow(epi_r - endo_r, 2));
 
 							rad_strain(epi_r_ref, epi_e_ref, p) = (myo_dist - myo_dist_ref) / myo_dist_ref;
