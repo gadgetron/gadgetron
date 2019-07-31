@@ -51,7 +51,7 @@ typedef Types<float> realImplementations;
 
 TYPED_TEST_CASE(cmr_thickening_test, realImplementations);
 
-TYPED_TEST(cmr_thickening_test, Cine)
+TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
 {
 	typedef float T;
 
