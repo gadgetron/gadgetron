@@ -40,9 +40,18 @@ def main():
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
+    parser.add_argument('--run-all-cases', help='Whether to continue testing after encountering failtures', action='store_true')
+    
     parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
 
     args = parser.parse_args()
+
+    run_all_cases = args.run_all_cases
+    failure_status_flag = False
+    stats = []
+    passed = []    
+    skipped = []
+    failed = []
 
     def pass_handler(test):
         passed.append(test)
@@ -53,17 +62,18 @@ def main():
         skipped.append(test)
 
     def fail_handler(test):
-        sys.exit(1)
+        if(run_all_cases):
+            failed.append(test)
+            print("Failed - %s" % test)
+        else:
+            sys.exit(1)
 
-    stats = []
-    passed = []
-    skipped = []
     handlers = {0: pass_handler, 1: fail_handler, 2: skip_handler}
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
     for i, test in enumerate(tests, start=1):
-        print("\nTest {} of {}: {}\n".format(i, len(tests), test))
+        print("\n ----> Test {} of {}: {}\n".format(i, len(tests), test))
         proc = subprocess.run(['python3', 'run_gadgetron_test.py',
                                '-G', args.gadgetron_home,
                                '-I', args.ismrmrd_home,
@@ -75,9 +85,16 @@ def main():
     if args.stats:
         output_csv(stats, args.stats)
 
-    print("\n{} tests passed. {} tests skipped.".format(len(passed), len(skipped)))
+        
+    print("\n{} tests passed. {} tests skipped. {} tests failed.".format(len(passed), len(skipped), len(failed)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
+    if(len(failed)>0):
+        print("=========================================")
+        for test in failed:            
+            print("Failed case -- %s" % test)
+        print("=========================================")
+        sys.exit(1)    
 
 if __name__ == '__main__':
     main()
