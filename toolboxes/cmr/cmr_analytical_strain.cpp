@@ -1,7 +1,7 @@
 /** \file   cmr_radial_thickening.h
-	\brief  Implement functionalities to handle cardiac time stamps
+	\brief  Implement analytical method to compute strain
 	\author Angela Gao
-	\date   July 9, 2019
+	\date   July 31, 2019
 */
 
 #include "cmr_analytical_strain.h"
@@ -19,9 +19,9 @@ namespace Gadgetron {
 	{
 		try
 		{
-			size_t RO = mask.get_size(0);
-			size_t E1 = mask.get_size(1);
-			size_t PHS = mask.get_size(2);
+			size_t RO = dx.get_size(0);
+			size_t E1 = dx.get_size(1);
+			size_t PHS = dx.get_size(2);
 
 			typedef hoNDArray<T> ArrayType;
 
@@ -47,7 +47,7 @@ namespace Gadgetron {
 				{
 					for (size_t p = 0; p < PHS; p++)
 					{
-						if (mask(ro, e1, p) > 0)
+						if (mask(ro, e1) > 0)
 						{
 							centroidR(p) += ro;
 							centroidE(p) += e1;
@@ -68,7 +68,7 @@ namespace Gadgetron {
 				{
 					for (ro = 1; ro < (RO-1); ro++)
 					{
-						if (mask(ro, e1, p) == 1)
+						if (mask(ro, e1) == 1)
 						{
 							// compute strain for this point
 							double x = ro - (double)centroidR(p);
