@@ -254,7 +254,7 @@ TYPED_TEST(cmr_analytical_strain_test, RetroCine)
 }
 
 
-
+// with respect to slice 10
 TYPED_TEST(cmr_analytical_strain_test, RTCine)
 {
 	typedef float T;
