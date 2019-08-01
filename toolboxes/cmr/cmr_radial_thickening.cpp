@@ -14,30 +14,6 @@
 
 namespace Gadgetron {
 
-	//template <typename T>
-	//void linspace(const T start, const T end, const int num, hoNDArray<T>& res)
-	//{
-	//	try
-	//	{
-	//		res.create(num);
-	//		Gadgetron::clear(res);
-
-	//		double stepsize = (end - start) / (num - 1);
-	//		for (int s = 0; s < num; s++)
-	//		{
-	//			res(s) = start + stepsize*s;
-	//		}
-
-	//	}
-	//	catch (...)
-	//	{
-	//		GADGET_THROW("Exceptions happened in linspace(...) ... ");
-	//	}
-	//	template EXPORTCMR void linspace(const float start, const float end, const int num, hoNDArray<float> & res);
-	//	template EXPORTCMR void linspace(const double start, const double end, const int num, hoNDArray<double> & res);
-	//}
-
-
 	template <typename T>
 	void compute_thickening(const hoNDArray<T>& endo_mask, const hoNDArray<T>& epi_mask, const size_t ref_phase, hoNDArray<T>& edge_endo, hoNDArray<T>& edge_epi, hoNDArray<T>& rad_strain)
 	{

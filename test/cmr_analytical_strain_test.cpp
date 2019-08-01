@@ -14,37 +14,37 @@ template<typename Real>
 class cmr_analytical_strain_test : public ::testing::Test
 {
 protected:
-	virtual void SetUp()
-	{
-		GDEBUG_STREAM("=============================================================================================");
-		char* ut_dir = ::getenv("GT_UNITTEST_DIRECTORY");
-		if (ut_dir != NULL)
-		{
-			gt_ut_folder_ = std::string(ut_dir);
-		}
-		else
-			gt_ut_folder_.clear();
+    virtual void SetUp()
+    {
+        GDEBUG_STREAM("=============================================================================================");
+        char* ut_dir = ::getenv("GT_UNITTEST_DIRECTORY");
+        if (ut_dir != NULL)
+        {
+            gt_ut_folder_ = std::string(ut_dir);
+        }
+        else
+            gt_ut_folder_.clear();
 
-		GDEBUG_STREAM("=============================================================================================");
+        GDEBUG_STREAM("=============================================================================================");
 
-		if (!gt_ut_folder_.empty())
-		{
-			GDEBUG_STREAM("Unit Test for Gadgetron hoNFFT");
-			gt_ut_data_folder_ = gt_ut_folder_;
-			gt_ut_res_folder_ = gt_ut_folder_ + "/result/";
-			GDEBUG_STREAM("gt_ut_data_folder_ is " << gt_ut_data_folder_);
-			GDEBUG_STREAM("gt_ut_res_folder_ is " << gt_ut_res_folder_);
-		}
+        if (!gt_ut_folder_.empty())
+        {
+            GDEBUG_STREAM("Unit Test for Gadgetron Analytical Strain");
+            gt_ut_data_folder_ = gt_ut_folder_;
+            gt_ut_res_folder_ = gt_ut_folder_ + "/result/";
+            GDEBUG_STREAM("gt_ut_data_folder_ is " << gt_ut_data_folder_);
+            GDEBUG_STREAM("gt_ut_res_folder_ is " << gt_ut_res_folder_);
+        }
 
-		this->timer_.set_timing_in_destruction(false);
-	}
+        this->timer_.set_timing_in_destruction(false);
+    }
 
-	std::string gt_ut_folder_;
-	std::string gt_ut_data_folder_;
-	std::string gt_ut_res_folder_;
+    std::string gt_ut_folder_;
+    std::string gt_ut_data_folder_;
+    std::string gt_ut_res_folder_;
 
-	ImageIOAnalyze gt_io_;
-	GadgetronTimer timer_;
+    ImageIOAnalyze gt_io_;
+    GadgetronTimer timer_;
 };
 
 typedef Types<float> realImplementations;
@@ -53,100 +53,106 @@ TYPED_TEST_CASE(cmr_analytical_strain_test, realImplementations);
 
 TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
 {
-	typedef float T;
+    typedef float T;
 
-	if (this->gt_ut_folder_.empty())
-	{
-		GDEBUG_STREAM("Gadgetron unit test directory is not set ... ");
-		return;
-	}
+    if (this->gt_ut_folder_.empty())
+    {
+        GDEBUG_STREAM("Gadgetron unit test directory is not set ... ");
+        return;
+    }
 
-	hoNDArray< T > dx;
-	this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/SynthesisStrain/grtr_dx");
-	dx.print(std::cout);
+    hoNDArray< T > dx;
+    this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/SynthesisStrain/grtr_dx");
+    dx.print(std::cout);
 
-	hoNDArray< T > dy;
-	this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/SynthesisStrain/grtr_dy");
-	dy.print(std::cout);
+    hoNDArray< T > dy;
+    this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/SynthesisStrain/grtr_dy");
+    dy.print(std::cout);
 
-	hoNDArray< T > mask;
-	this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/SynthesisStrain/mask");
-	T norm_mask = Gadgetron::nrm2(mask);
+    hoNDArray< T > mask;
+    this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/SynthesisStrain/mask");
+    T norm_mask = Gadgetron::nrm2(mask);
+    GDEBUG_STREAM("mask is " << norm_mask);
 
-	hoNDArray<T> radial, circ;
-	Gadgetron::compute_analytical_strain(dx, dy, mask, radial, circ);
+    hoNDArray<T> radial, circ;
+    timer_.start("Compute analytical straion, quad ... ");
+    Gadgetron::compute_analytical_strain(dx, dy, mask, radial, circ);
+    timer_.stop();
 
-	this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalQuad/radial");
-	this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalQuad/circ");
+    this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_rad_strain");
+    this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_circ_strain");
 
-	// compare agains ground truth
-	hoNDArray<T> ref;
-	hoNDArray<T> diff;
-	T norm_ref;
+    // compare agains ground truth
+    hoNDArray<T> ref;
+    hoNDArray<T> diff;
+    T norm_ref;
 
-	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/analytical_results/analytical_quad_rad_strain");
-	std::cout << Gadgetron::nrm2(radial) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
-	Gadgetron::subtract(ref, radial, diff);
-	T v = Gadgetron::nrm2(diff);
-	norm_ref = Gadgetron::nrm2(ref);
-	EXPECT_LE(v / norm_ref, 0.002);
+    this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_quad_rad_strain");
+    std::cout << Gadgetron::nrm2(radial) << std::endl;
+    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    Gadgetron::subtract(ref, radial, diff);
+    T v = Gadgetron::nrm2(diff);
+    norm_ref = Gadgetron::nrm2(ref);
+    EXPECT_LE(v / norm_ref, 0.002);
 
-	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/analytical_results/analytical_quad_circ_strain");
-	std::cout << Gadgetron::nrm2(circ) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
-	Gadgetron::subtract(ref, circ, diff);
-	T q = Gadgetron::nrm2(diff);
-	norm_ref = Gadgetron::nrm2(ref);
-	EXPECT_LE(q / norm_ref, 0.002);
+    this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_quad_circ_strain");
+    std::cout << Gadgetron::nrm2(circ) << std::endl;
+    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    Gadgetron::subtract(ref, circ, diff);
+    T q = Gadgetron::nrm2(diff);
+    norm_ref = Gadgetron::nrm2(ref);
+    EXPECT_LE(q / norm_ref, 0.002);
 }
 
 TYPED_TEST(cmr_analytical_strain_test, ConstStrain)
 {
-	typedef float T;
+    typedef float T;
 
-	if (this->gt_ut_folder_.empty())
-	{
-		GDEBUG_STREAM("Gadgetron unit test directory is not set ... ");
-		return;
-	}
+    if (this->gt_ut_folder_.empty())
+    {
+        GDEBUG_STREAM("Gadgetron unit test directory is not set ... ");
+        return;
+    }
 
-	hoNDArray< T > dx;
-	this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_grtr_dx");
-	dx.print(std::cout);
+    hoNDArray< T > dx;
+    this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_grtr_dx");
+    dx.print(std::cout);
 
-	hoNDArray< T > dy;
-	this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_grtr_dy");
-	dy.print(std::cout);
+    hoNDArray< T > dy;
+    this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_grtr_dy");
+    dy.print(std::cout);
 
-	hoNDArray< T > mask;
-	this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_mask");
-	T norm_mask = Gadgetron::nrm2(mask);
+    hoNDArray< T > mask;
+    this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_mask");
+    T norm_mask = Gadgetron::nrm2(mask);
+    GDEBUG_STREAM("mask is " << norm_mask);
 
-	hoNDArray<T> radial, circ;
-	Gadgetron::compute_analytical_strain(dx, dy, mask, radial, circ);
+    hoNDArray<T> radial, circ;
+    timer_.start("Compute analytical straion, const ... ");
+    Gadgetron::compute_analytical_strain(dx, dy, mask, radial, circ);
+    timer_.stop();
 
-	this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalCons/radial");
-	this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalCons/circ");
+    this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_rad_strain");
+    this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_circ_strain");
 
-	// compare agains ground truth
-	hoNDArray<T> ref;
-	hoNDArray<T> diff;
-	T norm_ref;
+    // compare agains ground truth
+    hoNDArray<T> ref;
+    hoNDArray<T> diff;
+    T norm_ref;
 
-	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/analytical_results/analytical_cons_rad_strain");
-	std::cout << Gadgetron::nrm2(radial) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
-	Gadgetron::subtract(ref, radial, diff);
-	T v = Gadgetron::nrm2(diff);
-	norm_ref = Gadgetron::nrm2(ref);
-	EXPECT_LE(v / norm_ref, 0.002);
+    this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_cons_rad_strain");
+    std::cout << Gadgetron::nrm2(radial) << std::endl;
+    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    Gadgetron::subtract(ref, radial, diff);
+    T v = Gadgetron::nrm2(diff);
+    norm_ref = Gadgetron::nrm2(ref);
+    EXPECT_LE(v / norm_ref, 0.002);
 
-	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/analytical_results/analytical_cons_circ_strain");
-	std::cout << Gadgetron::nrm2(circ) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
-	Gadgetron::subtract(ref, circ, diff);
-	T q = Gadgetron::nrm2(diff);
-	norm_ref = Gadgetron::nrm2(ref);
-	EXPECT_LE(q / norm_ref, 0.002);
+    this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_cons_circ_strain");
+    std::cout << Gadgetron::nrm2(circ) << std::endl;
+    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    Gadgetron::subtract(ref, circ, diff);
+    T q = Gadgetron::nrm2(diff);
+    norm_ref = Gadgetron::nrm2(ref);
+    EXPECT_LE(q / norm_ref, 0.002);
 }

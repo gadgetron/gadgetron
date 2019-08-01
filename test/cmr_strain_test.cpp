@@ -73,7 +73,6 @@ TYPED_TEST(cmr_strain_test, Cine)
     this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/RetroCine/mask_6");
     T norm_mask = Gadgetron::nrm2(mask);
 
-
     hoNDArray<T> radial, circ, thetas;
     bool compare_mask = true;
 
