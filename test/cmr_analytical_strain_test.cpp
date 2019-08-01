@@ -75,9 +75,9 @@ TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
     GDEBUG_STREAM("mask is " << norm_mask);
 
     hoNDArray<T> radial, circ;
-    timer_.start("Compute analytical straion, quad ... ");
+    this->timer_.start("Compute analytical straion, quad ... ");
     Gadgetron::compute_analytical_strain(dx, dy, mask, radial, circ);
-    timer_.stop();
+    this->timer_.stop();
 
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_rad_strain");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_circ_strain");
@@ -128,9 +128,9 @@ TYPED_TEST(cmr_analytical_strain_test, ConstStrain)
     GDEBUG_STREAM("mask is " << norm_mask);
 
     hoNDArray<T> radial, circ;
-    timer_.start("Compute analytical straion, const ... ");
+    this->timer_.start("Compute analytical straion, const ... ");
     Gadgetron::compute_analytical_strain(dx, dy, mask, radial, circ);
-    timer_.stop();
+    this->timer_.stop();
 
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_rad_strain");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_circ_strain");
