@@ -75,7 +75,7 @@ namespace Gadgetron {
 				{
 					for (size_t p = 0; p < PHS; p++)
 					{
-						if ((epi_mask(ro, e1, p) > 0) & (endo_mask(ro, e1, p) > 0))
+						if ((epi_mask(ro, e1, p) > 0.9) & (endo_mask(ro, e1, p) < 0.1))
 						{
 							centroidR(p) += ro;
 							centroidE(p) += e1;
@@ -87,6 +87,14 @@ namespace Gadgetron {
 
 			Gadgetron::divide(centroidR, counter, centroidR);
 			Gadgetron::divide(centroidE, counter, centroidE);
+
+			for (size_t p = 0; p < PHS; p++)
+			{
+
+				double cr = centroidR(p);
+				double ce = centroidE(p);
+				double count = counter(p);
+			}
 
 			hoNDArray<T> dists(RO, E1, PHS);
 
@@ -151,7 +159,7 @@ namespace Gadgetron {
 			std::cout << Gadgetron::nrm2(edge_endo) << std::endl;
 			int e, r, p;
 
-//#pragma omp parallel for default(none) private(p, e, r) shared(PHS, RO, E1, rad_strain, centroidE, centroidR, thetas, samples, edge_endo, edge_epi)
+#pragma omp parallel for default(none) private(p, e, r) shared(PHS, RO, E1, rad_strain, centroidE, centroidR, thetas, samples, edge_endo, edge_epi)
 
 			for (e = 0; e < E1; e++)
 			{

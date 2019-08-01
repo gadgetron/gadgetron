@@ -105,7 +105,7 @@ TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
 	std::cout << v << std::endl;
 	std::cout << norm_ref << std::endl;
 	std::cout << v / norm_ref << std::endl;
-	EXPECT_LE(v / norm_ref, 0.1);
+	EXPECT_LE(v / norm_ref, 0.18);
 
 	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/Masks/retro_cine_edge_endo");
 	Gadgetron::subtract(ref, edge_endo, diff);
