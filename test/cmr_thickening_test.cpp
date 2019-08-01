@@ -86,7 +86,7 @@ TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
 	endo_mask.print(std::cout);
 
 	hoNDArray<T> rad_strain, edge_endo, edge_epi;
-	size_t ref_phase = 1;
+	size_t ref_phase = 0;
 	Gadgetron::compute_thickening(endo_mask, epi_mask, ref_phase, edge_endo, edge_epi, rad_strain);
 
 	this->gt_io_.export_array(rad_strain, this->gt_ut_res_folder_ + "/Thickening/retro_cine_strain");
@@ -99,26 +99,25 @@ TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
 	T norm_ref;
 
 	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/Masks/retro_cine_strain");
-	std::cout << Gadgetron::nrm2(rad_strain) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
 	Gadgetron::subtract(ref, rad_strain, diff);
 	T v = Gadgetron::nrm2(diff);
 	norm_ref = Gadgetron::nrm2(ref);
+	std::cout << v << std::endl;
+	std::cout << norm_ref << std::endl;
+	std::cout << v / norm_ref << std::endl;
 	EXPECT_LE(v / norm_ref, 0.1);
 
 	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/Masks/retro_cine_edge_endo");
-	std::cout << Gadgetron::nrm2(edge_endo) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
 	Gadgetron::subtract(ref, edge_endo, diff);
 	T q = Gadgetron::nrm2(diff);
 	norm_ref = Gadgetron::nrm2(ref);
+	std::cout << q / norm_ref << std::endl;
 	EXPECT_LE(q / norm_ref, 0.15);
 
 	this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/Masks/retro_cine_edge_epi");
-	std::cout << Gadgetron::nrm2(edge_epi) << std::endl;
-	std::cout << Gadgetron::nrm2(ref) << std::endl;
 	Gadgetron::subtract(ref, edge_epi, diff);
 	T s = Gadgetron::nrm2(diff);
 	norm_ref = Gadgetron::nrm2(ref);
+	std::cout << s / norm_ref << std::endl;
 	EXPECT_LE(s / norm_ref, 0.15);
 }
