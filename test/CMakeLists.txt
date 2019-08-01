@@ -85,6 +85,8 @@ set(test_src_files tests.cpp
       hoNDArray_linalg_test.cpp
       parse_girf_test.cpp
       cmr_strain_test.cpp
+      cmr_thickening_test.cpp
+      cmr_analytical_strain_test.cpp
       )
 
 if (PYTHONLIBS_FOUND)
