@@ -56,14 +56,6 @@ namespace Gadgetron {
             return vec[i];
         }
 
-        __inline__ __host__ __device__ T& operator()(size_t i) {
-            return vec[i];
-        }
-
-        __inline__ __host__ __device__ const T& operator()(size_t i) const {
-            return vec[i];
-        }
-
         __inline__ __host__ __device__ T* begin() {
             return vec;
         }
