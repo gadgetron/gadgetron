@@ -1,5 +1,4 @@
 #include "MatlabBucketReconGadget.h"
-#include "../mri_core/GadgetIsmrmrdReadWrite.h" //LA: added ../mri_core/, is that the correct way ?
 #include "mri_core_data.h"
 #include "mri_core_def.h"
 #include "hoNDArray_elemwise.h"

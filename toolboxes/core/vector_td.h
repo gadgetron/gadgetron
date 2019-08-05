@@ -47,6 +47,7 @@ namespace Gadgetron {
         explicit vector_td(const STATIC_CONTAINER& other) {
             std::copy(other.begin(), other.end(), this->begin());
         }
+
         __inline__ __host__ __device__ T& operator[](size_t i) {
             return vec[i];
         }
