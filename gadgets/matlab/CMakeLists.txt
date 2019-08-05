@@ -1,4 +1,6 @@
-include_directories(${MATLAB_INCLUDE_DIR})
+include_directories(
+    ${MATLAB_INCLUDE_DIR}
+    )
 
 if (UNIX)
     if (APPLE)

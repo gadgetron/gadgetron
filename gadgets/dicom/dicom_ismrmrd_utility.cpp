@@ -429,8 +429,9 @@ namespace Gadgetron
             // Slice Thickness
             // This will need updated if the "reconSpace.fieldOfView_mm.z" field
             // is changed in the ISMRMRD populating code (client)
+            if (r_space.matrixSize.z == 0) r_space.matrixSize.z = 1;
             key.set(0x0018, 0x0050);
-            snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z / std::max(r_space.matrixSize.z, (unsigned short)1));
+            snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z / r_space.matrixSize.z);
             write_dcm_string(dataset, key, buf);
 
             // Spacing Between Slices
