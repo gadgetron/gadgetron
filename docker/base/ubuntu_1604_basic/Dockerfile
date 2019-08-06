@@ -11,7 +11,7 @@ RUN apt-get update --quiet && \
     libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools cpio
+    supervisor net-tools cpio jove
 
 #Python stuff
 RUN pip3 install --upgrade pip
