@@ -70,101 +70,45 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
 
          size_t m, n;
 
-         try
+         // compute and subtract mean from data
+         hoNDArray<T> data2DNoMean;
+
+         arma::Mat<T> Am;
+         if (remove_mean)
          {
-             // compute mean
-             hoNDArray<T> mean(N), V, E;
-             V.create(N, N);
-             E.create(N, 1);
-             Gadgetron::clear(V);
-             Gadgetron::clear(E);
+             hoNDArray<T> dataMean(1, N);
+             Gadgetron::sum_over_dimension(data2D, dataMean, 0);
 
-             // compute data'*data
-             char uplo = 'L';
-             bool isAHA = true;
-             Gadgetron::herk(V, data2D, uplo, isAHA);
+             Gadgetron::scal((T)(1.0 / M), dataMean);
 
-             hoMatrix<T> m;
-             m.createMatrix(N, N, V.begin());
-             m.copyLowerTriToUpper();
-
-             if (remove_mean)
-             {
-                 // compute and subtract mean for every mode
-                 hoNDArray<T> mean(N, 1);
-                 hoNDArray<T> dataMean(1, N, mean.begin());
-                 Gadgetron::sum_over_dimension(data2D, dataMean, 0);
-
-                 Gadgetron::scal((T)(1.0 / M), mean);
-
-                 hoNDArray<T> MMH(N, N);
-                 Gadgetron::clear(MMH);
-
-                 hoNDArray<T> meanCopy(mean);
-                 Gadgetron::gemm(MMH, meanCopy, false, mean, true);
-                 Gadgetron::subtract(V, MMH, V);
-             }
-
-             // compute eigen vector and values
-             Gadgetron::heev(V, E);
-
-             // make the first eigen channel with the largest eigen value
-             hoNDArray<T> V_flipped(V), E_flipped(E);
-             for (size_t r = 0; r < N; r++)
-             {
-                 for (size_t c = 0; c < N; c++)
-                 {
-                     V_flipped(r, c) = V(r, N - 1 - c);
-                 }
-
-                 E_flipped(r) = E(N - 1 - r);
-             }
-
-             V_ = V_flipped;
-             E_ = E_flipped;
-         }
-         catch (...)
-         {
-             // compute and subtract mean from data
-             hoNDArray<T> data2DNoMean;
-
-             arma::Mat<T> Am;
-             if (remove_mean)
-             {
-                 hoNDArray<T> dataMean(1, N);
-                 Gadgetron::sum_over_dimension(data2D, dataMean, 0);
-
-                 Gadgetron::scal((T)(1.0 / M), dataMean);
-
-                 data2DNoMean.create(M, N);
-
-                 for (n = 0; n < N; n++)
-                 {
-                     for (m = 0; m < M; m++)
-                     {
-                         data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
-                     }
-                 }
-
-                 Am = as_arma_matrix(data2DNoMean);
-             }
-             else
-             {
-                 Am = as_arma_matrix(data2D);
-             }
-
-             // call svd
-             arma::Mat<T> Vm = as_arma_matrix(V_);
-             arma::Mat<T> Um;
-             arma::Col<value_type> Sv;
-
-             GADGET_CHECK_THROW(arma::svd_econ(Um, Sv, Vm, Am, 'r'));
+             data2DNoMean.create(M, N);
 
              for (n = 0; n < N; n++)
              {
-                 value_type v = Sv(n);
-                 E_(n) = v * v; // the E is eigen value, the square of singular value
+                 for (m = 0; m < M; m++)
+                 {
+                     data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
+                 }
              }
+
+             Am = as_arma_matrix(data2DNoMean);
+         }
+         else
+         {
+             Am = as_arma_matrix(data2D);
+         }
+
+         // call svd
+         arma::Mat<T> Vm = as_arma_matrix(V_);
+         arma::Mat<T> Um;
+         arma::Col<value_type> Sv;
+
+         GADGET_CHECK_THROW(arma::svd_econ(Um, Sv, Vm, Am, 'r'));
+
+         for (n = 0; n < N; n++)
+         {
+             value_type v = Sv(n);
+             E_(n) = v * v; // the E is eigen value, the square of singular value
          }
     }
     catch (...)
