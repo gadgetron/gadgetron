@@ -10,7 +10,7 @@ RUN apt-get update --quiet && \
     libfftw3-dev jq libzmq-dev \
     libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
-    libgtest-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
+    libgtest-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
     supervisor net-tools cpio jove
 
 #Python stuff
