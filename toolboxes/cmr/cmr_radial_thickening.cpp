@@ -122,8 +122,8 @@ namespace Gadgetron {
 					}
 				}
 			}
-			std::cout << Gadgetron::nrm2(edge_epi) << std::endl;
-			std::cout << Gadgetron::nrm2(edge_endo) << std::endl;
+			//std::cout << Gadgetron::nrm2(edge_epi) << std::endl;
+			//std::cout << Gadgetron::nrm2(edge_endo) << std::endl;
 			int epi_e_ref, epi_r_ref, p;
 
 //#pragma omp parallel for default(none) private(p, epi_e_ref, epi_r_ref) shared(PHS, RO, E1, rad_strain, mask, centroidE, centroidR, thetas)

@@ -598,6 +598,8 @@ namespace Gadgetron {
                     meta.set("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[0]);
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
+
+                    meta.set("gadgetron_sha1", GADGETRON_SHA1);
                 }
             }
         }

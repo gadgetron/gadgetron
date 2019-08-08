@@ -78,6 +78,7 @@ if (GIT_FOUND)
 else()
   set(GADGETRON_GIT_SHA1 "NA")
 endif()
+
 set(GADGETRON_INSTALL_CMAKE_PATH share/gadgetron/cmake)
 set(GADGETRON_INSTALL_CONFIG_PATH share/gadgetron/config)
 set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
@@ -91,6 +92,11 @@ else()
 set(GADGETRON_VAR_DIR /var/lib/gadgetron/ CACHE PATH "Path where Gadgetron will store calibration data, etc" FORCE)
 endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# create the Gadgetron version header
+configure_file("${CMAKE_SOURCE_DIR}/cmake/gadgetron_sha1.h.in" ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h @ONLY)
+include_directories(${PROJECT_BINARY_DIR}/include)
+install(FILES ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 #Set the build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
