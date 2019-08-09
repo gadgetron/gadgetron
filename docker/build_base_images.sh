@@ -38,6 +38,9 @@ docker build --network=host -t gadgetron/ubuntu_1604_cuda101_cudnn7_base .
 cd ${base_dir}/base/ubuntu_1804
 docker build --network=host -t gadgetron/ubuntu_1804_base .
 
+cd ${base_dir}/base/ubuntu_1804_basic
+docker build --network=host -t gadgetron/ubuntu_1804_base_basic .
+
 cd ${base_dir}/base/ubuntu_1804_cuda90
 docker build --network=host -t gadgetron/ubuntu_1804_cuda90_cudnn7_base .
 
