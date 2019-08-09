@@ -69,6 +69,7 @@ namespace Gadgetron {
         typedef CoordType coord_type;
 
         typedef hoNDImage< std::complex<CoordType>, D> DeformCplxType;
+        typedef hoNDImage< std::complex<float>, D> DeformFLTCplxType;
 
         typedef typename BaseClass::InterpolatorType InterpolatorType;
 
@@ -783,13 +784,18 @@ namespace Gadgetron {
                     gt_exporter_.export_array_complex(deform_cplx_[d], debugFolder_ + ostr.str());
                 }
 
+                DeformFLTCplxType deform_flt, deform_fft_flt;
+                deform_flt.copyFrom(deform_cplx_[d]);
+
                 if (D == 2)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->fft2(deform_cplx_[d], deform_fft_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->fft2(deform_flt, deform_fft_flt);
+                    deform_fft_cplx_[d].copyFrom(deform_fft_flt);
                 }
                 else if (D == 3)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->fft3(deform_cplx_[d], deform_fft_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->fft3(deform_flt, deform_fft_flt);
+                    deform_fft_cplx_[d].copyFrom(deform_fft_flt);
                 }
                 else
                 {
@@ -973,9 +979,13 @@ namespace Gadgetron {
                     gt_exporter_.export_array_complex(deform_fft_buf_cplx_[d], debugFolder_ + ostr.str());
                 }
 
+                DeformFLTCplxType deform_flt, deform_fft_flt;
+                deform_fft_flt.copyFrom(deform_fft_buf_cplx_[d]);
+
                 if (D == 2)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->ifft2(deform_fft_buf_cplx_[d], deform_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->ifft2(deform_fft_flt, deform_flt);
+                    deform_cplx_[d].copyFrom(deform_flt);
                     Gadgetron::complex_to_real(deform_cplx_[d], deform[d]);
 
                     if (!debugFolder_.empty())
@@ -987,7 +997,8 @@ namespace Gadgetron {
                 }
                 else if (D == 3)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->ifft3(deform_fft_buf_cplx_[d], deform_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->ifft3(deform_fft_flt, deform_flt);
+                    deform_cplx_[d].copyFrom(deform_flt);
                     Gadgetron::complex_to_real(deform_cplx_[d], deform[d]);
 
                     if (!debugFolder_.empty())
