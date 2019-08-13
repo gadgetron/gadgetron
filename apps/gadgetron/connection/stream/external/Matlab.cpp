@@ -14,11 +14,9 @@ namespace Gadgetron::Server::Connection::Stream {
 
         auto matlab_path = (context.paths.gadgetron_home / "share" / "gadgetron" / "matlab").string();
 
-        std::list<std::string> args{"-batch", "gadgetron.external.main"};
-
         boost::process::child module(
                 boost::process::search_path("matlab"),
-                boost::process::args=args,
+                boost::process::args={"-batch", "gadgetron.external.main"},
                 boost::process::env["MATLABPATH"]+={matlab_path},
                 boost::process::env["GADGETRON_EXTERNAL_PORT"] = std::to_string(port),
                 boost::process::env["GADGETRON_EXTERNAL_MODULE"] = execute.name

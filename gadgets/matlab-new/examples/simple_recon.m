@@ -2,8 +2,6 @@
 function simple_recon(connection)
     disp("Matlab reconstruction running.") 
 
-    tic
-    
     next = @connection.next; has_next = @connection.has_next;
     
     [next, has_next] = noise_adjust(next, has_next);
@@ -15,6 +13,8 @@ function simple_recon(connection)
     
     connection.filter('ismrmrd.Acquisition')
     
+    tic
+
     while has_next()
         image = next();
         disp("Sending image back to client.")
