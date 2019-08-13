@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "Channel.h"
@@ -7,9 +8,15 @@
 
 namespace Gadgetron::Core {
 
+
+/**
+ * The base class for everything in a Gadgetron chain, including Gadgets and ChannelGadgets
+ */
     class Node {
+
     public:
         virtual ~Node() = default;
+
         virtual void process(InputChannel& in, OutputChannel& out) = 0;
     };
 

@@ -7,7 +7,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITÂ´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             [3] Christophe Chefd'Hotel, Gerardo Hermosillo, Olivier D. Faugeras: Flows of diffeomorphisms for multimodal image registration. ISBI 2002: 753-756.
