@@ -21,10 +21,9 @@
     </writers>
 
     <stream>
-
-
         <external>
             <execute name="simple_recon" type="matlab"/>
+
             <!-- The configuration is sent to the external process. It's left pretty empty here. -->
             <configuration/>
         </external>
