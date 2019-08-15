@@ -380,7 +380,7 @@ namespace Gadgetron {
         for (auto val : data) {
             size_t bin = std::max<size_t>(std::floor((val - min_val) / span_val * bins), 0);
             if (bin > bins)
-                bin = bin - 1;
+                bin = bins - 1;
             result[bin]++;
         }
 
@@ -400,7 +400,7 @@ namespace Gadgetron {
                 break;
         }
 
-        auto result = REAL(counter + 1) * (max_val - min_val) + min_val;
+        auto result = REAL(counter + 1) * (max_val - min_val) / bins + min_val;
         return result;
     }
 
