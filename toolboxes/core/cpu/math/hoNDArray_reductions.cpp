@@ -371,11 +371,11 @@ namespace Gadgetron {
     template EXPORTCPUCOREMATH void maxValue(const hoNDArray<float>& a, float& v);
     template EXPORTCPUCOREMATH void maxValue(const hoNDArray<double>& a, double& v);
 
-    template<class REAL>
-    static std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val, REAL  max_val) {
+    template <class REAL>
+    static std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val, REAL max_val) {
 
         auto span_val = max_val - min_val;
-        auto result = std::vector<size_t>(bins, 0);
+        auto result   = std::vector<size_t>(bins, 0);
 
         for (auto val : data) {
             size_t bin = std::max<size_t>(std::floor((val - min_val) / span_val * bins), 0);
@@ -403,10 +403,28 @@ namespace Gadgetron {
         auto result = REAL(counter + 1) * (max_val - min_val) / bins + min_val;
         return result;
     }
-
     template float percentile_approx(const hoNDArray<float>& data, float fraction, size_t bins);
     template double percentile_approx(const hoNDArray<double>& data, double fraction, size_t bins);
+    template <class REAL> REAL percentile(const hoNDArray<REAL>& data, REAL fraction) {
 
+        if (fraction <= 1.0 / (data.size() + 1))
+            return min(data);
+        if (fraction >= double(data.size()) / (data.size() + 1))
+            return max(data);
+
+        auto data_sorted = data;
+        std::sort(data_sorted.begin(),data_sorted.end());
+
+        double real_index = double(fraction) * (data_sorted.size() + 1);
+
+        size_t i1 = size_t(std::floor(real_index));
+
+        REAL result = data_sorted[i1 - 1] + (data_sorted[i1] - data_sorted[i1 - 1]) * (real_index - i1);
+
+        return result;
+    }
+    template float percentile(const hoNDArray<float>& data, float fraction);
+    template double percentile(const hoNDArray<double>& data, double fraction);
     // --------------------------------------------------------------------------------
 
     // --------------------------------------------------------------------------------
