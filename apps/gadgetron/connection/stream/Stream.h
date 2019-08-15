@@ -27,6 +27,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 ErrorHandler &
         ) override;
 
+        bool empty() const;
         const std::string &name() override;
 
     private:

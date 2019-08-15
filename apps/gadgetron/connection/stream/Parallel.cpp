@@ -41,6 +41,31 @@ namespace {
     }
 }
 
+namespace {
+    using namespace Gadgetron::Core;
+    using namespace Gadgetron::Core::Parallel;
+    using namespace Gadgetron::Server::Connection;
+    using Stream = Gadgetron::Server::Connection::Stream::Stream;
+
+    ChannelPair split(const ChannelPair &in) {
+        return ChannelPair{ split(in.input), split(in.output) };
+    }
+
+    void emplace_channels(
+            const Stream &stream,
+            std::map<std::string, ChannelPair> &input,
+            std::map<std::string, ChannelPair> &output
+    ) {
+        ChannelPair in_pair = make_channel<MessageChannel>();
+        ChannelPair out_pair = make_channel<MessageChannel>();
+
+        if (stream.empty()) out_pair = split(in_pair);
+
+        input.emplace(stream.key, std::move(in_pair));
+        output.emplace(stream.key, std::move(out_pair));
+    }
+}
+
 namespace Gadgetron::Server::Connection::Stream {
 
     Parallel::Parallel(
@@ -66,10 +91,8 @@ namespace Gadgetron::Server::Connection::Stream {
         std::map<std::string, ChannelPair> input_channels;
         std::map<std::string, ChannelPair> output_channels;
 
-
         for (auto &stream : streams) {
-            input_channels.emplace(stream->key, make_channel<MessageChannel>());
-            output_channels.emplace(stream->key, make_channel<MessageChannel>());
+            emplace_channels(*stream, input_channels, output_channels);
         }
 
         threads.emplace_back(nested_handler.run(
@@ -80,7 +103,6 @@ namespace Gadgetron::Server::Connection::Stream {
                 transform_map(input_channels, [](auto& val) { return std::move(val.output); }),
                 split(output)
         ));
-
 
         threads.emplace_back(nested_handler.run(
                 [&](auto input, auto output) {

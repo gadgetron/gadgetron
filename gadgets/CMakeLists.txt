@@ -2,6 +2,7 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETS__)
 endif ()
 
+add_subdirectory(examples)
 add_subdirectory(mri_core)
 add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
