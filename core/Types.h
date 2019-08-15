@@ -23,9 +23,13 @@ namespace Gadgetron::Core {
     template<class... ARGS>
     using tuple = std::tuple<ARGS...>;
 
+/// An Acquisition consists of a data header, the kspace data itself and optionally an array of kspace trajectories
     using Acquisition = tuple<ISMRMRD::AcquisitionHeader,  hoNDArray<std::complex<float>>,optional<hoNDArray<float>>>;
+
+/// A Waveform consiste of a header, followed by the raw Waveform data. See the MRD documentation page for more details
     using Waveform    = tuple<ISMRMRD::WaveformHeader, hoNDArray<uint32_t>>;
 
+    ///An image consists of a header, an array of image data and optionally some metadata
     template<class T>
     using Image = tuple<ISMRMRD::ImageHeader,  hoNDArray<T>, optional<ISMRMRD::MetaContainer>>;
 }

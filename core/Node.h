@@ -10,38 +10,43 @@ namespace Gadgetron::Core {
 
 
 /**
- * The base class for everything in a Gadgetron chain, including Gadgets and ChannelGadgets
+ * Node is the base class for everything in a Gadgetron chain, including Gadgets and TypedChannelGadgets
  */
     class Node {
 
     public:
         virtual ~Node() = default;
-
+/**
+ * The function which processes the data comming from the InputChannel. Conceptually a coroutine.
+ * @param in Channel from which messages are received from upstream
+ * @param out Channel in which messages are sent on downstream
+ */
         virtual void process(InputChannel& in, OutputChannel& out) = 0;
     };
 
     class ChannelGadget : public Node, public PropertyMixin {
     public:
             using PropertyMixin::PropertyMixin;
+            ChannelGadget(const Context& context, const GadgetProperties& properties) : PropertyMixin(properties){}
     };
 
-    template<class ...ARGS >
+    /**
+     * A Node providing typed access to input data.
+     * Should be the first choice for writing new Gadgets.
+     * @tparam TYPELIST The type(s) of the messages to be received
+     */
+    template<class ... TYPELIST>
     class TypedChannelGadget : public ChannelGadget {
     public:
-
-        explicit TypedChannelGadget(const GadgetProperties& properties): ChannelGadget(properties) {}
-
-        TypedChannelGadget(const Context& context, const GadgetProperties& properties): ChannelGadget(properties) {
-
-        }
+        using ChannelGadget::ChannelGadget;
 
         void process(InputChannel& in, OutputChannel& out)  final  {
-            auto typed_input = TypedInputChannel<ARGS...>(in, out);
+            auto typed_input = TypedInputChannel<TYPELIST...>(in, out);
             this->process(typed_input, out);
         }
 
 
-        virtual void process(TypedInputChannel<ARGS...> &in, OutputChannel &out) = 0;
+        virtual void process(TypedInputChannel<TYPELIST...> &in, OutputChannel &out) = 0;
 
     };
 

@@ -13,6 +13,7 @@ if(DOXYGEN_FOUND)
             ${SPHINX_SOURCE} ${SPHINX_BUILD}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             COMMENT "Generating documentation with Sphinx")
+    add_dependencies(Sphinx Doxygen)
 else()
 	message("Doxygen not found. Will not be able to build documentation")
 endif()

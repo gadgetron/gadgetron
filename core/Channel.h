@@ -37,13 +37,18 @@ protected:
 InputChannel split(const InputChannel& channel);
 OutputChannel split(const OutputChannel& channel);
 
+/**
+ * The end of a channel which provides input
+ */
 class InputChannel {
 public:
     InputChannel(InputChannel&& other) noexcept = default;
     InputChannel& operator=(InputChannel&& other) noexcept = default;
 
+    /// Blocks until it can take a message from the channel
     Message pop();
 
+    /// Nonblocking method returning a message if one is available, or None otherwise
     optional<Message> try_pop();
 
 private:
@@ -67,14 +72,19 @@ ChannelIterator<InputChannel> begin(InputChannel&);
 
 ChannelIterator<InputChannel> end(InputChannel&);
 
+/**
+ * The end of a channel which provides output. Only constructible through make_channel(args)
+ */
 class OutputChannel {
 public:
     OutputChannel(OutputChannel&& other) noexcept = default;
     OutputChannel& operator=(OutputChannel&& other) noexcept = default;
 
+    /// Pushes a message of type ARGS to the channel
     template <class... ARGS>
     void push(ARGS&&... ptrs);
 
+    /// Pushes a message to the channel
     void push_message(Message);
 
 private:
@@ -96,6 +106,13 @@ struct ChannelPair {
     OutputChannel output;
 };
 
+/***
+ * Creates a ChannelPair
+ * @tparam ChannelType Type of Channel, typically MessageChannel
+ * @tparam ARGS
+ * @param args
+ * @return Input and output of a channel.
+ */
 template <class ChannelType, class... ARGS>
 ChannelPair make_channel(ARGS&&... args)
 {
@@ -104,6 +121,7 @@ ChannelPair make_channel(ARGS&&... args)
 }
 
 ChannelIterator<OutputChannel> begin(OutputChannel&);
+
 
 class MessageChannel : public Channel {
 
@@ -120,7 +138,11 @@ protected:
 
 };
 
-template <class... ARGS>
+/***
+ * A wrapper around an InputChannel. Filters the content of an Inputchannel based on the specified typelist
+ * @tparam ARGS
+ */
+template <class... TYPELIST>
 class TypedInputChannel {
 public:
     TypedInputChannel(InputChannel& input, OutputChannel& bypass)
@@ -132,19 +154,19 @@ public:
     decltype(auto) pop()
     {
         Message message = in.pop();
-        while (!convertible_to<ARGS...>(message)) {
+        while (!convertible_to<TYPELIST...>(message)) {
             bypass.push_message(std::move(message));
             message = in.pop();
         }
-        return force_unpack<ARGS...>(std::move(message));
+        return force_unpack<TYPELIST...>(std::move(message));
     }
 
-    optional<decltype(force_unpack<ARGS...>(Message {}))> try_pop()
+    optional<decltype(force_unpack<TYPELIST...>(Message {}))> try_pop()
     {
 
         optional<Message> message = in.try_pop();
 
-        while (message && !convertible_to<ARGS...>(*message)) {
+        while (message && !convertible_to<TYPELIST...>(*message)) {
             bypass.push_message(std::move(*message));
             message = in.try_pop();
         }
@@ -152,7 +174,7 @@ public:
         if (!message)
             return none;
 
-        return force_unpack<ARGS...>(std::move(*message));
+        return force_unpack<TYPELIST...>(std::move(*message));
     }
 
 private:

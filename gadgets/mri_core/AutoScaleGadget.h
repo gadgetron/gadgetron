@@ -1,35 +1,16 @@
-#ifndef AUTOSCALEGADGET_H_
-#define AUTOSCALEGADGET_H_
+#pragma once
 
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#include "PureGadget.h"
+namespace Gadgetron {
 
-#include <ismrmrd/ismrmrd.h>
+    class AutoScaleGadget : public Core::TypedPureGadget<Core::Image<float>, Core::Image<float>> {
+    public:
+        using TypedPureGadget<Core::Image<float>,Core::Image<float>>::TypedPureGadget;
+        Core::Image<float> process_function(Core::Image<float> args) const override;
 
-namespace Gadgetron{
-
-  class EXPORTGADGETSMRICORE AutoScaleGadget:
-    public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
-  {
-  public:
-    GADGET_DECLARE(AutoScaleGadget);
-
-    AutoScaleGadget();
-    virtual ~AutoScaleGadget();
-
-  protected:
-    GADGET_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
-
-    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			GadgetContainerMessage< hoNDArray< float > >* m2);
-    virtual int process_config(ACE_Message_Block *mb);
-
-    unsigned int histogram_bins_;
-    std::vector<size_t> histogram_;
-    float current_scale_;
-    float max_value_;
-  };
+    protected:
+        NODE_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
+    };
 }
 
-#endif /* AUTOSCALEGADGET_H_ */
+
