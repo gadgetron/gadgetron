@@ -19,7 +19,8 @@ namespace Gadgetron{
         GADGET_DECLARE(MaxwellCorrectionGadget);
         MaxwellCorrectionGadget();
         virtual ~MaxwellCorrectionGadget();
-
+        void patient_to_physical_coordinate(std::vector<float> &norm_vec, std::string patient_position);
+        void find_flow_dir(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
 
     protected:
         virtual int process_config(ACE_Message_Block* mb);
@@ -28,6 +29,17 @@ namespace Gadgetron{
 	
     private:
 	std::vector<double> maxwell_coefficients_;
+	std::vector<float> RO_dir_Physical_;
+	std::vector<float> PE_dir_Physical_;
+	std::vector<float> SLC_dir_Physical_;
+	std::vector<float> SLC_position_Physical_;
+
+    bool FlipPhaseDirection_ = false;
+    int FlowDirection_ = 4; //flow encoding direction: 4 through plane, 2 RO direction, 1 PE direction
+
+
+	std::string patient_position_;
+
 	bool maxwell_coefficients_present_;
     };
 }
