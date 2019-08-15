@@ -1,31 +1,26 @@
 
 function simple_recon(connection)
     disp("Matlab reconstruction running.") 
-
-    next = @connection.next; has_next = @connection.has_next;
     
-    [next, has_next] = noise_adjust(next, has_next);
-    [next, has_next] = remove_oversampling(next, has_next, connection.header);
-    [next, has_next] = accumulate_slice(next, has_next, connection.header);
-    [next, has_next] = reconstruct_slice(next, has_next);
-    [next, has_next] = combine_channels(next, has_next);
-    [next, has_next] = create_ismrmrd_image(next, has_next);
+    next = noise_adjust(@connection.next);
+    next = remove_oversampling(next, connection.header);
+    next = accumulate_slice(next, connection.header);
+    next = reconstruct_slice(next);
+    next = combine_channels(next);
+    next = create_ismrmrd_image(next);
     
     connection.filter('ismrmrd.Acquisition')
     
-    tic
-
-    while has_next()
-        image = next();
-        disp("Sending image back to client.")
-        connection.send(image); 
+    function handle_image(image)
+        disp("Sending image to client.") 
+        connection.send(image)
     end
-    
-    toc
+
+    tic, gadgetron.consume(next, @handle_image); toc
 end
 
 
-function [next, has_next] = noise_adjust(input, has_next)
+function next = noise_adjust(input)
 
     noise_matrix = [];
 
@@ -54,7 +49,7 @@ function [next, has_next] = noise_adjust(input, has_next)
     next = @() handle_noise(input());
 end
 
-function [next, has_next] = remove_oversampling(input, has_next, header)
+function next = remove_oversampling(input, header)
 
     encoding_space = header.encoding.encodedSpace.matrixSize;
     recon_space = header.encoding.reconSpace.matrixSize;
@@ -76,7 +71,7 @@ function [next, has_next] = remove_oversampling(input, has_next, header)
     next = @() remove_oversampling(input());
 end
 
-function [next, has_next] = accumulate_slice(input, has_next, header)
+function next = accumulate_slice(input, header)
 
     matrix_size = header.encoding.encodedSpace.matrixSize;
 
@@ -101,7 +96,7 @@ function [next, has_next] = accumulate_slice(input, has_next, header)
         
         acquisitions = gadgetron.util.List.empty;
         
-        while has_next()
+        while true
             acquisition = input();
             acquisitions = cons(acquisitions, acquisition);
             if acquisition.is_flag_set(ismrmrd.Flags.ACQ_LAST_IN_SLICE), break; end
@@ -113,7 +108,7 @@ function [next, has_next] = accumulate_slice(input, has_next, header)
     next = @accumulate;
 end
 
-function [next, has_next] = reconstruct_slice(input, has_next)
+function next = reconstruct_slice(input)
     
     function image = reconstruct(image)
         image.data = cifftn(image.data, [2, 3, 4]);
@@ -122,7 +117,7 @@ function [next, has_next] = reconstruct_slice(input, has_next)
     next = @() reconstruct(input());
 end
 
-function [next, has_next] = combine_channels(input, has_next)
+function next = combine_channels(input)
 
     function x = square(x), x = x .^ 2; end
     function image = combine_channels(image)
@@ -132,7 +127,7 @@ function [next, has_next] = combine_channels(input, has_next)
     next = @() combine_channels(input());
 end
 
-function [next, has_next] = create_ismrmrd_image(input, has_next)
+function next = create_ismrmrd_image(input)
 
     function image = create_image(image)
         image = ismrmrd.Image.from_data(image.data, image.acquisition);
