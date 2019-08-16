@@ -35,5 +35,30 @@ Note the **GADGETRON_GADGET_EXPORT** declaration, which produces the code causin
 ChannelGadget
 -------------
 
+:cpp:class:`PureGadget<Gadgetron::Core::TypedPureGadget>` can't hold any state between different messages and must send
+one message per input.
+This makes it easier to reason about and implement, but is also limiting in cases where we want to accumulate multiple
+messages for processing. In this case, :cpp:class:`ChannelGadget<Gadgetron::Core::ChannelGadget>` and
+:cpp:class:`TypedChannelGadget<Gadgetron::Core::TypedChannelGadget>` should be used.
+If we want to create a Gadget which takes several :cpp:class:`Acquisitions<Gadgetron::Core::Acquisition>` and
+reconstruct them, we inherit from :cpp:class:`TypedChannelGadget\<Acquisition\><Gadgetron::Core::TypedChannelGadget>`.
 
+.. code-block:: cpp
 
+    class SimpleRecon : public TypedChannelGadget<Acquisition>{
+        public:
+            void process(TypedInputChannel<Acquisition>& in, OutputChannel& out) override {
+                ...
+            }
+    }
+
+Channels are ranges, meaning they can be used directly with for loops and with algorithm from standard library, such as
+:cpp:function:`std::transform` and :cpp:function:`std::accumulate`.
+
+.. code-block: cpp
+
+    void process(TypedInputChannel<Acquisition>& in, OutputChannel& out) override {
+        for (auto acquisition : in ) {
+
+        }
+    }

@@ -1,4 +1,4 @@
-Docs
+Core
 ====
 
 Nodes and Gadgets 
