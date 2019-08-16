@@ -22,7 +22,7 @@ namespace {
             {"python", start_python_module}
     };
 
-    void process_input(InputChannel input, std::shared_ptr<ExternalChannel> external) {
+    void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external) {
         auto closer = make_closer(external);
         for (auto message : input) {
             external->push_message(std::move(message));

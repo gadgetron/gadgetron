@@ -51,12 +51,12 @@ namespace Gadgetron::Core {
     };
 
 
-    inline ChannelIterator<InputChannel> begin(InputChannel &channel) {
-        return ChannelIterator<InputChannel>(&channel);
+    inline ChannelIterator<GenericInputChannel> begin(GenericInputChannel&channel) {
+        return ChannelIterator<GenericInputChannel>(&channel);
     }
 
-    inline ChannelIterator<InputChannel> end(InputChannel &) {
-        return ChannelIterator<InputChannel>();
+    inline ChannelIterator<GenericInputChannel> end(GenericInputChannel&) {
+        return ChannelIterator<GenericInputChannel>();
     }
 
     template<>
@@ -106,17 +106,17 @@ namespace Gadgetron::Core {
 
 
     template<class... ARGS>
-    ChannelIterator<TypedInputChannel < ARGS...>>
+    ChannelIterator<InputChannel < ARGS...>>
     begin(
-            TypedInputChannel<ARGS...>
+            InputChannel<ARGS...>
     &channel) {
-    return ChannelIterator<TypedInputChannel < ARGS...>>(&channel);
+    return ChannelIterator<InputChannel< ARGS...>>(&channel);
 }
 
 template<class... ARGS>
-ChannelIterator <TypedInputChannel<ARGS...>> end(
-        TypedInputChannel<ARGS...> &channel) {
-    return ChannelIterator < TypedInputChannel < ARGS...>>();
+ChannelIterator <InputChannel<ARGS...>> end(
+        InputChannel<ARGS...> &channel) {
+    return ChannelIterator < InputChannel < ARGS...>>();
 }
 }
 

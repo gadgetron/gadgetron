@@ -10,7 +10,7 @@ namespace Gadgetron::Core::Distributed {
     public:
         AcquisitionDistributor(const Context& context, const GadgetProperties& props);
 
-        void process(TypedInputChannel<Acquisition> &input, ChannelCreator &creator) override;
+        void process(InputChannel<Acquisition> &input, ChannelCreator &creator) override;
 
         NODE_PROPERTY(parallel_dimension, std::string, "Dimension that data will be parallelized over", "slice");
 

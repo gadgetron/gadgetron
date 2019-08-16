@@ -16,8 +16,7 @@ namespace {
     class WeightsProvider {
     public:
         WeightsProvider(
-                const Context &context,
-                TypedInputChannel<Weights> &source
+                const Context &context, InputChannel<Weights> &source
         ) : weights(number_of_slices(context), none), source(source) {}
 
 
@@ -48,7 +47,7 @@ namespace {
             return e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
         }
 
-        TypedInputChannel<Weights> &source;
+        InputChannel<Weights> &source;
         std::vector<optional<Weights>> weights;
     };
 }
@@ -64,11 +63,11 @@ namespace Gadgetron::Grappa {
         image_fov(create_output_image_fov(context)) {}
 
     void Unmixing::process(
-            std::map<std::string, InputChannel> input,
+            std::map<std::string, GenericInputChannel> input,
             OutputChannel output
     ) {
-        TypedInputChannel<Image> images(input.at("images"), output);
-        TypedInputChannel<Weights> weights(input.at("weights"), output);
+        InputChannel<Image> images(input.at("images"), output);
+        InputChannel<Weights> weights(input.at("weights"), output);
 
         WeightsProvider weights_provider(context, weights);
 

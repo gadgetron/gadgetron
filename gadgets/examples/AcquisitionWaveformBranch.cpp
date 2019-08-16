@@ -16,7 +16,7 @@ namespace Gadgetron::Examples {
     ) : TypedBranch<AcquisitionOrWaveform>(properties) {}
 
     void AcquisitionWaveformBranch::process(
-            TypedInputChannel<AcquisitionOrWaveform> &input,
+        InputChannel<AcquisitionOrWaveform> &input,
             std::map<std::string, OutputChannel> output
     ) {
         for (auto acq_or_wav : input) {

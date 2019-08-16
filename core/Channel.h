@@ -10,7 +10,7 @@
 #include "MPMCChannel.h"
 
 namespace Gadgetron::Core {
-class InputChannel;
+class GenericInputChannel;
 
 class OutputChannel;
 struct ChannelPair;
@@ -19,7 +19,7 @@ class Channel {
 public:
     virtual ~Channel() = default;
 
-    friend InputChannel;
+    friend GenericInputChannel;
     friend OutputChannel;
 
 protected:
@@ -34,16 +34,16 @@ protected:
     class Closer;
 };
 
-InputChannel split(const InputChannel& channel);
+GenericInputChannel split(const GenericInputChannel& channel);
 OutputChannel split(const OutputChannel& channel);
 
 /**
  * The end of a channel which provides input
  */
-class InputChannel {
+class GenericInputChannel {
 public:
-    InputChannel(InputChannel&& other) noexcept = default;
-    InputChannel& operator=(InputChannel&& other) noexcept = default;
+    GenericInputChannel(GenericInputChannel&& other) noexcept = default;
+    GenericInputChannel& operator=(GenericInputChannel&& other) noexcept = default;
 
     /// Blocks until it can take a message from the channel
     Message pop();
@@ -52,14 +52,14 @@ public:
     optional<Message> try_pop();
 
 private:
-    InputChannel(const InputChannel&) = default;
+    GenericInputChannel(const GenericInputChannel&) = default;
 
     template <class ChannelType, class... ARGS>
     friend ChannelPair make_channel(ARGS&&... args);
 
-    friend InputChannel split(const InputChannel& channel);
+    friend GenericInputChannel split(const GenericInputChannel& channel);
 
-    explicit InputChannel(std::shared_ptr<Channel>);
+    explicit GenericInputChannel(std::shared_ptr<Channel>);
 
     std::shared_ptr<Channel::Closer> closer;
     std::shared_ptr<Channel> channel;
@@ -68,9 +68,9 @@ private:
 template <class CHANNEL>
 class ChannelIterator;
 
-ChannelIterator<InputChannel> begin(InputChannel&);
+ChannelIterator<GenericInputChannel> begin(GenericInputChannel&);
 
-ChannelIterator<InputChannel> end(InputChannel&);
+ChannelIterator<GenericInputChannel> end(GenericInputChannel&);
 
 /**
  * The end of a channel which provides output. Only constructible through make_channel(args)
@@ -102,7 +102,7 @@ private:
 };
 
 struct ChannelPair {
-    InputChannel input;
+    GenericInputChannel input;
     OutputChannel output;
 };
 
@@ -117,7 +117,7 @@ template <class ChannelType, class... ARGS>
 ChannelPair make_channel(ARGS&&... args)
 {
     auto channel = std::make_shared<ChannelType>(std::forward<ARGS>(args)...);
-    return { InputChannel(channel), OutputChannel(channel) };
+    return { GenericInputChannel(channel), OutputChannel(channel) };
 }
 
 ChannelIterator<OutputChannel> begin(OutputChannel&);
@@ -143,13 +143,13 @@ protected:
  * @tparam ARGS
  */
 template <class... TYPELIST>
-class TypedInputChannel {
+class InputChannel {
 public:
-    TypedInputChannel(InputChannel& input, OutputChannel& bypass)
+    InputChannel(GenericInputChannel& input, OutputChannel& bypass)
         : in(input)
         , bypass(bypass) {};
-    TypedInputChannel(TypedInputChannel&& other) noexcept = default;
-    TypedInputChannel& operator=(TypedInputChannel&& other) noexcept = default;
+    InputChannel(InputChannel&& other) noexcept = default;
+    InputChannel& operator=(InputChannel&& other) noexcept = default;
 
     decltype(auto) pop()
     {
@@ -178,15 +178,15 @@ public:
     }
 
 private:
-    InputChannel& in;
+    GenericInputChannel& in;
     OutputChannel& bypass;
 };
 
 template <class... ARGS>
-ChannelIterator<TypedInputChannel<ARGS...>> begin(TypedInputChannel<ARGS...>&);
+ChannelIterator<InputChannel<ARGS...>> begin(InputChannel<ARGS...>&);
 
 template <class... ARGS>
-ChannelIterator<TypedInputChannel<ARGS...>> end(TypedInputChannel<ARGS...>&);
+ChannelIterator<InputChannel<ARGS...>> end(InputChannel<ARGS...>&);
 
 
 }

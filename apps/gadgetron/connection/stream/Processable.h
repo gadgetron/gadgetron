@@ -13,7 +13,7 @@ namespace Gadgetron::Server::Connection::Stream {
         virtual ~Processable() = default;
 
         virtual void process(
-                Core::InputChannel input,
+                Core::GenericInputChannel input,
                 Core::OutputChannel output,
                 ErrorHandler &error_handler
         ) = 0;
@@ -22,7 +22,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         static std::thread process_async(
                 std::shared_ptr<Processable> processable,
-                Core::InputChannel input,
+                Core::GenericInputChannel input,
                 Core::OutputChannel output,
                 const ErrorHandler &errorHandler
         );

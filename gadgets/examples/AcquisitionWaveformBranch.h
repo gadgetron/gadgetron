@@ -10,7 +10,7 @@ namespace Gadgetron::Examples {
     public:
         AcquisitionWaveformBranch(const Core::Context &, const Core::GadgetProperties &);
         void process(
-                Core::TypedInputChannel<AcquisitionOrWaveform> &,
+                Core::InputChannel<AcquisitionOrWaveform> &,
                 std::map<std::string, Core::OutputChannel>
         ) override;
     };

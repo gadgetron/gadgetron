@@ -28,7 +28,7 @@ namespace Gadgetron {
     }
 
     void LegacyGadgetNode::process(
-            Core::InputChannel& in,
+            Core::GenericInputChannel& in,
             Core::OutputChannel& out) {
 
         gadget->next(std::make_shared<ChannelAdaptor>(out));

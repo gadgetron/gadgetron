@@ -617,7 +617,7 @@ namespace Gadgetron {
                 const std::unordered_map<std::string, std::string> &props
         );
 
-        void process(Core::InputChannel& in,
+        void process(Core::GenericInputChannel& in,
                      Core::OutputChannel& out) override;
 
     private:

@@ -23,7 +23,7 @@ namespace {
                 std::shared_ptr<Configuration> configuration
         );
 
-        void process_input(InputChannel input);
+        void process_input(GenericInputChannel input);
         void process_output(OutputChannel output);
 
     private:
@@ -43,7 +43,7 @@ namespace {
         );
     }
 
-    void ChannelWrapper::process_input(InputChannel input) {
+    void ChannelWrapper::process_input(GenericInputChannel input) {
         auto closer = make_closer(external);
         for (auto message : input) {
             external->push_message(std::move(message));
@@ -145,7 +145,7 @@ namespace {
 namespace Gadgetron::Server::Connection::Stream {
 
     void Distributed::process(
-            Core::InputChannel input,
+            Core::GenericInputChannel input,
             Core::OutputChannel output,
             ErrorHandler& error_handler
     ) {

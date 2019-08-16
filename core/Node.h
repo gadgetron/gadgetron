@@ -19,7 +19,7 @@ namespace Gadgetron::Core {
          * @param in Channel from which messages are received from upstream
          * @param out Channel in which messages are sent on downstream
          */
-        virtual void process(InputChannel& in, OutputChannel& out) = 0;
+        virtual void process(GenericInputChannel& in, OutputChannel& out) = 0;
     };
 
     class GenericChannelGadget : public Node, public PropertyMixin {
@@ -40,8 +40,8 @@ namespace Gadgetron::Core {
         using GenericChannelGadget::GenericChannelGadget;
 
         ///
-        void process(InputChannel& in, OutputChannel& out) final {
-            auto typed_input = TypedInputChannel<TYPELIST...>(in, out);
+        void process(GenericInputChannel& in, OutputChannel& out) final {
+            auto typed_input = InputChannel<TYPELIST...>(in, out);
             this->process(typed_input, out);
         }
 
@@ -50,7 +50,7 @@ namespace Gadgetron::Core {
          * @param in A channel of the types specified in TYPELIST
          * @param out Channel of output
          */
-        virtual void process(TypedInputChannel<TYPELIST...>& in, OutputChannel& out) = 0;
+        virtual void process(InputChannel<TYPELIST...>& in, OutputChannel& out) = 0;
     };
 
 }

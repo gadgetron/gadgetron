@@ -25,7 +25,7 @@ namespace Gadgetron::Server::Connection::Stream {
         );
 
         void process(
-                Core::InputChannel input,
+                Core::GenericInputChannel input,
                 Core::OutputChannel output,
                 ErrorHandler &error_handler
         ) override;

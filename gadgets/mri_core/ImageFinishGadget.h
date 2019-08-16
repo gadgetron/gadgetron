@@ -14,7 +14,7 @@ namespace Gadgetron {
         ) : GenericChannelGadget(properties) {};
 
     protected:
-        void process(Core::InputChannel& in,
+        void process(Core::GenericInputChannel& in,
                     Core::OutputChannel& out) override;
 
     };

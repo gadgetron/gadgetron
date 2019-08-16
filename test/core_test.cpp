@@ -8,7 +8,7 @@ TEST(TypeTests, multitype) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::string("test"), int(4));
@@ -25,7 +25,7 @@ TEST(TypeTests, multitype) {
 TEST(TypeTests, singletype) {
     using namespace Gadgetron::Core;
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
 
@@ -43,7 +43,7 @@ TEST(TypeTests, optionaltype) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::string("test"), int(1));
@@ -67,7 +67,7 @@ TEST(TypeTests, optionaltype2) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
 
@@ -87,7 +87,7 @@ TEST(TypeTests, converttype) {
 
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
 
@@ -106,7 +106,7 @@ TEST(TypeTests, optionaltype3) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
 
@@ -122,7 +122,7 @@ TEST(TypeTests, optionaltype3) {
 TEST(TypeTests, varianttype) {
     using namespace Gadgetron::Core;
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::string("hello"));
@@ -148,7 +148,7 @@ TEST(TypeTests, varianttype2) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::string("hello"));
@@ -169,7 +169,7 @@ TEST(TypeTests, tupletype) {
 
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::string("hello"), 1.0f, int(42));
@@ -185,7 +185,7 @@ TEST(TypeTests, tuplevarianttype) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::string("hello"), float(1.0f), int(42));
@@ -200,7 +200,7 @@ TEST(TypeTests, tupletype2) {
     using namespace Gadgetron::Core;
 
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
     outputChannel.push(std::make_tuple(std::string("hello"), 1.0f, int(42)));
@@ -215,7 +215,7 @@ TEST(TypeTests, tupletype2) {
 TEST(TypeTests, tupletype3) {
     using namespace Gadgetron::Core;
     auto channel = make_channel<MessageChannel>();
-    InputChannel inputChannel = std::move(channel.input);
+    GenericInputChannel inputChannel = std::move(channel.input);
     OutputChannel outputChannel = std::move(channel.output);
 
 

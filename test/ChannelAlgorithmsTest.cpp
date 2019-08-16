@@ -16,9 +16,9 @@ protected:
 
         {
             auto channels = make_channel<MessageChannel>();
-            in            = std::make_shared<InputChannel>(std::move(channels.input));
+            in            = std::make_shared<GenericInputChannel>(std::move(channels.input));
             out           = std::make_shared<OutputChannel>(std::move(channels.output));
-            tin           = std::make_shared<TypedInputChannel<std::string>>(*in, *out);
+            tin           = std::make_shared<InputChannel<std::string>>(*in, *out);
         }
 
         out->push("Penguins"s);
@@ -29,8 +29,8 @@ protected:
         out->push("Weird"s);
     }
 
-    std::shared_ptr<TypedInputChannel<std::string>> tin;
-    std::shared_ptr<InputChannel> in;
+    std::shared_ptr<InputChannel<std::string>> tin;
+    std::shared_ptr<GenericInputChannel> in;
     std::shared_ptr<OutputChannel> out;
 };
 

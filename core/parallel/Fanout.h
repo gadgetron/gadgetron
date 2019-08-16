@@ -13,7 +13,7 @@ namespace Gadgetron::Core::Parallel {
     class Fanout : public TypedBranch<ARGS...> {
     public:
         Fanout(const Context &context, const GadgetProperties &props);
-        void process(TypedInputChannel<ARGS...> &, std::map<std::string, OutputChannel>) override;
+        void process(InputChannel<ARGS...> &, std::map<std::string, OutputChannel>) override;
     };
 
     using AcquisitionFanout = Core::Parallel::Fanout<Acquisition>;

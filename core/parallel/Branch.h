@@ -14,7 +14,7 @@ namespace Gadgetron::Core::Parallel {
     public:
         virtual ~Branch() = default;
         virtual void process(
-                InputChannel input,
+            GenericInputChannel input,
                 std::map<std::string, OutputChannel> output,
                 OutputChannel bypass
         ) = 0;
@@ -31,12 +31,12 @@ namespace Gadgetron::Core::Parallel {
         explicit TypedBranch(const GadgetProperties &props);
 
         void process(
-                InputChannel input,
+            GenericInputChannel input,
                 std::map<std::string, OutputChannel> output,
                 OutputChannel bypass
         ) final;
 
-        virtual void process(TypedInputChannel<ARGS...> &, std::map<std::string, OutputChannel>) = 0;
+        virtual void process(InputChannel<ARGS...> &, std::map<std::string, OutputChannel>) = 0;
     };
 
 }

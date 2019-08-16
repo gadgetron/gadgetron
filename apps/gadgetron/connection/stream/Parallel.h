@@ -13,7 +13,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     class Parallel : public Processable {
         using Channel = Core::Channel;
-        using InputChannel = Core::InputChannel;
+        using InputChannel = Core::GenericInputChannel;
         using OutputChannel = Core::OutputChannel;
         using Branch = Core::Parallel::Branch;
         using Merge  = Core::Parallel::Merge;
@@ -22,7 +22,7 @@ namespace Gadgetron::Server::Connection::Stream {
         Parallel(const Config::Parallel &, const Core::Context &, Loader &);
 
         void process(
-                Core::InputChannel input,
+                Core::GenericInputChannel input,
                 Core::OutputChannel output,
                 ErrorHandler &error_handler
         ) override;

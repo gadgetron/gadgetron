@@ -68,7 +68,7 @@ namespace Gadgetron {
 
     }
 
-    void PythonGadget::process(Core::TypedInputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) {
+    void PythonGadget::process(Core::InputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) {
 
         if (!config_success_) return;
 

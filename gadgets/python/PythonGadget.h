@@ -56,6 +56,6 @@ namespace Gadgetron {
 
         void register_converters();
 
-        void process(Core::TypedInputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) override;
+        void process(Core::InputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) override;
     };
 }

@@ -50,10 +50,10 @@ namespace Gadgetron::Examples {
 
     ImageLayerer::ImageLayerer(const Context &, const GadgetProperties &properties) : Merge(properties) {}
 
-    void ImageLayerer::process(std::map<std::string, InputChannel> input, OutputChannel output) {
+    void ImageLayerer::process(std::map<std::string, GenericInputChannel> input, OutputChannel output) {
 
-        auto unchanged = TypedInputChannel<AnyImage>(input.at("unchanged"), output);
-        auto inverted = TypedInputChannel<AnyImage>(input.at("inverted"), output);
+        auto unchanged = InputChannel<AnyImage>(input.at("unchanged"), output);
+        auto inverted = InputChannel<AnyImage>(input.at("inverted"), output);
 
         for (auto image : unchanged) {
             auto merged = Core::apply_visitor(

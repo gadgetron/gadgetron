@@ -33,8 +33,7 @@ namespace {
 
 namespace Gadgetron::Core::Distributed {
 
-    void AcquisitionDistributor::process(
-            TypedInputChannel<Acquisition> &input,
+    void AcquisitionDistributor::process(InputChannel<Acquisition> &input,
             ChannelCreator &creator
     ) {
         std::map<uint16_t, OutputChannel> channels{};

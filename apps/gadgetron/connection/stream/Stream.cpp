@@ -19,8 +19,7 @@ namespace {
     public:
         NodeProcessable(std::unique_ptr<Node> node, std::string name) : node(std::move(node)), name_(std::move(name)) {}
 
-        void process(
-                InputChannel input,
+        void process(GenericInputChannel input,
                 OutputChannel output,
                 ErrorHandler &
         ) override {
@@ -73,14 +72,13 @@ namespace Gadgetron::Server::Connection::Stream {
         }
     }
 
-    void Stream::process(
-            InputChannel input,
+    void Stream::process(GenericInputChannel input,
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
         if (empty()) return;
 
-        std::vector<InputChannel> input_channels{};
+        std::vector<GenericInputChannel> input_channels{};
         input_channels.emplace_back(std::move(input));
         std::vector<OutputChannel> output_channels{};
 

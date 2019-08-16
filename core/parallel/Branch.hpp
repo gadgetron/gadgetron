@@ -6,10 +6,11 @@ namespace Gadgetron::Core::Parallel {
     TypedBranch<ARGS...>::TypedBranch(const GadgetProperties &props) : Branch(props) {}
 
     template<class... ARGS>
-    void TypedBranch<ARGS...>::process(InputChannel input,
+    void TypedBranch<ARGS...>::process(
+        GenericInputChannel input,
                                        std::map<std::string, OutputChannel> output,
                                        OutputChannel bypass) {
-        auto typed_input = TypedInputChannel<ARGS...>(input, bypass);
+        auto typed_input = InputChannel<ARGS...>(input, bypass);
         process(typed_input, std::move(output));
     }
 }

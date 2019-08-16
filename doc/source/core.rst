@@ -28,11 +28,11 @@ Channels
    :members:
    :undoc-members:
 
-.. doxygenclass:: Gadgetron::Core::InputChannel
+.. doxygenclass:: Gadgetron::Core::GenericInputChannel
    :members:
    :undoc-members:
 
-.. doxygenclass:: Gadgetron::Core::TypedInputChannel
+.. doxygenclass:: Gadgetron::Core::InputChannel
    :undoc-members:
 
 Core Types

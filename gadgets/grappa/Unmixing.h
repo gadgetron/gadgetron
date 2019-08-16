@@ -37,7 +37,7 @@ namespace Gadgetron::Grappa {
         NODE_PROPERTY(unmixing_scale, float, "", 1.0);
 
         void process(
-                std::map<std::string, Core::InputChannel> input,
+                std::map<std::string, Core::GenericInputChannel> input,
                 Core::OutputChannel output
         ) override;
 

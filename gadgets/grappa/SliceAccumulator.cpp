@@ -22,7 +22,7 @@ namespace Gadgetron::Grappa {
             const std::unordered_map<std::string, std::string> &props
     ) : ChannelGadget(props), context(context) {}
 
-    void SliceAccumulator::process(TypedInputChannel<AnnotatedAcquisition> &in, OutputChannel &out) {
+    void SliceAccumulator::process(InputChannel<AnnotatedAcquisition> &in, OutputChannel &out) {
 
         std::vector<AnnotatedAcquisition> acquisitions{};
 

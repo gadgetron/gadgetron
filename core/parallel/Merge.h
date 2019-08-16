@@ -15,7 +15,7 @@ namespace Gadgetron::Core::Parallel {
         explicit Merge(const GadgetProperties &props);
 
         virtual ~Merge() = default;
-        virtual void process(std::map<std::string, InputChannel>, OutputChannel) = 0;
+        virtual void process(std::map<std::string, GenericInputChannel>, OutputChannel) = 0;
     };
 }
 

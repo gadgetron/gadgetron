@@ -9,6 +9,6 @@ namespace Gadgetron::Examples {
     class ImageLayerer : public Core::Parallel::Merge {
     public:
         ImageLayerer(const Core::Context &, const Core::GadgetProperties &);
-        void process(std::map<std::string, Core::InputChannel>, Core::OutputChannel) override;
+        void process(std::map<std::string, Core::GenericInputChannel>, Core::OutputChannel) override;
     };
 }

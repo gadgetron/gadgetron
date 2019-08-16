@@ -6,7 +6,7 @@ using namespace Gadgetron::Core;
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    void ParallelProcess::process_input(InputChannel input, Queue &queue) {
+    void ParallelProcess::process_input(GenericInputChannel input, Queue &queue) {
 
         ThreadPool pool(workers ? workers : std::thread::hardware_concurrency());
 
@@ -26,8 +26,7 @@ namespace Gadgetron::Server::Connection::Stream {
         while(true) output.push_message(queue.pop().get());
     }
 
-    void ParallelProcess::process(
-            InputChannel input,
+    void ParallelProcess::process(GenericInputChannel input,
             OutputChannel output,
             ErrorHandler& error_handler
     ) {

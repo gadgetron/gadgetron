@@ -6,7 +6,7 @@ class GenericPureGadget : public GenericChannelGadget {
 public:
     using GenericChannelGadget::GenericChannelGadget;
 
-        void process(InputChannel &in, OutputChannel &out) final {
+        void process(GenericInputChannel&in, OutputChannel &out) final {
             for (auto message : in)
                 out.push(this->process_function(std::move(message)));
         }

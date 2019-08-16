@@ -21,7 +21,7 @@ namespace Gadgetron::Grappa {
         NODE_PROPERTY(block_size_samples, uint16_t, "Block size used to estimate missing samples; number of samples.", 5);
         NODE_PROPERTY(convolution_kernel_threshold, float, "Grappa convolution kernel calibration Tikhonov threshold.", 5e-4);
 
-        void process(Core::TypedInputChannel<Slice> &in, Core::OutputChannel &out) override;
+        void process(Core::InputChannel<Slice> &in, Core::OutputChannel &out) override;
 
     private:
         const Core::Context context;

@@ -22,7 +22,7 @@ namespace Gadgetron::Server::Connection::Stream {
         Stream(const Config::Stream &, const Core::Context &, Loader &);
 
         void process(
-                Core::InputChannel input,
+                Core::GenericInputChannel input,
                 Core::OutputChannel output,
                 ErrorHandler &
         ) override;

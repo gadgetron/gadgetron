@@ -101,7 +101,7 @@ namespace Gadgetron::Server::Connection {
     }
 
     template<class F>
-    void process_output(std::iostream &stream, Core::InputChannel messages, F writer_factory) {
+    void process_output(std::iostream &stream, Core::GenericInputChannel messages, F writer_factory) {
 
         auto writers = writer_factory();
 
@@ -135,7 +135,7 @@ namespace Gadgetron::Server::Connection {
     template<class F>
     std::thread start_output_thread(
             std::iostream &stream,
-            Core::InputChannel channel,
+            Core::GenericInputChannel channel,
             F writer_factory,
             ErrorHandler &error_handler
     ) {
