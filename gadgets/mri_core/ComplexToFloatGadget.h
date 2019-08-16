@@ -13,7 +13,7 @@
 #include "PureGadget.h"
 namespace Gadgetron
 {
-class ComplexToFloatGadget: public Core::TypedPureGadget<Core::Image<float>,Core::Image<std::complex<float>>>
+class ComplexToFloatGadget: public Core::PureGadget<Core::Image<float>,Core::Image<std::complex<float>>>
     {
     public:
         ComplexToFloatGadget(const Core::Context& context, const Core::GadgetProperties& props);

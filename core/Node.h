@@ -1,9 +1,8 @@
-
 #pragma once
 
 #include "Channel.h"
-#include "Context.h"
 #include "PropertyMixin.h"
+#include "Context.h"
 #include <boost/dll/alias.hpp>
 
 namespace Gadgetron::Core {
@@ -23,10 +22,10 @@ namespace Gadgetron::Core {
         virtual void process(InputChannel& in, OutputChannel& out) = 0;
     };
 
-    class ChannelGadget : public Node, public PropertyMixin {
+    class GenericChannelGadget : public Node, public PropertyMixin {
     public:
         using PropertyMixin::PropertyMixin;
-        ChannelGadget(const Context& context, const GadgetProperties& properties) : PropertyMixin(properties) {}
+        GenericChannelGadget(const Context& context, const GadgetProperties& properties) : PropertyMixin(properties) {}
     };
 
     /**
@@ -35,9 +34,10 @@ namespace Gadgetron::Core {
      * Should be the first choice for writing new Gadgets.
      * @tparam TYPELIST The type(s) of the messages to be received
      */
-    template <class... TYPELIST> class TypedChannelGadget : public ChannelGadget {
+    template <class... TYPELIST> class ChannelGadget : public GenericChannelGadget {
     public:
-        using ChannelGadget::ChannelGadget;
+
+        using GenericChannelGadget::GenericChannelGadget;
 
         ///
         void process(InputChannel& in, OutputChannel& out) final {

@@ -4,25 +4,25 @@ namespace {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Server::Connection;
 
-    std::unique_ptr<PureGadget> load_pure_gadget(const Config::Gadget& conf, const Context& context, Loader& loader) {
+    std::unique_ptr<GenericPureGadget> load_pure_gadget(const Config::Gadget& conf, const Context& context, Loader& loader) {
         auto factory
             = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname, conf.dll);
 
         auto gadget = factory(context, conf.properties);
 
-        if (dynamic_cast<PureGadget *>(gadget.get())) {
-            return std::unique_ptr<PureGadget>(dynamic_cast<PureGadget *>(gadget.release()));
+        if (dynamic_cast<GenericPureGadget*>(gadget.get())) {
+            return std::unique_ptr<GenericPureGadget>(dynamic_cast<GenericPureGadget*>(gadget.release()));
         }
 
         throw std::runtime_error("Non-pure Gadget \"" + conf.classname + "\" in pure stream.");
     }
 
-    std::vector<std::unique_ptr<PureGadget>> load_pure_gadgets(
+    std::vector<std::unique_ptr<GenericPureGadget>> load_pure_gadgets(
         const std::vector<Config::Gadget>& configs,
         const Context& context,
         Loader& loader
     ) {
-        std::vector<std::unique_ptr<PureGadget>> gadgets;
+        std::vector<std::unique_ptr<GenericPureGadget>> gadgets;
         for (auto& config : configs) {
             gadgets.emplace_back(load_pure_gadget(config, context, loader));
         }

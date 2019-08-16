@@ -10,7 +10,7 @@
 #include "ImageArraySendMixin.h"
 
 namespace Gadgetron {
-    class PureCmrCartesianKSpaceBinningCineGadget : public Core::TypedPureGadget<IsmrmrdImageArray, IsmrmrdReconData>, public ImageArraySendMixin<PureCmrCartesianKSpaceBinningCineGadget> {
+    class PureCmrCartesianKSpaceBinningCineGadget : public Core::PureGadget<IsmrmrdImageArray, IsmrmrdReconData>, public ImageArraySendMixin<PureCmrCartesianKSpaceBinningCineGadget> {
     public:
         PureCmrCartesianKSpaceBinningCineGadget(const Core::Context& context, const Core::GadgetProperties& props);
 

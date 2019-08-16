@@ -291,7 +291,7 @@ endif ()
 find_package(Armadillo REQUIRED )
 # check whether ILP64 MKL should is used
 if(ARMADILLO_FOUND)
-add_library(armadillo INTERFACE )
+add_library(armadillo INTERFACE)
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
 add_definitions( -DARMA_DONT_USE_WRAPPER)
 
@@ -367,10 +367,12 @@ add_library(python INTERFACE)
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-if (VCPKG_TARGET_TRIPLET)
-    find_package(Boost 1.65.0 COMPONENTS python37 REQUIRED)
+if (Boost_VERSION VERSION_LESS 1.67.0)
+    find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
     else()
-    find_package(Boost 1.65.0 COMPONENTS python37 REQUIRED)
+    string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
+    set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
+    find_package(Boost 1.65.0 COMPONENTS "python3${PYTHON_MINOR_VERSION}" REQUIRED)
 endif()
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})

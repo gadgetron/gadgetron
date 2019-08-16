@@ -25,14 +25,14 @@
 
 namespace Gadgetron {
 
-class GenericReconPartialFourierHandlingGadget : public Core::TypedPureGadget<IsmrmrdImageArray,IsmrmrdImageArray>
+class GenericReconPartialFourierHandlingGadget : public Core::PureGadget<IsmrmrdImageArray,IsmrmrdImageArray>
     {
     public:
 
         typedef float real_value_type;
         typedef std::complex<real_value_type> ValueType;
         typedef ValueType T;
-        using BaseClass = Core::TypedPureGadget<IsmrmrdImageArray,IsmrmrdImageArray>;
+        using BaseClass = Core::PureGadget<IsmrmrdImageArray,IsmrmrdImageArray>;
 
         GenericReconPartialFourierHandlingGadget(const Core::Context& context, const Core::GadgetProperties& props);
 

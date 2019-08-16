@@ -34,6 +34,6 @@ namespace Gadgetron {
     }
 
     DenoiseGadget::DenoiseGadget(const Core::Context& context, const Core::GadgetProperties& props)
-        : Core::TypedPureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes>{ props } {}
+        : Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes>{ props } {}
     GADGETRON_GADGET_EXPORT(DenoiseGadget)
 }

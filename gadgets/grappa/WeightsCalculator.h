@@ -9,7 +9,7 @@
 namespace Gadgetron::Grappa {
 
     template<class WeightsCore>
-    class WeightsCalculator : public Core::TypedChannelGadget<Slice> {
+    class WeightsCalculator : public Core::ChannelGadget<Slice> {
     public:
         WeightsCalculator(const Core::Context &, const std::unordered_map<std::string, std::string> &);
 

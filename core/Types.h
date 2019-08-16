@@ -32,6 +32,16 @@ namespace Gadgetron::Core {
     ///An image consists of a header, an array of image data and optionally some metadata
     template<class T>
     using Image = tuple<ISMRMRD::ImageHeader,  hoNDArray<T>, optional<ISMRMRD::MetaContainer>>;
+
+    using AnyImage =
+            variant<
+                    Image<short>,
+                    Image<unsigned short>,
+                    Image<float>,
+                    Image<double>,
+                    Image<std::complex<float>>,
+                    Image<std::complex<double>>
+            >;
 }
 
 

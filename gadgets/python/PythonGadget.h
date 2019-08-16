@@ -30,7 +30,7 @@ namespace Gadgetron {
         using PythonTypes = PythonTypePattern<float, std::complex<float>, double, std::complex<double>, uint16_t, int16_t, uint32_t, int32_t>;
     }
     /// This PythonGadget is the gateway for c++ to call python
-    class EXPORTGADGETSPYTHON PythonGadget : public Core::TypedChannelGadget<Python::PythonTypes> {
+    class EXPORTGADGETSPYTHON PythonGadget : public Core::ChannelGadget<Python::PythonTypes> {
     public:
 
 

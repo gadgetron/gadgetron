@@ -5,7 +5,9 @@ add_library(gadgetron_core_parallel SHARED
         Merge.cpp
         Merge.h
         Fanout.h
-        Fanout.hpp Branch.cpp)
+        Fanout.hpp
+        Fanout.cpp
+        Branch.cpp)
 
 target_link_libraries(gadgetron_core_parallel
         gadgetron_core)
@@ -19,6 +21,8 @@ install(TARGETS gadgetron_core_parallel
 
 install(FILES
         Branch.h
+        Branch.hpp
         Merge.h
         Fanout.h
+        Fanout.hpp
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
