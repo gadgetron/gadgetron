@@ -2,9 +2,9 @@
 #include "Node.h"
 
 namespace Gadgetron::Core {
-class PureGadget : public ChannelGadget {
+class GenericPureGadget : public GenericChannelGadget {
 public:
-    using ChannelGadget::ChannelGadget;
+    using GenericChannelGadget::GenericChannelGadget;
 
         void process(InputChannel &in, OutputChannel &out) final {
             for (auto message : in)
@@ -15,9 +15,9 @@ public:
     };
 
 template <class RETURN, class ARG>
-class TypedPureGadget : public PureGadget {
+class PureGadget : public GenericPureGadget {
 public:
-    using PureGadget::PureGadget;
+    using GenericPureGadget::GenericPureGadget;
     Message process_function(Message message) const override{
         if (!convertible_to<ARG>(message)) return message;
         return  Message(process_function(force_unpack<ARG>(std::move(message))));

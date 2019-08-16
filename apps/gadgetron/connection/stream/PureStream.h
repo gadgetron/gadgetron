@@ -11,6 +11,6 @@ namespace Gadgetron::Server::Connection::Stream {
         Core::Message process_function(Core::Message) const;
 
     private:
-        const std::vector<std::unique_ptr<Core::PureGadget>> pure_gadgets;
+        const std::vector<std::unique_ptr<Core::GenericPureGadget>> pure_gadgets;
     };
 }

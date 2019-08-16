@@ -13,18 +13,18 @@ namespace Gadgetron::Core {
         virtual void process(InputChannel& in, OutputChannel& out) = 0;
     };
 
-    class ChannelGadget : public Node, public PropertyMixin {
+    class GenericChannelGadget : public Node, public PropertyMixin {
     public:
             using PropertyMixin::PropertyMixin;
     };
 
     template<class ...ARGS >
-    class TypedChannelGadget : public ChannelGadget {
+    class ChannelGadget : public GenericChannelGadget {
     public:
 
-        explicit TypedChannelGadget(const GadgetProperties& properties): ChannelGadget(properties) {}
+        explicit ChannelGadget(const GadgetProperties& properties): GenericChannelGadget(properties) {}
 
-        TypedChannelGadget(const Context& context, const GadgetProperties& properties): ChannelGadget(properties) {
+        ChannelGadget(const Context& context, const GadgetProperties& properties): GenericChannelGadget(properties) {
 
         }
 

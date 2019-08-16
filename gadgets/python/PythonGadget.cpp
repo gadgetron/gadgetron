@@ -107,7 +107,7 @@ namespace Gadgetron {
 
 
     PythonGadget::PythonGadget(const Core::Context &context, const Core::GadgetProperties &params)
-            : Core::TypedChannelGadget<Python::PythonTypes>(params) {
+            : Core::ChannelGadget<Python::PythonTypes>(params) {
 
         initialize_python();
 

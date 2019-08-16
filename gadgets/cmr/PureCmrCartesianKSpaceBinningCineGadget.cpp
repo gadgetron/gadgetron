@@ -140,7 +140,7 @@ PureCmrCartesianKSpaceBinningCineGadget::BinningResult PureCmrCartesianKSpaceBin
 
 PureCmrCartesianKSpaceBinningCineGadget::PureCmrCartesianKSpaceBinningCineGadget(
     const Core::Context& context, const Core::GadgetProperties& props)
-    : TypedPureGadget(props) {
+    : PureGadget(props) {
     auto h    = context.header;
     size_t NE = h.encoding.size();
 

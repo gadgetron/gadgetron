@@ -11,7 +11,7 @@ namespace Gadgetron::Grappa {
 
     using Slice = std::vector<AnnotatedAcquisition>;
 
-    class SliceAccumulator : public Core::TypedChannelGadget<AnnotatedAcquisition> {
+    class SliceAccumulator : public Core::ChannelGadget<AnnotatedAcquisition> {
     public:
         SliceAccumulator(const Core::Context &, const std::unordered_map<std::string, std::string> &);
 
