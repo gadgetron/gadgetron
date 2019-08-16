@@ -7,16 +7,16 @@ Nodes and Gadgets
 .. doxygenclass:: Gadgetron::Core::Node
    :members:
 
+.. doxygenclass:: Gadgetron::Core::GenericChannelGadget
+   :members:
+
 .. doxygenclass:: Gadgetron::Core::ChannelGadget
    :members:
 
-.. doxygenclass:: Gadgetron::Core::TypedChannelGadget
-   :members:
-
-.. doxygenclass:: Gadgetron::Core::PureGadget
+.. doxygenclass:: Gadgetron::Core::GenericPureGadget
     :members:
 
-.. doxygenclass:: Gadgetron::Core::TypedPureGadget
+.. doxygenclass:: Gadgetron::Core::PureGadget
     :members:
 
 Channels

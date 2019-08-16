@@ -45,6 +45,8 @@ reconstruct them, we inherit from :cpp:class:`ChannelGadget\<Acquisition\><Gadge
 
 .. code-block:: cpp
 
+    using namespace Gadgetron;
+    using namespace Gadgetron::Core;
     class SimpleRecon : public ChannelGadget<Acquisition>{
         public:
             void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
@@ -53,12 +55,31 @@ reconstruct them, we inherit from :cpp:class:`ChannelGadget\<Acquisition\><Gadge
     }
 
 Channels are ranges, meaning they can be used directly with for loops and with algorithm from standard library, such as
-:cpp:function:`std::transform` and :cpp:function:`std::accumulate`.
+:cpp:func:`std::transform` and :cpp:func:`std::accumulate`.
 
 .. code-block: cpp
 
     void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
         for (auto acquisition : in ) {
 
+            auto& header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
+            auto& data = std::get<hoNDArray<std::complex<float>>>(acquisition);
+            auto& trajectory = std::get<optional<hoNDArray<float>>>(acquisition);
+            //Gather acquisitions here
         }
     }
+
+Or if you're using C++17, this would be
+
+.. code-block: cpp
+
+    void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
+        for (auto [header, data, trajectory] : in ) {
+            //Gather acquisitions here
+        }
+    }
+
+
+
+
+
