@@ -4,7 +4,8 @@
 #include <iostream>
 
 #include "gadgetron_config.h"
-
+#include "connection/stream/external/Python.h"
+#include "connection/stream/external/Matlab.h"
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -74,20 +75,14 @@ namespace Gadgetron::Server::Info {
         return 0L;
     }
 
+    static auto python_available = Gadgetron::Server::Connection::Stream::python_available();
     bool python_support() {
-#if defined COMPILING_WITH_PYTHON_SUPPORT
-        return true;
-#else
-        return false;
-#endif
+        return python_available;
     }
 
+    static auto matlab_available = Gadgetron::Server::Connection::Stream::matlab_available();
     bool matlab_support() {
-#if defined USE_MATLAB
-        return true;
-#else
-        return false;
-#endif
+        return matlab_available;
     }
 
 #if defined USE_CUDA
