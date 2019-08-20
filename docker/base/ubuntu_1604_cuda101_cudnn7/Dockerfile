@@ -3,11 +3,9 @@ FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04
 ARG BART_URL=https://github.com/mrirecon/bart
 ARG BART_BRANCH=master
 
-#Fix default ceres package on 16.04 is broken
-
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
-RUN add-apt-repository ppa:lkoppel/ceres
+
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
@@ -15,7 +13,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    libceres-dev supervisor net-tools cpio
+    supervisor net-tools cpio
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
@@ -37,9 +35,9 @@ RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install torchvision 
-RUN pip3 install tensorboardx visdom
+RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
@@ -93,8 +91,8 @@ RUN cd /opt && \
 ENV GADGETRON_HOME=/usr/local \
     ISMRMRD_HOME=/usr/local
 
-ENV PATH=$PATH:/usr/local/cuda-9.2/bin;$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.2/lib64:$ISMRMRD_HOME/lib:$GADGETRON_HOME/lib
+ENV PATH=$PATH:/usr/local/cuda/bin;$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:$ISMRMRD_HOME/lib:$GADGETRON_HOME/lib
 
 ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs:${LIBRARY_PATH}
 

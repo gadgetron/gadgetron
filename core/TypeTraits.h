@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace Gadgetron::Core {
+namespace Gadgetron { namespace Core {
 
     template <class T> constexpr bool is_trivially_copyable_v = std::is_trivially_copyable<T>::value;
 
@@ -33,4 +33,4 @@ namespace Gadgetron::Core {
 
 
     template <bool... ARGS> constexpr bool any_of_v = any_of<ARGS...>::value;
-}
+}}

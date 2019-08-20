@@ -3,10 +3,11 @@ FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04
 ARG BART_URL=https://github.com/mrirecon/bart
 ARG BART_BRANCH=master
 
-RUN  sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+#Fix default ceres package on 16.04 is broken
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
+
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential emacs python-dev python-pip libhdf5-serial-dev cmake git-core \
@@ -46,9 +47,9 @@ RUN pip3 install h5py psutil pyxb lxml Pillow configargparse numpy==1.15.4 Cytho
 RUN apt-get install -y python3.6-tk
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install torchvision 
-RUN pip3 install tensorboardx visdom
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
@@ -83,8 +84,11 @@ RUN cd /opt && \
     cmake -DCMAKE_BUILD_TYPE=Release .. &&  \
     make -j$(nproc) && \
     make install
+    
+# fix the  qhull reentrant problem
+# RUN pip uninstall -y scipy
 
-# ZFP
+#ZFP
 RUN cd /opt && \
     git clone https://github.com/hansenms/ZFP.git && \
     cd ZFP && \
@@ -114,3 +118,6 @@ ENV PATH=$PATH:/usr/local/cuda/bin;$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
 
 ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs:${LIBRARY_PATH}
 
+# Clean up packages.
+#RUN  apt-get clean && \
+#   rm -rf /var/lib/apt/lists/*

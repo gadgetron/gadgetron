@@ -10,7 +10,9 @@ using namespace Gadgetron::Core;
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    void send_header(std::iostream &stream, const Context::Header &header) {
+    using Serializable = Core::variant<Config::External,Config>;
+
+    static void send_header(std::iostream &stream, const Context::Header &header) {
         std::stringstream strstream;
         ISMRMRD::serialize(header, strstream);
 
@@ -18,48 +20,28 @@ namespace Gadgetron::Server::Connection::Stream {
         IO::write_string_to_stream<uint32_t>(stream, strstream.str());
     }
 
-    void send_config(std::iostream &stream, const Configuration::Serializable &serializable) {
-        serializable.write(stream);
+    static void send_config(std::iostream &stream, const Serializable &config) {
+        Core::apply_visitor([&stream](auto &config) {
+                                IO::write(stream, CONFIG);
+                                IO::write_string_to_stream<uint32_t>(stream, serialize_config(config));
+                            },
+                            config);
     }
 
     void Configuration::send(std::iostream &stream) const {
-        send_config(stream, *config);
+        send_config(stream, config);
         send_header(stream, context.header);
     }
-
-    class ExternalSerializable : public Configuration::Serializable {
-    public:
-        const Config::External config;
-
-        explicit ExternalSerializable(Config::External config) : config(std::move(config)) {}
-
-        void write(std::iostream &stream) const override {
-            IO::write(stream, CONFIG);
-            IO::write_string_to_stream<uint32_t>(stream, serialize_external_config(config));
-        }
-    };
-
-    class ConfigSerializable : public Configuration::Serializable {
-    public:
-        const Config config;
-
-        explicit ConfigSerializable(Config config) : config(std::move(config)) {}
-
-        void write(std::iostream &stream) const override {
-            IO::write(stream, CONFIG);
-            IO::write_string_to_stream<uint32_t>(stream, serialize_config(config));
-        };
-    };
 
     Configuration::Configuration(
             Core::Context context,
             Config config
-    ) : context(std::move(context)), config(std::make_unique<ConfigSerializable>(config)) {}
+    ) : context(std::move(context)), config{config} {}
 
     Configuration::Configuration(
             Core::Context context,
             Config::External config
-    ) : context(std::move(context)), config(std::make_unique<ExternalSerializable>(config)) {}
+    ) : context(std::move(context)), config{config} {}
 
     Configuration::Configuration(
             Core::Context context,

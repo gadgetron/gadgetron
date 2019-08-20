@@ -5,7 +5,9 @@ set_target_properties(gadgetron_toolbox_matlab PROPERTIES VERSION ${GADGETRON_VE
 target_include_directories(gadgetron_toolbox_matlab
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${MATLAB_INCLUDE_DIR})
+        ${MATLAB_INCLUDE_DIR}
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+        )
 
 
 target_link_libraries(gadgetron_toolbox_matlab

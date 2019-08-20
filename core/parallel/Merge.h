@@ -31,5 +31,4 @@ merge_factory_##MergeClass(                                                     
 BOOST_DLL_ALIAS(                                                                \
         merge_factory_##MergeClass,                                             \
         merge_factory_export_##MergeClass                                       \
-)                                                                               \
-
+)

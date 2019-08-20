@@ -15,6 +15,10 @@ namespace Gadgetron::Core::Parallel {
         Fanout(const Context &context, const GadgetProperties &props);
         void process(TypedInputChannel<ARGS...> &, std::map<std::string, OutputChannel>) override;
     };
+
+    using AcquisitionFanout = Core::Parallel::Fanout<Acquisition>;
+    using WaveformFanout = Core::Parallel::Fanout<Waveform>;
+    using ImageFanout = Core::Parallel::Fanout<AnyImage>;
 }
 
 #include "Fanout.hpp"

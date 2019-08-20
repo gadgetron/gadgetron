@@ -11,12 +11,8 @@ install(FILES
     FindNumPy.cmake
     FindOctave.cmake
     FindPLplot.cmake
-    FindPython3.cmake
     FindZFP.cmake
     FindBART.cmake
     DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
-if (WIN32)
-    install(FILES InstallWinGadgetron.bat DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
-endif ()
 

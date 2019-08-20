@@ -27,11 +27,11 @@ namespace Gadgetron {
     template <class T, unsigned int D> class vector_td {
     public:
         T vec[D];
-        __inline__ __host__ __device__ vector_td() = default;
+        __inline__ vector_td() = default;
 
         template <typename... X> constexpr __inline__ __host__ __device__ explicit vector_td(X... xs) : vec{ T(xs)... } {}
 
-        __inline__ __host__ __device__ vector_td(const vector_td& other) = default;
+        __inline__ vector_td(const vector_td& other) = default;
 
         template <class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2, D>& other) {
             for (unsigned int i = 0; i < D; i++)
@@ -47,6 +47,7 @@ namespace Gadgetron {
         explicit vector_td(const STATIC_CONTAINER& other) {
             std::copy(other.begin(), other.end(), this->begin());
         }
+
         __inline__ __host__ __device__ T& operator[](size_t i) {
             return vec[i];
         }

@@ -1,13 +1,10 @@
-if (WIN32)
-  add_definitions(-D__BUILD_GADGETRON_GADGETCORE__)
-endif ()
 
 set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h TrajectoryParameters.h)
 set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp TrajectoryParameters.cpp)
 
 if (CUDA_FOUND)
-set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h)
-set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp)
+set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h gpuSpiralDeblurGadget.h)
+set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp gpuSpiralDeblurGadget.cpp)
 endif()
 
 add_library(gadgetron_spiral SHARED ${SPIRAL_HEADER_FILES} ${SPIRAL_SRC_FILES})
@@ -28,9 +25,9 @@ if (CUDA_FOUND)
                                 gadgetron_toolbox_gpunfft 
                                 gadgetron_toolbox_gpusolvers 
                                 gadgetron_toolbox_gpuoperators
-                                gadgetron_toolbox_gpuparallelmri )
+                                gadgetron_toolbox_gpuparallelmri
+                                gadgetron_toolbox_deblur )
 endif()
-
 
 install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
 install (FILES ${SPIRAL_HEADER_FILES}

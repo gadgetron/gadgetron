@@ -13,10 +13,6 @@ namespace Gadgetron::Server::Connection::Stream {
     public:
         using Readers = std::map<uint16_t, std::unique_ptr<Core::Reader>>;
         using Writers = std::vector<std::unique_ptr<Core::Writer>>;
-
-        const Readers readers;
-        const Writers writers;
-
         Serialization(Readers readers, Writers writers);
 
         void close(std::iostream &stream) const;
@@ -26,5 +22,8 @@ namespace Gadgetron::Server::Connection::Stream {
                 std::function<void()> on_close,
                 std::function<void(std::string message)> on_error
         ) const;
+    private:
+        const Readers readers;
+        const Writers writers;
     };
 }

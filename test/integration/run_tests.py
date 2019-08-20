@@ -71,7 +71,7 @@ def main():
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
-    base_args = ['python3', 'run_gadgetron_test.py','-a',str(args.host), '-p', str(args.port)] + args.external
+    base_args = [sys.executable, 'run_gadgetron_test.py','-a',str(args.host), '-p', str(args.port)] + args.external
     if args.gadgetron_home is not None:
         base_args += ['-G',args.gadgetron_home]
     if args.ismrmrd_home is not None:

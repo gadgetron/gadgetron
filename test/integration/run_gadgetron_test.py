@@ -309,6 +309,8 @@ def start_additional_nodes(args, config):
             env['GADGETRON_REMOTE_WORKER_COMMAND'] = 'cmd /k echo ' + json.dumps(worker_list) + ' & exit'
         else:
             env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+
+        print("Setting env to",env["GADGETRON_REMOTE_WORKER_COMMAND"])
         return cont(env=env, **state)
 
     base_port = int(config['DISTRIBUTED']['node_port_base'])

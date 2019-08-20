@@ -62,8 +62,10 @@ namespace Gadgetron {
 
     public:
 
+        [[deprecated]]
         ACE_Message_Queue(int, int);
 
+        [[deprecated]]
         ACE_Message_Queue();
 
         void high_water_mark(size_t bsize) {};
@@ -88,10 +90,9 @@ namespace Gadgetron {
 
 
     public:
-
         class ITERATOR {
         public:
-            ITERATOR(ACE_Message_Queue &);
+            explicit ITERATOR(ACE_Message_Queue &);
 
             int advance();
 
@@ -105,7 +106,6 @@ namespace Gadgetron {
 
 
         friend ITERATOR;
-
 
     };
 

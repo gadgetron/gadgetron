@@ -7,11 +7,6 @@
 #include "ismrmrd/ismrmrd.h"
 #include "engine.h"     // Matlab Engine header
 
-//#include "ace/Synch.h"  // For the MatlabCommandServer
-#include "ace/SOCK_Connector.h"
-#include "ace/INET_Addr.h"
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex>
@@ -37,8 +32,7 @@ public:
 
     ~MatlabBufferGadget()
     {
-    std::lock_guard<std::mutex> lock(mutex_);   
-       // Close the Matlab engine
+        std::lock_guard<std::mutex> lock(mutex_);   
         GDEBUG("Closing down Matlab\n");
         engClose(engine_);
     }
@@ -142,6 +136,8 @@ protected:
     std::string classname_;
     std::string startcmd_;
     bool debug_mode_;
+    
+    std::clock_t timer_out; //LA: timer for measurement of execution time outside this->process
 
     Engine *engine_;
 };

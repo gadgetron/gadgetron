@@ -29,7 +29,6 @@ namespace {
 
         const std::string& name() override {
             return name_;
-
         }
 
     private:
@@ -67,7 +66,6 @@ namespace {
 namespace Gadgetron::Server::Connection::Stream {
 
     Stream::Stream(const Config::Stream &config, const Core::Context &context, Loader &loader) : key(config.key) {
-        if (config.nodes.empty()) throw std::runtime_error("Empty config provided");
         for (auto &node_config : config.nodes) {
             nodes.emplace_back(
                     boost::apply_visitor([&](auto n) { return load_node(n, context, loader); }, node_config)
@@ -80,7 +78,9 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler &error_handler
     ) {
-        std::vector<InputChannel> input_channels;
+if (empty()) return;
+
+        std::vector<InputChannel> input_channels{};
         input_channels.emplace_back(std::move(input));
         std::vector<OutputChannel> output_channels{};
 
@@ -103,6 +103,8 @@ namespace Gadgetron::Server::Connection::Stream {
             thread.join();
         }
     }
+
+    bool Stream::empty() const { return nodes.empty(); }
 }
 
 const std::string &Gadgetron::Server::Connection::Stream::Stream::name() {

@@ -1,4 +1,6 @@
-include_directories(${MATLAB_INCLUDE_DIR})
+include_directories(
+    ${MATLAB_INCLUDE_DIR}
+    )
 
 if (UNIX)
     if (APPLE)
@@ -12,9 +14,21 @@ else()
 endif()
 
 if (UNIX)
-    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp )
+    add_library(gadgetron_matlab SHARED
+        gadgetron_matlab_export.h
+        MatlabGadget.h MatlabGadget.cpp
+        MatlabBufferGadget.h
+        MatlabBufferGadget.cpp
+        MatlabBucketReconGadget.h
+        MatlabBucketReconGadget.cpp)
 else()
-    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
+    add_library(gadgetron_matlab SHARED
+        gadgetron_matlab_export.h
+        MatlabGadget.h MatlabGadget.cpp
+        MatlabBufferGadget.h
+        MatlabBufferGadget.cpp
+        MatlabBucketReconGadget.h
+        MatlabBucketReconGadget.cpp)
 endif()
 set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

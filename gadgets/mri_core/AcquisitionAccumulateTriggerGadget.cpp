@@ -75,6 +75,14 @@ namespace Gadgetron {
         else if (trigger_dimension_local.compare("user_7") == 0) {
             trigger_ = USER_7;
         }
+        else if (trigger_dimension_local.compare("n_acquisitions") == 0) {
+            trigger_ = N_ACQUISITIONS;
+            n_acq_since_trigger_ = 0;
+            n_acquisitions_before_trigger_ = n_acquisitions_before_trigger.value();
+            n_acquisitions_before_ongoing_trigger_ = n_acquisitions_before_ongoing_trigger.value();
+            GDEBUG("NUMBER OF ACQ BEFORE (INITIAL) TRIGGER IS : %lu\n", n_acquisitions_before_trigger_);
+            GDEBUG("NUMBER OF ACQ BEFORE ONGOING TRIGGERING IS : %lu\n", n_acquisitions_before_ongoing_trigger_);
+        }
         else {
             GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension_local.c_str());
             trigger_ = NONE;
@@ -136,6 +144,9 @@ namespace Gadgetron {
         else if (sorting_dimension_local.compare("user_7") == 0) {
             sort_ = USER_7;
         }
+        else if (sorting_dimension_local.compare("n_acquisitions") == 0) {
+            sort_ = NONE;
+        }
         else {
             GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", sorting_dimension_local.c_str());
             sort_ = NONE;
@@ -165,68 +176,71 @@ namespace Gadgetron {
             return GADGET_FAIL;
         }
 
-        //It is enough to put the first one, since they are linked
-        unsigned short sorting_index = 0;
-        switch (sort_) {
-        case KSPACE_ENCODE_STEP_1:
-            sorting_index = m1->getObjectPtr()->idx.kspace_encode_step_1;
-            break;
-        case KSPACE_ENCODE_STEP_2:
-            sorting_index = m1->getObjectPtr()->idx.kspace_encode_step_2;
-            break;
-        case AVERAGE:
-            sorting_index = m1->getObjectPtr()->idx.average;
-            break;
-        case SLICE:
-            sorting_index = m1->getObjectPtr()->idx.slice;
-            break;
-        case CONTRAST:
-            sorting_index = m1->getObjectPtr()->idx.contrast;
-            break;
-        case PHASE:
-            sorting_index = m1->getObjectPtr()->idx.phase;
-            break;
-        case REPETITION:
-            sorting_index = m1->getObjectPtr()->idx.repetition;
-            break;
-        case SET:
-            sorting_index = m1->getObjectPtr()->idx.set;
-            break;
-        case SEGMENT:
-            sorting_index = m1->getObjectPtr()->idx.segment;
-            break;
-        case USER_0:
-            sorting_index = m1->getObjectPtr()->idx.user[0];
-            break;
-        case USER_1:
-            sorting_index = m1->getObjectPtr()->idx.user[1];
-            break;
-        case USER_2:
-            sorting_index = m1->getObjectPtr()->idx.user[2];
-            break;
-        case USER_3:
-            sorting_index = m1->getObjectPtr()->idx.user[3];
-            break;
-        case USER_4:
-            sorting_index = m1->getObjectPtr()->idx.user[4];
-            break;
-        case USER_5:
-            sorting_index = m1->getObjectPtr()->idx.user[5];
-            break;
-        case USER_6:
-            sorting_index = m1->getObjectPtr()->idx.user[6];
-            break;
-        case USER_7:
-            sorting_index = m1->getObjectPtr()->idx.user[7];
-            break;
-        case NONE:
-            sorting_index = 0;
-            break;
-        default:
-            GDEBUG("Unknown sorting condition %d\n", sort_);
-            m1->release();
-            return GADGET_FAIL;
-        }
+    //It is enough to put the first one, since they are linked
+    unsigned short sorting_index = 0;
+    switch (sort_) {
+    case KSPACE_ENCODE_STEP_1:
+      sorting_index = m1->getObjectPtr()->idx.kspace_encode_step_1;
+      break;
+    case KSPACE_ENCODE_STEP_2:
+      sorting_index = m1->getObjectPtr()->idx.kspace_encode_step_2;
+      break;
+    case AVERAGE:
+      sorting_index = m1->getObjectPtr()->idx.average;
+      break;
+    case SLICE:
+      sorting_index = m1->getObjectPtr()->idx.slice;
+      break;
+    case CONTRAST:
+      sorting_index = m1->getObjectPtr()->idx.contrast;
+      break;
+    case PHASE:
+      sorting_index = m1->getObjectPtr()->idx.phase;
+      break;
+    case REPETITION:
+      sorting_index = m1->getObjectPtr()->idx.repetition;
+      break;
+    case SET:
+      sorting_index = m1->getObjectPtr()->idx.set;
+      break;
+    case SEGMENT:
+      sorting_index = m1->getObjectPtr()->idx.segment;	
+      break;
+    case USER_0:
+      sorting_index = m1->getObjectPtr()->idx.user[0];
+      break;
+    case USER_1:
+      sorting_index = m1->getObjectPtr()->idx.user[1];	
+      break;
+    case USER_2:
+      sorting_index = m1->getObjectPtr()->idx.user[2];
+      break;
+    case USER_3:
+      sorting_index = m1->getObjectPtr()->idx.user[3];
+      break;
+    case USER_4:
+      sorting_index = m1->getObjectPtr()->idx.user[4];	
+      break;
+    case USER_5:
+      sorting_index = m1->getObjectPtr()->idx.user[5];
+      break;
+    case USER_6:
+      sorting_index = m1->getObjectPtr()->idx.user[6];	
+      break;
+    case USER_7:
+      sorting_index = m1->getObjectPtr()->idx.user[7];
+      break;
+    case N_ACQUISITIONS:
+      sorting_index = 0;
+      break;
+    case NONE:
+      sorting_index = 0;
+      break;	
+    default:
+      GDEBUG("Unknown sorting condition %d\n", sort_);
+      m1->release();
+      return GADGET_FAIL;
+    }
 
         //Create the data structure that will go in the bucket
         IsmrmrdAcquisitionData d(m1, m2, AsContainerMessage< hoNDArray<float> >(m2->cont()));
@@ -336,6 +350,8 @@ namespace Gadgetron {
                     trigger();
                 }
                 break;
+            case N_ACQUISITIONS:
+                break;
             case NONE:
                 break;
             default:
@@ -396,6 +412,15 @@ namespace Gadgetron {
             bucket->refstats_[espace].repetition.insert(m1->getObjectPtr()->idx.repetition);
         }
 
+            // Handle possible n_acq trigger _after_ pushing data - all others come before
+        if(trigger_==N_ACQUISITIONS)
+        if (++n_acq_since_trigger_ >= n_acquisitions_before_trigger_)
+        {
+            trigger();
+            n_acq_since_trigger_ = 0;
+            n_acquisitions_before_trigger_=n_acquisitions_before_ongoing_trigger_;
+        }
+            
         //We can release the data now. It is reference counted and counter have been incremented through operations above. 
         m1->release();
 
@@ -404,6 +429,7 @@ namespace Gadgetron {
 
         return GADGET_OK;
     }
+                
 
     int AcquisitionAccumulateTriggerGadget::process(GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1)
     {

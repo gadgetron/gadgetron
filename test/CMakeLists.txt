@@ -65,7 +65,8 @@ if (GTEST_FOUND AND ARMADILLO_FOUND)
     endif ()
     target_link_libraries(test_all
             gadgetron_core
-            gadgetron_mricore
+        gadgetron_core_readers
+		gadgetron_core_writers    gadgetron_mricore
             gadgetron_toolbox_cpucore
             gadgetron_toolbox_cpucore_math
             gadgetron_toolbox_cpufft
@@ -81,7 +82,7 @@ if (GTEST_FOUND AND ARMADILLO_FOUND)
             gadgetron_toolbox_cpu_image
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
-            gadgetron_toolbox_node_discovery
+
             ${GTEST_LIBRARIES}
             )
 

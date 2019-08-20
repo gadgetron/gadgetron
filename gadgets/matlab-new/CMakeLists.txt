@@ -1,5 +1,5 @@
 
-set(MATLAB_EXAMPLE_FILES ../matlab-new/examples/simple_recon.m)
+set(MATLAB_EXAMPLE_FILES examples/simple_recon.m)
 
 message("Matlab example files: ${MATLAB_EXAMPLE_FILES}")
 

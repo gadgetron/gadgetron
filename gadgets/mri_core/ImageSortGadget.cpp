@@ -49,7 +49,6 @@ namespace Gadgetron{
   
   int ImageSortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1)
   {
-    
     if (index(m1) < 0) {
       if (this->next()->putq(m1) == -1) {
 	m1->release();

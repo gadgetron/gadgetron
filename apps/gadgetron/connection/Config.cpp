@@ -627,8 +627,7 @@ namespace Gadgetron::Server::Connection {
     std::string serialize_config(const Config &config) {
         pugi::xml_document doc{};
         auto config_node = doc.append_child("configuration");
-        config_node.append_child("version").text().set("2");
-
+        config_node.append_child("version").text().set(2);
         XMLSerializer::add_readers(config.readers, config_node);
         XMLSerializer::add_writers(config.writers, config_node);
         XMLSerializer::add_node(config.stream, config_node);
@@ -638,7 +637,7 @@ namespace Gadgetron::Server::Connection {
         return stream.str();
     }
 
-    std::string serialize_external_config(const Config::External& external_config) {
+    std::string serialize_config(const Config::External& external_config) {
         std::stringstream stream;
         external_config.configuration->document.save(stream);
         return stream.str();
