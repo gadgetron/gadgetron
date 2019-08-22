@@ -406,20 +406,22 @@ namespace Gadgetron {
     template float percentile_approx(const hoNDArray<float>& data, float fraction, size_t bins);
     template double percentile_approx(const hoNDArray<double>& data, double fraction, size_t bins);
     template <class REAL> REAL percentile(const hoNDArray<REAL>& data, REAL fraction) {
+        if (!data.size()) return std::numeric_limits<REAL>::quiet_NaN();
 
         if (fraction <= 1.0 / (data.size() + 1))
             return min(data);
         if (fraction >= double(data.size()) / (data.size() + 1))
             return max(data);
+        double real_index = double(fraction) * (data.size() + 1);
+
+        size_t i1 = size_t(std::floor(real_index))-1;
 
         auto data_sorted = data;
-        std::sort(data_sorted.begin(),data_sorted.end());
+        std::nth_element(data_sorted.begin(),data_sorted.begin()+i1,data_sorted.end());
+        auto val1 = data_sorted[i1];
+        auto val2 = *std::min(data_sorted.begin()+i1+1, data_sorted.end());
 
-        double real_index = double(fraction) * (data_sorted.size() + 1);
-
-        size_t i1 = size_t(std::floor(real_index));
-
-        REAL result = data_sorted[i1 - 1] + (data_sorted[i1] - data_sorted[i1 - 1]) * (real_index - i1);
+        REAL result = val1 + (val2 - val1) * (real_index - i1+1);
 
         return result;
     }

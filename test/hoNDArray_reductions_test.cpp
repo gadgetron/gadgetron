@@ -67,4 +67,21 @@ TYPED_TEST(hoNDArray_reductions_TestReal, sortTest)
     EXPECT_EQ(ind[4] , 4);
 }
 
+TEST(Percentile,Empty){
+    hoNDArray<float> data{};
+    auto val = percentile(data,0.5f);
+    ASSERT_TRUE(std::isnan(val));
+}
 
+TEST(Percentile, One){
+    hoNDArray<float> data{1};
+    data[0] = 42;
+
+    auto val = percentile(data,0.1f);
+    ASSERT_EQ(data[0],val);
+
+    val = percentile(data,0.99f);
+    ASSERT_EQ(data[0],val);
+    val = percentile(data,0.5f);
+    ASSERT_EQ(data[0],val);
+}

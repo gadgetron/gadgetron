@@ -54,10 +54,12 @@ reconstruct them, we inherit from :cpp:class:`ChannelGadget\<Acquisition\><Gadge
             }
     }
 
+We can take the messages from the channel either by calling :cpp:func:`InputChannel::pop()` directly, or by using it in
+ a for loop.
 Channels are ranges, meaning they can be used directly with for loops and with algorithm from standard library, such as
 :cpp:func:`std::transform` and :cpp:func:`std::accumulate`.
 
-.. code-block: cpp
+.. code-block:: cpp
 
     void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
         for (auto acquisition : in ) {
@@ -71,7 +73,7 @@ Channels are ranges, meaning they can be used directly with for loops and with a
 
 Or if you're using C++17, this would be
 
-.. code-block: cpp
+.. code-block:: cpp
 
     void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
         for (auto [header, data, trajectory] : in ) {
@@ -79,7 +81,75 @@ Or if you're using C++17, this would be
         }
     }
 
+We want to gather acquisitions until we have enough for a (possibly undersampled) image. The AcquisitionHeader has the
+ ISMRMRD::_ACQ_LAST_IN_ENCODE_STEP1 flag which we can use as a trigger. By importing channel_algorithms.h, we can write
 
+.. code-block:: cpp
+
+    void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
+
+        auto split_condition = [](auto& message){
+          return !std::get<ISMRMRD::AcquisitionHeader>(message).isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_ENCODE_STEP1);
+        };
+
+        for (auto acquisitions : buffer(in,split_condition)) {
+            for (auto [header, data, trajectory] : acquisitions ) {
+            //Gather acquisitions here
+            }
+    }
+
+
+.. code-block:: cpp
+
+    #include <gadgetron/Gadget.h>
+    #include <gadgetron/hoNDFFT.h>
+    #include <gadgetron/mri_core_utility.h>
+    #include <gadgetron/ChannelAlgorithms.h>
+    #include <gadgetron/log.h>
+    #include <gadgetron/mri_core_coil_map_estimation.h>
+    using namespace Gadgetron;
+    using namespace Gadgetron::Core;
+
+    class SimpleRecon : public TypedChannelGadget<Acquisition> {
+
+        public:
+            SimpleRecon(const Context& context, const GadgetProperties& params) : TypedChannelGadget<Acquisition>(params), header{context.header} {
+
+            }
+
+            void process(TypedInputChannel<Acquisition>& in, OutputChannel& out){
+
+                auto recon_size = header.encoding[0].encodedSpace.matrixSize;
+                auto data = hoNDArray<std::complex<float>>(recon_size.x,recon_size.y,recon_size.z,header.acquisitionSystemInformation->receiverChannels.get());
+
+                ISMRMRD::AcquisitionHeader saved_header;
+
+                auto split_condition = [](auto& message){
+                return !std::get<ISMRMRD::AcquisitionHeader>(message).isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_ENCODE_STEP1);
+                };
+
+                for (auto acquisitions : buffer(in,split_condition)) {
+                   for ( auto [acq_header, acq_data, trajectories] : acquisitions){
+                        saved_header = acq_header;
+                        data(slice,acq_header.idx.kspace_encode_step_1,0,slice) = acq_data;
+                    }
+
+
+                    hoNDFFT<float>::instance()->fft2c(data);
+
+                    auto coil_map = coil_map_Inati(data);
+                    data = coil_combine(data,coil_map,3);
+
+                    auto image_header = image_header_from_acquisition(saved_header,header,data);
+
+                    out.push(image_header,data);
+                }
+            }
+        private:
+            const ISMRMRD::IsmrmrdHeader header;
+    };
+
+    GADGETRON_GADGET_EXPORT(SimpleRecon)
 
 
 
