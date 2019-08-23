@@ -10,14 +10,11 @@ RUN apt-get update --quiet && \
 ervisor supervisor net-tools cpio libpugixml-dev jove libopenblas-base libopenblas-dev
 
 RUN pip3 install -U pip setuptools
-RUN pip3 install numpy==1.15.4 scipy Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install numpy scipy Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-pil python3-h5py
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 
-# RUN pip3 install Cython
-
-RUN pip3 install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install https://download.pytorch.org/whl/cpu/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install --yes torch==1.2.0+cpu torchvision==0.4.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
