@@ -8,6 +8,7 @@
 
 using testing::Types;
 using namespace Gadgetron::Core;
+using namespace Gadgetron::Core::Algorithm;
 using namespace std::string_literals;
 
 class ChannelAlgortihmsTest : public ::testing::Test {
