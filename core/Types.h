@@ -18,7 +18,11 @@ namespace Gadgetron::Core {
 
     template<class... ARGS>
     using variant = boost::variant<ARGS...>;
-    using boost::apply_visitor;
+    template<class VISITOR, class... VARIANTS>
+    decltype(auto) visit(VISITOR&& vis, VARIANTS&&... vars){
+        return boost::apply_visitor(std::forward<VISITOR>(vis),std::forward<VARIANTS>(vars)...);
+    }
+//    using boost::apply_visitor;
 
     template<class... ARGS>
     using tuple = std::tuple<ARGS...>;

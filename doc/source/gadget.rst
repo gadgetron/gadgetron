@@ -16,7 +16,7 @@ A :cpp:class:`PureGadget<Gadgetron::Core::PureGadget>` is a Gadget which process
 and holds no state. Examples could be a Gadget which removes oversampling on :cpp:class:`Acquisitions<Gadgetron::Core::Acquisition>`,
 or one which takes an :cpp:class:`Image<Gadgetron::Core::Image>` and performs autoscaling.
 
-A PureGadget inhertis from :cpp:class:`PureGadget\<OUTPUT,INPUT\><Gadgetron::Core::PureGadget>`,
+A PureGadget inheritss from :cpp:class:`PureGadget\<OUTPUT,INPUT\><Gadgetron::Core::PureGadget>`,
 where OUTPUT and INPUT are the output type and input type of the Gadget.
 
 **AutoScaleGadget.h**
@@ -89,7 +89,7 @@ We want to gather acquisitions until we have enough for a (possibly undersampled
     void process(InputChannel<Acquisition>& in, OutputChannel& out) override {
 
         auto split_condition = [](auto& message){
-          return !std::get<ISMRMRD::AcquisitionHeader>(message).isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_ENCODE_STEP1);
+          return std::get<ISMRMRD::AcquisitionHeader>(message).isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_ENCODE_STEP1);
         };
 
         for (auto acquisitions : buffer(in,split_condition)) {
@@ -109,31 +109,32 @@ We want to gather acquisitions until we have enough for a (possibly undersampled
     #include <gadgetron/mri_core_coil_map_estimation.h>
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
+    using namespace Gadgetron::Core::Algorithm;
 
-    class SimpleRecon : public TypedChannelGadget<Acquisition> {
+    class SimpleRecon : public ChannelGadget<Acquisition> {
 
         public:
-            SimpleRecon(const Context& context, const GadgetProperties& params) : TypedChannelGadget<Acquisition>(params), header{context.header} {
+            SimpleRecon(const Context& context, const GadgetProperties& params) : ChannelGadget<Acquisition>(params), header{context.header} {
 
             }
 
-            void process(TypedInputChannel<Acquisition>& in, OutputChannel& out){
+            void process(InputChannel<Acquisition>& in, OutputChannel& out){
 
                 auto recon_size = header.encoding[0].encodedSpace.matrixSize;
-                auto data = hoNDArray<std::complex<float>>(recon_size.x,recon_size.y,recon_size.z,header.acquisitionSystemInformation->receiverChannels.get());
 
                 ISMRMRD::AcquisitionHeader saved_header;
 
                 auto split_condition = [](auto& message){
-                return !std::get<ISMRMRD::AcquisitionHeader>(message).isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_ENCODE_STEP1);
+                return std::get<ISMRMRD::AcquisitionHeader>(message).isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_ENCODE_STEP1);
                 };
 
                 for (auto acquisitions : buffer(in,split_condition)) {
+
+                   auto data = hoNDArray<std::complex<float>>(recon_size.x,recon_size.y,recon_size.z,header.acquisitionSystemInformation->receiverChannels.get());
                    for ( auto [acq_header, acq_data, trajectories] : acquisitions){
                         saved_header = acq_header;
                         data(slice,acq_header.idx.kspace_encode_step_1,0,slice) = acq_data;
                     }
-
 
                     hoNDFFT<float>::instance()->fft2c(data);
 
@@ -151,5 +152,4 @@ We want to gather acquisitions until we have enough for a (possibly undersampled
 
     GADGETRON_GADGET_EXPORT(SimpleRecon)
 
-
-
+   

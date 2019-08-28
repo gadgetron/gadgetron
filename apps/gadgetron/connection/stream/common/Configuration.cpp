@@ -21,7 +21,7 @@ namespace Gadgetron::Server::Connection::Stream {
     }
 
     static void send_config(std::iostream &stream, const Serializable &config) {
-        Core::apply_visitor([&stream](auto &config) {
+        Core::visit([&stream](auto &config) {
                                 IO::write(stream, CONFIG);
                                 IO::write_string_to_stream<uint32_t>(stream, serialize_config(config));
                             },

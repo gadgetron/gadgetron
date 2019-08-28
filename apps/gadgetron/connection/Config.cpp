@@ -152,7 +152,7 @@ namespace {
 
             add_readers(external.readers, external_node);
             add_writers(external.writers, external_node);
-            boost::apply_visitor(
+            visit(
                     [&](auto action) { add_node(action, external_node); },
                     external.action
             );
@@ -165,7 +165,7 @@ namespace {
             auto stream_node = node.append_child("stream");
             stream_node.append_attribute("key").set_value(stream.key.c_str());
             for (auto node : stream.nodes) {
-                boost::apply_visitor([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
+                visit([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
             }
             return stream_node;
         }

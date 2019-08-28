@@ -90,7 +90,7 @@ namespace Gadgetron {
         for (auto message : in) {
             GILLock lock;
             try {
-                boost::apply_visitor([this, &out](auto &&message) { process_message(class_, out, message); }, message);
+                Core::visit([this, &out](auto &&message) { process_message(class_, out, message); }, message);
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");

@@ -371,8 +371,40 @@ namespace Gadgetron {
     template EXPORTCPUCOREMATH void maxValue(const hoNDArray<float>& a, float& v);
     template EXPORTCPUCOREMATH void maxValue(const hoNDArray<double>& a, double& v);
 
+    template <class REAL>
+    static std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val, REAL max_val) {
 
+        auto span_val = max_val - min_val;
+        auto result   = std::vector<size_t>(bins, 0);
 
+        for (auto val : data) {
+            size_t bin = std::max<size_t>(std::floor((val - min_val) / span_val * bins), 0);
+            if (bin > bins)
+                bin = bins - 1;
+            result[bin]++;
+        }
+
+        return result;
+    }
+
+    template <class REAL> REAL percentile_approx(const hoNDArray<REAL>& data, REAL fraction, size_t bins) {
+        auto max_val = max(data);
+        auto min_val = min(data);
+        auto hist    = histogram(data, bins, min_val, max_val);
+
+        size_t cumsum = 0;
+        size_t counter;
+        for (counter = 0; counter < hist.size(); counter++) {
+            cumsum += hist[counter];
+            if (cumsum > (fraction * data.size()))
+                break;
+        }
+
+        auto result = REAL(counter + 1) * (max_val - min_val) / bins + min_val;
+        return result;
+    }
+    template float percentile_approx(const hoNDArray<float>& data, float fraction, size_t bins);
+    template double percentile_approx(const hoNDArray<double>& data, double fraction, size_t bins);
     template <class REAL> REAL percentile(const hoNDArray<REAL>& data, REAL fraction) {
         if (!data.size()) return std::numeric_limits<REAL>::quiet_NaN();
 
@@ -389,7 +421,7 @@ namespace Gadgetron {
         auto val1 = data_sorted[i1];
         auto val2 = *std::min(data_sorted.begin()+i1+1, data_sorted.end());
 
-        REAL result = val1 + (val2 - val1) * (real_index - i1-1);
+        REAL result = val1 + (val2 - val1) * (real_index - i1+1);
 
         return result;
     }

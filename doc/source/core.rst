@@ -19,6 +19,8 @@ Nodes and Gadgets
 .. doxygenclass:: Gadgetron::Core::PureGadget
     :members:
 
+.. _channels:
+
 Channels
 --------
 

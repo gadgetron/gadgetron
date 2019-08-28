@@ -56,7 +56,7 @@ namespace Gadgetron::Examples {
         auto inverted = InputChannel<AnyImage>(input.at("inverted"), output);
 
         for (auto image : unchanged) {
-            auto merged = Core::apply_visitor(
+            auto merged = Core::visit(
                     [](const auto &a, const auto &b) -> AnyImage { return merge(a, b); },
                     image,
                     inverted.pop()

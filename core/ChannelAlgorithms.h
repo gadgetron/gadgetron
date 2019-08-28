@@ -12,7 +12,7 @@ namespace Gadgetron {
 
             namespace channel_detail {
                 template<class CHANNEL, class PRED>
-                class TakeWhileChannel {
+                class TakeWhileChannel : public ChannelRange<TakeWhileChannel<CHANNEL,PRED>> {
 
                 public:
                     TakeWhileChannel(CHANNEL &channel, PRED pred) : channel{channel}, pred{std::move(pred)} {}
@@ -31,22 +31,12 @@ namespace Gadgetron {
                     bool done = false;
                 };
 
-                template<class CHANNEL, class PRED>
-                inline ChannelIterator<TakeWhileChannel<CHANNEL, PRED>>
-                begin(TakeWhileChannel<CHANNEL, PRED> &channel) {
-                    return ChannelIterator<TakeWhileChannel<CHANNEL, PRED>>(&channel);
-                }
-
-                template<class CHANNEL, class PRED>
-                inline ChannelIterator<TakeWhileChannel<CHANNEL, PRED>> end(TakeWhileChannel<CHANNEL, PRED> &channel) {
-                    return ChannelIterator<TakeWhileChannel<CHANNEL, PRED>>();
-                }
 
 
                 template<class CHANNEL, class PRED>
-                class BufferChannel {
+                class BufferChannel : public ChannelRange<BufferChannel<CHANNEL,PRED>> {
                 public:
-                    BufferChannel(Channel &channel, PRED pred) : channel{channel}, pred{std::move(pred)} {}
+                    BufferChannel(CHANNEL &channel, PRED pred) : channel{channel}, pred{std::move(pred)} {}
 
                     auto pop() {
                         if (closed) throw ChannelClosed();
@@ -67,6 +57,20 @@ namespace Gadgetron {
                     PRED pred;
                     bool closed = false;
 
+                };
+
+
+                template<class CHANNEL, class FUNCTION>
+                class TransformChannel : public ChannelRange<TransformChannel<CHANNEL,FUNCTION>> {
+                public:
+                    TransformChannel(CHANNEL& channel, FUNCTION func) : channel{channel}, func{std::move(func)} {}
+                    auto pop() {
+                        return func(channel.pop());
+                    }
+
+                private:
+                    CHANNEL& channel;
+                    FUNCTION func;
                 };
             }
 
@@ -103,6 +107,19 @@ namespace Gadgetron {
             template<class CHANNEL, class PRED>
             auto buffer(CHANNEL &channel, PRED pred) {
                 return channel_detail::BufferChannel<CHANNEL, PRED>(channel, pred);
+            }
+
+            /**
+             * Produces a channel view, which lazily transforms the messages from the channel using the provided function.
+             * @tparam CHANNEL
+             * @tparam FUNCTION
+             * @param channel
+             * @param func
+             * @return
+             */
+            template<class CHANNEL, class FUNCTION>
+            auto transform(CHANNEL & channel, FUNCTION func){
+                return channel_detail::TransformChannel<CHANNEL, FUNCTION>(channel,func);
             }
 
         }

@@ -67,7 +67,7 @@ namespace Gadgetron::Server::Connection::Stream {
     Stream::Stream(const Config::Stream &config, const Core::Context &context, Loader &loader) : key(config.key) {
         for (auto &node_config : config.nodes) {
             nodes.emplace_back(
-                    boost::apply_visitor([&](auto n) { return load_node(n, context, loader); }, node_config)
+                    Core::visit([&](auto n) { return load_node(n, context, loader); }, node_config)
             );
         }
     }

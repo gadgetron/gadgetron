@@ -62,7 +62,7 @@ namespace Gadgetron {
             ISMRMRD::deserialize(buffer.get(), *meta);
         }
 
-        return boost::apply_visitor([&](auto type_tag) {
+        return Core::visit([&](auto type_tag) {
             return combine_and_read<decltype(type_tag)>(stream, std::move(header), std::move(meta));
         }, ismrmrd_type_map.at(header.data_type));
     }

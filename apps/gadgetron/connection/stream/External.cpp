@@ -70,7 +70,7 @@ namespace Gadgetron::Server::Connection::Stream {
             const Config::External &config,
             const Context &context
     ) {
-        auto stream = boost::apply_visitor([&](auto action) { return open_connection(action, context); }, config.action);
+        auto stream = Core::visit([&](auto action) { return open_connection(action, context); }, config.action);
         return std::make_shared<ExternalChannel>(
                 std::move(stream),
                 serialization,
