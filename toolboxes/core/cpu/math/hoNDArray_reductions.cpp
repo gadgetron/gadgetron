@@ -421,7 +421,7 @@ namespace Gadgetron {
         auto val1 = data_sorted[i1];
         auto val2 = *std::min(data_sorted.begin()+i1+1, data_sorted.end());
 
-        REAL result = val1 + (val2 - val1) * (real_index - i1+1);
+        REAL result = val1 + (val2 - val1) * (real_index - i1-1);
 
         return result;
     }
