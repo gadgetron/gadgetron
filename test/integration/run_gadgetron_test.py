@@ -86,7 +86,7 @@ def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
 
 
 def start_gadgetron_instance(*, log, port, env=environment):
-    print("Starting Gadgetron instance on port",port)
+    print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
@@ -95,39 +95,43 @@ def start_gadgetron_instance(*, log, port, env=environment):
     return proc
 
 
-def build_rules(requirements):
+def query_gadgetron_instance(gadgetron, query):
+    return subprocess.check_output(["gadgetron_ismrmrd_client",
+                                    "-a", gadgetron.host,
+                                    "-p", gadgetron.port,
+                                    "-q", "-Q", query],
+                                   env=environment,
+                                   universal_newlines=True)
+
+
+def prepare_rules(requirements):
+
     class Rule:
-        def __init__(self, pattern, reason, validate, default_value=0):
+        def __init__(self, query, reason, validate):
+            self.query = query
             self.reason = reason
-            self.pattern = pattern
             self.validate = validate
-            self.default_value = default_value
 
-        def accepts(self, info):
-            m = re.search(self.pattern, info, re.MULTILINE)
-            if m is None:
-                return self.validate(self.default_value)
-            return self.validate(m.group('value'))
+        def accepts(self, gadgetron):
+            try:
+                return self.validate(query_gadgetron_instance(gadgetron, self.query).strip())
+            except:
+                return False
 
-    def inspect(value):
-        return ['YES', 'yes', 'True', 'true', '1'].count(value)
+    def is_enabled(value):
+        return value in ['YES', 'yes', 'True', 'true', '1']
+
+    def as_list(value, func=float):
+        return [func(val) for val in value.split(';')]
 
     rules = {
-        'python_support': lambda req: Rule(r"^(\s+)-- Python Support(\s+): (?P<value>\w+)",
-                                           "Python support required.",
-                                           lambda val: int(req) <= inspect(val)),
-        'matlab_support': lambda req: Rule(r"^(\s+)-- Matlab Support(\s+): (?P<value>\w+)",
-                                           "Matlab support required.",
-                                           lambda val: int(req) <= inspect(val)),
-        'gpu_support': lambda req: Rule(r"^(\s+)-- CUDA Support(\s+): (?P<value>\w+)",
-                                        "CUDA support required.",
-                                        lambda val: int(req) <= inspect(val)),
-        'gpu_memory': lambda req: Rule(r"^(\s+)\+ Total amount of global GPU memory: (?P<value>.*) MB",
-                                       "Insufficient GPU memory.",
-                                       lambda val: float(req) <= float(val)),
-        'system_memory': lambda req: Rule(r"^(\s+)-- System Memory size : (?P<value>.*) MB",
-                                          "Insufficient system memory.",
-                                          lambda val: float(req) <= float(val))
+        'system_memory': lambda req: Rule('gadgetron::info::memory', "Insufficient system memory.",
+                                          lambda val: float(req) <= float(val)),
+        'python_support': lambda req: Rule('gadgetron::info::python', "Python support required.", is_enabled),
+        'matlab_support': lambda req: Rule('gadgetron::info::matlab', "MATLAB support required.", is_enabled),
+        'gpu_support': lambda req: Rule('gadgetron::info::cuda', "CUDA support required.", is_enabled),
+        'gpu_memory': lambda req: Rule('gadgetron::cuda::memory', "Insufficient GPU memory.",
+                                       lambda val: float(req) <= min(as_list(val)))
     }
 
     return [rules.get(rule)(requirement) for rule, requirement in requirements if rule in rules]
@@ -217,15 +221,9 @@ def ensure_instance_satisfies_requirements(args, config):
         return
 
     def action(cont, *, gadgetron, **state):
-        info = subprocess.check_output(["gadgetron_ismrmrd_client",
-                                        "-a", gadgetron.host,
-                                        "-p", gadgetron.port,
-                                        "-q", "-Q", "gadgetron::info"],
-                                       env=environment,
-                                       universal_newlines=True)
 
-        failed_rules = [rule for rule in build_rules(config.items('REQUIREMENTS'))
-                        if not rule.accepts(info)]
+        failed_rules = [rule for rule in prepare_rules(config.items('REQUIREMENTS'))
+                        if not rule.accepts(gadgetron)]
 
         if failed_rules:
             for rule in failed_rules:
