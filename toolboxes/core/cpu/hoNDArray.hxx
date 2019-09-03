@@ -1076,7 +1076,7 @@ namespace Gadgetron {
             }
 
             template <class... ARGS> static auto extract_indices(size_t index0, const ARGS&... args) {
-                return std::array<size_t, sizeof...(ARGS) + 1>{ index0, args... };
+                return std::array<size_t, sizeof...(ARGS) + 1>{ index0, static_cast<size_t>(args)... };
             }
 
             template <class T, class... INDICES>

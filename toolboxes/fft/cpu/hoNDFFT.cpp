@@ -300,7 +300,7 @@ namespace Gadgetron {
         if (a == NULL)
             throw std::runtime_error("hoNDFFT::fftshiftPivot2D: void ptr provided");
 
-#pragma omp parallel shared(a, x, y, n, pivotx, pivoty) if (n > 16) default(none)
+#pragma omp parallel if (n > 16) default(shared)
         {
             std::vector<std::complex<T>> buffer(x);
 
@@ -383,7 +383,7 @@ namespace Gadgetron {
 
         long long tt;
 
-#pragma omp parallel private(tt) shared(a, x, y, z, n, pivotx, pivoty, pivotz) if (n > 16) default(none)
+#pragma omp parallel private(tt)  if (n > 16) default(shared)
         {
             std::vector<std::complex<T>> buffer(x);
 
