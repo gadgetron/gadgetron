@@ -12,6 +12,7 @@ Welcome to Gadgetron's documentation!
 
    release_notes
    gadget
+   type_matching
    api
 
 Indices and tables

@@ -44,3 +44,6 @@ Core Types
 .. doxygentypedef:: Gadgetron::Core::Image
 .. doxygentypedef:: Gadgetron::Core::Waveform
 
+.. doxygentypedef:: Gadgetron::Core::optional
+.. doxygentypedef:: Gadgetron::Core::variant
+.. doxygenfunction:: Gadgetron::Core::visit
