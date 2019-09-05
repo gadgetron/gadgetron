@@ -6,6 +6,7 @@
 
 #include "connection/stream/common/External.h"
 #include "connection/stream/common/ExternalChannel.h"
+#include "io/iostream_operators.h"
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection::Stream;

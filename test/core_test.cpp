@@ -157,9 +157,7 @@ TEST(TypeTests, varianttype2) {
         auto message = inputChannel.pop();
 
         auto variation = force_unpack<variant<std::string, int>>(std::move(message));
-        EXPECT_FALSE(variation.empty());
-        std::cout << variation.type().name() << std::endl;
-        EXPECT_EQ(variation.which(), 0);
+        EXPECT_EQ(variation.index(), 0);
     }
 
 }

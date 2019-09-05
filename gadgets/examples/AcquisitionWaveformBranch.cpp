@@ -20,7 +20,7 @@ namespace Gadgetron::Examples {
             std::map<std::string, OutputChannel> output
     ) {
         for (auto acq_or_wav : input) {
-            auto &channel = output.at(apply_visitor([](auto &aw) { return select_channel(aw); }, acq_or_wav));
+            auto &channel = output.at(visit([](auto &aw) { return select_channel(aw); }, acq_or_wav));
             channel.push(std::move(acq_or_wav));
         }
     }

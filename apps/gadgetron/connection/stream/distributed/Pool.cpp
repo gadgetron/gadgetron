@@ -4,6 +4,7 @@
 #include "connection/stream/common/Discovery.h"
 
 #include "log.h"
+#include "io/iostream_operators.h"
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection::Stream;

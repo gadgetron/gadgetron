@@ -3,8 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <boost/variant.hpp>
-#include <boost/optional.hpp>
+#include "Types.h"
 
 namespace Gadgetron::Server::Connection {
 
@@ -16,7 +15,7 @@ namespace Gadgetron::Server::Connection {
         struct Distributed;
         struct ParallelProcess;
         struct PureDistributed;
-        using Node = boost::variant<Gadget, External, Parallel, Distributed, ParallelProcess, PureDistributed>;
+        using Node = Core::variant<Gadget, External, Parallel, Distributed, ParallelProcess, PureDistributed>;
 
         template<class CONFIG>
         static std::string name(CONFIG config) {
@@ -60,7 +59,7 @@ namespace Gadgetron::Server::Connection {
             std::string port;
         };
 
-        using Action = boost::variant<Execute, Connect>;
+        using Action = Core::variant<Execute, Connect>;
 
         struct External {
             Action action;

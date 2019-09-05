@@ -33,7 +33,7 @@ namespace Gadgetron::Examples {
 
     AnyImage ImageInverter::process_function(AnyImage image) const {
         GINFO_STREAM("Inverting image.")
-        return apply_visitor([](const auto &image) -> AnyImage { return invert_image(image); }, image);
+        return visit([](const auto &image) -> AnyImage { return invert_image(image); }, image);
     }
 
     GADGETRON_GADGET_EXPORT(ImageInverter);

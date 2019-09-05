@@ -5,24 +5,17 @@
 #include <ismrmrd/waveform.h>
 
 #include <boost/optional.hpp>
-#include <boost/variant.hpp>
 #include <tuple>
-
+#include "variant.hpp"
 #include "hoNDArray.h"
 #include "TypeTraits.h"
 
 namespace Gadgetron::Core {
+    using namespace mpark;
     template<class T>
     using optional = boost::optional<T>;
     static const auto none = boost::none;
 
-    template<class... ARGS>
-    using variant = boost::variant<ARGS...>;
-    template<class VISITOR, class... VARIANTS>
-    decltype(auto) visit(VISITOR&& vis, VARIANTS&&... vars){
-        return boost::apply_visitor(std::forward<VISITOR>(vis),std::forward<VARIANTS>(vars)...);
-    }
-//    using boost::apply_visitor;
 
     template<class... ARGS>
     using tuple = std::tuple<ARGS...>;

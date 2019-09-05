@@ -127,9 +127,9 @@ namespace Gadgetron {
             bool forward, bool normalize) {
 
             auto plan = ContigousFFTPlan<T>(rank, a, r, forward);
-            const size_t batch_size
+            size_t batch_size
                 = std::accumulate(a.dimensions().begin(), a.dimensions().begin() + rank, 1, std::multiplies<>());
-            const size_t batches = a.size() / batch_size;
+            size_t batches = a.size() / batch_size;
 
 #pragma omp parallel for default(none) shared(plan, batches, a, r, batch_size)
             for (long long i = 0; i < batches; i++) {
@@ -147,11 +147,11 @@ namespace Gadgetron {
             assert(dimension >= 0);
             auto plan              = SingleFFTPlan<T>(dimension, a, r, forward);
             const auto& dimensions = a.dimensions();
-            const size_t inner_batches
+            size_t inner_batches
                 = std::accumulate(dimensions.begin(), dimensions.begin() + dimension, 1, std::multiplies<>());
-            const size_t outer_batches
+            size_t outer_batches
                 = std::accumulate(dimensions.begin() + dimension, dimensions.end(), 1, std::multiplies<>());
-            const size_t outer_batchsize = inner_batches * dimensions[dimension];
+            size_t outer_batchsize = inner_batches * dimensions[dimension];
 
 #pragma omp parallel for default(none) shared(plan, a, r, inner_batches, outer_batches, outer_batchsize) collapse(2)
             for (long long outer = 0; outer < outer_batches; outer++) {

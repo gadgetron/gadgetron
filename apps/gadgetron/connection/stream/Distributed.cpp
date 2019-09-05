@@ -7,6 +7,7 @@
 #include "connection/stream/common/Closer.h"
 #include "connection/stream/common/Discovery.h"
 #include "connection/stream/common/ExternalChannel.h"
+#include "io/iostream_operators.h"
 
 namespace {
     using namespace Gadgetron;

@@ -62,6 +62,8 @@ namespace Gadgetron::Examples {
                     inverted.pop()
             );
 
+
+
             GINFO_STREAM("Images combined; pushing out result.");
 
             output.push(std::move(merged));
