@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "BucketToBufferGadget.h"
 #include "mri_core_data.h"
 #include "hoNDArray_elemwise.h"
@@ -94,7 +93,6 @@ namespace Gadgetron {
     int BucketToBufferGadget
         ::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
     {
-
         size_t key;
         std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
 
@@ -252,6 +250,7 @@ namespace Gadgetron {
                         // it->second->getObjectPtr()->rbit_[0].data_.waveform_ = wav;
                     }
 
+                    GDEBUG_STREAM("Putting buckets in queue")
                     if (this->next()->putq(it->second) == -1) {
                         it->second->release();
                         throw std::runtime_error("Failed to pass bucket down the chain\n");
@@ -269,14 +268,6 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int BucketToBufferGadget::close(unsigned long flags)
-    {
-
-        int ret = Gadget::close(flags);
-        GDEBUG("BucketToBufferGadget::close\n");
-
-        return ret;
-    }
 
     size_t BucketToBufferGadget::getSlice(ISMRMRD::ISMRMRD_EncodingCounters idx)
     {

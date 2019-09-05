@@ -16,7 +16,6 @@
 
 #include <mutex>
 #include "engine.h"     // Matlab Engine header
-#include "gadgetron_home.h"
 
 
 // time measurement

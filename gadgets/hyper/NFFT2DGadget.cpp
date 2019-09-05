@@ -4,7 +4,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray_utils.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ismrmrd/xml.h"
 #include "radial_utilities.h"
 #include <cmath>

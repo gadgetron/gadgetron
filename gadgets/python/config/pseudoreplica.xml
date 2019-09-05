@@ -103,7 +103,7 @@
       <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>pseudoreplicagather</value></property>
       <property><name>python_class</name>                <value>PseudoreplicaGather</value></property>
- 	<property>
+        <property>
 			<name>repetitions</name>
 			<value>100</value>
 		</property>

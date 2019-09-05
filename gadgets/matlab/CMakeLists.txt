@@ -1,8 +1,6 @@
 include_directories(
     ${MATLAB_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/toolboxes/matlab)
+    )
 
 if (UNIX)
     if (APPLE)
@@ -15,7 +13,7 @@ else()
     set(MATLAB_SUFFIX ".dll")
 endif()
 
-if (UNIX) 
+if (UNIX)
     add_library(gadgetron_matlab SHARED
         gadgetron_matlab_export.h
         MatlabGadget.h MatlabGadget.cpp
@@ -34,8 +32,7 @@ else()
 endif()
 set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(
-    gadgetron_matlab
+target_link_libraries(gadgetron_matlab
     gadgetron_toolbox_log
     gadgetron_toolbox_matlab
     gadgetron_gadgetbase
@@ -43,8 +40,6 @@ target_link_libraries(
     gadgetron_toolbox_cpucore_math
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
-    optimized ${ACE_LIBRARIES}
-    debug ${ACE_DEBUG_LIBRARY}
 )
 install(TARGETS gadgetron_matlab DESTINATION lib COMPONENT main)
 install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

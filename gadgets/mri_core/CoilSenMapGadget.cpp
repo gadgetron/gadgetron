@@ -319,14 +319,7 @@ namespace Gadgetron {
 
     }
 
-    int CoilSenMapGadget::close( unsigned long flags )
-    {
-        GDEBUG_CONDITION_STREAM(true, "CoilSenMapGadget - close(flags) : " << flags);
 
-        if (BaseClass::close( flags ) != GADGET_OK) return GADGET_FAIL;
-
-        return GADGET_OK;
-    }
 
     GADGET_FACTORY_DECLARE( CoilSenMapGadget )
 

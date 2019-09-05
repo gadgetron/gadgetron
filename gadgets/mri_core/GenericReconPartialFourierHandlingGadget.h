@@ -14,37 +14,40 @@
 
 #pragma once
 
-#include "GenericReconBase.h"
 
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDFFT.h"
 
 #include "mri_core_partial_fourier.h"
+#include "mri_core_data.h"
+#include "PureGadget.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconPartialFourierHandlingGadget : public GenericReconImageBase
+class GenericReconPartialFourierHandlingGadget : public Core::PureGadget<IsmrmrdImageArray,IsmrmrdImageArray>
     {
     public:
-        GADGET_DECLARE(GenericReconPartialFourierHandlingGadget);
 
         typedef float real_value_type;
         typedef std::complex<real_value_type> ValueType;
         typedef ValueType T;
+        using BaseClass = Core::PureGadget<IsmrmrdImageArray,IsmrmrdImageArray>;
 
-        typedef GenericReconImageBase BaseClass;
+        GenericReconPartialFourierHandlingGadget(const Core::Context& context, const Core::GadgetProperties& props);
 
-        GenericReconPartialFourierHandlingGadget();
-        ~GenericReconPartialFourierHandlingGadget();
+        virtual ~GenericReconPartialFourierHandlingGadget() = default;
 
+        IsmrmrdImageArray process_function(IsmrmrdImageArray array) const override;
         /// ------------------------------------------------------------------------------------
         /// parameters to control the reconstruction
         /// ------------------------------------------------------------------------------------
-        GADGET_PROPERTY(skip_processing_meta_field, std::string, "If this meta field exists, pass the incoming image array to next gadget without processing", "Skip_processing_after_recon");
+        NODE_PROPERTY(skip_processing_meta_field, std::string, "If this meta field exists, pass the incoming image array to next gadget without processing", "Skip_processing_after_recon");
+        NODE_PROPERTY(verbose, bool, "Verbose",false);
+        NODE_PROPERTY(perform_timing, bool, "Perform timing",false);
 
     protected:
-
+        size_t num_encoding_spaces;
         // --------------------------------------------------
         // variables for protocol
         // --------------------------------------------------
@@ -53,39 +56,12 @@ namespace Gadgetron {
         std::vector<double> acceFactorE1_;
         std::vector<double> acceFactorE2_;
 
-        // --------------------------------------------------
-        // variable for recon
-        // --------------------------------------------------
-
-        // sampled range
-        size_t startRO_;
-        size_t endRO_;
-        size_t startE1_;
-        size_t endE1_;
-        size_t startE2_;
-        size_t endE2_;
-
-        // kspace buffer
-        hoNDArray<T> kspace_buf_;
-
-        // results of pf handling
-        hoNDArray<T> pf_res_;
-
-        // --------------------------------------------------
-        // functional functions
-        // --------------------------------------------------
-
-        // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1);
-
-        // close call
-        int close(unsigned long flags);
 
         // --------------------------------------------------
         // implementation functions
         // --------------------------------------------------
-        virtual int perform_partial_fourier_handling() = 0;
+        virtual hoNDArray <std::complex<float>> perform_partial_fourier_handling(const hoNDArray <std::complex<float>> &kspace_buffer, size_t start_RO, size_t end_RO,
+                                         size_t start_E1, size_t end_E1, size_t start_E2, size_t end_E2) const  = 0;
 
     };
 }

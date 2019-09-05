@@ -2,36 +2,16 @@
 #include "GenericReconCartesianGrappaAIGadget.h"
 #include "mri_core_grappa.h"
 #include "hoNDArray_reductions.h"
-#include "gadgetron_home.h"
 
 namespace Gadgetron {
 
     GenericReconCartesianGrappaAIGadget::GenericReconCartesianGrappaAIGadget() : BaseClass()
     {
-        try
-        {
-            if (Gadgetron::initialize_python() == GADGET_OK)
-            {
-                boost::filesystem::path gadgetron_python_path = Gadgetron::get_gadgetron_home() / std::string(GADGETRON_PYTHON_PATH);
-                if (Gadgetron::add_python_path(gadgetron_python_path.generic_string()) == GADGET_FAIL)
-                {
-                    GERROR_STREAM("Failed to add path: " << gadgetron_python_path.generic_string() << " to python ... ");
-                }
-
-                this->gt_home_ = gadgetron_python_path.generic_string();
-
-                GDEBUG_STREAM("Set up python path : " << this->gt_home_);
-            }
-            else
-            {
-                GERROR_STREAM("Failed to initialize python ... ");
-            }
-        }
-        catch (...)
-        {
-            this->gt_home_.clear();
-            GERROR_STREAM("Exception happened when adding  path to python ... ");
-        }
+        Gadgetron::initialize_python();
+        boost::filesystem::path gadgetron_python_path
+            = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
+        Gadgetron::add_python_path(gadgetron_python_path.generic_string());
+        this->gt_home_ = gadgetron_python_path.generic_string();
     }
 
     GenericReconCartesianGrappaAIGadget::~GenericReconCartesianGrappaAIGadget()

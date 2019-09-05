@@ -38,9 +38,9 @@
 #include <thread>
 #include <chrono>
 #include <condition_variable>
+#include <boost/make_shared.hpp>
 
 #include "NHLBICompression.h"
-#include "log.h"
 
 #if defined GADGETRON_COMPRESSION_ZFP
 #include "zfp/zfp.h"
@@ -198,6 +198,8 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_PARAMETER_SCRIPT                       =   3,
     GADGET_MESSAGE_CLOSE                                  =   4,
     GADGET_MESSAGE_TEXT                                   =   5,
+    GADGET_MESSAGE_QUERY                                  =   6,
+    GADGET_MESSAGE_RESPONSE                               =   7,
     GADGET_MESSAGE_INT_ID_MAX                             = 999,
     GADGET_MESSAGE_EXT_ID_MIN                             = 1000,
     GADGET_MESSAGE_ACQUISITION                            = 1001, /**< DEPRECATED */
@@ -275,6 +277,24 @@ public:
     */
     virtual void read(tcp::socket* s) = 0;
 
+};
+
+class GadgetronClientResponseReader : public GadgetronClientMessageReader
+{
+    void read(tcp::socket *stream) override {
+
+        uint64_t correlation_id = 0;
+        uint64_t response_length = 0;
+
+        boost::asio::read(*stream, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
+        boost::asio::read(*stream, boost::asio::buffer(&response_length, sizeof(response_length)));
+
+        std::vector<char> response(response_length + 1,0);
+
+        boost::asio::read(*stream, boost::asio::buffer(response.data(),response_length));
+
+        std::cout << response.data() << std::endl;
+    }
 };
 
 class GadgetronClientTextReader : public GadgetronClientMessageReader
@@ -1185,6 +1205,22 @@ public:
         boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
     }
 
+    void send_gadgetron_info_query(const std::string &query, uint64_t correlation_id = 0) {
+        GadgetMessageIdentifier id{ 6 }; // 6 = QUERY; Deal with it.
+
+        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(id)));
+
+        uint64_t reserved = 0;
+
+        boost::asio::write(*socket_, boost::asio::buffer(&reserved, sizeof(reserved)));
+        boost::asio::write(*socket_, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
+
+        uint64_t query_length = query.size();
+
+        boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(query_length)));
+        boost::asio::write(*socket_, boost::asio::buffer(query));
+    }
+
     void send_gadgetron_configuration_file(std::string config_xml_name) {
 
         if (!socket_) {
@@ -1527,7 +1563,7 @@ class GadgetronClientQueryToStringReader : public GadgetronClientMessageReader
 {
   
 public:
-  GadgetronClientQueryToStringReader(std::string* result) : result_(result)
+  GadgetronClientQueryToStringReader(std::string& result) : result_(result)
   {
     
   }
@@ -1545,35 +1581,17 @@ public:
     size_t_type len(0);
     boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
 
-    char* buf = NULL;
-    try {
-      buf = new char[len];
-      memset(buf, '\0', len);
-      memcpy(buf, &len, sizeof(size_t_type));
-    } catch (std::runtime_error &err) {
-      std::cerr << "DependencyQueryReader, failed to allocate buffer" << std::endl;
-      throw;
-    }
-    
-    
-    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    std::vector<char> temp(len,0);
+    if (boost::asio::read(*stream, boost::asio::buffer(temp.data(), len)) != len)
     {
-      delete [] buf;
-      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");
     }
+    result_ = std::string(temp.data(),len);
     
-    if (!result_) {
-      delete [] buf;
-      throw GadgetronClientException("Result pointer is NULL");  
-    }
-    
-    *result_ = std::string(buf);
-
-    delete[] buf;
   }
   
   protected:
-    std::string* result_;
+    std::string& result_;
 };
 
 
@@ -1584,7 +1602,7 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
     std::string result;
     NoiseStatistics stat;
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientQueryToStringReader(&result)));
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::make_shared<GadgetronClientQueryToStringReader>(result));
     
     std::string xml_config;
     
@@ -1699,6 +1717,7 @@ int main(int argc, char **argv)
         ("help,h", "Produce help message")
         ("query,q", "Dependency query mode")
         ("verbose,v", "Verbose mode")
+        ("info,Q", po::value<std::string>(), "Query Gadgetron information")
         ("port,p", po::value<std::string>(&port)->default_value("9002"), "Port")
         ("address,a", po::value<std::string>(&host_name)->default_value("localhost"), "Address (hostname) of Gadgetron host")
         ("filename,f", po::value<std::string>(&in_filename), "Input file")
@@ -1726,14 +1745,14 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!vm.count("filename") && !vm.count("query")) {
+    if (!vm.count("filename") && !vm.count("query") && !vm.count("info")) {
         std::cout << std::endl << std::endl << "\tYou must supply a filename" << std::endl << std::endl;
         std::cout << desc << std::endl;
         return -1;
     }
 
-    if (vm.count("query")) {
-      open_input_file = false;
+    if (vm.count("query") || vm.count("info")) {
+        open_input_file = false;
     }
 
     if (vm.count("verbose")) {
@@ -1774,7 +1793,7 @@ int main(int argc, char **argv)
       ismrmrd_dataset->readHeader(xml_config);
     }
 
-    if (!vm.count("query")) {
+    if (!vm.count("query") && !vm.count("info")) {
       std::cout << "Gadgetron ISMRMRD client" << std::endl;
       std::cout << "  -- host            :      " << host_name << std::endl;
       std::cout << "  -- port            :      " << port << std::endl;
@@ -1789,7 +1808,7 @@ int main(int argc, char **argv)
 
     //Let's figure out if this measurement has dependencies
     NoiseStatistics noise_stats; noise_stats.status = false;
-    if (!vm.count("query")) {
+    if (!vm.count("query") && !vm.count("info")) {
         ISMRMRD::IsmrmrdHeader h;
         ISMRMRD::deserialize(xml_config.c_str(),h);
 
@@ -1851,11 +1870,16 @@ int main(int argc, char **argv)
 
     con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));
     con.register_reader(GADGET_MESSAGE_TEXT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
+    con.register_reader(7, boost::shared_ptr<GadgetronClientResponseReader>(new GadgetronClientResponseReader()));
 
     try
     {
         con.connect(host_name,port);
-        if (vm.count("config-local"))
+
+        if (vm.count("info")) {
+            con.send_gadgetron_info_query(vm["info"].as<std::string>());
+        }
+        else if (vm.count("config-local"))
         {
             con.send_gadgetron_configuration_script(config_xml_local);
         }

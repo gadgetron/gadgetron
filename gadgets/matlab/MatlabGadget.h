@@ -7,16 +7,10 @@
 #include "log.h"
 #include "engine.h"     // Matlab Engine header
 
-#include "ace/Synch.h"  // For the MatlabCommandServer
-#include "ace/SOCK_Connector.h"
-#include "ace/INET_Addr.h"
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex>
 #include <boost/lexical_cast.hpp>
-#include "gadgetron_home.h"
 
 // TODO:
 //Make the port option work so that we can have multiple matlabs running, each with its own command server.
@@ -26,37 +20,14 @@
 //Test on windows
 
 
-namespace Gadgetron{
+namespace Gadgetron {
 
 template <class T> class MatlabGadget :
 		public Gadget2<T, hoNDArray< std::complex<float> > >
 {
 public:
 	MatlabGadget(): Gadget2<T, hoNDArray< std::complex<float> > >()
-	{
-		// Open the Matlab Engine on the current host
-		GDEBUG("Starting MATLAB engine\n");
-		if (!(engine_ = engOpen("matlab -nosplash -nodesktop"))) {
-			// TODO: error checking!
-			GDEBUG("Can't start MATLAB engine\n");
-		} else {
-
-			// Prepare a buffer for collecting Matlab's output
-			char matlab_buffer_[2049] = "\0";
-			engOutputBuffer(engine_, matlab_buffer_, 2048);
-
-			// Add the necessary paths to the matlab environment
-			// Java matlab command server
-			std::string gadgetron_matlab_path = get_gadgetron_home().string() + "/share/gadgetron/matlab";
-			std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
-			// Gadgetron matlab scripts
-			engEvalString(engine_, add_path_cmd.c_str());
-			// ISMRMRD matlab library
-			engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
-
-			GDEBUG("%s", matlab_buffer_);
-		}
-	}
+	{}
 
 	~MatlabGadget()
 	{
@@ -71,6 +42,30 @@ protected:
 
 	int process_config(ACE_Message_Block* mb)
 	{
+		// Open the Matlab Engine on the current host
+		GDEBUG("Starting MATLAB engine\n");
+		if (!(engine_ = engOpen("matlab -nosplash -nodesktop"))) {
+			// TODO: error checking!
+			GDEBUG("Can't start MATLAB engine\n");
+		} else {
+
+			// Prepare a buffer for collecting Matlab's output
+			char matlab_buffer_[2049] = "\0";
+			engOutputBuffer(engine_, matlab_buffer_, 2048);
+
+			auto gadgetron_matlab_path = this->context.paths.gadgetron_home / "/share/gadgetron/matlab";
+
+			std::stringstream add_path_command{};
+			add_path_command << "addpath('" << gadgetron_matlab_path << "');";
+
+			// Gadgetron matlab scripts
+			engEvalString(engine_, add_path_command.str().c_str());
+			// ISMRMRD matlab library
+			engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
+
+			GDEBUG("%s", matlab_buffer_);
+		}
+
 		std::string cmd;
 
 		debug_mode_  = debug_mode.value();

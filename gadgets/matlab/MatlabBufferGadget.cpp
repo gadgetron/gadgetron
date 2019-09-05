@@ -261,6 +261,8 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
     
 	return GADGET_OK;
 }
+	GADGET_FACTORY_DECLARE(MatlabBufferGadget);
+
 }
 
 

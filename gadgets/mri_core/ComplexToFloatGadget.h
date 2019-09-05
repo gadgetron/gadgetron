@@ -3,32 +3,24 @@
     \author Hui Xue
 */
 
-#ifndef ComplexToFloatGadget_H_
-#define ComplexToFloatGadget_H_
-
-#include "Gadget.h"
+#pragma once
 #include "hoNDArray.h"
 #include "ismrmrd/meta.h"
-#include "gadgetron_mricore_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 
+#include <Types.h>
+#include "PureGadget.h"
 namespace Gadgetron
 {
-    class EXPORTGADGETSMRICORE ComplexToFloatGadget:public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
+class ComplexToFloatGadget: public Core::PureGadget<Core::Image<float>,Core::Image<std::complex<float>>>
     {
     public:
+        ComplexToFloatGadget(const Core::Context& context, const Core::GadgetProperties& props);
 
-        GADGET_DECLARE(ComplexToFloatGadget);
-
-        typedef std::complex<float> ValueType;
-
-        ComplexToFloatGadget();
-        virtual ~ComplexToFloatGadget();
-
-    protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2);
-    };
+        Core::Image<float> process_function(Core::Image<std::complex<float>> args) const override;
+    private:
+        std::map<uint16_t,std::function<hoNDArray<float>(const hoNDArray<std::complex<float>>&)>> converters;
+};
 }
 
-#endif // ComplexToFloatGadget

@@ -9,7 +9,7 @@ if(WIN32)
 endif()
 
 if (WIN32)
-    set(GT_DICOM_LIBRARIES ${DCMTK_dcmdata_LIBRARY} ${DCMTK_oflog_LIBRARY} ${DCMTK_ofstd_LIBRARY})
+    set(GT_DICOM_LIBRARIES ${DCMTK_dcmdata_LIBRARY} ${DCMTK_oflog_LIBRARY} ${DCMTK_ofstd_LIBRARY} ${DCMTK_dcmdata_LIBRARY})
 else ()
     set(GT_DICOM_LIBRARIES
         ${DCMTK_dcmdata_LIBRARY}
@@ -22,9 +22,9 @@ else ()
 endif ()
 
 # sanity check:
-#message("DCMTK ${DCMTK_HOME}")
-#message("Include: ${DCMTK_INCLUDE_DIRS}")
-#message("Libraries: ${GT_DICOM_LIBRARIES}")
+message("DCMTK ${DCMTK_HOME}")
+message("Include: ${DCMTK_INCLUDE_DIRS}")
+message("Libraries: ${GT_DICOM_LIBRARIES}")
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/gadgets/mri_core    # for GadgetIsmrmrdReadWrite.h
@@ -74,14 +74,12 @@ add_library(gadgetron_dicom SHARED
 
 set_target_properties(gadgetron_dicom PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(
-    gadgetron_dicom
-    gadgetron_gadgetbase
+target_link_libraries(gadgetron_dicom 
+    gadgetron_core
+    gadgetron_mricore
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore 
     ${ISMRMRD_LIBRARIES}
-    optimized ${ACE_LIBRARIES}
-    debug ${ACE_DEBUG_LIBRARY}
     ${Boost_LIBRARIES}
     ${GT_DICOM_LIBRARIES} )
 

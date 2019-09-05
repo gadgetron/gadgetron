@@ -1,6 +1,6 @@
 
 set(image_header_fiels 
-        ../image_export.h 
+        image_export.h
         morphology.h )
 
 set(image_src_fiels morphology.cpp )
@@ -16,6 +16,10 @@ target_link_libraries(gadgetron_toolbox_cpu_image
     gadgetron_toolbox_cpucore_math 
     )
 
+target_include_directories(gadgetron_toolbox_cpu_image
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        )
 install(TARGETS gadgetron_toolbox_cpu_image DESTINATION lib COMPONENT main)
 
 install(FILES

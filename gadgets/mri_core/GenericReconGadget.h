@@ -44,6 +44,7 @@ namespace Gadgetron {
 
     protected:
 
+        void send_out_image_array(IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);
         // --------------------------------------------------
         // variables for protocol
         // --------------------------------------------------

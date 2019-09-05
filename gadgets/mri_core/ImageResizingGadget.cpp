@@ -3,7 +3,6 @@
 *       Author: Hui Xue
 */
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ImageResizingGadget.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"

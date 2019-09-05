@@ -11,7 +11,6 @@
 constexpr double GAMMA = 4258.0;        /* Hz/G */
 constexpr double PI = boost::math::constants::pi<double>();
 
-#define DEBUG_VDS    0
 /* #define TESTCODE 	For testing as regular C code... */
 
 /*
@@ -164,13 +163,6 @@ namespace Gadgetron {
         double rootparta, rootpartb;
 
 
-        if (DEBUG_VDS > 1) {
-            printf("calcthetadotdot:  slewmax=%8.2f, gmax=%6.2f, \n",
-                   slewmax, gradmax);
-            printf("        kr=%8.4f, Tg=%9.6f, N=%d, nfov=%d \n",
-                   kr, Tgsample, Ninterleaves, numfov);
-        }
-
         /* Calculate the actual FOV and dFOV/dkr for this R,
          * based on the fact that the FOV is expressed
          * as a polynomial in kr.*/
@@ -193,14 +185,11 @@ namespace Gadgetron {
         /* Maximum dkr/dt, based on gradient amplitude.  */
 
         maxkrdot = sqrt(pow(GAMMA * gradmax, 2) / (1 + pow(2 * PI * fovval * kr / Ninterleaves, 2)));
-        if (DEBUG_VDS > 1)
-            printf("calcthetadotdot:  maxkrdot = %g \n", maxkrdot);
+
 
         /* These two are just to simplify expressions below */
         tpf = 2 * PI * fovval / Ninterleaves;
         tpfsq = pow(tpf, 2);
-        if (DEBUG_VDS > 1)
-            printf("calcthetadotdot:  tpf = %8.4f,  tpfsq = %8.4f  \n", tpf, tpfsq);
 
 
         if (krdot > maxkrdot)    /* Then choose krdotdot so that krdot is in range */
@@ -219,15 +208,9 @@ namespace Gadgetron {
                    4 * tpfsq * dfovdrval / fovval * kr * pow(krdot, 4) -
                    pow(GAMMA * slewmax, 2);
 
-            if (DEBUG_VDS > 1)
-                printf("calcthetadotdot:  qdfA, qdfB, qdfC = %g, %g, %g \n",
-                       qdfA, qdfB, qdfC);
 
             rootparta = -qdfB / (2 * qdfA);
             rootpartb = qdfB * qdfB / (4 * qdfA * qdfA) - qdfC / qdfA;
-            if (DEBUG_VDS > 1)
-                printf("calcthetadotdot:  rootparta, rootpartb = %g, %g \n",
-                       rootparta, rootpartb);
 
             if (rootpartb < 0)    /* Safety check - if complex, take real part.*/
 
@@ -244,16 +227,11 @@ namespace Gadgetron {
 
 
         *thetadotdot = tpf * dfovdrval / fovval * krdot * krdot + tpf * (*krdotdot);
-
-        if (DEBUG_VDS > 1)
-            printf("calcthetadot:  r=%8.4f,  r'=%8.4f,  r''=%g  q''=%g \n",
-                   kr, krdot, *krdotdot, *thetadotdot);
-
     }
 
 
     /* ----------------------------------------------------------------------- */
-    void EXPORTGADGETS_SPIRAL
+    void
     calc_vds(double slewmax, double gradmax, double Tgsample, double Tdsample, int Ninterleaves,
              double *fov, int numfov, double krmax,
              int ngmax, double **xgrad, double **ygrad, int *numgrad)
@@ -309,10 +287,6 @@ namespace Gadgetron {
 
 
 
-
-        if (DEBUG_VDS > 0)
-            printf("calc_vds:  First run. \n");
-
         /* First just find the gradient length. */
 
         while ((kr < krmax) && (gradcount < ngmax)) {
@@ -336,8 +310,6 @@ namespace Gadgetron {
         /* Allocate memory for gradients. */
 
         *numgrad = gradcount;
-        if (DEBUG_VDS > 0)
-            printf("Allocating for %d gradient points. \n", *numgrad);
 
         //*xgrad = (double *)malloc(*numgrad*sizeof(double));
         //*ygrad = (double *)malloc(*numgrad*sizeof(double));
@@ -357,9 +329,6 @@ namespace Gadgetron {
 
 
         /* Now re-calculate gradient to find length. */
-
-        if (DEBUG_VDS > 0)
-            printf("calc_vds:  First run. \n");
 
         while ((kr < krmax) && (gradcount < ngmax)) {
             calcthetadotdot(slewmax, gradmax, kr, krdot, Tgsample, Tdsample,
@@ -382,9 +351,6 @@ namespace Gadgetron {
             lastkx = kx;
             lastky = ky;
 
-            if (DEBUG_VDS > 0)
-                printf("Current kr is %6.3f \n", kr);
-
             gradcount++;
         }
 
@@ -392,7 +358,7 @@ namespace Gadgetron {
 
 
     /* ----------------------------------------------------------------------- */
-    void EXPORTGADGETS_SPIRAL
+    void
     calc_traj(double *xgrad, double *ygrad, int ngrad, int Nints, double Tgsamp, double krmax,
               double **x_trajectory, double **y_trajectory,
               double **weights) //, double** y_weights)

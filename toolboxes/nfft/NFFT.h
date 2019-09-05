@@ -148,6 +148,9 @@ namespace Gadgetron {
         }
 
 
+        virtual ~NFFT_plan() = default;
+
+
     protected:
 
         // Dedicated computes

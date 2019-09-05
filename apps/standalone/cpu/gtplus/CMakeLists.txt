@@ -19,15 +19,20 @@ if (MATLAB_FOUND)
     )
 
     link_directories(${Boost_LIBRARY_DIRS})
-    link_libraries(${MATLAB_LIBRARIES} 
-                    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-                    ${ISMRMRD_LIBRARIES} 
+    link_libraries(${MATLAB_LIBRARIES}
+                    ${ISMRMRD_LIBRARIES}
+                    ${FFTW3_LIBRARIES}
+                    ${Boost_LIBRARIES}
+                    ${ARMADILLO_LIBRARIES}
                     gadgetron_toolbox_matlab 
-                    gadgetron_toolbox_image_analyze_io 
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math
                     gadgetron_toolbox_mri_core
-                    gadgetron_toolbox_cpureg )
+                    gadgetron_toolbox_cpureg 
+                    gadgetron_toolbox_cpufft 
+                    gadgetron_toolbox_cpuklt 
+                    gadgetron_toolbox_cpuoperator 
+                    gadgetron_toolbox_log )
 
     if (WIN32)
         if ( HAS_64_BIT )

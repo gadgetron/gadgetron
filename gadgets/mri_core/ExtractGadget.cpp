@@ -8,10 +8,11 @@
 #include <bitset>
 #include <unordered_map>
 #include <cpu/math/hoNDArray_math.h>
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ExtractGadget.h"
 
 #include <boost/math/constants/constants.hpp>
+
+#include "hoNDArray_fileio.h"
 
 namespace Gadgetron {
 
@@ -71,7 +72,6 @@ namespace Gadgetron {
 
     int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1,
                                GadgetContainerMessage<hoNDArray<std::complex<float>>> *m2) {
-
         float min_val = minimum_component(*m2->getObjectPtr());
 
         for (IMTYPE image_type : image_types) {
@@ -94,8 +94,6 @@ namespace Gadgetron {
             if (real_imag_offset != 0 && (image_type == IMTYPE::ISMRMRD_IMTYPE_REAL || image_type == IMTYPE::ISMRMRD_IMTYPE_IMAG)) {
                 *cm2->getObjectPtr() += float(real_imag_offset);
             }
-
-
 
             cm1->cont(cm2);
             cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;//GADGET_IMAGE_REAL_FLOAT;

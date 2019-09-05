@@ -13,11 +13,13 @@ RUN apt-get update --quiet && \
     apt-utils wget build-essential emacs python-dev python-pip libhdf5-serial-dev cmake git-core \
     libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
-    libxslt-dev libace-dev gcc-multilib  \
-    libgtest-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools cpio
+    libxslt-dev gcc-multilib  \
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
+    supervisor cpio net-tools
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
+
+RUN apt-get install --no-install-recommends --no-install-suggests --yes \
+    libopenblas-base libopenblas-dev
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -55,9 +57,9 @@ RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
 
 # Compile boost
 RUN cd /opt && \
-    wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz && \
-    tar -xzvf boost_1_67_0.tar.gz && \
-    cd boost_1_67_0 && \
+    wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz && \
+    tar -xzvf boost_1_69_0.tar.gz && \
+    cd boost_1_69_0 && \
     ./bootstrap.sh --with-python=/usr/bin/python3 --prefix=/usr && \
     ./b2 -j$(nproc) address-model=64 stage && \
     ./b2 install
@@ -67,11 +69,19 @@ RUN ln -s /usr/lib/libboost_python36.so /usr/lib/libboost_python3.so
 
 # Compile armadillo
 RUN cd /opt && \
-    wget http://sourceforge.net/projects/arma/files/armadillo-8.600.0.tar.xz && \
-    tar xvf armadillo-8.600.0.tar.xz && \
-    cd armadillo-8.600.0 && \
+    wget http://sourceforge.net/projects/arma/files/armadillo-9.200.8.tar.xz && \
+    tar xvf armadillo-9.200.8.tar.xz && \
+    cd armadillo-9.200.8 && \
     mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
+    make -j$(nproc) && \
+    make PREFIX=/usr/lib/x86_64-linux-gnu install
+
+# Compile PugiXML
+RUN cd /opt && \
+    git clone https://github.com/zeux/pugixml.git --branch v1.9 && cd pugixml && \
+    mkdir build && cd build &&\
+    cmake -DCMAKE_BUILD_TYPE=Release .. &&  \
     make -j$(nproc) && \
     make install
     
@@ -96,6 +106,8 @@ RUN cd /opt && \
     cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
     make install
+
+RUN apt-get clean
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \

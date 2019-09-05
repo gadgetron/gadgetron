@@ -15,7 +15,7 @@
 namespace Gadgetron {
 
     template <typename T>
-    void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<T>& mask, const bool compare_mask, hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas)
+    void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<T>& mask, bool compare_mask, hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas)
     {
         try
         {
@@ -62,7 +62,7 @@ namespace Gadgetron {
 
             int phs;
 
-#pragma omp parallel for default(none) private(phs) shared(N, RO, E1, dx, dy, radial, circ, mask, Cr, Ce, thetas)
+#pragma omp parallel for default(none) private(phs) shared(N, RO, E1, dx, dy, radial, circ, mask, Cr, Ce, thetas, compare_mask)
             for (phs = 0; phs < N; phs++)
             {
                 ArrayType dx_2D(RO, E1, const_cast<double*>(&dx(0, 0, phs)));

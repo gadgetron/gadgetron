@@ -29,9 +29,10 @@ namespace Gadgetron{
       MFIOperator(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArray<floatd2>& gpu_traj, std::vector<size_t> &data_d,std::vector<size_t> &image_d, uint64d2 &image_d_os, double &st,float dTE);
 
 
-      bool Prepare(boost::shared_ptr<cuNFFT_plan<float,2>> plan_, cuNDArray<floatd2>& gpu_traj, std::vector<size_t> &data_d,std::vector<size_t> &image_d, uint64d2 &image_d_os, double &st,float dTE);
+      bool prepare(boost::shared_ptr<cuNFFT_plan<float, 2>> plan_, cuNDArray<floatd2>& gpu_traj,
+          std::vector<size_t>& data_d, std::vector<size_t>& image_d, uint64d2& image_d_os, double& st, float dTE);
 
-      hoNDArray<complext<float>> MFI_Apply(hoNDArray<complext<float>> &ho_image,hoNDArray<float> B0_map);
+      hoNDArray<complext<float>> MFI_apply(hoNDArray<complext<float>>& ho_image, hoNDArray<float> B0_map);
 
   private:
 
@@ -53,11 +54,11 @@ namespace Gadgetron{
 
       boost::shared_ptr<cuNFFT_plan<float,2>> nfft_plan_;
 
-      void Calc_MFI_Coeff();
+      void calc_MFI_coeff();
 
-      void Calc_Phase_Mask();
+      void calc_phase_mask();
 
-      void Calc_Kspace_Filter(std::vector<size_t> &matrix_size);
+      void calc_kspace_filter(std::vector<size_t>& matrix_size);
 
   };
 }

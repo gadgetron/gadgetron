@@ -39,7 +39,7 @@ namespace Gadgetron{
 	for (size_t i = 0; i < chm.size(); i++) {
 	  std::string ch = boost::algorithm::trim_copy(chm[i]);
 	  if (ch.size() > 0) {
-	    size_t mv = static_cast<size_t>(ACE_OS::atoi(ch.c_str()));
+	    size_t mv = static_cast<size_t>(std::stoi(ch));
 	    //GDEBUG("Coil mask value: %d\n", mv);
 	    if (mv > 0) {
 	      coil_mask_.push_back(1);

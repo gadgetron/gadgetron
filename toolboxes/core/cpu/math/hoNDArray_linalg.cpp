@@ -169,8 +169,7 @@ extern "C" void zgetri_( const lapack_int* n, lapack_complex_double* a, const la
 namespace Gadgetron
 {
 
-// following matrix computation calls MKL functions
-#if defined(USE_MKL) || defined(USE_LAPACK)
+
 
 void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
 {
@@ -2017,6 +2016,6 @@ template EXPORTCPUCOREMATH void linFit(const hoNDArray<float>& x, const hoNDArra
 template EXPORTCPUCOREMATH void linFit(const hoNDArray<double>& x, const hoNDArray<double>& y, double& a, double& b);
 template EXPORTCPUCOREMATH void linFit(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& a, std::complex<float>& b);
 template EXPORTCPUCOREMATH void linFit(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& a, std::complex<double>& b);
-#endif // defined(USE_MKL) || defined(USE_LAPACK)
+
 
 }

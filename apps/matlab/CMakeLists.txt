@@ -6,10 +6,10 @@ if (MATLAB_FOUND)
 
     set(CMAKE_DEBUG_POSTFIX)
 
-    include_directories( 
-        ${Boost_INCLUDE_DIR} 
-        ${ARMADILLO_INCLUDE_DIRS} 
-        ${ACE_INCLUDE_DIR} 
+    include_directories(
+        ${Boost_INCLUDE_DIR}
+        ${ARMADILLO_INCLUDE_DIRS}
+        ${ACE_INCLUDE_DIR}
         ${ISMRMRD_INCLUDE_DIR}
         ${FFTW3_INCLUDE_DIR}
         ${MKL_INCLUDE_DIR}
@@ -47,12 +47,11 @@ if (MATLAB_FOUND)
     )
 
     link_directories(${Boost_LIBRARY_DIRS})
-    link_libraries(${MATLAB_LIBRARIES} 
-                    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-                    ${ISMRMRD_LIBRARIES} 
-                    ${FFTW3_LIBRARIES} 
-                    ${Boost_LIBRARIES} 
-                    ${ARMADILLO_LIBRARIES} 
+    link_libraries(${MATLAB_LIBRARIES}
+                    ${ISMRMRD_LIBRARIES}
+                    ${FFTW3_LIBRARIES}
+                    ${Boost_LIBRARIES}
+                    ${ARMADILLO_LIBRARIES}
                     gadgetron_toolbox_matlab 
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math

@@ -146,6 +146,13 @@ namespace Gadgetron{
     template <class T> EXPORTCPUCOREMATH 
     void maxValue(const hoNDArray<T>& a, T& v);
 
+
+    template<class REAL>
+    REAL percentile_approx(const hoNDArray<REAL>& data, REAL fraction,size_t bins = 100);
+
+     template<class REAL>
+    REAL percentile(const hoNDArray<REAL>& data, REAL fraction);
+
 }
 
 

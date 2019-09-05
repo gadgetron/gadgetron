@@ -22,7 +22,7 @@ namespace Gadgetron {
       NoiseAdjustGadget();
       virtual ~NoiseAdjustGadget();
 
-      virtual int close(unsigned long flags);
+      int close(unsigned long flags) override;
 
     protected:
       GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix of noise depencency file", "GadgetronNoiseCovarianceMatrix");
@@ -55,9 +55,9 @@ namespace Gadgetron {
       std::string measurement_id_of_noise_dependency_;
       std::string full_name_stored_noise_dependency_;
 
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+      int process_config(ACE_Message_Block* mb) override;
+      int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
+			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2) override;
 
       std::string generateNoiseDependencyFilename(const std::string& measurement_id);
       std::string generateMeasurementIdOfNoiseDependency(const std::string& noise_id);

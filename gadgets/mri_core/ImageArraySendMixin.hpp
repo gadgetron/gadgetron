@@ -5,7 +5,7 @@
 
 
 
-template<class Derived> size_t Gadgetron::ImageArraySendMixin<Derived>::compute_image_number(const ISMRMRD::ImageHeader& imheader, size_t encoding, size_t CHA, size_t cha, size_t E2)
+template<class Derived> size_t Gadgetron::ImageArraySendMixin<Derived>::compute_image_number(const ISMRMRD::ImageHeader& imheader, size_t encoding, size_t CHA, size_t cha, size_t E2) const
 {
     if (encoding >= meas_max_idx_.size())
     {
@@ -26,10 +26,9 @@ template<class Derived> size_t Gadgetron::ImageArraySendMixin<Derived>::compute_
     return imageNum;
 }
 
-template<class Derived> int Gadgetron::ImageArraySendMixin<Derived>::prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role)
+template<class Derived> void Gadgetron::ImageArraySendMixin<Derived>::prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role) const
 {
-    try
-    {
+
         size_t RO = res.data_.get_size(0);
         size_t E1 = res.data_.get_size(1);
         size_t E2 = res.data_.get_size(2);
@@ -81,20 +80,11 @@ template<class Derived> int Gadgetron::ImageArraySendMixin<Derived>::prep_image_
             res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "RETRO");
             res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RETRO);
         }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors in GenericReconGadget::prep_image_header_send_out(...) ... ");
-        return GADGET_FAIL;
-    }
 
-    return GADGET_OK;
 }
 
-template<class Derived> int Gadgetron::ImageArraySendMixin<Derived>::send_out_image_array(IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role)
+template<class Derived> void Gadgetron::ImageArraySendMixin<Derived>::prepare_image_array(IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role) const
 {
-    try
-    {
         size_t RO = res.data_.get_size(0);
         size_t E1 = res.data_.get_size(1);
         size_t E2 = res.data_.get_size(2);
@@ -104,7 +94,7 @@ template<class Derived> int Gadgetron::ImageArraySendMixin<Derived>::send_out_im
         size_t SLC = res.data_.get_size(6);
 
         GDEBUG_CONDITION_STREAM(true, "sending out image array, acquisition boundary [RO E1 E2 CHA N S SLC] = [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "] ");
-        Derived* derived = static_cast<Derived*>(this);
+        const Derived* derived = static_cast<const Derived*>(this);
         // compute image numbers and fill the image meta
         size_t n, s, slc;
         for (slc = 0; slc < SLC; slc++)
@@ -113,7 +103,7 @@ template<class Derived> int Gadgetron::ImageArraySendMixin<Derived>::send_out_im
             {
                 for (n = 0; n < N; n++)
                 {
-                    GADGET_CHECK_RETURN(this->prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role)==GADGET_OK, GADGET_FAIL);
+                    this->prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role);
 
                     if (derived->verbose)
                     {
@@ -126,23 +116,7 @@ template<class Derived> int Gadgetron::ImageArraySendMixin<Derived>::send_out_im
             }
         }
 
-        // send out the images
-        GadgetContainerMessage<IsmrmrdImageArray>* cm1 = new GadgetContainerMessage<IsmrmrdImageArray>();
-        *(cm1->getObjectPtr()) = res;
 
-        if (derived->next()->putq(cm1) < 0)
-        {
-            GERROR_STREAM("Put image array to Q failed ... ");
-            return GADGET_FAIL;
-        }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors in GenericReconGadget::send_out_image_array(...) ... ");
-        return GADGET_FAIL;
-    }
-
-    return GADGET_OK;
 }
 
 template<class Derived>

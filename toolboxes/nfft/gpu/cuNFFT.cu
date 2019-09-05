@@ -31,7 +31,7 @@
 
 #include <thrust/system/cuda/detail/cub/cub.cuh>
 // Includes - CUDA
-#include <device_functions.h>
+#include <cuda_runtime.h>
 #include <math_constants.h>
 #include <cufft.h>
 

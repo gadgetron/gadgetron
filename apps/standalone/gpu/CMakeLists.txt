@@ -16,9 +16,6 @@ include_directories(
 	)
 
 add_subdirectory(mri)
-if (NOT(WIN32))
-	add_subdirectory(ct)
-endif()
 add_subdirectory(denoising)
 add_subdirectory(deblurring)
 add_subdirectory(registration)

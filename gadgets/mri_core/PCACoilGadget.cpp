@@ -6,14 +6,12 @@
 */
 
 #include "PCACoilGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDArray_elemwise.h"
 #include "ismrmrd/xml.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDKLT.h"
 #include "hoNDArray_linalg.h"
 
-#include <ace/OS_NS_stdlib.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 

@@ -11,7 +11,6 @@
 
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-#include "GadgetStreamController.h"
 
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"

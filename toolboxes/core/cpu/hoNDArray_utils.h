@@ -1,8 +1,10 @@
 #pragma once
 
 #include <boost/make_shared.hpp>
+#include <boost/range/combine.hpp>
 #include <numeric>
 #include "hoNDArray.h"
+#include "hoNDArray_iterators.h"
 #include "vector_td_utilities.h"
 
 #include <boost/math/interpolators/cubic_b_spline.hpp>
@@ -11,6 +13,13 @@
 #ifdef USE_OMP
 #include <omp.h>
 #endif
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif 
 
 namespace Gadgetron {
 
@@ -45,7 +54,7 @@ namespace Gadgetron {
       current_idx_ = 0;
       for (size_t i = 0; i < dimensions_.size(); i++) {
         current_idx_ += current_[i]*block_sizes_[i];
-      }	
+      }
       return current_idx_;
     }
 
@@ -95,7 +104,7 @@ namespace Gadgetron {
     return out;
   }
 
-  template<class T> void 
+  template<class T> void
   permute(const  hoNDArray<T>& in, hoNDArray<T>& out, const std::vector<size_t>& dim_order)
   {
 
@@ -339,7 +348,7 @@ namespace Gadgetron {
       {
           std::vector<size_t> ind;
 
-      #pragma omp for 
+      #pragma omp for
           for (k = 0; k < (long long)num; k++){
               ind = out.calculate_index(k*len);
               for (unsigned int d = 0; d < D; d++){
@@ -526,7 +535,7 @@ namespace Gadgetron {
   {
       std::vector<size_t> dim;
       src.get_dimensions(dim);
- 
+
       vector_td<size_t, D> offset_src, size;
 
       if (dim.size() < D)
@@ -620,7 +629,7 @@ namespace Gadgetron {
       {
           std::vector<size_t> ind;
 
-#pragma omp for 
+#pragma omp for
           for (k = 0; k < (long long)num; k++){
               ind = in.calculate_index(k*len);
               for (d = 0; d < D; d++){
@@ -674,7 +683,7 @@ namespace Gadgetron {
   }
 
   /// copy the sub array x(:, indLastDim) to all other places of the last dimensions
-  template<typename T> 
+  template<typename T>
   bool repmatLastDimension(hoNDArray<T>& x, size_t indLastDim)
   {
     try
@@ -727,45 +736,45 @@ namespace Gadgetron {
   }
 
   // Downsample
-  template<class REAL, unsigned int D> 
+  template<class REAL, unsigned int D>
    hoNDArray<REAL>  downsample(const  hoNDArray<REAL>& _in )
   {
-    // A few sanity checks 
+    // A few sanity checks
     if( _in.get_number_of_dimensions() < D ){
       throw std::runtime_error( "downsample(): the number of array dimensions should be at least D");
     }
-    
+
     for( size_t d=0; d<D; d++ ){
       if( (_in.get_size(d)%2) == 1 && _in.get_size(d) != 1 ){
 	throw std::runtime_error( "downsample(): uneven array dimensions larger than one not accepted");
       }
     }
-    
+
     typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( size_t d=0; d<D; d++ ){
-      if( matrix_size_out[d] == 0 ) 
+      if( matrix_size_out[d] == 0 )
 	matrix_size_out[d] = 1;
     }
-  
+
     size_t num_elements = prod(matrix_size_out);
     size_t num_batches = 1;
 
     for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
       num_batches *= _in.get_size(d);
     }
-  
+
     std::vector<size_t> dims = to_std_vector(matrix_size_out);
     for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
       dims.push_back(_in.get_size(d));
     }
-  
+
     const REAL *in = _in.get_data_ptr();
 
      hoNDArray<REAL>  _out( &dims );
     REAL *out = _out.get_data_ptr();
-    
+
     typedef vector_td<size_t,D> uint64d;
 
 #ifdef USE_OMP
@@ -788,7 +797,7 @@ namespace Gadgetron {
 	const size_t in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
 	actual_adds++;
 	res += in[in_idx];
-      }    
+      }
       out[idx] = res/REAL(actual_adds);
     }
 
@@ -951,23 +960,47 @@ namespace Gadgetron {
       out_ptr[idx] = in_ptr[in_idx];
 	}
 
-
-
     return out;
   }
-
-
 
   template<class T> hoNDArray<T> repeat(const hoNDArray<T>& array,unsigned int repeats){
       auto dims = *array.get_dimensions();
       dims.push_back(repeats);
 
       hoNDArray<T> output(dims);
-      T* out_ptr = output.get_data_ptr();
 
-      for (int i =0; i < repeats; i++){
-          std::copy(array.begin(),array.end(),out_ptr+i*array.get_number_of_elements());
+      for (auto span : spans(output, array.get_number_of_dimensions())) {
+          span = array;
       }
+
+      return output;
+  }
+
+  template<class COLL, class T = typename COLL::value_type::value_type>
+  hoNDArray<T> concat(const COLL &arrays) {
+
+      if (arrays.empty()) return hoNDArray<T>();
+
+      const hoNDArray<T> &first = *std::begin(arrays);
+
+      auto dims = first.dimensions();
+      auto size = first.size();
+
+      if (!std::all_of(begin(arrays), end(arrays), [&](auto &array) { return dims == array.dimensions(); }) ||
+          !std::all_of(begin(arrays), end(arrays), [&](auto &array) { return size == array.size(); })) {
+          throw std::runtime_error("Array size or dimensions do not match.");
+      }
+
+      dims.push_back(arrays.size());
+      hoNDArray<T> output(dims);
+
+      auto output_iterator = spans(output, first.get_number_of_dimensions()).begin();
+
+      for (auto& array : arrays) {
+          *output_iterator = array;
+          ++output_iterator;
+      }
+
       return output;
   }
 }

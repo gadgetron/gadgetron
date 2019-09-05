@@ -37,11 +37,11 @@ namespace Gadgetron {
     namespace {
 
         template<typename T, unsigned int D>
-        struct FFT {
+        struct FFTD {
         };
 
         template<typename T>
-        struct FFT<T, 1> {
+        struct FFTD<T, 1> {
             using REAL = typename realType<T>::Type;
 
             static void fft(hoNDArray<T> &array, NFFT_fft_mode mode, bool do_scale) {
@@ -55,7 +55,7 @@ namespace Gadgetron {
         };
 
         template<typename T>
-        struct FFT<T, 2> {
+        struct FFTD<T, 2> {
             using REAL = typename realType<T>::Type;
 
             static void fft(hoNDArray<T> &array, NFFT_fft_mode mode, bool do_scale ) {
@@ -71,7 +71,7 @@ namespace Gadgetron {
         };
 
         template<typename T>
-        struct FFT<T, 3> {
+        struct FFTD<T, 3> {
             using REAL = typename realType<T>::Type;
 
             static void fft(hoNDArray<T> &array, NFFT_fft_mode mode, bool do_scale) {
@@ -152,8 +152,8 @@ namespace Gadgetron {
         this->beta = compute_beta(W,matrix_size,matrix_size_os);
         this->deapodization_filter_IFFT = compute_deapodization_filter(this->matrix_size_os,this->beta, this->W);
         this->deapodization_filter_FFT = deapodization_filter_IFFT;
-        FFT<std::complex<REAL>,D>::fft(deapodization_filter_IFFT,NFFT_fft_mode::BACKWARDS,true);
-        FFT<std::complex<REAL>,D>::fft(deapodization_filter_FFT,NFFT_fft_mode::FORWARDS,true);
+        FFTD<std::complex<REAL>,D>::fft(deapodization_filter_IFFT,NFFT_fft_mode::BACKWARDS,true);
+        FFTD<std::complex<REAL>,D>::fft(deapodization_filter_FFT,NFFT_fft_mode::FORWARDS,true);
 
         boost::transform(deapodization_filter_IFFT,deapodization_filter_IFFT.begin(),[](auto val){return REAL(1)/val;});
         boost::transform(deapodization_filter_FFT,deapodization_filter_FFT.begin(),[](auto val){return REAL(1)/val;});
@@ -168,8 +168,8 @@ namespace Gadgetron {
         this->deapodization_filter_IFFT = compute_deapodization_filter(this->matrix_size_os, this->beta, this->W);
         this->deapodization_filter_FFT = deapodization_filter_IFFT;
 
-        FFT<std::complex<REAL>, D>::fft(deapodization_filter_IFFT, NFFT_fft_mode::BACKWARDS, false);
-        FFT<std::complex<REAL>, D>::fft(deapodization_filter_FFT, NFFT_fft_mode::FORWARDS, false);
+        FFTD<std::complex<REAL>, D>::fft(deapodization_filter_IFFT, NFFT_fft_mode::BACKWARDS, false);
+        FFTD<std::complex<REAL>, D>::fft(deapodization_filter_FFT, NFFT_fft_mode::FORWARDS, false);
         
         boost::transform(deapodization_filter_IFFT, deapodization_filter_IFFT.begin(),
                          [](auto val) { return REAL(1) / val; });
@@ -288,7 +288,7 @@ namespace Gadgetron {
             bool do_scale
     ) {
         GadgetronTimer timer("FFT");
-        FFT<std::complex<REAL>, D>::fft(d, mode,do_scale);
+        FFTD<std::complex<REAL>, D>::fft(d, mode,do_scale);
     }
     template<class REAL, unsigned int D>
     void hoNFFT_plan<REAL, D>::fft(

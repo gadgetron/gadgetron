@@ -234,11 +234,11 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			host_image = *(reg_image.to_host());
 
 			gpu_traj = host_traj;
-			if(MFI.Prepare(nfft_plan_, gpu_traj, *host_data.get_dimensions(), image_dimensions_recon_, image_dimensions_recon_os_, sample_time, .001)){
-				output_image = MFI.MFI_Apply(host_image, B0_map);
+			if(MFI.prepare(nfft_plan_, gpu_traj, *host_data.get_dimensions(), image_dimensions_recon_,
+                                image_dimensions_recon_os_, sample_time, .001)){
+				output_image = MFI.MFI_apply(host_image, B0_map);
 			}
-			host_image = *(reg_image.to_host()); //caling MFI_Apply corrupts host_image, Recall it from GPU;
-
+			host_image = *(reg_image.to_host()); //caling MFI_apply corrupts host_image, Recall it from GPU;
 			//queue deblurred im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header = get_image_header(curr_header,1);
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();

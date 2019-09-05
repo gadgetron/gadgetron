@@ -211,6 +211,8 @@ void addEpsilon(hoNDArray<T>& x);
 */
 template <typename T> EXPORTCPUCOREMATH 
 void argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
+template<class T>
+hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x);
 
 /**
 * @brief r = 1/x
@@ -224,10 +226,9 @@ void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
  * @return A new array containing the element-wise absolute values of the input.
  */
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
-template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
-template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
-template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< complext<T> >& x, hoNDArray< complext<T> >& r);
- 
+template<class T> EXPORTCPUCOREMATH hoNDArray<typename realType<T>::Type> abs(const  hoNDArray<T>& x );
+template <typename T, typename R> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<R>& r);
+
 /**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
  * @param[in,out] x Input and output array.
@@ -317,6 +318,7 @@ template<class T> EXPORTCPUCOREMATH void sgn_inplace( hoNDArray<T> *x );
  * @return A new array of the real component of the complex array.
  */
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > real(const  hoNDArray<T> *x );
+    template<class T> EXPORTCPUCOREMATH  hoNDArray<realType_t<T>> real(const  hoNDArray<T>&x );
 
 /**
  * @brief Extract the imaginary component from a complex array.
@@ -324,7 +326,7 @@ template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realTy
  * @return A new array of the imaginary component of the complex array.
  */
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > imag( const hoNDArray<T> *x );
-
+template<class T> EXPORTCPUCOREMATH  hoNDArray<realType_t<T>> imag(const  hoNDArray<T>&x );
 /**
  * @brief Create a new array of the complex conjugate of the input array. For real arrays a copy of the input array is return.
  * @param[in] x Input array.
@@ -404,7 +406,7 @@ template<class T> void clear( hoNDArray<T>& x )
 {
     if ( x.get_number_of_elements() > 0 )
     {
-        memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
+        memset( x.get_data_ptr(), 0, x.get_number_of_elements() * sizeof(T));
     }
 }
 

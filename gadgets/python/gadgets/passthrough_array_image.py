@@ -2,6 +2,9 @@ from __future__ import print_function
 import numpy as np
 from gadgetron import Gadget
 
+import logging
+
+
 class ArrayImagePassThrough(Gadget):
     def __init__(self,next_gadget=None):
         super(ArrayImagePassThrough,self).__init__(next_gadget=next_gadget)
@@ -23,8 +26,8 @@ class ArrayImagePassThrough(Gadget):
 
         #Send the combined image and the modified header and metadata
         if metadata is not None:
-            self.put_next(header,image,metadata)
+            self.put_next(header, image, metadata)
         else:
-            self.put_next(header,image)
+            self.put_next(header, image)
 
         return 0

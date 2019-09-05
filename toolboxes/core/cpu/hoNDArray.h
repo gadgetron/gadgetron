@@ -14,8 +14,45 @@
 #include <float.h>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
+#include "TypeTraits.h"
 
 namespace Gadgetron{
+
+   class Slice {};
+   constexpr auto slice = Slice{};
+
+   template<class... ARGS>
+   struct ValidIndex : std::integral_constant<bool, Core::all_of_v<Core::is_convertible_v<ARGS,size_t>...>> {};
+
+   template<> struct ValidIndex<> : std::true_type {};
+
+   template<class... ARGS>
+   struct ValidIndex<Slice,ARGS...> : ValidIndex<ARGS...> {};
+
+
+   template<class T> class hoNDArray;
+
+
+   template<class T, size_t D>
+   class hoNDArrayView {
+   public:
+       hoNDArrayView& operator=(const hoNDArrayView&);
+       hoNDArrayView& operator=(const hoNDArray<T>&);
+
+        template<class... INDICES>
+       std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
+       operator()(INDICES... indices);
+   private:
+       friend class hoNDArray<T>;
+       hoNDArrayView(const std::array<size_t,D>& strides, const std::array<size_t,D>& dimensions, T*);
+
+       vector_td<size_t, D> strides;
+       vector_td<size_t, D> dimensions;
+       T* data;
+
+   };
+
+
 
   template <typename T> class hoNDArray : public NDArray<T>
   {
@@ -37,10 +74,8 @@ namespace Gadgetron{
     hoNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
-#if __cplusplus > 199711L
     hoNDArray(std::initializer_list<size_t> dimensions);
     hoNDArray(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
-#endif
 
     explicit hoNDArray(size_t len);
     hoNDArray(size_t sx, size_t sy);
@@ -67,24 +102,21 @@ namespace Gadgetron{
     explicit hoNDArray(const hoNDArray<T> *a);
     //Move constructors
 
-#if __cplusplus > 199711L
     //Move constructors
-    hoNDArray(hoNDArray<T>&& a);
-    hoNDArray& operator=(hoNDArray&& rhs);
+    hoNDArray(hoNDArray<T>&& a) noexcept;
+    hoNDArray& operator=(hoNDArray&& rhs) noexcept;
 
-#endif
 
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
+    bool operator==(const hoNDArray& rhs) const;
     virtual void create(const std::vector<size_t>& dimensions);
     virtual void create(const std::vector<size_t> *dimensions);
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
-#if __cplusplus > 199711L
     virtual void create(std::initializer_list<size_t> dimensions);
     virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
-#endif
 
     virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
@@ -109,6 +141,45 @@ namespace Gadgetron{
     virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T* data, bool delete_data_on_destruct = false);
     virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct = false);
     virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, T* data, bool delete_data_on_destruct = false);
+
+    T& operator()( const std::vector<size_t>& ind );
+    const T& operator()( const std::vector<size_t>& ind ) const;
+
+    T& operator()( size_t x );
+    const T& operator()( size_t x ) const;
+
+    T& operator()( size_t x, size_t y );
+    const T& operator()( size_t x, size_t y ) const;
+
+    T& operator()( size_t x, size_t y, size_t z );
+    const T& operator()( size_t x, size_t y, size_t z ) const;
+
+    T& operator()( size_t x, size_t y, size_t z, size_t s );
+    const T& operator()( size_t x, size_t y, size_t z, size_t s ) const;
+
+    T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p );
+    const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p ) const;
+
+    T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r );
+    const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r ) const;
+
+    T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a );
+    const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a ) const;
+
+    T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q );
+    const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q ) const;
+
+    T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u );
+    const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
+
+    template<class... INDICES>
+    std::enable_if_t<ValidIndex<Slice,INDICES...>::value, hoNDArray<T>>
+    operator()(const Slice&, const INDICES&... );
+
+
+
+  template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Slice>...>> >
+  auto operator()(const INDICES&... );
 
     void fill(T value);
 
@@ -217,6 +288,7 @@ namespace Gadgetron{
       free( data );
     }
   };
+
 }
 
 #include "hoNDArray.hxx"

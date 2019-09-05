@@ -567,11 +567,11 @@ namespace Gadgetron {
         std::complex<float> mean_frequency(const Parameters &parameters) {
             ChemicalSpecies fat = parameters.species[1];
             auto average_fat_freq =
-                    accumulate(fat.amplitude_frequency_pairs.begin(), fat.amplitude_frequency_pairs.end(), 0.0if,
+                    accumulate(fat.amplitude_frequency_pairs.begin(), fat.amplitude_frequency_pairs.end(), std::complex<float>(0.0),
                                [](auto val, auto tup) {
                                    return val + std::get<0>(tup) * std::get<1>(tup);
                                }) /
-                    accumulate(fat.amplitude_frequency_pairs.begin(), fat.amplitude_frequency_pairs.end(), 0.0if,
+                    accumulate(fat.amplitude_frequency_pairs.begin(), fat.amplitude_frequency_pairs.end(), std::complex<float>(0.0),
                                [](auto val, auto tup) { return val + std::get<0>(tup); });
             average_fat_freq *= parameters.field_strength_T * parameters.gyromagnetic_ratio_Mhz;
             return average_fat_freq;
