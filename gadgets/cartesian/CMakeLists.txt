@@ -15,12 +15,9 @@ target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore
   gadgetron_core
   gadgetron_toolbox_log
   gadgetron_mricore
-  ${ISMRMRD_LIBRARIES}
+  gadgetron_toolbox_cpucore_math 
   )
 
-if(ARMADILLO_FOUND)
-    target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore_math )
-endif()
 
 install (FILES  gadgetron_cartesian_export.h
                 CartesianToGenericGadget.h

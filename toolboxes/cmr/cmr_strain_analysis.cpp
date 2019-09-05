@@ -15,7 +15,7 @@
 namespace Gadgetron {
 
     template <typename T>
-    void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<T>& mask, const bool compare_mask, hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas)
+    void compute_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<T>& mask, bool compare_mask, hoNDArray<T>& radial, hoNDArray<T>& circ, hoNDArray<T>& thetas)
     {
         try
         {
