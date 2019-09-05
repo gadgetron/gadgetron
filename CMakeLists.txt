@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5...3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10...3.12 FATAL_ERROR)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -97,6 +97,11 @@ else ()
     set(GADGETRON_VAR_DIR /var/lib/gadgetron/ CACHE PATH "Path where Gadgetron will store calibration data, etc" FORCE)
 endif ()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# create the Gadgetron version header
+configure_file("${CMAKE_SOURCE_DIR}/cmake/gadgetron_sha1.h.in" ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h @ONLY)
+include_directories(${PROJECT_BINARY_DIR}/include)
+install(FILES ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 #Set the build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
@@ -275,18 +280,7 @@ set( CUDA_NVCC_FLAGS "NA")
 endif ()
 
 find_package(GTest)
-#Add support for the default ubuntu package of gtest (which is not compiled
-if (NOT GTEST_FOUND)
-    find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
-    find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
-    if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
-        message("GTest src package found. Compiling as part of Gadgetron.")
-        add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
-        include_directories(${GTEST_INCLUDE_DIRS})
-        set(GTEST_FOUND 1)
-        set(GTEST_LIBRARIES gtest gtest_main)
-    endif ()
-endif ()
+
 
 find_package(Armadillo REQUIRED )
 # check whether ILP64 MKL should is used
@@ -418,7 +412,7 @@ message("Adding gpertools to build.")
 find_package(Gperftools REQUIRED)
 endif()
 
-add_subdirectory(test)
+#add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
 add_subdirectory(chroot)

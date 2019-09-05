@@ -176,7 +176,7 @@ namespace Gadgetron {
                 {
                     // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                     {
-                        coord_type px, py, px_source, py_source, ix_source, iy_source;
+                        typename TargetType::coord_type px, py, px_source, py_source, ix_source, iy_source;
 
                         // #pragma omp for 
                         for ( y=0; y<(long long)sy; y++ )
@@ -207,7 +207,7 @@ namespace Gadgetron {
                 {
                     // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                     {
-                        coord_type ix_source, iy_source;
+                        typename TargetType::coord_type ix_source, iy_source;
 
                         // #pragma omp for 
                         for ( y=0; y<(long long)sy; y++ )
@@ -241,7 +241,7 @@ namespace Gadgetron {
                 {
                     #pragma omp parallel private(z) shared(sx, sy, sz, target, source, warped)
                     {
-                        coord_type px, py, pz, px_source, py_source, pz_source, ix_source, iy_source, iz_source;
+                        typename TargetType::coord_type px, py, pz, px_source, py_source, pz_source, ix_source, iy_source, iz_source;
 
                         #pragma omp for 
                         for ( z=0; z<(long long)sz; z++ )
@@ -275,7 +275,7 @@ namespace Gadgetron {
                 {
                     #pragma omp parallel private(z) shared(sx, sy, sz, target, source, warped)
                     {
-                        coord_type ix_source, iy_source, iz_source;
+                        typename TargetType::coord_type ix_source, iy_source, iz_source;
 
                         #pragma omp for 
                         for ( z=0; z<(long long)sz; z++ )
@@ -311,9 +311,9 @@ namespace Gadgetron {
                     #pragma omp parallel private(n) shared(numOfPixels, target, source, warped)
                     {
                         size_t ind_target[DIn];
-                        coord_type pt_target[DIn];
-                        coord_type pt_source[DOut];
-                        coord_type ind_source[DOut];
+                        typename TargetType::coord_type pt_target[DIn];
+                        typename TargetType::coord_type pt_source[DOut];
+                        typename TargetType::coord_type ind_source[DOut];
 
                         #pragma omp for 
                         for ( n=0; n<(long long)numOfPixels; n++ )
@@ -341,8 +341,8 @@ namespace Gadgetron {
                 {
                     #pragma omp parallel private(n) shared(numOfPixels, target, source, warped)
                     {
-                        coord_type pt_target[DIn];
-                        coord_type pt_source[DOut];
+                        typename TargetType::coord_type pt_target[DIn];
+                        typename TargetType::coord_type pt_source[DOut];
 
                         #pragma omp for 
                         for ( n=0; n<(long long)numOfPixels; n++ )

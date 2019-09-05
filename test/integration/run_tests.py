@@ -63,6 +63,7 @@ def main():
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
+
     parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
 
     args = parser.parse_args()
@@ -78,7 +79,7 @@ def main():
         base_args += ['-I',args.ismrmrd_home]
 
     for i, test in enumerate(tests, start=1):
-        print("\nTest {} of {}: {}\n".format(i, len(tests), test))
+        print("\n ----> Test {} of {}: {}\n".format(i, len(tests), test))
         proc = subprocess.run(base_args + [test])
 
         handlers.get(proc.returncode)(test)
@@ -86,14 +87,21 @@ def main():
     if args.stats:
         output_csv(stats, args.stats)
 
+
     if failed:
         print("\nFailed tests:")
         for test in failed:
             print("\t{}".format(test))
 
-    print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
+    print("\n{} tests passed. {} tests failed. {} tests skipped.{} tests failed.".format(len(passed), len(failed), len(skipped), len(failed)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
+    if(len(failed)>0):
+        print("=========================================")
+        for test in failed:
+            print("Failed case -- %s" % test)
+        print("=========================================")
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()

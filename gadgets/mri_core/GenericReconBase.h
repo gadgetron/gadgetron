@@ -22,6 +22,8 @@
 
 #include "ImageIOAnalyze.h"
 
+#include "gadgetron_sha1.h"
+
 namespace Gadgetron {
 
     template <typename T> 

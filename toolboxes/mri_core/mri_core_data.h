@@ -20,7 +20,7 @@ namespace Gadgetron
       the @IsmrmrdAcquisitionBucket and @IsmrmrdDataBuffered structures. 
 
    */
-    enum IsmrmrdCONDITION {
+    enum class IsmrmrdCONDITION {
 	KSPACE_ENCODE_STEP_1,
 	KSPACE_ENCODE_STEP_2,
 	AVERAGE,
@@ -42,6 +42,9 @@ namespace Gadgetron
 	NONE
       };
 
+    IsmrmrdCONDITION from_string(const std::string&, IsmrmrdCONDITION& condition );
+
+
     // define the dimensions of ISMRMRD
     enum IsmrmrdDIM
     {
@@ -61,6 +64,7 @@ namespace Gadgetron
         DIM_other3,
         DIM_NONE
     };
+
 
     // --------------------------------------------------------------------------
     /// define the calibration mode of ISMRMRD
@@ -207,6 +211,8 @@ namespace Gadgetron
     Core::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
 
   };
+
+
 
 }
 #endif //MRI_CORE_DATA_H
