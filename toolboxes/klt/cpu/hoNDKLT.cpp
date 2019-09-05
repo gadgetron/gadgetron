@@ -68,42 +68,42 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
         Gadgetron::clear(V_);
         Gadgetron::clear(E_);
 
-        size_t m, n;
+         size_t m, n;
 
-        // compute and subtract mean from data
-        hoNDArray<T> data2DNoMean;
+         // compute and subtract mean from data
+         hoNDArray<T> data2DNoMean;
 
-        arma::Mat<T> Am;
-        if (remove_mean)
-        {
-            hoNDArray<T> dataMean(1, N);
-            Gadgetron::sum_over_dimension(data2D, dataMean, 0);
+         arma::Mat<T> Am;
+         if (remove_mean)
+         {
+             hoNDArray<T> dataMean(1, N);
+             Gadgetron::sum_over_dimension(data2D, dataMean, 0);
 
-            Gadgetron::scal((T)(1.0 / M), dataMean);
+             Gadgetron::scal((T)(1.0 / M), dataMean);
 
-            data2DNoMean.create(M, N);
+             data2DNoMean.create(M, N);
 
-            for (n = 0; n < N; n++)
-            {
-                for (m = 0; m < M; m++)
-                {
-                    data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
-                }
-            }
+             for (n = 0; n < N; n++)
+             {
+                 for (m = 0; m < M; m++)
+                 {
+                     data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
+                 }
+             }
 
-            Am = as_arma_matrix(data2DNoMean);
-        }
-        else
-        {
-            Am = as_arma_matrix(data2D);
-        }
+             Am = as_arma_matrix(data2DNoMean);
+         }
+         else
+         {
+             Am = as_arma_matrix(data2D);
+         }
 
-        // call svd
-        arma::Mat<T> Vm = as_arma_matrix(V_);
-        arma::Mat<T> Um;
-        arma::Col<value_type> Sv;
+         // call svd
+         arma::Mat<T> Vm = as_arma_matrix(V_);
+         arma::Mat<T> Um;
+         arma::Col<value_type> Sv;
 
-        arma::svd_econ(Um, Sv, Vm, Am, 'r');
+         arma::svd_econ(Um, Sv, Vm, Am, 'r');
 
          for (n = 0; n < N; n++)
          {

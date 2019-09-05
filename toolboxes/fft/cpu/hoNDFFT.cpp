@@ -131,7 +131,7 @@ namespace Gadgetron {
                 = std::accumulate(a.dimensions().begin(), a.dimensions().begin() + rank, 1, std::multiplies<>());
             size_t batches = a.size() / batch_size;
 
-#pragma omp parallel for default(none) shared(plan,  a, r )
+#pragma omp parallel for default(none) shared(plan,  a, r, batches, batch_size)
             for (long long i = 0; i < batches; i++) {
 
                 plan.execute(a.data() + i * batch_size, r.data() + i * batch_size);
@@ -153,7 +153,7 @@ namespace Gadgetron {
                 = std::accumulate(dimensions.begin() + dimension, dimensions.end(), 1, std::multiplies<>());
             size_t outer_batchsize = inner_batches * dimensions[dimension];
 
-#pragma omp parallel for default(none) shared(plan, a, r  ) collapse(2)
+#pragma omp parallel for default(none) shared(plan, a, r , outer_batches, inner_batches, outer_batchsize ) collapse(2)
             for (long long outer = 0; outer < outer_batches; outer++) {
                 for (long long inner = 0; inner < inner_batches; inner++) {
                     plan.execute(

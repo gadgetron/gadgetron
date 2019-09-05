@@ -20,7 +20,7 @@ namespace Gadgetron
       the @IsmrmrdAcquisitionBucket and @IsmrmrdDataBuffered structures. 
 
    */
-    enum class IsmrmrdCONDITION {
+    enum IsmrmrdCONDITION {
 	KSPACE_ENCODE_STEP_1,
 	KSPACE_ENCODE_STEP_2,
 	AVERAGE,

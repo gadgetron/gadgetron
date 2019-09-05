@@ -35,7 +35,10 @@ include(GoogleTest)
             cmr_strain_test.cpp
             cmr_thickening_test.cpp
             cmr_analytical_strain_test.cpp
-            )
+            cmr_strain_test.cpp
+      cmr_thickening_test.cpp
+      cmr_analytical_strain_test.cpp
+      )
 
     if (PYTHONLIBS_FOUND)
         set(test_src_files ${test_src_files} python_converter_test.cpp)
