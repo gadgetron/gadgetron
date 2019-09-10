@@ -235,7 +235,7 @@ set_target_properties(boost PROPERTIES
 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 message(${Boost_LIBRARIES})
 #set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
+target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
