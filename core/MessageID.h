@@ -20,6 +20,7 @@ namespace Gadgetron::Core {
 		GADGET_MESSAGE_RECONDATA                           = 1023,
 		GADGET_MESSAGE_ISMRMRD_IMAGE_ARRAY                 = 1024,
 		GADGET_MESSAGE_ISMRMRD_WAVEFORM                    = 1026,
-
+		GADGET_MESSAGE_BUCKET                              = 1050,
+		GADGET_MESSAGE_BUNDLE                              = 1051
     };
 }

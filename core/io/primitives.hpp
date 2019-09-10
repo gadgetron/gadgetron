@@ -10,11 +10,16 @@ void Gadgetron::Core::IO::write(std::ostream &ostream, const Core::optional<T> &
     if (val) write(ostream, *val);
 }
 
-
 template<class T>
 void Gadgetron::Core::IO::write(std::ostream &ostream, const std::vector<T> &val) {
     IO::write(ostream, val.size());
     IO::write(ostream, val.data(), val.size());
+}
+
+template<class T>
+void Gadgetron::Core::IO::write(std::ostream &ostream, const std::set<T> &val) {
+    IO::write(ostream, val.size());
+    IO::write(ostream, val.begin(), val.end());
 }
 
 template<class T>
@@ -41,6 +46,13 @@ std::enable_if_t<!Gadgetron::Core::is_trivially_copyable_v<T>>
 Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of_elements) {
     for (size_t i = 0; i < number_of_elements; i++) {
         write(stream, data[i]);
+    }
+}
+
+template<class iterator_type, class = Gadgetron::Core::IO::enable_if_forward_iterator<iterator_type>>
+void Gadgetron::Core::IO::write(std::ostream &stream, iterator_type begin, iterator_type end) {
+    for (; begin!=end; begin++) {
+        IO::write(stream, *begin);
     }
 }
 

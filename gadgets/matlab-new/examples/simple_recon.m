@@ -8,15 +8,11 @@ function simple_recon(connection)
     next = reconstruct_slice(next);
     next = combine_channels(next);
     next = create_ismrmrd_image(next);
+    next = send_image_to_client(next, connection);
     
     connection.filter('ismrmrd.Acquisition')
-    
-    function handle_image(image)
-        disp("Sending image to client.") 
-        connection.send(image)
-    end
 
-    tic, gadgetron.consume(next, @handle_image); toc
+    tic, gadgetron.consume(next); toc
 end
 
 
@@ -79,7 +75,7 @@ function next = accumulate_slice(input, header)
         disp("Assembling buffer from " + num2str(length(acquisitions)) + " acquisitions");
 
         acquisition = head(acquisitions);
-       
+        
         slice = complex(zeros( ...
             size(acquisition.data, 1), ...
             size(acquisition.data, 2), ...
@@ -90,6 +86,9 @@ function next = accumulate_slice(input, header)
         for acq = acquisitions.asarray
             slice(:, :, acq.header.idx.kspace_encode_step_1 + 1, acq.header.idx.kspace_encode_step_2 + 1) = acq.data;
         end
+        
+        disp("Slice sum:")
+        s = sum(slice, 'all')
     end
 
     function image = accumulate()
@@ -137,6 +136,17 @@ function next = create_ismrmrd_image(input)
 
     next = @() create_image(input());
 end
+
+function next = send_image_to_client(input, connection)
+
+    function send_image(image)
+        disp("Sending image to client.");
+        connection.send(image);
+    end
+
+    next = @() send_image(input());
+end
+
 
 function data = cfft(data, dim)
     data = ifftshift(fft(fftshift(data, dim), [], dim), dim);

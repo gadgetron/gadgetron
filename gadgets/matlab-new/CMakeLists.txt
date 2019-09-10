@@ -1,5 +1,7 @@
 
-set(MATLAB_EXAMPLE_FILES examples/simple_recon.m)
+set(MATLAB_EXAMPLE_FILES
+        examples/simple_recon.m
+        examples/bucket_recon.m)
 
 message("Matlab example files: ${MATLAB_EXAMPLE_FILES}")
 

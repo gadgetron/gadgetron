@@ -57,7 +57,8 @@ namespace Gadgetron::Server::Connection {
                     Config::Reader { "gadgetron_mricore", "GadgetIsmrmrdWaveformMessageReader", boost::none },
                     Config::Reader { "gadgetron_mricore", "MRIImageReader", boost::none },
                     Config::Reader { "gadgetron_core_readers", "BufferReader", boost::none },
-                    Config::Reader { "gadgetron_core_readers", "IsmrmrdImageArrayReader", boost::none }
+                    Config::Reader { "gadgetron_core_readers", "IsmrmrdImageArrayReader", boost::none },
+                    Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", boost::none }
             };
 
             auto configs = default_readers;
@@ -78,7 +79,8 @@ namespace Gadgetron::Server::Connection {
                     Config::Writer { "gadgetron_mricore", "GadgetIsmrmrdWaveformMessageWriter" },
                     Config::Writer { "gadgetron_core_writers", "ImageWriter" },
                     Config::Writer { "gadgetron_core_writers", "BufferWriter" },
-                    Config::Writer { "gadgetron_core_writers", "IsmrmrdImageArrayWriter" }
+                    Config::Writer { "gadgetron_core_writers", "IsmrmrdImageArrayWriter" },
+                    Config::Writer { "gadgetron_core_writers", "AcquisitionBucketWriter" }
             };
 
             auto configs = default_writers;
