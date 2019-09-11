@@ -86,9 +86,6 @@ function next = accumulate_slice(input, header)
         for acq = acquisitions.asarray
             slice(:, :, acq.header.idx.kspace_encode_step_1 + 1, acq.header.idx.kspace_encode_step_2 + 1) = acq.data;
         end
-        
-        disp("Slice sum:")
-        s = sum(slice, 'all')
     end
 
     function image = accumulate()
