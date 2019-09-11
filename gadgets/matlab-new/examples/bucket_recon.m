@@ -2,7 +2,7 @@
 function bucket_recon(connection)
     disp("Matlab bucket reconstruction running.") 
 
-    next = slice_from_bucket(@connection.next, connection.header);
+    next = create_slice_from_bucket(@connection.next, connection.header);
     next = reconstruct_slice(next);
     next = combine_channels(next);
     next = create_ismrmrd_image(next);
@@ -11,22 +11,22 @@ function bucket_recon(connection)
     tic, gadgetron.consume(next); toc
 end
 
-function next = slice_from_bucket(input, header)
+function next = create_slice_from_bucket(input, header)
 
     matrix_size = header.encoding.encodedSpace.matrixSize;
 
-    function image = slice_from_acquisitions(bucket)
+    function image = slice_from_bucket(bucket)
         disp("Assembling buffer from bucket containing " + num2str(bucket.data.count) + " acquisitions");
         
-        acquisition = ismrmrd.Acquisition(              ...
+        image.acquisition = ismrmrd.Acquisition(              ...
             single_header(bucket.data.header, 1),       ...
             squeeze(bucket.data.data(1, :, :)),         ...
             squeeze(bucket.data.trajectory(1, :, :))    ...
         );
     
-        slice = complex(zeros( ...
-            size(acquisition.data, 1), ...
-            size(acquisition.data, 2), ...
+        image.slice = complex(zeros( ...
+            size(image.acquisition.data, 1), ...
+            size(image.acquisition.data, 2), ...
             matrix_size.y,             ...
             matrix_size.z              ...
         ));
@@ -34,17 +34,12 @@ function next = slice_from_bucket(input, header)
         for i = 1:bucket.data.count
             encode_step_1 = bucket.data.header.idx.kspace_encode_step_1(i);
             encode_step_2 = bucket.data.header.idx.kspace_encode_step_2(i);
-            slice(:, :, encode_step_1 + 1, encode_step_2 + 1) = squeeze(bucket.data.data(i, :, :));            
+            image.slice(:, :, encode_step_1 + 1, encode_step_2 + 1) = ...
+                squeeze(bucket.data.data(i, :, :));            
         end
-        
-        disp("Slice sum:")
-        s = sum(slice, 'all')
-        
-        image.data = slice;
-        image.acquisition = acquisition;
     end
 
-    next = @() slice_from_acquisitions(input());
+    next = @() slice_from_bucket(input());
 end
 
 function header = single_header(header, index)
@@ -53,10 +48,10 @@ function header = single_header(header, index)
     header.idx = structfun(take, header.idx, 'UniformOutput', false);
 end
 
-% The rest of this file is IDENTICAL to corrosponding functions used in
-% simple_recon. They are included here to have self-contained examples, 
-% but you should much prefer to have functions like these on the MATLAB
-% path and reuse them individually. 
+% The following functions are IDENTICAL to those found in simple_recon.
+% They are repeated here to have self-contained examples, but copy-pasting
+% code is of course not adviced. You should keep reusable functions in 
+% individual files on your MATLAB path, and reuse them whenever possible.
 
 function next = reconstruct_slice(input)
     
