@@ -19,18 +19,27 @@ end
 function next = noise_adjust(input)
 
     noise_matrix = [];
+    
+    function bwf = bw_scale_factor(~)
+        bwf = complex(sqrt(2), 0.0);
+    end
 
     function transformation = calculate_whitening_transformation(data)
         noise = reshape(data, size(data, 1), []);
         M = size(noise, 2);
         transformation = (1/(M-1)) .* (noise * noise');
-        transformation = sqrt(2) .* inv(chol(transformation, 'lower'));
+        transformation = inv(chol(transformation, 'lower'));
     end
 
-    function data = apply_whitening_transformation(data)
+    function acquisition = apply_whitening_transformation(acquisition)
         if isempty(noise_matrix), return; end
-        shape = size(data);
-        data = reshape(noise_matrix * reshape(data, shape(1), []), shape);
+        shape = size(acquisition.data);
+        acquisition.data = reshape( ...
+                bw_scale_factor(acquisition) * ...
+                noise_matrix * ...
+                reshape(acquisition.data, shape(1), []), ...
+            shape ...
+        );
     end
 
     function acquisition = handle_noise(acquisition)       
@@ -38,7 +47,7 @@ function next = noise_adjust(input)
             noise_matrix = calculate_whitening_transformation(acquisition.data);
             acquisition = handle_noise(input()); % Recursive call; we output the next item.
         else
-            acquisition.data = apply_whitening_transformation(acquisition.data);
+            acquisition = apply_whitening_transformation(acquisition);
         end
     end
 
