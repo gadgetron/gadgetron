@@ -2,7 +2,7 @@
 function simple_recon(connection)
     disp("Matlab reconstruction running.") 
     
-    next = noise_adjust(@connection.next);
+    next = noise_adjust(@connection.next, connection.header);
     next = remove_oversampling(next, connection.header);
     next = accumulate_slice(next, connection.header);
     next = reconstruct_slice(next);
@@ -16,35 +16,35 @@ function simple_recon(connection)
 end
 
 
-function next = noise_adjust(input)
+function next = noise_adjust(input, header)
 
-    noise_matrix = [];
+    noise_matrix        = [];
+    noise_dwell_time    = single(1.0);
     
-    function bwf = bw_scale_factor(~)
-        bwf = complex(sqrt(2), 0.0);
+    try 
+        noise_bandwidth = header.acquisitionSystemInformation.relativeReceiverNoiseBandwidth;
+    catch
+        noise_bandwidth = single(0.793);
+    end
+
+    function f = scale_factor(acquisition)
+        f = sqrt(2 * acquisition.header.sample_time_us * noise_bandwidth / noise_dwell_time);
     end
 
     function transformation = calculate_whitening_transformation(data)
-        noise = reshape(data, size(data, 1), []);
-        M = size(noise, 2);
-        transformation = (1/(M-1)) .* (noise * noise');
-        transformation = inv(chol(transformation, 'lower'));
+        covariance = (1.0 / (size(data, 2) - 1)) * (data * data'); 
+        transformation = inv(chol(covariance, 'lower'));
     end
 
     function acquisition = apply_whitening_transformation(acquisition)
         if isempty(noise_matrix), return; end
-        shape = size(acquisition.data);
-        acquisition.data = reshape( ...
-                bw_scale_factor(acquisition) * ...
-                noise_matrix * ...
-                reshape(acquisition.data, shape(1), []), ...
-            shape ...
-        );
+        acquisition.data = scale_factor(acquisition) * noise_matrix * acquisition.data; 
     end
 
     function acquisition = handle_noise(acquisition)       
         if acquisition.is_flag_set(ismrmrd.Flags.ACQ_IS_NOISE_MEASUREMENT)
             noise_matrix = calculate_whitening_transformation(acquisition.data);
+            noise_dwell_time = acquisition.header.sample_time_us;
             acquisition = handle_noise(input()); % Recursive call; we output the next item.
         else
             acquisition = apply_whitening_transformation(acquisition);
@@ -97,7 +97,7 @@ function next = accumulate_slice(input, header)
         end
     end
 
-    function image = accumulate()
+    function slice = accumulate()
         
         acquisitions = gadgetron.util.List.empty;
         
@@ -107,7 +107,7 @@ function next = accumulate_slice(input, header)
             if acquisition.is_flag_set(ismrmrd.Flags.ACQ_LAST_IN_SLICE), break; end
         end
         
-        [image.data, image.acquisition] = slice_from_acquisitions(acquisitions);
+        [slice.data, slice.acquisition] = slice_from_acquisitions(acquisitions);
     end
 
     next = @accumulate;
@@ -115,8 +115,8 @@ end
 
 function next = reconstruct_slice(input)
     
-    function image = reconstruct(image)
-        image.data = cifftn(image.data, [2, 3, 4]);
+    function slice = reconstruct(slice)
+        slice.data = cifftn(slice.data, [2, 3, 4]);
     end
 
     next = @() reconstruct(input());
@@ -155,11 +155,11 @@ end
 
 
 function data = cfft(data, dim)
-    data = ifftshift(fft(fftshift(data, dim), [], dim), dim);
+    data = ifftshift(fft(fftshift(data, dim), [], dim), dim) ./ sqrt(size(data, dim));
 end
 
 function data = cifft(data, dim)
-    data = fftshift(ifft(ifftshift(data, dim), [], dim), dim);
+    data = fftshift(ifft(ifftshift(data, dim), [], dim), dim) .* sqrt(size(data, dim));
 end
 
 function data = cifftn(data, dims)

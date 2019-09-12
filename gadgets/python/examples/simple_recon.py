@@ -15,44 +15,49 @@ import gadgetron.external
 
 def cfftn(data, axes):
     # Centered fast fourier transform, n-dimensional
-    return fft.ifftshift(fft.fftn(fft.fftshift(data, axes=axes), axes=axes), axes=axes)
+    return fft.ifftshift(fft.fftn(fft.fftshift(data, axes=axes), axes=axes, norm='ortho'), axes=axes)
 
 
 def cifftn(data, axes):
     # Centered inverse fast fourier transform, n-dimensional
-    return fft.fftshift(fft.ifftn(fft.ifftshift(data, axes=axes), axes=axes), axes=axes)
+    return fft.fftshift(fft.ifftn(fft.ifftshift(data, axes=axes), axes=axes, norm='ortho'), axes=axes)
 
 
-def noise_adjustment(connection):
+def noise_adjustment(connection, header):
     # The dataset might include noise measurements (mine does). We'll consume noise measurements, use them
     # to prepare a noise adjustment matrix, and never pass them down the chain. They contain no image data,
     # and will not be missed. We'll also perform noise adjustment on following acquisitions, when we have a
     # noise matrix available.
 
     noise_matrix = None
+    noise_dwell_time = 1.0
 
-    def calculate_whitening_transformation(noise, scale_factor=1.0):
-        # The whitening transformation is beyond the scope of these comments. Read more at:
-        # https://en.wikipedia.org/wiki/Whitening_transformation
+    try:
+        noise_bandwidth = header.encoding[0].acquisitionSystemInformation.relativeNoiseBandwidth
+    except:
+        noise_bandwidth = 0.793
 
-        noise_int = noise.reshape((noise.shape[0], noise.size // noise.shape[0]))
-        M = float(noise_int.shape[1])
-        dmtx = (1/(M-1)) * np.asmatrix(noise_int) * np.asmatrix(noise_int).H
-        dmtx = np.linalg.inv(np.linalg.cholesky(dmtx))
-        return np.sqrt(2) * np.sqrt(scale_factor) * dmtx
+    def scaling_factor(acq):
+        return np.sqrt(2 * acq.sample_time_us * noise_bandwidth / noise_dwell_time)
 
-    def apply_whitening_transformation(data, dmtx):
-        s = data.shape
-        return np.asarray(np.asmatrix(dmtx) * np.asmatrix(data.reshape(s[0], data.size // s[0]))).reshape(s)
+    def calculate_whitening_transformation(noise):
+        # The details of the whitening transformation is beyond the scope of these comments.
+        noise = np.asmatrix(noise)
+        covariance = (1.0 / (noise.shape[1] - 1)) * (noise * noise.H)
+        return np.linalg.inv(np.linalg.cholesky(covariance))
+
+    def apply_whitening_transformation(acq):
+        return np.asarray(scaling_factor(acq) * noise_matrix * np.asmatrix(acq.data))
 
     def noise_adjust(acq):
         if noise_matrix is not None:
-            acq.data[:] = apply_whitening_transformation(acq.data, noise_matrix)[:]
+            acq.data[:] = apply_whitening_transformation(acq)
         return acq
 
     for _, acquisition in connection:
         if acquisition.is_flag_set(ismrmrd.ACQ_IS_NOISE_MEASUREMENT):
             noise_matrix = calculate_whitening_transformation(acquisition.data)
+            noise_dwell_time = acquisition.sample_time_us
         else:
             yield noise_adjust(acquisition)
 
@@ -153,7 +158,7 @@ def simple_recon(connection):
     # responsible for part of the reconstruction. In this manner, we construct a succession of generators, each
     # one step closer to the final product. Iterating the final iterator thus produces output-ready images.
 
-    iterable = noise_adjustment(connection)
+    iterable = noise_adjustment(connection, connection.header)
     iterable = remove_oversampling(iterable, connection.header)
     iterable = accumulate_acquisitions(iterable, connection.header)
     iterable = reconstruct_images(iterable)

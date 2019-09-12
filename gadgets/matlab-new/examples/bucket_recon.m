@@ -15,18 +15,18 @@ function next = create_slice_from_bucket(input, header)
 
     matrix_size = header.encoding.encodedSpace.matrixSize;
 
-    function image = slice_from_bucket(bucket)
+    function slice = slice_from_bucket(bucket)
         disp("Assembling buffer from bucket containing " + num2str(bucket.data.count) + " acquisitions");
         
-        image.acquisition = ismrmrd.Acquisition(              ...
+        slice.acquisition = ismrmrd.Acquisition(              ...
             single_header(bucket.data.header, 1),       ...
             squeeze(bucket.data.data(1, :, :)),         ...
             squeeze(bucket.data.trajectory(1, :, :))    ...
         );
     
-        image.data = complex(zeros( ...
-            size(image.acquisition.data, 1), ...
-            size(image.acquisition.data, 2), ...
+        slice.data = complex(zeros( ...
+            size(slice.acquisition.data, 1), ...
+            size(slice.acquisition.data, 2), ...
             matrix_size.y,             ...
             matrix_size.z              ...
         ));
@@ -34,7 +34,7 @@ function next = create_slice_from_bucket(input, header)
         for i = 1:bucket.data.count
             encode_step_1 = bucket.data.header.idx.kspace_encode_step_1(i);
             encode_step_2 = bucket.data.header.idx.kspace_encode_step_2(i);
-            image.data(:, :, encode_step_1 + 1, encode_step_2 + 1) = ...
+            slice.data(:, :, encode_step_1 + 1, encode_step_2 + 1) = ...
                 squeeze(bucket.data.data(i, :, :));            
         end
     end
@@ -55,8 +55,8 @@ end
 
 function next = reconstruct_slice(input)
     
-    function image = reconstruct(image)
-        image.data = cifftn(image.data, [2, 3, 4]);
+    function slice = reconstruct(slice)
+        slice.data = cifftn(slice.data, [2, 3, 4]);
     end
 
     next = @() reconstruct(input());
@@ -94,7 +94,7 @@ function next = send_image_to_client(input, connection)
 end
 
 function data = cifft(data, dim)
-    data = fftshift(ifft(ifftshift(data, dim), [], dim), dim);
+    data = fftshift(ifft(ifftshift(data, dim), [], dim), dim) .* sqrt(size(data, dim));
 end
 
 function data = cifftn(data, dims)
