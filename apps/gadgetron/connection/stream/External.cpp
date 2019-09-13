@@ -46,7 +46,7 @@ namespace Gadgetron::Server::Connection::Stream {
             std::shared_ptr<tcp::acceptor> acceptor
     ) {
         child->wait();
-        boost::asio::dispatch(io_service, [=]() { acceptor->close(); });
+        io_service.dispatch([=]() { acceptor->close(); });
     }
 
     std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const Context &context) {
