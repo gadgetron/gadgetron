@@ -49,14 +49,6 @@ Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of
     }
 }
 
-template<class iterator_type, class = Gadgetron::Core::IO::enable_if_forward_iterator<iterator_type>>
-void Gadgetron::Core::IO::write(std::ostream &stream, iterator_type begin, iterator_type end) {
-    for (; begin!=end; begin++) {
-        IO::write(stream, *begin);
-    }
-}
-
-
 template<class T>
 void Gadgetron::Core::IO::write(std::ostream &stream, const hoNDArray <T> &array) {
     write(stream, *array.get_dimensions());

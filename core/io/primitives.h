@@ -69,7 +69,11 @@ namespace Gadgetron::Core::IO {
     using enable_if_forward_iterator = std::enable_if_t<std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<iterator_type>::iterator_category>::value>;
 
     template<class iterator_type, class = enable_if_forward_iterator<iterator_type>>
-    void Gadgetron::Core::IO::write(std::ostream &stream, iterator_type begin, iterator_type end);
+    void write(std::ostream &stream, iterator_type begin, iterator_type end) {
+        for (; begin!=end; begin++) {
+            IO::write(stream, *begin);
+        }
+    }
 
     template<class T>
     void write(std::ostream &stream, const hoNDArray<T> &array);
