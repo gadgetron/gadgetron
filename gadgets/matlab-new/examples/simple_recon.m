@@ -32,13 +32,13 @@ function next = noise_adjust(input, header)
     end
 
     function transformation = calculate_whitening_transformation(data)
-        covariance = (1.0 / (size(data, 2) - 1)) * (data * data'); 
-        transformation = inv(chol(covariance, 'lower'));
+        covariance = (1.0 / (size(data, 1) - 1)) * (data' * data); 
+        transformation = inv(chol(covariance, 'upper'));
     end
 
     function acquisition = apply_whitening_transformation(acquisition)
         if isempty(noise_matrix), return; end
-        acquisition.data = scale_factor(acquisition) * noise_matrix * acquisition.data; 
+        acquisition.data = scale_factor(acquisition) * acquisition.data * noise_matrix; 
     end
 
     function acquisition = handle_noise(acquisition)       
@@ -63,11 +63,11 @@ function next = remove_oversampling(input, header)
 
     x0 = (encoding_space.x - recon_space.x) / 2 + 1;
     x1 = (encoding_space.x - recon_space.x) / 2 + recon_space.x;
-    along_x_dimension = 2;
+    along_x_dimension = 1;
     
     function acquisition = remove_oversampling(acquisition)
         xspace = cifft(acquisition.data, along_x_dimension); 
-        xspace = xspace(:, x0:x1);
+        xspace = xspace(x0:x1, :);
         acquisition.header.number_of_samples = recon_space.x;
         acquisition.header.center_sample = recon_space.x / 2;
         acquisition.data = cfft(xspace, along_x_dimension);
@@ -86,14 +86,15 @@ function next = accumulate_slice(input, header)
         acquisition = head(acquisitions);
         
         slice = complex(zeros( ...
-            size(acquisition.data, 1), ...
             size(acquisition.data, 2), ...
+            size(acquisition.data, 1), ...
             matrix_size.y,             ...
             matrix_size.z              ...
         ));
     
         for acq = acquisitions.asarray
-            slice(:, :, acq.header.idx.kspace_encode_step_1 + 1, acq.header.idx.kspace_encode_step_2 + 1) = acq.data;
+            slice(:, :, acq.header.idx.kspace_encode_step_1 + 1, acq.header.idx.kspace_encode_step_2 + 1) = ...
+                transpose(acq.data);
         end
     end
 
