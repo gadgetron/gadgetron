@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5...3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10...3.12 FATAL_ERROR)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -97,6 +97,11 @@ else ()
     set(GADGETRON_VAR_DIR /var/lib/gadgetron/ CACHE PATH "Path where Gadgetron will store calibration data, etc" FORCE)
 endif ()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# create the Gadgetron version header
+configure_file("${CMAKE_SOURCE_DIR}/cmake/gadgetron_sha1.h.in" ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h @ONLY)
+include_directories(${PROJECT_BINARY_DIR}/include)
+install(FILES ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 #Set the build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
@@ -230,7 +235,7 @@ set_target_properties(boost PROPERTIES
 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 message(${Boost_LIBRARIES})
 #set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-target_link_libraries(boost INTERFACE ${Boost_LIBRARIES})
+target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
@@ -275,18 +280,7 @@ set( CUDA_NVCC_FLAGS "NA")
 endif ()
 
 find_package(GTest)
-#Add support for the default ubuntu package of gtest (which is not compiled
-if (NOT GTEST_FOUND)
-    find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
-    find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
-    if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
-        message("GTest src package found. Compiling as part of Gadgetron.")
-        add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
-        include_directories(${GTEST_INCLUDE_DIRS})
-        set(GTEST_FOUND 1)
-        set(GTEST_LIBRARIES gtest gtest_main)
-    endif ()
-endif ()
+
 
 find_package(Armadillo REQUIRED )
 # check whether ILP64 MKL should is used
@@ -366,11 +360,13 @@ message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE
 add_library(python INTERFACE)
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-
-if (VCPKG_TARGET_TRIPLET)
-    find_package(Boost 1.65.0 COMPONENTS python37 REQUIRED)
-    else()
+message("Boost_VERSION ${Boost_VERSION_STRING}")
+if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
     find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
+    else()
+    string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
+    set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
+    find_package(Boost 1.65.0 COMPONENTS "python3${PYTHON_MINOR_VERSION}" REQUIRED)
 endif()
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
