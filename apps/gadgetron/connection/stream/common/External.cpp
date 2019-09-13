@@ -75,6 +75,6 @@ namespace Gadgetron::Server::Connection::Stream {
     }
 
     std::unique_ptr<std::iostream> connect(const Address &address, std::shared_ptr<Configuration> configuration) {
-        return connect(boost::apply_visitor([&](auto address) { return as_remote(address, configuration); }, address));
+        return connect(Core::visit([&](auto address) { return as_remote(address, configuration); }, address));
     }
 }

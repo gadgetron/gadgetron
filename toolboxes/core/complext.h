@@ -162,9 +162,13 @@ namespace Gadgetron {
     }
 
 
-
     typedef complext<float> float_complext;
     typedef complext<double> double_complext;
+
+    template <class T> struct is_complex_type { static constexpr bool value = false; };
+    template <class T> struct is_complex_type<std::complex<T>> { static constexpr bool value = true; };
+    template <class T> struct is_complex_type<complext<T>> { static constexpr bool value = true; };
+    template<class T> constexpr bool is_complex_type_v = is_complex_type<T>::value;
 
     template<class T>
     struct realType {

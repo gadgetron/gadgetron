@@ -2,7 +2,6 @@
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/meta.h>
 #include "io/primitives.h"
-#include <boost/variant.hpp>
 #include "MessageID.h"
 
 namespace Gadgetron {
@@ -25,7 +24,7 @@ namespace Gadgetron {
             return Core::Message(std::move(header), std::move(array), std::move(meta));
         }
 
-        using ISMRMRD_TYPES = boost::variant<uint16_t, int16_t, uint32_t, int32_t, float, double, std::complex<float>, std::complex<double>>;
+        using ISMRMRD_TYPES = Core::variant<uint16_t, int16_t, uint32_t, int32_t, float, double, std::complex<float>, std::complex<double>>;
         static const auto ismrmrd_type_map = std::unordered_map<uint16_t, ISMRMRD_TYPES>{
                 {ISMRMRD::ISMRMRD_USHORT,   uint16_t()},
                 {ISMRMRD::ISMRMRD_SHORT,    int16_t()},
@@ -59,7 +58,7 @@ namespace Gadgetron {
             ISMRMRD::deserialize(buffer.get(), *meta);
         }
 
-        return boost::apply_visitor([&](auto type_tag) {
+        return Core::visit([&](auto type_tag) {
             return combine_and_read<decltype(type_tag)>(stream, std::move(header), std::move(meta));
         }, ismrmrd_type_map.at(header.data_type));
     }

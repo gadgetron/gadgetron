@@ -10,7 +10,6 @@ GADGETRON_ADAPT_STRUCT(Gadgetron::IsmrmrdReconData, GADGETRON_ACCESS_ELEMENT(rbi
 
 
 Gadgetron::Core::Message Gadgetron::Core::Readers::BufferReader::read(std::istream &stream) {
-    GDEBUG("Reading Recondata\n");
     return Message(IO::read<IsmrmrdReconData>(stream));
 }
 

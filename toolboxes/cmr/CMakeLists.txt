@@ -11,7 +11,11 @@ set(cmr_header_fiels cmr_export.h
                     cmr_parametric_mapping.h 
                     cmr_t1_mapping.h 
                     cmr_t2_mapping.h 
-                    cmr_spirit_recon.h )
+                    cmr_spirit_recon.h 
+                    cmr_strain_analysis.h 
+                    cmr_radial_thickening.h 
+                    cmr_analytical_strain.h 
+                    )
 
 set(cmr_src_fiels cmr_kspace_binning.cpp 
                 cmr_time_stamp.cpp 
@@ -19,7 +23,11 @@ set(cmr_src_fiels cmr_kspace_binning.cpp
                 cmr_parametric_mapping.cpp 
                 cmr_t1_mapping.cpp 
                 cmr_t2_mapping.cpp 
-                cmr_spirit_recon.cpp )
+                cmr_spirit_recon.cpp 
+                cmr_strain_analysis.cpp 
+                cmr_radial_thickening.cpp 
+                cmr_analytical_strain.cpp 
+                )
 
 add_library(gadgetron_toolbox_cmr SHARED 
             ${cmr_header_fiels} 

@@ -3,7 +3,7 @@
 
 std::thread Gadgetron::Server::Connection::Stream::Processable::process_async(
         std::shared_ptr<Processable> processable,
-        Core::InputChannel input,
+        Core::GenericInputChannel input,
         Core::OutputChannel output,
         const ErrorHandler &error_handler
 ) {

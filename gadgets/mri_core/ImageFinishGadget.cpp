@@ -2,7 +2,7 @@
 
 namespace Gadgetron {
 
-    void ImageFinishGadget::process(Core::InputChannel& in,
+    void ImageFinishGadget::process(Core::GenericInputChannel& in,
                                     Core::OutputChannel& out) {
 
         for (auto message : in) {

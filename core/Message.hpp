@@ -35,7 +35,7 @@ namespace Gadgetron::Core {
                 static void
                 add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, variant<VARGS...> var,
                             REST &&... args) {
-                    boost::apply_visitor([&](auto val) { add_messages(messages, val, std::forward<REST>(args)...); },
+                    Core::visit([&](auto val) { add_messages(messages, val, std::forward<REST>(args)...); },
                                          var);
                 }
 

@@ -1,7 +1,7 @@
 #include "BufferDistributor.h"
 
 void Gadgetron::Core::Distributed::BufferDistributor::process(
-        Gadgetron::Core::TypedInputChannel<Gadgetron::IsmrmrdReconData> &input,
+        Gadgetron::Core::InputChannel<Gadgetron::IsmrmrdReconData> &input,
         Gadgetron::Core::Distributed::ChannelCreator &creator) {
 
     std::vector<OutputChannel> channels;

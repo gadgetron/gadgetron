@@ -1,5 +1,5 @@
 if (GTEST_FOUND AND ARMADILLO_FOUND)
-
+include(GoogleTest)
     enable_testing()
 
     if (WIN32)
@@ -31,7 +31,14 @@ if (GTEST_FOUND AND ARMADILLO_FOUND)
             threadpool_test.cpp
             from_string_test.cpp
             hoNDArrayView_test.cpp
-            ChannelAlgorithmsTest.cpp)
+            ChannelAlgorithmsTest.cpp
+            cmr_strain_test.cpp
+            cmr_thickening_test.cpp
+            cmr_analytical_strain_test.cpp
+            cmr_strain_test.cpp
+      cmr_thickening_test.cpp
+      cmr_analytical_strain_test.cpp
+      )
 
     if (PYTHONLIBS_FOUND)
         set(test_src_files ${test_src_files} python_converter_test.cpp)
@@ -65,8 +72,8 @@ if (GTEST_FOUND AND ARMADILLO_FOUND)
     endif ()
     target_link_libraries(test_all
             gadgetron_core
-        gadgetron_core_readers
-		gadgetron_core_writers    gadgetron_mricore
+    gadgetron_core_readers
+		gadgetron_core_writers        gadgetron_mricore
             gadgetron_toolbox_cpucore
             gadgetron_toolbox_cpucore_math
             gadgetron_toolbox_cpufft
@@ -82,8 +89,9 @@ if (GTEST_FOUND AND ARMADILLO_FOUND)
             gadgetron_toolbox_cpu_image
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
+            GTest::GTest
+            GTest::Main
 
-            ${GTEST_LIBRARIES}
             )
 
     if (PYTHONLIBS_FOUND)
@@ -93,8 +101,7 @@ if (GTEST_FOUND AND ARMADILLO_FOUND)
     endif ()
 
 
-    add_test(test_all test_all)
-
+    gtest_discover_tests(test_all)
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 
 endif ()

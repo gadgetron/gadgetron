@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 
-#include <boost/optional.hpp>
 #include <boost/parameter/name.hpp>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/range/algorithm/count_if.hpp>
@@ -152,7 +151,7 @@ namespace {
 
             add_readers(external.readers, external_node);
             add_writers(external.writers, external_node);
-            boost::apply_visitor(
+            visit(
                     [&](auto action) { add_node(action, external_node); },
                     external.action
             );
@@ -165,7 +164,7 @@ namespace {
             auto stream_node = node.append_child("stream");
             stream_node.append_attribute("key").set_value(stream.key.c_str());
             for (auto node : stream.nodes) {
-                boost::apply_visitor([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
+                visit([&stream_node](auto &typed_node) { add_node(typed_node, stream_node); }, node);
             }
             return stream_node;
         }
@@ -242,7 +241,7 @@ namespace {
 
     template<class Source>
     optional<Property> make_property(const pugi::xml_node &node) {
-        if (!Source::accepts(node)) return boost::none;
+        if (!Source::accepts(node)) return none;
         return Property{Source::name(node), Source::value(node)};
     }
 
@@ -289,7 +288,7 @@ namespace {
 
             std::string slot_str = reader_node.child_value("slot");
 
-            boost::optional<uint16_t> slot = boost::none;
+            optional<uint16_t> slot = none;
             if (!slot_str.empty())
                 slot = static_cast<uint16_t>(std::stoi(slot_str));
 
@@ -560,8 +559,8 @@ namespace {
             return {readers,writers,purestream};
         }
 
-        static boost::optional<std::string> parse_target(std::string s) {
-            if (s.empty()) return boost::none;
+        static optional<std::string> parse_target(std::string s) {
+            if (s.empty()) return none;
             return s;
         }
 

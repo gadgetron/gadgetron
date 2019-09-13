@@ -50,7 +50,7 @@ namespace {
 namespace Gadgetron::Server::Connection::Stream {
 
 
-    void PureDistributed::process_outbound(InputChannel input, Queue &jobs) {
+    void PureDistributed::process_outbound(GenericInputChannel input, Queue &jobs) {
         auto workers = Pool(finish_connecting_to_peers(std::move(pending_workers)));
 
         for (auto message : input) {
@@ -66,8 +66,7 @@ namespace Gadgetron::Server::Connection::Stream {
         }
     }
 
-    void PureDistributed::process(
-            InputChannel input,
+    void PureDistributed::process(GenericInputChannel input,
             OutputChannel output,
             ErrorHandler& error_handler
     ) {

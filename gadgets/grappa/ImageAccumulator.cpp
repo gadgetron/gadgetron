@@ -51,9 +51,9 @@ namespace Gadgetron::Grappa {
     ImageAccumulator::ImageAccumulator(
             const Core::Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : TypedChannelGadget<Slice>(props), context(context) {}
+    ) : ChannelGadget<Slice>(props), context(context) {}
 
-    void ImageAccumulator::process(TypedInputChannel<Slice> &in, OutputChannel &out) {
+    void ImageAccumulator::process(InputChannel<Slice> &in, OutputChannel &out) {
 
         AcquisitionBuffer buffer{context};
 

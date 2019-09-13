@@ -22,7 +22,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     class External : public Processable {
     public:
-        using InputChannel = Core::InputChannel;
+        using InputChannel = Core::GenericInputChannel;
         using OutputChannel = Core::OutputChannel;
 
         External(const Config::External &, const Core::Context &, Loader &);

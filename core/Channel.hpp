@@ -1,123 +1,99 @@
 #pragma once
 
-#include<typeinfo>
+#include <typeinfo>
 
+namespace Gadgetron { namespace Core {
 
-namespace Gadgetron::Core {
-
-    template<class INPUTCHANNEL>
-    class ChannelIterator {
+    template <class INPUTCHANNEL> class ChannelIterator {
     public:
-        explicit ChannelIterator(INPUTCHANNEL *c) : channel(c) {
+        explicit ChannelIterator(INPUTCHANNEL* c) : channel(c) {
             this->operator++();
         }
 
         ChannelIterator() : channel(nullptr) {}
-        ChannelIterator(const ChannelIterator& ) = default;
+        ChannelIterator(const ChannelIterator&) = default;
 
     private:
-        INPUTCHANNEL *channel;
+        INPUTCHANNEL* channel;
+
     public:
-        using difference_type = long long;
-        using value_type = decltype(channel->pop());
-        using pointer = value_type *;
-        using reference = value_type&&;
+        using difference_type   = long long;
+        using value_type        = decltype(channel->pop());
+        using pointer           = value_type*;
+        using reference         = value_type&&;
         using iterator_category = std::input_iterator_tag;
+
     private:
         std::shared_ptr<value_type> element;
+
     public:
-        ChannelIterator &operator++() {
+        ChannelIterator& operator++() {
             try {
                 element = std::make_shared<value_type>(channel->pop());
-            } catch (const ChannelClosed &err) {
+            } catch (const ChannelClosed& err) {
                 channel = nullptr;
             }
             return *this;
         };
 
-
-        bool operator==(const ChannelIterator &other) const {
+        bool operator==(const ChannelIterator& other) const {
             return this->channel == other.channel;
         }
 
-        bool operator!=(const ChannelIterator &other) const {
+        bool operator!=(const ChannelIterator& other) const {
             return this->channel != other.channel;
         }
 
         reference operator*() {
             return std::move(*element);
         }
-
     };
 
-
-    inline ChannelIterator<InputChannel> begin(InputChannel &channel) {
-        return ChannelIterator<InputChannel>(&channel);
-    }
-
-    inline ChannelIterator<InputChannel> end(InputChannel &) {
-        return ChannelIterator<InputChannel>();
-    }
-
-    template<>
-    class ChannelIterator<OutputChannel> {
+    template <class CHANNEL> class ChannelRange {
     public:
-        explicit ChannelIterator(OutputChannel *c) : channel(c) {
-
+        ChannelIterator<CHANNEL> begin() {
+            return ChannelIterator<CHANNEL>(reinterpret_cast<CHANNEL*>(this));
         }
 
-        template<class T>
-        void operator=(T &&data) {
+        ChannelIterator<CHANNEL> end() {
+            return ChannelIterator<CHANNEL>();
+        }
+    };
+
+    template <> class ChannelIterator<OutputChannel> {
+    public:
+        explicit ChannelIterator(OutputChannel* c) : channel(c) {}
+
+        template <class T> void operator=(T&& data) {
             channel->push(std::forward<T>(data));
         }
 
-        void operator=(Message &&message) {
+        void operator=(Message&& message) {
             channel->push_message(std::move(message));
         }
 
-
-        ChannelIterator &operator++() {
+        ChannelIterator& operator++() {
             return *this;
         }
 
-        ChannelIterator &operator++(int) {
+        ChannelIterator& operator++(int) {
             return *this;
         }
 
-
-        ChannelIterator &operator*() {
+        ChannelIterator& operator*() {
             return *this;
         }
 
     private:
-        OutputChannel *channel;
-
-
+        OutputChannel* channel;
     };
 
-    inline ChannelIterator<OutputChannel> begin(OutputChannel &channel) {
+    inline ChannelIterator<OutputChannel> begin(OutputChannel& channel) {
         return ChannelIterator<OutputChannel>(&channel);
     }
 
-    template<class ...ARGS>
-    inline void OutputChannel::push(ARGS &&... ptr) {
+    template <class... ARGS> inline void OutputChannel::push(ARGS&&... ptr) {
         this->push_message(Message(std::forward<ARGS>(ptr)...));
     }
 
-
-    template<class... ARGS>
-    ChannelIterator<TypedInputChannel < ARGS...>>
-    begin(
-            TypedInputChannel<ARGS...>
-    &channel) {
-    return ChannelIterator<TypedInputChannel < ARGS...>>(&channel);
-}
-
-template<class... ARGS>
-ChannelIterator <TypedInputChannel<ARGS...>> end(
-        TypedInputChannel<ARGS...> &channel) {
-    return ChannelIterator < TypedInputChannel < ARGS...>>();
-}
-}
-
-
+} }

@@ -7,7 +7,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITÂ´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             [3] Christophe Chefd'Hotel, Gerardo Hermosillo, Olivier D. Faugeras: Flows of diffeomorphisms for multimodal image registration. ISBI 2002: 753-756.
@@ -69,6 +69,7 @@ namespace Gadgetron {
         typedef CoordType coord_type;
 
         typedef hoNDImage< std::complex<CoordType>, D> DeformCplxType;
+        typedef hoNDImage< std::complex<float>, D> DeformFLTCplxType;
 
         typedef typename BaseClass::InterpolatorType InterpolatorType;
 
@@ -783,13 +784,18 @@ namespace Gadgetron {
                     gt_exporter_.export_array_complex(deform_cplx_[d], debugFolder_ + ostr.str());
                 }
 
+                DeformFLTCplxType deform_flt, deform_fft_flt;
+                deform_flt.copyFrom(deform_cplx_[d]);
+
                 if (D == 2)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->fft2(deform_cplx_[d], deform_fft_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->fft2(deform_flt, deform_fft_flt);
+                    deform_fft_cplx_[d].copyFrom(deform_fft_flt);
                 }
                 else if (D == 3)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->fft3(deform_cplx_[d], deform_fft_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->fft3(deform_flt, deform_fft_flt);
+                    deform_fft_cplx_[d].copyFrom(deform_fft_flt);
                 }
                 else
                 {
@@ -813,29 +819,29 @@ namespace Gadgetron {
             // e.g. the discrete fourier transform is exp(-j*2*pi*(kx*x/sx + ky*y/sy))
             if (D == 2)
             {
-                ValueType dx = (ValueType)( 2 * M_PI / sx );
-                ValueType dy = (ValueType)( 2 * M_PI / sy );
+                CoordType dx = (CoordType)( 2 * M_PI / sx );
+                CoordType dy = (CoordType)( 2 * M_PI / sy );
 
                 for (y = 0; y < sy; y++)
                 {
-                    ValueType ky = (y < sy/2) ? y : y - sy;
-                    ValueType fy = ky * dy;
+                    CoordType ky = (y < sy/2) ? y : y - sy;
+                    CoordType fy = ky * dy;
 
                     for (x = 0; x < sx; x++)
                     {
                         size_t offset = x + y*sx;
 
-                        ValueType kx = (x < sx / 2) ? x : x - sx;
-                        ValueType fx = kx * dx;
+                        CoordType kx = (x < sx / 2) ? x : x - sx;
+                        CoordType fx = kx * dx;
 
-                        std::complex<ValueType> vx = deform_fft_cplx_[0](offset);
-                        std::complex<ValueType> vy = deform_fft_cplx_[1](offset);
+                        std::complex<CoordType> vx = deform_fft_cplx_[0](offset);
+                        std::complex<CoordType> vy = deform_fft_cplx_[1](offset);
 
                         if ( (x!=0) || (y!=0))
                         {
-                            std::complex<ValueType> s1 = fx * vx + fy * vy;
-                            std::complex<ValueType> s2 = fx * fx + fy * fy;
-                            std::complex<ValueType> s3 = s1 / s2;
+                            std::complex<CoordType> s1 = fx * vx + fy * vy;
+                            std::complex<CoordType> s2 = fx * fx + fy * fy;
+                            std::complex<CoordType> s3 = s1 / s2;
 
                             deform_fft_buf_cplx_[0](offset) = vx - fx*s3;
                             deform_fft_buf_cplx_[1](offset) = vy - fy*s3;
@@ -850,43 +856,43 @@ namespace Gadgetron {
             }
             else if (D == 3)
             {
-                ValueType dx = (ValueType)(2 * M_PI / sx);
-                ValueType dy = (ValueType)(2 * M_PI / sy);
-                ValueType dz = (ValueType)(2 * M_PI / sz);
+                CoordType dx = (CoordType)(2 * M_PI / sx);
+                CoordType dy = (CoordType)(2 * M_PI / sy);
+                CoordType dz = (CoordType)(2 * M_PI / sz);
 
 #pragma omp parallel for private(z, y, x) shared(sx, sy, sz)
                 for (z = 0; z < sz; z++)
                 {
-                    ValueType kz = z;
+                    CoordType kz = z;
                     if (z>=sz/2) kz = z - sz;
 
-                    ValueType fz = kz * dz;
+                    CoordType fz = kz * dz;
 
                     for (y = 0; y < sy; y++)
                     {
-                        ValueType ky = y;
+                        CoordType ky = y;
                         if (y >= sy / 2) ky = y - sy;
 
-                        ValueType fy = ky * dy;
+                        CoordType fy = ky * dy;
 
                         for (x = 0; x < sx; x++)
                         {
                             size_t offset = x + y*sx + z*sx*sy;
 
-                            ValueType kx = x;
+                            CoordType kx = x;
                             if (x >= sx / 2) kx = x - sx;
 
-                            ValueType fx = kx * dx;
+                            CoordType fx = kx * dx;
 
-                            std::complex<ValueType> vx = deform_fft_cplx_[0](offset);
-                            std::complex<ValueType> vy = deform_fft_cplx_[1](offset);
-                            std::complex<ValueType> vz = deform_fft_cplx_[2](offset);
+                            std::complex<CoordType> vx = deform_fft_cplx_[0](offset);
+                            std::complex<CoordType> vy = deform_fft_cplx_[1](offset);
+                            std::complex<CoordType> vz = deform_fft_cplx_[2](offset);
 
                             if ((x != 0) || (y != 0) || (z != 0))
                             {
-                                std::complex<ValueType> s1 = fx * vx + fy * vy + fz * vz;
-                                std::complex<ValueType> s2 = fx * fx + fy * fy + fz * fz;
-                                std::complex<ValueType> s3 = s1 / s2;
+                                std::complex<CoordType> s1 = fx * vx + fy * vy + fz * vz;
+                                std::complex<CoordType> s2 = fx * fx + fy * fy + fz * fz;
+                                std::complex<CoordType> s3 = s1 / s2;
 
                                 deform_fft_buf_cplx_[0](offset) = vx - fx*s3;
                                 deform_fft_buf_cplx_[1](offset) = vy - fy*s3;
@@ -908,18 +914,18 @@ namespace Gadgetron {
 
                 long long n;
 
-                ValueType dd[D];
+                CoordType dd[D];
                 for (size_t ii = 0; ii<D; ii++)
                 {
-                    dd[ii] = (ValueType)(2 * M_PI / deform[0].get_size(ii));
+                    dd[ii] = (CoordType)(2 * M_PI / deform[0].get_size(ii));
                 }
 
 #pragma omp parallel default(none) private(n) shared(dd, N)
                 {
                     size_t ind[D];
-                    ValueType kk[D];
-                    ValueType ff[D];
-                    std::complex<ValueType> vv[D];
+                    CoordType kk[D];
+                    CoordType ff[D];
+                    std::complex<CoordType> vv[D];
 
                     #pragma omp for 
                     for (n = 0; n<(long long)N; n++)
@@ -936,7 +942,7 @@ namespace Gadgetron {
                             vv[ii] = deform_fft_cplx_[ii]( (size_t)n );
                         }
 
-                        std::complex<ValueType> s1(0), s2(0);
+                        std::complex<CoordType> s1(0), s2(0);
 
                         for (ii = 0; ii<D; ii++)
                         {
@@ -946,7 +952,7 @@ namespace Gadgetron {
 
                         if (s2.real()>0)
                         {
-                            std::complex<ValueType> s3 = s1 / s2;
+                            std::complex<CoordType> s3 = s1 / s2;
 
                             for (ii = 0; ii<D; ii++)
                             {
@@ -973,9 +979,13 @@ namespace Gadgetron {
                     gt_exporter_.export_array_complex(deform_fft_buf_cplx_[d], debugFolder_ + ostr.str());
                 }
 
+                DeformFLTCplxType deform_flt, deform_fft_flt;
+                deform_fft_flt.copyFrom(deform_fft_buf_cplx_[d]);
+
                 if (D == 2)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->ifft2(deform_fft_buf_cplx_[d], deform_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->ifft2(deform_fft_flt, deform_flt);
+                    deform_cplx_[d].copyFrom(deform_flt);
                     Gadgetron::complex_to_real(deform_cplx_[d], deform[d]);
 
                     if (!debugFolder_.empty())
@@ -987,7 +997,8 @@ namespace Gadgetron {
                 }
                 else if (D == 3)
                 {
-                    Gadgetron::hoNDFFT<CoordType>::instance()->ifft3(deform_fft_buf_cplx_[d], deform_cplx_[d]);
+                    Gadgetron::hoNDFFT<float>::instance()->ifft3(deform_fft_flt, deform_flt);
+                    deform_cplx_[d].copyFrom(deform_flt);
                     Gadgetron::complex_to_real(deform_cplx_[d], deform[d]);
 
                     if (!debugFolder_.empty())

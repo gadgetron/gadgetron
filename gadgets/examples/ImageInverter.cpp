@@ -11,8 +11,8 @@ namespace {
 
         auto data = std::get<hoNDArray<T>>(image);
 
-        data -= max(data);
-        data *= T(-1);
+		auto max_value = *std::max(data.begin(), data.end());
+		for (auto& d : data) d = max_value - d;
 
         return Image<T>(
                 std::get<ISMRMRD::ImageHeader>(image),
@@ -29,11 +29,11 @@ namespace {
 
 namespace Gadgetron::Examples {
 
-    ImageInverter::ImageInverter(const Context &, const GadgetProperties &properties) : TypedPureGadget(properties) {}
+    ImageInverter::ImageInverter(const Context &, const GadgetProperties &properties) : PureGadget(properties) {}
 
     AnyImage ImageInverter::process_function(AnyImage image) const {
         GINFO_STREAM("Inverting image.")
-        return apply_visitor([](const auto &image) -> AnyImage { return invert_image(image); }, image);
+        return visit([](const auto &image) -> AnyImage { return invert_image(image); }, image);
     }
 
     GADGETRON_GADGET_EXPORT(ImageInverter);

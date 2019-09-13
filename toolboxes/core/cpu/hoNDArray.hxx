@@ -1076,7 +1076,7 @@ namespace Gadgetron {
             }
 
             template <class... ARGS> static auto extract_indices(size_t index0, const ARGS&... args) {
-                return std::array<size_t, sizeof...(ARGS) + 1>{ index0, args... };
+                return std::array<size_t, sizeof...(ARGS) + 1>{ index0, static_cast<size_t>(args)... };
             }
 
             template <class T, class... INDICES>
@@ -1170,13 +1170,22 @@ namespace Gadgetron {
     std::enable_if_t<ValidIndex<Slice, INDICES...>::value, hoNDArray<T>> hoNDArray<T>::operator()(
         const Slice&, const INDICES&... indices) {
         constexpr size_t nsubdims = hondarray_detail::count_slices<0, INDICES...>::value + 1;
+        constexpr size_t N = sizeof...(INDICES) - nsubdims+1;
         auto index_array          = hondarray_detail::extract_indices(indices...);
         auto subdimensions        = std::vector<size_t>(nsubdims);
         std::copy_n(this->dimensions_.begin(), nsubdims, subdimensions.begin());
 
+
+        auto n_offset = 1;
+        for(const auto & s : subdimensions ) n_offset *= s;
+
         T* sub_data = this->data();
-        for (size_t i = 0; i < sizeof...(INDICES); i++) {
-            sub_data += index_array[i] * this->dimensions_[i + nsubdims];
+        size_t offset = 0;
+        for (size_t i = 0; i < N; i++) {
+            sub_data += index_array[i] * n_offset;
+            offset += index_array[i]*n_offset;
+            n_offset *= this->dimensions_[i + nsubdims];
+
         }
 
         return hoNDArray<T>(subdimensions, sub_data);

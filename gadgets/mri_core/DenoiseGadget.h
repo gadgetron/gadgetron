@@ -19,7 +19,7 @@ namespace Gadgetron {
         Core::variant<DenoiseImage<float>, DenoiseImage<std::complex<float>>, IsmrmrdImageArray>;
 
     class EXPORTGADGETSMRICORE DenoiseGadget
-        : public Core::TypedPureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes> {
+        : public Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes> {
 
     public:
         DenoiseGadget(const Core::Context& context, const Core::GadgetProperties&);

@@ -60,12 +60,14 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericImageReconGadget.h
         GenericReconAccumulateImageTriggerGadget.h
         GenericImageReconArrayToImageGadget.h
+        GenericReconReferenceKSpaceDelayedBufferGadget.h
         WhiteNoiseInjectorGadget.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
         ImageAccumulatorGadget.h
         writers/GadgetIsmrmrdWriter.h
+        ImageResizingGadget.h
         DenoiseGadget.h)
 
 set(gadgetron_mricore_src_files
@@ -127,6 +129,7 @@ set(gadgetron_mricore_src_files
         dependencyquery/NoiseSummaryGadget.cpp
         ImageAccumulatorGadget.cpp
         writers/GadgetIsmrmrdWriter.cpp
+        ImageResizingGadget.cpp
         DenoiseGadget.cpp)
 
 set(gadgetron_mricore_config_files

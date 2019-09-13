@@ -1,22 +1,17 @@
 
 #include <gtest/gtest.h>
-
-#include <sstream>
-
 #include "Message.h"
 #include "Channel.h"
-#include "MessageID.h"
-#include "hoNDArray_elemwise.h"
-
-#include "mri_core_data.h"
-#include "mri_core_acquisition_bucket.h"
-
 #include "writers/GadgetIsmrmrdWriter.h"
 #include "readers/GadgetIsmrmrdReader.h"
-#include "readers/IsmrmrdImageArrayReader.h"
-#include "writers/IsmrmrdImageArrayWriter.h"
+#include <sstream>
+#include "hoNDArray_elemwise.h"
+#include "mri_core_data.h"
 #include "readers/BufferReader.h"
+#include "readers/IsmrmrdImageArrayReader.h"
 #include "writers/BufferWriter.h"
+#include "writers/IsmrmrdImageArrayWriter.h"
+#include "MessageID.h"
 
 TEST(ReadWriteTest,AcquisitionTest){
     using namespace Gadgetron;
@@ -56,16 +51,6 @@ TEST(ReadWriteTest,AcquisitionTest){
     ASSERT_EQ(data,std::get<hoNDArray<std::complex<float>>>(value));
 }
 
-TEST(ReadWriteTest, AcquisitionBucketTest) {
-    using namespace Gadgetron;
-    using namespace Gadgetron::Core;
-
-    IsmrmrdAcquisitionBucket bucket;
-
-
-
-
-}
 
 TEST(ReadWriteTest, BufferTest){
 	using namespace Gadgetron;

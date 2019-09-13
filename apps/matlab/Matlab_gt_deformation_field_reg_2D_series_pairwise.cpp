@@ -213,7 +213,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         Gadgetron::hoNDImageContainer2D<Image2DType> sourceSeries;
         sourceSeries.create(source.begin(), dim);
 
-        Gadgetron::hoImageRegContainer2DRegistration<Image2DType, Image2DType, float> regContainer;
+        Gadgetron::hoImageRegContainer2DRegistration<Image2DType, Image2DType, double> regContainer;
 
         regContainer.setDefaultParameters(level, false);
 
@@ -277,7 +277,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         // output parameter
         // ---------------------------------------------------------------
 
-        Gadgetron::hoNDArray<float> deformField;
+        Gadgetron::hoNDArray<double> deformField;
 
         mxArray* M0 = NULL;
         regContainer.deformation_field_[0].to_NDArray(0, deformField);

@@ -25,7 +25,7 @@ echo $DOCKER_LABELS
 cat << EOF > ${DOCKERFOLDER}/Dockerfile
 FROM ${IMG_IN}
 
-RUN apt-get remove --yes --autoremove emacs build-essential x11-common libgtk* make cmake
+RUN apt-get remove --yes --autoremove build-essential x11-common libgtk* make cmake
 RUN apt-get --yes remove *-dev
 #RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update

@@ -29,15 +29,15 @@ namespace Gadgetron::Core {
        channel.close();
     }
 
-    Message InputChannel::pop() {
+    Message GenericInputChannel::pop() {
         return channel->pop();
     }
 
-    optional<Message> InputChannel::try_pop() {
+    optional<Message> GenericInputChannel::try_pop() {
         return channel->try_pop();
     }
 
-    InputChannel::InputChannel(std::shared_ptr<Channel> channel) : channel{channel},
+    GenericInputChannel::GenericInputChannel(std::shared_ptr<Channel> channel) : channel{channel},
                                                                    closer{std::make_shared<Channel::Closer>(channel)} {
     }
 
@@ -51,8 +51,8 @@ namespace Gadgetron::Core {
 }
 
 
-Gadgetron::Core::InputChannel Gadgetron::Core::split(const InputChannel &channel) {
-    return InputChannel{channel};
+Gadgetron::Core::GenericInputChannel Gadgetron::Core::split(const GenericInputChannel&channel) {
+    return GenericInputChannel{channel};
 }
 
 Gadgetron::Core::OutputChannel Gadgetron::Core::split(const OutputChannel &channel) {

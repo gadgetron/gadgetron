@@ -29,7 +29,7 @@ namespace Gadgetron::Server::Connection::Stream {
         );
 
         void process(
-                Core::InputChannel,
+                Core::GenericInputChannel,
                 Core::OutputChannel,
                 ErrorHandler &
         ) override;
@@ -40,7 +40,7 @@ namespace Gadgetron::Server::Connection::Stream {
         using Job = std::future<Core::Message>;
         using Queue = Core::MPMCChannel<Job>;
 
-        void process_outbound(Core::InputChannel, Queue &);
+        void process_outbound(Core::GenericInputChannel, Queue &);
         void process_inbound(Core::OutputChannel, Queue &);
 
         std::shared_ptr<Serialization> serialization;

@@ -68,7 +68,7 @@ namespace Gadgetron {
 
     }
 
-    void PythonGadget::process(Core::TypedInputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) {
+    void PythonGadget::process(Core::InputChannel<Python::PythonTypes> &in, Core::OutputChannel &out) {
 
         if (!config_success_) return;
 
@@ -90,7 +90,7 @@ namespace Gadgetron {
         for (auto message : in) {
             GILLock lock;
             try {
-                boost::apply_visitor([this, &out](auto &&message) { process_message(class_, out, message); }, message);
+                Core::visit([this, &out](auto &&message) { process_message(class_, out, message); }, message);
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
@@ -107,7 +107,7 @@ namespace Gadgetron {
 
 
     PythonGadget::PythonGadget(const Core::Context &context, const Core::GadgetProperties &params)
-            : Core::TypedChannelGadget<Python::PythonTypes>(params) {
+            : Core::ChannelGadget<Python::PythonTypes>(params) {
 
         initialize_python();
 

@@ -30,7 +30,7 @@ namespace {
         return array;
     }
 
-    std::vector<Grappa::Slice> take_available_slices(TypedInputChannel<Grappa::Slice> &input) {
+    std::vector<Grappa::Slice> take_available_slices(InputChannel<Grappa::Slice> &input) {
 
         std::vector<Grappa::Slice> slices{};
 
@@ -186,10 +186,10 @@ namespace Gadgetron::Grappa {
     WeightsCalculator<WeightsCore>::WeightsCalculator(
             const Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : TypedChannelGadget<Grappa::Slice>(props), context(context) {}
+    ) : ChannelGadget<Grappa::Slice>(props), context(context) {}
 
     template<class WeightsCore>
-    void WeightsCalculator<WeightsCore>::process(TypedInputChannel<Grappa::Slice> &in, OutputChannel &out) {
+    void WeightsCalculator<WeightsCore>::process(InputChannel<Grappa::Slice> &in, OutputChannel &out) {
 
         std::set<uint16_t> updated_slices{};
         uint16_t n_combined_channels = 0, n_uncombined_channels = 0;

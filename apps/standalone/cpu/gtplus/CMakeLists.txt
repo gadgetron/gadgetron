@@ -58,17 +58,13 @@ if (MATLAB_FOUND)
         endif ()
     endif()
 
-    if ( MKL_FOUND AND FFTW3_FOUND )
+    add_library(Matlab_gt_read_analyze SHARED Matlab_gt_read_analyze.cpp)
+    set_target_properties(Matlab_gt_read_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
+    install(TARGETS Matlab_gt_read_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
-        add_library(Matlab_gt_read_analyze SHARED Matlab_gt_read_analyze.cpp)
-        set_target_properties(Matlab_gt_read_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_gt_read_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
-
-        add_library(Matlab_gt_write_analyze SHARED Matlab_gt_write_analyze.cpp)
-        set_target_properties(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_gt_write_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
-
-    endif ()
+    add_library(Matlab_gt_write_analyze SHARED Matlab_gt_write_analyze.cpp)
+    set_target_properties(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
+    install(TARGETS Matlab_gt_write_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
 else()
     message("MATLAB NOT FOUND: matlab wrapper for gtplus toolbox will not be compiled.")
