@@ -78,11 +78,11 @@ namespace Gadgetron::Server::Connection::Stream {
                 acceptor
         );
 
-        auto future_socket = acceptor->async_accept(boost::asio::use_future);
+        auto socket = std::make_unique<tcp::socket>(io_service);
+        auto future_socket = acceptor->async_accept(*socket, boost::asio::use_future);
 
         io_service.run();
-
-        auto socket = std::make_unique<tcp::socket>(std::move(future_socket.get()));
+        future_socket.get();
 
         GINFO_STREAM("Connected to external module '" << execute.name << "' on port: " << port);
 
