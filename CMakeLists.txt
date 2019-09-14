@@ -223,12 +223,7 @@ add_definitions( -DBOOST_NO_EXCEPTIONS )
 add_definitions( -DHAVE_SNPRINTF)
 endif()
 
-# We actually only use system and thread explicitly, but they require linking in date_time and chrono
-if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
-else()
-find_package(Boost 1.65.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
-endif()
+find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 
 add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES

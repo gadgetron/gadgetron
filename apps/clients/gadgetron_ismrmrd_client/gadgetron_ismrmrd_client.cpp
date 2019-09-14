@@ -17,8 +17,6 @@
 
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <ismrmrd/ismrmrd.h>
@@ -36,6 +34,7 @@
 #include <exception>
 #include <map>
 #include <thread>
+#include <mutex>
 #include <chrono>
 #include <condition_variable>
 #include <boost/make_shared.hpp>
@@ -229,7 +228,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
-boost::mutex mtx;
+std::mutex mtx;
 
 struct GadgetMessageIdentifier
 {
@@ -1193,7 +1192,7 @@ public:
         if (error)
             throw GadgetronClientException("Error connecting using socket.");
 
-        reader_thread_ = boost::thread(boost::bind(&GadgetronClientConnector::read_task, this));
+        reader_thread_ = std::thread(&GadgetronClientConnector::read_task, this);
     }
 
     void send_gadgetron_close() { 
@@ -1551,7 +1550,7 @@ protected:
 
     boost::asio::io_service io_service;
     tcp::socket* socket_;
-    boost::thread reader_thread_;
+    std::thread reader_thread_;
     maptype readers_;
     unsigned int timeout_ms_;
     double uncompressed_bytes_sent_;
@@ -1920,12 +1919,12 @@ int main(int argc, char **argv)
             if(waveforms>0)
             {
                 {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    std::mutex::scoped_lock scoped_lock(mtx);
                     ismrmrd_dataset->readAcquisition(i, acq_tmp);
                 }
 
                 {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    std::mutex::scoped_lock scoped_lock(mtx);
                     ismrmrd_dataset->readWaveform(j, wav_tmp);
                 }
 
@@ -1949,7 +1948,7 @@ int main(int argc, char **argv)
 
                         if(j<waveforms)
                         {
-                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            std::mutex::scoped_lock scoped_lock(mtx);
                             ismrmrd_dataset->readWaveform(j, wav_tmp);
                         }
                         else
@@ -1971,7 +1970,7 @@ int main(int argc, char **argv)
 
                         if(i<acquisitions)
                         {
-                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            std::mutex::scoped_lock scoped_lock(mtx);
                             ismrmrd_dataset->readAcquisition(i, acq_tmp);
                         }
                         else
@@ -1987,7 +1986,7 @@ int main(int argc, char **argv)
                         for (uint32_t ia=i+1; ia<acquisitions; ia++)
                         {
                             {
-                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                std::mutex::scoped_lock scoped_lock(mtx);
                                 ismrmrd_dataset->readAcquisition(ia, acq_tmp);
                             }
 
@@ -2002,7 +2001,7 @@ int main(int argc, char **argv)
                         for (uint32_t iw = j + 1; iw<waveforms; iw++)
                         {
                             {
-                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                std::mutex::scoped_lock scoped_lock(mtx);
                                 ismrmrd_dataset->readWaveform(iw, wav_tmp);
                             }
 
@@ -2016,7 +2015,7 @@ int main(int argc, char **argv)
                 for (i=0; i<acquisitions; i++)
                 {
                     {
-                        boost::mutex::scoped_lock scoped_lock(mtx);
+		        std::unique_lock<std::mutex> scoped_lock(mtx);
                         ismrmrd_dataset->readAcquisition(i, acq_tmp);
                     }
 
