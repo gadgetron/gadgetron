@@ -225,9 +225,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
+find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer REQUIRED )
 else()
-find_package(Boost 1.65.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
+find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 endif()
 
 add_library(boost INTERFACE)
@@ -412,9 +412,14 @@ message("Adding gpertools to build.")
 find_package(Gperftools REQUIRED)
 endif()
 
-#add_subdirectory(test)
+add_subdirectory(test)
 add_subdirectory(cmake)
+
+
+option(BUILD_DOCUMENTATION "Build Gadgetron documentation" Off)
+if (BUILD_DOCUMENTATION)
 add_subdirectory(doc)
+endif()
 add_subdirectory(chroot)
 
 # install dependencies for WIN32
