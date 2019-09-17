@@ -3,7 +3,9 @@ set(EXAMPLE_SOURCES
         ImageLayerer.cpp
         ImageLayerer.h
         ImageInverter.cpp
-        ImageInverter.h AcquisitionWaveformBranch.cpp AcquisitionWaveformBranch.h)
+        ImageInverter.h
+        AcquisitionWaveformBranch.cpp
+        AcquisitionWaveformBranch.h)
 
 add_library(gadgetron_examples SHARED ${EXAMPLE_SOURCES})
 set_target_properties(gadgetron_examples PROPERTIES
@@ -21,4 +23,9 @@ install(TARGETS gadgetron_examples DESTINATION lib COMPONENT main)
 install(FILES
         config/external_example.xml
         config/parallel_bypass_example.xml
+        config/external_equivalent_example.xml
+        config/external_connect_example.xml
+        config/external_python_example.xml
+        config/external_matlab_example.xml
+        config/external_matlab_bucket_example.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
