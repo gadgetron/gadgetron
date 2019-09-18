@@ -49,15 +49,8 @@ set(gadgetron_python_gadgets_files
         gadgets/image_array_recon_rtcine_plotting.py
         )
 
-#set(gadgetron_python_models_files
-#                            models/grappa_ai.py
-#        )
-
 set(gadgetron_python_examples_files
-        examples/mixed_gadgets.py
-        examples/mixed_gadgets_gpu.py
-        examples/pure_python_demo.py
-        examples/simple_recon.py)
+        ../python-new/examples/simple_recon.py)
 
 source_group(config FILES ${gadgetron_python_config_files})
 source_group(utils FILES ${gadgetron_python_utils_files})
@@ -87,9 +80,7 @@ set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_ST
 target_link_libraries(gadgetron_python
         gadgetron_core
         gadgetron_toolbox_python
-        gadgetron_toolbox_log
-
-        )
+        gadgetron_toolbox_log)
 
 target_include_directories(gadgetron_python
         PUBLIC
@@ -119,5 +110,4 @@ install(FILES
 install(FILES ${gadgetron_python_config_files}
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
-add_subdirectory(config)
 add_subdirectory(utils)

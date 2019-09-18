@@ -86,7 +86,6 @@ else ()
 endif ()
 set(GADGETRON_INSTALL_CMAKE_PATH share/gadgetron/cmake)
 set(GADGETRON_INSTALL_CONFIG_PATH share/gadgetron/config)
-set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
 set(GADGETRON_INSTALL_PYTHON_MODULE_PATH share/gadgetron/python)
 set(GADGETRON_INSTALL_SCHEMA_PATH share/gadgetron/schema)
 set(GADGETRON_INSTALL_INCLUDE_PATH include/gadgetron)
@@ -374,21 +373,6 @@ target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${
 target_link_libraries(boost INTERFACE python)
 
 endif()
-
-option(ADD_MATLAB_SUPPORT "Install MATLAB libraries and examples." On)
-option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)
-if (BUILD_MATLAB_SUPPORT)
-    find_package(GMatlab)
-    if (MATLAB_FOUND)
-        add_definitions(-DUSE_MATLAB)
-    else()
-        set(BUILD_MATLAB_SUPPORT OFF)
-    endif ()
-else()
-    # explicitly set it, just in case BUILD_MATLAB_SUPPORT was set to OFF
-    # after Matlab was already found.
-    set(MATLAB_FOUND OFF)
-endif ()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)

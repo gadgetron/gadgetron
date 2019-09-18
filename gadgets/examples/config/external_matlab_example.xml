@@ -22,7 +22,9 @@
 
     <stream>
         <external>
-            <execute name="simple_recon" type="matlab"/>
+            <!-- We're referencing a function called simple_recon in the gadgetron.recon package.
+                 It's installed with the Gadgetron MATLAB package, and used there as an example. -->
+            <execute name="gadgetron.examples.simple_recon" type="matlab"/>
 
             <!-- The configuration is sent to the external process. It's left pretty empty here. -->
             <configuration/>

@@ -77,11 +77,11 @@ def remove_oversampling(iterable, header):
     x1 = (encoding_space.x - recon_space.x) // 2 + recon_space.x
 
     def crop_acquisition(acquisition):
-        xspace = cifftn(acquisition.data, axes=[1])
-        xspace = xspace[:, x0:x1]
-        acquisition.resize(number_of_samples=xspace.shape[1], active_channels=xspace.shape[0])
+        x_space = cifftn(acquisition.data, axes=[1])
+        x_space = x_space[:, x0:x1]
+        acquisition.resize(number_of_samples=x_space.shape[1], active_channels=x_space.shape[0])
         acquisition.center_sample = recon_space.x // 2
-        acquisition.data[:] = cfftn(xspace, axes=[1])
+        acquisition.data[:] = cfftn(x_space, axes=[1])
 
         return acquisition
 

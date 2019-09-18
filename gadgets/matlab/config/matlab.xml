@@ -23,25 +23,28 @@
     <stream>
         <gadget>
             <dll>gadgetron_mricore</dll>
-            <classname>NoiseAdjustGadget</classname>
-        </gadget>
-
-        <gadget>
-            <dll>gadgetron_mricore</dll>
             <classname>RemoveROOversamplingGadget</classname>
         </gadget>
 
         <gadget>
             <dll>gadgetron_mricore</dll>
             <classname>AcquisitionAccumulateTriggerGadget</classname>
-            <property name="trigger_dimension" value="repetition"/>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>BucketToBufferGadget</classname>
+            <property name="split_slices" value="true"/>
         </gadget>
 
         <external>
-            <!-- We're referencing a function called bucket_recon in the gadgetron.recon package.
-                 It's installed with the Gadgetron MATLAB package, and used there as an example. -->
-            <execute name="gadgetron.examples.bucket_recon" type="matlab"/>
+            <execute name="gadgetron.examples.buffer_recon" type="matlab"/>
             <configuration/>
         </external>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>ExtractGadget</classname>
+        </gadget>
     </stream>
 </configuration>
