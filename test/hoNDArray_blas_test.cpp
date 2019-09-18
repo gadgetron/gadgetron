@@ -1,6 +1,8 @@
-#include "hoNDArray_math.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_math.h"
+#include <cpu/math/hoNDArray_linalg.h>
 #include <gtest/gtest.h>
+#include <random>
 #include <vector>
 
 using namespace Gadgetron;
@@ -145,4 +147,26 @@ TYPED_TEST(hoNDArray_blas_Cplx,amaxTest){
   EXPECT_EQ(768,amax(&this->Array));
   this->Array.get_data_ptr()[999]=TypeParam(-3,-6);
   EXPECT_EQ(999,amax(&this->Array));
+}
+
+TEST(BLASLevel3,gemm_squared){
+
+    hoNDArray<std::complex<float>> A(127,113);
+    std::uniform_real_distribution<float> dist;
+    std::mt19937_64 engine{};
+
+    for (auto& d : A) d = {dist(engine),dist(engine)};
+
+    auto B = A;
+
+    auto C = A;
+    auto C2 = A;
+
+    gemm(C,A,true,B,false);
+    gemm(C2,A,true,A,false);
+
+    ASSERT_EQ(C,C2);
+
+
+
 }

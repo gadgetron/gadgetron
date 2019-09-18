@@ -61,7 +61,7 @@ add_executable(gadgetron
         connection/stream/common/Configuration.h
         connection/stream/distributed/Pool.h
         connection/stream/distributed/Worker.cpp
-        connection/stream/distributed/Worker.h connection/stream/common/Closer.h connection/stream/distributed/Pool.cpp)
+        connection/stream/distributed/Worker.h connection/stream/common/Closer.h connection/stream/distributed/Pool.cpp )
 
 target_link_libraries(gadgetron
         gadgetron_core
@@ -90,3 +90,5 @@ endif ()
 
 install(TARGETS gadgetron DESTINATION bin COMPONENT main)
 
+
+add_subdirectory(test)

@@ -42,6 +42,10 @@ namespace Gadgetron{
         template<class... INDICES>
        std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
        operator()(INDICES... indices);
+
+       template<class... INDICES>
+       std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),const T&>
+       operator()(INDICES... indices) const;
    private:
        friend class hoNDArray<T>;
        hoNDArrayView(const std::array<size_t,D>& strides, const std::array<size_t,D>& dimensions, T*);
@@ -230,7 +234,9 @@ namespace Gadgetron{
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;
 
+  [[deprecated("Use IO::write instead")]]
     virtual bool serialize(char*& buf, size_t& len) const;
+    [[deprecated("Use IO::read instead")]]
     virtual bool deserialize(char* buf, size_t& len);
 
   protected:

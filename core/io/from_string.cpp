@@ -4,6 +4,7 @@
 #include "from_string.h"
 
 #include <boost/spirit/include/qi.hpp>
+#include <boost/filesystem/path.hpp>
 
 template <class T> void Gadgetron::Core::IO::from_string(const std::string& str, T& val) {
 
@@ -24,6 +25,11 @@ template <class T> void Gadgetron::Core::IO::from_string(const std::string& str,
         throw std::runtime_error("Cannot parse vector from string: " + str);
 }
 
+template<>
+void Gadgetron::Core::IO::from_string(const std::string& str, boost::filesystem::path& path){
+    path = boost::filesystem::path(str);
+}
+
 template void Gadgetron::Core::IO::from_string<float>(const std::string& str, float& val);
 template void Gadgetron::Core::IO::from_string<double>(const std::string& str, double& val);
 template void Gadgetron::Core::IO::from_string<unsigned int>(const std::string& str, unsigned int& val);
@@ -41,3 +47,5 @@ template void Gadgetron::Core::IO::from_string<unsigned short>(const std::string
 template void Gadgetron::Core::IO::from_string<short>(const std::string& str, std::vector<short>& val);
 template void Gadgetron::Core::IO::from_string<size_t>(const std::string& str, std::vector<size_t>& val);
 template void Gadgetron::Core::IO::from_string<bool>(const std::string& str, std::vector<bool>& val);
+
+template void Gadgetron::Core::IO::from_string<boost::filesystem::path>(const std::string& str, boost::filesystem::path& val);

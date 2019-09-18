@@ -284,14 +284,10 @@ find_package(GTest)
 
 find_package(Armadillo REQUIRED )
 # check whether ILP64 MKL should is used
-if(ARMADILLO_FOUND)
 add_library(armadillo INTERFACE)
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
 add_definitions( -DARMA_DONT_USE_WRAPPER)
 
-endif()
-
-#find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
 
@@ -313,9 +309,6 @@ if (USE_MKL)
   set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
-
-
-
 
   add_definitions(-DUSE_MKL)
   else()
