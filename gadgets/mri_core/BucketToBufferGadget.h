@@ -1,7 +1,5 @@
-#ifndef BUCKETTOBUFFER_H
-#define BUCKETTOBUFFER_H
-
-#include "Gadget.h"
+#pragma once
+#include "Node.h"
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
 
@@ -24,60 +22,39 @@ namespace Gadgetron{
     // Since the order of data can be changed from its acquried time order, there is no easy way to resort waveform data
     // Therefore, the waveform data was copied and passed with every buffer
 
-  class EXPORTGADGETSMRICORE BucketToBufferGadget : 
-  public Gadget1<IsmrmrdAcquisitionBucket>
+  class BucketToBufferGadget :
+public Core::ChannelGadget<AcquisitionBucket>
     {
     public:
-      GADGET_DECLARE(BucketToBufferGadget);
-
-      BucketToBufferGadget();
-      virtual ~BucketToBufferGadget();
-
+        BucketToBufferGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        enum class Dimension {
+            average,contrast,phase,repetition,set,segment,slice,none;
+        };
 
     protected:
-      GADGET_PROPERTY_LIMITS(N_dimension, std::string, "N-Dimensions", "", 
-                 GadgetPropertyLimitsEnumeration,
-                 "average",
-                 "contrast",
-                 "phase",
-                 "repetition",
-                 "set",
-                 "segment",
-                 "slice",
-                 "");
+      NODE_PROPERTY(N_dimension,Dimension , "N-Dimensions", "" );
+      NODE_PROPERTY(S_dimension,Dimension , "S-Dimensions", "" );
 
-      GADGET_PROPERTY_LIMITS(S_dimension, std::string, "S-Dimensions", "", 
-                 GadgetPropertyLimitsEnumeration,
-                 "average",
-                 "contrast",
-                 "phase",
-                 "repetition",
-                 "set",
-                 "segment",
-                 "slice",
-                 "");
+      NODE_PROPERTY(split_slices, bool, "Split slices", false);
+      NODE_PROPERTY(ignore_segment, bool, "Ignore segment", false);
+      NODE_PROPERTY(verbose, bool, "Whether to print more information", false);
 
-      GADGET_PROPERTY(split_slices, bool, "Split slices", false);
-      GADGET_PROPERTY(ignore_segment, bool, "Ignore segment", false);
-      GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
-
-      IsmrmrdCONDITION N_;
-      IsmrmrdCONDITION S_;
       bool split_slices_;
       bool ignore_segment_;
-      ISMRMRD::IsmrmrdHeader hdr_;
+      ISMRMRD::IsmrmrdHeader header;
       
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1);
-      size_t getKey(ISMRMRD::ISMRMRD_EncodingCounters idx);
-      size_t getSlice(ISMRMRD::ISMRMRD_EncodingCounters idx);
-      size_t getN(ISMRMRD::ISMRMRD_EncodingCounters idx);
-      size_t getS(ISMRMRD::ISMRMRD_EncodingCounters idx);
+      void process(Core::InputChannel<AcquisitionBucket>& in, Core::OutputChannel& out) override;
+      size_t getKey(ISMRMRD::ISMRMRD_EncodingCounters idx) const;
+      size_t getSlice(ISMRMRD::ISMRMRD_EncodingCounters idx) const ;
+      size_t getN(ISMRMRD::ISMRMRD_EncodingCounters idx) const;
+      size_t getS(ISMRMRD::ISMRMRD_EncodingCounters idx)const ;
 
-      IsmrmrdReconBit & getRBit(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > & recon_data_buffers, size_t key, uint16_t espace);
-      virtual void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
-      virtual void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader & acqhdr, bool forref);
-      virtual void stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
+      IsmrmrdReconBit & getRBit(std::map<size_t, IsmrmrdReconData > & recon_data_buffers, size_t key, uint16_t espace) const ;
+      void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, AcquisitionBucketStats& stats, bool forref);
+      void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding,
+          AcquisitionBucketStats& stats, ISMRMRD::AcquisitionHeader & acqhdr, bool forref);
+      void stuff(std::vector<Core::Acquisition>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, AcquisitionBucketStats& stats, bool forref);
     };
+
+    void from_string(const std::string&, BucketToBufferGadget::Dimension& );
 }
-#endif //BUCKETTOBUFFER_H

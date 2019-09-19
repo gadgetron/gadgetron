@@ -4,268 +4,126 @@
 #include "hoNDArray_reductions.h"
 namespace Gadgetron {
 
-    BucketToBufferGadget::BucketToBufferGadget()
+
+       void BucketToBufferGadget::add_acquisition(Core::Acquisition acq, IsmrmrdDataBuffered& dataBuffer, const AcquisitionBucketStats& stats) const {
+
+           auto& acqhdr = std::get<ISMRMRD::AcquisitionHeader>(acq);
+
+           // Generate the key to the corresponding ReconData buffer
+           // The storage is based on the encoding space
+           uint16_t espace = acqhdr.encoding_space_ref;
+           auto encoding = header.encoding[espace];
+           // this bucket's reference stats
+
+           // Fill the sampling description for this data buffer, only need to fill the sampling_ once per recon bit
+           if (&dataBuffer != pCurrDataBuffer) {
+               fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, true);
+               pCurrDataBuffer = &dataBuffer;
+           }
+
+           // Make sure that the data storage for this data buffer has been allocated
+           // TODO should this check the limits, or should that be done in the stuff function?
+           allocateDataArrays(dataBuffer, acqhdr, encoding, stats, true);
+       }
+    void BucketToBufferGadget
+        ::process(Core::InputChannel<AcquisitionBucket>& input,Core::OutputChannel& out)
     {
-    }
 
-    BucketToBufferGadget::~BucketToBufferGadget()
-    {
-        //The buckets array should be empty but just in case, let's make sure all the stuff is released.
-    }
 
-    int BucketToBufferGadget
-        ::process_config(ACE_Message_Block* mb)
-    {
-        if (N_dimension.value().size() == 0) {
-            N_ = NONE;
-        }
-        else if (N_dimension.value().compare("average") == 0) {
-            N_ = AVERAGE;
-        }
-        else if (N_dimension.value().compare("contrast") == 0) {
-            N_ = CONTRAST;
-        }
-        else if (N_dimension.value().compare("phase") == 0) {
-            N_ = PHASE;
-        }
-        else if (N_dimension.value().compare("repetition") == 0) {
-            N_ = REPETITION;
-        }
-        else if (N_dimension.value().compare("set") == 0) {
-            N_ = SET;
-        }
-        else if (N_dimension.value().compare("segment") == 0) {
-            N_ = SEGMENT;
-        }
-        else if (N_dimension.value().compare("slice") == 0) {
-            N_ = SLICE;
-        }
-        else {
-            GDEBUG("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.value().c_str());
-            N_ = NONE;
-        }
+        for (auto acq_bucket : input ) {
+            size_t key;
+            std::map<size_t, IsmrmrdReconData> recon_data_buffers;
 
-        GDEBUG("N DIMENSION IS: %s (%d)\n", N_dimension.value().c_str(), N_);
+            // Iterate over the reference data of the bucket
+            for (auto& acq : acq_bucket.ref_) {
+                // Get a reference to the header for this acquisition
 
-        if (S_dimension.value().size() == 0) {
-            S_ = NONE;
-        }
-        else if (S_dimension.value().compare("average") == 0) {
-            S_ = AVERAGE;
-        }
-        else if (S_dimension.value().compare("contrast") == 0) {
-            S_ = CONTRAST;
-        }
-        else if (S_dimension.value().compare("phase") == 0) {
-            S_ = PHASE;
-        }
-        else if (S_dimension.value().compare("repetition") == 0) {
-            S_ = REPETITION;
-        }
-        else if (S_dimension.value().compare("set") == 0) {
-            S_ = SET;
-        }
-        else if (S_dimension.value().compare("segment") == 0) {
-            S_ = SEGMENT;
-        }
-        else if (S_dimension.value().compare("slice") == 0) {
-            S_ = SLICE;
-        }
-        else {
-            GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.value().c_str());
-            S_ = NONE;
-        }
 
-        GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.value().c_str(), S_);
-
-        split_slices_ = split_slices.value();
-        GDEBUG("SPLIT SLICES IS: %d\n", split_slices_);
-
-        ignore_segment_ = ignore_segment.value();
-        GDEBUG("IGNORE SEGMENT IS: %d\n", ignore_segment_);
-
-        // keep a copy of the deserialized ismrmrd xml header for runtime
-        ISMRMRD::deserialize(mb->rd_ptr(), hdr_);
-
-        return GADGET_OK;
-    }
-
-    int BucketToBufferGadget
-        ::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
-    {
-        size_t key;
-        std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
-
-        //GDEBUG("BucketToBufferGadget::process\n");
-
-        //Some information about the bucket
-        //GDEBUG_STREAM("The Reference part: " << m1->getObjectPtr()->refstats_.size() << std::endl);
-        //GDEBUG_STREAM("   nslices: " << m1->getObjectPtr()->refstats_[0].slice.size() << std::endl);
-        //for (int e=0; e<m1->getObjectPtr()->refstats_.size() ; e++) {
-        //    for (std::set<uint16_t>::iterator it = m1->getObjectPtr()->refstats_[e].kspace_encode_step_1.begin();
-        //         it != m1->getObjectPtr()->refstats_[e].kspace_encode_step_1.end(); ++it) {
-        //        GDEBUG_STREAM("   K1: " <<  *it << std::endl);
-        //    }
-        //}
-        //GDEBUG_STREAM("The data part: " << m1->getObjectPtr()->datastats_.size() << std::endl);
-        //GDEBUG_STREAM("   nslices: " << m1->getObjectPtr()->datastats_[0].slice.size() << std::endl);
-        //for (int e=0; e<m1->getObjectPtr()->datastats_.size() ; e++) {
-        //    for (std::set<uint16_t>::iterator it = m1->getObjectPtr()->datastats_[e].kspace_encode_step_1.begin();
-        //         it != m1->getObjectPtr()->datastats_[e].kspace_encode_step_1.end(); ++it) {
-        //        GDEBUG_STREAM("   K1: " <<  *it << std::endl);
-        //    }
-        //}
-
-        //Iterate over the reference data of the bucket
-        IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
-        for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->ref_.begin();
-            it != m1->getObjectPtr()->ref_.end(); ++it)
-        {
-            //Get a reference to the header for this acquisition
-            ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
-
-            //Generate the key to the corresponding ReconData buffer
-            key = getKey(acqhdr.idx);
-
-            //The storage is based on the encoding space
-            uint16_t espace = acqhdr.encoding_space_ref;
-
-            //GDEBUG_STREAM("espace: " << acqhdr.encoding_space_ref << std::endl);
-            //GDEBUG_STREAM("slice: " << acqhdr.idx.slice << std::endl);
-            //GDEBUG_STREAM("rep: " << acqhdr.idx.repetition << std::endl);
-            //GDEBUG_STREAM("k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl);
-            //GDEBUG_STREAM("k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl);
-            //GDEBUG_STREAM("seg: " << acqhdr.idx.segment << std::endl);
-            //GDEBUG_STREAM("key: " << key << std::endl);
-
-            //Get some references to simplify the notation
-            //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
-            IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
-            //and the corresponding data buffer for the reference data
-            if (!rbit.ref_)
-                rbit.ref_ = IsmrmrdDataBuffered();
-            IsmrmrdDataBuffered & dataBuffer = *rbit.ref_;
-            //this encoding space's xml header info
-            ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
-            //this bucket's reference stats
-            IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->refstats_[espace];
-
-            //Fill the sampling description for this data buffer, only need to fill the sampling_ once per recon bit
-            if (&dataBuffer != pCurrDataBuffer)
-            {
-                fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, true);
-                pCurrDataBuffer = &dataBuffer;
+                // Stuff the data, header and trajectory into this data buffer
+                stuff(acq, dataBuffer, encoding, stats, true);
             }
 
-            //Make sure that the data storage for this data buffer has been allocated
-            //TODO should this check the limits, or should that be done in the stuff function?
-            allocateDataArrays(dataBuffer, acqhdr, encoding, stats, true);
+            // Iterate over the imaging data of the bucket
+            // this is exactly the same code as for the reference data except for
+            // the chunk of the data buffer.
+            for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
+                 it != m1->getObjectPtr()->data_.end(); ++it) {
+                // Get a reference to the header for this acquisition
+                ISMRMRD::AcquisitionHeader& acqhdr = *it->head_->getObjectPtr();
 
-            // Stuff the data, header and trajectory into this data buffer
-            stuff(it, dataBuffer, encoding, stats, true);
-        }
+                // Generate the key to the corresponding ReconData buffer
+                key = getKey(acqhdr.idx);
 
+                // The storage is based on the encoding space
+                uint16_t espace = acqhdr.encoding_space_ref;
 
-        //Iterate over the imaging data of the bucket
-        // this is exactly the same code as for the reference data except for
-        // the chunk of the data buffer.
-        pCurrDataBuffer = NULL;
-        for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
-            it != m1->getObjectPtr()->data_.end(); ++it)
-        {
-            //Get a reference to the header for this acquisition
-            ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
+                // Get some references to simplify the notation
+                // the reconstruction bit corresponding to this ReconDataBuffer and encoding space
+                IsmrmrdReconBit& rbit = getRBit(recon_data_buffers, key, espace);
+                // and the corresponding data buffer for the imaging data
+                IsmrmrdDataBuffered& dataBuffer = rbit.data_;
+                // this encoding space's xml header info
+                ISMRMRD::Encoding& encoding = header.encoding[espace];
+                // this bucket's imaging data stats
+                AcquisitionBucketStats& stats = m1->getObjectPtr()->datastats_[espace];
 
-            //Generate the key to the corresponding ReconData buffer
-            key = getKey(acqhdr.idx);
-
-            //The storage is based on the encoding space
-            uint16_t espace = acqhdr.encoding_space_ref;
-
-            //GDEBUG_STREAM("espace: " << acqhdr.encoding_space_ref << std::endl);
-            //GDEBUG_STREAM("slice: " << acqhdr.idx.slice << std::endl);
-            //GDEBUG_STREAM("rep: " << acqhdr.idx.repetition << std::endl);
-            //GDEBUG_STREAM("k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl);
-            //GDEBUG_STREAM("k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl);
-            //GDEBUG_STREAM("seg: " << acqhdr.idx.segment << std::endl);
-            //GDEBUG_STREAM("key: " << key << std::endl);
-
-            //Get some references to simplify the notation
-            //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
-            IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
-            //and the corresponding data buffer for the imaging data
-            IsmrmrdDataBuffered & dataBuffer = rbit.data_;
-            //this encoding space's xml header info
-            ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
-            //this bucket's imaging data stats
-            IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
-
-            //Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
-            if (&dataBuffer != pCurrDataBuffer)
-            {
-                fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
-                pCurrDataBuffer = &dataBuffer;
-            }
-
-            //Make sure that the data storage for this data buffer has been allocated
-            //TODO should this check the limits, or should that be done in the stuff function?
-            allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
-
-            // Stuff the data, header and trajectory into this data buffer
-            stuff(it, dataBuffer, encoding, stats, false);
-        }
-
-
-        //Send all the ReconData messages
-        GDEBUG("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
-        for (std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* >::iterator it = recon_data_buffers.begin(); it != recon_data_buffers.end(); it++)
-        {
-            //GDEBUG_STREAM("Sending: " << it->first << std::endl);
-            if (it->second) {
-
-                size_t num_rbit = it->second->getObjectPtr()->rbit_.size();
-                size_t total_data = 0;
-                for (size_t r = 0; r < num_rbit; r++)
-                {
-                    total_data += it->second->getObjectPtr()->rbit_[r].data_.data_.get_number_of_elements();
-                    if (it->second->getObjectPtr()->rbit_[r].ref_) total_data += it->second->getObjectPtr()->rbit_[r].ref_.get().data_.get_number_of_elements();
+                // Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
+                if (&dataBuffer != pCurrDataBuffer) {
+                    fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
+                    pCurrDataBuffer = &dataBuffer;
                 }
 
-                if (total_data > 0)
-                {
-                    std::vector<ISMRMRD::Waveform>& wav = m1->getObjectPtr()->waveform_;
-                    if (!wav.empty())
-                    {
-                        GadgetContainerMessage< std::vector<ISMRMRD::Waveform> >* m3 = new GadgetContainerMessage< std::vector<ISMRMRD::Waveform> >();
-                        if (m3)
-                        {
-                            *m3->getObjectPtr() = wav;
-                            it->second->cont(m3);
-                        }
-                        else
-                        {
-                            GWARN_STREAM("Create wave form message failed ... ");
-                        }
+                // Make sure that the data storage for this data buffer has been allocated
+                // TODO should this check the limits, or should that be done in the stuff function?
+                allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
 
-                        // it->second->getObjectPtr()->rbit_[0].data_.waveform_ = wav;
+                // Stuff the data, header and trajectory into this data buffer
+                stuff(it, dataBuffer, encoding, stats, false);
+            }
+
+            // Send all the ReconData messages
+            GDEBUG("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
+            for (std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>*>::iterator it = recon_data_buffers.begin();
+                 it != recon_data_buffers.end(); it++) {
+                // GDEBUG_STREAM("Sending: " << it->first << std::endl);
+                if (it->second) {
+
+                    size_t num_rbit   = it->second->getObjectPtr()->rbit_.size();
+                    size_t total_data = 0;
+                    for (size_t r = 0; r < num_rbit; r++) {
+                        total_data += it->second->getObjectPtr()->rbit_[r].data_.data_.get_number_of_elements();
+                        if (it->second->getObjectPtr()->rbit_[r].ref_)
+                            total_data
+                                += it->second->getObjectPtr()->rbit_[r].ref_.get().data_.get_number_of_elements();
                     }
 
-                    GDEBUG_STREAM("Putting buckets in queue")
-                    if (this->next()->putq(it->second) == -1) {
-                        it->second->release();
-                        throw std::runtime_error("Failed to pass bucket down the chain\n");
+                    if (total_data > 0) {
+                        std::vector<ISMRMRD::Waveform>& wav = m1->getObjectPtr()->waveform_;
+                        if (!wav.empty()) {
+                            GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>* m3
+                                = new GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>();
+                            if (m3) {
+                                *m3->getObjectPtr() = wav;
+                                it->second->cont(m3);
+                            } else {
+                                GWARN_STREAM("Create wave form message failed ... ");
+                            }
+                        }
+
+                        GDEBUG_STREAM("Putting buckets in queue")
+                        if (this->next()->putq(it->second) == -1) {
+                            it->second->release();
+                            throw std::runtime_error("Failed to pass bucket down the chain\n");
+                        }
                     }
                 }
             }
+
+            // Clear the recondata buffer map
+            recon_data_buffers.clear(); // is this necessary?
+
+            // We can release the incoming bucket now. This will release all of the data it contains.
         }
-
-        //Clear the recondata buffer map
-        recon_data_buffers.clear();  // is this necessary?
-
-        //We can release the incoming bucket now. This will release all of the data it contains.
-        m1->release();
-
-        return GADGET_OK;
     }
 
 
@@ -429,7 +287,7 @@ namespace Gadgetron {
 
     }
 
-    void BucketToBufferGadget::allocateDataArrays(IsmrmrdDataBuffered & dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref)
+    void BucketToBufferGadget::allocateDataArrays(IsmrmrdDataBuffered & dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, AcquisitionBucketStats& stats, bool forref)
     {
         if (dataBuffer.data_.get_number_of_elements() == 0)
         {
@@ -632,9 +490,23 @@ namespace Gadgetron {
         }
 
     }
+    namespace {
+           template<class DIMSTRUCT>
+           auto xyz_to_vector(const DIMSTRUCT& dimstruct){
+               std::array<decltype(dimstruct.x),3> result = {dimstruct.x,dimstruct.y,dimstruct.z};
+               return result;
+           }
+       }
 
-    void BucketToBufferGadget::fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader& acqhdr, bool forref)
+    SamplingDescription BucketToBufferGadget::createSamplingDescription( ISMRMRD::Encoding & encoding,
+        AcquisitionBucketStats& stats, ISMRMRD::AcquisitionHeader& acqhdr, bool forref)
     {
+           auto sampling = SamplingDescription();
+           sampling.encoded_FOV_ = xyz_to_vector(encoding.encodedSpace.fieldOfView_mm);
+           sampling.encoded_matrix_ = xyz_to_vector(encoding.encodedSpace.matrixSize);
+           sampling.recon_FOV_ = xyz_to_vector(encoding.reconSpace.fieldOfView_mm);
+           sampling.recon_matrix_ = xyz_to_vector(encoding.reconSpace.matrixSize);
+
         // For cartesian trajectories, assume that any oversampling has been removed.
         if (encoding.trajectory == ISMRMRD::TrajectoryType::CARTESIAN) {
             sampling.encoded_FOV_[0] = encoding.reconSpace.fieldOfView_mm.x;
@@ -645,19 +517,6 @@ namespace Gadgetron {
             sampling.encoded_matrix_[0] = encoding.encodedSpace.matrixSize.x;
         }
 
-        sampling.encoded_FOV_[1] = encoding.encodedSpace.fieldOfView_mm.y;
-        sampling.encoded_FOV_[2] = encoding.encodedSpace.fieldOfView_mm.z;
-
-        sampling.encoded_matrix_[1] = encoding.encodedSpace.matrixSize.y;
-        sampling.encoded_matrix_[2] = encoding.encodedSpace.matrixSize.z;
-
-        sampling.recon_FOV_[0] = encoding.reconSpace.fieldOfView_mm.x;
-        sampling.recon_FOV_[1] = encoding.reconSpace.fieldOfView_mm.y;
-        sampling.recon_FOV_[2] = encoding.reconSpace.fieldOfView_mm.z;
-
-        sampling.recon_matrix_[0] = encoding.reconSpace.matrixSize.x;
-        sampling.recon_matrix_[1] = encoding.reconSpace.matrixSize.y;
-        sampling.recon_matrix_[2] = encoding.reconSpace.matrixSize.z;
 
         // For cartesian trajectories, assume that any oversampling has been removed.
         if (((encoding.trajectory == ISMRMRD::TrajectoryType::CARTESIAN)) || (encoding.trajectory == ISMRMRD::TrajectoryType::EPI))
@@ -719,7 +578,7 @@ namespace Gadgetron {
             sampling.sampling_limits_[2].center_ = encoding.encodingLimits.kspace_encoding_step_2->center;
         }
 
-        if (verbose.value())
+        if (verbose)
         {
             GDEBUG_STREAM("Encoding space : " << int(encoding.trajectory)
                 << " - FOV : [ " << encoding.encodedSpace.fieldOfView_mm.x << " " << encoding.encodedSpace.fieldOfView_mm.y << " " << encoding.encodedSpace.fieldOfView_mm.z << " ] "
@@ -730,9 +589,10 @@ namespace Gadgetron {
                 << " ] - E1 : [ " << sampling.sampling_limits_[1].min_ << " " << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_
                 << " ] - E2 : [ " << sampling.sampling_limits_[2].min_ << " " << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_ << " ]");
         }
+        return sampling;
     }
 
-    void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref)
+    void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, AcquisitionBucketStats& stats, bool forref)
     {
 
         // The acquisition header and data
@@ -887,6 +747,8 @@ namespace Gadgetron {
 
         }
     }
+    BucketToBufferGadget::BucketToBufferGadget(const Core::Context& context, const Core::GadgetProperties& props)
+        : ChannelGadget(context, props), header{context.header} {}
 
     GADGET_FACTORY_DECLARE(BucketToBufferGadget)
 
