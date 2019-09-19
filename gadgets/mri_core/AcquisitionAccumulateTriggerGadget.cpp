@@ -1,9 +1,10 @@
 #include "AcquisitionAccumulateTriggerGadget.h"
 #include "log.h"
 #include "mri_core_data.h"
+#include <boost/algorithm/string.hpp>
 
 namespace Gadgetron {
-
+    using TriggerDimension = AcquisitionAccumulateTriggerGadget::TriggerDimension;
     namespace {
         bool is_noise(Core::Acquisition& acq) {
             return std::get<ISMRMRD::AcquisitionHeader>(acq).isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
@@ -31,6 +32,7 @@ namespace Gadgetron {
             case TriggerDimension::n_acquisitions: return 0;
             case TriggerDimension::none: return 0;
             }
+            throw std::runtime_error("Illegal enum");
         }
 
         void add_stats(AcquisitionBucketStats& stats, const ISMRMRD::AcquisitionHeader& header) {
@@ -83,16 +85,19 @@ namespace Gadgetron {
             }
         };
         struct NumAcquisitionsTrigger {
-            explicit NumAcquisitionsTrigger(size_t target_acquisitions) : target_acquisitions{ target_acquisitions } {}
-            size_t target_acquisitions;
+            explicit NumAcquisitionsTrigger(size_t target_acquisitions_first, size_t target_acquisitions) : target_acquisitions_first{target_acquisitions_first},target_acquisitions{ target_acquisitions } {}
+            const size_t target_acquisitions_first;
+            const size_t target_acquisitions;
             size_t num_acquisitions = 0;
+            bool first = true;
 
             static bool trigger_before(const ISMRMRD::AcquisitionHeader& head) {
                 return false;
             }
             bool trigger_after(const ISMRMRD::AcquisitionHeader& head) {
                 // Handle possible n_acq trigger _after_ pushing data - all others come before
-                bool result = ++num_acquisitions >= target_acquisitions;
+                size_t current_target_acquisitions = first ? target_acquisitions_first : target_acquisitions;
+                bool result = ++num_acquisitions >= current_target_acquisitions;
                 if (result)
                     num_acquisitions = 0;
                 return result;
@@ -129,8 +134,9 @@ namespace Gadgetron {
             case TriggerDimension::user_5:
             case TriggerDimension::user_6:
             case TriggerDimension::user_7: return EqualityTrigger(gadget.trigger_dimension);
-            case TriggerDimension::n_acquisitions: return NumAcquisitionsTrigger(gadget.n_acquisitions_before_trigger);
+            case TriggerDimension::n_acquisitions: return NumAcquisitionsTrigger(gadget.n_acquisitions_before_trigger,gadget.n_acquisitions_before_ongoing_trigger);
             case TriggerDimension::none: return NoneTrigger();
+            default: throw std::runtime_error("ENUM TriggerDimension is in an invalid state.");
             }
         }
 
@@ -149,7 +155,9 @@ namespace Gadgetron {
             buckets.begin()->second.waveform_ = std::move(waveforms);
             // Pass all buckets down the chain
             for (auto& bucket : buckets)
-                out.push(std::move(bucket));
+                out.push(std::move(bucket.second));
+
+            buckets.clear();
         }
     }
 
@@ -182,6 +190,30 @@ namespace Gadgetron {
             if (trigger_after(trigger, head))
                 send_data(out, buckets, waveforms);
         }
+        send_data(out,buckets,waveforms);
     }
-    GADGETRON_GADGET_EXPORT(AcquisitionAccumulateTriggerGadget)
+    GADGETRON_GADGET_EXPORT(AcquisitionAccumulateTriggerGadget);
+
+    namespace {
+        const std::map<std::string, TriggerDimension> triggerdimension_from_name = {
+
+            { "kspace_encode_step_1", TriggerDimension::kspace_encode_step_1 },
+            { "kspace_encode_step_2", TriggerDimension::kspace_encode_step_2 },
+            { "average", TriggerDimension::average }, { "slice", TriggerDimension::slice },
+            { "contrast", TriggerDimension::contrast }, { "phase", TriggerDimension::phase },
+            { "repetition", TriggerDimension::repetition }, { "set", TriggerDimension::set },
+            { "segment", TriggerDimension::segment }, { "user_0", TriggerDimension::user_0 },
+            { "user_1", TriggerDimension::user_1 }, { "user_2", TriggerDimension::user_2 },
+            { "user_3", TriggerDimension::user_3 }, { "user_4", TriggerDimension::user_4 },
+            { "user_5", TriggerDimension::user_5 }, { "user_6", TriggerDimension::user_6 },
+            { "user_7", TriggerDimension::user_7 }, { "n_acquisitions", TriggerDimension::n_acquisitions },
+            { "none", TriggerDimension::none }, { "", TriggerDimension::none }
+        };
+    }
+
+    void from_string(const std::string& str, TriggerDimension& trigger) {
+        auto lower = str;
+        boost::to_lower(lower);
+        trigger = triggerdimension_from_name.at(lower);
+    }
 }

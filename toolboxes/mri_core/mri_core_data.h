@@ -107,10 +107,10 @@ namespace Gadgetron
     hoNDArray< std::complex<float> > data_;
     
     //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
-    boost::optional<hoNDArray<float>> trajectory_;
+    Core::optional<hoNDArray<float>> trajectory_;
 
     // 6D, density weights [E0, E1, E2, N, S, LOC]
-    boost::optional<hoNDArray<float> > density_;
+    Core::optional<hoNDArray<float> > density_;
 
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
