@@ -627,7 +627,6 @@ namespace Gadgetron::Server::Connection {
         pugi::xml_document doc{};
         auto config_node = doc.append_child("configuration");
         config_node.append_child("version").text().set(2);
-
         XMLSerializer::add_readers(config.readers, config_node);
         XMLSerializer::add_writers(config.writers, config_node);
         XMLSerializer::add_node(config.stream, config_node);

@@ -33,6 +33,12 @@ if (MATLAB_FOUND)
   add_subdirectory(matlab)
 endif()
 
+if (ADD_MATLAB_SUPPORT)
+    message("Installing MATLAB examples.")
+    add_subdirectory(matlab-new)
+endif ()
+
+
 if (BUILD_PYTHON_SUPPORT)
     add_subdirectory(python)
     add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
@@ -48,8 +54,7 @@ else()
 endif()
 
 add_subdirectory(cartesian)
-
-  add_subdirectory(moco)
+add_subdirectory(moco)
 
 if(PLPLOT_FOUND)
     if (MKL_FOUND OR ARMADILLO_FOUND)

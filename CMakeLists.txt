@@ -67,7 +67,7 @@ endif ()
 
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 4)
-set(GADGETRON_VERSION_MINOR 0)
+set(GADGETRON_VERSION_MINOR 1)
 set(GADGETRON_VERSION_PATCH 0)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
@@ -310,6 +310,9 @@ if (USE_MKL)
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
   set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
 
+
+
+
   add_definitions(-DUSE_MKL)
   else()
 
@@ -368,18 +371,19 @@ target_link_libraries(boost INTERFACE python)
 
 endif()
 
+option(ADD_MATLAB_SUPPORT "Install MATLAB libraries and examples." On)
 option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)
 if (BUILD_MATLAB_SUPPORT)
-find_package(GMatlab)
-if (MATLAB_FOUND)
-add_definitions(-DUSE_MATLAB)
+    find_package(GMatlab)
+    if (MATLAB_FOUND)
+        add_definitions(-DUSE_MATLAB)
+    else()
+        set(BUILD_MATLAB_SUPPORT OFF)
+    endif ()
 else()
-set(BUILD_MATLAB_SUPPORT OFF)
-endif ()
-else()
-# explicitly set it, just in case BUILD_MATLAB_SUPPORT was set to OFF
-# after Matlab was already found.
-set(MATLAB_FOUND OFF)
+    # explicitly set it, just in case BUILD_MATLAB_SUPPORT was set to OFF
+    # after Matlab was already found.
+    set(MATLAB_FOUND OFF)
 endif ()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
@@ -407,13 +411,12 @@ endif()
 
 add_subdirectory(test)
 add_subdirectory(cmake)
-
-
-option(BUILD_DOCUMENTATION "Build Gadgetron documentation" Off)
-if (BUILD_DOCUMENTATION)
-add_subdirectory(doc)
-endif()
 add_subdirectory(chroot)
+
+option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)
+if(BUILD_DOCUMENTATION)
+    add_subdirectory(doc)
+endif()
 
 # install dependencies for WIN32
 if (WIN32)

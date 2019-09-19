@@ -1246,7 +1246,7 @@ public:
         id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
 
         GadgetMessageScript conf;
-        conf.script_length = (uint32_t)xml_string.size()+1;
+        conf.script_length = (uint32_t)xml_string.size();
 
         boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
         boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
@@ -1264,7 +1264,7 @@ public:
         id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;
 
         GadgetMessageScript conf;
-        conf.script_length = (uint32_t)xml_string.size()+1;
+        conf.script_length = (uint32_t)xml_string.size();
 
         boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
         boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
