@@ -4,6 +4,7 @@
 #include "hoNDArray.h"
 #include "hoNDArray_math.h"
 using namespace Gadgetron;
+using namespace Gadgetron::Indexing;
 TEST(hoNDArrayView,copy){
 
     hoNDArray<float> x(127,49,3);

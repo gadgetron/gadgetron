@@ -8,7 +8,6 @@
 #include <complex>
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
-#include <map>
 
 namespace Gadgetron {
 
@@ -39,11 +38,9 @@ namespace Gadgetron {
         ISMRMRD::IsmrmrdHeader header;
 
         void process(Core::InputChannel<AcquisitionBucket>& in, Core::OutputChannel& out) override;
-        size_t getKey(ISMRMRD::ISMRMRD_EncodingCounters idx) const;
+        ISMRMRD::EncodingCounters getKey(const ISMRMRD::ISMRMRD_EncodingCounters& idx) const;
 
 
-        IsmrmrdReconBit& getRBit(
-            std::map<size_t, IsmrmrdReconData>& recon_data_buffers, size_t key, uint16_t espace) const;
         IsmrmrdDataBuffered makeDataBuffer(const ISMRMRD::AcquisitionHeader& acqhdr, ISMRMRD::Encoding encoding,
             const AcquisitionBucketStats& stats, bool forref) const;
         SamplingDescription createSamplingDescription(const ISMRMRD::Encoding& encoding,

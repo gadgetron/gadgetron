@@ -3,12 +3,66 @@
 #include "hoNDArray_reductions.h"
 #include "mri_core_data.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/container_hash/hash.hpp>
+namespace std {
+    template <> struct hash<ISMRMRD::EncodingCounters> {
+        std::size_t operator()(const ISMRMRD::EncodingCounters& idx) const {
+            size_t seed = 0;
+            boost::hash_combine(seed, idx.kspace_encode_step_1);
+            boost::hash_combine(seed, idx.kspace_encode_step_2);
+            boost::hash_combine(seed, idx.average);
+            boost::hash_combine(seed, idx.slice);
+            boost::hash_combine(seed, idx.contrast);
+            boost::hash_combine(seed, idx.phase);
+            boost::hash_combine(seed, idx.repetition);
+            boost::hash_combine(seed, idx.set);
+            boost::hash_combine(seed, idx.segment);
+            for (auto s : idx.user)
+                boost::hash_combine(seed, s);
+            return seed;
+        }
+    };
+
+    template<> struct equal_to<ISMRMRD::EncodingCounters>{
+        bool operator()(const ISMRMRD::EncodingCounters& idx1, const ISMRMRD::EncodingCounters& idx2) const {
+            return idx1.kspace_encode_step_1 == idx2.kspace_encode_step_1
+                   && idx1.kspace_encode_step_2 == idx2.kspace_encode_step_2 && idx1.average == idx2.average
+                   && idx1.slice == idx2.slice && idx1.contrast == idx2.contrast && idx1.phase == idx2.phase
+                   && idx1.repetition == idx2.repetition && idx1.set == idx2.set && idx1.segment == idx2.segment
+                   && std::equal(std::begin(idx1.user), std::end(idx1.user), std::begin(idx2.user));
+        }
+    };
+}
+
+
+//bool operator==(const ISMRMRD::ISMRMRD_EncodingCounters& idx1, const ISMRMRD::ISMRMRD_EncodingCounters& idx2) {
+//    return idx1.kspace_encode_step_1 == idx2.kspace_encode_step_1
+//           && idx1.kspace_encode_step_2 == idx2.kspace_encode_step_2 && idx1.average == idx2.average
+//           && idx1.slice == idx2.slice && idx1.contrast == idx2.contrast && idx1.phase == idx2.phase
+//           && idx1.repetition == idx2.repetition && idx1.set == idx2.set && idx1.segment == idx2.segment
+//           && std::equal(std::begin(idx1.user), std::end(idx2.user), std::begin(idx2.user));
+//}
 namespace Gadgetron {
+    namespace {
+
+        IsmrmrdReconBit& getRBit(std::unordered_map<ISMRMRD::EncodingCounters, IsmrmrdReconData>& recon_data_buffers,
+            const ISMRMRD::EncodingCounters& key, uint16_t espace) {
+
+            // Look up the DataBuffered entry corresponding to this encoding space
+            // create if needed and set the fields of view and matrix size
+            if (recon_data_buffers[key].rbit_.size() < (espace + 1)) {
+                recon_data_buffers[key].rbit_.resize(espace + 1);
+            }
+
+            return recon_data_buffers[key].rbit_[espace];
+        }
+
+    }
 
     void BucketToBufferGadget::process(Core::InputChannel<AcquisitionBucket>& input, Core::OutputChannel& out) {
 
         for (auto acq_bucket : input) {
-            std::map<size_t, IsmrmrdReconData> recon_data_buffers;
+            std::unordered_map<ISMRMRD::EncodingCounters, IsmrmrdReconData> recon_data_buffers;
             GDEBUG_STREAM("BUCKET_SIZE " << acq_bucket.data_.size() << " ESPACE " << acq_bucket.refstats_.size());
             // Iterate over the reference data of the bucket
             for (auto& acq : acq_bucket.ref_) {
@@ -61,7 +115,22 @@ namespace Gadgetron {
     }
 
     namespace {
-        uint16_t getDimensionKey(BucketToBufferGadget::Dimension dim, const ISMRMRD::ISMRMRD_EncodingCounters& idx) {
+        void clear(BucketToBufferGadget::Dimension dim, ISMRMRD::EncodingCounters& idx) {
+            switch (dim) {
+
+            case BucketToBufferGadget::Dimension::average: idx.average = 0; break;
+            case BucketToBufferGadget::Dimension::contrast: idx.contrast = 0; break;
+            case BucketToBufferGadget::Dimension::phase: idx.phase = 0; break;
+            case BucketToBufferGadget::Dimension::repetition: idx.repetition = 0; break;
+            case BucketToBufferGadget::Dimension::set: idx.set = 0; break;
+            case BucketToBufferGadget::Dimension::segment: idx.segment = 0; break;
+            case BucketToBufferGadget::Dimension::slice: break;
+            case BucketToBufferGadget::Dimension::none: break;
+            default: throw std::runtime_error("Invalid enum encountered");
+            }
+        }
+
+        size_t getDimensionKey(BucketToBufferGadget::Dimension dim, const ISMRMRD::EncodingCounters& idx) {
             switch (dim) {
 
             case BucketToBufferGadget::Dimension::average: return idx.average;
@@ -77,26 +146,13 @@ namespace Gadgetron {
         }
     }
 
-    size_t BucketToBufferGadget::getKey(ISMRMRD::ISMRMRD_EncodingCounters idx) const {
-        //[SLC, PHS, CON, REP, SET, SEG, AVE]
-        // collapse across two of them (N and S)
-        size_t key = getDimensionKey(N_dimension, idx) + (2u << 16u) * getDimensionKey(S_dimension, idx);
-        if (split_slices) {
-            key += (size_t(2) << 32u) * -idx.slice;
-        }
+    ISMRMRD::EncodingCounters BucketToBufferGadget::getKey(const ISMRMRD::EncodingCounters& idx) const {
+        auto key = idx;
+        clear(N_dimension, key);
+        clear(S_dimension, key);
+        if (!split_slices)
+            key.slice = 0;
         return key;
-    }
-
-    IsmrmrdReconBit& BucketToBufferGadget::getRBit(
-        std::map<size_t, IsmrmrdReconData>& recon_data_buffers, size_t key, uint16_t espace) const {
-
-        // Look up the DataBuffered entry corresponding to this encoding space
-        // create if needed and set the fields of view and matrix size
-        if (recon_data_buffers[key].rbit_.size() < (espace + 1)) {
-            recon_data_buffers[key].rbit_.resize(espace + 1);
-        }
-
-        return recon_data_buffers[key].rbit_[espace];
     }
 
     namespace {
@@ -517,7 +573,7 @@ namespace Gadgetron {
 
     void from_string(const std::string& str, BucketToBufferGadget::Dimension& dim) {
         auto lower = str;
-         boost::to_lower(lower);
+        boost::to_lower(lower);
         dim = dimension_from_name.at(lower);
     }
 
