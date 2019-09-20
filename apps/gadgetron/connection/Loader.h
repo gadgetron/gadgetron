@@ -23,7 +23,7 @@ namespace Gadgetron::Server::Connection {
 
         using GadgetProperties = Core::GadgetProperties;
     public:
-        explicit Loader(const Context &);
+        explicit Loader(const Core::StreamContext &);
 
         std::unique_ptr<Reader> load(const Config::Reader &);
         std::unique_ptr<Writer> load(const Config::Writer &);
@@ -92,7 +92,7 @@ namespace Gadgetron::Server::Connection {
         boost::dll::shared_library load_library(const std::string &shared_library_name);
         boost::filesystem::path make_library_path(const std::string &shared_library_name) const;
 
-        const Context context;
+        const Core::StreamContext context;
 
         std::vector<boost::dll::shared_library> libraries = std::vector<boost::dll::shared_library>();
     };

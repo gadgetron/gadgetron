@@ -145,5 +145,5 @@ namespace Gadgetron::Server::Connection {
         );
     }
 
-    void handle_connection(std::unique_ptr<std::iostream> stream, Core::Context::Paths paths, Core::Context::Args args);
+    void handle_connection(std::unique_ptr<std::iostream> stream, Core::StreamContext::Paths paths, Core::StreamContext::Args args);
 }

@@ -13,7 +13,7 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    Loader::Loader(const Context &context) : context(context) {}
+    Loader::Loader(const StreamContext &context) : context(context) {}
 
     boost::filesystem::path Loader::make_library_path(const std::string &shared_library_name) const {
         return context.paths.gadgetron_home / "lib" / shared_library_name;

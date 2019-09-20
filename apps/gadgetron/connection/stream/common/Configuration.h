@@ -9,14 +9,14 @@ namespace Gadgetron::Server::Connection::Stream {
 
     class Configuration {
     public:
-        const Core::Context context;
+        const Core::StreamContext context;
 
         void send(std::iostream &stream) const;
 
-        Configuration(Core::Context context, Config config);
-        Configuration(Core::Context context, Config::External config);
-        Configuration(Core::Context context, Config::Distributed config);
-        Configuration(Core::Context context, Config::PureDistributed config);
+        Configuration(Core::StreamContext context, Config config);
+        Configuration(Core::StreamContext context, Config::External config);
+        Configuration(Core::StreamContext context, Config::Distributed config);
+        Configuration(Core::StreamContext context, Config::PureDistributed config);
 
     private:
         Core::variant<Config::External,Config> config;
