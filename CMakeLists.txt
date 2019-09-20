@@ -6,22 +6,7 @@ else ()
     cmake_policy(VERSION 3.12)
 endif ()
 
-foreach (p
-        CMP0022
-        CMP0025 # CMake 3.0 Compiler id for Apple Clang is now ``AppleClang``.
-        CMP0042 # CMake 3.0 ``MACOSX_RPATH`` is enabled by default.
-        CMP0046 # CMake 3.0 Error on non-existent dependency in add_dependencies.
-        CMP0054 # CMake 3.1 Only interpret ``if()`` arguments as variables or keywords when unquoted.
-        CMP0056 # CMake 3.2 Honor link flags in ``try_compile()`` source-file signature.
-        CMP0058 # CMake 3.3 Ninja requires custom command byproducts to be explicit.
-        )
-    if (POLICY ${p})
-        cmake_policy(SET ${p} NEW)
-    endif ()
-endforeach ()
-
-project(GADGETRON
-        LANGUAGES CXX C)
+project(GADGETRON LANGUAGES CXX C)
 
 find_program(CCACHE_FOUND ccache)
 if (CCACHE_FOUND)
@@ -192,21 +177,16 @@ else ()
     if (COMPILER_SUPPORT_WNON_VIRTUAL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
-
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--enable-new-dtags")
-
-
 endif ()
-
 
 # whether to suppress compilation warnings
 option(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
-if (WIN32)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
-elseif (WIN32)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
-endif ()
+    if (WIN32)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+    elseif (WIN32)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+    endif ()
 endif ()
 
 set(Boost_USE_STATIC_LIBS OFF)
@@ -216,17 +196,17 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
-add_definitions( -DBOOST_ALL_NO_LIB )
-add_definitions( -DBOOST_ALL_DYN_LINK )
-add_definitions( -DBOOST_NO_EXCEPTIONS )
-add_definitions( -DHAVE_SNPRINTF)
+    add_definitions( -DBOOST_ALL_NO_LIB )
+    add_definitions( -DBOOST_ALL_DYN_LINK )
+    add_definitions( -DBOOST_NO_EXCEPTIONS )
+    add_definitions( -DHAVE_SNPRINTF)
 endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
+    find_package(Boost 1.65.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED )
 else()
-find_package(Boost 1.65.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
+    find_package(Boost 1.65.0 COMPONENTS system thread program_options filesystem timer REQUIRED )
 endif()
 
 add_library(boost INTERFACE)
@@ -280,70 +260,56 @@ endif ()
 
 find_package(GTest)
 
-
 find_package(Armadillo REQUIRED )
-# check whether ILP64 MKL should is used
-if(ARMADILLO_FOUND)
 add_library(armadillo INTERFACE)
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
-add_definitions( -DARMA_DONT_USE_WRAPPER)
+add_definitions(-DARMA_DONT_USE_WRAPPER)
 
-endif()
-
-#find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
-
 
 link_directories(${ISMRMRD_LIBRARY_DIRS})
 if (CUDA_FOUND AND USE_CUDA)
 # bart needs cuda
-find_package(BART)
+    find_package(BART)
 endif()
+
+find_package(FFTW3 REQUIRED COMPONENTS single double)
 add_library(FFTW INTERFACE)
- find_package(FFTW3 REQUIRED COMPONENTS single double)
 target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})
 set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 
 option(USE_MKL OFF)
 if (USE_MKL)
-  find_package(MKL REQUIRED)
-  add_library(BLAS INTERFACE IMPORTED)
-  set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+    find_package(MKL REQUIRED)
+    add_library(BLAS INTERFACE IMPORTED)
+    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
+    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
+    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
 
+    if (MKL_VERSION_STRING VERSION_LESS 11.2.0)
+        message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
+    endif ()
 
-
-
-  add_definitions(-DUSE_MKL)
-  else()
-
-  find_package(CBLAS REQUIRED)
-	find_package(LAPACK REQUIRED)
-	if (LAPACK_FOUND)
-		message("LAPACK Found")
-	endif ()
-
-
+    add_definitions(-DUSE_MKL)
+else()
+    find_package(CBLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+    if (LAPACK_FOUND)
+        message("LAPACK Found")
+    endif ()
 endif()
 
-if (MKL_FOUND)
-if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
-message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
-endif ()
-endif ()
-
 if(EXISTS $ENV{TORCH_HOME})
-find_package(Torch)
-if (TORCH_FOUND)
-add_definitions(-DUSE_TORCH)
-message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+    find_package(Torch)
+    if (TORCH_FOUND)
+        add_definitions(-DUSE_TORCH)
+        message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+    else()
+        message("Do not find Pytorch c++ library")
+    endif ()
 else()
-message("Do not find Pytorch c++ library")
-endif ()
-else()
-message("Do not find TORCH_HOME")
+    message("Do not find TORCH_HOME")
 endif()
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
