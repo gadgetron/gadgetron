@@ -27,6 +27,13 @@ namespace Gadgetron {
         BucketToBufferGadget(const Core::Context& context, const Core::GadgetProperties& props);
         enum class Dimension { average, contrast, phase, repetition, set, segment, slice, none };
 
+    struct BufferKey {
+        uint16_t average,slice,contrast,phase,repetition,set,segment;
+        BufferKey(const BufferKey&) = default;
+        BufferKey(const ISMRMRD::EncodingCounters& idx) : average{idx.average}, slice{idx.slice},contrast{idx.contrast}, phase{idx.phase},repetition{idx.repetition},set{idx.set},segment{idx.segment}{
+            
+        }
+    };
     protected:
         NODE_PROPERTY(N_dimension, Dimension, "N-Dimensions", Dimension::none);
         NODE_PROPERTY(S_dimension, Dimension, "S-Dimensions", Dimension::none);
@@ -38,7 +45,7 @@ namespace Gadgetron {
         ISMRMRD::IsmrmrdHeader header;
 
         void process(Core::InputChannel<AcquisitionBucket>& in, Core::OutputChannel& out) override;
-        ISMRMRD::EncodingCounters getKey(const ISMRMRD::ISMRMRD_EncodingCounters& idx) const;
+        BufferKey getKey(const ISMRMRD::EncodingCounters& idx) const;
 
 
         IsmrmrdDataBuffered makeDataBuffer(const ISMRMRD::AcquisitionHeader& acqhdr, ISMRMRD::Encoding encoding,

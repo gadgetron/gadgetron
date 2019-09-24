@@ -3,13 +3,14 @@
 #include "hoNDArray_reductions.h"
 #include "mri_core_data.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/container_hash/hash.hpp>
+#include <boost/functional/hash.hpp>
+
+using BufferKey =  Gadgetron::BucketToBufferGadget::BufferKey;
+
 namespace std {
-    template <> struct hash<ISMRMRD::EncodingCounters> {
-        std::size_t operator()(const ISMRMRD::EncodingCounters& idx) const {
+    template <> struct hash<BufferKey> {
+        std::size_t operator()(const BufferKey& idx) const {
             size_t seed = 0;
-            boost::hash_combine(seed, idx.kspace_encode_step_1);
-            boost::hash_combine(seed, idx.kspace_encode_step_2);
             boost::hash_combine(seed, idx.average);
             boost::hash_combine(seed, idx.slice);
             boost::hash_combine(seed, idx.contrast);
@@ -17,36 +18,23 @@ namespace std {
             boost::hash_combine(seed, idx.repetition);
             boost::hash_combine(seed, idx.set);
             boost::hash_combine(seed, idx.segment);
-            for (auto s : idx.user)
-                boost::hash_combine(seed, s);
             return seed;
         }
     };
 
-    template<> struct equal_to<ISMRMRD::EncodingCounters>{
-        bool operator()(const ISMRMRD::EncodingCounters& idx1, const ISMRMRD::EncodingCounters& idx2) const {
-            return idx1.kspace_encode_step_1 == idx2.kspace_encode_step_1
-                   && idx1.kspace_encode_step_2 == idx2.kspace_encode_step_2 && idx1.average == idx2.average
+    template<> struct equal_to<BufferKey>{
+        bool operator()(const BufferKey& idx1, const BufferKey& idx2) const {
+            return idx1.average == idx2.average
                    && idx1.slice == idx2.slice && idx1.contrast == idx2.contrast && idx1.phase == idx2.phase
-                   && idx1.repetition == idx2.repetition && idx1.set == idx2.set && idx1.segment == idx2.segment
-                   && std::equal(std::begin(idx1.user), std::end(idx1.user), std::begin(idx2.user));
+                   && idx1.repetition == idx2.repetition && idx1.set == idx2.set && idx1.segment == idx2.segment;
         }
     };
 }
-
-
-//bool operator==(const ISMRMRD::ISMRMRD_EncodingCounters& idx1, const ISMRMRD::ISMRMRD_EncodingCounters& idx2) {
-//    return idx1.kspace_encode_step_1 == idx2.kspace_encode_step_1
-//           && idx1.kspace_encode_step_2 == idx2.kspace_encode_step_2 && idx1.average == idx2.average
-//           && idx1.slice == idx2.slice && idx1.contrast == idx2.contrast && idx1.phase == idx2.phase
-//           && idx1.repetition == idx2.repetition && idx1.set == idx2.set && idx1.segment == idx2.segment
-//           && std::equal(std::begin(idx1.user), std::end(idx2.user), std::begin(idx2.user));
-//}
 namespace Gadgetron {
     namespace {
 
-        IsmrmrdReconBit& getRBit(std::unordered_map<ISMRMRD::EncodingCounters, IsmrmrdReconData>& recon_data_buffers,
-            const ISMRMRD::EncodingCounters& key, uint16_t espace) {
+        IsmrmrdReconBit& getRBit(std::unordered_map<BufferKey, IsmrmrdReconData>& recon_data_buffers,
+            const BufferKey& key, uint16_t espace) {
 
             // Look up the DataBuffered entry corresponding to this encoding space
             // create if needed and set the fields of view and matrix size
@@ -62,7 +50,7 @@ namespace Gadgetron {
     void BucketToBufferGadget::process(Core::InputChannel<AcquisitionBucket>& input, Core::OutputChannel& out) {
 
         for (auto acq_bucket : input) {
-            std::unordered_map<ISMRMRD::EncodingCounters, IsmrmrdReconData> recon_data_buffers;
+            std::unordered_map<BufferKey, IsmrmrdReconData> recon_data_buffers;
             GDEBUG_STREAM("BUCKET_SIZE " << acq_bucket.data_.size() << " ESPACE " << acq_bucket.refstats_.size());
             // Iterate over the reference data of the bucket
             for (auto& acq : acq_bucket.ref_) {
@@ -115,7 +103,7 @@ namespace Gadgetron {
     }
 
     namespace {
-        void clear(BucketToBufferGadget::Dimension dim, ISMRMRD::EncodingCounters& idx) {
+        void clear(BucketToBufferGadget::Dimension dim, BufferKey& idx) {
             switch (dim) {
 
             case BucketToBufferGadget::Dimension::average: idx.average = 0; break;
@@ -146,8 +134,8 @@ namespace Gadgetron {
         }
     }
 
-    ISMRMRD::EncodingCounters BucketToBufferGadget::getKey(const ISMRMRD::EncodingCounters& idx) const {
-        auto key = idx;
+    BufferKey BucketToBufferGadget::getKey(const ISMRMRD::EncodingCounters& idx) const {
+        BufferKey key = idx;
         clear(N_dimension, key);
         clear(S_dimension, key);
         if (!split_slices)
@@ -167,7 +155,7 @@ namespace Gadgetron {
             case BucketToBufferGadget::Dimension::segment:
             case BucketToBufferGadget::Dimension::average: return *stats.average.rbegin() - *stats.average.begin() + 1;
             case BucketToBufferGadget::Dimension::slice: return *stats.slice.rbegin() - *stats.slice.begin() + 1;
-            case BucketToBufferGadget::Dimension::none:; return 0;
+            case BucketToBufferGadget::Dimension::none:; return 1;
             default: throw std::runtime_error("Illegal enum value.");
             }
         }
@@ -193,6 +181,7 @@ namespace Gadgetron {
         uint16_t NN = getSizeFromDimension(N_dimension, stats);
 
         uint16_t NS = getSizeFromDimension(S_dimension, stats);
+
 
         GDEBUG_CONDITION_STREAM(verbose, "Data dimensions [RO E1 E2 CHA N S SLC] : ["
                                              << NE0 << " " << NE1 << " " << NE2 << " " << NCHA << " " << NN << " " << NS
