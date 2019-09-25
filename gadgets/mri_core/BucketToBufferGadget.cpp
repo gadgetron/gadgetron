@@ -85,7 +85,7 @@ namespace Gadgetron {
                         header.encoding[espace], acq_bucket.datastats_[espace], acqhdr, false);
                 }
 
-                add_acquisition(rbit.data_, acq, header.encoding[espace], acq_bucket.datastats_[espace], true);
+                add_acquisition(rbit.data_, acq, header.encoding[espace], acq_bucket.datastats_[espace], false);
 
                 // Stuff the data, header and trajectory into this data buffer
             }

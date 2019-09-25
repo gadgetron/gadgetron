@@ -54,6 +54,8 @@ install(FILES
         PropertyMixin.h
         GadgetContainerMessage.h
         ChannelAlgorithms.h
+        variant.hpp
+        MessageID.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES

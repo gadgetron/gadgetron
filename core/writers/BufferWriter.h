@@ -6,7 +6,7 @@
 namespace Gadgetron::Core::Writers {
 
 class BufferWriter : public TypedWriter<IsmrmrdReconData> {
-protected:
+public:
     void serialize(std::ostream &stream, const IsmrmrdReconData & args) override;
 };
 }
