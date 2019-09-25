@@ -5,7 +5,8 @@ import ismrmrd
 import ismrmrd.xsd
 import numpy as np
 import platform
-from gadgetron import Gadget,IsmrmrdImageArray
+
+from gadgetron import Gadget, IsmrmrdImageArray
 import copy 
 import math
 

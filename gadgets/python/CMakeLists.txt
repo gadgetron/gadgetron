@@ -35,7 +35,6 @@ set(gadgetron_python_utils_files
 set(gadgetron_python_gadgets_files
         gadgets/accumulate_and_recon.py
         gadgets/bucket_recon.py
-        gadgets/gadgetron_legacy.py
         gadgets/IDEAL.py
         gadgets/image_viewer.py
         gadgets/passthrough.py

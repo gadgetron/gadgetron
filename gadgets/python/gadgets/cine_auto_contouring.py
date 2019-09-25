@@ -1,10 +1,7 @@
 import ismrmrd
 import ismrmrd.xsd
-import numpy as np
-# from ismrmrdtools import transform, coils, grappa
+
 from gadgetron import Gadget
-import copy 
-import math
 
 class CineContouring(Gadget):
 

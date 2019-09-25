@@ -1,6 +1,8 @@
 import numpy as np
-from ismrmrdtools import transform
+
 from gadgetron import Gadget
+from gadgetron.util.cfft import cifftn
+
 import ismrmrd
 import ismrmrd.xsd
 
@@ -34,7 +36,7 @@ class AccumulateAndRecon(Gadget):
         self.myBuffer[:,int(acq.idx.kspace_encode_step_1+line_offset), int(acq.idx.kspace_encode_step_2), int(acq.idx.slice),:] = data
 
         if (acq.flags & (1<<7)): #Is this the last scan in slice
-            image = transform.transform_kspace_to_image(self.myBuffer,dim=(0,1,2))
+            image = cifftn(self.myBuffer, axes=(0, 1, 2))
             image = image * np.product(image.shape)*100 #Scaling for the scanner
             #Create a new image header and transfer value
             img_head = ismrmrd.ImageHeader()

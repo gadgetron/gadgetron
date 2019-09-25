@@ -1,6 +1,7 @@
 import numpy as np
-from ismrmrdtools import transform
-from gadgetron import Gadget,IsmrmrdDataBuffered, IsmrmrdReconBit, SamplingLimit,SamplingDescription
+
+from gadgetron import Gadget
+from gadgetron.util.cfft import cifftn
 
 import ismrmrd
 import ismrmrd.xsd
@@ -21,7 +22,7 @@ class BucketRecon(Gadget):
 
         print(np.shape(recondata[0].data.data))
 
-        image = transform.transform_kspace_to_image(recondata[0].data.data,dim=(0,1,2))
+        image = cifftn(recondata[0].data.data, axes=(0, 1, 2))
         image = np.reshape(image,(image.shape[0],image.shape[1],image.shape[2],image.shape[3]))
 
         #Create a new image header and transfer value

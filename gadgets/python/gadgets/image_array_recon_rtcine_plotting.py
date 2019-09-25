@@ -5,8 +5,8 @@ import ismrmrd
 import ismrmrd.xsd
 import numpy as np
 import platform
-# from ismrmrdtools import transform, coils, grappa
-from gadgetron import Gadget,IsmrmrdImageArray
+
+from gadgetron import Gadget, IsmrmrdImageArray
 import copy 
 import math
 
