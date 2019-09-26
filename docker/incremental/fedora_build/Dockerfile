@@ -1,10 +1,12 @@
-FROM fedora:29
+FROM fedora:30
 
 RUN dnf update -y
 RUN dnf install -y \
     git-core wget make cmake gcc gcc-c++ \
     boost-devel boost-python3-devel armadillo-devel libxml2-devel libxslt-devel pugixml-devel fftw-devel \
-    python3-devel python3-h5py python3-scipy python3-PyXB
+    python3-devel python3-h5py python3-scipy python3-pip openblas-devel
+
+RUN pip3 install PyXB
 
 RUN mkdir /opt/code
 
