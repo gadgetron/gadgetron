@@ -140,6 +140,8 @@ namespace Gadgetron {
         clear(S_dimension, key);
         if (!split_slices)
             key.slice = 0;
+        if (ignore_segment)
+            key.segment = 0;
         return key;
     }
 
