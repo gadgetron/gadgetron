@@ -45,6 +45,11 @@ namespace Gadgetron {
         NODE_PROPERTY(n_acquisitions_before_trigger, unsigned long, "Number of acquisition before first trigger", 40);
         NODE_PROPERTY(
             n_acquisitions_before_ongoing_trigger, unsigned long, "Number of acquisition before ongoing triggers", 40);
+
+        size_t trigger_events = 0;
+    private:
+        void send_data(Core::OutputChannel& out, std::map<unsigned short, AcquisitionBucket>& buckets,
+                       std::vector<Core::Waveform>& waveforms);
     };
 
     void from_string(const std::string& str, AcquisitionAccumulateTriggerGadget::TriggerDimension& val);

@@ -147,20 +147,20 @@ namespace Gadgetron {
             return Core::visit([&](auto& var) { return var.trigger_after(acq); }, trigger);
         }
 
-        void send_data(Core::OutputChannel& out, std::map<unsigned short, AcquisitionBucket>& buckets,
-            std::vector<Core::Waveform>& waveforms) {
-            static size_t trigger_events = 0;
-            trigger_events++;
-            GDEBUG("Trigger (%d) occurred, sending out %d buckets\n", trigger_events, buckets.size());
-            buckets.begin()->second.waveform_ = std::move(waveforms);
-            // Pass all buckets down the chain
-            for (auto& bucket : buckets)
-                out.push(std::move(bucket.second));
 
-            buckets.clear();
-        }
     }
 
+    void AcquisitionAccumulateTriggerGadget::send_data(Core::OutputChannel& out, std::map<unsigned short, AcquisitionBucket>& buckets,
+                                                       std::vector<Core::Waveform>& waveforms) {
+        trigger_events++;
+        GDEBUG("Trigger (%d) occurred, sending out %d buckets\n", trigger_events, buckets.size());
+        buckets.begin()->second.waveform_ = std::move(waveforms);
+        // Pass all buckets down the chain
+        for (auto& bucket : buckets)
+            out.push(std::move(bucket.second));
+
+        buckets.clear();
+    }
     void AcquisitionAccumulateTriggerGadget ::process(
         Core::InputChannel<Core::variant<Core::Acquisition, Core::Waveform>>& in, Core::OutputChannel& out) {
 
@@ -216,4 +216,5 @@ namespace Gadgetron {
         boost::to_lower(lower);
         trigger = triggerdimension_from_name.at(lower);
     }
+
 }

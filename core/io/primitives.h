@@ -27,6 +27,9 @@ namespace Gadgetron::Core::IO {
     void read(std::istream &stream, std::vector<T> &vec);
 
     template<class T>
+    void read(std::istream &stream, std::set<T> &vec);
+
+    template<class T>
     void read(std::istream &stream, hoNDArray<T> &array);
 
     template<class T>

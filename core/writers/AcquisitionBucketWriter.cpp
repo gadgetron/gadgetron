@@ -74,9 +74,7 @@ namespace {
             if (std::get<2>(acq)) write_array_data(streams.trajectory, *std::get<2>(acq));
         }
 
-        for (const AcquisitionBucketStats& sts : stats) {
-            IO::write(streams.stats, sts);
-        }
+        IO::write(streams.stats,stats);
     }
 
     void serialize_waveforms(
