@@ -11,7 +11,8 @@ namespace Gadgetron {
         Core::Image<float> process_function(Core::Image<float> args) const override;
 
     protected:
-        NODE_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
+        NODE_PROPERTY(max_value, float, "Percentile value (after scaling)", 2048);
+        NODE_PROPERTY(percentile,float,"Percentile to use.",99.9);
     };
 }
 

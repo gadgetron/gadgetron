@@ -89,6 +89,3 @@ if (GPERFTOOLS_PROFILER)
 endif ()
 
 install(TARGETS gadgetron DESTINATION bin COMPONENT main)
-
-
-add_subdirectory(test)
