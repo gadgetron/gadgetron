@@ -5,7 +5,6 @@ install(FILES
     FindFFTW3.cmake
     FindGadgetron.cmake
     FindGLEW.cmake
-    FindGMatlab.cmake
     FindGperftools.cmake
     FindMKL.cmake
     FindNumPy.cmake
