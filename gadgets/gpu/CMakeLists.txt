@@ -16,5 +16,11 @@ install(FILES
         cuFFTGadget.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_gpugadget DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_gpugadget
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 

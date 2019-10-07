@@ -20,7 +20,14 @@ target_include_directories(gadgetron_toolbox_denoise
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         )
-install(TARGETS gadgetron_toolbox_denoise DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_denoise
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
         denoise_export.h

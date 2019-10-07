@@ -107,7 +107,13 @@ endif ()
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 
-install(TARGETS gadgetron_python DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_python
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(FILES

@@ -53,7 +53,13 @@ target_include_directories(gadgetron_toolbox_cmr
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR})
 
-install(TARGETS gadgetron_toolbox_cmr DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cmr
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES ${cmr_header_fiels} 
       DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -22,9 +22,14 @@ target_link_libraries(gadgetron_toolbox_hostutils
 
 set_target_properties(gadgetron_toolbox_hostutils PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-install(TARGETS
-        gadgetron_toolbox_hostutils
-        DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_hostutils
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
         ${hostutils_header_files}

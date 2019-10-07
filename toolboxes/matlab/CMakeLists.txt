@@ -18,6 +18,13 @@ target_link_libraries(gadgetron_toolbox_matlab
         ${MATLAB_LIBRARIES}
         ${ISMRMRD_LIBRARIES})
 
-install(TARGETS gadgetron_toolbox_matlab DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_matlab
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES MatlabUtils.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

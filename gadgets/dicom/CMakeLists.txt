@@ -91,6 +91,11 @@ install(
     FILES ${gadgetron_dicom_header_files} 
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_dicom DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_dicom
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES ${gadgetron_dicom_config_files}  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

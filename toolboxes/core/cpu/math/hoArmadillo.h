@@ -7,6 +7,9 @@
 #include "hoNDArray.h"
 
 
+#define ARMA_BLAS_LONG
+#undef ARMA_BLAS_LONG_LONG
+
 #include "armadillo"
 
 /** \file hoArmadillo.h

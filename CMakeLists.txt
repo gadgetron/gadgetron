@@ -145,7 +145,7 @@ endif ()
 if (WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS -DWIN -D_AMD64_)
-    add_definitions(-D_WIN32_WINNT=0x0602 -Zc:__cplusplus)
+    add_definitions(-Zc:__cplusplus)
     #add_definitions(-DUNICODE -D_UNICODE)
     add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
     if (HAS_64_BIT)
@@ -216,16 +216,13 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
 set(Boost_NO_BOOST_CMAKE ON)
 
-if(WIN32)
-add_definitions( -DBOOST_ALL_NO_LIB )
-add_definitions( -DBOOST_ALL_DYN_LINK )
-add_definitions( -DBOOST_NO_EXCEPTIONS )
-add_definitions( -DHAVE_SNPRINTF)
-endif()
 
+if(WIN32)
+add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does. 
+endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer REQUIRED )
+find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
 find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 endif()
@@ -290,7 +287,7 @@ add_definitions( -DARMA_DONT_USE_WRAPPER)
 
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
-
+find_package(hdf5 REQUIRED)
 
 link_directories(${ISMRMRD_LIBRARY_DIRS})
 if (CUDA_FOUND AND USE_CUDA)
@@ -314,9 +311,12 @@ if (USE_MKL)
   else()
 
   find_package(CBLAS REQUIRED)
-	find_package(LAPACK REQUIRED)
+	find_package(LAPACK)
 	if (LAPACK_FOUND)
 		message("LAPACK Found")
+	else()
+		find_package(clapack CONFIG REQUIRED)
+		set(LAPACK_LIBRARIES f2c lapack)
 	endif ()
 
 

@@ -31,6 +31,12 @@ if (CUDA_FOUND)
             gadgetron_toolbox_gpureg
             )
 
+	install(TARGETS gadgetron_moco
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
     install(TARGETS gadgetron_moco DESTINATION lib COMPONENT main)
 
     install(FILES cpuRegistrationAveragingGadget.h

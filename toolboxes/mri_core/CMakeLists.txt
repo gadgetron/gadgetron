@@ -51,7 +51,14 @@ target_include_directories(
         ${ISMRMRD_INCLUDE_DIR}
 )
 
-install(TARGETS gadgetron_toolbox_mri_core DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_mri_core
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
   ${mri_core_header_files}

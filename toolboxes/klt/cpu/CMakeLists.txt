@@ -23,7 +23,14 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
 
 )
-install(TARGETS gadgetron_toolbox_cpuklt DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_cpuklt
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
   cpuklt_export.h 

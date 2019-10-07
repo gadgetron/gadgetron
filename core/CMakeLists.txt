@@ -33,7 +33,13 @@ target_include_directories(gadgetron_core PUBLIC
         .
         ${ISMRMRD_INCLUDE_DIR})
 
-install(TARGETS gadgetron_core DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_core 
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   COMPONENT main
+)
+
 
 install(FILES
         Channel.h

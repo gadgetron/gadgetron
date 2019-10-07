@@ -15,4 +15,10 @@ target_link_libraries(gadgetron_core_readers
 
 set_target_properties(gadgetron_core_readers PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-install(TARGETS gadgetron_core_readers DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_core_readers
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   COMPONENT main
+)
+

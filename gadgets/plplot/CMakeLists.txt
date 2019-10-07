@@ -34,7 +34,13 @@ install(FILES
     ${header_files}
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_plplot DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_plplot
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install (FILES  ${config_files} 
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

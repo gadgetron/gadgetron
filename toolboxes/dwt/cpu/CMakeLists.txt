@@ -25,7 +25,12 @@ target_link_libraries(gadgetron_toolbox_cpudwt
                     gadgetron_toolbox_cpucore_math
                     )
 
-install(TARGETS gadgetron_toolbox_cpudwt DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpudwt
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES
     cpudwt_export.h 

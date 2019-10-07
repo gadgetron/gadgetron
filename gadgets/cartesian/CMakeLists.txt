@@ -23,4 +23,9 @@ install (FILES  gadgetron_cartesian_export.h
                 CartesianToGenericGadget.h
                 DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install (TARGETS gadgetron_cartesian DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_cartesian
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)

@@ -33,7 +33,14 @@ target_link_libraries(gadgetron_toolbox_plplot
 target_include_directories(gadgetron_toolbox_plplot
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gadgetron_toolbox_plplot DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_plplot
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install (FILES  
         PLplotExport.h 

@@ -101,7 +101,6 @@ include(GoogleTest)
     endif ()
 
 
-    gtest_discover_tests(test_all)
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 
 endif ()
