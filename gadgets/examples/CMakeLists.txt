@@ -16,7 +16,13 @@ target_link_libraries(gadgetron_examples
         gadgetron_mricore
         gadgetron_toolbox_cpucore)
 
-install(TARGETS gadgetron_examples DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_examples
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
         config/external_example.xml

@@ -23,7 +23,13 @@ target_link_libraries(gadgetron_toolbox_hyper
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_hyper DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_hyper
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES 
     CSIOperator.h

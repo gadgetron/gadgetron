@@ -182,9 +182,6 @@ add_library(gadgetron_mricore SHARED
     gadgetron_mricore_export.h
     ${gadgetron_mricore_header_files}
     ${gadgetron_mricore_src_files}
-    ${gadgetron_mricore_config_files}
-    ${OPTIMIZED_GADGETS}
-    ${OPTIMIZED_GADGET_HEADERS}
     DenoiseGadget.cpp DenoiseGadget.h)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -232,11 +229,15 @@ endif ()
 install(FILES
         gadgetron_mricore_export.h
         ${gadgetron_mricore_header_files}
-        ${OPTIMIZED_GADGET_HEADERS}
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-if (ARMADILLO_FOUND)
-    install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-endif ()
+install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_mricore DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_mricore
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
+

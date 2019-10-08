@@ -62,7 +62,13 @@ target_link_libraries(gadgetron_toolbox_cpuoperator
                     gadgetron_toolbox_cpudwt
                     gadgetron_toolbox_mri_core
                     gadgetron_toolbox_image_analyze_io )
-install(TARGETS gadgetron_toolbox_cpuoperator DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_cpuoperator
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES 
   ${cpu_operator_header_files}

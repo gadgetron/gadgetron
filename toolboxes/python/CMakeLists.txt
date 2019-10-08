@@ -37,7 +37,13 @@ if (WIN32)
     set_target_properties(gadgetron_toolbox_python PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_TOOLBOX_PYTHON__")
 endif ()
 
-install(TARGETS gadgetron_toolbox_python DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_python
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
         ${gadgetron_toolbox_python_header_files}

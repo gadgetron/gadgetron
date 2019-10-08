@@ -19,7 +19,15 @@ target_link_libraries(gadgetron_toolbox_image_analyze_io gadgetron_toolbox_log g
 target_include_directories(gadgetron_toolbox_image_analyze_io
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gadgetron_toolbox_image_analyze_io DESTINATION lib COMPONENT main)
+
+
+install(TARGETS gadgetron_toolbox_image_analyze_io
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
         ${image_io_header_files}

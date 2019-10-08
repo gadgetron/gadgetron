@@ -18,7 +18,14 @@ target_include_directories(gadgetron_toolbox_deblur
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         )
-install(TARGETS gadgetron_toolbox_deblur DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_deblur
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
         MFIOperator.h

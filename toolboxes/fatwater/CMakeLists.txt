@@ -24,7 +24,13 @@ target_include_directories(
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
-install(TARGETS gadgetron_toolbox_fatwater DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_fatwater
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES
   fatwater_export.h 

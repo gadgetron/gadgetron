@@ -23,7 +23,12 @@ target_link_libraries(gadgetron_toolbox_cpunfft
     gadgetron_toolbox_hostutils
   )
 
-install(TARGETS gadgetron_toolbox_cpunfft DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpunfft
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES 
     hoNFFT.h hoNFFT_sparseMatrix.h

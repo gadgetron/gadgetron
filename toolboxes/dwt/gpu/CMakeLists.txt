@@ -28,7 +28,15 @@ target_link_libraries(gadgetron_toolbox_gpudwt
   ${CUDA_CUFFT_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_gpudwt DESTINATION lib COMPONENT main)
+
+
+install(TARGETS gadgetron_toolbox_gpudwt
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
   cuNDDWT.h

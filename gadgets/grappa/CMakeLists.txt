@@ -41,7 +41,14 @@ if (CUDA_FOUND)
             gadgetron_toolbox_gpuparallelmri)
 endif()
 
-install(TARGETS gadgetron_grappa DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_grappa
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
+
 
 install(FILES
         config/grappa.xml

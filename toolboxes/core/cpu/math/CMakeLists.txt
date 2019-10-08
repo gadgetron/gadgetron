@@ -39,9 +39,16 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
         gadgetron_toolbox_log
         armadillo
         BLAS
+		${LAPACK_LIBRARIES}
             )
 
-install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpucore_math
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES 
     ${cpucore_math_header_files}

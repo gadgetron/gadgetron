@@ -37,7 +37,12 @@ install(FILES
   gadgetron_epi_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_epi DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_epi
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES
   epi.xml
