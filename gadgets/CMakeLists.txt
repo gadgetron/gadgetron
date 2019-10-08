@@ -8,7 +8,6 @@ add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
 add_subdirectory(epi)
 add_subdirectory(fatwater)
-add_subdirectory(matlab)
 
 if(BART_FOUND)
   add_subdirectory(bart)

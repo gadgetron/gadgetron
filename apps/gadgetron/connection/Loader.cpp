@@ -15,10 +15,6 @@ namespace Gadgetron::Server::Connection {
 
     Loader::Loader(const Context &context) : context(context) {}
 
-    boost::filesystem::path Loader::make_library_path(const std::string &shared_library_name) const {
-        return context.paths.gadgetron_home / "lib" / shared_library_name;
-    }
-
     boost::dll::shared_library Loader::load_library(const std::string &shared_library_name) {
 
         auto lib = boost::dll::shared_library(

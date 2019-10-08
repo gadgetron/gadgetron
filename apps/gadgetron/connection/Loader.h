@@ -90,7 +90,6 @@ namespace Gadgetron::Server::Connection {
 
     private:
         boost::dll::shared_library load_library(const std::string &shared_library_name);
-        boost::filesystem::path make_library_path(const std::string &shared_library_name) const;
 
         const Context context;
 
