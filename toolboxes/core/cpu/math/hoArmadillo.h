@@ -1,14 +1,10 @@
 #pragma once
-#define ARMA_64BIT_WORD
 #ifdef NDEBUG
 #define ARMA_NO_DEBUG
 #endif
 
 #include "hoNDArray.h"
 
-
-#define ARMA_BLAS_LONG
-#undef ARMA_BLAS_LONG_LONG
 
 #include "armadillo"
 

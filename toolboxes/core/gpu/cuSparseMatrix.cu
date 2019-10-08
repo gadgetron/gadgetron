@@ -161,7 +161,7 @@ static cusparseStatus_t sparseCsr2Csc(cusparseHandle_t handle, int m, int n, int
 
 template<class T> EXPORTGPUCORE cuCsrMatrix<T> Gadgetron::transpose(const Gadgetron::cuCsrMatrix<T> &matrix) {
 	cuCsrMatrix<T> transposed;
-	cusparseCopyMatDescr(transposed.descr,matrix.descr);
+	copysparseMatDescr(transposed.descr,matrix.descr);
 
 	transposed.m = matrix.n;
 	transposed.n = matrix.m;
