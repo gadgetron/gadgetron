@@ -26,6 +26,7 @@ void Server::serve() {
     boost::asio::io_service service;
     boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), args["port"].as<unsigned short>());
     boost::asio::ip::tcp::acceptor acceptor(service, local);
+    acceptor.set_option(boost::asio::socket_base::reuse_address(true));
 
     while(true) {
         auto socket = std::make_unique<boost::asio::ip::tcp::socket>(service);

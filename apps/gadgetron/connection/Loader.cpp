@@ -15,17 +15,13 @@ namespace Gadgetron::Server::Connection {
 
     Loader::Loader(const Context &context) : context(context) {}
 
-    boost::filesystem::path Loader::make_library_path(const std::string &shared_library_name) const {
-        return context.paths.gadgetron_home / "bin" / shared_library_name;
-    }
+
 
     boost::dll::shared_library Loader::load_library(const std::string &shared_library_name) {
-		auto modified = make_library_path(shared_library_name);
-		GDEBUG_STREAM("Loading " << modified);
-
         auto lib = boost::dll::shared_library(
 			shared_library_name,
                                 boost::dll::load_mode::append_decorations |
+                                boost::dll::load_mode::search_system_folders |
                 boost::dll::load_mode::rtld_global 
                 
 

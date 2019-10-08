@@ -12,7 +12,7 @@ namespace Gadgetron {
 
     protected:
         NODE_PROPERTY(max_value, float, "Percentile value (after scaling)", 2048);
-        NODE_PROPERTY(percentile,float,"Percentile to use.",99.9);
+        NODE_PROPERTY(percentile,float,"Percentile to use.",99.1);
     };
 }
 

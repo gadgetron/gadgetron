@@ -287,7 +287,6 @@ add_definitions( -DARMA_DONT_USE_WRAPPER)
 
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
-find_package(hdf5 REQUIRED)
 
 link_directories(${ISMRMRD_LIBRARY_DIRS})
 if (CUDA_FOUND AND USE_CUDA)
@@ -405,7 +404,7 @@ message("Adding gpertools to build.")
 find_package(Gperftools REQUIRED)
 endif()
 
-add_subdirectory(test)
+#add_subdirectory(test)
 add_subdirectory(cmake)
 
 
