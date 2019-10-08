@@ -26,6 +26,7 @@ install(FILES
         config/external_equivalent_example.xml
         config/external_connect_example.xml
         config/external_python_example.xml
-        config/external_matlab_example.xml
+        config/external_matlab_acquisition_example.xml
         config/external_matlab_bucket_example.xml
+        config/external_matlab_buffer_example.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
