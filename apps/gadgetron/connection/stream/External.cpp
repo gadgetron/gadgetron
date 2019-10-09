@@ -51,9 +51,9 @@ namespace Gadgetron::Server::Connection::Stream {
     }
 
     std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const Context &context) {
-        GINFO_STREAM("Connecting to external module on port: " << connect.port);
+        GINFO_STREAM("Connecting to external module on address: " << connect.address << ":" << connect.port);
         return std::make_shared<ExternalChannel>(
-                Gadgetron::Connection::remote_stream("localhost", connect.port),
+                Gadgetron::Connection::remote_stream(connect.address, connect.port),
                 serialization,
                 configuration
         );
