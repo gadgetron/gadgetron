@@ -11,7 +11,7 @@ namespace Gadgetron {
         if (header.image_type != ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE)
             return image;
 
-        auto scale = max_value / Gadgetron::percentile(data,percentile/100);
+        auto scale = max_value / Gadgetron::percentile_approx(data,percentile/100);
         data *= scale;
 
         return image;

@@ -391,6 +391,7 @@ namespace Gadgetron {
         auto max_val = max(data);
         auto min_val = min(data);
         auto hist    = histogram(data, bins, min_val, max_val);
+        fraction = abs(fraction);
 
         size_t cumsum = 0;
         size_t counter;
@@ -400,7 +401,12 @@ namespace Gadgetron {
                 break;
         }
 
-        auto result = REAL(counter + 1) * (max_val - min_val) / bins + min_val;
+        size_t modulus = cumsum - fraction*data.size();
+        REAL offset = double(modulus)/double(hist[counter]);
+
+
+
+        auto result = REAL(counter+offset) * (max_val - min_val) / bins + min_val;
         return result;
     }
     template float percentile_approx(const hoNDArray<float>& data, float fraction, size_t bins);

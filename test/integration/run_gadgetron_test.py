@@ -154,6 +154,9 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
     norm_diff = numpy.linalg.norm(output - reference) / numpy.linalg.norm(reference)
     scale = numpy.dot(output, output) / numpy.dot(output, reference)
 
+    true_scale = numpy.vdot(output,reference)/numpy.vdot(output,output)
+    print("SCAAAALE",true_scale)
+
     if value_threshold < norm_diff:
         return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
 
