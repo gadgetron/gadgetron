@@ -25,7 +25,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         FloatToFixPointGadget.h
         RemoveROOversamplingGadget.h
         CoilReductionGadget.h
-        AutoScaleGadget.h
+        ScaleGadget.h
        FlowPhaseSubtractionGadget.h
         readers/GadgetIsmrmrdReader.h
         PhysioInterpolationGadget.h
@@ -88,7 +88,7 @@ set(gadgetron_mricore_src_files
         FloatToFixPointGadget.cpp
         RemoveROOversamplingGadget.cpp
         CoilReductionGadget.cpp
-        AutoScaleGadget.cpp
+        ScaleGadget.cpp
         FlowPhaseSubtractionGadget.cpp
         readers/GadgetIsmrmrdReader.cpp
         PhysioInterpolationGadget.cpp
@@ -130,6 +130,7 @@ set(gadgetron_mricore_src_files
         ImageAccumulatorGadget.cpp
         writers/GadgetIsmrmrdWriter.cpp
         ImageResizingGadget.cpp
+        AutoScaleGadget.cpp
         DenoiseGadget.cpp)
 
 set(gadgetron_mricore_config_files
