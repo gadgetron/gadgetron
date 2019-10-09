@@ -174,11 +174,9 @@ namespace Gadgetron
 void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
 {
     typedef std::complex<float> T;
-    try
-    {
         char TA, TB;
 
-        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) );
 
         lapack_int lda = (lapack_int)A.get_size(0);
         lapack_int ldb = (lapack_int)B.get_size(0);
@@ -206,11 +204,7 @@ void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
         TB = 'N';
 
         cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B) ...");
-    }
+
 }
 
 template<> EXPORTCPUCOREMATH 
@@ -354,11 +348,9 @@ void gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const h
 template<> EXPORTCPUCOREMATH 
 void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB)
 {
-    try
-    {
         typedef  std::complex<float>  T;
 
-        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B)  );
 
         char TA, TB;
 
@@ -413,11 +405,7 @@ void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
         }
 
         cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
-    }
+
 }
 
 template<> EXPORTCPUCOREMATH 

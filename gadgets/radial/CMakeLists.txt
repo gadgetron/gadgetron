@@ -34,6 +34,11 @@ install (FILES  gadgetron_radial_export.h
                 gpuRetroGatedSensePrepGadget.h 
                 DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install (TARGETS gadgetron_gpuradial DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_gpuradial
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 add_subdirectory(config)

@@ -1227,6 +1227,15 @@ namespace Gadgetron {
     }
 
     template <class T, size_t D>
+    template <class... INDICES>
+    std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),const T&>
+    hoNDArrayView<T,D>::operator()(INDICES... indices) const {
+        auto index_vector = make_vector_td<size_t>(indices...);
+        size_t offset = sum(index_vector*this->strides);
+        return data[offset];
+    }
+
+    template <class T, size_t D>
     hoNDArrayView<T, D>::hoNDArrayView(const std::array<size_t, D>& strides, const std::array<size_t, D>& dimensions, T* data) : strides{strides}, dimensions{dimensions}, data{data} {}
 
 }

@@ -87,8 +87,13 @@
     <name>AutoScaleGadget</name>
     <dll>gadgetron_mricore</dll>
     <classname>AutoScaleGadget</classname>
-    <property><name>max_value</name><value>512</value></property>
-  </gadget> 
+     <property>
+         <name>max_value</name>
+<!--         <value>499.7415424</value>-->
+         <value>512</value>
+     </property>
+<!--    <property><name>max_value</name><value>499.74</value></property>-->
+  </gadget>
 
 
   <gadget>

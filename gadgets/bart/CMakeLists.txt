@@ -55,7 +55,12 @@ target_link_libraries(gadgetron_bart gadgetron_core
 install(FILES  bartgadget.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_bart DESTINATION lib COMPONENT main)
+  install(TARGETS gadgetron_bart
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 set(GADGETRON_INSTALL_BART_PATH share/gadgetron/bart)
 install(FILES Sample_Grappa_Recon.sh Sample_Grappa_Recon_Standard.sh DESTINATION ${GADGETRON_INSTALL_BART_PATH})

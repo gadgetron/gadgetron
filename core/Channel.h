@@ -131,7 +131,7 @@ namespace Gadgetron { namespace Core {
 
         void push_message(Message) override;
 
-        MPMCChannel<Message> channel;
+		MPMCChannel<Message> channel;
     };
 
     /***

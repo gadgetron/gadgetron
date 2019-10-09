@@ -20,7 +20,14 @@ target_include_directories(gadgetron_toolbox_cpu_image
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         )
-install(TARGETS gadgetron_toolbox_cpu_image DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_cpu_image
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
   ${image_header_fiels} 

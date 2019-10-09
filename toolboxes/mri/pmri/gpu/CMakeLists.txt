@@ -57,7 +57,13 @@ target_include_directories(gadgetron_toolbox_gpuparallelmri
 		PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR})
 
-install(TARGETS gadgetron_toolbox_gpuparallelmri DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpuparallelmri
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES 
 	b1_map.h

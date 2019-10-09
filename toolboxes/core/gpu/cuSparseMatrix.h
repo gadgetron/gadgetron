@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "cusparse_v2.h"
+#include "cusparse.h"
 #include "gpucore_export.h"
 #include <thrust/device_vector.h>
 #include "cuNDArray.h"
@@ -17,6 +17,13 @@ namespace Gadgetron{
 
 
 EXPORTGPUCORE std::string gadgetron_getCusparseErrorString(cusparseStatus_t err);
+
+inline void copysparseMatDescr(cusparseMatDescr_t& destination, const cusparseMatDescr_t& source){
+    CUSPARSE_CALL(cusparseSetMatType(destination,cusparseGetMatType(source)));
+    CUSPARSE_CALL(cusparseSetMatFillMode(destination,cusparseGetMatFillMode(source)));
+    CUSPARSE_CALL(cusparseSetMatDiagType(destination,cusparseGetMatDiagType(source)));
+    CUSPARSE_CALL(cusparseSetMatIndexBase(destination,cusparseGetMatIndexBase(source)));
+}
 
 template<class T> struct cuCsrMatrix {
 
@@ -40,7 +47,7 @@ template<class T> struct cuCsrMatrix {
 	}
 
 	cuCsrMatrix& operator=(cuCsrMatrix&& other){
-		CUSPARSE_CALL(cusparseCopyMatDescr(descr,other.descr));
+		copysparseMatDescr(descr,other.descr);
 		csrRow = std::move(other.csrRow);
 		csrColdnd = std::move(other.csrColdnd);
 		data = std::move(other.data);
@@ -51,7 +58,7 @@ template<class T> struct cuCsrMatrix {
 	}
 
 	cuCsrMatrix& operator=(const cuCsrMatrix& other){
-		CUSPARSE_CALL(cusparseCopyMatDescr(descr,other.descr));
+		copysparseMatDescr(descr,other.descr);
 		csrRow = other.csrRow;
 		csrColdnd = other.csrColdnd;
 		data = other.data;

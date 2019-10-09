@@ -25,7 +25,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         FloatToFixPointGadget.h
         RemoveROOversamplingGadget.h
         CoilReductionGadget.h
-        AutoScaleGadget.h
+        ScaleGadget.h
        FlowPhaseSubtractionGadget.h
         readers/GadgetIsmrmrdReader.h
         PhysioInterpolationGadget.h
@@ -88,7 +88,7 @@ set(gadgetron_mricore_src_files
         FloatToFixPointGadget.cpp
         RemoveROOversamplingGadget.cpp
         CoilReductionGadget.cpp
-        AutoScaleGadget.cpp
+        ScaleGadget.cpp
         FlowPhaseSubtractionGadget.cpp
         readers/GadgetIsmrmrdReader.cpp
         PhysioInterpolationGadget.cpp
@@ -130,6 +130,7 @@ set(gadgetron_mricore_src_files
         ImageAccumulatorGadget.cpp
         writers/GadgetIsmrmrdWriter.cpp
         ImageResizingGadget.cpp
+        AutoScaleGadget.cpp
         DenoiseGadget.cpp)
 
 set(gadgetron_mricore_config_files
@@ -182,9 +183,6 @@ add_library(gadgetron_mricore SHARED
     gadgetron_mricore_export.h
     ${gadgetron_mricore_header_files}
     ${gadgetron_mricore_src_files}
-    ${gadgetron_mricore_config_files}
-    ${OPTIMIZED_GADGETS}
-    ${OPTIMIZED_GADGET_HEADERS}
     DenoiseGadget.cpp DenoiseGadget.h)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -232,11 +230,15 @@ endif ()
 install(FILES
         gadgetron_mricore_export.h
         ${gadgetron_mricore_header_files}
-        ${OPTIMIZED_GADGET_HEADERS}
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-if (ARMADILLO_FOUND)
-    install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-endif ()
+install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_mricore DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_mricore
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
+

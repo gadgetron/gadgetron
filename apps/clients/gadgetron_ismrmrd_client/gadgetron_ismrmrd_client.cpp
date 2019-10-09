@@ -17,9 +17,6 @@
 
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/dataset.h>
@@ -229,7 +226,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
-boost::mutex mtx;
+std::mutex mtx;
 
 struct GadgetMessageIdentifier
 {
@@ -441,7 +438,7 @@ public:
 
                 {
                     mtx.lock();
-                    dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary 
+                    dataset_ = std::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary
                     mtx.unlock();
                 }
             }
@@ -514,7 +511,7 @@ public:
 protected:
     std::string group_name_;
     std::string file_name_;
-    boost::shared_ptr<ISMRMRD::Dataset> dataset_;
+    std::shared_ptr<ISMRMRD::Dataset> dataset_;
 };
 
 // ----------------------------------------------------------------
@@ -1193,7 +1190,7 @@ public:
         if (error)
             throw GadgetronClientException("Error connecting using socket.");
 
-        reader_thread_ = boost::thread(boost::bind(&GadgetronClientConnector::read_task, this));
+        reader_thread_ = std::thread([&](){this->read_task();});
     }
 
     void send_gadgetron_close() { 
@@ -1529,12 +1526,12 @@ public:
         }
     }
 
-    void register_reader(unsigned short slot, boost::shared_ptr<GadgetronClientMessageReader> r) {
+    void register_reader(unsigned short slot, std::shared_ptr<GadgetronClientMessageReader> r) {
         readers_[slot] = r;
     }
 
 protected:
-    typedef std::map<unsigned short, boost::shared_ptr<GadgetronClientMessageReader> > maptype;
+    typedef std::map<unsigned short, std::shared_ptr<GadgetronClientMessageReader> > maptype;
 
     GadgetronClientMessageReader* find_reader(unsigned short r)
     {
@@ -1551,7 +1548,7 @@ protected:
 
     boost::asio::io_service io_service;
     tcp::socket* socket_;
-    boost::thread reader_thread_;
+    std::thread reader_thread_;
     maptype readers_;
     unsigned int timeout_ms_;
     double uncompressed_bytes_sent_;
@@ -1602,7 +1599,7 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
     std::string result;
     NoiseStatistics stat;
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::make_shared<GadgetronClientQueryToStringReader>(result));
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, std::make_shared<GadgetronClientQueryToStringReader>(result));
     
     std::string xml_config;
     
@@ -1785,10 +1782,10 @@ int main(int argc, char **argv)
     // Add check to see if input file exists
 
     //Let's open the input file
-    boost::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset;
+    std::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset;
     std::string xml_config;
     if (open_input_file) {
-      ismrmrd_dataset = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(in_filename.c_str(), hdf5_in_group.c_str(), false));
+      ismrmrd_dataset = std::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(in_filename.c_str(), hdf5_in_group.c_str(), false));
       // Read the header
       ismrmrd_dataset->readHeader(xml_config);
     }
@@ -1859,18 +1856,18 @@ int main(int argc, char **argv)
 
     if ( out_fileformat == "hdr" )
     {
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
     }
     else
     {
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader(out_filename, hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader(out_filename, hdf5_out_group)));
     }
 
-    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
+    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));
-    con.register_reader(GADGET_MESSAGE_TEXT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
-    con.register_reader(7, boost::shared_ptr<GadgetronClientResponseReader>(new GadgetronClientResponseReader()));
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));
+    con.register_reader(GADGET_MESSAGE_TEXT, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
+    con.register_reader(7, std::shared_ptr<GadgetronClientResponseReader>(new GadgetronClientResponseReader()));
 
     try
     {
@@ -1920,12 +1917,12 @@ int main(int argc, char **argv)
             if(waveforms>0)
             {
                 {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    std::lock_guard<std::mutex> scoped_lock(mtx);
                     ismrmrd_dataset->readAcquisition(i, acq_tmp);
                 }
 
                 {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    std::lock_guard<std::mutex> scoped_lock(mtx);
                     ismrmrd_dataset->readWaveform(j, wav_tmp);
                 }
 
@@ -1949,7 +1946,7 @@ int main(int argc, char **argv)
 
                         if(j<waveforms)
                         {
-                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            std::lock_guard<std::mutex> scoped_lock(mtx);
                             ismrmrd_dataset->readWaveform(j, wav_tmp);
                         }
                         else
@@ -1971,7 +1968,7 @@ int main(int argc, char **argv)
 
                         if(i<acquisitions)
                         {
-                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            std::lock_guard<std::mutex> scoped_lock(mtx);
                             ismrmrd_dataset->readAcquisition(i, acq_tmp);
                         }
                         else
@@ -1987,7 +1984,7 @@ int main(int argc, char **argv)
                         for (uint32_t ia=i+1; ia<acquisitions; ia++)
                         {
                             {
-                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                std::lock_guard<std::mutex> scoped_lock(mtx);
                                 ismrmrd_dataset->readAcquisition(ia, acq_tmp);
                             }
 
@@ -2002,7 +1999,7 @@ int main(int argc, char **argv)
                         for (uint32_t iw = j + 1; iw<waveforms; iw++)
                         {
                             {
-                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                std::lock_guard<std::mutex> scoped_lock(mtx);
                                 ismrmrd_dataset->readWaveform(iw, wav_tmp);
                             }
 
@@ -2016,7 +2013,7 @@ int main(int argc, char **argv)
                 for (i=0; i<acquisitions; i++)
                 {
                     {
-                        boost::mutex::scoped_lock scoped_lock(mtx);
+                        std::lock_guard<std::mutex> scoped_lock(mtx);
                         ismrmrd_dataset->readAcquisition(i, acq_tmp);
                     }
 

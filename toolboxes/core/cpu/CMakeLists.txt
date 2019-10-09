@@ -74,7 +74,12 @@ target_link_libraries(
   ismrmrd
   )
 
-install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpucore
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES
         ${header_files}

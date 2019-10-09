@@ -29,7 +29,13 @@ if (CUDA_FOUND)
                                 gadgetron_toolbox_deblur )
 endif()
 
-install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_spiral
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 install (FILES ${SPIRAL_HEADER_FILES}
                      DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 

@@ -44,7 +44,13 @@ target_include_directories(gadgetron_gpuparallelmri
         ${CMAKE_CURRENT_SOURCE_DIR})
 
 
-install (TARGETS gadgetron_gpuparallelmri DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_gpuparallelmri
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install (FILES  gadgetron_gpupmri_export.h
                 GenericReconJob.h

@@ -391,6 +391,7 @@ namespace Gadgetron {
         auto max_val = max(data);
         auto min_val = min(data);
         auto hist    = histogram(data, bins, min_val, max_val);
+        fraction = abs(fraction);
 
         size_t cumsum = 0;
         size_t counter;
@@ -400,13 +401,18 @@ namespace Gadgetron {
                 break;
         }
 
-        auto result = REAL(counter + 1) * (max_val - min_val) / bins + min_val;
+        size_t modulus = cumsum - fraction*data.size();
+        REAL offset = double(modulus)/double(hist[counter]);
+
+
+
+        auto result = REAL(counter+offset) * (max_val - min_val) / bins + min_val;
         return result;
     }
     template float percentile_approx(const hoNDArray<float>& data, float fraction, size_t bins);
     template double percentile_approx(const hoNDArray<double>& data, double fraction, size_t bins);
     template <class REAL> REAL percentile(const hoNDArray<REAL>& data, REAL fraction) {
-        if (!data.size()) return std::numeric_limits<REAL>::quiet_NaN();
+        if (data.empty()) return std::numeric_limits<REAL>::quiet_NaN();
 
         if (fraction <= 1.0 / (data.size() + 1))
             return min(data);
@@ -416,10 +422,11 @@ namespace Gadgetron {
 
         size_t i1 = size_t(std::floor(real_index))-1;
 
-        auto data_sorted = data;
+        hoNDArray<REAL> data_sorted = data;
+
         std::nth_element(data_sorted.begin(),data_sorted.begin()+i1,data_sorted.end());
         auto val1 = data_sorted[i1];
-        auto val2 = *std::min(data_sorted.begin()+i1+1, data_sorted.end());
+        auto val2 = *std::min_element(data_sorted.begin()+i1+1, data_sorted.end());
 
         REAL result = val1 + (val2 - val1) * (real_index - i1-1);
 

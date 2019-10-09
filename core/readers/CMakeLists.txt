@@ -4,9 +4,14 @@ add_library(gadgetron_core_readers SHARED
         AcquisitionReader.cpp
         WaveformReader.h
         WaveformReader.cpp 
-		BufferReader.cpp BufferReader.h 
-		IsmrmrdImageArrayReader.cpp IsmrmrdImageArrayReader.h
-        AcquisitionBucketReader.cpp AcquisitionBucketReader.h)
+		BufferReader.h
+        BufferReader.cpp
+        IsmrmrdImageArrayReader.h
+        IsmrmrdImageArrayReader.cpp
+        AcquisitionBucketReader.h
+        AcquisitionBucketReader.cpp
+        ImageReader.h
+        ImageReader.cpp)
 
 target_link_libraries(gadgetron_core_readers
         gadgetron_core
@@ -15,4 +20,10 @@ target_link_libraries(gadgetron_core_readers
 
 set_target_properties(gadgetron_core_readers PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-install(TARGETS gadgetron_core_readers DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_core_readers
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   COMPONENT main
+)
+

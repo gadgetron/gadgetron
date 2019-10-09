@@ -105,7 +105,14 @@
     source_group(application FILES ${application_files})
 
     if (BUILD_CPU_OPTIMAL_FLOW_REG)
-        install(TARGETS gadgetron_toolbox_cpureg DESTINATION lib COMPONENT main)
+        
+		install(TARGETS gadgetron_toolbox_cpureg
+			LIBRARY DESTINATION lib
+			ARCHIVE DESTINATION lib
+			RUNTIME DESTINATION bin
+			COMPONENT main
+			)
+
     endif ()
 
     install(FILES
