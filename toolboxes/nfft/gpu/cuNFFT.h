@@ -22,7 +22,7 @@
 #include <thrust/device_vector.h>
 #include <boost/shared_ptr.hpp>
 #include "cuSparseMatrix.h"
-#include "../NFFT.h"
+#include "NFFT.h"
 
 
 enum class ConvolutionType {
