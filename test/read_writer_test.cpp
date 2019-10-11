@@ -6,30 +6,50 @@
 #include "mri_core_data.h"
 #include "readers/BufferReader.h"
 #include "readers/GadgetIsmrmrdReader.h"
-#include "readers/IsmrmrdImageArrayReader.h"
 #include "readers/ImageReader.h"
+#include "readers/IsmrmrdImageArrayReader.h"
+#include "readers/AcquisitionBucketReader.h"
 #include "writers/BufferWriter.h"
 #include "writers/GadgetIsmrmrdWriter.h"
-#include "writers/IsmrmrdImageArrayWriter.h"
 #include "writers/ImageWriter.h"
+#include "writers/IsmrmrdImageArrayWriter.h"
+#include "writers/AcquisitionBucketWriter.h"
 #include <gtest/gtest.h>
+#include <mri_core_acquisition_bucket.h>
+#include <random>
 #include <sstream>
+
+namespace {
+    using namespace Gadgetron;
+
+    Core::Acquisition generate_acquisition(std::default_random_engine& engine) {
+        auto acquisition_header               = ISMRMRD::AcquisitionHeader();
+        acquisition_header.number_of_samples  = 32;
+        acquisition_header.active_channels    = 16;
+        acquisition_header.available_channels = 16;
+
+        std::uniform_real_distribution<float> dist(-100,100);
+
+
+
+        auto data
+            = hoNDArray<std::complex<float>>(acquisition_header.number_of_samples, acquisition_header.active_channels);
+        for (auto& d : data ) d = {dist(engine),dist(engine)};
+
+        return { acquisition_header, data, Core::none };
+    }
+}
 
 TEST(ReadWriteTest, AcquisitionTest) {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
 
     auto stream = std::stringstream{};
+    std::default_random_engine engine(4242);
+    auto acq   = generate_acquisition(engine);
+    auto& data = std::get<1>(acq);
 
-    auto acquisition_header               = ISMRMRD::AcquisitionHeader();
-    acquisition_header.number_of_samples  = 32;
-    acquisition_header.active_channels    = 1;
-    acquisition_header.available_channels = 1;
-
-    auto data = hoNDArray<std::complex<float>>(32, 1);
-    data.fill(42.0f);
-
-    auto message = Core::Message(acquisition_header, data);
+    auto message = Core::Message(acq);
 
     auto reader = GadgetIsmrmrdAcquisitionMessageReader();
     auto writer = GadgetIsmrmrdAcquisitionMessageWriter();
@@ -111,18 +131,18 @@ TEST(ReadWriteTest, ImageTest) {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
 
-    auto header = ISMRMRD::ImageHeader{};
+    auto header           = ISMRMRD::ImageHeader{};
     header.matrix_size[0] = 128;
     header.matrix_size[1] = 128;
     header.matrix_size[2] = 1;
-    header.channels = 1;
+    header.channels       = 1;
 
-    auto data = hoNDArray<int>(128,128,1,1);
-    std::fill(data.begin(),data.end(),42);
+    auto data = hoNDArray<int>(128, 128, 1, 1);
+    std::fill(data.begin(), data.end(), 42);
     auto meta = ISMRMRD::MetaContainer();
 
     auto stream  = std::stringstream();
-    auto message = Core::Message(header,data,meta);
+    auto message = Core::Message(header, data, meta);
     auto reader  = Core::Readers::ImageReader();
     auto writer  = Core::Writers::ImageWriter();
 
@@ -139,4 +159,34 @@ TEST(ReadWriteTest, ImageTest) {
     auto value = *unpacked;
 
     ASSERT_EQ(data, std::get<hoNDArray<int>>(value));
+}
+
+TEST(ReadWriteTest, BucketTest) {
+    using namespace Gadgetron;
+    using namespace Gadgetron::Core;
+    auto bucket = AcquisitionBucket{};
+
+    std::default_random_engine engine(4242);
+    for (size_t i = 0; i < 127; i++) bucket.data_.push_back(generate_acquisition(engine));
+
+
+    auto stream = std::stringstream();
+    auto message= Core::Message(bucket);
+    auto reader = Core::Readers::AcquisitionBucketReader();
+    auto writer = Core::Writers::AcquisitionBucketWriter();
+
+    ASSERT_TRUE(writer.accepts(message));
+
+    writer.write(stream,std::move(message));
+
+    ASSERT_EQ(Core::IO::read<uint16_t>(stream), GADGET_MESSAGE_BUCKET);
+    auto unpacked = Core::unpack<AcquisitionBucket>(reader.read(stream));
+
+    EXPECT_TRUE(bool(unpacked));
+    auto value = *unpacked;
+
+    ASSERT_EQ(bucket.data_,value.data_);
+
+
+
 }

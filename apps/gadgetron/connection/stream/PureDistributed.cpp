@@ -87,7 +87,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     PureDistributed::PureDistributed(
             const Config::PureDistributed& config,
-            const Context& context,
+            const Core::StreamContext& context,
             Loader& loader
     ) : serialization(std::make_shared<Serialization>(
                 loader.load_readers(config),

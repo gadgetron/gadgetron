@@ -1,4 +1,3 @@
-
 import time
 import logging
 import ismrmrd
@@ -7,20 +6,12 @@ import numpy as np
 import numpy.fft as fft
 
 import gadgetron.external
+from gadgetron.util import cfftn, cifftn
+
 
 # When running an external Python module, functions decorated with the 'gadgetron.external.module'
 # decorator (see the simple_recon function below) will be invoked. This decorated function serves
 # as the entry point for external Python modules.
-
-
-def cfftn(data, axes):
-    # Centered fast fourier transform, n-dimensional
-    return fft.fftshift(fft.fftn(fft.ifftshift(data, axes=axes), axes=axes, norm='ortho'), axes=axes)
-
-
-def cifftn(data, axes):
-    # Centered inverse fast fourier transform, n-dimensional
-    return fft.ifftshift(fft.ifftn(fft.fftshift(data, axes=axes), axes=axes, norm='ortho'), axes=axes)
 
 
 def noise_adjustment(connection, header):
@@ -147,7 +138,7 @@ def create_ismrmrd_images(iterable):
         yield ismrmrd.image.Image.from_array(buffer, acquisition=acquisition)
 
 
-@ gadgetron.external.module
+@gadgetron.external.module
 def simple_recon(connection):
     logging.info("Python reconstruction running.")
 
@@ -174,3 +165,14 @@ def simple_recon(connection):
         connection.send(image)
 
     logging.info(f"Python reconstruction done. Duration: {(time.time() - start):.2f} s")
+
+
+def main():
+    import gadgetron.external
+
+    logging.basicConfig(level=logging.INFO)
+    gadgetron.external.listen(9100, simple_recon)
+
+
+if __name__ == '__main__':
+    main()

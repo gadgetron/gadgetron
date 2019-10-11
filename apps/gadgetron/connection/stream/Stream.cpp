@@ -35,36 +35,36 @@ namespace {
         const std::string name_;
     };
 
-    std::shared_ptr<Processable> load_node(const Config::Gadget &conf, const Context &context, Loader &loader) {
+    std::shared_ptr<Processable> load_node(const Config::Gadget &conf, const StreamContext &context, Loader &loader) {
         auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname,
                                                                           conf.dll);
         return std::make_shared<NodeProcessable>(factory(context, conf.properties), Config::name(conf));
     }
 
-    std::shared_ptr<Processable> load_node(const Config::Parallel &conf, const Context &context, Loader &loader) {
+    std::shared_ptr<Processable> load_node(const Config::Parallel &conf, const StreamContext &context, Loader &loader) {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Parallel>(conf, context, loader);
     }
 
-    std::shared_ptr<Processable> load_node(const Config::External &conf, const Context &context, Loader &loader) {
+    std::shared_ptr<Processable> load_node(const Config::External &conf, const StreamContext &context, Loader &loader) {
         return std::make_shared<Gadgetron::Server::Connection::Stream::External>(conf, context, loader);
     }
 
-    std::shared_ptr<Processable> load_node(const Config::Distributed &conf, const Context &context, Loader &loader) {
+    std::shared_ptr<Processable> load_node(const Config::Distributed &conf, const StreamContext &context, Loader &loader) {
         return std::make_shared<Gadgetron::Server::Connection::Stream::Distributed>(conf, context, loader);
     }
 
-    std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const Context& context, Loader& loader){
+    std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const StreamContext& context, Loader& loader){
         return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);
     }
 
-    std::shared_ptr<Processable> load_node(const Config::PureDistributed& conf, const Context& context, Loader& loader){
+    std::shared_ptr<Processable> load_node(const Config::PureDistributed& conf, const StreamContext& context, Loader& loader){
         return std::make_shared<Gadgetron::Server::Connection::Stream::PureDistributed>(conf,context,loader);
     }
 }
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    Stream::Stream(const Config::Stream &config, const Core::Context &context, Loader &loader) : key(config.key) {
+    Stream::Stream(const Config::Stream &config, const Core::StreamContext &context, Loader &loader) : key(config.key) {
         for (auto &node_config : config.nodes) {
             nodes.emplace_back(
                     Core::visit([&](auto n) { return load_node(n, context, loader); }, node_config)

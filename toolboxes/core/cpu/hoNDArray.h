@@ -18,16 +18,17 @@
 
 namespace Gadgetron{
 
-   class Slice {};
-   constexpr auto slice = Slice{};
-
+    namespace Indexing {
+        class Slice {};
+        constexpr auto slice = Slice{};
+    }
    template<class... ARGS>
    struct ValidIndex : std::integral_constant<bool, Core::all_of_v<Core::is_convertible_v<ARGS,size_t>...>> {};
 
    template<> struct ValidIndex<> : std::true_type {};
 
    template<class... ARGS>
-   struct ValidIndex<Slice,ARGS...> : ValidIndex<ARGS...> {};
+   struct ValidIndex<Indexing::Slice,ARGS...> : ValidIndex<ARGS...> {};
 
 
    template<class T> class hoNDArray;
@@ -177,12 +178,12 @@ namespace Gadgetron{
     const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
 
     template<class... INDICES>
-    std::enable_if_t<ValidIndex<Slice,INDICES...>::value, hoNDArray<T>>
-    operator()(const Slice&, const INDICES&... );
+    std::enable_if_t<ValidIndex<Indexing::Slice,INDICES...>::value, hoNDArray<T>>
+    operator()(const Indexing::Slice&, const INDICES&... );
 
 
 
-  template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Slice>...>> >
+  template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
   auto operator()(const INDICES&... );
 
     void fill(T value);

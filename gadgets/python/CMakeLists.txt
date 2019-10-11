@@ -34,7 +34,6 @@ set(gadgetron_python_utils_files
 
 set(gadgetron_python_gadgets_files
         gadgets/accumulate_and_recon.py
-        gadgets/bucket_recon.py
         gadgets/IDEAL.py
         gadgets/image_viewer.py
         gadgets/passthrough.py
@@ -48,13 +47,10 @@ set(gadgetron_python_gadgets_files
         gadgets/image_array_recon_rtcine_plotting.py
         )
 
-set(gadgetron_python_examples_files
-        ../python-new/examples/simple_recon.py)
 
 source_group(config FILES ${gadgetron_python_config_files})
 source_group(utils FILES ${gadgetron_python_utils_files})
 source_group(gadgets FILES ${gadgetron_python_gadgets_files})
-source_group(examples FILES ${gadgetron_python_examples_files})
 source_group(models             FILES      ${gadgetron_python_models_files})
 
 add_library(GadgetronPythonMRI MODULE

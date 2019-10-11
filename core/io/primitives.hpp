@@ -106,6 +106,15 @@ void Gadgetron::Core::IO::read(std::istream &stream, std::vector<T> &vec) {
 }
 
 template<class T>
+void Gadgetron::Core::IO::read(std::istream &stream, std::set<T> &setT) {
+    auto length = IO::read<size_t>(stream);
+    for (size_t i = 0; i < length; i++){
+        setT.insert(IO::read<T>(stream));
+    }
+
+}
+
+template<class T>
 void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray<T> &array) {
     auto dimensions = IO::read<std::vector<size_t>>(stream);
     array = hoNDArray<T>(dimensions);

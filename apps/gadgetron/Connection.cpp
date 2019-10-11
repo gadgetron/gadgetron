@@ -18,8 +18,8 @@ namespace Gadgetron::Server::Connection {
 #if _WIN32 || !NDEBUG || GADGETRON_DISABLE_FORK
 
     void handle(
-            const Gadgetron::Core::Context::Paths& paths,
-            const Gadgetron::Core::Context::Args& args,
+            const Gadgetron::Core::StreamContext::Paths& paths,
+            const Gadgetron::Core::StreamContext::Args& args,
             std::unique_ptr<std::iostream> stream
     ) {
         auto thread = std::thread(handle_connection, std::move(stream), paths, args);
@@ -29,8 +29,8 @@ namespace Gadgetron::Server::Connection {
 #else
 
     void handle(
-            const Gadgetron::Core::Context::Paths& paths,
-            const Gadgetron::Core::Context::Args& args,
+            const Gadgetron::Core::StreamContext::Paths& paths,
+            const Gadgetron::Core::StreamContext::Args& args,
             std::unique_ptr<std::iostream> stream
     ) {
         auto pid = fork();

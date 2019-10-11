@@ -227,6 +227,7 @@ namespace Gadgetron {
 
         hoNDArray<std::complex<float>> reorder_noise_channels(
             hoNDArray<std::complex<float>> noise_covariance, const std::vector<size_t>& coil_order) {
+            using namespace Indexing;
             // check whether to switch channel order
             auto CHA = noise_covariance.get_size(0);
             if ((coil_order.size() != CHA)

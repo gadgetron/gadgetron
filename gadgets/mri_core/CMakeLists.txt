@@ -16,7 +16,6 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         FFTGadget.h
         CombineGadget.h
         CropAndCombineGadget.h
-        CoilSenMapGadget.h
         ImageWriterGadget.h
         writers/MRIImageWriter.h
         readers/MRIImageReader.h
@@ -78,7 +77,6 @@ set(gadgetron_mricore_src_files
         FFTGadget.cpp
         CombineGadget.cpp
         CropAndCombineGadget.cpp
-        CoilSenMapGadget.cpp
         ImageFinishGadget.cpp
         ImageWriterGadget.cpp
         writers/MRIImageWriter.cpp
@@ -139,7 +137,6 @@ set(gadgetron_mricore_config_files
         config/default_optimized.xml
         config/default_measurement_dependencies.xml
         config/default_measurement_dependencies_ismrmrd_storage.xml
-        config/default_measurement_dependencies_Noise_CoilSen_SCC.xml
         config/isalive.xml
         config/gtquery.xml
         config/Generic_Cartesian_FFT.xml
