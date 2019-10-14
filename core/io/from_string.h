@@ -6,6 +6,8 @@
 #include <boost/filesystem/path.hpp>
 namespace Gadgetron::Core::IO {
 
+    template<class T> T from_string(const std::string& str);
+
 
 
     void from_string(const std::string&, int&);
@@ -29,9 +31,6 @@ namespace Gadgetron::Core::IO {
 
     void from_string(const std::string&, boost::filesystem::path&);
 
-    template <class T> T from_string(const std::string& str) {
-        T val;
-        from_string(str, val);
-        return val;
-    }
 }
+
+#include "from_string.hpp"
