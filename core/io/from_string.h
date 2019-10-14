@@ -5,14 +5,11 @@
 #include <vector>
 namespace Gadgetron::Core::IO {
 
-
-    template<class T> void from_string(const std::string& str, T& va);
-    template<class T> void from_string(const std::string& str, std::vector<T>& va);
+    template<class T> T from_string(const std::string& str);
 
 
-    template <class T> T from_string(const std::string& str) {
-        T val;
-        from_string(str, val);
-        return val;
-    }
+
+
 }
+
+#include "from_string.hpp"
