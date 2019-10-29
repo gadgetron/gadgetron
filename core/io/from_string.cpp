@@ -7,9 +7,6 @@
 #include <boost/filesystem/path.hpp>
 
 namespace {
-
-    template <class T> void from_string_impl(const std::string& str, T& val) {
-namespace {
     template <class T> void from_string_impl(const std::string& str, T& val) {
 
         namespace qi    = boost::spirit::qi;
@@ -30,7 +27,6 @@ namespace {
     }
 }
 
-template<>
 void Gadgetron::Core::IO::from_string(const std::string& str, boost::filesystem::path& path){
     path = boost::filesystem::path(str);
 }
