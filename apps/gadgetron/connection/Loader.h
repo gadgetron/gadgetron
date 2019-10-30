@@ -53,9 +53,9 @@ namespace Gadgetron::Server::Connection {
         std::map<uint16_t, std::unique_ptr<Reader>> load_default_and_additional_readers(CONFIG config) {
 
             static const std::vector<Config::Reader> default_readers{
-                    Config::Reader { "gadgetron_mricore", "GadgetIsmrmrdAcquisitionMessageReader", boost::none },
-                    Config::Reader { "gadgetron_mricore", "GadgetIsmrmrdWaveformMessageReader", boost::none },
-                    Config::Reader { "gadgetron_mricore", "MRIImageReader", boost::none },
+                    Config::Reader { "gadgetron_core_readers", "AcquisitionReader", boost::none },
+                    Config::Reader { "gadgetron_core_readers", "WaveformReader", boost::none },
+                    Config::Reader { "gadgetron_core_readers", "ImageReader", boost::none },
                     Config::Reader { "gadgetron_core_readers", "BufferReader", boost::none },
                     Config::Reader { "gadgetron_core_readers", "IsmrmrdImageArrayReader", boost::none },
                     Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", boost::none }

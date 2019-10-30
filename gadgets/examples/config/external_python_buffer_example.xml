@@ -43,7 +43,7 @@
         </gadget>
 
         <external>
-            <execute name="gadgetron.examples.buffer_recon" type="matlab"/>
+            <execute name="gadgetron.examples" target="recon_buffers" type="python"/>
             <configuration/>
         </external>
     </stream>

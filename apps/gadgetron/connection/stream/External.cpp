@@ -8,7 +8,6 @@
 #include "external/Python.h"
 #include "external/Matlab.h"
 
-#include <boost/asio.hpp>
 #include <boost/asio/use_future.hpp>
 #include <boost/algorithm/string.hpp>
 

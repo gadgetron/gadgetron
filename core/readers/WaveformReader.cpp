@@ -14,14 +14,12 @@ namespace Gadgetron::Core::Readers {
         using namespace Core;
         using namespace std::literals;
 
-
         auto header = IO::read<ISMRMRD::WaveformHeader>(stream);
-
         auto data = hoNDArray<uint32_t>(header.number_of_samples, header.channels);
 
-        IO::read(stream, data.data(),data.size());
+        IO::read(stream, data.data(), data.size());
 
-        return Message(std::move(header), std::move(data));
+        return Message(header, std::move(data));
     }
 
     uint16_t WaveformReader::slot() {
