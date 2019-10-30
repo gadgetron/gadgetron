@@ -19,6 +19,15 @@ namespace Gadgetron { namespace Test {
     inline ISMRMRD::Encoding generate_encoding() {
         auto encoding         = ISMRMRD::Encoding{};
         encoding.encodedSpace = generate_encodingspace({ 192, 192, 1 }, { 256, 256, 10 });
+        encoding.encodingLimits.kspace_encoding_step_0 = ISMRMRD::Limit();
+        encoding.encodingLimits.kspace_encoding_step_1 = ISMRMRD::Limit();
+        encoding.encodingLimits.kspace_encoding_step_0->minimum = 0;
+        encoding.encodingLimits.kspace_encoding_step_0->center = 96;
+        encoding.encodingLimits.kspace_encoding_step_0->maximum = 191;
+        encoding.encodingLimits.kspace_encoding_step_1->minimum = 0;
+        encoding.encodingLimits.kspace_encoding_step_1->center = 96;
+        encoding.encodingLimits.kspace_encoding_step_1->maximum = 191;
+
         encoding.reconSpace   = generate_encodingspace({ 128, 128, 1 }, { 256, 256, 10 });
         return encoding;
     }
