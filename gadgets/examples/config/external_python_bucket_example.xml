@@ -38,8 +38,8 @@
         </gadget>
 
         <external>
-<!--            <execute name="simple_bucket_recon" type="python"/>-->
-            <connect port="9100"/>
+            <execute name="simple_bucket_recon" type="python"/>
+<!--            <connect port="9100"/>-->
             <configuration/>
         </external>
     </stream>
