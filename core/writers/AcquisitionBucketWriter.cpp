@@ -8,8 +8,7 @@
 using namespace Gadgetron;
 using namespace Gadgetron::Core;
 
-GADGETRON_ADAPT_STRUCT(
-        IsmrmrdAcquisitionBucketStats,
+GADGETRON_ADAPT_STRUCT(AcquisitionBucketStats,
         GADGETRON_ACCESS_ELEMENT(kspace_encode_step_1),
         GADGETRON_ACCESS_ELEMENT(kspace_encode_step_2),
         GADGETRON_ACCESS_ELEMENT(slice),
@@ -65,32 +64,30 @@ namespace {
 
     void serialize_acquisitions(
             acquisition_streams &streams,
-            const std::vector<IsmrmrdAcquisitionData> &acquisitions,
-            const std::vector<IsmrmrdAcquisitionBucketStats> &stats
+            const std::vector<Core::Acquisition> &acquisitions,
+            const std::vector<AcquisitionBucketStats> &stats
     ) {
-        for (const IsmrmrdAcquisitionData& acq : acquisitions) {
-            IO::write(streams.header, *acq.head_->getObjectPtr());
-            write_array_data(streams.data, *acq.data_->getObjectPtr());
+        for (const auto& acq : acquisitions) {
+            IO::write(streams.header, std::get<0>(acq));
+            write_array_data(streams.data, std::get<1>(acq));
 
-            if (acq.traj_) write_array_data(streams.trajectory, *acq.traj_->getObjectPtr());
+            if (std::get<2>(acq)) write_array_data(streams.trajectory, *std::get<2>(acq));
         }
 
-        for (const IsmrmrdAcquisitionBucketStats& sts : stats) {
-            IO::write(streams.stats, sts);
-        }
+        IO::write(streams.stats,stats);
     }
 
     void serialize_waveforms(
             waveform_streams &streams,
-            const std::vector<ISMRMRD::Waveform> &waveforms
+            const std::vector<Core::Waveform> &waveforms
     ) {
-        for (const ISMRMRD::Waveform& waveform : waveforms) {
-            IO::write(streams.header, waveform.head);
-            IO::write(streams.data, waveform.data, std::distance(waveform.begin_data(), waveform.end_data()));
+        for (const auto& waveform : waveforms) {
+            IO::write(streams.header, std::get<0>(waveform));
+            IO::write(streams.data, std::get<1>(waveform).data(), std::get<1>(waveform).size());
         }
     }
 
-    bucket_meta initialize_bucket_meta(const Gadgetron::IsmrmrdAcquisitionBucket &bucket) {
+    bucket_meta initialize_bucket_meta(const Gadgetron::AcquisitionBucket&bucket) {
         bucket_meta meta{};
         meta.data.count = bucket.data_.size();
         meta.reference.count = bucket.ref_.size();
@@ -139,7 +136,7 @@ namespace Gadgetron::Core::Writers {
 
     void AcquisitionBucketWriter::serialize(
             std::ostream &stream,
-            const Gadgetron::IsmrmrdAcquisitionBucket &bucket
+            const Gadgetron::AcquisitionBucket&bucket
     ) {
         struct {
             acquisition_streams data, reference;
@@ -160,7 +157,7 @@ namespace Gadgetron::Core::Writers {
         IO::write(stream, meta);
 
         write_streams(stream, streams.data);
-        write_streams(stream, streams.reference);
+            write_streams(stream, streams.reference);
         write_streams(stream, streams.waveforms);
     }
 

@@ -38,7 +38,7 @@
         </gadget>
 
         <external>
-            <execute name="gadgetron.examples" target="recon_buckets" type="python"/>
+            <execute name="gadgetron.examples" target="recon_buffers" type="python"/>
             <configuration/>
         </external>
     </stream>

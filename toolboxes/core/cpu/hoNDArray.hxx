@@ -1065,13 +1065,13 @@ namespace Gadgetron {
             template <size_t count, class... ARGS> struct count_slices { static constexpr size_t value = count; };
 
             template <size_t count, class... ARGS>
-            struct count_slices<count, Slice, ARGS...> : count_slices<count + 1, ARGS...> {};
+            struct count_slices<count, Indexing::Slice, ARGS...> : count_slices<count + 1, ARGS...> {};
 
 
             template <size_t count, class T, class... ARGS>
             struct count_slices<count, T, ARGS...> : count_slices<count, ARGS...> {};
 
-            template <class... ARGS> static auto extract_indices(const Slice&, const ARGS&... args) {
+            template <class... ARGS> static auto extract_indices(const Indexing::Slice&, const ARGS&... args) {
                 return extract_indices(args...);
             }
 
@@ -1100,7 +1100,7 @@ namespace Gadgetron {
                 return x;
             }
 
-            static size_t slice_start_index(const Slice&) {
+            static size_t slice_start_index(const Indexing::Slice&) {
                 return 0;
             }
 
@@ -1132,7 +1132,7 @@ namespace Gadgetron {
             template <unsigned int DIMS, unsigned int CUR_VIEW_DIM, unsigned int CUR_ARRAY_DIM, class T,
                 class... INDICES>
             static void calculate_dims_internal(
-                std::array<size_t, DIMS>& dims, const hoNDArray<T>& base, const Slice&, const INDICES&... indices) {
+                std::array<size_t, DIMS>& dims, const hoNDArray<T>& base, const Indexing::Slice&, const INDICES&... indices) {
                 dims[CUR_VIEW_DIM] = base.get_size(CUR_ARRAY_DIM);
                 if (CUR_VIEW_DIM + 1 < DIMS)
                     calculate_dims_internal<DIMS, CUR_VIEW_DIM + 1, CUR_ARRAY_DIM + 1>(dims, base, indices...);
@@ -1152,7 +1152,7 @@ namespace Gadgetron {
             template <unsigned int DIMS, unsigned int CUR_STRIDE_DIM, unsigned int CUR_ARRAY_DIM, class T,
                 class... INDICES>
             static void calculate_strides_internal(
-                std::array<size_t, DIMS>& strides, const hoNDArray<T>& base, const Slice&, const INDICES&... indices) {
+                std::array<size_t, DIMS>& strides, const hoNDArray<T>& base, const Indexing::Slice&, const INDICES&... indices) {
                 if (CUR_STRIDE_DIM + 1 < DIMS) {
                     strides[CUR_STRIDE_DIM + 1] = strides[CUR_STRIDE_DIM]*base.get_size(CUR_ARRAY_DIM);
                     hondarray_detail::calculate_strides_internal<DIMS, CUR_STRIDE_DIM + 1, CUR_ARRAY_DIM + 1>(strides, base, indices...);
@@ -1167,8 +1167,8 @@ namespace Gadgetron {
 
     template <class T>
     template <class... INDICES>
-    std::enable_if_t<ValidIndex<Slice, INDICES...>::value, hoNDArray<T>> hoNDArray<T>::operator()(
-        const Slice&, const INDICES&... indices) {
+    std::enable_if_t<ValidIndex<Indexing::Slice, INDICES...>::value, hoNDArray<T>> hoNDArray<T>::operator()(
+        const Indexing::Slice&, const INDICES&... indices) {
         constexpr size_t nsubdims = hondarray_detail::count_slices<0, INDICES...>::value + 1;
         constexpr size_t N = sizeof...(INDICES) - nsubdims+1;
         auto index_array          = hondarray_detail::extract_indices(indices...);

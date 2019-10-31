@@ -11,7 +11,6 @@ namespace Gadgetron::Core {
 
     struct Context {
 
-        using Args = boost::program_options::variables_map;
 
         using Header =
                 ISMRMRD::IsmrmrdHeader;
@@ -23,8 +22,15 @@ namespace Gadgetron::Core {
 
         Header header;
         Paths  paths;
+    };
+
+    struct StreamContext : Context {
+        using Args = boost::program_options::variables_map;
+        StreamContext(ISMRMRD::IsmrmrdHeader header, const Paths paths, const Args args) : Context{std::move(header),paths},args{args} {}
         Args   args;
     };
+
+
 }
 
 

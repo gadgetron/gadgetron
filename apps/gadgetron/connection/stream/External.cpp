@@ -107,7 +107,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     External::External(
             const Config::External &config,
-            const Core::Context &context,
+            const Core::StreamContext &context,
             Loader &loader
     ) : serialization(std::make_shared<Serialization>(
                 loader.load_default_and_additional_readers(config),

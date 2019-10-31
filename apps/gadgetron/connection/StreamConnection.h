@@ -8,7 +8,7 @@
 namespace Gadgetron::Server::Connection::StreamConnection {
     void process(
             std::iostream &stream,
-            const Core::Context &context,
+            const Core::StreamContext &context,
             const Config &config,
             ErrorHandler &error_handler
     );

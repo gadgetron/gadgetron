@@ -34,6 +34,8 @@ namespace Gadgetron { namespace Core {
         class Closer;
     };
 
+    class MessageChannel;
+    template <class ChannelType=MessageChannel, class... ARGS> ChannelPair make_channel(ARGS&&... args);
     /**
      * The end of a channel which provides output. Only constructible through make_channel(args)
      */
@@ -105,6 +107,19 @@ namespace Gadgetron { namespace Core {
         GenericInputChannel input;
         OutputChannel output;
     };
+    class MessageChannel : public Channel {
+
+    protected:
+        Message pop() override;
+
+        optional<Message> try_pop() override;
+
+        void close() override;
+
+        void push_message(Message) override;
+
+        MPMCChannel<Message> channel;
+    };
 
     /***
      * Creates a ChannelPair
@@ -120,22 +135,8 @@ namespace Gadgetron { namespace Core {
 
     ChannelIterator<OutputChannel> begin(OutputChannel&);
 
-    class MessageChannel : public Channel {
-
-    protected:
-        Message pop() override;
-
-        optional<Message> try_pop() override;
-
-        void close() override;
-
-        void push_message(Message) override;
-
-		MPMCChannel<Message> channel;
-    };
-
     /***
-     * A wrapper around an InputChannel. Filters the content of an Inputchannel based on the specified typelist
+     * A wrapper around a GenericInputChannel. Filters the content of an Inputchannel based on the specified typelist
      * @tparam ARGS
      */
     template <class... TYPELIST> class InputChannel : public ChannelRange<InputChannel<TYPELIST...>> {
@@ -173,4 +174,4 @@ namespace Gadgetron { namespace Core {
         OutputChannel& bypass;
     };
 
-} }
+}}

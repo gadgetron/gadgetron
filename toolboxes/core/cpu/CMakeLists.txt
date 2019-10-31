@@ -10,6 +10,7 @@ set(header_files ../NDArray.h
                 cpucore_export.h 
                 hoNDArray.h
                 hoNDArray.hxx
+				hoNDArray_iterators.h
                 hoNDObjectArray.h
                 hoNDArray_utils.h
                 hoNDArray_fileio.h
@@ -39,7 +40,7 @@ set(image_files image/hoNDImage.h
             image/hoNDImage.hxx 
             image/hoNDImageContainer2D.h )
 
-set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx hoNDArray_iterators.h)
+set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx )
 
 source_group(algorithm FILES ${algorithm_files})
 source_group(image FILES ${image_files})

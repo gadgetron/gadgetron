@@ -8,8 +8,8 @@
 
 namespace Gadgetron::Core::Writers {
 
-    class AcquisitionBucketWriter : public TypedWriter<IsmrmrdAcquisitionBucket> {
+    class AcquisitionBucketWriter : public TypedWriter<AcquisitionBucket> {
     protected:
-        void serialize(std::ostream& stream, const IsmrmrdAcquisitionBucket& args) override;
+        void serialize(std::ostream& stream, const AcquisitionBucket& args) override;
     };
 }

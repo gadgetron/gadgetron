@@ -163,7 +163,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     Distributed::Distributed(
             const Config::Distributed& config,
-            const Core::Context& context,
+            const Core::StreamContext& context,
             Loader& loader
     ) : serialization(std::make_shared<Serialization>(
                 loader.load_readers(config),

@@ -42,7 +42,6 @@ namespace Gadgetron
 	NONE
       };
 
-    IsmrmrdCONDITION from_string(const std::string&, IsmrmrdCONDITION& condition );
 
 
     // define the dimensions of ISMRMRD
@@ -89,16 +88,16 @@ namespace Gadgetron
   struct SamplingDescription
   {
     // encoding FOV
-    float encoded_FOV_[3] = {0,0,0};
+    std::array<float,3> encoded_FOV_ = {0,0,0};
     // recon FOV
-    float recon_FOV_[3] ={0,0,0};
+    std::array<float,3> recon_FOV_ ={0,0,0};
     
-    uint16_t encoded_matrix_[3] = {0,0,0};
-    uint16_t recon_matrix_[3] = {0,0,0};
+    std::array<uint16_t ,3> encoded_matrix_ = {0,0,0};
+    std::array<uint16_t ,3> recon_matrix_ = {0,0,0};
     
     // sampled range along RO, E1, E2 (for asymmetric echo and partial fourier)
     // min, max and center
-    SamplingLimit sampling_limits_[3];
+    std::array<SamplingLimit,3> sampling_limits_;
   };
   
   struct IsmrmrdDataBuffered
@@ -108,38 +107,17 @@ namespace Gadgetron
     hoNDArray< std::complex<float> > data_;
     
     //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
-    boost::optional<hoNDArray<float>> trajectory_;
+    Core::optional<hoNDArray<float>> trajectory_;
 
     // 6D, density weights [E0, E1, E2, N, S, LOC]
-    boost::optional<hoNDArray<float> > density_;
+    Core::optional<hoNDArray<float> > density_;
 
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
 
     SamplingDescription sampling_;
 
-    IsmrmrdDataBuffered() {}
-    IsmrmrdDataBuffered(const IsmrmrdDataBuffered& obj)
-    {
-        this->data_.copyFrom(obj.data_);
-
-        if (obj.trajectory_)
-        {
-            if (this->trajectory_) {
-                if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
-            } else {
-                this->trajectory_ = hoNDArray<float>();
-            }
-
-            this->trajectory_->copyFrom(*obj.trajectory_);
-        }
-        
-        this->headers_.copyFrom(obj.headers_);
-        this->sampling_ = obj.sampling_;
-    }
-
-    ~IsmrmrdDataBuffered() {}
-
+    [[deprecated]]
     void clear()
     {
         if (this->data_.delete_data_on_destruct()) this->data_.clear();
@@ -162,21 +140,7 @@ namespace Gadgetron
     IsmrmrdDataBuffered data_;
     boost::optional<IsmrmrdDataBuffered> ref_;
 
-    IsmrmrdReconBit() {}
-    IsmrmrdReconBit(const IsmrmrdReconBit& obj)
-    {
-        this->data_= obj.data_;
 
-        if (obj.ref_)
-        {
-            if (!this->ref_)
-                this->ref_.reset(IsmrmrdDataBuffered());
-
-            *this->ref_ = *obj.ref_;
-        }
-    }
-
-    ~IsmrmrdReconBit() {}
   };
 
   /**

@@ -38,7 +38,7 @@ namespace Gadgetron::Server::Connection::VoidConnection {
         GINFO_STREAM("Connection state: [VOID]");
 
         // Please note the empty header initialization crime. TODO: Fight crime.
-        Context context{Context::Header{}, paths};
+        Core::StreamContext context{Context::Header{}, paths,StreamContext::Args{}};
         Loader loader{context};
 
 

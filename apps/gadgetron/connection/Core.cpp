@@ -51,8 +51,8 @@ namespace Gadgetron::Server::Connection {
 
     void handle_connection(
             std::unique_ptr<std::iostream> stream,
-            Gadgetron::Core::Context::Paths paths,
-            Gadgetron::Core::Context::Args args
+            Gadgetron::Core::StreamContext::Paths paths,
+            Gadgetron::Core::StreamContext::Args args
     ) {
 
         stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);

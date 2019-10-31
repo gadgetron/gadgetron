@@ -13,7 +13,7 @@ set(gadgetron_python_gadgets_files
 		legacy/gadgets/accumulate_and_recon.py
 		legacy/gadgets/array_image.py
 		legacy/gadgets/bucket_recon.py
-		legacy/gadgets/image_array_recon.py
+        legacy/gadgets/image_array_recon.py
 		legacy/gadgets/image_array_recon_rtcine_plotting.py
 		legacy/gadgets/passthrough.py
 		legacy/gadgets/passthrough_array_image.py
