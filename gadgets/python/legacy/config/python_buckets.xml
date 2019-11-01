@@ -30,6 +30,10 @@
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
+        <property>
+            <name>trigger_dimension</name>
+            <value>repetition</value>
+        </property>
     </gadget>
 
     <gadget>

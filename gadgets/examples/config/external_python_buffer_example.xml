@@ -34,6 +34,7 @@
         <gadget>
             <dll>gadgetron_mricore</dll>
             <classname>AcquisitionAccumulateTriggerGadget</classname>
+            <property name="trigger_dimension" value="repetition"/>
         </gadget>
 
         <gadget>
