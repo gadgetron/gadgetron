@@ -14,6 +14,19 @@ namespace {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Connection::Stream;
+    using namespace std::string_literals;
+
+    std::string print_action(const Config::Execute& execute){
+        return "Execute block with name "s + execute.name + " of type " + execute.type;
+    }
+
+    std::string print_action(const Config::Connect& connect){
+        return "Connect block on port "s + connect.port;
+    }
+
+    std::string print_action(const Config::Action& action){
+        return visit([](auto& ac){return print_action(ac);},action);
+    }
 
     class NodeProcessable : public Processable {
     public:
@@ -36,28 +49,34 @@ namespace {
     };
 
     std::shared_ptr<Processable> load_node(const Config::Gadget &conf, const StreamContext &context, Loader &loader) {
+        GDEBUG("Loading Gadget %s of class %s from \n",conf.name.c_str(),conf.classname.c_str(),conf.dll.c_str());
         auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname,
                                                                           conf.dll);
         return std::make_shared<NodeProcessable>(factory(context, conf.properties), Config::name(conf));
     }
 
     std::shared_ptr<Processable> load_node(const Config::Parallel &conf, const StreamContext &context, Loader &loader) {
+        GDEBUG("Loading Parallel block\n");
         return std::make_shared<Gadgetron::Server::Connection::Stream::Parallel>(conf, context, loader);
     }
 
     std::shared_ptr<Processable> load_node(const Config::External &conf, const StreamContext &context, Loader &loader) {
+        GDEBUG("Loading External %s \n", print_action(conf.action).c_str());
         return std::make_shared<Gadgetron::Server::Connection::Stream::External>(conf, context, loader);
     }
 
     std::shared_ptr<Processable> load_node(const Config::Distributed &conf, const StreamContext &context, Loader &loader) {
+        GDEBUG("Loading Distributed block\n");
         return std::make_shared<Gadgetron::Server::Connection::Stream::Distributed>(conf, context, loader);
     }
 
     std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const StreamContext& context, Loader& loader){
+        GDEBUG("Loading ParalleProcess block\n");
         return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);
     }
 
     std::shared_ptr<Processable> load_node(const Config::PureDistributed& conf, const StreamContext& context, Loader& loader){
+        GDEBUG("Loading PureDistributed block\n");
         return std::make_shared<Gadgetron::Server::Connection::Stream::PureDistributed>(conf,context,loader);
     }
 }

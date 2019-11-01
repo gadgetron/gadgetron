@@ -3,22 +3,18 @@
 #include "hoNDArray_reductions.h"
 #include "mri_core_data.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/functional/hash.hpp>
+
 
 using BufferKey =  Gadgetron::BucketToBufferGadget::BufferKey;
 
+
+
 namespace std {
-    template <> struct hash<BufferKey> {
-        std::size_t operator()(const BufferKey& idx) const {
-            size_t seed = 0;
-            boost::hash_combine(seed, idx.average);
-            boost::hash_combine(seed, idx.slice);
-            boost::hash_combine(seed, idx.contrast);
-            boost::hash_combine(seed, idx.phase);
-            boost::hash_combine(seed, idx.repetition);
-            boost::hash_combine(seed, idx.set);
-            boost::hash_combine(seed, idx.segment);
-            return seed;
+    template<>
+    struct less<BufferKey>{
+        bool operator()(const BufferKey& idx1, const BufferKey& idx2) const {
+            return std::tie(idx1.average,idx1.slice,idx1.contrast,idx1.phase,idx1.repetition,idx1.set,idx1.segment) <
+                std::tie(idx2.average,idx2.slice,idx2.contrast,idx2.phase,idx2.repetition,idx2.set,idx2.segment);
         }
     };
 
@@ -33,7 +29,7 @@ namespace std {
 namespace Gadgetron {
     namespace {
 
-        IsmrmrdReconBit& getRBit(std::unordered_map<BufferKey, IsmrmrdReconData>& recon_data_buffers,
+        IsmrmrdReconBit& getRBit(std::map<BufferKey, IsmrmrdReconData>& recon_data_buffers,
             const BufferKey& key, uint16_t espace) {
 
             // Look up the DataBuffered entry corresponding to this encoding space
@@ -50,7 +46,7 @@ namespace Gadgetron {
     void BucketToBufferGadget::process(Core::InputChannel<AcquisitionBucket>& input, Core::OutputChannel& out) {
 
         for (auto acq_bucket : input) {
-            std::unordered_map<BufferKey, IsmrmrdReconData> recon_data_buffers;
+            std::map<BufferKey, IsmrmrdReconData> recon_data_buffers;
             GDEBUG_STREAM("BUCKET_SIZE " << acq_bucket.data_.size() << " ESPACE " << acq_bucket.refstats_.size());
             // Iterate over the reference data of the bucket
             for (auto& acq : acq_bucket.ref_) {

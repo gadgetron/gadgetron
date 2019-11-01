@@ -454,7 +454,7 @@ def main():
                         default=os.environ.get('ISMRMRD_HOME'),
                         help="ISMRMRD installation home")
 
-    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of Gadgetron instance")
+    parser.add_argument('-p', '--port', type=int, default=9003, help="Port used by Gadgetron")
     parser.add_argument('-a', '--host', type=str, default="localhost", help="Address of (external) Gadgetron host")
 
     parser.add_argument('-e', '--external', action='store_true', default=False,

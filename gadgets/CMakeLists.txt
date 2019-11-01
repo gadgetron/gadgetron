@@ -31,7 +31,6 @@ add_subdirectory(grappa)
 
 if (BUILD_PYTHON_SUPPORT)
     add_subdirectory(python)
-    add_subdirectory(python-new)
     add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
 endif () # BUILD_PYTHON_SUPPORT
 

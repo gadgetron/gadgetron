@@ -89,3 +89,4 @@ namespace Gadgetron::Core::IO {
         return val;
     }
 }
+#include "from_string.hpp"

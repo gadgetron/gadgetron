@@ -39,7 +39,6 @@ namespace Gadgetron::Server::Connection::Stream {
         auto illegal_message = [&](auto &) {
             throw std::runtime_error("Received illegal message id from external peer: " + std::to_string(id));
         };
-        //TODO: Let's not construct a brand new map for every message, eh?
 
         const std::map<uint16_t, std::function<void(std::iostream &)>> handlers{
                 {FILENAME,  illegal_message},

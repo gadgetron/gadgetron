@@ -6,11 +6,9 @@
 #include <memory>
 #include <string>
 
-#include <boost/parameter/name.hpp>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm/find_if.hpp>
-#include <numeric>
 
 #include "log.h"
 

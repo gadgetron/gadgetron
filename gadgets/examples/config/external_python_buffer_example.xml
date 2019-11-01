@@ -37,6 +37,12 @@
             <property name="trigger_dimension" value="repetition"/>
         </gadget>
 
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>BucketToBufferGadget</classname>
+            <property name="split_slices" value="true"/>
+        </gadget>
+
         <external>
             <execute name="gadgetron.examples" target="recon_buffers" type="python"/>
             <configuration/>

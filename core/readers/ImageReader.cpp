@@ -1,10 +1,9 @@
-//
-// Created by dchansen on 9/13/19.
-//
 
 #include "ImageReader.h"
 #include "MessageID.h"
+
 #include "io/primitives.h"
+
 namespace {
     using namespace Gadgetron;
     template<class T> inline constexpr uint16_t ismrmrd_data_type(){ return 0;}
@@ -16,7 +15,7 @@ namespace {
     template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
     template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
     template<> inline constexpr uint16_t ismrmrd_data_type<complext<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
-template<> inline constexpr uint16_t ismrmrd_data_type<complext<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<complext<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
 
 
     using image_datatypes = Core::variant<unsigned short, unsigned int, int, float, double, std::complex<float>,std::complex<double>>;
@@ -31,21 +30,34 @@ template<> inline constexpr uint16_t ismrmrd_data_type<complext<double>>(){retur
     };
 
     template<class T>
-    Core::Message read_image_message(std::istream& stream, ISMRMRD::ImageHeader header, ISMRMRD::MetaContainer meta, T type_tag){
+    Core::Message read_image_message(std::istream& stream, ISMRMRD::ImageHeader header, Core::optional<ISMRMRD::MetaContainer> meta, T type_tag){
         auto image_data = hoNDArray<T>(header.matrix_size[0],header.matrix_size[1],header.matrix_size[2],header.channels);
         Gadgetron::Core::IO::read(stream,image_data.data(),image_data.size());
         return Core::Message(header,std::move(image_data),std::move(meta));
     }
+
+    Core::optional<ISMRMRD::MetaContainer> parse_meta(const std::string &serialized_meta) {
+
+        if (serialized_meta.empty()) return Core::none;
+
+        ISMRMRD::MetaContainer meta;
+        ISMRMRD::deserialize(serialized_meta.c_str(), meta);
+
+        return meta;
+    }
 }
+
 Gadgetron::Core::Message Gadgetron::Core::Readers::ImageReader::read(std::istream& stream) {
+
     auto header = IO::read<ISMRMRD::ImageHeader>(stream);
     auto serialized_meta = IO::read_string_from_stream<uint64_t>(stream);
-    ISMRMRD::MetaContainer meta;
-    ISMRMRD::deserialize(serialized_meta.c_str(),meta);
+
+    auto meta = parse_meta(serialized_meta);
+
     auto datatype = ismrmrd_to_variant.at(header.data_type);
     return Core::visit([&](auto tag){return read_image_message(stream,header,std::move(meta),tag);}, datatype);
-
 }
+
 uint16_t Gadgetron::Core::Readers::ImageReader::slot() {
     return GADGET_MESSAGE_ISMRMRD_IMAGE;
 }
