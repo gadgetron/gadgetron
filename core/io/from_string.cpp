@@ -30,11 +30,13 @@ void Gadgetron::Core::IO::from_string(const std::string& str, boost::filesystem:
     path = boost::filesystem::path(str);
 }
 
-template<> void Gadgetron::Core::IO::from_string<long long>(const std::string& str, long long& val) { from_string_impl(str, val); }
+void Gadgetron::Core::IO::from_string(const std::string& str, long long& val) { from_string_impl(str, val); }
 
-template<> void Gadgetron::Core::IO::from_string<double>(const std::string& str, double& val) { from_string_impl(str,val);}
+void Gadgetron::Core::IO::from_string(const std::string& str, double& val) { from_string_impl(str,val);}
 void Gadgetron::Core::IO::from_string(const std::string& str, bool& val) { from_string_impl(str,val);}
-template<> void Gadgetron::Core::IO::from_string<long long>(const std::string& str, std::vector<long long>& val) { from_string_impl(str,val);}
-template<> void Gadgetron::Core::IO::from_string<double>(const std::string& str, std::vector<double>& val) { from_string_impl(str,val);}
+void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<long long>& val) { from_string_impl(str,val);}
+void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<double>& val) { from_string_impl(str,val);}
 void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<bool>& val) { from_string_impl(str,val);}
+
+
 
