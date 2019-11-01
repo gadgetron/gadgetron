@@ -19,17 +19,8 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install
 
-#ISMRMRD PYTHON API
-RUN cd /opt/code && \
-    git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
-    cd ismrmrd-python && \
-    python3 setup.py install
-
-#ISMRMRD PYTHON TOOLS
-RUN cd /opt/code && \
-    git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
-    cd ismrmrd-python-tools && \
-    python3 setup.py install
+# Install Python interface.
+RUN pip3 install gadgetron
 
 #SIEMENS_TO_ISMRMRD
 RUN cd /opt/code && \
