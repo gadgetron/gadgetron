@@ -52,8 +52,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-
 
 # RUN pip3 install Cython
 
-RUN pip3 install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install https://download.pytorch.org/whl/cpu/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install torch==1.3.0+cpu torchvision==0.4.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 RUN pip3 install --upgrade tensorflow
 RUN pip3 install tensorboardx visdom
