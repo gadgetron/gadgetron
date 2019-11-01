@@ -137,7 +137,7 @@ namespace Gadgetron
 	  base_start++;
 	  fmt_str += std::string("[") + std::string(base_start);
 	} else {
-	  std::string("[") + std::string(filename);
+	  fmt_str += std::string("[") + std::string(filename);
 	}
       } else {
 	fmt_str += std::string("[") + std::string(filename);
