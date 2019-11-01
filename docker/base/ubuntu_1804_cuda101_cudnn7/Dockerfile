@@ -18,11 +18,9 @@ RUN apt-get update && apt-get install -y libgtk2.0-dev
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 
-# tensorflow does not work with cuda92
 RUN pip3 install --upgrade tensorflow 
-# use pytorch 1.0
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install torchvision
+# use pytorch 1.3
+RUN pip3 install torch torchvision
 RUN pip3 install tensorboardx visdom tqdm
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
