@@ -633,6 +633,21 @@ namespace Gadgetron {
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
 
+                    size_t ui;
+                    for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_INTS; ui++)
+                    {
+                        std::ostringstream str;
+                        str << "user_int_" << ui;
+                        meta.append(str.str().c_str(), (long)res.headers_(n, s, slc).user_int[ui]);
+                    }
+
+                    for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_FLOATS; ui++)
+                    {
+                        std::ostringstream str;
+                        str << "user_float_" << ui;
+                        meta.append(str.str().c_str(), (long)res.headers_(n, s, slc).user_float[ui]);
+                    }
+
                     meta.set("gadgetron_sha1", GADGETRON_SHA1);
 
                     meta.set("measurementID", this->measurement_id_.c_str());
