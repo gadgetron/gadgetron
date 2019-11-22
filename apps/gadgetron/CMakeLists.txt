@@ -83,6 +83,14 @@ if (CUDA_FOUND)
     target_link_libraries(gadgetron ${CUDA_LIBRARIES})
 endif ()
 
+option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
+if (REQUIRE_SIGNED_CONFIG)
+    add_definitions(-DUSE_GTBABYLON)
+    find_package(GTBabylon REQUIRED)
+    target_link_libraries(gadgetron GTBabylon)
+endif()
+
+
 if (GPERFTOOLS_PROFILER)
     message("Adding gperftools cpu profiler to gadgetron link assemblage.")
     target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})

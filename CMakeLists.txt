@@ -360,8 +360,8 @@ add_subdirectory(gadgets)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)
-message("Adding gpertools to build.")
-find_package(Gperftools REQUIRED)
+    message("Adding gpertools to build.")
+    find_package(Gperftools REQUIRED)
 endif()
 
 add_subdirectory(test)
@@ -375,17 +375,17 @@ endif()
 
 # install dependencies for WIN32
 if (WIN32)
-if (GADGETRON_INSTALL_DEPENDENCIES)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
-endif ()
+    if (GADGETRON_INSTALL_DEPENDENCIES)
+        include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
+    endif ()
 endif ()
 
 if (UNIX)
-if (NOT APPLE)
-if (GADGETRON_INSTALL_DEPENDENCIES)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
-endif ()
-endif ()
+    if (NOT APPLE)
+        if (GADGETRON_INSTALL_DEPENDENCIES)
+            include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
+        endif ()
+    endif ()
 endif ()
 
 #  ---   Main Library  (end) ----

@@ -14,6 +14,10 @@
 #include "Context.h"
 #include "MessageID.h"
 
+#ifdef USE_GTBABYLON
+#include <GTBabylon.h>
+#endif
+
 namespace {
 
     using namespace Gadgetron::Core;
@@ -22,6 +26,19 @@ namespace {
     using namespace Gadgetron::Server::Connection::Handlers;
 
     using Header = Gadgetron::Core::StreamContext::Header;
+
+    namespace Babylon {
+#ifdef USE_GTBABYLON
+        std::string verify_signature(const std::string &config_string) {
+            return GTBabylon::decrypt_message(config_string);
+        }
+#else
+        std::string verify_signature(const std::string &config_string) {
+            // Config file signature verification is not enabled for this build - just pass on the config, it's fine.
+            return config_string;
+        }
+#endif
+    }
 
     std::string read_filename_from_stream(std::istream &stream) {
         auto buffer = read<std::array<char,1024>>(stream);
@@ -34,7 +51,8 @@ namespace {
         : callback(std::move(callback)) {}
 
         void handle_callback(std::istream &config_stream) {
-            callback(parse_config(config_stream));
+            auto config_string = std::string(std::istreambuf_iterator<char>(config_stream), {});
+            callback(parse_config(Babylon::verify_signature(config_string)));
         }
 
     private:

@@ -601,10 +601,10 @@ namespace Gadgetron::Server::Connection {
         std::make_pair(V2::accepts, V2::parse)
     };
 
-    Config parse_config(std::istream &stream) {
+    Config parse_config(const std::string &config_string) {
 
         pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load(stream);
+        pugi::xml_parse_result result = doc.load_string(config_string.c_str());
 
         if (result.status != pugi::status_ok) {
             GERROR("Loading config file failed with following error: %s (%d)\n", result.description(), result.status);

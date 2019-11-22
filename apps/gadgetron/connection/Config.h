@@ -106,7 +106,7 @@ namespace Gadgetron::Server::Connection {
         Stream stream;
     };
 
-    Config parse_config(std::istream &stream);
+    Config parse_config(const std::string &stream);
     std::string serialize_config(const Config& config);
     std::string serialize_config(const Config::External& external_config);
 }
