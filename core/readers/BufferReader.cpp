@@ -1,7 +1,3 @@
-//
-// Created by david on 2/12/2019.
-//
-
 #include "BufferReader.h"
 #include "mri_core_data.h"
 #include "io/primitives.h"
@@ -14,8 +10,11 @@ GADGETRON_ADAPT_STRUCT(Gadgetron::IsmrmrdReconData, GADGETRON_ACCESS_ELEMENT(rbi
 
 
 Gadgetron::Core::Message Gadgetron::Core::Readers::BufferReader::read(std::istream &stream) {
-    GDEBUG("Reading Recondata\n");
     return Message(IO::read<IsmrmrdReconData>(stream));
+}
+
+uint16_t Gadgetron::Core::Readers::BufferReader::slot() {
+    return MessageID::GADGET_MESSAGE_RECONDATA;
 }
 
 namespace Gadgetron::Core::Readers{

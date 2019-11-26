@@ -13,18 +13,14 @@ namespace {
 
 namespace Gadgetron::Server::Connection {
 
-    Loader::Loader(const Context &context) : context(context) {}
-
-
+    Loader::Loader(const StreamContext &context) : context(context) {}
 
     boost::dll::shared_library Loader::load_library(const std::string &shared_library_name) {
         auto lib = boost::dll::shared_library(
-			shared_library_name,
-                                boost::dll::load_mode::append_decorations |
-                                boost::dll::load_mode::search_system_folders |
-                boost::dll::load_mode::rtld_global 
-                
-
+                shared_library_name,
+                boost::dll::load_mode::append_decorations |
+                boost::dll::load_mode::rtld_global |
+                boost::dll::load_mode::search_system_folders
         );
 
         libraries.push_back(lib);

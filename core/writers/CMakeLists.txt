@@ -1,8 +1,14 @@
 
-add_library(gadgetron_core_writers SHARED ImageWriter.cpp ImageWriter.h
-BufferWriter.cpp BufferWriter.h 
-IsmrmrdImageArrayWriter.cpp IsmrmrdImageArrayWriter.h
-)
+add_library(gadgetron_core_writers SHARED
+        ImageWriter.cpp
+        ImageWriter.h
+        BufferWriter.cpp
+        BufferWriter.h
+        IsmrmrdImageArrayWriter.cpp
+        IsmrmrdImageArrayWriter.h
+        AcquisitionBucketWriter.cpp
+        AcquisitionBucketWriter.h
+        )
 
 target_link_libraries(gadgetron_core_writers
         gadgetron_core

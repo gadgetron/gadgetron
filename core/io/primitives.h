@@ -1,5 +1,7 @@
 #pragma once
 
+#include <set>
+#include <vector>
 #include <iostream>
 #include <type_traits>
 
@@ -23,6 +25,9 @@ namespace Gadgetron::Core::IO {
 
     template<class T>
     void read(std::istream &stream, std::vector<T> &vec);
+
+    template<class T>
+    void read(std::istream &stream, std::set<T> &vec);
 
     template<class T>
     void read(std::istream &stream, hoNDArray<T> &array);
@@ -50,6 +55,9 @@ namespace Gadgetron::Core::IO {
     void write(std::ostream &ostream, const std::vector<T> &val);
 
     template<class T>
+    void write(std::ostream &ostream, const std::set<T> &val);
+
+    template<class T>
     std::enable_if_t<boost::hana::Struct<T>::value, void> write(std::ostream &ostream, const T &x);
 
     template<class T>
@@ -59,6 +67,16 @@ namespace Gadgetron::Core::IO {
     template<class T>
     std::enable_if_t<!is_trivially_copyable_v<T>>
     write(std::ostream &stream, const T *data, size_t number_of_elements);
+
+    template<class iterator_type>
+    using enable_if_forward_iterator = std::enable_if_t<std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<iterator_type>::iterator_category>::value>;
+
+    template<class iterator_type, class = enable_if_forward_iterator<iterator_type>>
+    void write(std::ostream &stream, iterator_type begin, iterator_type end) {
+        for (; begin!=end; begin++) {
+            IO::write(stream, *begin);
+        }
+    }
 
     template<class T>
     void write(std::ostream &stream, const hoNDArray<T> &array);

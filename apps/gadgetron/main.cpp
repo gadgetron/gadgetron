@@ -8,6 +8,7 @@
 #include "paths.h"
 
 #include "system_info.h"
+#include "gadgetron_config.h"
 
 #include "Server.h"
 
@@ -45,6 +46,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    GINFO("Gadgetron %s [%s]\n", GADGETRON_VERSION_STRING, GADGETRON_GIT_SHA1_HASH);
     GINFO("Running on port %d\n", args["port"].as<unsigned short>());
 
     try {

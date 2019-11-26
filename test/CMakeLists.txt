@@ -38,7 +38,7 @@ include(GoogleTest)
             cmr_strain_test.cpp
       cmr_thickening_test.cpp
       cmr_analytical_strain_test.cpp
-      )
+            gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp )
 
     if (PYTHONLIBS_FOUND)
         set(test_src_files ${test_src_files} python_converter_test.cpp)

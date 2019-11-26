@@ -36,8 +36,8 @@ void Gadgetron::NonCartesian::append_image_header( IsmrmrdImageArray &res, const
                 uint16_t matrix_size[3] = {(uint16_t) RO, (uint16_t) E1, (uint16_t) E2};
                 std::copy(matrix_size, std::end(matrix_size), im_header.matrix_size);
 
-                std::copy(recon_bit.data_.sampling_.recon_FOV_, std::end(recon_bit.data_.sampling_.recon_FOV_),
-                          im_header.field_of_view);
+                std::copy(std::begin(recon_bit.data_.sampling_.recon_FOV_), std::end(recon_bit.data_.sampling_.recon_FOV_),
+                          std::begin(im_header.field_of_view));
 
                 im_header.channels = (uint16_t) CHA;
 

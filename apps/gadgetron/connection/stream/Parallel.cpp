@@ -70,7 +70,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     Parallel::Parallel(
             const Config::Parallel &config,
-            const Core::Context &context,
+            const Core::StreamContext &context,
             Loader &loader
     ) : branch(load_branch(config.branch, context, loader)), merge(load_merge(config.merge, context, loader)) {
         std::transform(

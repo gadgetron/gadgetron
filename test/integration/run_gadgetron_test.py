@@ -45,48 +45,73 @@ Failure = "Failure", 1
 Skipped = "Skipped", 2
 
 
-def siemens_to_ismrmrd(*, input, output, parameters, schema, measurement, flag=None):
-    subprocess.run(["siemens_to_ismrmrd", "-X",
-                    "-f", input,
-                    "-m", parameters,
-                    "-x", schema,
-                    "-o", output,
-                    "-z", measurement] + ([flag] if flag else []),
+def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measurement, flag=None):
+
+    command = ["siemens_to_ismrmrd", "-X",
+               "-f", input,
+               "-m", parameters,
+               "-x", schema,
+               "-o", output,
+               "-z", measurement] + ([flag] if flag else [])
+
+    echo_handler(command)
+    subprocess.run(command,
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
                    check=True)
 
 
-def send_dependency_to_gadgetron(gadgetron, dependency):
+def send_dependency_to_gadgetron(echo_handler, gadgetron, dependency):
     print("Passing dependency to Gadgetron: {}".format(dependency))
-    subprocess.run(["gadgetron_ismrmrd_client",
-                    "-a", gadgetron.host,
-                    "-p", gadgetron.port,
-                    "-f", dependency,
-                    "-c", "default_measurement_dependencies.xml"],
+
+    command = ["gadgetron_ismrmrd_client",
+               "-a", gadgetron.host,
+               "-p", gadgetron.port,
+               "-f", dependency,
+               "-c", "default_measurement_dependencies.xml"]
+
+    echo_handler(command)
+    subprocess.run(command,
                    env=environment,
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
                    check=True)
 
 
-def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration):
     print("Passing data to Gadgetron: {} -> {}".format(input, output))
-    subprocess.run(["gadgetron_ismrmrd_client",
-                    "-a", gadgetron.host,
-                    "-p", gadgetron.port,
-                    "-f", input,
-                    "-o", output,
-                    "-c", configuration,
-                    "-G", configuration],
+
+    command = ["gadgetron_ismrmrd_client",
+               "-a", gadgetron.host,
+               "-p", gadgetron.port,
+               "-f", input,
+               "-o", output,
+               "-c", configuration,
+               "-G", configuration]
+
+    echo_handler(command)
+    subprocess.run(command,
                    env=environment,
                    stdout=subprocess.PIPE,
                    stderr=subprocess.STDOUT,
                    check=True)
+
+
+def query_gadgetron_instance(echo_handler, gadgetron, query):
+
+    command = ["gadgetron_ismrmrd_client",
+               "-a", gadgetron.host,
+               "-p", gadgetron.port,
+               "-q", "-Q", query]
+
+    echo_handler(command)
+    return subprocess.check_output(command,
+                                   env=environment,
+                                   universal_newlines=True)
 
 
 def start_gadgetron_instance(*, log, port, env=environment):
-    print("Starting Gadgetron instance on port",port)
+    print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
@@ -95,39 +120,34 @@ def start_gadgetron_instance(*, log, port, env=environment):
     return proc
 
 
-def build_rules(requirements):
+def prepare_rules(args, requirements):
+
     class Rule:
-        def __init__(self, pattern, reason, validate, default_value=0):
+        def __init__(self, query, reason, validate):
+            self.query = query
             self.reason = reason
-            self.pattern = pattern
             self.validate = validate
-            self.default_value = default_value
 
-        def accepts(self, info):
-            m = re.search(self.pattern, info, re.MULTILINE)
-            if m is None:
-                return self.validate(self.default_value)
-            return self.validate(m.group('value'))
+        def accepts(self, gadgetron):
+            try:
+                return self.validate(query_gadgetron_instance(args.echo_handler, gadgetron, self.query).strip())
+            except:
+                return False
 
-    def inspect(value):
-        return ['YES', 'yes', 'True', 'true', '1'].count(value)
+    def is_enabled(value):
+        return value in ['YES', 'yes', 'True', 'true', '1']
+
+    def as_list(value, func=float):
+        return [func(val) for val in value.split(';')]
 
     rules = {
-        'python_support': lambda req: Rule(r"^(\s+)-- Python Support(\s+): (?P<value>\w+)",
-                                           "Python support required.",
-                                           lambda val: int(req) <= inspect(val)),
-        'matlab_support': lambda req: Rule(r"^(\s+)-- Matlab Support(\s+): (?P<value>\w+)",
-                                           "Matlab support required.",
-                                           lambda val: int(req) <= inspect(val)),
-        'gpu_support': lambda req: Rule(r"^(\s+)-- CUDA Support(\s+): (?P<value>\w+)",
-                                        "CUDA support required.",
-                                        lambda val: int(req) <= inspect(val)),
-        'gpu_memory': lambda req: Rule(r"^(\s+)\+ Total amount of global GPU memory: (?P<value>.*) MB",
-                                       "Insufficient GPU memory.",
-                                       lambda val: float(req) <= float(val)),
-        'system_memory': lambda req: Rule(r"^(\s+)-- System Memory size : (?P<value>.*) MB",
-                                          "Insufficient system memory.",
-                                          lambda val: float(req) <= float(val))
+        'system_memory': lambda req: Rule('gadgetron::info::memory', "Insufficient system memory.",
+                                          lambda val: float(req) <= float(val)),
+        'python_support': lambda req: Rule('gadgetron::info::python', "Python support required.", is_enabled),
+        'matlab_support': lambda req: Rule('gadgetron::info::matlab', "MATLAB support required.", is_enabled),
+        'gpu_support': lambda req: Rule('gadgetron::info::cuda', "CUDA support required.", is_enabled),
+        'gpu_memory': lambda req: Rule('gadgetron::cuda::memory', "Insufficient GPU memory.",
+                                       lambda val: float(req) <= min(as_list(val)))
     }
 
     return [rules.get(rule)(requirement) for rule, requirement in requirements if rule in rules]
@@ -153,9 +173,6 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
 
     norm_diff = numpy.linalg.norm(output - reference) / numpy.linalg.norm(reference)
     scale = numpy.dot(output, output) / numpy.dot(output, reference)
-
-    true_scale = numpy.vdot(output,reference)/numpy.vdot(output,output)
-    print("SCAAAALE",true_scale)
 
     if value_threshold < norm_diff:
         return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
@@ -220,15 +237,9 @@ def ensure_instance_satisfies_requirements(args, config):
         return
 
     def action(cont, *, gadgetron, **state):
-        info = subprocess.check_output(["gadgetron_ismrmrd_client",
-                                        "-a", gadgetron.host,
-                                        "-p", gadgetron.port,
-                                        "-q", "-Q", "gadgetron::info"],
-                                       env=environment,
-                                       universal_newlines=True)
 
-        failed_rules = [rule for rule in build_rules(config.items('REQUIREMENTS'))
-                        if not rule.accepts(info)]
+        failed_rules = [rule for rule in prepare_rules(args, config.items('REQUIREMENTS'))
+                        if not rule.accepts(gadgetron)]
 
         if failed_rules:
             for rule in failed_rules:
@@ -268,7 +279,8 @@ def prepare_siemens_input_data(args, config):
 
         print("Converting Siemens data: {} -> {}".format(source_file, destination_file))
 
-        siemens_to_ismrmrd(input=source_file,
+        siemens_to_ismrmrd(args.echo_handler,
+                           input=source_file,
                            output=destination_file,
                            parameters=config['SIEMENS']['parameter_xml'],
                            schema=config['SIEMENS']['parameter_xsl'],
@@ -279,10 +291,10 @@ def prepare_siemens_input_data(args, config):
 
     def convert_siemens_dependency_action(dependency, measurement, cont, *, siemens_source, dependencies=[], **state):
         destination_file = os.path.join(args.test_folder, "{}.h5".format(dependency))
-        print(
-            "Converting Siemens dependency measurement: {} {} -> {}".format(dependency, measurement, destination_file))
+        print("Converting Siemens dependency measurement: {} {} -> {}".format(dependency, measurement, destination_file))
 
-        siemens_to_ismrmrd(input=siemens_source,
+        siemens_to_ismrmrd(args.echo_handler,
+                           input=siemens_source,
                            output=destination_file,
                            parameters=config['SIEMENS']['dependency_parameter_xml'],
                            schema=config['SIEMENS']['dependency_parameter_xsl'],
@@ -344,13 +356,14 @@ def run_gadgetron_client(args, config):
 
     def send_dependencies_action(cont, *, gadgetron, dependencies=[], **state):
         for dependency in dependencies:
-            send_dependency_to_gadgetron(gadgetron, dependency)
+            send_dependency_to_gadgetron(args.echo_handler, gadgetron, dependency)
 
         return cont(gadgetron=gadgetron, dependencies=dependencies, **state)
 
     def send_data_action(cont, *, gadgetron, client_input, **state):
         start_time = time.time()
-        send_data_to_gadgetron(gadgetron,
+        send_data_to_gadgetron(args.echo_handler,
+                               gadgetron,
                                input=client_input,
                                output=output_file,
                                configuration=config['CLIENT']['configuration'])
@@ -441,7 +454,7 @@ def main():
                         default=os.environ.get('ISMRMRD_HOME'),
                         help="ISMRMRD installation home")
 
-    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of Gadgetron instance")
+    parser.add_argument('-p', '--port', type=int, default=9003, help="Port used by Gadgetron")
     parser.add_argument('-a', '--host', type=str, default="localhost", help="Address of (external) Gadgetron host")
 
     parser.add_argument('-e', '--external', action='store_true', default=False,
@@ -456,6 +469,10 @@ def main():
 
     parser.add_argument('--force', action='store_true', default=False,
                         help="Do not query Gadgetron capabilities; just run the test.")
+
+    parser.add_argument('--echo-commands', dest='echo_handler', action='store_const',
+                        const=lambda cmd: print(' '.join(cmd)), default=lambda *_: None,
+                        help="Echo the commands issued while running the test.")
 
     parser.add_argument('test', help="Test case file")
 

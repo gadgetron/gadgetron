@@ -6,8 +6,8 @@
 namespace Gadgetron::Server::Connection::ConfigConnection {
     void process(
         std::iostream &stream,
-        const Core::Context::Paths &paths,
-        const Core::Context::Args &args,
+        const Core::StreamContext::Paths &paths,
+        const Core::StreamContext::Args &args,
         ErrorHandler &error_handler
     );
 }

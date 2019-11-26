@@ -16,5 +16,4 @@ namespace Gadgetron { namespace Core {
             std::make_index_sequence<std::tuple_size<std::remove_reference_t<TupleLike>>::value>{});
     }
 
-
 }}

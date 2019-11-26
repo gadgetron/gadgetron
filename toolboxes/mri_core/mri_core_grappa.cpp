@@ -576,8 +576,6 @@ template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArr
 template <typename T>
 void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& convKer)
 {
-    try
-    {
         std::vector<int> kE1, oE1;
 
         bool fitItself = false;
@@ -591,14 +589,6 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
         grappa2d_calib(acsSrc, acsDst, thres, kRO, kE1, oE1, startRO, endRO, startE1, endE1, ker);
 
         grappa2d_convert_to_convolution_kernel(ker, kRO, kE1, oE1, convKer);
-
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in grappa2d_calib_convolution_kernel(...) ... ");
-    }
-
-    return;
 }
 
 template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer);

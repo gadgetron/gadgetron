@@ -8,6 +8,7 @@ add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
 add_subdirectory(epi)
 add_subdirectory(fatwater)
+
 if(BART_FOUND)
   add_subdirectory(bart)
 else()
@@ -28,16 +29,10 @@ endif()
 add_subdirectory(spiral)
 add_subdirectory(grappa)
 
-if (MATLAB_FOUND)
-  message("Compiling MATLAB gadgets")
-  add_subdirectory(matlab)
-endif()
-
 if (BUILD_PYTHON_SUPPORT)
     add_subdirectory(python)
     add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
 endif () # BUILD_PYTHON_SUPPORT
-
 
 find_package(DCMTK)
 if(DCMTK_FOUND)
@@ -48,8 +43,7 @@ else()
 endif()
 
 add_subdirectory(cartesian)
-
-  add_subdirectory(moco)
+add_subdirectory(moco)
 
 if(PLPLOT_FOUND)
     if (MKL_FOUND OR ARMADILLO_FOUND)

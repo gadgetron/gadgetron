@@ -58,7 +58,6 @@
                 <property name="parallel_dimension" value="repetition"/>
             </distributor>
 
-
             <stream>
                 <gadget>
                     <name>RemoveROOversampling</name>

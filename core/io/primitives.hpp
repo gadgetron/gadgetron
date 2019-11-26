@@ -10,11 +10,16 @@ void Gadgetron::Core::IO::write(std::ostream &ostream, const Core::optional<T> &
     if (val) write(ostream, *val);
 }
 
-
 template<class T>
 void Gadgetron::Core::IO::write(std::ostream &ostream, const std::vector<T> &val) {
     IO::write(ostream, val.size());
     IO::write(ostream, val.data(), val.size());
+}
+
+template<class T>
+void Gadgetron::Core::IO::write(std::ostream &ostream, const std::set<T> &val) {
+    IO::write(ostream, val.size());
+    IO::write(ostream, val.begin(), val.end());
 }
 
 template<class T>
@@ -43,7 +48,6 @@ Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of
         write(stream, data[i]);
     }
 }
-
 
 template<class T>
 void Gadgetron::Core::IO::write(std::ostream &stream, const hoNDArray <T> &array) {
@@ -98,6 +102,15 @@ void Gadgetron::Core::IO::read(std::istream &stream, std::vector<T> &vec) {
     auto length = IO::read<size_t>(stream);
     vec.resize(length);
     IO::read(stream,vec.data(),length);
+
+}
+
+template<class T>
+void Gadgetron::Core::IO::read(std::istream &stream, std::set<T> &setT) {
+    auto length = IO::read<size_t>(stream);
+    for (size_t i = 0; i < length; i++){
+        setT.insert(IO::read<T>(stream));
+    }
 
 }
 

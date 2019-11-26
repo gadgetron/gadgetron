@@ -1,9 +1,10 @@
 
 #include "system_info.h"
 
-#include <iostream>
-
 #include "gadgetron_config.h"
+#include "connection/stream/external/Python.h"
+#include "connection/stream/external/Matlab.h"
+#include "log.h"
 
 
 #if defined(_WIN32)
@@ -75,19 +76,11 @@ namespace Gadgetron::Server::Info {
     }
 
     bool python_support() {
-#if defined COMPILING_WITH_PYTHON_SUPPORT
-        return true;
-#else
-        return false;
-#endif
+        return Gadgetron::Server::Connection::Stream::python_available();
     }
 
     bool matlab_support() {
-#if defined USE_MATLAB
-        return true;
-#else
-        return false;
-#endif
+        return Gadgetron::Server::Connection::Stream::matlab_available();
     }
 
 #if defined USE_CUDA

@@ -40,21 +40,20 @@ namespace {
         );
     }
 
-    void initialize_with_default_queries(std::map<std::string, std::string> &answers) {
-
-        answers["ismrmrd::version"]              = Info::ismrmrd_version();
-        answers["gadgetron::version"]            = Info::gadgetron_version();
-        answers["gadgetron::build"]              = Info::gadgetron_build();
-        answers["gadgetron::info"]               = gadgetron_info();
-        answers["gadgetron::info::memory"]       = std::to_string(Info::system_memory());
-        answers["gadgetron::info::python"]       = std::to_string(Info::python_support());
-        answers["gadgetron::info::matlab"]       = std::to_string(Info::matlab_support());
-        answers["gadgetron::info::cuda"]         = std::to_string(Info::CUDA::cuda_support());
-        answers["gadgetron::cuda::devices"]      = std::to_string(Info::CUDA::cuda_device_count());
-        answers["gadgetron::cuda::driver"]       = Info::CUDA::cuda_driver_version();
-        answers["gadgetron::cuda::runtime"]      = Info::CUDA::cuda_runtime_version();
-        answers["gadgetron::cuda::memory"]       = cuda_memory();
-        answers["gadgetron::cuda::capabilities"] = cuda_capabilities();
+    void initialize_with_default_queries(std::map<std::string, std::function<std::string()>> &answers) {
+        answers["ismrmrd::version"]              = Info::ismrmrd_version;
+        answers["gadgetron::version"]            = Info::gadgetron_version;
+        answers["gadgetron::build"]              = Info::gadgetron_build;
+        answers["gadgetron::info"]               = gadgetron_info;
+        answers["gadgetron::info::memory"]       = []() { return std::to_string(Info::system_memory()); };
+        answers["gadgetron::info::python"]       = []() { return std::to_string(Info::python_support()); };
+        answers["gadgetron::info::matlab"]       = []() { return std::to_string(Info::matlab_support()); };
+        answers["gadgetron::info::cuda"]         = []() { return std::to_string(Info::CUDA::cuda_support()); };
+        answers["gadgetron::cuda::devices"]      = []() { return std::to_string(Info::CUDA::cuda_device_count()); };
+        answers["gadgetron::cuda::driver"]       = Info::CUDA::cuda_driver_version;
+        answers["gadgetron::cuda::runtime"]      = Info::CUDA::cuda_runtime_version;
+        answers["gadgetron::cuda::memory"]       = cuda_memory;
+        answers["gadgetron::cuda::capabilities"] = cuda_capabilities;
     }
 }
 
@@ -63,14 +62,8 @@ namespace Gadgetron::Server::Connection::Handlers {
     using namespace Gadgetron::Core;
     using namespace Gadgetron::Core::IO;
 
-    QueryHandler::QueryHandler()
-    {
+    QueryHandler::QueryHandler() {
         initialize_with_default_queries(answers);
-    }
-
-    QueryHandler::QueryHandler(
-            std::map<std::string, std::string> additional_answers
-    ) : answers(std::move(additional_answers)) {
     }
 
     void QueryHandler::handle(std::istream &stream, Gadgetron::Core::OutputChannel& channel) {
@@ -83,7 +76,7 @@ namespace Gadgetron::Server::Connection::Handlers {
             throw std::runtime_error("Unsupported value in reserved bytes.");
         }
 
-        channel.push(Response(corr_id, answers.at(query)));
+        channel.push(Response(corr_id, answers.at(query)()));
     }
 
 
