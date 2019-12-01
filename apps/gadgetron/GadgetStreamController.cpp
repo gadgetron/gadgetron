@@ -220,7 +220,7 @@ namespace Babylon
 {
 #ifdef USE_GTBABYLON
     std::string verify_signature(const std::string& config_string) {
-        return GTBabylon::decrypt_message(config_string);
+        return GTBabylon::decode_message(config_string);
     }
 #else
     std::string verify_signature(const std::string& config_string) {

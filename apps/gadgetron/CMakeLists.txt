@@ -6,6 +6,7 @@ endif()
 
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_INSTALL_PREFIX}/include
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
   ${CMAKE_SOURCE_DIR}/toolboxes/rest
@@ -44,10 +45,6 @@ target_link_libraries(gadgetron
   gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
-
-if (REQUIRE_SIGNED_CONFIG)
-    target_link_libraries(gadgetron GTBabylon)
-endif()
 
 if (BUILD_PYTHON_SUPPORT)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
@@ -92,6 +89,12 @@ target_link_libraries(gadgetron_gadgetbase
   gadgetron_toolbox_cloudbus
   gadgetron_toolbox_log
 )
+
+if (REQUIRE_SIGNED_CONFIG)
+    target_link_libraries(gadgetron_info GTBabylon)
+    target_link_libraries(gadgetron GTBabylon)
+    target_link_libraries(gadgetron_gadgetbase GTBabylon)
+endif()
 
 if (GPERFTOOLS_PROFILER)
   message("Adding gperftools cpu profiler to gadgetron link assemblage.")
