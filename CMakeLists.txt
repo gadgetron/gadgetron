@@ -449,6 +449,7 @@ find_package(PLplot)
 # gt babylon
 option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
 if (REQUIRE_SIGNED_CONFIG)
+    message("Compile with signed config; GTBabylon is needed")
     add_definitions(-DUSE_GTBABYLON)
     find_package(GTBabylon REQUIRED)
 endif()
