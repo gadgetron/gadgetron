@@ -41,7 +41,7 @@ private:
   WriterTask writer_task_;
   ACE_Reactor_Notification_Strategy notifier_;
   GadgetMessageReaderContainer readers_;
-  virtual int configure(std::istream &config_file_stream);
+  virtual int configure(const std::string&config_file_stream);
   virtual int configure_from_file(std::string filename);
 };
 

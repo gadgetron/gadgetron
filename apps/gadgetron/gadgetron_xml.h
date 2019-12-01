@@ -121,7 +121,7 @@ namespace GadgetronXML
     std::vector<Gadget> gadget;
   };
 
-  void EXPORTGADGETBASE deserialize(std::istream& stream, GadgetStreamConfiguration& cfg);
+  void EXPORTGADGETBASE deserialize(const std::string& stream, GadgetStreamConfiguration& cfg);
   void EXPORTGADGETBASE serialize(const GadgetStreamConfiguration& cfg, std::ostream& o);
 
 };

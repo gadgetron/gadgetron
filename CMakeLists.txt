@@ -446,6 +446,13 @@ find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
 
+# gt babylon
+option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
+if (REQUIRE_SIGNED_CONFIG)
+    add_definitions(-DUSE_GTBABYLON)
+    find_package(GTBabylon REQUIRED)
+endif()
+
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 

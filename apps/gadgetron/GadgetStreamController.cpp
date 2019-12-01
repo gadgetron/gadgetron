@@ -19,6 +19,10 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
+#ifdef USE_GTBABYLON
+    #include <GTBabylon.h>
+#endif
+
 using namespace Gadgetron;
 
 GadgetStreamController::GadgetStreamController()
@@ -119,8 +123,8 @@ int GadgetStreamController::svc(void)
       }
     } else if (id.id == GADGET_MESSAGE_CONFIG_SCRIPT) {
       std::string xml_config(mb->rd_ptr(), mb->length());
-      std::stringstream stream(xml_config, std::ios::in);
-      if (this->configure(stream) != GADGET_OK) {
+      //std::stringstream stream(xml_config, std::ios::in);
+      if (this->configure(xml_config) != GADGET_OK) {
 	GERROR("GadgetStream configuration failed\n");
 	mb->release();
 	return GADGET_FAIL;
@@ -208,14 +212,31 @@ int GadgetStreamController::configure_from_file(std::string filename)
     return GADGET_FAIL;
   }
 
-  return configure(config_file_stream);
+  auto config_string = std::string(std::istreambuf_iterator<char>(config_file_stream), {});
+  return configure(config_string);
 }
 
-int GadgetStreamController::configure(std::istream& config_file_stream)
+namespace Babylon
 {
+#ifdef USE_GTBABYLON
+    std::string verify_signature(const std::string& config_string) {
+        return GTBabylon::decrypt_message(config_string);
+    }
+#else
+    std::string verify_signature(const std::string& config_string) {
+        // Config file signature verification is not enabled for this build - just pass on the config, it's fine.
+        return config_string;
+    }
+#endif
+}
+
+int GadgetStreamController::configure(const std::string& config_string)
+{
+    std::string config_string_used = Babylon::verify_signature(config_string);
+
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
-    deserialize(config_file_stream, cfg);
+    deserialize(config_string_used, cfg);
   }  catch (const std::runtime_error& e) {
     GERROR("Failed to parse Gadget Stream Configuration: %s\n", e.what());
     return GADGET_FAIL;

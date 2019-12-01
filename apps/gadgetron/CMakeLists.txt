@@ -45,6 +45,10 @@ target_link_libraries(gadgetron
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
+if (REQUIRE_SIGNED_CONFIG)
+    target_link_libraries(gadgetron GTBabylon)
+endif()
+
 if (BUILD_PYTHON_SUPPORT)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
 endif()

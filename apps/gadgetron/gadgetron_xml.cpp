@@ -60,11 +60,13 @@ namespace GadgetronXML
     }
   }
 
-  void deserialize(std::istream& stream, GadgetStreamConfiguration& cfg)
+  void deserialize(const std::string& config_string, GadgetStreamConfiguration& cfg)
   {
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load(stream);
 
+    std::istringstream str(config_string);
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load(str);
 
     if (result.status != pugi::status_ok) {
         GERROR("Loading config file failed with following error: %s (%d)\n", result.description(), result.status);
