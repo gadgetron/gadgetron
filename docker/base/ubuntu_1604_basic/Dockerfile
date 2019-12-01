@@ -6,12 +6,19 @@ RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    apt-utils wget build-essential python3-dev python3-pip libhdf5-serial-dev cmake git-core \
+    apt-utils wget build-essential libcrypto++-dev python3-dev python3-pip libhdf5-serial-dev git-core \
     libfftw3-dev jq libzmq-dev \
     libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
     supervisor net-tools cpio jove
+
+RUN mkdir /opt/cmake
+RUN cd /opt/cmake && \
+    wget https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0-Linux-x86_64.sh && \
+    sh /opt/cmake/cmake-3.16.0-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
+    ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake && \
+    cmake --version
 
 #Python stuff
 RUN pip3 install --upgrade pip
