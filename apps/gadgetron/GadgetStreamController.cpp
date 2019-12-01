@@ -197,7 +197,23 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
   return 0;
 }
 
-
+namespace Babylon
+{
+#ifdef USE_GTBABYLON
+    std::string verify_signature(const std::string& config_string)
+    {
+        //GDEBUG_STREAM(config_string);
+        return GTBabylon::decode_message(config_string);
+    }
+#else
+    std::string verify_signature(const std::string& config_string)
+    {
+        //GDEBUG_STREAM(config_string);
+        // Config file signature verification is not enabled for this build - just pass on the config, it's fine.
+        return config_string;
+    }
+#endif
+}
 
 int GadgetStreamController::configure_from_file(std::string filename)
 {
@@ -213,26 +229,13 @@ int GadgetStreamController::configure_from_file(std::string filename)
   }
 
   auto config_string = std::string(std::istreambuf_iterator<char>(config_file_stream), {});
-  return configure(config_string);
-}
-
-namespace Babylon
-{
-#ifdef USE_GTBABYLON
-    std::string verify_signature(const std::string& config_string) {
-        return GTBabylon::decode_message(config_string);
-    }
-#else
-    std::string verify_signature(const std::string& config_string) {
-        // Config file signature verification is not enabled for this build - just pass on the config, it's fine.
-        return config_string;
-    }
-#endif
+  std::string config_string_used = Babylon::verify_signature(config_string);
+  return configure(config_string_used);
 }
 
 int GadgetStreamController::configure(const std::string& config_string)
 {
-    std::string config_string_used = Babylon::verify_signature(config_string);
+  std::string config_string_used = config_string; //Babylon::verify_signature(config_string);
 
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
