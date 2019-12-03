@@ -235,7 +235,12 @@ int GadgetStreamController::configure_from_file(std::string filename)
 
 int GadgetStreamController::configure(const std::string& config_string)
 {
-  std::string config_string_used = config_string; //Babylon::verify_signature(config_string);
+  std::string config_string_used = config_string;
+
+  if(config_string.find("GTBABYLON")!=std::string::npos)
+  {
+      config_string_used = Babylon::verify_signature(config_string);
+  }
 
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
