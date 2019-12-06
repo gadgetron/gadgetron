@@ -47,7 +47,7 @@ namespace Gadgetron::Grappa {
         internals.number_of_lines = r_space.matrixSize.y;
 
         internals.line_offset = (e_space.matrixSize.y / 2) - e_limits.kspace_encoding_step_1->center;
-        internals.expected_lines = all_values_in_range(
+        internals.expected_lines = all_values_in_range<uint32_t>(
                 e_limits.kspace_encoding_step_1->minimum,
                 e_limits.kspace_encoding_step_1->maximum
         );
@@ -114,7 +114,7 @@ namespace Gadgetron::Grappa {
 
         buffer buffer {
             hoNDArray<std::complex<float>>(dimensions),
-            std::set<uint16_t>()
+            {}
         };
 
         std::fill(buffer.data.begin(), buffer.data.end(), std::complex<float>(0.0f, 0.0f));

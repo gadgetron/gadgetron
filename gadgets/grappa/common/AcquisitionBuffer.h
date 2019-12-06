@@ -44,14 +44,14 @@ namespace Gadgetron::Grappa {
         const Core::Context context;
 
         struct {
-            std::set<uint16_t> expected_lines;
+            std::set<uint32_t> expected_lines;
             size_t number_of_samples, number_of_lines;
             int line_offset = 0;
         } internals;
 
         struct buffer {
             hoNDArray<std::complex<float>> data;
-            std::set<uint16_t> sampled_lines;
+            std::set<uint32_t> sampled_lines;
         };
 
         buffer create_buffer(const std::vector<size_t> &dimensions);
