@@ -10,22 +10,26 @@ RUN apt-get update --quiet && \
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    apt-utils wget build-essential emacs python-dev python-pip libhdf5-serial-dev cmake git-core \
+    apt-utils wget build-essential emacs python-dev python-pip libhdf5-serial-dev git-core \
     libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
     supervisor cpio net-tools
 
-
 RUN apt-get install --no-install-recommends --no-install-suggests --yes \
     libopenblas-base libopenblas-dev
+
+#Update cmake to something not entirely ancient
+RUN add-apt-repository ppa:litenstein/cmake310-xenial
+RUN apt-get update
+RUN apt-get -y install cmake
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
-RUN apt-get -y install gcc-6 g++-6
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+RUN apt-get -y install gcc-7 g++-7
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
 RUN add-apt-repository ppa:jonathonf/python-3.6
 RUN apt update

@@ -6,22 +6,7 @@ else ()
     cmake_policy(VERSION 3.12)
 endif ()
 
-foreach (p
-        CMP0022
-        CMP0025 # CMake 3.0 Compiler id for Apple Clang is now ``AppleClang``.
-        CMP0042 # CMake 3.0 ``MACOSX_RPATH`` is enabled by default.
-        CMP0046 # CMake 3.0 Error on non-existent dependency in add_dependencies.
-        CMP0054 # CMake 3.1 Only interpret ``if()`` arguments as variables or keywords when unquoted.
-        CMP0056 # CMake 3.2 Honor link flags in ``try_compile()`` source-file signature.
-        CMP0058 # CMake 3.3 Ninja requires custom command byproducts to be explicit.
-        )
-    if (POLICY ${p})
-        cmake_policy(SET ${p} NEW)
-    endif ()
-endforeach ()
-
-project(GADGETRON
-        LANGUAGES CXX C)
+project(GADGETRON LANGUAGES CXX C)
 
 find_program(CCACHE_FOUND ccache)
 if (CCACHE_FOUND)
@@ -67,7 +52,7 @@ endif ()
 
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 4)
-set(GADGETRON_VERSION_MINOR 0)
+set(GADGETRON_VERSION_MINOR 1)
 set(GADGETRON_VERSION_PATCH 0)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
@@ -86,7 +71,6 @@ else ()
 endif ()
 set(GADGETRON_INSTALL_CMAKE_PATH share/gadgetron/cmake)
 set(GADGETRON_INSTALL_CONFIG_PATH share/gadgetron/config)
-set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
 set(GADGETRON_INSTALL_PYTHON_MODULE_PATH share/gadgetron/python)
 set(GADGETRON_INSTALL_SCHEMA_PATH share/gadgetron/schema)
 set(GADGETRON_INSTALL_INCLUDE_PATH include/gadgetron)
@@ -193,21 +177,16 @@ else ()
     if (COMPILER_SUPPORT_WNON_VIRTUAL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
-
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--enable-new-dtags")
-
-
 endif ()
-
 
 # whether to suppress compilation warnings
 option(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
-if (WIN32)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
-elseif (WIN32)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
-endif ()
+    if (WIN32)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+    elseif (WIN32)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+    endif ()
 endif ()
 
 set(Boost_USE_STATIC_LIBS OFF)
@@ -216,9 +195,8 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
 set(Boost_NO_BOOST_CMAKE ON)
 
-
 if(WIN32)
-add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does. 
+add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
@@ -278,12 +256,10 @@ endif ()
 
 find_package(GTest)
 
-
 find_package(Armadillo REQUIRED )
-# check whether ILP64 MKL should is used
 add_library(armadillo INTERFACE)
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
-add_definitions( -DARMA_DONT_USE_WRAPPER)
+add_definitions(-DARMA_DONT_USE_WRAPPER)
 
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
@@ -291,20 +267,24 @@ find_package(ISMRMRD REQUIRED)
 link_directories(${ISMRMRD_LIBRARY_DIRS})
 if (CUDA_FOUND AND USE_CUDA)
 # bart needs cuda
-find_package(BART)
+    find_package(BART)
 endif()
+
+find_package(FFTW3 REQUIRED COMPONENTS single double)
 add_library(FFTW INTERFACE)
- find_package(FFTW3 REQUIRED COMPONENTS single double)
 target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})
 set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 
 option(USE_MKL OFF)
 if (USE_MKL)
-  find_package(MKL REQUIRED)
-  add_library(BLAS INTERFACE IMPORTED)
-  set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-  set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+    find_package(MKL REQUIRED)
+    add_library(BLAS INTERFACE IMPORTED)
+    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
+    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
+    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+
+
+
 
   add_definitions(-DUSE_MKL)
   else()
@@ -321,22 +301,16 @@ if (USE_MKL)
 
 endif()
 
-if (MKL_FOUND)
-if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
-message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
-endif ()
-endif ()
-
 if(EXISTS $ENV{TORCH_HOME})
-find_package(Torch)
-if (TORCH_FOUND)
-add_definitions(-DUSE_TORCH)
-message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+    find_package(Torch)
+    if (TORCH_FOUND)
+        add_definitions(-DUSE_TORCH)
+        message("Find Pytorch c++ library at ${TORCH_LIBRARIES}")
+    else()
+        message("Do not find Pytorch c++ library")
+    endif ()
 else()
-message("Do not find Pytorch c++ library")
-endif ()
-else()
-message("Do not find TORCH_HOME")
+    message("Do not find TORCH_HOME")
 endif()
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
@@ -367,20 +341,6 @@ target_link_libraries(boost INTERFACE python)
 
 endif()
 
-option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)
-if (BUILD_MATLAB_SUPPORT)
-find_package(GMatlab)
-if (MATLAB_FOUND)
-add_definitions(-DUSE_MATLAB)
-else()
-set(BUILD_MATLAB_SUPPORT OFF)
-endif ()
-else()
-# explicitly set it, just in case BUILD_MATLAB_SUPPORT was set to OFF
-# after Matlab was already found.
-set(MATLAB_FOUND OFF)
-endif ()
-
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
 message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
@@ -404,15 +364,14 @@ message("Adding gpertools to build.")
 find_package(Gperftools REQUIRED)
 endif()
 
-#add_subdirectory(test)
+add_subdirectory(test)
 add_subdirectory(cmake)
-
-
-option(BUILD_DOCUMENTATION "Build Gadgetron documentation" Off)
-if (BUILD_DOCUMENTATION)
-add_subdirectory(doc)
-endif()
 add_subdirectory(chroot)
+
+option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)
+if(BUILD_DOCUMENTATION)
+    add_subdirectory(doc)
+endif()
 
 # install dependencies for WIN32
 if (WIN32)

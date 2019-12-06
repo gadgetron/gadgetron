@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <version>2</version>
+
+    <readers>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
+
+    <stream>
+        <external>
+            <!-- Connect to a running process on port 18000. -->
+            <connect port="18000"/>
+
+            <!-- The configuration is sent to the external process. It's left pretty empty here. -->
+            <configuration/>
+        </external>
+    </stream>
+</configuration>

@@ -10,7 +10,7 @@
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    void start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
+    boost::process::child start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
 
         auto python_path = (context.paths.gadgetron_home / "share" / "gadgetron" / "python").string();
 
@@ -28,7 +28,21 @@ namespace Gadgetron::Server::Connection::Stream {
                 boost::process::env["PYTHONPATH"]+={python_path}
         );
 
-        module.detach();
         GINFO_STREAM("Started external Python module (pid: " << module.id() << ").");
+        return std::move(module);
+    }
+
+    bool python_available() noexcept {
+        try {
+            return !boost::process::system(
+                    boost::process::search_path("python3"),
+                    boost::process::args={"-m", "gadgetron"},
+                    boost::process::std_out > boost::process::null,
+                    boost::process::std_err > boost::process::null
+            );
+        }
+        catch (...) {
+            return false;
+        }
     }
 }

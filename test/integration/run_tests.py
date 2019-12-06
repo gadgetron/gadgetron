@@ -44,13 +44,6 @@ def main():
     parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-G', '--gadgetron-home',
-                        default=os.environ.get('GADGETRON_HOME'),
-                        help="Gadgetron installation home")
-    parser.add_argument('-I', '--ismrmrd-home',
-                        default=os.environ.get('ISMRMRD_HOME'),
-                        help="ISMRMRD installation home")
-
     parser.add_argument('-p', '--port', type=int, default=9003, help="Port of Gadgetron instance")
     parser.add_argument('-a', '--host', type=str, default="localhost", help="Address of (external) Gadgetron host")
 
@@ -63,7 +56,6 @@ def main():
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
-
     parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
 
     args = parser.parse_args()
@@ -72,36 +64,25 @@ def main():
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
-    base_args = [sys.executable, 'run_gadgetron_test.py','-a',str(args.host), '-p', str(args.port)] + args.external
-    if args.gadgetron_home is not None:
-        base_args += ['-G',args.gadgetron_home]
-    if args.ismrmrd_home is not None:
-        base_args += ['-I',args.ismrmrd_home]
-
     for i, test in enumerate(tests, start=1):
-        print("\n ----> Test {} of {}: {}\n".format(i, len(tests), test))
-        proc = subprocess.run(base_args + [test])
+        print("\nTest {} of {}: {}\n".format(i, len(tests), test))
+        proc = subprocess.run([sys.executable, 'run_gadgetron_test.py',
+                               '-a', str(args.host),
+                               '-p', str(args.port)] + args.external + [test])
 
         handlers.get(proc.returncode)(test)
 
     if args.stats:
         output_csv(stats, args.stats)
 
-
     if failed:
         print("\nFailed tests:")
         for test in failed:
             print("\t{}".format(test))
 
-    print("\n{} tests passed. {} tests failed. {} tests skipped.{} tests failed.".format(len(passed), len(failed), len(skipped), len(failed)))
+    print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
-    if(len(failed)>0):
-        print("=========================================")
-        for test in failed:
-            print("Failed case -- %s" % test)
-        print("=========================================")
-        sys.exit(1)
 
 if __name__ == '__main__':
     main()

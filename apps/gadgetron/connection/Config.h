@@ -56,7 +56,7 @@ namespace Gadgetron::Server::Connection {
         };
 
         struct Connect {
-            std::string port;
+            std::string address, port;
         };
 
         using Action = Core::variant<Execute, Connect>;

@@ -20,13 +20,9 @@ namespace Gadgetron::Server::Connection::Handlers {
     public:
         QueryHandler();
 
-        explicit QueryHandler(
-                std::map<std::string, std::string> additional_answers
-        );
-
         void handle(std::istream &stream, Gadgetron::Core::OutputChannel &channel) override;
 
-        std::map<std::string, std::string> answers;
+        std::map<std::string, std::function<std::string()>> answers;
     };
 
     class ErrorProducingHandler : public Handler {

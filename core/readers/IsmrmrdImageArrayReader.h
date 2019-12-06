@@ -1,7 +1,3 @@
-//
-// Created by dchansen on 2/25/19.
-//
-
 #pragma once
 #include "Reader.h"
 

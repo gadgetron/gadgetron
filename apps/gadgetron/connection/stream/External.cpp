@@ -8,7 +8,7 @@
 #include "external/Python.h"
 #include "external/Matlab.h"
 
-#include <boost/asio.hpp>
+#include <boost/asio/use_future.hpp>
 #include <boost/algorithm/string.hpp>
 
 
@@ -16,10 +16,13 @@ using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection;
 using namespace Gadgetron::Server::Connection::Stream;
 
+using tcp = boost::asio::ip::tcp;
+
 namespace {
 
-    const std::map<std::string, std::function<void(const Config::Execute &, unsigned short, const Context &)>> modules{
-            {"python", start_python_module}
+    const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const Context &)>> modules{
+            {"python", start_python_module},
+            {"matlab", start_matlab_module}
     };
 
     void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external) {
@@ -38,49 +41,73 @@ namespace {
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    std::unique_ptr<std::iostream> External::open_connection(Config::Connect connect, const Context &context) {
-
-        GINFO_STREAM("Connecting to external module on port: " << connect.port);
-
-        return std::unique_ptr<std::iostream>(nullptr);
+    void External::monitor_child(
+            std::shared_ptr<boost::process::child> child,
+            std::shared_ptr<tcp::acceptor> acceptor
+    ) {
+        child->wait();
+        io_service.dispatch([=]() { acceptor->close(); });
     }
 
-    std::unique_ptr<std::iostream> External::open_connection(Config::Execute execute, const Context &context) {
+    std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const Context &context) {
+        GINFO_STREAM("Connecting to external module on address: " << connect.address << ":" << connect.port);
+        return std::make_shared<ExternalChannel>(
+                Gadgetron::Connection::remote_stream(connect.address, connect.port),
+                serialization,
+                configuration
+        );
+    }
 
-        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v6(), 0);
-        boost::asio::ip::tcp::acceptor acceptor(io_service, endpoint);
+    std::shared_ptr<ExternalChannel> External::open_connection(Config::Execute execute, const Context &context) {
 
-        auto port = acceptor.local_endpoint().port();
+        tcp::endpoint endpoint(tcp::v6(), 0);
+        auto acceptor = std::make_shared<tcp::acceptor>(io_service, endpoint);
+
+        auto port = acceptor->local_endpoint().port();
         boost::algorithm::to_lower(execute.type);
 
         GINFO_STREAM("Waiting for external module '" << execute.name << "' on port: " << port);
 
-        modules.at(execute.type)(execute, port, context);
+        auto child = std::make_shared<boost::process::child>(modules.at(execute.type)(execute, port, context));
 
-        auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-        acceptor.accept(*socket);
-        acceptor.close();
+        monitors.child = std::async(
+                std::launch::async,
+                [=](auto child, auto acceptor) { monitor_child(std::move(child), std::move(acceptor)); },
+                child,
+                acceptor
+        );
+
+        auto socket = std::make_unique<tcp::socket>(io_service);
+        auto future_socket = acceptor->async_accept(*socket, boost::asio::use_future);
+
+        io_service.run();
+        future_socket.get();
 
         GINFO_STREAM("Connected to external module '" << execute.name << "' on port: " << port);
 
-        return Gadgetron::Connection::stream_from_socket(std::move(socket));
+        auto stream = Gadgetron::Connection::stream_from_socket(std::move(socket));
+        auto external_channel = std::make_shared<ExternalChannel>(
+                std::move(stream),
+                serialization,
+                configuration
+        );
+
+        return external_channel;
     }
 
     std::shared_ptr<ExternalChannel> External::open_external_channel(
             const Config::External &config,
             const Context &context
     ) {
-        auto stream = Core::visit([&](auto action) { return open_connection(action, context); }, config.action);
-        return std::make_shared<ExternalChannel>(
-                std::move(stream),
-                serialization,
-                configuration
+        return Core::visit(
+                [&, this](auto action) { return this->open_connection(action, context); },
+                config.action
         );
     }
 
     External::External(
             const Config::External &config,
-            const Core::Context &context,
+            const Core::StreamContext &context,
             Loader &loader
     ) : serialization(std::make_shared<Serialization>(
                 loader.load_default_and_additional_readers(config),

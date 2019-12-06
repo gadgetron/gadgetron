@@ -11,13 +11,10 @@ namespace Gadgetron {
 
     Core::Message GadgetIsmrmrdAcquisitionMessageReader::read(std::istream &stream) {
 
-
         using namespace Core;
         using namespace std::literals;
 
         auto header = IO::read<ISMRMRD::AcquisitionHeader>(stream);
-
-
 
         optional<hoNDArray<float>> trajectory = boost::none;
         if (header.trajectory_dimensions) {
@@ -27,7 +24,6 @@ namespace Gadgetron {
         }
         auto data = hoNDArray<std::complex<float>>(header.number_of_samples,
                                                    header.active_channels);
-
 
         if (header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1)) { //Is this ZFP compressed data
 
@@ -136,14 +132,12 @@ namespace Gadgetron {
         using namespace Core;
         using namespace std::literals;
 
-
         auto header = IO::read<ISMRMRD::WaveformHeader>(stream);
-
         auto data = hoNDArray<uint32_t>(header.number_of_samples, header.channels);
 
-        IO::read(stream, data.data(),data.size());
+        IO::read(stream, data.data(), data.size());
 
-        return Message(std::move(header), std::move(data));
+        return Message(header, std::move(data));
     }
 
 

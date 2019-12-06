@@ -34,17 +34,17 @@ namespace Gadgetron::Server::Connection::Stream {
     }
 
     Configuration::Configuration(
-            Core::Context context,
+            Core::StreamContext context,
             Config config
     ) : context(std::move(context)), config{config} {}
 
     Configuration::Configuration(
-            Core::Context context,
+            Core::StreamContext context,
             Config::External config
     ) : context(std::move(context)), config{config} {}
 
     Configuration::Configuration(
-            Core::Context context,
+            Core::StreamContext context,
             Config::Distributed config
     ) : Configuration(
             std::move(context),
@@ -56,7 +56,7 @@ namespace Gadgetron::Server::Connection::Stream {
     ) {}
 
     Configuration::Configuration(
-            Core::Context context,
+            Core::StreamContext context,
             Config::PureDistributed config
     ) : Configuration(
             std::move(context),

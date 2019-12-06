@@ -6,11 +6,9 @@
 #include <memory>
 #include <string>
 
-#include <boost/parameter/name.hpp>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm/find_if.hpp>
-#include <numeric>
 
 #include "log.h"
 
@@ -399,15 +397,6 @@ namespace {
         };
     }
 
-    bool is_legacy_matlab_gadget(const Config::Gadget &gadget) {
-        return gadget.dll == "gadgetron_matlab" && gadget.classname == "MatlabBufferGadget";
-    }
-
-    Config::Node transform_legacy_matlab_gadget(Config::Gadget gadget) {
-        GDEBUG_STREAM("Legacy Matlab Gadget detected: " << gadget.name);
-        throw std::runtime_error("Currently not implemented.");
-    }
-
     class Legacy : public Parser<LegacySource> {
     public:
 
@@ -433,7 +422,6 @@ namespace {
         const std::list<std::pair<std::function<bool(const Config::Gadget &)>,
                                   std::function<Config::Node(Config::Gadget)>>> node_transformations{
             std::make_pair(is_legacy_python_gadget, transform_legacy_python_gadget),
-            std::make_pair(is_legacy_matlab_gadget, transform_legacy_matlab_gadget),
             std::make_pair([](auto _) { return true; }, [=](auto c) { return Config::Node(c); })
         };
 
@@ -572,8 +560,13 @@ namespace {
             };
         }
 
+        static std::string address_or_localhost(const std::string &s) {
+            return s.empty() ? "localhost" : s;
+        }
+
         static Config::Connect parse_connect(const pugi::xml_node &connect_node) {
             return Config::Connect {
+                address_or_localhost(connect_node.attribute("address").value()),
                 connect_node.attribute("port").value()
             };
         }
@@ -627,7 +620,6 @@ namespace Gadgetron::Server::Connection {
         pugi::xml_document doc{};
         auto config_node = doc.append_child("configuration");
         config_node.append_child("version").text().set(2);
-
         XMLSerializer::add_readers(config.readers, config_node);
         XMLSerializer::add_writers(config.writers, config_node);
         XMLSerializer::add_node(config.stream, config_node);

@@ -30,12 +30,6 @@ add_subdirectory(denoise)
 
 add_subdirectory(image_io)
 
-if (MATLAB_FOUND)
-    message("Compiling MATLAB toolbox")
-    add_subdirectory(matlab)
-endif ()
-
-
 # Should we compile the python toolbox
 if (BUILD_PYTHON_SUPPORT)
     message("Find python; build gadgetron toolbox python")

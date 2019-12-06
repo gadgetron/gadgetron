@@ -7,8 +7,8 @@
 
 namespace Gadgetron::Server::Connection {
     void handle(
-            const Gadgetron::Core::Context::Paths &paths,
-            const Gadgetron::Core::Context::Args &args,
+            const Gadgetron::Core::StreamContext::Paths &paths,
+            const Gadgetron::Core::StreamContext::Args &args,
             std::unique_ptr<std::iostream> stream
     );
 }
