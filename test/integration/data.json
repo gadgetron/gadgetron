@@ -44,6 +44,14 @@
     "md5":"624ac3178e15e27e52489f330b3fffa5"
   },
   {
+    "file":"simple_gre/simple_gre_output.h5",
+    "md5":"95444430d62866a49a0b44e1fa3aa028"
+  },
+  {
+    "file":"denoise/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4/ref_20180709_denoised.h5",
+    "md5":"63ef3a7de32d9c912f2cc11a19916d39"
+  },
+  {
     "file":"simple_gre/simple_gre_out_20150110_msh.h5",
     "md5":"13870af335ec1708a15fc139d0ffd4bb"
   },
