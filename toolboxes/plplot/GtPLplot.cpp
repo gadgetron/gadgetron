@@ -423,7 +423,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
             std::vector<PLFLT> symbol_scales(num), line_widths(num), box_scales(num, 1);
 
             std::vector<std::string> glyphs(num);
-            std::vector<const char*> syms(num, NULL);
+            std::vector<const char*> syms;
             PLFLT legend_width, legend_height;
 
             std::vector<const char*> legend_text(num);
@@ -450,7 +450,11 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
 
                 if (symbols.size() > n)
                 {
-                    syms[n] = symbols[n].c_str();
+                    syms.push_back(symbols[n].c_str());
+                }
+                else
+                {
+                    syms.push_back("");
                 }
                 legend_text[n] = legend[n].c_str();
             }

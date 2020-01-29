@@ -151,19 +151,25 @@ TYPED_TEST(gt_plplot_Test, plplot_curves_test)
 
     bool trueColor = true;
 
-    std::vector<hoNDArray<T> > xs(1);
-    std::vector<hoNDArray<T> > ys(1);
-    std::vector<std::string> legend(1);
+    std::vector<hoNDArray<T> > xs(2);
+    std::vector<hoNDArray<T> > ys(2);
+    std::vector<std::string> legend(2);
 
     size_t num_hb = 60;
 
     xs[0].create(num_hb);
     ys[0].create(num_hb);
 
+    xs[1].create(num_hb);
+    ys[1].create(num_hb);
+
     for (size_t n = 0; n < num_hb; n++)
     {
         xs[0](n) = n + 1;
-        ys[0](n) = 1000 + (T)std::rand()/RAND_MAX * 100.0;
+        ys[0](n) = 1000 + (T)std::rand() / RAND_MAX * 100.0;
+
+        xs[1](n) = n + 1;
+        ys[1](n) = ys[0](n) + 15.4;
     }
 
     legend.clear();
@@ -181,8 +187,8 @@ TYPED_TEST(gt_plplot_Test, plplot_curves_test)
     std::vector<std::string> symbols(1);
     symbols[0] = "#(225)";
 
-    std::vector<int> lineStyle(1, 1);
-    std::vector<int> lineWidth(1, 8);
+    std::vector<int> lineStyle(2, 1);
+    std::vector<int> lineWidth(2, 8);
     Gadgetron::plotCurves(xs, ys, "Heart Beat", "RR interval (ms)", ostr.str(), legend, symbols, xsize, ysize, xlim, ylim, trueColor, true, lineStyle, lineWidth, plotIm);
 
     gt_io.export_array(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_HeartBeat");
