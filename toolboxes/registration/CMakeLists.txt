@@ -1,1 +1,2 @@
 add_subdirectory(optical_flow)
+add_subdirectory(demons)
