@@ -1569,7 +1569,20 @@ namespace Gadgetron {
                 dataRoleString = ostr.str();
             }
 
-            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+            int series_no = seriesNum;
+            if (seriesNum < 0)
+            {
+                for (size_t ii = 0; ii < images.get_number_of_elements(); ii++)
+                {
+                    if (images(ii).header_.image_series_index >= 0)
+                    {
+                        series_no = images(ii).header_.image_series_index;
+                        break;
+                    }
+                }
+            }
+
+            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out " << dataRoleString << " images for series " << series_no << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
                 << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
 
             size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);

@@ -449,7 +449,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 symbol_numbers[n] = 1;
 
                 if (symbols.size() > n)
-                {
+                {    
                     syms.push_back(symbols[n].c_str());
                 }
                 else
