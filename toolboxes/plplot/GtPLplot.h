@@ -29,14 +29,14 @@ namespace Gadgetron
     /// if drawLine = false, the line will be not plotted, onl glyphs
     template <typename T> EXPORTGTPLPLOT
     bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-        size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+        size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
 
     /// user can supply x/y axis limits to plot
     /// xlim: xmin to xmax
     /// ylim: ymin to ymax
     template <typename T> EXPORTGTPLPLOT
         bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-            size_t xsize, size_t ysize, T xlim[2], T ylim[2], bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+            size_t xsize, size_t ysize, T xlim[2], T ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
 
     /// plot noise std
     template <typename T> EXPORTGTPLPLOT

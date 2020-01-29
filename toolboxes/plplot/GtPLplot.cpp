@@ -277,7 +277,8 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
     const std::string& title, const std::vector<std::string>& legend,
     const std::vector<std::string>& symbols,
     size_t xsize, size_t ysize,
-    bool trueColor, bool drawLine,
+    bool trueColor, bool drawLine, 
+    const std::vector<int>& lineStyple, 
     hoNDArray<float>& plotIm)
 {
     try
@@ -289,7 +290,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
         T xlim[2], ylim[2];
         findDataRange(x, y, xlim[0], xlim[1], ylim[0], ylim[1]);
 
-        return Gadgetron::plotCurves(x, y, xlabel, ylabel, title, legend, symbols, xsize, ysize, xlim, ylim, trueColor, drawLine, plotIm);
+        return Gadgetron::plotCurves(x, y, xlabel, ylabel, title, legend, symbols, xsize, ysize, xlim, ylim, trueColor, drawLine, lineStyple, plotIm);
     }
     catch(...)
     {
@@ -301,10 +302,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
 }
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
 
 template <typename T> EXPORTGTPLPLOT
 bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, 
@@ -314,6 +315,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 size_t xsize, size_t ysize, 
                 T xlim[2], T ylim[2], 
                 bool trueColor, bool drawLine, 
+                const std::vector<int>& lineStyple, 
                 hoNDArray<float>& plotIm)
 {
     try
@@ -349,10 +351,11 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
             plvpor(0.15, 0.85, 0.1, 0.9);
         }
 
-        T spaceX = 0.01*(maxX - minX);
+        /*T spaceX = 0.01*(maxX - minX);
         T spaceY = 0.05*(maxY - minY);
+        plwind(minX - spaceX, maxX + spaceX, minY - spaceY, maxY + spaceY);*/
 
-        plwind(minX - spaceX, maxX + spaceX, minY - spaceY, maxY + spaceY);
+        plwind(minX, maxX, minY, maxY);
 
         plcol0(15);
         plbox("bgcnst", 0.0, 0, "bgcnstv", 0.0, 0);
@@ -382,7 +385,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 int c;
                 getPlotColor(n, c);
                 plcol0(c);
-                pllsty(n % 8 + 1);
+                if(lineStyple.size()>n)
+                    pllsty(lineStyple[n]);
+                else
+                    pllsty(1);
                 plline(N, xd.begin(), yd.begin());
             }
 
@@ -390,11 +396,8 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
             if(symbols.size()>n)
             {
                 gly = symbols[n];
+                plstring(N, xd.begin(), yd.begin(), gly.c_str());
             }
-            else
-                getPlotGlyph(n, gly);
-
-            plstring(N, xd.begin(), yd.begin(), gly.c_str());
         }
 
         plcol0(15);
@@ -480,10 +483,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
 }
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, float xlim[2], float ylim[2], bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, float xlim[2], float ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, double xlim[2], double ylim[2], bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, double xlim[2], double ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
 
 // ---------------------------------------------------
 

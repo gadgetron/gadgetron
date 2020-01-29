@@ -181,7 +181,8 @@ TYPED_TEST(gt_plplot_Test, plplot_curves_test)
     std::vector<std::string> symbols(1);
     symbols[0] = "#(225)";
 
-    Gadgetron::plotCurves(xs, ys, "Heart Beat", "RR interval (ms)", ostr.str(), legend, symbols, xsize, ysize, xlim, ylim, trueColor, false, plotIm);
+    std::vector<int> lineStyle;
+    Gadgetron::plotCurves(xs, ys, "Heart Beat", "RR interval (ms)", ostr.str(), legend, symbols, xsize, ysize, xlim, ylim, trueColor, false, lineStyle, plotIm);
 
     gt_io.export_array(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_HeartBeat");
 }
