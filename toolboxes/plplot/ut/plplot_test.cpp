@@ -145,8 +145,8 @@ TYPED_TEST(gt_plplot_Test, plplot_curves_test)
     std::string xlabel = "Heart Beat";
     std::string ylabel = "RR interval (ms)";
     std::string title = "Acqusition heart beat plot";
-    size_t xsize = 2048;
-    size_t ysize = 2048;
+    size_t xsize = 1000;
+    size_t ysize = 750;
     hoNDArray<float> plotIm;
 
     bool trueColor = true;
@@ -181,8 +181,9 @@ TYPED_TEST(gt_plplot_Test, plplot_curves_test)
     std::vector<std::string> symbols(1);
     symbols[0] = "#(225)";
 
-    std::vector<int> lineStyle;
-    Gadgetron::plotCurves(xs, ys, "Heart Beat", "RR interval (ms)", ostr.str(), legend, symbols, xsize, ysize, xlim, ylim, trueColor, false, lineStyle, plotIm);
+    std::vector<int> lineStyle(1, 1);
+    std::vector<int> lineWidth(1, 8);
+    Gadgetron::plotCurves(xs, ys, "Heart Beat", "RR interval (ms)", ostr.str(), legend, symbols, xsize, ysize, xlim, ylim, trueColor, true, lineStyle, lineWidth, plotIm);
 
     gt_io.export_array(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_HeartBeat");
 }

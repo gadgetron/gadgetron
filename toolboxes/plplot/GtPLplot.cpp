@@ -279,6 +279,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
     size_t xsize, size_t ysize,
     bool trueColor, bool drawLine, 
     const std::vector<int>& lineStyple, 
+    const std::vector<int>& lineWidth,
     hoNDArray<float>& plotIm)
 {
     try
@@ -290,7 +291,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
         T xlim[2], ylim[2];
         findDataRange(x, y, xlim[0], xlim[1], ylim[0], ylim[1]);
 
-        return Gadgetron::plotCurves(x, y, xlabel, ylabel, title, legend, symbols, xsize, ysize, xlim, ylim, trueColor, drawLine, lineStyple, plotIm);
+        return Gadgetron::plotCurves(x, y, xlabel, ylabel, title, legend, symbols, xsize, ysize, xlim, ylim, trueColor, drawLine, lineStyple, lineWidth, plotIm);
     }
     catch(...)
     {
@@ -302,10 +303,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
 }
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, const std::vector<int>& lineWidth, hoNDArray<float>& plotIm);
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, bool trueColor, bool drawLine, const std::vector<int>& lineStyple, const std::vector<int>& lineWidth, hoNDArray<float>& plotIm);
 
 template <typename T> EXPORTGTPLPLOT
 bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, 
@@ -316,6 +317,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 T xlim[2], T ylim[2], 
                 bool trueColor, bool drawLine, 
                 const std::vector<int>& lineStyple, 
+                const std::vector<int>& lineWidth,
                 hoNDArray<float>& plotIm)
 {
     try
@@ -355,7 +357,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
         T spaceY = 0.05*(maxY - minY);
         plwind(minX - spaceX, maxX + spaceX, minY - spaceY, maxY + spaceY);*/
 
+        plvsta();
         plwind(minX, maxX, minY, maxY);
+        plsmaj(0.0, 0.0);
+        plsmin(0.0, 0.0);
 
         plcol0(15);
         plbox("bgcnst", 0.0, 0, "bgcnstv", 0.0, 0);
@@ -385,10 +390,16 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 int c;
                 getPlotColor(n, c);
                 plcol0(c);
-                if(lineStyple.size()>n)
+                if (lineStyple.size() > n)
+                {
                     pllsty(lineStyple[n]);
+                    plwidth(lineWidth[n]);
+                }
                 else
+                {
                     pllsty(1);
+                    plwidth(2);
+                }
                 plline(N, xd.begin(), yd.begin());
             }
 
@@ -412,7 +423,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
             std::vector<PLFLT> symbol_scales(num), line_widths(num), box_scales(num, 1);
 
             std::vector<std::string> glyphs(num);
-            std::vector<const char*> symbols(num);
+            std::vector<const char*> syms(num, NULL);
             PLFLT legend_width, legend_height;
 
             std::vector<const char*> legend_text(num);
@@ -426,12 +437,21 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 opt_array[n] = PL_LEGEND_SYMBOL | PL_LEGEND_LINE;
                 text_colors[n] = 15;
                 line_colors[n] = c;
-                line_styles[n] = (n%8+1);
-                line_widths[n] = 0.2;
+
+                if (lineStyple.size() > n)
+                    line_styles[n] = lineStyple[n];
+                else
+                    line_styles[n] = 1;
+
+                line_widths[n] = 0.4;
                 symbol_colors[n] = c;
                 symbol_scales[n] = 0.75;
                 symbol_numbers[n] = 1;
-                symbols[n] = glyphs[n].c_str();
+
+                if (symbols.size() > n)
+                {
+                    syms[n] = symbols[n].c_str();
+                }
                 legend_text[n] = legend[n].c_str();
             }
 
@@ -465,9 +485,12 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                     &symbol_colors[0], 
                     &symbol_scales[0], 
                     &symbol_numbers[0], 
-                    (const char **)(&symbols[0])
+                    (const char **)(&syms[0])
                     );
         }
+
+        plsmin(0.0, 1.0);
+        plsmaj(0.0, 1.0);
 
         plend();
 
@@ -483,10 +506,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
 }
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, float xlim[2], float ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, float xlim[2], float ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, const std::vector<int>& lineWidth, hoNDArray<float>& plotIm);
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
-    size_t xsize, size_t ysize, double xlim[2], double ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, hoNDArray<float>& plotIm);
+    size_t xsize, size_t ysize, double xlim[2], double ylim[2], bool trueColor, bool drawLine, const std::vector<int>& lineStyple, const std::vector<int>& lineWidth, hoNDArray<float>& plotIm);
 
 // ---------------------------------------------------
 
