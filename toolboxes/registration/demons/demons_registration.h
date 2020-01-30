@@ -20,4 +20,17 @@ namespace Gadgetron { namespace Registration {
     hoNDArray<T> deform_image(const hoNDArray<T>& image, const hoNDArray<vector_td<R, D>>& deformation_field);
 
 
+    /**
+     *
+     * @tparam T datatype of the image. Float or double
+     * @tparam D Image dimension.
+     * @param fixed
+     * @param moving
+     * @param iterations Number of iterations
+     * @param sigma Sigma for smoothing the motion field
+     * @return The vector field deforming fixed to moving.
+     */
+    template<class T, unsigned int D>
+    hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations = 20,float sigma = 2.0);
+
 }}
