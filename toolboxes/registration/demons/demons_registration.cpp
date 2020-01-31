@@ -5,6 +5,7 @@
 #include "demons_registration.h"
 #include "vector_td_utilities.h"
 #include <numeric>
+#include "hoNDArray_elemwise.h"
 using namespace Gadgetron;
 
 namespace {
@@ -159,7 +160,7 @@ namespace {
         auto z2 = min(max(int(y) + 1, 0), int(dims[2] - 1));
 
         auto zstride = dims[0] * dims[1];
-        return { (image[x2 + y * dims[0] + z * zstride] - image[x1 + y * dims[1] + z * zstride]) / 2,
+        return vector_td<T,3>{ (image[x2 + y * dims[0] + z * zstride] - image[x1 + y * dims[1] + z * zstride]) / 2,
             (image[x + y2 * dims[0] + z * zstride] - image[x + y1 * dims[0] + z * zstride]) / 2,
             (image[x + y * dims[0] + z2 * zstride] - image[x + y * dims[0] + z1 * zstride]) / 2 };
     }
@@ -175,7 +176,7 @@ namespace {
         auto y1      = min(max(int(y) - 1, 0), int(dims[1] - 1));
         auto y2      = min(max(int(y) + 1, 0), int(dims[1] - 1));
 
-        return { (image[x2 + y * dims[0]] - image[x1 + y * dims[1]]) / 2,
+        return vector_td<T,2>{ (image[x2 + y * dims[0]] - image[x1 + y * dims[1]]) / 2,
             (image[x + y2 * dims[0]] - image[x + y1 * dims[0]]) / 2 };
     }
 
@@ -359,7 +360,7 @@ namespace {
 
         auto field_exponent = hoNDArray<vector_td<T, D>>(vector_field.dimensions());
         std::transform(vector_field.begin(), vector_field.end(), field_exponent.begin(),
-            [n_iteration](const auto& val) { return val * std::pow(T(2), -n_iteration); });
+            [n_iteration](const auto& val) { return val * std::pow(T(2), T(-n_iteration)); });
 
         for (size_t i = 0; i < n_iteration; i++) {
             field_exponent = compose_fields(field_exponent, field_exponent);

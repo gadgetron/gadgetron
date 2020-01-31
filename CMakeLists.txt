@@ -156,7 +156,7 @@ else ()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
         endif ()
     endif ()
-    set(CXX_STANDARD 14)
+    set(CXX_STANDARD 17)
 
 
     check_cxx_compiler_flag(-std=c++${CXX_STANDARD} COMPILER_SUPPORTS_stdcxx${CXX_STANDARD})
