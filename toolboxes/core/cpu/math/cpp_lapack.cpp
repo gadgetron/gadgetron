@@ -86,11 +86,33 @@ long long Gadgetron::Lapack::posv(
 long long Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs, std::complex<float> *a, size_t lda, size_t *ipiv,
                                   std::complex<float> *b, size_t ldb) {
     return LAPACKE_chesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_float*>(a),lda, ipiv,
-                         reinterpret_cast<lapack_complex_float>(b),ldb);
+                         reinterpret_cast<lapack_complex_float*>(b),ldb);
 }
 
 long long Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs, std::complex<double> *a, size_t lda, size_t *ipiv,
                                   std::complex<double> *b, size_t ldb) {
-    return LAPACKE_chesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_double*>(a),lda, ipiv,
-                         reinterpret_cast<lapack_complex_double>(b),ldb);
+    return LAPACKE_zhesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_double*>(a),lda, ipiv,
+                         reinterpret_cast<lapack_complex_double*>(b),ldb);
+}
+
+long long
+Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, float *a, size_t lda, size_t *ipiv, float *b, size_t ldb) {
+    return LAPACKE_ssysv(LAPACK_COL_MAJOR,upper ? 'U' : 'L',n,nrhs,a,lda,ipiv,b,ldb);
+}
+
+long long
+Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, double *a, size_t lda, size_t *ipiv, double *b, size_t ldb) {
+    return LAPACKE_dsysv(LAPACK_COL_MAJOR,upper ? 'U' : 'L',n,nrhs,a,lda,ipiv,b,ldb);
+}
+
+long long Gadgetron::Lapack::syv(bool upper, size_t n, size_t nrhs, std::complex<float> *a, size_t lda, size_t *ipiv,
+                                 std::complex<float> *b, size_t ldb) {
+
+    return LAPACKE_csysv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_float*>(a),lda, ipiv,
+}
+
+long long Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, std::complex<double> *a, size_t lda, size_t *ipiv,
+                                  std::complex<double> *b, size_t ldb) {
+
+    return LAPACKE_zsysv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_float*>(a),lda, ipiv,
 }

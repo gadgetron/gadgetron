@@ -36,5 +36,11 @@ namespace Gadgetron {
 
         long long hesv(bool upper, size_t n, size_t nrhs, std::complex<float>* a, size_t lda, size_t* ipiv, std::complex<float>*b, size_t ldb);
         long long hesv(bool upper, size_t n, size_t nrhs, std::complex<double>* a, size_t lda, size_t* ipiv, std::complex<double>*b, size_t ldb);
+
+
+        long long sysv(bool upper, size_t n, size_t nrhs, float* a, size_t lda, size_t* ipiv, float*b, size_t ldb);
+        long long sysv(bool upper, size_t n, size_t nrhs, double* a, size_t lda, size_t* ipiv, double*b, size_t ldb);
+        long long syv(bool upper, size_t n, size_t nrhs, std::complex<float>* a, size_t lda, size_t* ipiv, std::complex<float>*b, size_t ldb);
+        long long sysv(bool upper, size_t n, size_t nrhs, std::complex<double>* a, size_t lda, size_t* ipiv, std::complex<double>*b, size_t ldb);
     }
 }
