@@ -82,3 +82,15 @@ long long Gadgetron::Lapack::posv(
     return LAPACKE_zposv(LAPACK_COL_MAJOR,upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_double*>(a),lda,
                          reinterpret_cast<lapack_complex_double*>(b),ldb);
 }
+
+long long Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs, std::complex<float> *a, size_t lda, size_t *ipiv,
+                                  std::complex<float> *b, size_t ldb) {
+    return LAPACKE_chesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_float*>(a),lda, ipiv,
+                         reinterpret_cast<lapack_complex_float>(b),ldb);
+}
+
+long long Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs, std::complex<double> *a, size_t lda, size_t *ipiv,
+                                  std::complex<double> *b, size_t ldb) {
+    return LAPACKE_chesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_double*>(a),lda, ipiv,
+                         reinterpret_cast<lapack_complex_double>(b),ldb);
+}

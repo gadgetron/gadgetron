@@ -33,5 +33,8 @@ namespace Gadgetron {
         long long posv(bool upper, size_t n, size_t nrhs, double* a, size_t lda, double* b, size_t ldb);
         long long posv(bool upper, size_t n, size_t nrhs, std::complex<float>* a, size_t lda, std::complex<float>* b, size_t ldb);
         long long posv(bool upper, size_t n, size_t nrhs, std::complex<double>* a, size_t lda, std::complex<double>* b, size_t ldb);
+
+        long long hesv(bool upper, size_t n, size_t nrhs, std::complex<float>* a, size_t lda, size_t* ipiv, std::complex<float>*b, size_t ldb);
+        long long hesv(bool upper, size_t n, size_t nrhs, std::complex<double>* a, size_t lda, size_t* ipiv, std::complex<double>*b, size_t ldb);
     }
 }
