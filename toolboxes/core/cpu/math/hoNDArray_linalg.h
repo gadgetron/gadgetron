@@ -4,7 +4,7 @@
 #include "cpucore_math_export.h"
 #include "hoNDArray.h"
 
-
+#include <cpp_lapack.h>
 //#include "hoArmadillo.h"
 
 
@@ -79,7 +79,7 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
 /// Computes the LU factorization of a general m-by-n matrix
 /// this function is called by general matrix inversion
 template<typename T> EXPORTCPUCOREMATH 
-void getrf(hoNDArray<T>& A, hoNDArray<lapack_int>& ipiv);
+void getrf(hoNDArray<T>& A, hoNDArray<Lapack::Int>& ipiv);
 
 /// Computes the inverse of an LU-factored general matrix
 template<typename T> EXPORTCPUCOREMATH 

@@ -2,12 +2,12 @@
 #include "hoNDArray_linalg.h"
 
 #include "cpp_blas.h"
-#include "cpp_lapack.h.h"
+#include "cpp_lapack.h"
 //#include "hoNDArray_elemwise.h"
 //#include "hoNDArray_reductions.h"
 
 #ifdef USE_OMP
-    #include "omp.h"
+#include "omp.h"
 #endif // USE_OMP
 
 
@@ -137,7 +137,7 @@ void herk(hoNDArray< std::complex<T> >& C, const hoNDArray< std::complex<T> >& A
 
     size_t ldc = (size_t)C.get_size(0);
 
-    BLAS::herk((uplo == 'U'), isATA, M, K, 1, A.data(), lda, 0, C.data(), ldc);
+    BLAS::herk((uplo == 'U'), isAHA, N, K, 1, A.data(), lda, 0, C.data(), ldc);
 }
 
 void herk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isAHA)
@@ -195,7 +195,7 @@ void heev(hoNDArray<std::complex<T>>& A, hoNDArray<T>& eigenValue)
             eigenValue.create(M, 1);
         }
         bool eigenvectors = true;
-        bool uppper = false;
+        bool upper = false;
         auto info = Lapack::heev(eigenvectors,upper,M,A.data(),M,eigenValue.data());
         GADGET_CHECK_THROW(info==0);
 }
@@ -211,7 +211,7 @@ void heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue)
         eigenValue.create(M, 1);
     }
     bool eigenvectors = true;
-    bool uppper = false;
+    bool upper = false;
     auto info = Lapack::syev(eigenvectors,upper,M,A.data(),M,eigenValue.data());
     GADGET_CHECK_THROW(info==0);
 }
@@ -317,184 +317,50 @@ template void posv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex
 
 /// ------------------------------------------------------------------------------------
 
-template<> EXPORTCPUCOREMATH
-void hesv(hoNDArray< float >& A, hoNDArray< float >& b)
+template<T>
+void hesv(hoNDArray< std::complex<T>>& A, hoNDArray< std::complex<T> >& b)
 {
-    typedef float T;
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return;
-        if( b.get_number_of_elements()==0 ) return;
-        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+    if (A.get_number_of_elements() == 0)
+        return;
+    if (b.get_number_of_elements() == 0)
+        return;
+    GADGET_CHECK_THROW(A.get_size(0) == b.get_size(0));
 
-        size_t info(0);
-        char uplo = 'L';
-        size_t n = (size_t)A.get_size(0);
-        size_t nrhs = (size_t)b.get_size(1);
-        T* pA = A.begin();
-        size_t lda = (size_t)A.get_size(0);
-        T* pB = b.begin();
-        size_t ldb = (size_t)b.get_size(0);
+    size_t n    = (size_t)A.get_size(0);
+    size_t nrhs = (size_t)b.get_size(1);
+    T* pA       = A.begin();
+    size_t lda  = (size_t)A.get_size(0);
+    T* pB       = b.begin();
+    size_t ldb  = (size_t)b.get_size(0);
 
-        hoNDArray<size_t> ipiv_array(n);
-        Gadgetron::clear(ipiv_array);
-        size_t* ipiv = ipiv_array.begin();
-
-        size_t lwork(n*n);
-        hoNDArray<T> work_array(lwork);
-        Gadgetron::clear(work_array);
-        T* work = work_array.begin();
-
-        cblas_ssysv(&uplo, &n, &nrhs, reinterpret_cast<float*>(pA), &lda, ipiv, reinterpret_cast<float*>(pB), &ldb, reinterpret_cast<float*>(work), &lwork, &info);
-
-        GADGET_CHECK_THROW(info==0);
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in hesv(hoNDArray< float >& A, hoNDArray< float >& b) ...");
-    }
+    hoNDArray<Lapack::Int> ipiv_array(n);
+    Gadgetron::clear(ipiv_array);
+    auto ipiv = ipiv_array.data();
+    auto info    = Lapack::hesv(false, n, nrhs, pA, lda, ipiv, pB, ldb);
+    GADGET_CHECK_THROW(info == 0);
 }
 
-template<> EXPORTCPUCOREMATH
-void hesv(hoNDArray< double >& A, hoNDArray< double >& b)
+template<T>
+void hesv(hoNDArray< T>& A, hoNDArray< T >& b)
 {
-    typedef double T;
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return;
-        if( b.get_number_of_elements()==0 ) return;
-        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+    if (A.get_number_of_elements() == 0)
+        return;
+    if (b.get_number_of_elements() == 0)
+        return;
+    GADGET_CHECK_THROW(A.get_size(0) == b.get_size(0));
 
-        size_t info(0);
-        char uplo = 'L';
-        size_t n = (size_t)A.get_size(0);
-        size_t nrhs = (size_t)b.get_size(1);
-        T* pA = A.begin();
-        size_t lda = (size_t)A.get_size(0);
-        T* pB = b.begin();
-        size_t ldb = (size_t)b.get_size(0);
+    size_t n    = (size_t)A.get_size(0);
+    size_t nrhs = (size_t)b.get_size(1);
+    T* pA       = A.begin();
+    size_t lda  = (size_t)A.get_size(0);
+    T* pB       = b.begin();
+    size_t ldb  = (size_t)b.get_size(0);
 
-        hoNDArray<size_t> ipiv_array(n);
-        Gadgetron::clear(ipiv_array);
-        size_t* ipiv = ipiv_array.begin();
-
-        size_t lwork(n*n);
-        hoNDArray<T> work_array(lwork);
-        Gadgetron::clear(work_array);
-        T* work = work_array.begin();
-
-        cblas_dsysv(&uplo, &n, &nrhs, reinterpret_cast<double*>(pA), &lda, ipiv, reinterpret_cast<double*>(pB), &ldb, reinterpret_cast<double*>(work), &lwork, &info);
-
-        GADGET_CHECK_THROW(info==0);
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in hesv(hoNDArray< double >& A, hoNDArray< double >& b) ...");
-    }
-}
-
-template<> EXPORTCPUCOREMATH
-void hesv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b)
-{
-    typedef std::complex<float> T;
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return;
-        if( b.get_number_of_elements()==0 ) return;
-        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
-
-        size_t info(0);
-        char uplo = 'L';
-        size_t n = (size_t)A.get_size(0);
-        size_t nrhs = (size_t)b.get_size(1);
-        T* pA = A.begin();
-        size_t lda = (size_t)A.get_size(0);
-        T* pB = b.begin();
-        size_t ldb = (size_t)b.get_size(0);
-
-        hoNDArray<size_t> ipiv_array(n);
-        Gadgetron::clear(ipiv_array);
-        size_t* ipiv = ipiv_array.begin();
-
-        size_t lwork(n*n);
-        hoNDArray<T> work_array(lwork);
-        Gadgetron::clear(work_array);
-        T* work = work_array.begin();
-
-        cblas_chesv(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(work), &lwork, &info);
-
-        GADGET_CHECK_THROW(info==0);
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in hesv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b) ...");
-    }
-}
-
-template<> EXPORTCPUCOREMATH
-void hesv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b)
-{
-    typedef hoNDArray< std::complex<float> > ArrayType;
-    try
-    {
-        hesv( reinterpret_cast<ArrayType&>(A), reinterpret_cast<ArrayType&>(b) );
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in hesv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b) ...");
-    }
-}
-
-template<> EXPORTCPUCOREMATH
-void hesv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b)
-{
-    typedef std::complex<double> T;
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return;
-        if( b.get_number_of_elements()==0 ) return;
-        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
-
-        size_t info(0);
-        char uplo = 'L';
-        size_t n = (size_t)A.get_size(0);
-        size_t nrhs = (size_t)b.get_size(1);
-        T* pA = A.begin();
-        size_t lda = (size_t)A.get_size(0);
-        T* pB = b.begin();
-        size_t ldb = (size_t)b.get_size(0);
-
-        hoNDArray<size_t> ipiv_array(n);
-        Gadgetron::clear(ipiv_array);
-        size_t* ipiv = ipiv_array.begin();
-
-        size_t lwork(n*n);
-        hoNDArray<T> work_array(lwork);
-        Gadgetron::clear(work_array);
-        T* work = work_array.begin();
-
-        cblas_zhesv(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_double*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(work), &lwork, &info);
-
-        GADGET_CHECK_THROW(info==0);
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in hesv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b) ...");
-    }
-}
-
-template<> EXPORTCPUCOREMATH
-void hesv(hoNDArray< complext<double> >& A, hoNDArray< complext<double> >& b)
-{
-    typedef hoNDArray< std::complex<double> > ArrayType;
-    try
-    {
-        hesv( reinterpret_cast<ArrayType&>(A), reinterpret_cast<ArrayType&>(b) );
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in hesv(hoNDArray< complext<double> >& A, hoNDArray< complext<double> >& b) ...");
-    }
+    hoNDArray<size_t> ipiv_array(n);
+    Gadgetron::clear(ipiv_array);
+    size_t* ipiv = ipiv_array.data();
+    auto info    = Lapack::hesv(false, n, nrhs, pA, lda, ipiv, pB, ldb);
+    GADGET_CHECK_THROW(info == 0);
 }
 
 /// ------------------------------------------------------------------------------------

@@ -26,7 +26,7 @@ set(cpucore_math_src_files
          )
 
     set(cpucore_math_src_files 
-#        ${cpucore_math_src_files}
+        ${cpucore_math_src_files}
         hoNDArray_reductions.cpp
         hoNDArray_elemwise.cpp
         cpp_blas.cpp
