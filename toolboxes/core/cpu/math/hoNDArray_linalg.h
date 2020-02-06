@@ -18,8 +18,9 @@ namespace Gadgetron
 
 // following matrix computation calls lapacke functions
 
-/// C = A*B for complex float
-EXPORTCPUCOREMATH void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B);
+/// C = A*B
+template<class T>
+void gemm(hoNDArray<T>& C, const hoNDArray<T>& A, const hoNDArray<T>& B);
 /// if transA==true, C = A'*B
 /// if transB==true, C=A*B'
 /// if both are true, C=A'*B'
@@ -81,9 +82,9 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
 template<typename T> EXPORTCPUCOREMATH 
 void getrf(hoNDArray<T>& A, hoNDArray<Lapack::Int>& ipiv);
 
-/// Computes the inverse of an LU-factored general matrix
+/// Computes the inverse of a matrix using LU factorization
 template<typename T> EXPORTCPUCOREMATH 
-void getri(hoNDArray<T>& A);
+void invert(hoNDArray<T>& A);
 
 
 

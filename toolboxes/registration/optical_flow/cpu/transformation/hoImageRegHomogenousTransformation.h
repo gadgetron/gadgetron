@@ -122,7 +122,7 @@ namespace Gadgetron {
     template <typename ValueType, unsigned int D> 
     bool hoImageRegHomogenousTransformation<ValueType, D>::invertTransformation()
     {
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::getri(matrix_) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::invert(matrix_) );
         return true;
     }
 

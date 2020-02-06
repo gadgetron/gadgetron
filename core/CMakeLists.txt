@@ -8,22 +8,12 @@ add_subdirectory(parallel)
 add_subdirectory(distributed)
 
 add_library(gadgetron_core SHARED
-        Types.h
-        variant.hpp
-        Channel.h
-        Channel.hpp
         Channel.cpp
-        Gadget.h
         Gadget.cpp
-        Reader.h
-        Writer.h
         LegacyACE.cpp
         Message.cpp
-        Writer.hpp
-        Response.h
         Response.cpp
-        PureGadget.h
-        io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp io/ismrmrd_types.h io/adapt_struct.h TypeTraits.h ChannelAlgorithms.h io/iostream_operators.h )
+        io/from_string.cpp)
 
 target_link_libraries(gadgetron_core
         gadgetron_toolbox_cpucore

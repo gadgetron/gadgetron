@@ -3,6 +3,7 @@
 //
 
 #include "cpp_lapack.h"
+#include <algorithm>
 #include <vector>
 
 #ifdef USE_MKL
@@ -85,14 +86,14 @@ Gadgetron::Lapack::Int Gadgetron::Lapack::posv(
 
 namespace {
     template<class T>
-        class int_converter {
+        class int_output_converter {
 
         public:
-            int_converter(T* outside, size_t n) : internal_storage(n), elements(n),outside_data(outside) {
+            int_output_converter(T* outside, size_t n) : internal_storage(n), elements(n),outside_data(outside) {
                 data = internal_storage.data();
             }
 
-            ~int_converter(){
+            ~int_output_converter(){
                 std::copy(internal_storage.begin(),internal_storage.end(),outside_data);
             }
             lapack_int* data;
@@ -103,17 +104,38 @@ namespace {
         };
 
     template<>
-    class int_converter<lapack_int> {
+    class int_output_converter<lapack_int> {
 
     public:
-        int_converter(lapack_int* outside,size_t n) : data(outside) {};
+        int_output_converter(lapack_int* outside,size_t n) : data(outside) {};
+        lapack_int* data;
+    };
+
+    template<class T>
+    class int_input_converter {
+    public:
+        int_input_converter(T* outside, size_t n) : storage{std::vector<lapack_int>(n)} {
+            data = storage.data();
+            std::copy_n(outside,n,data);
+        }
+
+    public:
+        lapack_int* data;
+    private:
+        std::vector<lapack_int> storage;
+    };
+
+    template<>
+    class int_input_converter<lapack_int>{
+    public:
+        int_input_converter(lapack_int* outside, size_t n) : data{outside} {}
         lapack_int* data;
     };
 }
 
 Gadgetron::Lapack::Int Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs, std::complex<float> *a, size_t lda, Int *ipiv,
                                   std::complex<float> *b, size_t ldb) {
-    auto converter = int_converter<Int>(ipiv,n);
+    auto converter = int_output_converter<Int>(ipiv,n);
     return LAPACKE_chesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_float*>(a),lda, converter.data,
                          reinterpret_cast<lapack_complex_float*>(b),ldb);
 
@@ -122,34 +144,94 @@ Gadgetron::Lapack::Int Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs
 
 Gadgetron::Lapack::Int Gadgetron::Lapack::hesv(bool upper, size_t n, size_t nrhs, std::complex<double> *a, size_t lda, Int *ipiv,
                                   std::complex<double> *b, size_t ldb) {
-    auto converter = int_converter<Int>(ipiv,n);
+    auto converter = int_output_converter<Int>(ipiv,n);
     return LAPACKE_zhesv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_double*>(a),lda, converter.data,
                          reinterpret_cast<lapack_complex_double*>(b),ldb);
 }
 
 Gadgetron::Lapack::Int
 Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, float *a, size_t lda, Int *ipiv, float *b, size_t ldb) {
-    auto converter = int_converter<Int>(ipiv,n);
+    auto converter = int_output_converter<Int>(ipiv,n);
     return LAPACKE_ssysv(LAPACK_COL_MAJOR,upper ? 'U' : 'L',n,nrhs,a,lda,converter.data,b,ldb);
 }
 
 Gadgetron::Lapack::Int
 Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, double *a, size_t lda, Int *ipiv, double *b, size_t ldb) {
-    auto converter = int_converter<Int>(ipiv,n);
+    auto converter = int_output_converter<Int>(ipiv,n);
     return LAPACKE_dsysv(LAPACK_COL_MAJOR,upper ? 'U' : 'L',n,nrhs,a,lda,converter.data,b,ldb);
 
 }
 
-Gadgetron::Lapack::Int Gadgetron::Lapack::syv(bool upper, size_t n, size_t nrhs, std::complex<float> *a, size_t lda, Int *ipiv,
+Gadgetron::Lapack::Int Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, std::complex<float> *a, size_t lda, Int *ipiv,
                                  std::complex<float> *b, size_t ldb) {
-    auto converter = int_converter<Int>(ipiv,n);
+    auto converter = int_output_converter<Int>(ipiv,n);
     return LAPACKE_csysv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_float*>(a),lda, converter.data,
         reinterpret_cast<lapack_complex_float*>(b),ldb);
 }
 
 Gadgetron::Lapack::Int Gadgetron::Lapack::sysv(bool upper, size_t n, size_t nrhs, std::complex<double> *a, size_t lda, Int *ipiv,
                                   std::complex<double> *b, size_t ldb) {
-    auto converter = int_converter<Int>(ipiv,n);
+    auto converter = int_output_converter<Int>(ipiv,n);
     return LAPACKE_zsysv(LAPACK_COL_MAJOR, upper ? 'U' : 'L', n, nrhs, reinterpret_cast<lapack_complex_double*>(a),lda, converter.data,
                          reinterpret_cast<lapack_complex_double*>(b),ldb);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::gesv(
+    size_t n, size_t nrhs, float* a, size_t lda, Gadgetron::Lapack::Int* ipiv, float* b, size_t ldb) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_sgesv(LAPACK_COL_MAJOR,n,nrhs,a,lda,converter.data,b,ldb);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::gesv(
+    size_t n, size_t nrhs, double* a, size_t lda, Gadgetron::Lapack::Int* ipiv, double* b, size_t ldb) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_dgesv(LAPACK_COL_MAJOR,n,nrhs,a,lda,converter.data,b,ldb);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::gesv(size_t n, size_t nrhs, std::complex<float>* a, size_t lda,
+    Gadgetron::Lapack::Int* ipiv, std::complex<float>* b, size_t ldb) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_cgesv(LAPACK_COL_MAJOR,n,nrhs, reinterpret_cast<lapack_complex_float*>(a),lda,converter.data,
+        reinterpret_cast<lapack_complex_float*>(b),ldb);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::gesv(size_t n, size_t nrhs, std::complex<double>* a, size_t lda,
+    Gadgetron::Lapack::Int* ipiv, std::complex<double>* b, size_t ldb) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_zgesv(LAPACK_COL_MAJOR,n,nrhs, reinterpret_cast<lapack_complex_double*>(a),lda,converter.data,
+                         reinterpret_cast<lapack_complex_double*>(b),ldb);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getrf(
+    size_t m, size_t n, float* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_sgetrf(LAPACK_COL_MAJOR,m,n,a,lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getrf(
+    size_t m, size_t n, double* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_dgetrf(LAPACK_COL_MAJOR,m,n,a,lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getrf(
+    size_t m, size_t n, std::complex<float>* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_cgetrf(LAPACK_COL_MAJOR,m,n, reinterpret_cast<lapack_complex_float*>(a),lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getrf(
+    size_t m, size_t n, std::complex<double>* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_output_converter<Int>(ipiv,n);
+    return LAPACKE_zgetrf(LAPACK_COL_MAJOR,m,n, reinterpret_cast<lapack_complex_double*>(a),lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getri(size_t n, float* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_input_converter<Int>(ipiv,n);
+    return LAPACKE_sgetri(LAPACK_COL_MAJOR,n,a,lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getri(size_t n, double* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_input_converter<Int>(ipiv,n);
+    return LAPACKE_dgetri(LAPACK_COL_MAJOR,n,a,lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getri(
+    size_t n, std::complex<float>* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_input_converter<Int>(ipiv,n);
+    return LAPACKE_cgetri(LAPACK_COL_MAJOR,n, reinterpret_cast<lapack_complex_float*>(a),lda,converter.data);
+}
+Gadgetron::Lapack::Int Gadgetron::Lapack::getri(
+    size_t n, std::complex<double>* a, size_t lda, Gadgetron::Lapack::Int* ipiv) {
+    auto converter = int_input_converter<Int>(ipiv,n);
+    return LAPACKE_zgetri(LAPACK_COL_MAJOR,n, reinterpret_cast<lapack_complex_double*>(a),lda,converter.data);
 }

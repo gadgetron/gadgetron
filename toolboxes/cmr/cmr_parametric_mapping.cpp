@@ -503,7 +503,7 @@ void CmrParametricMapping<T>::compute_sd_impl(const VectorType& ti, const Vector
         Gadgetron::scal((T)(1.0 / (std*std)), hessian);
 
         // take inversion
-        Gadgetron::getri(hessian);
+        Gadgetron::invert(hessian);
 
         for (n = 0; n < N; n++)
         {

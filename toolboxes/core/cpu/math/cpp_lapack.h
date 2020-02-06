@@ -42,7 +42,23 @@ namespace Gadgetron {
 
         Int sysv(bool upper, size_t n, size_t nrhs, float* a, size_t lda, Int* ipiv, float*b, size_t ldb);
         Int sysv(bool upper, size_t n, size_t nrhs, double* a, size_t lda, Int* ipiv, double*b, size_t ldb);
-        Int syv(bool upper, size_t n, size_t nrhs, std::complex<float>* a, size_t lda, Int* ipiv, std::complex<float>*b, size_t ldb);
+        Int sysv(bool upper, size_t n, size_t nrhs, std::complex<float>* a, size_t lda, Int* ipiv, std::complex<float>*b, size_t ldb);
         Int sysv(bool upper, size_t n, size_t nrhs, std::complex<double>* a, size_t lda, Int* ipiv, std::complex<double>*b, size_t ldb);
+
+        Int gesv(size_t n, size_t nrhs, float* a, size_t lda, Int* ipiv, float* b, size_t ldb);
+        Int gesv(size_t n, size_t nrhs, double* a, size_t lda, Int* ipiv, double* b, size_t ldb);
+        Int gesv(size_t n, size_t nrhs, std::complex<float>* a, size_t lda, Int* ipiv, std::complex<float>* b, size_t ldb);
+        Int gesv(size_t n, size_t nrhs, std::complex<double>* a, size_t lda, Int* ipiv, std::complex<double>* b, size_t ldb);
+
+        Int getrf(size_t m, size_t n, float* a, size_t lda, Int* ipiv);
+        Int getrf(size_t m, size_t n, double* a, size_t lda, Int* ipiv);
+        Int getrf(size_t m, size_t n, std::complex<float>* a, size_t lda, Int* ipiv);
+        Int getrf(size_t m, size_t n, std::complex<double>* a, size_t lda, Int* ipiv);
+
+
+        Int getri(size_t n, float* a, size_t lda, Int* ipiv);
+        Int getri(size_t n, double* a, size_t lda, Int* ipiv);
+        Int getri(size_t n, std::complex<float>* a, size_t lda, Int* ipiv);
+        Int getri(size_t n, std::complex<double>* a, size_t lda, Int* ipiv);
     }
 }

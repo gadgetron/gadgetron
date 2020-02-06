@@ -4,6 +4,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_utils.h"
+#include "hoArmadillo.h"
 
 namespace Gadgetron{
 
