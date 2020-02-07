@@ -43,10 +43,10 @@ void potrf(hoNDArray<T>& A, char uplo);
 
 /// compute all eigenvalues and eigenvectors of a Hermitian matrix A
 template<typename T> EXPORTCPUCOREMATH 
-void heev(hoNDArray<T>& A, hoNDArray<typename realType<T>::Type>& eigenValue);
+std::enable_if_t<std::is_floating_point_v<T>> heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue);
 
 template<typename T> EXPORTCPUCOREMATH
-void heev(hoNDArray< std::complex<T> >& A, hoNDArray<  std::complex<T> >& eigenValue);
+void heev(hoNDArray< std::complex<T> >& A, hoNDArray<T>& eigenValue);
 
 /// compute inverse of a symmetric (Hermitian) positive-definite matrix A
 template<typename T> EXPORTCPUCOREMATH 

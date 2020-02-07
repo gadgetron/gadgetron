@@ -190,7 +190,7 @@ void heev(hoNDArray<std::complex<T>>& A, hoNDArray<T>& eigenValue)
 
 
 template<typename T>
-void heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue)
+std::enable_if_t<std::is_floating_point_v<T>> heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue)
 {
     size_t M = (size_t)A.get_size(0);
     GADGET_CHECK_THROW(A.get_size(1) == M);
