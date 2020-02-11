@@ -26,7 +26,10 @@ install(FILES ${operator_header_files}
 add_library(gadgetron_toolbox_operator INTERFACE)
 target_include_directories(gadgetron_toolbox_operator
         INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+install(TARGETS gadgetron_toolbox_operator
+        EXPORT gadgetron-export)
 
 add_subdirectory(cpu)
 

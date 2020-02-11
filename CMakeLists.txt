@@ -208,9 +208,9 @@ endif()
 add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES
 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-message(${Boost_LIBRARIES})
 #set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
+
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
@@ -260,11 +260,19 @@ find_package(Armadillo REQUIRED )
 add_library(armadillo INTERFACE)
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
 add_definitions(-DARMA_DONT_USE_WRAPPER)
+install(TARGETS armadillo EXPORT gadgetron-export)
 
 find_package(PugiXML REQUIRED)
-find_package(ISMRMRD REQUIRED)
 
-link_directories(${ISMRMRD_LIBRARY_DIRS})
+find_package(ISMRMRD REQUIRED)
+add_library(ISMRMRD INTERFACE)
+set_property(TARGET ISMRMRD PROPERTY
+        INTERFACE_INCLUDE_DIRECTORIES ${ISMRMRD_INCLUDE_DIR})
+target_link_directories(ISMRMRD INTERFACE ${ISMRMRD_LIBRARY_DIRS})
+message("FNARBEL ${ISMRMRD_LIBRARIES}")
+target_link_libraries(ISMRMRD INTERFACE ${ISMRMRD_LIBRARIES})
+install(TARGETS ISMRMRD EXPORT gadgetron-export)
+
 if (CUDA_FOUND AND USE_CUDA)
 # bart needs cuda
     find_package(BART)
@@ -274,6 +282,7 @@ find_package(FFTW3 REQUIRED COMPONENTS single double)
 add_library(FFTW INTERFACE)
 target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})
 set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
+install(TARGETS FFTW EXPORT gadgetron-export)
 
 option(USE_MKL OFF)
 if (USE_MKL)
@@ -338,9 +347,10 @@ set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(boost INTERFACE python)
-
+install(TARGETS python EXPORT gadgetron-export)
 endif()
 
+install(TARGETS boost EXPORT gadgetron-export)
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
 message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
@@ -389,6 +399,34 @@ endif ()
 endif ()
 
 #  ---   Main Library  (end) ----
+include(GNUInstallDirs)
+install(EXPORT gadgetron-export
+        FILE gadgetron-targets.cmake
+        NAMESPACE
+        Gadgetron::
+        DESTINATION
+            ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+        ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
+        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
+)
+
+write_basic_package_version_file(
+        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
+        VERSION ${GADGETRON_VERSION_STRING}
+        COMPATIBILITY AnyNewerVersion
+)
+
+install(
+        FILES
+        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
+        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
+)
 
 # Create package
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)

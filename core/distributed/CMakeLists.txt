@@ -14,6 +14,7 @@ set_target_properties(gadgetron_core_distributed PROPERTIES
         SOVERSION ${GADGETRON_SOVERSION})
 
 install(TARGETS gadgetron_core_distributed
+		EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

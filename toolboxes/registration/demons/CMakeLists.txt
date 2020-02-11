@@ -9,11 +9,18 @@ set_target_properties(gadgetron_toolbox_mri_core PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(
         gadgetron_toolbox_demons
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 
 
+install(TARGETS gadgetron_toolbox_demons
+        EXPORT gadgetron-export
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        COMPONENT main
+        )
 
 install(FILES
         demons_registration.h

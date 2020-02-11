@@ -12,7 +12,7 @@ add_library(gadgetron_core_writers SHARED
 
 target_link_libraries(gadgetron_core_writers
         gadgetron_core
-        ismrmrd
+        ISMRMRD
         gadgetron_toolbox_mri_core)
 
 set_target_properties(gadgetron_core_writers PROPERTIES
@@ -20,9 +20,9 @@ set_target_properties(gadgetron_core_writers PROPERTIES
         SOVERSION ${GADGETRON_SOVERSION})
 
 install(TARGETS gadgetron_core_writers
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-   RUNTIME DESTINATION bin
-   COMPONENT main
-)
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        COMPONENT main
+        )
 
