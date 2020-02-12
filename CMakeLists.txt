@@ -280,7 +280,7 @@ endif()
 find_package(FFTW3 REQUIRED COMPONENTS single double)
 add_library(FFTW INTERFACE)
 target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})
-set_property(TARGET FFTW PROPERTY INTERFACE_LINK_DIRECTORIES ${FFTW3_INCLUDE_DIR})
+set_property(TARGET FFTW PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 install(TARGETS FFTW EXPORT gadgetron-export)
 
 option(USE_MKL OFF)
@@ -292,22 +292,25 @@ if (USE_MKL)
     set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
 
 
+    add_definitions(-DUSE_MKL)
+else ()
 
+    find_package(CBLAS REQUIRED)
+    find_package(LAPACK)
+    if (LAPACK_FOUND)
+        message("LAPACK Found")
+    else ()
+        find_package(clapack CONFIG REQUIRED)
+        set(LAPACK_LIBRARIES f2c lapack)
+    endif ()
+    add_library(BLAS INTERFACE)
+    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CBLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
+    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${CBLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
-  add_definitions(-DUSE_MKL)
-  else()
+endif ()
 
-  find_package(CBLAS REQUIRED)
-	find_package(LAPACK)
-	if (LAPACK_FOUND)
-		message("LAPACK Found")
-	else()
-		find_package(clapack CONFIG REQUIRED)
-		set(LAPACK_LIBRARIES f2c lapack)
-	endif ()
+install(TARGETS BLAS EXPORT gadgetron-export)
 
-
-endif()
 
 if(EXISTS $ENV{TORCH_HOME})
     find_package(Torch)

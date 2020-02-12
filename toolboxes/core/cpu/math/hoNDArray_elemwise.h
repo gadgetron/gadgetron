@@ -501,36 +501,15 @@ template<class T> EXPORTCPUCOREMATH void pshrinkd ( hoNDArray<T> *x, hoNDArray<t
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      add(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("+= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y);
+template<class T, class R> hoNDArray<T>& operator+= (hoNDArray<T> &x, const R &y);
 
-/**
- * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> >&x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> >&x, const T &y);
 
 /**
  * @brief Implementation of element-wise operator-= on two hoNDArrays.
@@ -541,15 +520,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      subtract(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("-= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 
 /**
@@ -557,21 +528,8 @@ template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoND
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y);
+template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const S &y);
 
-/**
- * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> >&x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> >&x, const T &y);
 
 /**
  * @brief Implementation of element-wise operator*= on two hoNDArrays.
@@ -582,36 +540,14 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      multiply(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("*= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y);
+template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const S &y);
 
 /**
  * @brief Implementation of element-wise operator/= on two hoNDArrays.
@@ -622,36 +558,17 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      divide(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("*= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y);
+template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const S &y);
 
-/**
- * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y);
 
-/**
- * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y);
+
 
 /**
  * @brief Calculates y = a*x+y in which x and y are considered as vectors
@@ -718,3 +635,6 @@ void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
  hoNDArray<bool>& operator|= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
 
 }
+
+
+#include "hoNDArray_elemwise.hpp"
