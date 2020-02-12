@@ -1,6 +1,6 @@
 
 add_library(gadgetron_toolbox_demons demons_registration.cpp)
-target_link_libraries(gadgetron_toolbox_demons gadgetron_toolbox_cpucore)
+target_link_libraries(gadgetron_toolbox_demons gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math)
 
 
 set_target_properties(gadgetron_toolbox_mri_core PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

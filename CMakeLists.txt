@@ -156,7 +156,7 @@ else ()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
         endif ()
     endif ()
-    set(CXX_STANDARD 17)
+    set(CXX_STANDARD 14)
 
 
     check_cxx_compiler_flag(-std=c++${CXX_STANDARD} COMPILER_SUPPORTS_stdcxx${CXX_STANDARD})
@@ -269,7 +269,6 @@ add_library(ISMRMRD INTERFACE)
 set_property(TARGET ISMRMRD PROPERTY
         INTERFACE_INCLUDE_DIRECTORIES ${ISMRMRD_INCLUDE_DIR})
 target_link_directories(ISMRMRD INTERFACE ${ISMRMRD_LIBRARY_DIRS})
-message("FNARBEL ${ISMRMRD_LIBRARIES}")
 target_link_libraries(ISMRMRD INTERFACE ${ISMRMRD_LIBRARIES})
 install(TARGETS ISMRMRD EXPORT gadgetron-export)
 
@@ -373,8 +372,10 @@ if (BUILD_WITH_GPERFTOOLS_PROFILER)
 message("Adding gpertools to build.")
 find_package(Gperftools REQUIRED)
 endif()
-
+option(BUILD_TESTING ON)
+if (BUILD_TESTING)
 add_subdirectory(test)
+endif()
 add_subdirectory(cmake)
 add_subdirectory(chroot)
 

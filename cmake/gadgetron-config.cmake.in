@@ -1,6 +1,8 @@
 @PACKAGE_INIT@
 
 find_package(ISMRMRD REQUIRED )
+find_package(CBLAS REQUIRED)
+
 if(NOT TARGET gadgetron::gadgetron)
     INCLUDE(${CMAKE_CURRENT_LIST_DIR}/gadgetron-targets.cmake)
 endif()
