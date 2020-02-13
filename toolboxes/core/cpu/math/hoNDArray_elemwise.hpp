@@ -6,11 +6,13 @@
 namespace {
     using namespace Gadgetron;
     namespace gadgetron_detail {
-        constexpr long long NumElementsUseThreading = 1024*64; //This is probably WAAAY too low. Any real gain for operations this small comes from OMP being more aggresive with SIMD
+        constexpr long long NumElementsUseThreading
+            = 1024 * 64; // This is probably WAAAY too low. Any real gain for operations this small comes from OMP being
+                         // more aggresive with SIMD
         template <class T, class R, class F> inline void omp_transform(const T* t, size_t N, R* r, F f) {
 
 #pragma omp parallel for if (N > gadgetron_detail::NumElementsUseThreading)
-            for (long long i = 0; i < (long long) N; i++) {
+            for (long long i = 0; i < (long long)N; i++) {
                 r[i] = f(t[i]);
             }
         }
@@ -97,7 +99,7 @@ namespace {
         }
 
         template <class T, class S, class BinaryFunction>
-        void transform_arrays_inplace(hoNDArray<T>& x, const hoNDArray<S>& y, BinaryFunction op) {
+        void transform_arrays_inplace(hoNDArray<T>& x, const hoNDArray<S>& y, BinaryFunction&& op) {
             if (!compatible_dimensions<T, S>(x, y)) {
                 throw std::runtime_error("add: x and y have incompatible dimensions.");
             }
@@ -107,7 +109,7 @@ namespace {
 
         template <class T, class S, class BinaryFunction>
         void transform_arrays(const hoNDArray<T>& x, const hoNDArray<S>& y,
-            hoNDArray<typename mathReturnType<T, S>::type>& r, BinaryFunction op) {
+            hoNDArray<typename mathReturnType<T, S>::type>& r, BinaryFunction&& op) {
             // Check the dimensions os x and y for broadcasting.
             if (!compatible_dimensions<T, S>(x, y)) {
                 throw std::runtime_error("add: x and y have incompatible dimensions.");

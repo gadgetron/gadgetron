@@ -356,9 +356,7 @@ namespace {
 
         auto maximum_vector_length = std::accumulate(vector_field.begin(), vector_field.end(), T(0),
             [](auto current, const auto& next) { return std::max(current, norm(next)); });
-
-        size_t n_iteration = std::ceil(2.0 + 0.5f * std::log2(maximum_vector_length));
-
+        int n_iteration = std::ceil(2.0 + 0.5f * std::log2(maximum_vector_length));
         auto field_exponent = hoNDArray<vector_td<T, D>>(vector_field.dimensions());
         std::transform(vector_field.begin(), vector_field.end(), field_exponent.begin(),
             [n_iteration](const auto& val) { return val * std::pow(T(2), T(-n_iteration)); });
@@ -373,15 +371,13 @@ namespace {
 
 template<class T, unsigned int D>
 hoNDArray<vector_td<T,D>> Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations,float sigma){
-    auto vector_field = demons_step<T,D>(fixed,moving,1.0f,1e-3f);
+    auto vector_field = demons_step<T,D>(fixed,moving,2.0f,1e-6f);
     vector_field = gaussian_filter(vector_field,sigma);
-//    vector_field = vector_field_exponential(vector_field);
-    GDEBUG("DAEMON!");
+    vector_field = vector_field_exponential(vector_field);
     for (size_t i = 1; i < iterations; i++){
-        GDEBUG("Iteration %i \n",i);
         auto current_fixed = deform_image(fixed,vector_field);
-        auto update_field = demons_step<T,D>(current_fixed,moving,1.0f,1e-3f);
-//        update_field = vector_field_exponential(update_field);
+        auto update_field = demons_step<T,D>(current_fixed,moving,2.0f,1e-6f);
+        update_field = vector_field_exponential(update_field);
         vector_field = compose_fields(update_field,vector_field);
         vector_field = gaussian_filter(vector_field,sigma);
     }
