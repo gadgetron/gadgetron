@@ -99,7 +99,10 @@ namespace Gadgetron {
                 size_t current_target_acquisitions = first ? target_acquisitions_first : target_acquisitions;
                 bool result = ++num_acquisitions >= current_target_acquisitions;
                 if (result)
+                {
+                    first = false;
                     num_acquisitions = 0;
+                }
                 return result;
             }
         };

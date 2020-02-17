@@ -1,5 +1,5 @@
-#ifndef ACCUMULATORGADGET_H
-#define ACCUMULATORGADGET_H
+#ifndef RATELIMITGADGET_H
+#define RATELIMITGADGET_H
 
 #include "Gadget.h"
 #include "hoNDArray.h"
