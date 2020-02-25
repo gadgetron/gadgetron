@@ -29,7 +29,7 @@ template void gemm(hoNDArray<std::complex<double>>& C, const hoNDArray<std::comp
 template void gemm(hoNDArray<complext<float>>& C, const hoNDArray<complext<float>>& A, const hoNDArray<complext<float>>& B);
 template void gemm(hoNDArray<complext<double>>& C, const hoNDArray<complext<double>>& A, const hoNDArray<complext<double>>& B);
 
-template<class T> EXPORTCPUCOREMATH
+template<class T> 
 void gemm(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoNDArray<T>& B, bool transB)
 
 {
@@ -351,7 +351,7 @@ template void hesv(hoNDArray<std::complex<float>>& A, hoNDArray<std::complex<flo
 template void hesv(hoNDArray<std::complex<double>>& A, hoNDArray<std::complex<double>>& b);
 /// ------------------------------------------------------------------------------------
 
-template<class T> EXPORTCPUCOREMATH
+template<class T> 
 void gesv(hoNDArray<T>& A, hoNDArray<T>& b)
 {
 

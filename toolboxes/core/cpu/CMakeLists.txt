@@ -73,6 +73,7 @@ target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
   ismrmrd
+	boost
   )
 
 install(TARGETS gadgetron_toolbox_cpucore
