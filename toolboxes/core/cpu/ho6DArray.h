@@ -51,4 +51,4 @@ protected:
 
 }
 
-#include <ho6DArray.hxx>
+#include "ho6DArray.hxx"

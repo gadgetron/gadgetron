@@ -11,7 +11,7 @@ namespace {
 
         auto data = std::get<hoNDArray<T>>(image);
 
-		auto max_value = *std::max(data.begin(), data.end());
+		auto max_value = *std::max_element(data.begin(), data.end());
 		for (auto& d : data) d = max_value - d;
 
         return Image<T>(

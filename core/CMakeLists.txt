@@ -36,6 +36,7 @@ install(TARGETS gadgetron_core
 install(FILES
         Channel.h
         Channel.hpp
+        ChannelIterator.h
         Message.h
         Message.hpp
         MPMCChannel.h
