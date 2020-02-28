@@ -6,7 +6,7 @@ add_library(gadgetron_core_distributed SHARED
 
 target_link_libraries(gadgetron_core_distributed
         gadgetron_core
-        ismrmrd
+        ISMRMRD::ISMRMRD
         gadgetron_toolbox_mri_core)
 
 set_target_properties(gadgetron_core_distributed PROPERTIES

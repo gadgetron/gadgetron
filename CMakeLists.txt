@@ -264,13 +264,8 @@ install(TARGETS armadillo EXPORT gadgetron-export)
 
 find_package(PugiXML REQUIRED)
 
-find_package(ISMRMRD REQUIRED)
-add_library(ISMRMRD INTERFACE)
-set_property(TARGET ISMRMRD PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${ISMRMRD_INCLUDE_DIR})
-target_link_directories(ISMRMRD INTERFACE ${ISMRMRD_LIBRARY_DIRS})
-target_link_libraries(ISMRMRD INTERFACE ${ISMRMRD_LIBRARIES})
-install(TARGETS ISMRMRD EXPORT gadgetron-export)
+find_package(ISMRMRD CONFIG REQUIRED)
+
 
 if (CUDA_FOUND AND USE_CUDA)
 # bart needs cuda

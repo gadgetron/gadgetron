@@ -16,6 +16,7 @@ add_library(gadgetron_core SHARED
         io/from_string.cpp)
 
 target_link_libraries(gadgetron_core
+        ISMRMRD::ISMRMRD
         gadgetron_toolbox_cpucore
         boost)
 

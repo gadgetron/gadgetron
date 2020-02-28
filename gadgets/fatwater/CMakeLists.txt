@@ -18,7 +18,6 @@ target_link_libraries(
   gadgetron_toolbox_cpucore_math
   gadgetron_toolbox_log
   gadgetron_toolbox_fatwater
-  ${ISMRMRD_LIBRARIES}
 )
 
 install(FILES 
