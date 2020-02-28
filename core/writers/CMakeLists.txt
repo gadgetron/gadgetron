@@ -8,7 +8,10 @@ add_library(gadgetron_core_writers SHARED
         IsmrmrdImageArrayWriter.h
         AcquisitionBucketWriter.cpp
         AcquisitionBucketWriter.h
-        )
+        AcquisitionWriter.cpp
+        AcquisitionWriter.h
+        WaveformWriter.cpp
+        WaveformWriter.h)
 
 target_link_libraries(gadgetron_core_writers
         gadgetron_core
