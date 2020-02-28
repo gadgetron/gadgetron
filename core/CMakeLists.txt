@@ -13,6 +13,7 @@ add_library(gadgetron_core SHARED
         Channel.h
         Channel.hpp
         Channel.cpp
+        ChannelIterator.h
         Gadget.h
         Gadget.cpp
         Reader.h
@@ -44,6 +45,7 @@ install(TARGETS gadgetron_core
 install(FILES
         Channel.h
         Channel.hpp
+        ChannelIterator.h
         Message.h
         Message.hpp
         MPMCChannel.h

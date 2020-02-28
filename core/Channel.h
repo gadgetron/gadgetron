@@ -9,6 +9,8 @@
 #include "Message.h"
 #include "Types.h"
 
+#include "ChannelIterator.h"
+
 namespace Gadgetron { namespace Core {
     class GenericInputChannel;
 
@@ -50,6 +52,8 @@ namespace Gadgetron { namespace Core {
         /// Pushes a message to the channel
         void push_message(Message);
 
+        ChannelIterator<OutputChannel> begin();
+
     private:
         OutputChannel(const OutputChannel&) = default;
 
@@ -63,6 +67,7 @@ namespace Gadgetron { namespace Core {
         std::shared_ptr<Channel::Closer> closer;
     };
 } }
+
 #include "Channel.hpp"
 
 namespace Gadgetron { namespace Core {
@@ -98,10 +103,6 @@ namespace Gadgetron { namespace Core {
     };
 
     template <class CHANNEL> class ChannelIterator;
-
-    ChannelIterator<GenericInputChannel> begin(GenericInputChannel&);
-
-    ChannelIterator<GenericInputChannel> end(GenericInputChannel&);
 
     struct ChannelPair {
         GenericInputChannel input;

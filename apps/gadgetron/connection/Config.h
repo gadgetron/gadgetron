@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include "Types.h"
 
 namespace Gadgetron::Server::Connection {
@@ -24,7 +25,7 @@ namespace Gadgetron::Server::Connection {
 
         struct Reader {
             std::string dll, classname;
-            boost::optional<uint16_t> slot;
+            Core::optional<uint16_t> slot;
         };
 
         struct Writer {
@@ -52,7 +53,7 @@ namespace Gadgetron::Server::Connection {
 
         struct Execute {
             std::string name, type;
-            boost::optional<std::string> target;
+            Core::optional<std::string> target;
         };
 
         struct Connect {
@@ -87,7 +88,6 @@ namespace Gadgetron::Server::Connection {
         };
 
         struct ParallelProcess {
-
             size_t workers = 0;
             PureStream stream;
         };
