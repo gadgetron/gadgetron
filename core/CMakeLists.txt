@@ -20,15 +20,16 @@ target_link_libraries(gadgetron_core
         boost)
 
 target_include_directories(gadgetron_core PUBLIC
-        .
-        ${ISMRMRD_INCLUDE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        )
 
-install(TARGETS gadgetron_core 
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-   RUNTIME DESTINATION bin
-   COMPONENT main
-)
+install(TARGETS gadgetron_core
+        EXPORT gadgetron-export
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        COMPONENT main
+        )
 
 
 install(FILES

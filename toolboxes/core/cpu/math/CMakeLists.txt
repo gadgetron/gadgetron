@@ -6,7 +6,6 @@ endif (WIN32)
 
 
 set(cpucore_math_header_files
-    cpucore_math_export.h
     hoNDArray_math.h
     hoNDImage_util.h
     hoNDImage_util.hxx
@@ -45,6 +44,7 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
             )
 
 install(TARGETS gadgetron_toolbox_cpucore_math
+        EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

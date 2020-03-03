@@ -103,7 +103,10 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
         arma::Mat<T> Um;
         arma::Col<value_type> Sv;
 
-        arma::svd_econ(Um, Sv, Vm, Am, 'r');
+		Lapack::gesvd()
+
+        //arma::svd_econ(Um, Sv, Vm, Am, 'r');
+		//arma::svd(Um, Sv, Vm, Am);
 
         for (n = 0; n < N; n++)
         {

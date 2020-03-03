@@ -297,33 +297,23 @@ template void posv(hoNDArray<float>& A, hoNDArray<float>& b);
 template void posv(hoNDArray<double>& A, hoNDArray<double>& b);
 template void posv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b);
 template void posv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b);
+template void posv(hoNDArray<complext<float>>& A, hoNDArray< complext<float> >& b);
+template void posv(hoNDArray<complext<double>>& A, hoNDArray< complext<double> >& b);
 
 /// ------------------------------------------------------------------------------------
+namespace {
 
-template<class T>
-void hesv(hoNDArray< std::complex<T>>& A, hoNDArray< std::complex<T> >& b)
-{
-    if (A.get_number_of_elements() == 0)
-        return;
-    if (b.get_number_of_elements() == 0)
-        return;
-    GADGET_CHECK_THROW(A.get_size(0) == b.get_size(0));
-
-    size_t n    = (size_t)A.get_size(0);
-    size_t nrhs = (size_t)b.get_size(1);
-    auto pA       = A.data();
-    size_t lda  = (size_t)A.get_size(0);
-    auto pB       = b.data();
-    size_t ldb  = (size_t)b.get_size(0);
-
-    hoNDArray<Lapack::Int> ipiv_array(n);
-    Gadgetron::clear(ipiv_array);
-    auto ipiv = ipiv_array.data();
-    auto info    = Lapack::hesv(false, n, nrhs, pA, lda, ipiv, pB, ldb);
-    GADGET_CHECK_THROW(info == 0);
+    template<class T>
+    std::enable_if_t<is_complex_type_v<T>,Lapack::Int> hesv_internal(bool upper, size_t n, size_t nrhs, T* a, size_t lda, Lapack::Int* ipiv, T*b, size_t ldb){
+        return Lapack::hesv(upper,n,nrhs,a,lda,ipiv,b,ldb);
+    }
+    template<class T>
+    std::enable_if_t<!is_complex_type_v<T>,Lapack::Int> hesv_internal(bool upper, size_t n, size_t nrhs, T* a, size_t lda, Lapack::Int* ipiv, T*b, size_t ldb){
+        return Lapack::sysv(upper,n,nrhs,a,lda,ipiv,b,ldb);
+    }
 }
 
-template<class T>
+    template<class T>
 void hesv(hoNDArray< T>& A, hoNDArray< T >& b)
 {
     if (A.get_number_of_elements() == 0)
@@ -342,13 +332,17 @@ void hesv(hoNDArray< T>& A, hoNDArray< T >& b)
     hoNDArray<Lapack::Int> ipiv_array(n);
     Gadgetron::clear(ipiv_array);
     auto ipiv = ipiv_array.data();
-    auto info    = Lapack::sysv(false, n, nrhs, pA, lda, ipiv, pB, ldb);
+    auto info    = hesv_internal(false, n, nrhs, pA, lda, ipiv, pB, ldb);
     GADGET_CHECK_THROW(info == 0);
 }
+
+
 template void hesv(hoNDArray<float>& A, hoNDArray<float>& b);
 template void hesv(hoNDArray<double>& A, hoNDArray<double>& b);
 template void hesv(hoNDArray<std::complex<float>>& A, hoNDArray<std::complex<float>>& b);
 template void hesv(hoNDArray<std::complex<double>>& A, hoNDArray<std::complex<double>>& b);
+template void hesv(hoNDArray<complext<float>>& A, hoNDArray<complext<float>>& b);
+template void hesv(hoNDArray<complext<double>>& A, hoNDArray<complext<double>>& b);
 /// ------------------------------------------------------------------------------------
 
 template<class T> 

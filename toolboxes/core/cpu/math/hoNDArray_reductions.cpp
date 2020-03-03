@@ -118,11 +118,11 @@ namespace Gadgetron {
         r = pX[ind];
     }
 
-    template EXPORTCPUCOREMATH void minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
-    template EXPORTCPUCOREMATH void minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH void minAbsolute(
+    template  void minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
+    template  void minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    template  void minAbsolute(
         const hoNDArray<std::complex<float>>& x, std::complex<float>& r, size_t& ind);
-    template EXPORTCPUCOREMATH void minAbsolute(
+    template  void minAbsolute(
         const hoNDArray<std::complex<double>>& x, std::complex<double>& r, size_t& ind);
 
     template <class T> size_t amin(const hoNDArray<T>* x) {
@@ -163,63 +163,63 @@ namespace Gadgetron {
         r = pX[ind];
     }
 
-    template EXPORTCPUCOREMATH void maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
-    template EXPORTCPUCOREMATH void maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH void maxAbsolute(
+    template  void maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
+    template  void maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    template  void maxAbsolute(
         const hoNDArray<std::complex<float>>& x, std::complex<float>& r, size_t& ind);
-    template EXPORTCPUCOREMATH void maxAbsolute(
+    template  void maxAbsolute(
         const hoNDArray<std::complex<double>>& x, std::complex<double>& r, size_t& ind);
 
     // --------------------------------------------------------------------------------
 
-    template EXPORTCPUCOREMATH float max(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH float max(const hoNDArray<float>&);
-    template EXPORTCPUCOREMATH float min(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH float mean(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH float median(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH float sum(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH float stddev(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH float var(const hoNDArray<float>*);
+    template  float max(const hoNDArray<float>*);
+    template  float max(const hoNDArray<float>&);
+    template  float min(const hoNDArray<float>*);
+    template  float mean(const hoNDArray<float>*);
+    template  float median(const hoNDArray<float>*);
+    template  float sum(const hoNDArray<float>*);
+    template  float stddev(const hoNDArray<float>*);
+    template  float var(const hoNDArray<float>*);
 
-    template EXPORTCPUCOREMATH double max(const hoNDArray<double>*);
-    template EXPORTCPUCOREMATH double max(const hoNDArray<double>&);
-    template EXPORTCPUCOREMATH double min(const hoNDArray<double>*);
-    template EXPORTCPUCOREMATH double mean(const hoNDArray<double>*);
-    template EXPORTCPUCOREMATH double median(const hoNDArray<double>*);
-    template EXPORTCPUCOREMATH double sum(const hoNDArray<double>*);
-    template EXPORTCPUCOREMATH double stddev(const hoNDArray<double>*);
-    template EXPORTCPUCOREMATH double var(const hoNDArray<double>*);
+    template  double max(const hoNDArray<double>*);
+    template  double max(const hoNDArray<double>&);
+    template  double min(const hoNDArray<double>*);
+    template  double mean(const hoNDArray<double>*);
+    template  double median(const hoNDArray<double>*);
+    template  double sum(const hoNDArray<double>*);
+    template  double stddev(const hoNDArray<double>*);
+    template  double var(const hoNDArray<double>*);
 
-    template EXPORTCPUCOREMATH complext<double> mean(const hoNDArray<complext<double>>*);
-    template EXPORTCPUCOREMATH complext<double> median(const hoNDArray<complext<double>>*);
-    template EXPORTCPUCOREMATH complext<double> sum(const hoNDArray<complext<double>>*);
-    template EXPORTCPUCOREMATH complext<double> stddev(const hoNDArray<complext<double>>*);
-    template EXPORTCPUCOREMATH complext<double> var(const hoNDArray<complext<double>>*);
+    template  complext<double> mean(const hoNDArray<complext<double>>*);
+    template  complext<double> median(const hoNDArray<complext<double>>*);
+    template  complext<double> sum(const hoNDArray<complext<double>>*);
+    template  complext<double> stddev(const hoNDArray<complext<double>>*);
+    template  complext<double> var(const hoNDArray<complext<double>>*);
 
-    template EXPORTCPUCOREMATH complext<float> mean(const hoNDArray<complext<float>>*);
-    template EXPORTCPUCOREMATH complext<float> median(const hoNDArray<complext<float>>*);
-    template EXPORTCPUCOREMATH complext<float> sum(const hoNDArray<complext<float>>*);
-    template EXPORTCPUCOREMATH complext<float> stddev(const hoNDArray<complext<float>>*);
-    template EXPORTCPUCOREMATH complext<float> var(const hoNDArray<complext<float>>*);
+    template  complext<float> mean(const hoNDArray<complext<float>>*);
+    template  complext<float> median(const hoNDArray<complext<float>>*);
+    template  complext<float> sum(const hoNDArray<complext<float>>*);
+    template  complext<float> stddev(const hoNDArray<complext<float>>*);
+    template  complext<float> var(const hoNDArray<complext<float>>*);
 
-    template EXPORTCPUCOREMATH std::complex<double> mean(const hoNDArray<std::complex<double>>*);
-    template EXPORTCPUCOREMATH std::complex<double> sum(const hoNDArray<std::complex<double>>*);
-    template EXPORTCPUCOREMATH std::complex<double> stddev(const hoNDArray<std::complex<double>>*);
-    template EXPORTCPUCOREMATH std::complex<double> var(const hoNDArray<std::complex<double>>*);
+    template  std::complex<double> mean(const hoNDArray<std::complex<double>>*);
+    template  std::complex<double> sum(const hoNDArray<std::complex<double>>*);
+    template  std::complex<double> stddev(const hoNDArray<std::complex<double>>*);
+    template  std::complex<double> var(const hoNDArray<std::complex<double>>*);
 
-    template EXPORTCPUCOREMATH std::complex<float> mean(const hoNDArray<std::complex<float>>*);
-    template EXPORTCPUCOREMATH std::complex<float> sum(const hoNDArray<std::complex<float>>*);
-    template EXPORTCPUCOREMATH std::complex<float> stddev(const hoNDArray<std::complex<float>>*);
-    template EXPORTCPUCOREMATH std::complex<float> var(const hoNDArray<std::complex<float>>*);
+    template  std::complex<float> mean(const hoNDArray<std::complex<float>>*);
+    template  std::complex<float> sum(const hoNDArray<std::complex<float>>*);
+    template  std::complex<float> stddev(const hoNDArray<std::complex<float>>*);
+    template  std::complex<float> var(const hoNDArray<std::complex<float>>*);
 
-    template EXPORTCPUCOREMATH size_t amin<std::complex<float>>(const hoNDArray<std::complex<float>>*);
-    template EXPORTCPUCOREMATH size_t amin<std::complex<double>>(const hoNDArray<std::complex<double>>*);
+    template  size_t amin<std::complex<float>>(const hoNDArray<std::complex<float>>*);
+    template  size_t amin<std::complex<double>>(const hoNDArray<std::complex<double>>*);
 
-    template EXPORTCPUCOREMATH size_t amin<complext<float>>(const hoNDArray<complext<float>>*);
-    template EXPORTCPUCOREMATH size_t amin<complext<double>>(const hoNDArray<complext<double>>*);
+    template  size_t amin<complext<float>>(const hoNDArray<complext<float>>*);
+    template  size_t amin<complext<double>>(const hoNDArray<complext<double>>*);
 
-    template EXPORTCPUCOREMATH size_t amin<float>(const hoNDArray<float>*);
-    template EXPORTCPUCOREMATH size_t amin<double>(const hoNDArray<double>*);
+    template  size_t amin<float>(const hoNDArray<float>*);
+    template  size_t amin<double>(const hoNDArray<double>*);
 
     // --------------------------------------------------------------------------------
 
@@ -261,8 +261,8 @@ namespace Gadgetron {
         sort(x.get_number_of_elements(), x.begin(), r.begin(), isascending);
     }
 
-    template EXPORTCPUCOREMATH void sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
-    template EXPORTCPUCOREMATH void sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+    template  void sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
+    template  void sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
 
     // --------------------------------------------------------------------------------
 
@@ -322,9 +322,9 @@ namespace Gadgetron {
         sort(x.get_number_of_elements(), x.begin(), r.begin(), ind, isascending);
     }
 
-    template EXPORTCPUCOREMATH void sort(
+    template  void sort(
         const hoNDArray<float>& x, hoNDArray<float>& r, std::vector<size_t>& ind, bool isascending);
-    template EXPORTCPUCOREMATH void sort(
+    template  void sort(
         const hoNDArray<double>& x, hoNDArray<double>& r, std::vector<size_t>& ind, bool isascending);
 
     // --------------------------------------------------------------------------------
@@ -347,8 +347,8 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCPUCOREMATH void minValue(const hoNDArray<float>& a, float& v);
-    template EXPORTCPUCOREMATH void minValue(const hoNDArray<double>& a, double& v);
+    template  void minValue(const hoNDArray<float>& a, float& v);
+    template  void minValue(const hoNDArray<double>& a, double& v);
 
     template <class T> void maxValue(const hoNDArray<T>& a, T& v) {
         typedef T ValueType;
@@ -368,8 +368,8 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCPUCOREMATH void maxValue(const hoNDArray<float>& a, float& v);
-    template EXPORTCPUCOREMATH void maxValue(const hoNDArray<double>& a, double& v);
+    template  void maxValue(const hoNDArray<float>& a, float& v);
+    template  void maxValue(const hoNDArray<double>& a, double& v);
 
     template <class REAL>
     static std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val, REAL max_val) {

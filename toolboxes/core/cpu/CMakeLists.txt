@@ -55,16 +55,15 @@ add_library(gadgetron_toolbox_cpucore SHARED
 target_include_directories(
         gadgetron_toolbox_cpucore
     PUBLIC
-    ${CMAKE_SOURCE_DIR}/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_BINARY_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/apps/gadgetron
-    ${ISMRMRD_INCLUDE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/core>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/toolboxes/core>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/apps/gadgetron>
 )
 
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -72,11 +71,12 @@ set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_
 target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
-  ismrmrd
+  ISMRMRD
 	boost
   )
 
 install(TARGETS gadgetron_toolbox_cpucore
+		EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

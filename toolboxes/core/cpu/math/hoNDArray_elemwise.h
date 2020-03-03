@@ -26,7 +26,6 @@
 #pragma once
 
 #include "hoNDArray.h"
-#include "cpucore_math_export.h"
 #include "cpp_blas.h"
 
 #include <complex>
@@ -117,7 +116,7 @@ namespace Gadgetron{
   support in-place computation, e.g. x==r or y==r
   support simple broadcasting
 */
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S> 
 void add(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -133,7 +132,7 @@ void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathRe
   support in-place computation, e.g. x==r
   support simple broadcasting
 */
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S> 
 void subtract(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -149,7 +148,7 @@ void subtract(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename m
   support in-place computation, e.g. x==r or y==r
   support simple broadcasting
 */
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S> 
 void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -166,7 +165,7 @@ void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename m
   support simple broadcasting
   no check for y==0
 */
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S> 
 void divide(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -182,7 +181,7 @@ void divide(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mat
   support in-place computation, e.g. x==r
   support simple broadcasting
 */
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S> 
 void multiplyConj(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -196,20 +195,20 @@ void multiplyConj(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typena
 /**
 * @brief r = conj(x)
 */
-template <typename T> EXPORTCPUCOREMATH 
+template <typename T>  
 void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r);
 
 /**
 * @brief if abs(x) is smaller than epsilon for its numeric type
 add epsilon to this x
 */
-template <typename T> EXPORTCPUCOREMATH 
+template <typename T>  
 void addEpsilon(hoNDArray<T>& x);
 
 /**
 * @brief r = angle(x)
 */
-template <typename T> EXPORTCPUCOREMATH 
+template <typename T>  
 void argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
 template<class T>
 hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x);
@@ -217,7 +216,7 @@ hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x);
 /**
 * @brief r = 1/x
 */
-template <typename T> EXPORTCPUCOREMATH 
+template <typename T>  
 void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
 
 /**
@@ -225,37 +224,37 @@ void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
  * @param[in] x Input array.
  * @return A new array containing the element-wise absolute values of the input.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
-template<class T> EXPORTCPUCOREMATH hoNDArray<typename realType<T>::Type> abs(const  hoNDArray<T>& x );
-template <typename T, typename R> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<R>& r);
+template<class T>  boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
+template<class T>  hoNDArray<typename realType<T>::Type> abs(const  hoNDArray<T>& x );
+template <typename T, typename R>  void abs(const hoNDArray<T>& x, hoNDArray<R>& r);
 
 /**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
  * @param[in,out] x Input and output array.
  */
-template<class T> EXPORTCPUCOREMATH void abs_inplace( hoNDArray<T> *x );
+template<class T>  void abs_inplace( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise squared absolute values of the array entries
  * @param[in] x Input array.
  * @return A new array containing the element-wise absolute values of the input.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs_square( hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs_square( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise sqrt of the array entries.
  * @param[in] x Input array.
  * @return A new array containing the element-wise sqrt of the input.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > sqrt( hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<T> > sqrt( hoNDArray<T> *x );
 
-template <typename T> EXPORTCPUCOREMATH void sqrt(const hoNDArray<T>& x, hoNDArray<T>& r);
+template <typename T>  void sqrt(const hoNDArray<T>& x, hoNDArray<T>& r);
 
 /**
  * @brief Calculates the element-wise sqrt of the array entries (in place).
  * @param[in,out] x Input and output array.
  */
-template<class T> EXPORTCPUCOREMATH void sqrt_inplace( hoNDArray<T> *x );
+template<class T>  void sqrt_inplace( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise square of the array entries.
@@ -265,108 +264,108 @@ template<class T> EXPORTCPUCOREMATH void sqrt_inplace( hoNDArray<T> *x );
  * For real numbers this functions is equivalent to square.
  * For complex arrays abs_square() and square() differ however.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > square( hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<T> > square( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise square of the array entries (in place).
  * @param[in,out] x Input and output array.
  */
-template<class T> EXPORTCPUCOREMATH void square_inplace( hoNDArray<T> *x );
+template<class T>  void square_inplace( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise reciprocal of the array entries.
  * @param[in] x Input array.
  * @return A new array containing the element-wise reciprocal of the input.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > reciprocal( hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<T> > reciprocal( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise reciprocal of the array entries (in place).
  * @param[in,out] x Input and output array.
  */
-template<class T> EXPORTCPUCOREMATH void reciprocal_inplace( hoNDArray<T> *x );
+template<class T>  void reciprocal_inplace( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise reciprocal sqrt of the array entries.
  * @param[in] x Input array.
  * @return A new array containing the element-wise reciprocal sqrt of the input.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > reciprocal_sqrt( hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<T> > reciprocal_sqrt( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the element-wise reciprocal sqrt of the array entries (in place).
  * @param[in,out] x Input and output array.
  */
-template<class T> EXPORTCPUCOREMATH void reciprocal_sqrt_inplace( hoNDArray<T> *x );
+template<class T>  void reciprocal_sqrt_inplace( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the elementwise signum function on the array.
  * @param[in] x Input array.
  * @return A new array containing the element-wise sgn of the input.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > sgn( hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<T> > sgn( hoNDArray<T> *x );
 
 /**
  * @brief Calculates the elementwise signum function on the array (in place).
  * @param[in,out] x Input and output array.
  */
-template<class T> EXPORTCPUCOREMATH void sgn_inplace( hoNDArray<T> *x );
+template<class T>  void sgn_inplace( hoNDArray<T> *x );
 
 /**
  * @brief Extract the real component from a complex array.
  * @param[in] x Input array.
  * @return A new array of the real component of the complex array.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > real(const  hoNDArray<T> *x );
-    template<class T> EXPORTCPUCOREMATH  hoNDArray<realType_t<T>> real(const  hoNDArray<T>&x );
+template<class T>  boost::shared_ptr< hoNDArray<typename realType<T>::Type> > real(const  hoNDArray<T> *x );
+    template<class T>   hoNDArray<realType_t<T>> real(const  hoNDArray<T>&x );
 
 /**
  * @brief Extract the imaginary component from a complex array.
  * @param[in] x Input array.
  * @return A new array of the imaginary component of the complex array.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > imag( const hoNDArray<T> *x );
-template<class T> EXPORTCPUCOREMATH  hoNDArray<realType_t<T>> imag(const  hoNDArray<T>&x );
+template<class T>  boost::shared_ptr< hoNDArray<typename realType<T>::Type> > imag( const hoNDArray<T> *x );
+template<class T>   hoNDArray<realType_t<T>> imag(const  hoNDArray<T>&x );
 /**
  * @brief Create a new array of the complex conjugate of the input array. For real arrays a copy of the input array is return.
  * @param[in] x Input array.
  * @return A new array of the complex conjugate of the input array.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > conj( const hoNDArray<T> *x );
+template<class T>  boost::shared_ptr< hoNDArray<T> > conj( const hoNDArray<T> *x );
 
 /**
  * @brief Construct a complex array from a real array.
  * @param[in] x Input array.
  * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
  */
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> >
+template<class T>  boost::shared_ptr< hoNDArray<T> >
 real_to_complex( const hoNDArray<typename realType<T>::Type> *x );
 
-template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> >
+template<class T>  boost::shared_ptr< hoNDArray<T> >
 real_imag_to_complex( hoNDArray<typename realType<T>::Type> *real, hoNDArray<typename realType<T>::Type>* imag);
 
 /**
 * @brief real and imag to complex
 */
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx);
 
 /**
 * @brief complex to real and imag
 */
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real, hoNDArray<typename realType<T>::Type>& imag);
 
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<T>& real, hoNDArray<T>& imag);
 
 /**
 * @brief get the real part of complex
 */
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real);
 
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real);
 
 template<class T> 
@@ -375,19 +374,19 @@ void complex_to_real(hoNDArray<T>& cplx);
 /**
 * @brief get the imag part of complex
 */
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag);
 
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag);
 
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void complex_to_imag(hoNDArray<T>& cplx);
 
 /**
 * @brief get complex array whose real part is the input and imag part is zero
 */
-template<class T> EXPORTCPUCOREMATH 
+template<class T>  
 void real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx);
 
 /**
@@ -415,8 +414,8 @@ template<class T> void clear( hoNDArray<T>& x )
  * @param[in,out] x Input and output array.
  * @param[in] val Fill value.
  */
-template <typename T> EXPORTCPUCOREMATH void fill( hoNDArray<T>* x, T val);
-template <typename T> EXPORTCPUCOREMATH void fill( hoNDArray<T>& x, T val );
+template <typename T>  void fill( hoNDArray<T>* x, T val);
+template <typename T>  void fill( hoNDArray<T>& x, T val );
 
 /**
  * @brief Clamps all values in the array to the minimum and maximum values specified (in place).
@@ -426,7 +425,7 @@ template <typename T> EXPORTCPUCOREMATH void fill( hoNDArray<T>& x, T val );
  * @param[in] min_val value to which everything below the minimum will be set
  * @param[in] max_val value to which everything above the maximum will be set
  */
-template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max, T min_val, T max_val );
+template<class T>  void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max, T min_val, T max_val );
 
 /**
  * @brief Clamps all values in the array to the minimum and maximum values specified (in place).
@@ -434,28 +433,28 @@ template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realTy
  * @param[in] min minimum value.
  * @param[in] max maximum value.
  */
-template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max );
+template<class T>  void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max );
 
 /**
  * @brief Clamps all values in the array to a minimum value allowed (in place).
  * @param[in,out] x Input and output array.
  * @param[in] min Minimum value.
  */
-template<class T> EXPORTCPUCOREMATH void clamp_min( hoNDArray<T> *x, typename realType<T>::Type min );
+template<class T>  void clamp_min( hoNDArray<T> *x, typename realType<T>::Type min );
 
 /**
  * @brief Clamps all values in the array to a maximum value allowed (in place).
  * @param[in,out] x Input and output array.
  * @param[in] max Maximum value.
  */
-template<class T> EXPORTCPUCOREMATH void clamp_max( hoNDArray<T> *x, typename realType<T>::Type max );
+template<class T>  void clamp_max( hoNDArray<T> *x, typename realType<T>::Type max );
 
 /**
  * @brief In place normalization (scaling) to a new maximum absolute array value val.
  * @param[in,out] x Input and output array.
  * @param[in] val New maximum absolute array value (according to the l2-norm)
  */
-template<class T> EXPORTCPUCOREMATH void normalize( hoNDArray<T> *x, typename realType<T>::Type val = typename realType<T>::Type(1) );
+template<class T>  void normalize( hoNDArray<T> *x, typename realType<T>::Type val = typename realType<T>::Type(1) );
 
 /**
  * @brief Shrinkage (soft thresholding), i.e. shrink(x,gamma) = x/abs(x)*max(abs(x)-gamma,0).
@@ -463,7 +462,7 @@ template<class T> EXPORTCPUCOREMATH void normalize( hoNDArray<T> *x, typename re
  * @param[in,out] x Input array (and output array if out == 0x0).
  * @param[in] gamma Shrinkage control parameter
  */
-template<class T> EXPORTCPUCOREMATH void shrink1( hoNDArray<T> *x, typename realType<T>::Type gamma, hoNDArray<T> *out = 0x0 );
+template<class T>  void shrink1( hoNDArray<T> *x, typename realType<T>::Type gamma, hoNDArray<T> *out = 0x0 );
 
 /**
  * @brief In place p-shrinkage (soft thresholding), i.e. pshrink(x,gamma,p) = x/abs(x)*max(abs(x)-gamma*abs(x)^(p-1),0).
@@ -472,7 +471,7 @@ template<class T> EXPORTCPUCOREMATH void shrink1( hoNDArray<T> *x, typename real
  * @param[in] gamma Shrinkage control parameter
  * @param[in] p p value of the shrinkage. Should be less than 1 and more than 0.
  */
-template<class T> EXPORTCPUCOREMATH void pshrink( hoNDArray<T> *x, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out = 0x0 );
+template<class T>  void pshrink( hoNDArray<T> *x, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out = 0x0 );
 
 /**
  * @brief Shrinkage (soft thresholding, multi-dimensional), i.e. shrink(x,gamma,s) = x/s*max(s-gamma,0).
@@ -481,7 +480,7 @@ template<class T> EXPORTCPUCOREMATH void pshrink( hoNDArray<T> *x, typename real
  * @param[in] s Input array, normalization.
  * @param[in] gamma Shrinkage control parameter
  */
-template<class T> EXPORTCPUCOREMATH void shrinkd ( hoNDArray<T> *x, hoNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma, hoNDArray<T> *out = 0x0 );
+template<class T>  void shrinkd ( hoNDArray<T> *x, hoNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma, hoNDArray<T> *out = 0x0 );
 
 /**
  * @brief In place p-shrinkage (soft thresholding, multi-dimensional), i.e. pshrink(x,s,gamma,p) = x/s*max(s-gamma*s^(p-1),0).
@@ -490,7 +489,7 @@ template<class T> EXPORTCPUCOREMATH void shrinkd ( hoNDArray<T> *x, hoNDArray<ty
  * @param[in] gamma Shrinkage control parameter
  * @param[in] p p value of the shrinkage. Should be less than 1 and more than 0.
  */
-template<class T> EXPORTCPUCOREMATH void pshrinkd ( hoNDArray<T> *x, hoNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out = 0x0 );
+template<class T>  void pshrinkd ( hoNDArray<T> *x, hoNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out = 0x0 );
 
 /**
  * @brief Implementation of element-wise operator+= on two hoNDArrays.
@@ -501,36 +500,15 @@ template<class T> EXPORTCPUCOREMATH void pshrinkd ( hoNDArray<T> *x, hoNDArray<t
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      add(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("+= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y);
+template<class T, class R> hoNDArray<T>& operator+= (hoNDArray<T> &x, const R &y);
 
-/**
- * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> >&x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> >&x, const T &y);
 
 /**
  * @brief Implementation of element-wise operator-= on two hoNDArrays.
@@ -541,15 +519,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      subtract(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("-= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 
 /**
@@ -557,21 +527,8 @@ template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoND
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y);
+template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const S &y);
 
-/**
- * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> >&x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> >&x, const T &y);
 
 /**
  * @brief Implementation of element-wise operator*= on two hoNDArrays.
@@ -582,36 +539,14 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      multiply(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("*= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y);
+template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const S &y);
 
 /**
  * @brief Implementation of element-wise operator/= on two hoNDArrays.
@@ -622,36 +557,17 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y)
-{
-  if (compatible_dimensions<T,S>(x,y)) {
-      divide(x, y, x);
-      return x;
-  } else {
-      throw std::runtime_error("*= incompatible dimensions.");
-  }
-}
+template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y);
+template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const S &y);
 
-/**
- * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y);
 
-/**
- * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
- * @param[in,out] x Input and output array.
- * @param[in] y Input scalar.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y);
+
 
 /**
  * @brief Calculates y = a*x+y in which x and y are considered as vectors
@@ -675,14 +591,14 @@ template <typename R, typename T> void scal(R a, hoNDArray<T>& x) {BLAS::scal(x.
 * @brief 2D convolution
             x: input data, y: convolution kernel, z: output; each 2D slice is convolved
 */
-template <typename T> EXPORTCPUCOREMATH 
+template <typename T>  
 void conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 
 /**
 * @brief 3D convolution
             x: input data, y: convolution kernel, z: output; each 3D volume is convolved
 */
-template <typename T> EXPORTCPUCOREMATH 
+template <typename T>  
 void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 
 /**
@@ -690,7 +606,7 @@ void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
             x: input array, y: output array, dim: dimension to perform sum
             resulting y.get_size(d) == 1
 */
-template <typename T> EXPORTCPUCOREMATH
+template <typename T> 
 void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
 
 
@@ -718,3 +634,6 @@ void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
  hoNDArray<bool>& operator|= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
 
 }
+
+
+#include "hoNDArray_elemwise.hpp"

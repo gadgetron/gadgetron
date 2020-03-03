@@ -38,6 +38,7 @@ include(GoogleTest)
             cmr_strain_test.cpp
       cmr_thickening_test.cpp
       cmr_analytical_strain_test.cpp
+            lapack_test.cpp
             gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp )
 
     if (PYTHONLIBS_FOUND)

@@ -68,7 +68,7 @@ target_link_libraries(gadgetron
         gadgetron_toolbox_log
         ${PUGIXML_LIBRARIES}
         boost
-        ${ISMRMRD_LIBRARIES})
+        ISMRMRD)
 
 target_include_directories(gadgetron
         PRIVATE

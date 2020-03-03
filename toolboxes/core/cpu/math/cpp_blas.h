@@ -1,5 +1,4 @@
 #pragma once
-#include "cpucore_math_export.h"
 #include "complext.h"
 #include <complex>
 
