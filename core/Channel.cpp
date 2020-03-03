@@ -48,6 +48,10 @@ namespace Gadgetron::Core {
     OutputChannel::OutputChannel(std::shared_ptr<Channel> channel) : channel{channel},
                                                                      closer{std::make_shared<Channel::Closer>(
                                                                              channel)} {}
+
+    ChannelIterator<OutputChannel> OutputChannel::begin() {
+        return ChannelIterator<OutputChannel>(this);
+    }
 }
 
 

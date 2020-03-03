@@ -197,7 +197,6 @@ target_link_libraries(gadgetron_mricore
         gadgetron_toolbox_cpuklt
         gadgetron_toolbox_mri_core
         boost
-        ISMRMRD
         )
 
 target_include_directories(gadgetron_mricore

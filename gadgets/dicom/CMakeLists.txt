@@ -78,9 +78,9 @@ target_link_libraries(gadgetron_dicom
     gadgetron_core
     gadgetron_mricore
     gadgetron_toolbox_log
-    gadgetron_toolbox_cpucore 
-    ${ISMRMRD_LIBRARIES}
-    ${Boost_LIBRARIES}
+    gadgetron_toolbox_cpucore
+    boost
+    ISMRMRD::ISMRMRD
     ${GT_DICOM_LIBRARIES} )
 
 if(ARMADILLO_FOUND)

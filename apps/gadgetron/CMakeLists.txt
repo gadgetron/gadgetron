@@ -66,9 +66,8 @@ add_executable(gadgetron
 target_link_libraries(gadgetron
         gadgetron_core
         gadgetron_toolbox_log
-        ${PUGIXML_LIBRARIES}
         boost
-        ISMRMRD)
+        )
 
 target_include_directories(gadgetron
         PRIVATE

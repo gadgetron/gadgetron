@@ -16,6 +16,7 @@ add_library(gadgetron_core SHARED
         io/from_string.cpp)
 
 target_link_libraries(gadgetron_core
+        ISMRMRD::ISMRMRD
         gadgetron_toolbox_cpucore
         boost)
 
@@ -35,6 +36,7 @@ install(TARGETS gadgetron_core
 install(FILES
         Channel.h
         Channel.hpp
+        ChannelIterator.h
         Message.h
         Message.hpp
         MPMCChannel.h

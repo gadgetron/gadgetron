@@ -8,6 +8,7 @@ set( cpu_solver_header_files
         hoSbCgSolver.h
         hoSolverUtils.h
         curveFittingSolver.h
+        HybridLM.h
         simplexLagariaSolver.h )
 
 add_library(gadgetron_toolbox_cpu_solver INTERFACE)

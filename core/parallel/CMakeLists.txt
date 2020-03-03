@@ -1,13 +1,15 @@
 
 add_library(gadgetron_core_parallel SHARED
-        Branch.hpp
         Branch.h
-        Merge.cpp
-        Merge.h
-        Fanout.h
-        Fanout.hpp
-        Fanout.cpp
-        Branch.cpp)
+		Branch.hpp
+		Branch.cpp
+		Merge.h
+		Merge.cpp
+		Fanout.h
+		Fanout.hpp
+		Fanout.cpp
+		UnorderedMerge.h
+		UnorderedMerge.cpp)
 
 target_link_libraries(gadgetron_core_parallel
         gadgetron_core)

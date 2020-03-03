@@ -11,7 +11,7 @@ add_library(gadgetron_core_readers SHARED
 
 target_link_libraries(gadgetron_core_readers
         gadgetron_core
-        ISMRMRD
+        ISMRMRD::ISMRMRD
         gadgetron_toolbox_mri_core)
 
 set_target_properties(gadgetron_core_readers PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

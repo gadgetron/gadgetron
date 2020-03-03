@@ -262,14 +262,14 @@ void Gadgetron::BLAS::gemm(bool transa, bool transb, size_t m, size_t n, size_t 
     std::complex<float>* c, size_t ldc) {
 
     cblas_cgemm(CblasColMajor, transa ? CblasConjTrans : CblasNoTrans, transb ? CblasConjTrans : CblasNoTrans, m, n, k,
-        &alpha, (float*)a, lda, (float*)b, ldb, &beta, (float*)c, ldc);
+                (float*) &alpha, (float*)a, lda, (float*)b, ldb, (float*)&beta, (float*)c, ldc);
 }
 void Gadgetron::BLAS::gemm(bool transa, bool transb, size_t m, size_t n, size_t k, std::complex<double> alpha,
     const std::complex<double>* a, size_t lda, const std::complex<double>* b, size_t ldb, std::complex<double> beta,
     std::complex<double>* c, size_t ldc) {
 
     cblas_zgemm(CblasColMajor, transa ? CblasConjTrans : CblasNoTrans, transb ? CblasConjTrans : CblasNoTrans, m, n, k,
-        &alpha, (double*)a, lda, (double*)b, ldb, &beta, (double*)c, ldc);
+                (double*)&alpha, (double*)a, lda, (double*)b, ldb, (double*)&beta, (double*)c, ldc);
 }
 
 void Gadgetron::BLAS::gemm(bool transa, bool transb, size_t m, size_t n, size_t k, complext<float> alpha,
@@ -277,14 +277,14 @@ void Gadgetron::BLAS::gemm(bool transa, bool transb, size_t m, size_t n, size_t 
     complext<float>* c, size_t ldc) {
 
     cblas_cgemm(CblasColMajor, transa ? CblasConjTrans : CblasNoTrans, transb ? CblasConjTrans : CblasNoTrans, m, n, k,
-        &alpha, (float*)a, lda, (float*)b, ldb, &beta, (float*)c, ldc);
+                (float*)&alpha, (float*)a, lda, (float*)b, ldb, (float*)&beta, (float*)c, ldc);
 }
 void Gadgetron::BLAS::gemm(bool transa, bool transb, size_t m, size_t n, size_t k, complext<double> alpha,
     const complext<double>* a, size_t lda, const complext<double>* b, size_t ldb, complext<double> beta,
     complext<double>* c, size_t ldc) {
 
     cblas_zgemm(CblasColMajor, transa ? CblasConjTrans : CblasNoTrans, transb ? CblasConjTrans : CblasNoTrans, m, n, k,
-        &alpha, (double*)a, lda, (double*)b, ldb, &beta, (double*)c, ldc);
+                (double*)&alpha, (double*)a, lda, (double*)b, ldb, (double*)&beta, (double*)c, ldc);
 }
 void Gadgetron::BLAS::syrk(bool upper, bool trans, size_t n, size_t k, float alpha, const float* a, size_t lda,
     float beta, float* c, size_t ldc) {
@@ -299,24 +299,24 @@ void Gadgetron::BLAS::syrk(bool upper, bool trans, size_t n, size_t k, double al
 void Gadgetron::BLAS::syrk(bool upper, bool trans, size_t n, size_t k, std::complex<float> alpha,
     const std::complex<float>* a, size_t lda, std::complex<float> beta, std::complex<float>* c, size_t ldc) {
 
-    cblas_csyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, &alpha,
-        (float*)a, lda, &beta, (float*)c, ldc);
+    cblas_csyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, (float*)&alpha,
+        (float*)a, lda, (float*) &beta, (float*)c, ldc);
 }
 void Gadgetron::BLAS::syrk(bool upper, bool trans, size_t n, size_t k, std::complex<double> alpha,
     const std::complex<double>* a, size_t lda, std::complex<double> beta, std::complex<double>* c, size_t ldc) {
-    cblas_zsyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, &alpha,
-        (double*)a, lda, &beta, (double*)c, ldc);
+    cblas_zsyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, (double*)&alpha,
+        (double*)a, lda, (double*)&beta, (double*)c, ldc);
 }
 void Gadgetron::BLAS::syrk(bool upper, bool trans, size_t n, size_t k, complext<float> alpha,
                            const complext<float>* a, size_t lda, complext<float> beta, complext<float>* c, size_t ldc) {
 
-    cblas_csyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, &alpha,
-                (float*)a, lda, &beta, (float*)c, ldc);
+    cblas_csyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, (float*)&alpha,
+                (float*)a, lda, (float*)&beta, (float*)c, ldc);
 }
 void Gadgetron::BLAS::syrk(bool upper, bool trans, size_t n, size_t k, complext<double> alpha,
                            const complext<double>* a, size_t lda, complext<double> beta, complext<double>* c, size_t ldc) {
-    cblas_zsyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, &alpha,
-                (double*)a, lda, &beta, (double*)c, ldc);
+    cblas_zsyrk(CblasColMajor, upper ? CblasUpper : CblasLower, trans ? CblasConjTrans : CblasNoTrans, n, k, (double*)&alpha,
+                (double*)a, lda, (double*) &beta, (double*)c, ldc);
 }
 void Gadgetron::BLAS::herk(bool upper, bool trans, size_t n, size_t k, float alpha,
     const std::complex<float>* a, size_t lda, float beta, std::complex<float>* c, size_t ldc) {

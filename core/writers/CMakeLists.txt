@@ -12,7 +12,7 @@ add_library(gadgetron_core_writers SHARED
 
 target_link_libraries(gadgetron_core_writers
         gadgetron_core
-        ISMRMRD
+        ISMRMRD::ISMRMRD
         gadgetron_toolbox_mri_core)
 
 set_target_properties(gadgetron_core_writers PROPERTIES
