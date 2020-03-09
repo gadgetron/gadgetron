@@ -7,8 +7,7 @@ include_directories(
   ${OPENGL_INCLUDE_DIR}
   ${GLUT_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIR}
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR} 
+  ${Boost_INCLUDE_DIR}
 )
 
 set(UI_UIFILES reconBaseWidget.ui radialSenseAppBaseMainWidget.ui)

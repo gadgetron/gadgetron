@@ -7,7 +7,7 @@ if(WIN32)
 endif()
 
 
-cuda_add_library(gadgetron_toolbox_gpucore SHARED 
+cuda_add_library(gadgetron_toolbox_gpucore SHARED
     check_CUDA.h
     CUBLASContextProvider.h
     cudaDeviceManager.h
@@ -57,7 +57,6 @@ target_link_libraries(gadgetron_toolbox_gpucore
 target_include_directories(
   gadgetron_toolbox_gpucore
   PUBLIC
-  ${CUDA_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

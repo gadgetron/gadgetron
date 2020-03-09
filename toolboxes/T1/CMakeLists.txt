@@ -11,6 +11,7 @@ target_link_libraries(gadgetron_toolbox_t1
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_cpucore_math
 		gadgetron_toolbox_cpu_solver
+		gadgetron_toolbox_demons
         armadillo
         )
 target_include_directories(gadgetron_toolbox_t1

@@ -3,7 +3,6 @@ install(FILES
     FindCUDA_advanced.cmake
     FindDCMTK.cmake
     FindFFTW3.cmake
-    FindGadgetron.cmake
     FindGLEW.cmake
     FindGperftools.cmake
     FindMKL.cmake

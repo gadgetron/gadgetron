@@ -10,8 +10,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
 	${CMAKE_SOURCE_DIR}/toolboxes/solvers
 	${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-	${CUDA_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIR} 
+	${Boost_INCLUDE_DIR}
 	${ISMRMRD_INCLUDE_DIR} 
 	)
 
