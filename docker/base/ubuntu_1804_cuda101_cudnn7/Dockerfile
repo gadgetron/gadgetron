@@ -57,9 +57,6 @@ RUN cd /opt && \
 RUN cd /opt/code && \
     git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
     cd bart && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
     make install
 
