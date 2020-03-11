@@ -31,11 +31,11 @@ RUN apt-get update
 RUN apt-get -y install gcc-7 g++-7
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
-RUN add-apt-repository ppa:jonathonf/python-3.6
-RUN apt update
-RUN apt install -y python3.6
-RUN apt install -y python3.6-dev
-RUN apt install -y python3.6-venv
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update
+RUN apt-get install -y python3.6
+RUN apt-get install -y python3.6-dev
+RUN apt-get install -y python3.6-venv
 
 RUN cd /tmp
 RUN wget https://bootstrap.pypa.io/get-pip.py
@@ -105,8 +105,7 @@ RUN cd /opt && \
     git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
     cd bart && \
     mkdir build && \
-    cd build && \
-    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
+    cd build && \    
     make -j $(nproc) && \
     make install
 
