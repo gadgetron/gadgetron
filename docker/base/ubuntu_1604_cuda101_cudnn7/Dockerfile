@@ -35,7 +35,7 @@ RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
