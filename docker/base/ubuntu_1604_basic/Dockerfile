@@ -11,7 +11,7 @@ RUN apt-get update --quiet && \
     libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools cpio jove
+    supervisor net-tools cpio jove libpugixml-dev
 
 #Python stuff
 RUN pip3 install --upgrade pip
@@ -24,7 +24,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
-RUN pip3 install torch==1.3.0+cpu torchvision==0.4.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3 install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
