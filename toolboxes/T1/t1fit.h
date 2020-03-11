@@ -5,7 +5,7 @@
 #pragma once
 
 #include "hoNDArray.h"
-namespace Gadgetron {
+namespace Gadgetron::T1 {
 
     struct T1_2param {
         hoNDArray<float> A;
@@ -15,7 +15,7 @@ namespace Gadgetron {
     struct T1_3param {
         hoNDArray<float> A;
         hoNDArray<float> B;
-        hoNDArray<float> T1;
+        hoNDArray<float> T1star;
     };
 
     /**
@@ -24,7 +24,7 @@ namespace Gadgetron {
      * @param TI Inversion times
      * @return Magnitude (A) and T1 mapping
      */
-    T1_2param fit_T1_2param(const hoNDArray<float>& data, std::vector<float>& TI);
+    T1_2param fit_T1_2param(const hoNDArray<float>& data, const std::vector<float>& TI);
 
     /**
     * Fits a T1 map using the 2 parameter model
@@ -32,11 +32,11 @@ namespace Gadgetron {
     * @param TI Inversion times
     * @return Magnitude (A), inverse magnitude (B) and T1 mapping
     */
-    T1_3param fit_T1_3param(const hoNDArray<float>& data, std::vector<float>& TI);
+    T1_3param fit_T1_3param(const hoNDArray<float>& data, const std::vector<float>& TI);
 
 
+    T1_3param motion_compensated_t1_fit(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations=5);
 
-    hoNDArray<float> motion_compensated_t1_fit(const hoNDArray<std::complex<float>>& array, const std::vector<float>& TI);
 
 
 }

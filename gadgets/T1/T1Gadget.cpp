@@ -21,7 +21,7 @@ namespace Gadgetron {
     private:
         Core::Image<float> process_function(IsmrmrdImageArray images) const final {
 
-
+            return Core::Image<float>{};
 
 
         }

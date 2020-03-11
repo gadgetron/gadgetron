@@ -20,6 +20,7 @@ target_include_directories(gadgetron_toolbox_t1
         )
 
 install(TARGETS gadgetron_toolbox_t1
+	EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

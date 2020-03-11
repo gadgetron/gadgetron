@@ -16,7 +16,7 @@ namespace Gadgetron { namespace Registration {
  * @param deformation_field Deformation field by which each voxel should be offset.
  * @return The deformed image.
  */
-    template <class T, class R, unsigned int D>
+    template <class T, unsigned int D, class R = realType_t<T>>
     hoNDArray<T> deform_image(const hoNDArray<T>& image, const hoNDArray<vector_td<R, D>>& deformation_field);
 
 
