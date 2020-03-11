@@ -13,7 +13,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools cpio
+    supervisor net-tools cpio libpugixml-dev
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
@@ -35,7 +35,7 @@ RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install torch torchvision
+RUN pip3 install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
