@@ -19,15 +19,14 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 
 RUN pip3 install --upgrade tensorflow 
-# use pytorch 1.3
-RUN pip3 install torch torchvision
+RUN pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install tensorboardx visdom tqdm
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install numpy==1.15.4 Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install numpy Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
@@ -58,9 +57,6 @@ RUN cd /opt && \
 RUN cd /opt/code && \
     git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
     cd bart && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
     make install
 

@@ -15,7 +15,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
-    supervisor cpio net-tools
+    supervisor cpio net-tools libpugixml-dev
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes \
     libopenblas-base libopenblas-dev
@@ -31,11 +31,11 @@ RUN apt-get update
 RUN apt-get -y install gcc-7 g++-7
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
-RUN add-apt-repository ppa:jonathonf/python-3.6
-RUN apt update
-RUN apt install -y python3.6
-RUN apt install -y python3.6-dev
-RUN apt install -y python3.6-venv
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update
+RUN apt-get install -y python3.6
+RUN apt-get install -y python3.6-dev
+RUN apt-get install -y python3.6-venv
 
 RUN cd /tmp
 RUN wget https://bootstrap.pypa.io/get-pip.py
@@ -51,8 +51,7 @@ RUN pip3 install h5py psutil pyxb lxml Pillow configargparse numpy==1.15.4 Cytho
 RUN apt-get install -y python3.6-tk
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-RUN pip3 install https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
@@ -105,9 +104,6 @@ RUN cd /opt && \
 RUN cd /opt && \
     git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
     cd bart && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
     make install
 
