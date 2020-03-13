@@ -6,6 +6,7 @@
 #include "hoArmadillo.h"
 namespace Gadgetron { namespace Solver {
 
+    enum class ReturnStatus { SUCCESS, MAX_ITERATIONS_REACHED, LINEAR_SOLVER_FAILED };
     template <class Scalar> class HybridLMSolver {
     public:
         HybridLMSolver(size_t num_residuals, size_t num_params)
@@ -77,7 +78,7 @@ namespace Gadgetron { namespace Solver {
                 DTD[i] = std::max(DTD[i], JTJ(i, i));
             }
 
-            Mat<Scalar> h = arma::solve(JTJ + mu * diagmat(DTD), -g, solve_opts::likely_sympd + solve_opts::fast);
+            Mat<Scalar> h = arma::solve(JTJ + mu * diagmat(DTD), -g, solve_opts::fast);
             if (norm(h) < minimum_step_size * (norm(params) + minimum_step_size)) {
                 return true;
             }
@@ -119,7 +120,7 @@ namespace Gadgetron { namespace Solver {
         template <class F> bool qm_step(F& func, arma::Col<Scalar>& params, bool& better, bool& use_lm_step) {
             using namespace arma;
             Col<Scalar> g = J.t() * residuals;
-            Col<Scalar> h = arma::solve(B, -g, solve_opts::likely_sympd + solve_opts::fast);
+            Col<Scalar> h = arma::solve(B, -g, solve_opts::fast);
             if (norm(h) < minimum_step_size * (norm(params) + minimum_step_size)) {
                 return true;
             }

@@ -158,9 +158,7 @@ namespace Gadgetron {
     template  void argument(const hoNDArray<std::complex<double>>& x, hoNDArray<double>& r);
 
     template <class T> hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x) {
-        hoNDArray<realType_t<T>> result(x.dimensions());
-        gadgetron_detail::omp_transform(x.data(),x.size(),result.data(),[](auto v){return std::arg(v);});
-        return result;
+        return Gadgetron::transform(x,[](const auto& v){return std::arg(v);});
     }
 
     template  hoNDArray<float> argument(const hoNDArray<std::complex<float>>& x);
@@ -418,9 +416,7 @@ namespace Gadgetron {
     }
 
     template<class T> hoNDArray<realType_t<T>> real(const hoNDArray<T>& x){
-        hoNDArray<realType_t<T>> result(x.dimensions());
-        gadgetron_detail::omp_transform(x.data(),x.size(),result.data(),[](auto cplx){return real(cplx);});
-        return result;
+        return Gadgetron::transform(x,[](const auto& cplx){return real(cplx);});
     }
 
     template hoNDArray<float> real(const hoNDArray<std::complex<float>>&);
@@ -456,9 +452,7 @@ namespace Gadgetron {
     }
 
     template<class T> hoNDArray<realType_t<T>> imag(const hoNDArray<T>& x){
-        hoNDArray<realType_t<T>> result(x.dimensions());
-        gadgetron_detail::omp_transform(x.data(),x.size(),result.data(),[](auto cplx){return imag(cplx);});
-        return result;
+        return Gadgetron::transform(x,[](const auto& cplx){return imag(cplx);});
     }
 
     template hoNDArray<float> imag(const hoNDArray<std::complex<float>>&);

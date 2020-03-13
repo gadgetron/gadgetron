@@ -9,13 +9,7 @@ namespace {
         constexpr long long NumElementsUseThreading
             = 1024 * 64; // This is probably WAAAY too low. Any real gain for operations this small comes from OMP being
                          // more aggresive with SIMD
-        template <class T, class R, class F> inline void omp_transform(const T* t, size_t N, R* r, F f) {
 
-#pragma omp parallel for if (N > gadgetron_detail::NumElementsUseThreading)
-            for (long long i = 0; i < (long long)N; i++) {
-                r[i] = f(t[i]);
-            }
-        }
         //
         // Math internal complex types
         // this replaces std::complex<T> with complext<T>
@@ -133,46 +127,46 @@ namespace {
 
 template <class T, class S>
 void Gadgetron::add(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T, S>::type>& r) {
-    gadgetron_detail::transform_arrays(x, y, r, std::plus<>());
+    ::gadgetron_detail::transform_arrays(x, y, r, std::plus<>());
 }
 
 template <class T, class S>
 void Gadgetron::subtract(
     const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T, S>::type>& r) {
-    gadgetron_detail::transform_arrays(x, y, r, std::minus<>());
+    ::gadgetron_detail::transform_arrays(x, y, r, std::minus<>());
 }
 
 template <class T, class S>
 void Gadgetron::multiply(
     const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T, S>::type>& r) {
-    gadgetron_detail::transform_arrays(x, y, r, std::multiplies<>());
+    ::gadgetron_detail::transform_arrays(x, y, r, std::multiplies<>());
 }
 
 template <class T, class S>
 void Gadgetron::divide(
     const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T, S>::type>& r) {
-    gadgetron_detail::transform_arrays(x, y, r, std::divides<>());
+    ::gadgetron_detail::transform_arrays(x, y, r, std::divides<>());
 }
 template <class T, class S>
 void Gadgetron::multiplyConj(
     const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T, S>::type>& r) {
-    gadgetron_detail::transform_arrays(x, y, r, [](auto& a, auto& b) { return a + conj(b); });
+    ::gadgetron_detail::transform_arrays(x, y, r, [](auto& a, auto& b) { return a + conj(b); });
 }
 
 template <class T, class S> Gadgetron::hoNDArray<T>& Gadgetron::operator+=(hoNDArray<T>& x, const hoNDArray<S>& y) {
-    gadgetron_detail::transform_arrays_inplace(x, y, std::plus<>());
+    ::gadgetron_detail::transform_arrays_inplace(x, y, std::plus<>());
     return x;
 }
 template <class T, class S> Gadgetron::hoNDArray<T>& Gadgetron::operator-=(hoNDArray<T>& x, const hoNDArray<S>& y) {
-    gadgetron_detail::transform_arrays_inplace(x, y, std::minus<>());
+    ::gadgetron_detail::transform_arrays_inplace(x, y, std::minus<>());
     return x;
 }
 template <class T, class S> Gadgetron::hoNDArray<T>& Gadgetron::operator*=(hoNDArray<T>& x, const hoNDArray<S>& y) {
-    gadgetron_detail::transform_arrays_inplace(x, y, std::multiplies<>());
+    ::gadgetron_detail::transform_arrays_inplace(x, y, std::multiplies<>());
     return x;
 }
 template <class T, class S> Gadgetron::hoNDArray<T>& Gadgetron::operator/=(hoNDArray<T>& x, const hoNDArray<S>& y) {
-    gadgetron_detail::transform_arrays_inplace(x, y, std::divides<>());
+    ::gadgetron_detail::transform_arrays_inplace(x, y, std::divides<>());
     return x;
 }
 
@@ -228,4 +222,24 @@ template <class T, class S> Gadgetron::hoNDArray<T>& Gadgetron::operator/=(hoNDA
     }
 
     return x;
+}
+
+template<class T, class S, class F>
+void Gadgetron::transform(const hoNDArray<T> &input,hoNDArray<S>& output, F&& fun) {
+    if (output.size() != input.size()) {
+        throw std::runtime_error("Input and output arrays have different number of elements");
+    }
+#pragma omp simd
+    for (long long i = 0; i < (long long)input.size(); i++) {
+        output[i] = fun(input[i]);
+    }
+}
+
+template <class T, class F, class S> hoNDArray<S> Gadgetron::transform(const hoNDArray<T>& input, F&& fun) {
+    hoNDArray<S> output(input.dimensions());
+#pragma omp simd
+    for (long long i = 0; i < (long long)input.size(); i++) {
+        output[i] = fun(input[i]);
+    }
+    return output;
 }

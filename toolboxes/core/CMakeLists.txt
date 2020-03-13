@@ -1,6 +1,3 @@
-include_directories(
-  ${Boost_INCLUDE_DIR}
-  )
 
 configure_file(core_defines.h.in ${CMAKE_BINARY_DIR}/toolboxes/core/core_defines.h)
 

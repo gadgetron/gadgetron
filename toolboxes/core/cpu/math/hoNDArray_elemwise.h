@@ -116,7 +116,7 @@ namespace Gadgetron{
   support in-place computation, e.g. x==r or y==r
   support simple broadcasting
 */
-template <class T, class S> 
+template <class T, class S>
 void add(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -132,7 +132,7 @@ void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathRe
   support in-place computation, e.g. x==r
   support simple broadcasting
 */
-template <class T, class S> 
+template <class T, class S>
 void subtract(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -148,7 +148,7 @@ void subtract(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename m
   support in-place computation, e.g. x==r or y==r
   support simple broadcasting
 */
-template <class T, class S> 
+template <class T, class S>
 void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -165,7 +165,7 @@ void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename m
   support simple broadcasting
   no check for y==0
 */
-template <class T, class S> 
+template <class T, class S>
 void divide(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -181,7 +181,7 @@ void divide(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mat
   support in-place computation, e.g. x==r
   support simple broadcasting
 */
-template <class T, class S> 
+template <class T, class S>
 void multiplyConj(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
@@ -195,20 +195,20 @@ void multiplyConj(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typena
 /**
 * @brief r = conj(x)
 */
-template <typename T>  
+template <typename T>
 void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r);
 
 /**
 * @brief if abs(x) is smaller than epsilon for its numeric type
 add epsilon to this x
 */
-template <typename T>  
+template <typename T>
 void addEpsilon(hoNDArray<T>& x);
 
 /**
 * @brief r = angle(x)
 */
-template <typename T>  
+template <typename T>
 void argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
 template<class T>
 hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x);
@@ -216,7 +216,7 @@ hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x);
 /**
 * @brief r = 1/x
 */
-template <typename T>  
+template <typename T>
 void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
 
 /**
@@ -347,25 +347,25 @@ real_imag_to_complex( hoNDArray<typename realType<T>::Type> *real, hoNDArray<typ
 /**
 * @brief real and imag to complex
 */
-template<class T>  
+template<class T>
 void real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx);
 
 /**
 * @brief complex to real and imag
 */
-template<class T>  
+template<class T>
 void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real, hoNDArray<typename realType<T>::Type>& imag);
 
-template<class T>  
+template<class T>
 void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<T>& real, hoNDArray<T>& imag);
 
 /**
 * @brief get the real part of complex
 */
-template<class T>  
+template<class T>
 void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real);
 
-template<class T>  
+template<class T>
 void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real);
 
 template<class T> 
@@ -374,19 +374,19 @@ void complex_to_real(hoNDArray<T>& cplx);
 /**
 * @brief get the imag part of complex
 */
-template<class T>  
+template<class T>
 void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag);
 
-template<class T>  
+template<class T>
 void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag);
 
-template<class T>  
+template<class T>
 void complex_to_imag(hoNDArray<T>& cplx);
 
 /**
 * @brief get complex array whose real part is the input and imag part is zero
 */
-template<class T>  
+template<class T>
 void real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx);
 
 /**
@@ -591,14 +591,14 @@ template <typename R, typename T> void scal(R a, hoNDArray<T>& x) {BLAS::scal(x.
 * @brief 2D convolution
             x: input data, y: convolution kernel, z: output; each 2D slice is convolved
 */
-template <typename T>  
+template <typename T>
 void conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 
 /**
 * @brief 3D convolution
             x: input data, y: convolution kernel, z: output; each 3D volume is convolved
 */
-template <typename T>  
+template <typename T>
 void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 
 /**
@@ -606,7 +606,7 @@ void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
             x: input array, y: output array, dim: dimension to perform sum
             resulting y.get_size(d) == 1
 */
-template <typename T> 
+template <typename T>
 void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
 
 
@@ -632,6 +632,29 @@ void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
  * If x contains further dimensions the operator is batched across those dimensions.
  */
  hoNDArray<bool>& operator|= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
+
+ /**
+  * Function transforming an input array into an output array
+  * @tparam T Element type of input array
+  * @tparam S Element type of output array
+  * @tparam F Function type
+  * @param input Input array
+  * @param output Output array. Must have the same number of elements as the input array.
+  * @param fun Function taking a value of type T and returning a value assignable to type S.
+  */
+ template <class T, class S, class F> void transform(const hoNDArray<T>& input, hoNDArray<S>& output, F&& fun);
+
+
+ /**
+  * Returns a new array containing the input array transformed by the provided function
+  * @tparam T Element type of input array
+  * @tparam F Function type
+  * @tparam S Element type of output array.
+  * @param input  Input array to be transformed
+  * @param fun Function taking a value of type T and returning a value assignable to type S.
+  * @return The resulting array
+  */
+ template <class T, class F, class S=std::invoke_result_t<F&&,T&&>> hoNDArray<S> transform(const hoNDArray<T>& input, F&& fun);
 
 }
 

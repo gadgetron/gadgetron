@@ -1,8 +1,11 @@
 // This file is not to be included by anyone else than hoNDArray.h
 // Contains the "private" implementation of the container
 //
-#include "vector_td_utilities.h"
 #include "Types.hpp"
+#include "hoNDArray.h"
+#include "vector_td_utilities.h"
+#include <cstring>
+
 namespace Gadgetron {
     template <typename T> hoNDArray<T>::hoNDArray() : NDArray<T>::NDArray() {}
 
@@ -889,6 +892,7 @@ namespace Gadgetron {
 
         buf = new char[len];
 
+
         memcpy(buf, &NDim, sizeof(size_t));
         if (NDim > 0) {
             memcpy(buf + sizeof(size_t), &(dimensions_[0]), sizeof(size_t) * NDim);
@@ -1062,15 +1066,6 @@ namespace Gadgetron {
     namespace {
         struct hondarray_detail {
 
-            template <size_t count, class... ARGS> struct count_slices { static constexpr size_t value = count; };
-
-            template <size_t count, class... ARGS>
-            struct count_slices<count, Indexing::Slice, ARGS...> : count_slices<count + 1, ARGS...> {};
-
-
-            template <size_t count, class T, class... ARGS>
-            struct count_slices<count, T, ARGS...> : count_slices<count, ARGS...> {};
-
             template <class... ARGS> static auto extract_indices(const Indexing::Slice&, const ARGS&... args) {
                 return extract_indices(args...);
             }
@@ -1081,7 +1076,7 @@ namespace Gadgetron {
 
             template <class T, class... INDICES>
             static auto calculate_strides(const hoNDArray<T>& base, const INDICES&... indices) {
-                constexpr size_t ndims = count_slices<0, INDICES...>::value;
+                constexpr size_t ndims = gadgetron_detail::count_slices<0, INDICES...>::value;
                 auto strides           = std::array<size_t, ndims>{};
                 std::fill_n(strides.begin(),strides.size(),1);
                 calculate_strides_internal<ndims, 0, 0>(strides, base, indices...);
@@ -1090,7 +1085,7 @@ namespace Gadgetron {
 
             template <class T, class... INDICES>
             static auto calculate_dimensions(const hoNDArray<T>& base, const INDICES&... indices) {
-                constexpr size_t ndims = count_slices<0, INDICES...>::value;
+                constexpr size_t ndims = gadgetron_detail::count_slices<0, INDICES...>::value;
                 auto dims              = std::array<size_t, ndims>{};
                 calculate_dims_internal<ndims, 0, 0>(dims, base, indices...);
                 return dims;
@@ -1104,23 +1099,36 @@ namespace Gadgetron {
                 return 0;
             }
 
-             template <unsigned int DIMS, unsigned int CUR_DIM, class T, class OTHER> struct looper {
+             template <unsigned int DIMS, unsigned int CUR_DIM, class ASSIGNEE, class OTHER> struct looper {
                 static void assign_loop(const vector_td<size_t, DIMS>& dims, vector_td<size_t, DIMS>& idx,
-                    hoNDArrayView<T, DIMS>& self, const OTHER& other) {
+                    ASSIGNEE& self, const OTHER& other) {
                     for (idx[CUR_DIM] = 0; idx[CUR_DIM] < dims[CUR_DIM]; idx[CUR_DIM]++){
-                        looper<DIMS,CUR_DIM-1,T,OTHER>::assign_loop(dims,idx,self,other);
+                        looper<DIMS,CUR_DIM-1,ASSIGNEE,OTHER>::assign_loop(dims,idx,self,other);
                     }
                 }
             };
 
-            template <unsigned int DIMS, class T, class OTHER> struct looper<DIMS, 0, T, OTHER> {
+            template <unsigned int DIMS, class ASSIGNEE, class OTHER> struct looper<DIMS, 0, ASSIGNEE, OTHER> {
                 static void assign_loop(const vector_td<size_t, DIMS>& dims, vector_td<size_t, DIMS>& idx,
-                    hoNDArrayView<T, DIMS>& self, const OTHER& other) {
+                    ASSIGNEE& self, const OTHER& other) {
                     for (idx[0] = 0; idx[0] < dims[0]; idx[0]++){
                         Core::apply([&](auto&&... indices) { self(indices...) = other(indices...); },idx);
                     }
                 }
             };
+
+            template <unsigned int D>
+            static bool is_contigous_data(const vector_td<size_t, D>& dimensions, const vector_td<size_t, D>& strides) {
+
+                bool result         = strides[0] == 1;
+                size_t total_stride = 1;
+                for (long long i = 1; i < D; i++) {
+                    total_stride *= dimensions[i - 1];
+                    result = result && (total_stride == strides[i]);
+                }
+
+                return result;
+            }
 
         private:
             template <unsigned int DIMS, unsigned int CUR_VIEW_DIM, unsigned int CUR_ARRAY_DIM, class T,
@@ -1166,54 +1174,57 @@ namespace Gadgetron {
     }
 
     template <class T>
-    template <class... INDICES>
-    std::enable_if_t<ValidIndex<Indexing::Slice, INDICES...>::value, hoNDArray<T>> hoNDArray<T>::operator()(
-        const Indexing::Slice&, const INDICES&... indices) {
-        constexpr size_t nsubdims = hondarray_detail::count_slices<0, INDICES...>::value + 1;
-        constexpr size_t N = sizeof...(INDICES) - nsubdims+1;
-        auto index_array          = hondarray_detail::extract_indices(indices...);
-        auto subdimensions        = std::vector<size_t>(nsubdims);
-        std::copy_n(this->dimensions_.begin(), nsubdims, subdimensions.begin());
-
-
-        auto n_offset = 1;
-        for(const auto & s : subdimensions ) n_offset *= s;
-
-        T* sub_data = this->data();
-        size_t offset = 0;
-        for (size_t i = 0; i < N; i++) {
-            sub_data += index_array[i] * n_offset;
-            offset += index_array[i]*n_offset;
-            n_offset *= this->dimensions_[i + nsubdims];
-
-        }
-
-        return hoNDArray<T>(subdimensions, sub_data);
-    }
-
-    template<class T>
-    template<class... INDICES, class UNUSED >
-    auto hoNDArray<T>::operator()(const INDICES&... indices){
+    template <class... INDICES, class UNUSED>
+    auto hoNDArray<T>::operator()(const INDICES&... indices) {
 
         auto strides = hondarray_detail::calculate_strides(*this, indices...);
         auto dims    = hondarray_detail::calculate_dimensions(*this, indices...);
 
-            T* offset = &Core::apply([this](auto&&... indices) -> T& { return this->operator()(indices...); },
+        T* offset = Core::apply([this](auto&&... indices) -> T* { return &this->operator()(indices...); },
             std::make_tuple(hondarray_detail::slice_start_index(indices)...));
 
-        return hoNDArrayView<T, dims.size()>{ strides, dims, offset};
+        return hoNDArrayView<T, dims.size()>{ strides, dims, offset };
+    }
+
+    template <typename T>
+    template <class... INDICES, class>
+    auto hoNDArray<T>::operator()(const INDICES&... indices) const
+        -> const hoNDArrayView<T, gadgetron_detail::count_slices<0, INDICES...>::value> {
+
+        auto strides = hondarray_detail::calculate_strides(*this, indices...);
+        auto dims    = hondarray_detail::calculate_dimensions(*this, indices...);
+
+        const T* offset = Core::apply([this](auto&&... indices) -> const T* { return &this->operator()(indices...); },
+            std::make_tuple(hondarray_detail::slice_start_index(indices)...));
+
+        return hoNDArrayView<T, dims.size()>{ strides, dims, const_cast<T*>(offset) };
+    }
+
+    template <typename T>
+    template <unsigned int D>
+    hoNDArray<T>& hoNDArray<T>::operator=(const hoNDArrayView<T, D>& view) {
+        auto other_dims = to_std_vector(view.dimensions);
+        if (!this->dimensions_equal(to_std_vector(view.dimensions))){
+            this->create(other_dims);
+        }
+
+        auto idx = vector_td<size_t,D>{};
+        hondarray_detail::looper<D,D-1,hoNDArray<T>,hoNDArrayView<T,D>>::assign_loop(view.dimensions,idx,*this,view);
+
+
     }
 
     template <class T, size_t D> hoNDArrayView<T,D>& hoNDArrayView<T, D>::operator=(const hoNDArrayView& other) {
+        if (&other == this) return *this;
         auto idx = vector_td<size_t,D>{};
-        hondarray_detail::looper<D,D-1,T,hoNDArrayView<T,D>>::assign_loop(dimensions,idx,*this,other);
+        hondarray_detail::looper<D,D-1,hoNDArrayView<T,D>,hoNDArrayView<T,D>>::assign_loop(dimensions,idx,*this,other);
         return *this;
 
     }
 
     template <class T, size_t D> hoNDArrayView<T,D>& hoNDArrayView<T, D>::operator=(const hoNDArray<T>& other) {
         auto idx = vector_td<size_t,D>{};
-        hondarray_detail::looper<D,D-1,T,hoNDArray<T>>::assign_loop(dimensions,idx,*this,other);
+        hondarray_detail::looper<D,D-1,hoNDArrayView<T,D>,hoNDArray<T>>::assign_loop(dimensions,idx,*this,other);
         return *this;
     }
 
@@ -1238,4 +1249,16 @@ namespace Gadgetron {
     template <class T, size_t D>
     hoNDArrayView<T, D>::hoNDArrayView(const std::array<size_t, D>& strides, const std::array<size_t, D>& dimensions, T* data) : strides{strides}, dimensions{dimensions}, data{data} {}
 
+
+
+    template <class T, size_t D> hoNDArrayView<T, D>::operator const hoNDArray<T>() const {
+        if (hondarray_detail::is_contigous_data(dimensions,strides)){
+            return hoNDArray<T>(to_std_vector(dimensions),data);
+        }
+
+        hoNDArray<T> result = *this;
+
+        return result;
+
+    }
 }

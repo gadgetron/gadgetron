@@ -8,10 +8,6 @@
 #include "complext.h"
 #include "vector_td.h"
 
-#include "cpucore_export.h"
-
-#include <string.h>
-#include <float.h>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include "TypeTraits.h"
@@ -31,6 +27,18 @@ namespace Gadgetron{
    struct ValidIndex<Indexing::Slice,ARGS...> : ValidIndex<ARGS...> {};
 
 
+    namespace {
+       namespace gadgetron_detail {
+
+           template <size_t count, class... ARGS> struct count_slices { static constexpr size_t value = count; };
+
+           template <size_t count, class... ARGS>
+           struct count_slices<count, Indexing::Slice, ARGS...> : count_slices<count + 1, ARGS...> {};
+
+           template <size_t count, class T, class... ARGS>
+           struct count_slices<count, T, ARGS...> : count_slices<count, ARGS...> {};
+       }
+   }
    template<class T> class hoNDArray;
 
 
@@ -47,6 +55,11 @@ namespace Gadgetron{
        template<class... INDICES>
        std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),const T&>
        operator()(INDICES... indices) const;
+
+       operator const hoNDArray<T>() const;
+
+
+
    private:
        friend class hoNDArray<T>;
        hoNDArrayView(const std::array<size_t,D>& strides, const std::array<size_t,D>& dimensions, T*);
@@ -115,6 +128,9 @@ namespace Gadgetron{
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
+    template<unsigned int D>
+    hoNDArray& operator=(const hoNDArrayView<T,D>& view);
+
     bool operator==(const hoNDArray& rhs) const;
     virtual void create(const std::vector<size_t>& dimensions);
     virtual void create(const std::vector<size_t> *dimensions);
@@ -177,14 +193,11 @@ namespace Gadgetron{
     T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u );
     const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
 
-    template<class... INDICES>
-    std::enable_if_t<ValidIndex<Indexing::Slice,INDICES...>::value, hoNDArray<T>>
-    operator()(const Indexing::Slice&, const INDICES&... );
+    template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
+    auto operator()(const INDICES&... );
 
-
-
-  template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
-  auto operator()(const INDICES&... );
+    template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
+    auto operator()(const INDICES&... ) const -> const hoNDArrayView<T,gadgetron_detail::count_slices<0, INDICES...>::value>;
 
     void fill(T value);
 
@@ -295,6 +308,7 @@ namespace Gadgetron{
       free( data );
     }
   };
+
 
 }
 

@@ -5,13 +5,6 @@ include(GoogleTest)
     if (WIN32)
         link_directories(${Boost_LIBRARY_DIRS})
     endif ()
-
-
-    if (CUDA_FOUND)
-        include_directories(${CUDA_INCLUDE_DIRS})
-    endif ()
-
-
     set(test_src_files
             tests.cpp
             hoNDArray_elemwise_test.cpp
@@ -46,8 +39,6 @@ include(GoogleTest)
     endif ()
 
     if (CUDA_FOUND)
-
-        include_directories(${CUDA_INCLUDE_DIRS})
 
         cuda_add_executable(test_all
                 ${test_src_files}
