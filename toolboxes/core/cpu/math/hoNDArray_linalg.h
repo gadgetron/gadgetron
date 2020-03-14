@@ -4,6 +4,7 @@
 #include "hoNDArray.h"
 
 #include <cpp_lapack.h>
+#include "TypeTraits.h"
 //#include "hoArmadillo.h"
 
 
@@ -42,7 +43,7 @@ void potrf(hoNDArray<T>& A, char uplo);
 
 /// compute all eigenvalues and eigenvectors of a Hermitian matrix A
 template<typename T>  
-std::enable_if_t<std::is_floating_point_v<T>> heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue);
+std::enable_if_t<Core::is_floating_point_v<T>> heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue);
 
 template<typename T> 
 void heev(hoNDArray< std::complex<T> >& A, hoNDArray<T>& eigenValue);

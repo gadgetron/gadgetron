@@ -33,4 +33,7 @@ namespace Gadgetron { namespace Core {
 
 
     template <bool... ARGS> constexpr bool any_of_v = any_of<ARGS...>::value;
+
+    template<class T>
+    constexpr bool is_floating_point_v = std::is_floating_point<T>::value;
 }}

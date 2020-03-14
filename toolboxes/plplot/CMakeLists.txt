@@ -48,5 +48,5 @@ install (FILES
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 if (GTEST_FOUND)
-    add_subdirectory(ut)
+#    add_subdirectory(ut)
 endif ()

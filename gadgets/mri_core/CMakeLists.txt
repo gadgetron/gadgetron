@@ -6,6 +6,7 @@ find_package(ZFP)
 
 
 
+include_directories(${HDF5_INCLUDE_DIR})
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         NoiseAdjustGadget.h

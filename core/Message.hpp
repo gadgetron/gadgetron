@@ -23,7 +23,7 @@ namespace Gadgetron::Core {
     }
 
     namespace {
-        namespace gadgetron_detail {
+        namespace gadgetron_message_detail {
 
             template<class T>
             std::unique_ptr<MessageChunk> make_message(T &&input) {
@@ -80,7 +80,7 @@ namespace Gadgetron::Core {
 
     namespace {
 
-        namespace gadgetron_detail {
+        namespace gadgetron_message_detail {
 
 
             namespace hana = boost::hana;
@@ -240,7 +240,7 @@ namespace Gadgetron::Core {
     template<class ...ARGS>
     bool convertible_to(const Message &message) {
         auto &messages = message.messages();
-        return gadgetron_detail::detail::convertible(messages.begin(), messages.end(),
+        return gadgetron_message_detail::detail::convertible(messages.begin(), messages.end(),
                                                      boost::hana::basic_type<ARGS>()...);
 
     }
@@ -248,13 +248,13 @@ namespace Gadgetron::Core {
     template<class ...ARGS>
     std::enable_if_t<(sizeof...(ARGS) > 1), std::tuple<ARGS...>>
     force_unpack(Message message) {
-        return gadgetron_detail::detail::message_to_tuple<ARGS...>(message);
+        return gadgetron_message_detail::detail::message_to_tuple<ARGS...>(message);
     }
 
 
     template<class T>
     T force_unpack(Message message) {
-        return gadgetron_detail::detail::message_to_tuple<T>(message);
+        return gadgetron_message_detail::detail::message_to_tuple<T>(message);
     }
 
     template<class ...ARGS>
@@ -280,7 +280,7 @@ optional <T> unpack(Message &&message) {
 
 template<class... ARGS>
 Gadgetron::Core::Message::Message(ARGS &&... args) : messages_(
-        gadgetron_detail::make_messages<ARGS...>(std::forward<ARGS>(args)...)) {
+        gadgetron_message_detail::make_messages<ARGS...>(std::forward<ARGS>(args)...)) {
 
 
 }

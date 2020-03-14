@@ -44,7 +44,7 @@ namespace Gadgetron::Core {
 
 
     namespace {
-        namespace gadgetron_detail {
+        namespace gadgetron_writer_detail {
             template<class F, size_t... Is>
             constexpr auto index_apply_impl(F f,
                                             std::index_sequence<Is...>) {
@@ -66,7 +66,7 @@ namespace Gadgetron::Core {
 
         std::tuple<ARGS...> arg_tuple = force_unpack<ARGS...>(std::move(message));
 
-        gadgetron_detail::index_apply<sizeof...(ARGS)>(
+        gadgetron_writer_detail::index_apply<sizeof...(ARGS)>(
                 [&](auto... Is) { this->serialize(stream, std::move(std::get<Is>(arg_tuple))...); });
     }
 
