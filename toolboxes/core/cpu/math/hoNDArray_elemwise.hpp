@@ -20,17 +20,17 @@ namespace {
         // --------------------------------------------------------------------------------
 
         // internal low level function for element-wise addition of two arrays
-        template <class T, class S, class BinaryOperator>
-        inline void transform_impl(size_t sizeX, size_t sizeY, const T* x, const S* y,
-            typename mathReturnType<T, S>::type* r, BinaryOperator op) {
+        template<class T, class S, class BinaryOperator>
+        inline void transform_impl(size_t sizeX, size_t sizeY, const T *x, const S *y,
+                                   typename mathReturnType<T, S>::type *r, BinaryOperator op) {
 
             // cast to internal types
-            const typename mathInternalType<T>::type* a
-                = reinterpret_cast<const typename mathInternalType<T>::type*>(x);
-            const typename mathInternalType<S>::type* b
-                = reinterpret_cast<const typename mathInternalType<S>::type*>(y);
-            typename mathInternalType<typename mathReturnType<T, S>::type>::type* c
-                = reinterpret_cast<typename mathInternalType<typename mathReturnType<T, S>::type>::type*>(r);
+            const typename mathInternalType<T>::type *a
+                    = reinterpret_cast<const typename mathInternalType<T>::type *>(x);
+            const typename mathInternalType<S>::type *b
+                    = reinterpret_cast<const typename mathInternalType<S>::type *>(y);
+            typename mathInternalType<typename mathReturnType<T, S>::type>::type *c
+                    = reinterpret_cast<typename mathInternalType<typename mathReturnType<T, S>::type>::type *>(r);
 
             if (sizeY > sizeX) {
                 throw std::runtime_error("Add cannot broadcast when the size of x is less than the size of y.");
@@ -48,41 +48,16 @@ namespace {
                 // Broadcasting
                 long long outerloopsize = sizeX / sizeY;
                 long long innerloopsize = sizeX / outerloopsize;
-                if (sizeX < gadgetron_detail::NumElementsUseThreading) {
-                    // No OMP at All
-                    for (long long outer = 0; outer < outerloopsize; outer++) {
-                        size_t offset                                = outer * innerloopsize;
-                        const typename mathInternalType<T>::type* ai = &a[offset];
-                        typename mathInternalType<typename mathReturnType<T, S>::type>::type* ci = &c[offset];
-                        for (long long n = 0; n < innerloopsize; n++) {
-                            ci[n] = op(a[n], b[n]);
-                        }
-                    }
-                } else if (innerloopsize > gadgetron_detail::NumElementsUseThreading) {
-                    // OMP in the inner loop
-                    for (long long outer = 0; outer < outerloopsize; outer++) {
-                        size_t offset                                = outer * innerloopsize;
-                        const typename mathInternalType<T>::type* ai = &a[offset];
-                        typename mathInternalType<typename mathReturnType<T, S>::type>::type* ci = &c[offset];
-                        long long n;
-
-                        for (n = 0; n < innerloopsize; n++) {
-                            ci[n] = op(ai[n], b[n]);
-                        }
-                    }
-                } else {
-                    // OMP in the outer loop
-                    long long outer;
-
-                    for (outer = 0; outer < outerloopsize; outer++) {
-                        size_t offset                                = outer * innerloopsize;
-                        const typename mathInternalType<T>::type* ai = &a[offset];
-                        typename mathInternalType<typename mathReturnType<T, S>::type>::type* ci = &c[offset];
-                        for (long long n = 0; n < innerloopsize; n++) {
-                            ci[n] = op(ai[n], b[n]);
-                        }
+                // No OMP at All
+                for (long long outer = 0; outer < outerloopsize; outer++) {
+                    size_t offset = outer * innerloopsize;
+                    const typename mathInternalType<T>::type *ai = &a[offset];
+                    typename mathInternalType<typename mathReturnType<T, S>::type>::type *ci = &c[offset];
+                    for (long long n = 0; n < innerloopsize; n++) {
+                        ci[n] = op(a[n], b[n]);
                     }
                 }
+
             }
         }
 
@@ -150,7 +125,7 @@ void Gadgetron::divide(
 template <class T, class S>
 void Gadgetron::multiplyConj(
     const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T, S>::type>& r) {
-    ::gadgetron_detail::transform_arrays(x, y, r, [](auto& a, auto& b) { return a + conj(b); });
+    ::gadgetron_detail::transform_arrays(x, y, r, [](auto& a, auto& b) { return a * conj(b); });
 }
 
 template <class T, class S> Gadgetron::hoNDArray<T>& Gadgetron::operator+=(hoNDArray<T>& x, const hoNDArray<S>& y) {

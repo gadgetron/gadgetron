@@ -370,6 +370,16 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx2,realToCplxTest){
   EXPECT_FLOAT_EQ(0.0,imag(real_to_complex<TypeParam>(real(&this->Array).get())->get_data_ptr()[33425]));
 }
 
+TYPED_TEST(hoNDArray_elemwise_TestCplx2,multiplyConj){
+fill(&this->Array,TypeParam(3,1));
+fill(&this->Array2,TypeParam(3,2));
+
+multiplyConj(this->Array,this->Array2,this->Array);
+
+EXPECT_FLOAT_EQ(11,real(this->Array[33425]));
+EXPECT_FLOAT_EQ(-3,imag(this->Array[33425]));
+}
+
 TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx3, cplxtImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx3,realToCplxTest){
@@ -616,3 +626,4 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsDivideTest3){
   EXPECT_FLOAT_EQ(real(v1/v2),real(this->Array.get_data_ptr()[idx]));
   EXPECT_FLOAT_EQ(imag(v1/v2),imag(this->Array.get_data_ptr()[idx]));
 }
+

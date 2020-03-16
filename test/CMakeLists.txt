@@ -1,4 +1,3 @@
-if (GTEST_FOUND AND ARMADILLO_FOUND)
 include(GoogleTest)
     enable_testing()
 
@@ -81,8 +80,8 @@ include(GoogleTest)
             gadgetron_toolbox_cpu_image
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
-            GTest::GTest
-            GTest::Main
+
+            ${GTEST_LIBRARIES}
 
             )
 
@@ -95,4 +94,3 @@ include(GoogleTest)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 
-endif ()
