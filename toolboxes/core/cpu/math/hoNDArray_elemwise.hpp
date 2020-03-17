@@ -6,10 +6,6 @@
 namespace {
     using namespace Gadgetron;
     namespace gadgetron_detail {
-        constexpr long long NumElementsUseThreading
-            = 1024 * 64; // This is probably WAAAY too low. Any real gain for operations this small comes from OMP being
-                         // more aggresive with SIMD
-
         //
         // Math internal complex types
         // this replaces std::complex<T> with complext<T>
@@ -32,16 +28,12 @@ namespace {
             typename mathInternalType<typename mathReturnType<T, S>::type>::type *c
                     = reinterpret_cast<typename mathInternalType<typename mathReturnType<T, S>::type>::type *>(r);
 
-            if (sizeY > sizeX) {
-                throw std::runtime_error("Add cannot broadcast when the size of x is less than the size of y.");
-            }
-
             if (sizeX == sizeY) {
                 // No Broadcasting
                 long long loopsize = sizeX;
                 long long n;
 
-                for (n = 0; n < loopsize; n++) {
+                for ( long long n = 0; n < loopsize; n++) {
                     c[n] = op(a[n], b[n]);
                 }
             } else {
@@ -54,7 +46,7 @@ namespace {
                     const typename mathInternalType<T>::type *ai = &a[offset];
                     typename mathInternalType<typename mathReturnType<T, S>::type>::type *ci = &c[offset];
                     for (long long n = 0; n < innerloopsize; n++) {
-                        ci[n] = op(a[n], b[n]);
+                        ci[n] = op(ai[n], b[n]);
                     }
                 }
 

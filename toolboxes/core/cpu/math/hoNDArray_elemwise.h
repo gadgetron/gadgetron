@@ -76,11 +76,6 @@ namespace Gadgetron{
   template<> struct mathReturnType<double, float> {typedef double type;};
   template<> struct mathReturnType<float,double> {typedef double type;};
 
-  // Utility to verify array dimensions for simple broadcasting.
-  // It "replaces" NDArray::dimensions_equal() to support batch mode.
-  // There is an identical function for all array instances (currently hoNDArray, cuNDArray, hoCuNDArray)
-  // !!! Remember to fix any bugs in all versions !!!
-  //
   template<class T,class S> bool compatible_dimensions( const hoNDArray<T> &x, const hoNDArray<S> &y )
   {
       return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
@@ -585,7 +580,7 @@ template <typename T> void axpy(T a, const hoNDArray<T>& x, hoNDArray<T>& y){ ax
 /**
 * @brief compute x *= a
 */
-template <typename R, typename T> void scal(R a, hoNDArray<T>& x) {BLAS::scal(x.get_number_of_elements(),a,x.get_data_ptr(),1);}
+template <typename R, typename T> void scal(R a, hoNDArray<T>& x) { x *= a;}
 
 /**
 * @brief 2D convolution

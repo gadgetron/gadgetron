@@ -11,10 +11,6 @@
 #include "omp.h"
 #endif // USE_OMP
 
-#ifndef _WIN32
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif // _WIN32
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -66,7 +62,7 @@ namespace Gadgetron {
                 return Core::none;
 
             std::ifstream infile;
-            infile.open(noise_dependency_file.c_str(), std::ios::in | std::ios::binary);
+            infile.open(noise_dependency_file.string(), std::ios::in | std::ios::binary);
             if (!infile.good())
                 return Core::none;
 
@@ -98,9 +94,11 @@ namespace Gadgetron {
 
             using namespace Core::IO;
 
-            GDEBUG_STREAM("Saving noise to " << noise_dependency_file);
+            GDEBUG_STREAM("Saving noise to " << noise_dependency_file.string());
+            boost::filesystem::create_directories(noise_dependency_file.parent_path());
+
             std::ofstream outfile;
-            outfile.open(noise_dependency_file.c_str(), std::ios::out | std::ios::binary);
+            outfile.open(noise_dependency_file.string(), std::ios::out | std::ios::binary);
 
             {
                 std::stringstream sstream;
@@ -113,13 +111,11 @@ namespace Gadgetron {
             write(outfile, silly_length_we_dont_really_need);
             write(outfile, ncov.noise_covariance_matrix);
 
-#ifndef _WIN32 // SERIOUSLY WINDOWS??
-            int res = chmod(noise_dependency_file.c_str(),
-                S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH);
-            if (res != 0) {
-                GDEBUG("Changing noise prewhitener file permission failed ...\n");
+            {
+                using namespace boost::filesystem;
+                permissions(noise_dependency_file,owner_read | owner_write | others_read | group_read);
             }
-#endif // _WIN32
+
         }
 
         std::string to_string(const std::vector<ISMRMRD::CoilLabel>& coils) {
@@ -184,8 +180,6 @@ namespace Gadgetron {
 
         hoNDArray<std::complex<float>> computeNoisePrewhitener(
             const hoNDArray<std::complex<float>>& noise_covariance_matrix) {
-            //            GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
-            //            GDEBUG("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
 
             auto noise_prewhitener_matrix = noise_covariance_matrix;
             size_t c                      = noise_prewhitener_matrix.get_size(0);
@@ -272,7 +266,7 @@ namespace Gadgetron {
         if (!perform_noise_adjust)
             return;
 
-        GDEBUG("Folder to store noise dependencies is %s\n", noise_dependency_folder.c_str());
+        GDEBUG("Folder to store noise dependencies is %s\n", noise_dependency_folder.string());
         GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust);
         GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data);
         GDEBUG("receiver_noise_bandwidth_ is %f\n", receiver_noise_bandwidth);

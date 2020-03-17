@@ -28,26 +28,11 @@ namespace {
 
 namespace Gadgetron {
 
-
-    namespace {
-        template <class Complex> inline void conjugate(size_t N, const Complex* x, Complex* r) {
-            long long n;
-            using REAL = typename realType<Complex>::Type;
-
-#pragma omp parallel for default(none) private(n) shared(N, x, r) if (N > NumElementsUseThreading)
-            for (n = 0; n < (long long)N; n++) {
-                reinterpret_cast<REAL(&)[2]>(r[n])[0] = reinterpret_cast<const REAL(&)[2]>(x[n])[0];
-                reinterpret_cast<REAL(&)[2]>(r[n])[1] = -(reinterpret_cast<const REAL(&)[2]>(x[n])[1]);
-            }
-        }
-    }
-
     template <typename T> void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r) {
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
             r.create(x.get_dimensions());
         }
-
-        conjugate(x.get_number_of_elements(), x.begin(), r.begin());
+        Gadgetron::transform(x,r,[](auto val){return conj(val);});
     }
 
     template  void conjugate(
@@ -59,73 +44,12 @@ namespace Gadgetron {
     template  void conjugate(const hoNDArray<complext<double>>& x, hoNDArray<complext<double>>& r);
     // --------------------------------------------------------------------------------
 
-    template <typename T> inline void addEpsilon(size_t N, T* x) {
-        typename realType<T>::Type eps = std::numeric_limits<typename realType<T>::Type>::epsilon();
 
-        long long n;
-
-#pragma omp parallel for default(none) private(n) shared(N, x, eps) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            if (std::abs(x[n]) < eps) {
-                x[n] += eps;
-            }
-        }
-    }
-
-    inline void addEpsilon(size_t N, std::complex<float>* x) {
-        const float eps = std::numeric_limits<float>::epsilon();
-
-        long long n;
-
-#pragma omp parallel for private(n) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            if (std::abs(x[n]) < eps) {
-                reinterpret_cast<float(&)[2]>(x[n])[0] += eps;
-            }
-        }
-    }
-
-    inline void addEpsilon(size_t N, complext<float>* x) {
-        const float eps = std::numeric_limits<float>::epsilon();
-
-        long long n;
-
-#pragma omp parallel for private(n) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            if (Gadgetron::abs(x[n]) < eps) {
-                reinterpret_cast<float(&)[2]>(x[n])[0] += eps;
-            }
-        }
-    }
-
-    inline void addEpsilon(size_t N, std::complex<double>* x) {
-        const double eps = std::numeric_limits<double>::epsilon();
-
-        long long n;
-
-#pragma omp parallel for private(n) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            if (std::abs(x[n]) < eps) {
-                reinterpret_cast<double(&)[2]>(x[n])[0] += eps;
-            }
-        }
-    }
-
-    inline void addEpsilon(size_t N, complext<double>* x) {
-        const double eps = std::numeric_limits<double>::epsilon();
-
-        long long n;
-
-#pragma omp parallel for private(n) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            if (Gadgetron::abs(x[n]) < eps) {
-                reinterpret_cast<double(&)[2]>(x[n])[0] += eps;
-            }
-        }
-    }
 
     template <typename T> void addEpsilon(hoNDArray<T>& x) {
-        addEpsilon(x.get_number_of_elements(), x.begin());
+        constexpr auto eps = std::numeric_limits<realType_t<T>>::epsilon();
+        using std::abs;
+        transform(x,x,[&](auto val){return (abs(val) < eps ) ? val+eps : val; });
     }
 
     template  void addEpsilon(hoNDArray<float>& x);
@@ -141,24 +65,16 @@ namespace Gadgetron {
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
             r.create(x.get_dimensions());
         }
-
-        size_t N                       = x.get_number_of_elements();
-        const T* pX                    = x.begin();
-        typename realType<T>::Type* pR = r.begin();
-
-        long long n;
-
-#pragma omp parallel for default(none) private(n) shared(N, pX, pR) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            pR[n] = std::arg(pX[n]);
-        }
+        using std::arg;
+        transform(x,r,[](auto val){return arg(val);});
     }
 
     template  void argument(const hoNDArray<std::complex<float>>& x, hoNDArray<float>& r);
     template  void argument(const hoNDArray<std::complex<double>>& x, hoNDArray<double>& r);
 
     template <class T> hoNDArray<realType_t<T>> argument(const hoNDArray<T>& x) {
-        return Gadgetron::transform(x,[](const auto& v){return std::arg(v);});
+        using std::arg;
+        return Gadgetron::transform(x,[](const auto& v){return arg(v);});
     }
 
     template  hoNDArray<float> argument(const hoNDArray<std::complex<float>>& x);
@@ -170,18 +86,7 @@ namespace Gadgetron {
         if (!r.dimensions_equal(&x)) {
             r = x;
         }
-
-        size_t N    = x.get_number_of_elements();
-        const T* pX = x.begin();
-        T* pR       = r.begin();
-
-        T v(1.0);
-        long long n;
-
-#pragma omp parallel for default(none) private(n) shared(N, pX, pR, v) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            pR[n] = v / pX[n];
-        }
+        transform(x,r,[](auto val){return T(1)/val;});
     }
 
     template  void inv(const hoNDArray<float>& x, hoNDArray<float>& r);
@@ -193,21 +98,11 @@ namespace Gadgetron {
 
     // --------------------------------------------------------------------------------
 
-    template <typename T, typename R> inline void abs(size_t N, const T* x, R* r) {
-        long long n;
-        using std::abs;
-#pragma omp parallel for default(none) private(n) shared(N, x, r) if (N > NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++) {
-            r[n] = abs(x[n]);
-        }
-    }
-
     template <typename T, typename R> void abs(const hoNDArray<T>& x, hoNDArray<R>& r) {
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
             r.create(x.get_dimensions());
         }
-
-        abs(x.get_number_of_elements(), x.begin(), r.begin());
+        transform(x,r,[](auto val){return abs(val);});
     }
 
     template  void abs(const hoNDArray<float>& x, hoNDArray<float>& r);
@@ -222,9 +117,8 @@ namespace Gadgetron {
     template  void abs(const hoNDArray<complext<double>>& x, hoNDArray<complext<double>>& r);
 
     template <class T> hoNDArray<realType_t<T>> abs(const hoNDArray<T>& x) {
-        hoNDArray<realType_t<T>> output(x.dimensions());
-        abs(x.size(), x.data(), output.data());
-        return output;
+        using std::abs;
+        return transform(x,[](auto val){return abs(val);}) ;
     }
 
     template  hoNDArray<float> abs(const hoNDArray<float>& x);
@@ -275,7 +169,6 @@ namespace Gadgetron {
         T* pR       = r.begin();
 
         long long n;
-#pragma omp parallel for default(none) private(n) shared(N, pX, pR) if (N > NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++) {
             pR[n] = sqrt(pX[n]);
         }
@@ -1359,7 +1252,6 @@ namespace Gadgetron {
 
                 long long n;
 
-#pragma omp parallel for default(none) private(n) shared(X, num, pX, pR)
                 for (n = 0; n < (long long)num; n++) {
                     T xsum = pX[n * X];
                     for (size_t ro = 1; ro < X; ro++) {
@@ -1388,7 +1280,6 @@ namespace Gadgetron {
 
                 long long n;
 
-#pragma omp parallel for default(none) private(n) shared(strideX, strideR, num, nDim, pX, pR)
                 for (n = 0; n < (long long)num; n++) {
                     const T* pX_curr = pX + n * strideX;
                     T* pR_curr       = pR + n * strideR;
