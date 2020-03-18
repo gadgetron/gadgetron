@@ -200,13 +200,14 @@ namespace {
     }
 
     hoNDArray<std::complex<float>> register_and_deform_groups(const hoNDArray<float>& phase_corrected_data,
-        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data) {
+        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>>& vector_field) {
         using namespace Indexing;
         hoNDArray<std::complex<float>> result(predicted.dimensions());
 
 #pragma omp parallel for
         for (long long cha = 0; cha < (long long)data.get_size(2); cha++) {
-            auto vector_field = Registration::diffeomorphic_demons<float, 2>(
+            hoNDArray<vector_td<float,2>> vfield_view = vector_field(slice,slice,cha);
+            Registration::diffeomorphic_demons<float, 2>(vfield_view,
                 predicted(slice, slice, cha), phase_corrected_data(slice, slice, cha), 40, 2.0);
             result(slice, slice, cha)
                 = Registration::deform_image<std::complex<float>, 2>(data(slice, slice, cha), vector_field);
@@ -231,10 +232,13 @@ T1_3param Gadgetron::T1::motion_compensated_t1_fit(
 
     auto predicted = predict_signal(parameters, TI);
 
+    auto vector_field = hoNDArray<vector_td<float,2>>(data.dimensions());
+    vector_field.fill(vector_td<float,2>(0));
+
     for (int i = 0; i < iterations; i++) {
         std::cout << "Iteration " << i << std::endl;
 
-        auto deformed_data = register_and_deform_groups(corrected_orig, predicted, data);
+        auto deformed_data = register_and_deform_groups(corrected_orig, predicted, data,vector_field);
         corrected = phase_correct(deformed_data, TI);
 
         parameters = fit_T1_2param(corrected, TI);

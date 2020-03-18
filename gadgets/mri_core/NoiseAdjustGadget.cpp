@@ -233,7 +233,8 @@ namespace Gadgetron {
 
             // switch row
             for (size_t n = 0; n < CHA; n++) {
-                noise_covariance_reordered(n, slice) = noise_covariance(coil_order[n], slice);
+                hoNDArrayView<std::complex<float>,1,false> f = noise_covariance_reordered(n,slice);
+//                noise_covariance_reordered(n, slice) = noise_covariance(coil_order[n], slice);
             }
 
             // switch column
@@ -266,7 +267,7 @@ namespace Gadgetron {
         if (!perform_noise_adjust)
             return;
 
-        GDEBUG("Folder to store noise dependencies is %s\n", noise_dependency_folder.string());
+        GDEBUG("Folder to store noise dependencies is %s\n", noise_dependency_folder.c_str());
         GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust);
         GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data);
         GDEBUG("receiver_noise_bandwidth_ is %f\n", receiver_noise_bandwidth);

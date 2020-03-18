@@ -374,16 +374,22 @@ hoNDArray<vector_td<T,D>> Gadgetron::Registration::diffeomorphic_demons(const ho
     auto vector_field = demons_step<T,D>(fixed,moving,2.0f,1e-6f);
     vector_field = gaussian_filter(vector_field,sigma);
     vector_field = vector_field_exponential(vector_field);
-    for (size_t i = 1; i < iterations; i++){
+    diffeomorphic_demons(vector_field,fixed,moving,iterations-1,sigma);
+    return vector_field;
+}
+
+template<class T, unsigned int D>
+void Registration::diffeomorphic_demons(hoNDArray<vector_td<T, D>> &vector_field, const hoNDArray<T> &fixed,
+                                        const hoNDArray<T> &moving, unsigned int iterations, float sigma) {
+    for (size_t i = 0; i < iterations; i++){
         auto current_fixed = deform_image(fixed,vector_field);
         auto update_field = demons_step<T,D>(current_fixed,moving,2.0f,1e-6f);
         update_field = vector_field_exponential(update_field);
         vector_field = compose_fields(update_field,vector_field);
         vector_field = gaussian_filter(vector_field,sigma);
     }
-
-    return vector_field;
 }
 
 template hoNDArray<vector_td<float,2>> Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<float>& , const hoNDArray<float>& ,unsigned int, float );
+template void Gadgetron::Registration::diffeomorphic_demons(hoNDArray<vector_td<float,2>>&, const hoNDArray<float>& , const hoNDArray<float>& ,unsigned int, float );
 
