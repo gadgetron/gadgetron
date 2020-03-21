@@ -97,5 +97,26 @@ namespace Gadgetron {
         // compute snr scaling factor from effective acceleration rate and sampling region
         void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
 
+        // scan info
+
+        float system_field_strength_T_;
+
+        // protocol name
+        std::string protocol_name_;
+
+        // device name
+        std::string device_;
+        // patient ID
+        std::string patient_;
+        // study ID
+        std::string study_;
+        // measurement ID
+        std::string measurement_;
+        // patient position string
+        std::string patient_position_;
+        // acquired measurement ID
+        std::string measurement_id_;
+        // vendor name
+        std::string vendor_;
     };
 }
