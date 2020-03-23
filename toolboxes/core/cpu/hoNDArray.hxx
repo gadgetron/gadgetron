@@ -271,7 +271,7 @@ namespace Gadgetron {
         }
     }
 
-#if __cplusplus > 199711L
+
 
     template<typename T>
     hoNDArray<T>::hoNDArray(hoNDArray<T> &&a) noexcept : NDArray<T>::NDArray() {
@@ -283,7 +283,7 @@ namespace Gadgetron {
         this->delete_data_on_destruct_ = a.delete_data_on_destruct_;
     }
 
-#endif
+
 
     template<typename T>
     hoNDArray<T> &hoNDArray<T>::operator=(const hoNDArray<T> &rhs) {
@@ -309,12 +309,17 @@ namespace Gadgetron {
         return *this;
     }
 
-#if __cplusplus > 199711L
+
 
     template<typename T>
     hoNDArray<T> &hoNDArray<T>::operator=(hoNDArray<T> &&rhs) noexcept {
         if (&rhs == this)
             return *this;
+        if (!this->delete_data_on_destruct_){ //We want to use the copy constructor if we don't own the data.
+            hoNDArray<T>& rhs_ref = rhs;
+            *this = rhs_ref;
+            return *this;
+        }
         this->clear();
         this->dimensions_ = rhs.dimensions_;
         this->offsetFactors_ = rhs.offsetFactors_;
@@ -325,7 +330,7 @@ namespace Gadgetron {
         return *this;
     }
 
-#endif
+
 
     template<typename T>
     void hoNDArray<T>::create(const std::vector<size_t> &dimensions) {
@@ -404,10 +409,9 @@ namespace Gadgetron {
     template<typename T>
     inline void hoNDArray<T>::create(
             boost::shared_ptr<std::vector<size_t>> dimensions, T *data, bool delete_data_on_destruct) {
-        this->create(dimensions.get(), data, delete_data_on_destruct);
+        this->create(*dimensions, data, delete_data_on_destruct);
     }
 
-#if __cplusplus > 199711L
 
     template<class T>
     void hoNDArray<T>::create(std::initializer_list<size_t> dimensions) {
@@ -421,7 +425,6 @@ namespace Gadgetron {
         this->create(dims, data, delete_data_on_destruct);
     }
 
-#endif
 
     template<typename T>
     inline void hoNDArray<T>::create(size_t len) {
@@ -528,7 +531,7 @@ namespace Gadgetron {
     inline void hoNDArray<T>::create(size_t len, T *data, bool delete_data_on_destruct) {
         std::vector<size_t> dim(1);
         dim[0] = len;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -536,7 +539,7 @@ namespace Gadgetron {
         std::vector<size_t> dim(2);
         dim[0] = sx;
         dim[1] = sy;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -545,7 +548,7 @@ namespace Gadgetron {
         dim[0] = sx;
         dim[1] = sy;
         dim[2] = sz;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -556,7 +559,7 @@ namespace Gadgetron {
         dim[1] = sy;
         dim[2] = sz;
         dim[3] = st;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -568,7 +571,7 @@ namespace Gadgetron {
         dim[2] = sz;
         dim[3] = st;
         dim[4] = sp;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -581,7 +584,7 @@ namespace Gadgetron {
         dim[3] = st;
         dim[4] = sp;
         dim[5] = sq;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -595,7 +598,7 @@ namespace Gadgetron {
         dim[4] = sp;
         dim[5] = sq;
         dim[6] = sr;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -610,7 +613,7 @@ namespace Gadgetron {
         dim[5] = sq;
         dim[6] = sr;
         dim[7] = ss;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -626,7 +629,7 @@ namespace Gadgetron {
         dim[6] = sr;
         dim[7] = ss;
         dim[8] = su;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -686,59 +689,9 @@ namespace Gadgetron {
 
     template<typename T>
     inline const T &hoNDArray<T>::operator[](size_t idx) const {
-        /*if( idx >= this->get_number_of_elements() )
-        {
-        BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator[]: index out of range."));
-        }*/
         GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
         return this->get_data_ptr()[idx];
     }
-
-    // template <typename T>
-    // inline T& hohoNDArray<T>::operator()( size_t idx )
-    //{
-    //    /*if( idx >= this->get_number_of_elements() )
-    //    {
-    //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-    //    }*/
-    //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    //    return this->get_data_ptr()[idx];
-    //}
-
-    // template <typename T>
-    // inline const T& hohoNDArray<T>::operator()( size_t idx ) const
-    //{
-    //    /*if( idx >= this->get_number_of_elements() )
-    //    {
-    //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-    //    }*/
-    //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    //    return this->get_data_ptr()[idx];
-    //}
-
-    // template <typename T>
-    // inline T& hohoNDArray<T>::operator()( const std::vector<size_t>& ind )
-    //{
-    //    size_t idx = this->calculate_offset(ind);
-    //    /*if( idx >= this->get_number_of_elements() )
-    //    {
-    //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-    //    }*/
-    //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    //    return this->get_data_ptr()[idx];
-    //}
-
-    // template <typename T>
-    // inline const T& hohoNDArray<T>::operator()( const std::vector<size_t>& ind ) const
-    //{
-    //    size_t idx = this->calculate_offset(ind);
-    //    /*if( idx >= this->get_number_of_elements() )
-    //    {
-    //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-    //    }*/
-    //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    //    return this->get_data_ptr()[idx];
-    //}
 
     template<typename T>
     void hoNDArray<T>::get_sub_array(
@@ -973,7 +926,7 @@ namespace Gadgetron {
             memcpy(&dimensions[0], buf + sizeof(size_t), sizeof(size_t) * NDim);
 
             // allocate memory
-            this->create(&dimensions);
+            this->create(dimensions);
 
             // copy the content
             memcpy(this->data_, buf + sizeof(size_t) + sizeof(size_t) * NDim, sizeof(T) * elements_);
@@ -1350,9 +1303,9 @@ namespace Gadgetron {
 
     template<class T, size_t D, bool contiguous>
     hoNDArrayView<T, D, contiguous>::operator const hoNDArray<T>() const {
-        if constexpr(contiguous) {
-            return hoNDArray<T>(to_std_vector(dimensions), data);
-        }
+//        if constexpr(contiguous) {
+//            return hoNDArray<T>(to_std_vector(dimensions), data);
+//        }
 
         if (hondarray_detail::is_contigous_data(dimensions, strides)) {
             return hoNDArray<T>(to_std_vector(dimensions), data);
@@ -1364,7 +1317,7 @@ namespace Gadgetron {
 
     }
 
-
+//
     template<class T, size_t D, bool contigous>
     template<typename Dummy1, typename Dummy2>
     hoNDArrayView<T, D, contigous>::operator hoNDArray<T>() {

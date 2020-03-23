@@ -2,8 +2,10 @@
 #include "HybridLM.h"
 #include "hoArmadillo.h"
 #include <vector>
+#include "hoNDArray_math.h"
 
 #include "demons_registration.h"
+#include "hoNDArray_fileio.h"
 
 namespace {
     using namespace Gadgetron;
@@ -94,7 +96,7 @@ namespace {
         for (int cha = 0; cha < (int)TI.size(); cha++) {
             for (int y = 0; y < (int)A.get_size(1); y++) {
                 for (int x = 0; x < (int)A.get_size(0); x++) {
-                    result(x, y, cha) = A(x, y) * (2 - std::exp(-TI[cha] / T1(x, y)));
+                    result(x, y, cha) = A(x, y) * (1 - 2*std::exp(-TI[cha] / T1(x, y)));
                 }
             }
         }
@@ -191,7 +193,7 @@ namespace {
 
                 for (long long i = 0; i < (long long)data.get_size(2); i++) {
                     auto val        = data(x, y, i);
-                    result(x, y, i) = std::polar(std::abs(val), std::arg(val) - reference_phase).real();
+                    result(x, y, i) = std::abs(val)*std::polar(1.0f, std::arg(val) - reference_phase).real();
                 }
             }
         }
@@ -204,13 +206,15 @@ namespace {
         using namespace Indexing;
         hoNDArray<std::complex<float>> result(predicted.dimensions());
 
+        auto abs_corrected = abs(phase_corrected_data);
+        auto abs_predicted = abs(predicted);
+
 #pragma omp parallel for
         for (long long cha = 0; cha < (long long)data.get_size(2); cha++) {
-            hoNDArray<vector_td<float,2>> vfield_view = vector_field(slice,slice,cha);
-            Registration::diffeomorphic_demons<float, 2>(vfield_view,
-                predicted(slice, slice, cha), phase_corrected_data(slice, slice, cha), 40, 2.0);
+            vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
+                abs_predicted(slice, slice, cha), abs_corrected(slice, slice, cha),vector_field(slice,slice,cha), 50, 2.0);
             result(slice, slice, cha)
-                = Registration::deform_image<std::complex<float>, 2>(data(slice, slice, cha), vector_field);
+                = Registration::deform_image<std::complex<float>, 2,float >(data(slice, slice, cha), vector_field(slice,slice,cha));
         }
 
         return result;
@@ -228,13 +232,24 @@ T1_3param Gadgetron::T1::motion_compensated_t1_fit(
 
     auto corrected_orig = corrected;
 
+    std::cout << "TI ";
+    for (auto & t : TI) std::cout << t << " ";
+
+    std::cout << std::endl;
+
     auto parameters = fit_T1_2param(corrected, TI);
 
     auto predicted = predict_signal(parameters, TI);
 
+//    write_nd_array(&corrected,"corrected.real");
+//    write_nd_array(&predicted,"predicted.real");
     auto vector_field = hoNDArray<vector_td<float,2>>(data.dimensions());
     vector_field.fill(vector_td<float,2>(0));
-
+    {
+        auto difference = predicted;
+        difference -= corrected;
+        std::cout << "Nrm: " << nrm2(difference) << std::endl;
+    }
     for (int i = 0; i < iterations; i++) {
         std::cout << "Iteration " << i << std::endl;
 
@@ -245,6 +260,8 @@ T1_3param Gadgetron::T1::motion_compensated_t1_fit(
 
         predicted = predict_signal(parameters, TI);
 
+        deformed_data -= predicted;
+        std::cout << "Loss: " << nrm2(deformed_data) << std::endl;
     }
 
     auto result = fit_T1_3param(corrected, TI);

@@ -37,7 +37,7 @@ namespace Gadgetron { namespace Registration {
      *
      * @tparam T datatype of the image. Float or double
      * @tparam D Image dimension.
-     * @param vector_field Deformation field used as initial guess. Will be updated to contain the result.
+     * @param vector_field Deformation field used as initial guess.
      * @param fixed
      * @param moving
      * @param iterations Number of iterations
@@ -45,6 +45,13 @@ namespace Gadgetron { namespace Registration {
      * @return The vector field deforming fixed to moving.
      */
         template<class T, unsigned int D>
-        void diffeomorphic_demons(hoNDArray<vector_td<T,D>>& vector_field, const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations = 20,float sigma = 2.0);
+        hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, hoNDArray<vector_td<T,D>> vector_field, unsigned int iterations = 20,float sigma = 2.0);
+
+
+
+        // TEMPORARY STUFF GOES HERE
+
+         template <class T> hoNDArray<T> gaussian_filter(const hoNDArray<T>& image, float sigma);
+        
 
     }}

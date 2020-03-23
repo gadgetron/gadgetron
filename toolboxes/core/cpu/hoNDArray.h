@@ -113,11 +113,18 @@ namespace Gadgetron{
     hoNDArray();
 
     explicit hoNDArray(const std::vector<size_t> &dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     explicit hoNDArray(const std::vector<size_t> *dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     explicit hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
 
+    [[deprecated("Pass vector as reference instead")]]
     hoNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+
+    [[deprecated("Pass vector as reference instead")]]
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
     hoNDArray(std::initializer_list<size_t> dimensions);
@@ -161,14 +168,21 @@ namespace Gadgetron{
 
     bool operator==(const hoNDArray& rhs) const;
     virtual void create(const std::vector<size_t>& dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(const std::vector<size_t> *dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
     virtual void create(std::initializer_list<size_t> dimensions);
     virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
 
     virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(size_t len);

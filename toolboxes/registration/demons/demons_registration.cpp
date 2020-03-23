@@ -3,9 +3,9 @@
 //
 
 #include "demons_registration.h"
+#include "hoNDArray_elemwise.h"
 #include "vector_td_utilities.h"
 #include <numeric>
-#include "hoNDArray_elemwise.h"
 using namespace Gadgetron;
 
 namespace {
@@ -117,7 +117,7 @@ namespace {
 
 }
 
-template <class T,unsigned int D, class R>
+template <class T, unsigned int D, class R>
 Gadgetron::hoNDArray<T> Gadgetron::Registration::deform_image(
     const hoNDArray<T>& image, const hoNDArray<vector_td<R, D>>& deformation_field) {
 
@@ -160,7 +160,7 @@ namespace {
         auto z2 = min(max(int(y) + 1, 0), int(dims[2] - 1));
 
         auto zstride = dims[0] * dims[1];
-        return vector_td<T,3>{ (image[x2 + y * dims[0] + z * zstride] - image[x1 + y * dims[1] + z * zstride]) / 2,
+        return vector_td<T, 3>{ (image[x2 + y * dims[0] + z * zstride] - image[x1 + y * dims[1] + z * zstride]) / 2,
             (image[x + y2 * dims[0] + z * zstride] - image[x + y1 * dims[0] + z * zstride]) / 2,
             (image[x + y * dims[0] + z2 * zstride] - image[x + y * dims[0] + z1 * zstride]) / 2 };
     }
@@ -176,23 +176,23 @@ namespace {
         auto y1      = min(max(int(y) - 1, 0), int(dims[1] - 1));
         auto y2      = min(max(int(y) + 1, 0), int(dims[1] - 1));
 
-        return vector_td<T,2>{ (image[x2 + y * dims[0]] - image[x1 + y * dims[1]]) / 2,
+        return vector_td<T, 2>{ (image[x2 + y * dims[0]] - image[x1 + y * dims[1]]) / 2,
             (image[x + y2 * dims[0]] - image[x + y1 * dims[0]]) / 2 };
     }
 
     template <class T, unsigned int D>
-    vector_td<T, D> demons_point(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha,
-        T beta, const vector_td<size_t, D>& index, const vector_td<size_t, D>& dims) {
+    vector_td<T, D> demons_point(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha, T beta,
+        const vector_td<size_t, D>& index, const vector_td<size_t, D>& dims) {
 
         auto fixed_grad   = demons_gradient(fixed, index, dims);
         auto moving_grad  = demons_gradient(moving, index, dims);
         auto average_grad = (fixed_grad + moving_grad) / 2;
 
         auto it = moving[co_to_idx(index, dims)] - fixed[co_to_idx(index, dims)];
-//
+        //
         auto result = it * average_grad / (norm_squared(average_grad) + (alpha * it) * (alpha * it) + beta);
         return result;
-//        return average_grad*it;
+        //        return average_grad*it;
     }
 
     template <class T, unsigned int D>
@@ -253,16 +253,23 @@ namespace {
 
         const int kernel_size = kernel.size();
         constexpr int dim     = DIM;
-        vector_td<size_t, 2> index;
+        vector_td<int, 2> index;
 
-        for (size_t y = 0; y < dims[1]; y++) {
+        long long dim_len = dims[dim];
+
+        for (int y = 0; y < dims[1]; y++) {
             index[1] = y;
-            for (size_t x = 0; x < dims[0]; x++) {
+            for (int x = 0; x < dims[0]; x++) {
                 index[0]    = x;
                 T summation = T(0);
                 for (int k = 0; k < kernel_size; k++) {
-                    auto offset = (max(min(k - kernel_size / 2 + int(index[dim]), int(dims[dim] - 1)), 0) - index[dim])
+                    long long
+                    offset = (max(min(k - kernel_size / 2 + int(index[dim]), int(dims[dim] - 1)), 0) - index[dim])
                                   * ((long long)(strides[dim]));
+
+                    //long long offset = (k - kernel_size / 2 + int(index[dim]));
+
+                    //offset = offset < dim_len || offset >= 0 ? offset : (2*dim_len  - offset)%dim_len);
                     summation += kernel[k] * input[x + y * dims[0] + offset];
                 }
                 output[x + y * dims[0]] = summation;
@@ -304,11 +311,15 @@ namespace {
     }
 
     std::vector<float> calculate_gauss_kernel(float sigma) {
-        auto kernel = std::vector<float>(std::max(int(sigma * 3) * 2 + 1, 1));
+        int lw = int(sigma*4+0.5f);
+        auto kernel = std::vector<float>(std::max(lw * 2 + 1, 1));
+        auto sigma2 = sigma*sigma;
+        kernel[lw] = 1.0f;
 
-        for (long long k = 0; k < (long long)kernel.size(); k++) {
-            float x   = float(k) - float(kernel.size() / 2);
-            kernel[k] = std::exp(-0.5f * (x / sigma) * (x / sigma));
+        for (long long k = 1; k < lw+1; k++) {
+            float x   = std::exp(-0.5*float(k*k)/sigma2);
+            kernel[lw+k] = x;
+            kernel[lw-k] = x;
         }
 
         auto sum = std::accumulate(kernel.begin(), kernel.end(), 0.0f);
@@ -317,7 +328,7 @@ namespace {
     }
 
 }
-template <class T> hoNDArray<T> gaussian_filter(const hoNDArray<T>& image, float sigma) {
+template <class T> hoNDArray<T> Gadgetron::Registration::gaussian_filter(const hoNDArray<T>& image, float sigma) {
 
     auto kernel = calculate_gauss_kernel(sigma);
 
@@ -336,10 +347,10 @@ template <class T> hoNDArray<T> gaussian_filter(const hoNDArray<T>& image, float
     default: throw std::runtime_error("Gaussian filter only support 2 and 3 D images");
     }
 }
-template hoNDArray<float> gaussian_filter(const hoNDArray<float>& image, float sigma);
-template hoNDArray<double> gaussian_filter(const hoNDArray<double>& image, float sigma);
-template hoNDArray<vector_td<float, 2>> gaussian_filter(const hoNDArray<vector_td<float, 2>>& image, float sigma);
-template hoNDArray<vector_td<float, 3>> gaussian_filter(const hoNDArray<vector_td<float, 3>>& image, float sigma);
+template hoNDArray<float> Gadgetron::Registration::gaussian_filter(const hoNDArray<float>& image, float sigma);
+template hoNDArray<double> Gadgetron::Registration::gaussian_filter(const hoNDArray<double>& image, float sigma);
+template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::gaussian_filter(const hoNDArray<vector_td<float, 2>>& image, float sigma);
+template hoNDArray<vector_td<float, 3>> Gadgetron::Registration::gaussian_filter(const hoNDArray<vector_td<float, 3>>& image, float sigma);
 
 namespace {
     using namespace Gadgetron::Registration;
@@ -352,12 +363,12 @@ namespace {
     }
 
     template <class T, unsigned int D>
-    hoNDArray<vector_td<T, D>> vector_field_exponential(const hoNDArray<vector_td<T,D>>& vector_field) {
+    hoNDArray<vector_td<T, D>> vector_field_exponential(const hoNDArray<vector_td<T, D>>& vector_field) {
 
         auto maximum_vector_length = std::accumulate(vector_field.begin(), vector_field.end(), T(0),
             [](auto current, const auto& next) { return std::max(current, norm(next)); });
-        int n_iteration = std::ceil(2.0 + 0.5f * std::log2(maximum_vector_length));
-        auto field_exponent = hoNDArray<vector_td<T, D>>(vector_field.dimensions());
+        int n_iteration            = std::ceil(2.0 + 0.5f * std::log2(maximum_vector_length));
+        auto field_exponent        = hoNDArray<vector_td<T, D>>(vector_field.dimensions());
         std::transform(vector_field.begin(), vector_field.end(), field_exponent.begin(),
             [n_iteration](const auto& val) { return val * std::pow(T(2), T(-n_iteration)); });
 
@@ -366,30 +377,48 @@ namespace {
         }
         return field_exponent;
     }
-}
+    template <class T, unsigned int D>
+    hoNDArray<vector_td<T, D>> diffeomorphic_demons_impl(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
+        hoNDArray<vector_td<T, D>> vector_field, hoNDArray<vector_td<T, D>> predictor_field, unsigned int iterations,
+        float sigma) {
 
-
-template<class T, unsigned int D>
-hoNDArray<vector_td<T,D>> Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations,float sigma){
-    auto vector_field = demons_step<T,D>(fixed,moving,2.0f,1e-6f);
-    vector_field = gaussian_filter(vector_field,sigma);
-    vector_field = vector_field_exponential(vector_field);
-    diffeomorphic_demons(vector_field,fixed,moving,iterations-1,sigma);
-    return vector_field;
-}
-
-template<class T, unsigned int D>
-void Registration::diffeomorphic_demons(hoNDArray<vector_td<T, D>> &vector_field, const hoNDArray<T> &fixed,
-                                        const hoNDArray<T> &moving, unsigned int iterations, float sigma) {
-    for (size_t i = 0; i < iterations; i++){
-        auto current_fixed = deform_image(fixed,vector_field);
-        auto update_field = demons_step<T,D>(current_fixed,moving,2.0f,1e-6f);
-        update_field = vector_field_exponential(update_field);
-        vector_field = compose_fields(update_field,vector_field);
-        vector_field = gaussian_filter(vector_field,sigma);
+        predictor_field *= 0.5;
+        for (size_t i = 0; i < iterations; i++) {
+            auto current_fixed = deform_image(fixed, vector_field);
+            auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / 2.0f, 1e-6f);
+            update_field       = compose_fields(predictor_field, update_field);
+            update_field       = vector_field_exponential(update_field);
+            vector_field       = compose_fields(update_field, vector_field);
+            vector_field       = gaussian_filter(vector_field, sigma);
+            predictor_field    = std::move(update_field);
+            predictor_field *= 0.5;
+        }
+        return vector_field;
     }
 }
 
-template hoNDArray<vector_td<float,2>> Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<float>& , const hoNDArray<float>& ,unsigned int, float );
-template void Gadgetron::Registration::diffeomorphic_demons(hoNDArray<vector_td<float,2>>&, const hoNDArray<float>& , const hoNDArray<float>& ,unsigned int, float );
+template <class T, unsigned int D>
+hoNDArray<vector_td<T, D>> Gadgetron::Registration::diffeomorphic_demons(
+    const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations, float sigma) {
+    auto vector_field = demons_step<T, D>(fixed, moving, 1 / 2.0f, 1e-6f);
+    vector_field      = vector_field_exponential(vector_field);
+    vector_field      = gaussian_filter(vector_field, sigma);
+    return diffeomorphic_demons_impl(fixed, moving, vector_field, vector_field, iterations - 1, sigma);
+}
 
+template <class T, unsigned int D>
+hoNDArray<vector_td<T, D>> Registration::diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
+    hoNDArray<vector_td<T, D>> vector_field, unsigned int iterations, float sigma) {
+    auto current_fixed = deform_image(fixed, vector_field);
+    auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / 2.0f, 1e-6f);
+    update_field       = vector_field_exponential(update_field);
+    vector_field       = compose_fields(update_field, vector_field);
+    vector_field       = gaussian_filter(vector_field, sigma);
+    return diffeomorphic_demons_impl(
+        fixed, moving, std::move(vector_field), std::move(update_field), iterations-1, sigma);
+}
+
+template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
+    const hoNDArray<float>&, const hoNDArray<float>&, unsigned int, float);
+template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
+    const hoNDArray<float>&, const hoNDArray<float>&, hoNDArray<vector_td<float, 2>>, unsigned int, float);
