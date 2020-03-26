@@ -51,3 +51,5 @@ if (CUDA_FOUND)
 elseif (CUDA_FOUND)
     message("Cuda not found, not compiling gpu-based registration gadgets")
 endif ()
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

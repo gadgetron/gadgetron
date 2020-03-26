@@ -5,3 +5,5 @@ if(CUDA_FOUND)
 else()
   message("CUDA not found, not compiling gpu fft toolbox")
 endif()
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

@@ -58,3 +58,5 @@ install(FILES
         config/grappa_unoptimized.xml
         config/grappa_unoptimized_float.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

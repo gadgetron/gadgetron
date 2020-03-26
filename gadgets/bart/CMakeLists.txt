@@ -66,3 +66,5 @@ set(GADGETRON_INSTALL_BART_PATH share/gadgetron/bart)
 install(FILES Sample_Grappa_Recon.sh Sample_Grappa_Recon_Standard.sh DESTINATION ${GADGETRON_INSTALL_BART_PATH})
 
 install(FILES BART_Recon.xml BART_Recon_cloud.xml BART_Recon_cloud_Standard.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

@@ -43,3 +43,5 @@ target_include_directories(gadgetron_toolbox_cpuffd
 install(FILES
         ${ffd_header_files}
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

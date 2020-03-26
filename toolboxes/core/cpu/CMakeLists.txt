@@ -93,3 +93,5 @@ install(FILES
 
 add_subdirectory(math)
 add_subdirectory(hostutils)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

@@ -69,3 +69,5 @@ install(TARGETS gadgetron_mri_noncartesian
 
 
 install(FILES ${gadgetron_mri_noncartesian_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
