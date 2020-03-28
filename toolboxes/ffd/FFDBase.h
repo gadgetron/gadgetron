@@ -177,7 +177,7 @@ public:
 
     /// get the size of control point arrays
     virtual size_t get_size(size_t dimension) const { return ctrl_pt_[0].get_size(dimension); }
-    virtual std::vector<size_t> get_dimensions() const { std::vector<size_t> dim; ctrl_pt_[0].get_dimensions(dim); return dim; }
+    virtual std::vector<size_t> dimensions() const { return ctrl_pt_[0].dimensions(); }
 
     /// get the spacing of of control point arrays
     virtual coord_type get_spacing(size_t dimension) const { return ctrl_pt_[0].get_pixel_size(dimension); }
@@ -782,7 +782,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& po
 
         if ( !residual.dimensions_equal(&value) )
         {
-            residual.create(value.get_dimensions());
+            residual.create(value.dimensions());
             Gadgetron::clear(residual);
         }
 
@@ -844,7 +844,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayType& p
 
         if ( !residual.dimensions_equal(&value) )
         {
-            residual.create(value.get_dimensions());
+            residual.create(value.dimensions());
             Gadgetron::clear(residual);
         }
 

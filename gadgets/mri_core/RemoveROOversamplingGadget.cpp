@@ -89,7 +89,7 @@ namespace Gadgetron{
             fft_res_.create(data_out_dims);
         }
 
-        try{ m3->getObjectPtr()->create(&data_out_dims);}
+        try{ m3->getObjectPtr()->create(data_out_dims);}
         catch (std::runtime_error &err)
         {
             GEXCEPTION(err,"Unable to create new data array for downsampled data\n");

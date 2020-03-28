@@ -4,8 +4,7 @@ if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else ()
     cmake_policy(VERSION 3.12)
-endif ()
-
+endif()
 project(GADGETRON LANGUAGES CXX C)
 
 find_program(CCACHE_FOUND ccache)
@@ -203,12 +202,16 @@ find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options fil
 else()
 find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 endif()
-
 add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES
 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
 #set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
+
+if (NOT DEFINED Boost_VERSION_STRING)
+    set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+endif()
+
 
 option(USE_CUDA "Build with CUDA support" On)
 
@@ -366,6 +369,7 @@ find_package(Gperftools REQUIRED)
 endif()
 option(BUILD_TESTING ON)
 if (BUILD_TESTING)
+enable_testing()
 find_package(GTest)
 if (NOT GTEST_FOUND)
     find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
@@ -376,7 +380,10 @@ if (NOT GTEST_FOUND)
         include_directories(${GTEST_INCLUDE_DIRS})
         set(GTEST_FOUND 1)
         set(GTEST_LIBRARIES gtest gtest_main)
+    else()
+        message(FATAL_ERROR "GTest required for building tests")
     endif ()
+
 endif ()
 add_subdirectory(test)
 endif()

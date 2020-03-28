@@ -38,5 +38,15 @@ namespace Gadgetron::T1 {
     T1_3param motion_compensated_t1_fit(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations=5);
 
 
+    hoNDArray<float> predict_signal(const T1_2param& params, const std::vector<float>& TI);
+
+    hoNDArray<float> predict_signal(const T1_3param& params, const std::vector<float>& TI);
+
+
+    hoNDArray<float> phase_correct(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI);
+
+
+    std::tuple<hoNDArray<std::complex<float>>,hoNDArray<vector_td<float,2>>> register_and_deform_groups(const hoNDArray<float>& phase_corrected_data,
+        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>> vector_field);
 
 }

@@ -69,8 +69,8 @@ namespace Gadgetron{
    template<class T, size_t D, bool contigous = false>
    class hoNDArrayView {
    public:
-       template<bool C>
-       hoNDArrayView& operator=(const hoNDArrayView<T,D,C>&);
+       hoNDArrayView& operator=(const hoNDArrayView<T,D,!contigous>&);
+       hoNDArrayView& operator=(const hoNDArrayView&);
        hoNDArrayView<T,D,contigous>& operator=(const hoNDArray<T>&);
 
         template<class... INDICES>
@@ -267,7 +267,7 @@ namespace Gadgetron{
         {
             if (!this->dimensions_equal(&aArray))
             {
-                this->create(aArray.get_dimensions());
+                this->create(aArray.dimensions());
             }
 
             long long i;

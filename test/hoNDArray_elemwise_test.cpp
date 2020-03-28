@@ -13,8 +13,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -26,8 +26,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -39,8 +39,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -52,8 +52,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -65,8 +65,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<typename realType<T>::Type>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<typename realType<T>::Type>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -409,8 +409,8 @@ protected:
     size_t vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     dims2 = std::vector<size_t>(vdims2,vdims2+sizeof(vdims2)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims2);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims2);
   }
   std::vector<size_t> dims;
   std::vector<size_t> dims2;
@@ -423,8 +423,8 @@ protected:
   virtual void SetUp() {
     dims = {37, 49, 23, 19};
     dims2 = {37,49};
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims2);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims2);
   }
   std::vector<size_t> dims;
   std::vector<size_t> dims2;

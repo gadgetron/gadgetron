@@ -86,7 +86,10 @@ namespace {
         return { params[0], params[1], params[2] };
     }
 
-    hoNDArray<float> predict_signal(const T1_2param& params, const std::vector<float>& TI) {
+
+
+}
+    hoNDArray<float> Gadgetron::T1::predict_signal(const T1_2param& params, const std::vector<float>& TI) {
 
         const auto& [A, T1] = params;
 
@@ -104,7 +107,7 @@ namespace {
         return result;
     }
 
-    hoNDArray<float> predict_signal(const T1_3param& params, const std::vector<float>& TI) {
+    hoNDArray<float> Gadgetron::T1::predict_signal(const T1_3param& params, const std::vector<float>& TI) {
 
         const auto& [A, B, T1] = params;
 
@@ -119,8 +122,6 @@ namespace {
 
         return result;
     }
-
-}
 
 T1_2param Gadgetron::T1::fit_T1_2param(const hoNDArray<float>& data, const std::vector<float>& TI) {
 
@@ -181,9 +182,7 @@ T1_3param Gadgetron::T1::fit_T1_3param(const hoNDArray<float>& data, const std::
     }
     return { A, B, T1 };
 }
-namespace {
-
-    hoNDArray<float> phase_correct(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI) {
+hoNDArray<float> Gadgetron::T1::phase_correct(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI) {
 
         hoNDArray<float> result(data.dimensions());
         auto max_TI_index = std::distance(TI.begin(), std::max_element(TI.begin(), TI.end()));
@@ -200,9 +199,15 @@ namespace {
 
         return result;
     }
+namespace {
 
-    hoNDArray<std::complex<float>> register_and_deform_groups(const hoNDArray<float>& phase_corrected_data,
-        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>>& vector_field) {
+    
+
+
+}
+
+    std::tuple<hoNDArray<std::complex<float>>,hoNDArray<vector_td<float,2>>> Gadgetron::T1::register_and_deform_groups(const hoNDArray<float>& phase_corrected_data,
+        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>> vector_field) {
         using namespace Indexing;
         hoNDArray<std::complex<float>> result(predicted.dimensions());
 
@@ -212,16 +217,13 @@ namespace {
 #pragma omp parallel for
         for (long long cha = 0; cha < (long long)data.get_size(2); cha++) {
             vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
-                abs_predicted(slice, slice, cha), abs_corrected(slice, slice, cha),vector_field(slice,slice,cha), 50, 2.0);
+                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), 40, 2.0);
             result(slice, slice, cha)
                 = Registration::deform_image<std::complex<float>, 2,float >(data(slice, slice, cha), vector_field(slice,slice,cha));
         }
 
-        return result;
+        return {result,vector_field};
     }
-
-}
-
 T1_3param Gadgetron::T1::motion_compensated_t1_fit(
     const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations) {
     if (data.get_size(2) != TI.size()) {
@@ -232,36 +234,23 @@ T1_3param Gadgetron::T1::motion_compensated_t1_fit(
 
     auto corrected_orig = corrected;
 
-    std::cout << "TI ";
-    for (auto & t : TI) std::cout << t << " ";
-
     std::cout << std::endl;
 
     auto parameters = fit_T1_2param(corrected, TI);
 
     auto predicted = predict_signal(parameters, TI);
 
-//    write_nd_array(&corrected,"corrected.real");
-//    write_nd_array(&predicted,"predicted.real");
     auto vector_field = hoNDArray<vector_td<float,2>>(data.dimensions());
     vector_field.fill(vector_td<float,2>(0));
-    {
-        auto difference = predicted;
-        difference -= corrected;
-        std::cout << "Nrm: " << nrm2(difference) << std::endl;
-    }
-    for (int i = 0; i < iterations; i++) {
-        std::cout << "Iteration " << i << std::endl;
 
-        auto deformed_data = register_and_deform_groups(corrected_orig, predicted, data,vector_field);
+    for (int i = 0; i < iterations; i++) {
+        auto [deformed_data,updated_vector_field] = register_and_deform_groups(corrected_orig, predicted, data,vector_field);
+        vector_field = updated_vector_field;
         corrected = phase_correct(deformed_data, TI);
 
         parameters = fit_T1_2param(corrected, TI);
 
         predicted = predict_signal(parameters, TI);
-
-        deformed_data -= predicted;
-        std::cout << "Loss: " << nrm2(deformed_data) << std::endl;
     }
 
     auto result = fit_T1_3param(corrected, TI);

@@ -1,5 +1,4 @@
 include(GoogleTest)
-    enable_testing()
 
     if (WIN32)
         link_directories(${Boost_LIBRARY_DIRS})
@@ -27,10 +26,7 @@ include(GoogleTest)
             cmr_strain_test.cpp
             cmr_thickening_test.cpp
             cmr_analytical_strain_test.cpp
-            cmr_strain_test.cpp
-      cmr_thickening_test.cpp
-      cmr_analytical_strain_test.cpp
-            lapack_test.cpp
+            #lapack_test.cpp
             gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp )
 
     if (PYTHONLIBS_FOUND)
@@ -91,6 +87,7 @@ include(GoogleTest)
                 python)
     endif ()
 
+    gtest_add_tests(TARGET test_all)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 

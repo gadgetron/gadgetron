@@ -233,8 +233,8 @@ namespace Gadgetron {
 
             // switch row
             for (size_t n = 0; n < CHA; n++) {
-                hoNDArrayView<std::complex<float>,1,false> f = noise_covariance_reordered(n,slice);
-//                noise_covariance_reordered(n, slice) = noise_covariance(coil_order[n], slice);
+                //hoNDArrayView<std::complex<float>,1,false> f = noise_covariance_reordered(n,slice);
+                noise_covariance_reordered(n, slice) = noise_covariance(coil_order[n], slice);
             }
 
             // switch column

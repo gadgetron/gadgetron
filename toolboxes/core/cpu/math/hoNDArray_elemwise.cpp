@@ -30,7 +30,7 @@ namespace Gadgetron {
 
     template <typename T> void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r) {
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
-            r.create(x.get_dimensions());
+            r.create(x.dimensions());
         }
         Gadgetron::transform(x,r,[](auto val){return conj(val);});
     }
@@ -63,7 +63,7 @@ namespace Gadgetron {
 
     template <typename T> void argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r) {
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
-            r.create(x.get_dimensions());
+            r.create(x.dimensions());
         }
         using std::arg;
         transform(x,r,[](auto val){return arg(val);});
@@ -100,7 +100,7 @@ namespace Gadgetron {
 
     template <typename T, typename R> void abs(const hoNDArray<T>& x, hoNDArray<R>& r) {
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
-            r.create(x.get_dimensions());
+            r.create(x.dimensions());
         }
         transform(x,r,[](auto val){return abs(val);});
     }
@@ -133,7 +133,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::abs(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<typename realType<T>::Type>> result(new hoNDArray<typename realType<T>::Type>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         abs(*x, *result);
         return result;
     }
@@ -150,7 +150,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::abs_square(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<typename realType<T>::Type>> result(new hoNDArray<typename realType<T>::Type>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         abs(*x, *result);
         multiply(*result, *result, *result);
         return result;
@@ -161,7 +161,7 @@ namespace Gadgetron {
     template <typename T> void sqrt(const hoNDArray<T>& x, hoNDArray<T>& r) {
         using std::sqrt;
         if (r.get_number_of_elements() != x.get_number_of_elements()) {
-            r.create(x.get_dimensions());
+            r.create(x.dimensions());
         }
 
         size_t N    = x.get_number_of_elements();
@@ -187,7 +187,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::sqrt(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         sqrt(*x, *result);
         return result;
     }
@@ -206,7 +206,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::square(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
         aRes = arma::square(as_arma_col(x));*/
         multiply(*x, *x, *result);
@@ -232,7 +232,7 @@ namespace Gadgetron {
         /*arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();*/
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
         aRes = ones/as_arma_col(x);*/
         inv(*x, *result);
@@ -258,7 +258,7 @@ namespace Gadgetron {
         /*arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();*/
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
         aRes = ones/arma::sqrt(as_arma_col(x));*/
 
@@ -287,7 +287,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::sgn(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<T>> res(new hoNDArray<T>());
-        res->create(x->get_dimensions());
+        res->create(x->dimensions());
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
@@ -325,7 +325,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::real(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<typename realType<T>::Type>> result(new hoNDArray<typename realType<T>::Type>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         arma::Col<typename realType<T>::Type> aRes = as_arma_col(*result);
         aRes                                       = arma::real(as_arma_col(*x));
         return result;
@@ -338,7 +338,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::imag(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<typename realType<T>::Type>> result(new hoNDArray<typename realType<T>::Type>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         arma::Col<typename realType<T>::Type> aRes = as_arma_col(*result);
         aRes                                       = arma::imag(as_arma_col(*x));
         return result;
@@ -360,7 +360,7 @@ namespace Gadgetron {
             throw std::runtime_error("Gadgetron::conj(): Invalid input array");
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(*result);
         aRes                                      = arma::conj(as_arma_col(*x));
         return result;
@@ -373,7 +373,7 @@ namespace Gadgetron {
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_to_complex(): Invalid input array"));
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(x->get_dimensions());
+        result->create(x->dimensions());
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(*result);
         aRes                                      = arma::Col<typename stdType<T>::Type>(
             as_arma_col(*x), arma::Col<typename realType<T>::Type>(x->get_number_of_elements()).zeros());
@@ -390,7 +390,7 @@ namespace Gadgetron {
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_imag_to_complex(): Invalid input array"));
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
-        result->create(real->get_dimensions());
+        result->create(real->dimensions());
 
         T* pRes = result->begin();
 
@@ -411,7 +411,7 @@ namespace Gadgetron {
             GADGET_CHECK_THROW(real.dimensions_equal(&imag));
 
             if (!cplx.dimensions_equal(&real)) {
-                cplx.create(real.get_dimensions());
+                cplx.create(real.dimensions());
             }
 
             T* pRes                                 = cplx.begin();
@@ -442,11 +442,11 @@ namespace Gadgetron {
         hoNDArray<typename realType<T>::Type>& imag) {
         try {
             if (!real.dimensions_equal(&cplx)) {
-                real.create(cplx.get_dimensions());
+                real.create(cplx.dimensions());
             }
 
             if (!imag.dimensions_equal(&cplx)) {
-                imag.create(cplx.get_dimensions());
+                imag.create(cplx.dimensions());
             }
 
             const T* pRes                     = cplx.begin();
@@ -474,11 +474,11 @@ namespace Gadgetron {
     void complex_to_real_imag(const hoNDArray<float>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag) {
         try {
             if (!real.dimensions_equal(&cplx)) {
-                real.create(cplx.get_dimensions());
+                real.create(cplx.dimensions());
             }
 
             if (!imag.dimensions_equal(&cplx)) {
-                imag.create(cplx.get_dimensions());
+                imag.create(cplx.dimensions());
             }
 
             const float* pRes = cplx.begin();
@@ -501,11 +501,11 @@ namespace Gadgetron {
     void complex_to_real_imag(const hoNDArray<double>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag) {
         try {
             if (!real.dimensions_equal(&cplx)) {
-                real.create(cplx.get_dimensions());
+                real.create(cplx.dimensions());
             }
 
             if (!imag.dimensions_equal(&cplx)) {
-                imag.create(cplx.get_dimensions());
+                imag.create(cplx.dimensions());
             }
 
             const double* pRes = cplx.begin();
@@ -530,7 +530,7 @@ namespace Gadgetron {
     template <class T> void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real) {
         try {
             if (!real.dimensions_equal(&cplx)) {
-                real.create(cplx.get_dimensions());
+                real.create(cplx.dimensions());
             }
 
             const T* pRes                     = cplx.begin();
@@ -557,7 +557,7 @@ namespace Gadgetron {
     template <class T> void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real) {
         try {
             if (!real.dimensions_equal(&cplx)) {
-                real.create(cplx.get_dimensions());
+                real.create(cplx.dimensions());
             }
 
             const T* pRes = cplx.begin();
@@ -610,7 +610,7 @@ namespace Gadgetron {
     template <class T> void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag) {
         try {
             if (!imag.dimensions_equal(&cplx)) {
-                imag.create(cplx.get_dimensions());
+                imag.create(cplx.dimensions());
             }
 
             const T* pRes                     = cplx.begin();
@@ -635,7 +635,7 @@ namespace Gadgetron {
     template <class T> void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag) {
         try {
             if (!imag.dimensions_equal(&cplx)) {
-                imag.create(cplx.get_dimensions());
+                imag.create(cplx.dimensions());
             }
 
             const T* pRes = cplx.begin();
@@ -682,7 +682,7 @@ namespace Gadgetron {
     template <class T> void real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx) {
         try {
             if (!cplx.dimensions_equal(&real)) {
-                cplx.create(real.get_dimensions());
+                cplx.create(real.dimensions());
             }
 
             const typename realType<T>::Type* pReal = real.begin();
@@ -1233,10 +1233,9 @@ namespace Gadgetron {
                 return;
             }
 
-            std::vector<size_t> dimX, dimR;
-            x.get_dimensions(dimX);
+            auto dimX = x.dimensions();
 
-            dimR      = dimX;
+            auto dimR      = dimX;
             dimR[dim] = 1;
 
             if (!r.dimensions_equal(&dimR)) {

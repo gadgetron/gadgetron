@@ -46,14 +46,14 @@ int SimpleReconGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
         data_dims[4] = N;
         data_dims[5] = S;
         data_dims[6] = LOC;        
-        imarray.data_.create(&data_dims);
+        imarray.data_.create(data_dims);
         
         //ImageHeaders will be [N, S, LOC]
         std::vector<size_t> header_dims(3);
         header_dims[0] = N;
         header_dims[1] = S;
         header_dims[2] = LOC;        
-        imarray.headers_.create(&header_dims);
+        imarray.headers_.create(header_dims);
 
         //We will not add any meta data
         //so skip the meta_ part

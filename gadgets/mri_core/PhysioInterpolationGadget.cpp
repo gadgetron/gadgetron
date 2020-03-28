@@ -230,7 +230,7 @@ namespace Gadgetron{
                     tmpm1->cont(tmpm2);
 
                     (*tmpm1->getObjectPtr()) = (*hptrs[0]);
-                    tmpm2->getObjectPtr()->create(aptrs[0]->get_dimensions());
+                    tmpm2->getObjectPtr()->create(aptrs[0]->dimensions());
 
                     out_heads.push_back(tmpm1);
                     out_data.push_back(tmpm2);

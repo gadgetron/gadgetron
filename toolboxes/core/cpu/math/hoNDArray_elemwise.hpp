@@ -77,12 +77,12 @@ namespace {
             if (sx >= sy) {
                 // x is bigger than y or they have the same size
                 if (sx != sr) {
-                    r.create(x.get_dimensions());
+                    r.create(x.dimensions());
                 }
             } else {
                 // y is bigger than x
                 if (sy != sr) {
-                    r.create(y.get_dimensions());
+                    r.create(y.dimensions());
                 }
             }
 

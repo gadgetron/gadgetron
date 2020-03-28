@@ -55,7 +55,7 @@ int ImageArraySplitGadget::process( GadgetContainerMessage<IsmrmrdImageArray>* m
                 GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = 
                         new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
 
-                try{cm2->getObjectPtr()->create(&img_dims);}
+                try{cm2->getObjectPtr()->create(img_dims);}
                 catch (std::runtime_error &err){
                     GEXCEPTION(err,"Unable to allocate new image\n");
                     cm1->release();

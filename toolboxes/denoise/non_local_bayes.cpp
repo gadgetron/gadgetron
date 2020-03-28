@@ -185,17 +185,17 @@ namespace Gadgetron {
                 constexpr int patch_size = 5;
                 constexpr int n_patches = 50;
 
-                hoNDArray<T> result(image.get_dimensions());
+                hoNDArray<T> result(image.dimensions());
                 result.fill(0);
 
-                hoNDArray<bool> mask(image.get_dimensions());
+                hoNDArray<bool> mask(image.dimensions());
                 mask.fill(true);
 
-                hoNDArray<int> count(image.get_dimensions());
+                hoNDArray<int> count(image.dimensions());
                 count.fill(0);
 
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
-                        from_std_vector<size_t, 2>(*image.get_dimensions())
+                        from_std_vector<size_t, 2>(image.dimensions())
                 );
 
 #pragma omp parallel for num_threads(4)
@@ -235,7 +235,7 @@ namespace Gadgetron {
                 std::vector<size_t> image_dims = {image.get_size(0), image.get_size(1)};
                 size_t image_elements = image_dims[0] * image_dims[1];
 
-                auto result = hoNDArray<T>(image.get_dimensions());
+                auto result = hoNDArray<T>(image.dimensions());
 
                 hoNDArray<T> result_view;
                 result_view.create(image_dims);

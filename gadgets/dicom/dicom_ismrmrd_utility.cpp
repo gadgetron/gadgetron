@@ -609,9 +609,7 @@ namespace Gadgetron
     {
         try
         {
-            hoNDArray< int16_t > data;
-            boost::shared_ptr< std::vector<size_t> > dims = m2.get_dimensions();
-            data.create(dims.get());
+            hoNDArray< int16_t > data(m2.dimensions());
 
             T *src = m2.get_data_ptr();
             auto dst = data.get_data_ptr();

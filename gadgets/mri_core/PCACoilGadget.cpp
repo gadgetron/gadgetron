@@ -121,7 +121,7 @@ namespace Gadgetron {
                 dims[0] = total_samples; dims[1] = channels;
 
                 hoNDArray< std::complex<float> > A;
-                try{ A.create(&dims); }
+                try{ A.create(dims); }
                 catch (std::runtime_error & err){
                     GDEBUG("Unable to create array for PCA calculation\n");
                     return GADGET_FAIL;
@@ -140,7 +140,7 @@ namespace Gadgetron {
                 hoNDArray<std::complex<float> > means;
                 std::vector<size_t> means_dims; means_dims.push_back(channels);
 
-                try{ means.create(&means_dims); }
+                try{ means.create(means_dims); }
                 catch (std::runtime_error& err){
                     GDEBUG("Unable to create temporary stoorage for mean values\n");
                     return GADGET_FAIL;
@@ -230,7 +230,7 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
                 new GadgetContainerMessage < hoNDArray< std::complex<float> > > ;
 
-            try{ m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get()); }
+            try{ m3->getObjectPtr()->create(m2->getObjectPtr()->dimensions()); }
             catch (std::runtime_error& err){
                 GEXCEPTION(err, "Unable to create storage for PCA coils\n");
                 m3->release();

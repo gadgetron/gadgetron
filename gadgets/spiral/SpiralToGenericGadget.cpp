@@ -77,7 +77,7 @@ namespace Gadgetron {
         std::vector<size_t> trajectory_dimensions = {trajectory_and_weights.get_size(0),trajectory_and_weights.get_size(1)};
 
         hoNDArray<float> *traj_source = new hoNDArray<float>
-                (&trajectory_dimensions, trajectory_and_weights.get_data_ptr() + 3 * samples_per_interleave * interleave);
+                (trajectory_dimensions, trajectory_and_weights.get_data_ptr() + 3 * samples_per_interleave * interleave);
 
         // Make a new array as continuation of m1, and pass along
         //

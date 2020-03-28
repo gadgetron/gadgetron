@@ -89,7 +89,7 @@ namespace Gadgetron {
         hoNDArray<float> approx_second_derivative(const hoNDArray<float> &residuals,
                                                   const hoNDArray<std::vector<uint16_t>> &local_min_indices,
                                                   float step_size) {
-            hoNDArray<float> second_deriv(local_min_indices.get_dimensions());
+            hoNDArray<float> second_deriv(local_min_indices.dimensions());
 
             const auto Y = second_deriv.get_size(1);
             const auto X = second_deriv.get_size(0);
@@ -119,7 +119,7 @@ namespace Gadgetron {
         hoNDArray<float>
         create_field_map(const hoNDArray<uint16_t> &field_map_index, const std::vector<float> &field_map_strengths) {
             const uint16_t max_val = field_map_strengths.size() - 1;
-            hoNDArray<float> field_map(field_map_index.get_dimensions());
+            hoNDArray<float> field_map(field_map_index.dimensions());
             std::transform(field_map_index.begin(), field_map_index.end(), field_map.begin(),
                            [&](uint16_t i) { return field_map_strengths[std::min(i, max_val)]; });
             return field_map;
@@ -133,7 +133,7 @@ namespace Gadgetron {
                                                        float dF, float dTE) {
 
             const size_t elements = field_map_index.get_number_of_elements();
-            hoNDArray<uint16_t> proposed_field_map_index(field_map_index.get_dimensions());
+            hoNDArray<uint16_t> proposed_field_map_index(field_map_index.dimensions());
             const size_t field_maps = field_map_strengths.size();
             std::uniform_int_distribution<int> coinflip(0, 1);
             int jump;
@@ -165,7 +165,7 @@ namespace Gadgetron {
                                                        float dF, float dTE) {
 
             const size_t elements = field_map_index.get_number_of_elements();
-            hoNDArray<uint16_t> proposed_field_map_index(field_map_index.get_dimensions());
+            hoNDArray<uint16_t> proposed_field_map_index(field_map_index.dimensions());
             std::uniform_int_distribution<int> coinflip(0, 1);
             int jump;
             if (coinflip(rng_state)) {
@@ -196,7 +196,7 @@ namespace Gadgetron {
 
             int step_size = sign * rng(rng_state);
 //        int step_size = sign;
-            hoNDArray<uint16_t> proposed_field_map_index(field_map_index.get_dimensions());
+            hoNDArray<uint16_t> proposed_field_map_index(field_map_index.dimensions());
             std::transform(field_map_index.begin(), field_map_index.end(), proposed_field_map_index.begin(),
                            [&](uint16_t j) {
                                return uint16_t(std::min(std::max(j + step_size, 0), int(max_field_value)));
@@ -210,7 +210,7 @@ namespace Gadgetron {
                   const hoNDArray<float> &residual, const hoNDArray<std::vector<uint16_t>> &local_min_indices,
                   const hoNDArray<float> &second_deriv, float fat_freq, float dF, float dTE) {
 
-            hoNDArray<uint16_t> fmIndex(local_min_indices.get_dimensions());
+            hoNDArray<uint16_t> fmIndex(local_min_indices.dimensions());
 
             std::uniform_int_distribution<int> coinflip(0, 2);
             fmIndex.fill(field_map_strengths.size() / 2);
@@ -334,7 +334,7 @@ namespace Gadgetron {
             }
 
 
-            hoNDArray<float> r2star_map(field_map.get_dimensions());
+            hoNDArray<float> r2star_map(field_map.dimensions());
 #ifdef WIN32
 #pragma omp parallel for
 #else

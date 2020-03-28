@@ -92,7 +92,7 @@ void hoNDWavelet<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t
             }
         }
 
-        out.create(&dimOut);
+        out.create(dimOut);
 
         if (level == 0)
         {

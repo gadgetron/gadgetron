@@ -12,7 +12,8 @@ namespace Gadgetron {
 
     template<typename T>
     hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions) : NDArray<T>::NDArray() {
-        this->create(dimensions);
+        assert(dimensions != nullptr);
+        this->create(*dimensions);
     }
 
     template<typename T>
@@ -22,7 +23,8 @@ namespace Gadgetron {
 
     template<typename T>
     hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions) : NDArray<T>::NDArray() {
-        this->create(dimensions);
+        assert(dimensions.get() != nullptr);
+        this->create(*dimensions);
     }
 
     template<class T>
@@ -124,7 +126,7 @@ namespace Gadgetron {
     template<typename T>
     hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions, T *data, bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        this->create(dimensions, data, delete_data_on_destruct);
+        this->create(*dimensions, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -136,85 +138,51 @@ namespace Gadgetron {
     template<typename T>
     hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions, T *data, bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        this->create(dimensions, data, delete_data_on_destruct);
+        this->create(*dimensions, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t len, T *data, bool delete_data_on_destruct) : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(1);
-        dim[0] = len;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(len, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, T *data, bool delete_data_on_destruct) : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(2);
-        dim[0] = sx;
-        dim[1] = sy;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(sx,sy, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, T *data, bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(3);
-        dim[0] = sx;
-        dim[1] = sy;
-        dim[2] = sz;
-        this->create(&dim, data, delete_data_on_destruct);
+   ;
+        this->create(sx,sy,sz, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, T *data, bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(4);
-        dim[0] = sx;
-        dim[1] = sy;
-        dim[2] = sz;
-        dim[3] = st;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(sx,sy,sz,st, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(
             size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T *data, bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(5);
-        dim[0] = sx;
-        dim[1] = sy;
-        dim[2] = sz;
-        dim[3] = st;
-        dim[4] = sp;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(sx,sy,sz,st,sp, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(
             size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, T *data, bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(6);
-        dim[0] = sx;
-        dim[1] = sy;
-        dim[2] = sz;
-        dim[3] = st;
-        dim[4] = sp;
-        dim[5] = sq;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(sx,sy,sz,st,sp,sq, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T *data,
                             bool delete_data_on_destruct)
             : NDArray<T>::NDArray() {
-        std::vector<size_t> dim(7);
-        dim[0] = sx;
-        dim[1] = sy;
-        dim[2] = sz;
-        dim[3] = st;
-        dim[4] = sp;
-        dim[5] = sq;
-        dim[6] = sr;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(sx,sy,sz,st,sp,sq,sr, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -1257,15 +1225,25 @@ namespace Gadgetron {
     }
 
     template<class T, size_t D, bool C>
-    template<bool C2>
-    hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArrayView<T, D, C2> &other) {
+    hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArrayView<T, D, C> &other) {
         if (&other == this) return *this;
         auto idx = vector_td<size_t, D>{};
-        hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArrayView<T, D>>::assign_loop(dimensions, idx,
+        hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArrayView<T, D,C>>::assign_loop(dimensions, idx,
                                                                                                      *this, other);
         return *this;
 
     }
+    template<class T, size_t D, bool C>
+    hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArrayView<T, D, !C> &other) {
+        if (&other == this) return *this;
+        auto idx = vector_td<size_t, D>{};
+        hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArrayView<T, D,!C>>::assign_loop(dimensions, idx,
+                                                                                                     *this, other);
+        return *this;
+
+    }
+
+
 
     template<class T, size_t D, bool C>
     hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArray<T> &other) {

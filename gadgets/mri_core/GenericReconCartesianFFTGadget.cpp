@@ -130,7 +130,6 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                recon_bit_->rbit_[e].ref_->clear();
                 recon_bit_->rbit_[e].ref_ = boost::none;
             }
 

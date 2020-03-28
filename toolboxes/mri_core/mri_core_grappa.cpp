@@ -734,19 +734,19 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
 
 #pragma omp parallel default(none) private(src) shared(RO, E1, srcCHA, dstCHA, pKerIm, pCoilMap, pCoeff, dim)
         {
-            hoNDArray<T> coeff2D, coeffTmp(&dim);
+            hoNDArray<T> coeff2D, coeffTmp(dim);
             hoNDArray<T> coilMap2D;
             hoNDArray<T> kerIm2D;
 
 #pragma omp for
             for (src = 0; src<(int)srcCHA; src++)
             {
-                coeff2D.create(&dim, pCoeff + src*RO*E1);
+                coeff2D.create(dim, pCoeff + src*RO*E1);
 
                 for (size_t dst = 0; dst<dstCHA; dst++)
                 {
-                    kerIm2D.create(&dim, pKerIm + src*RO*E1 + dst*RO*E1*srcCHA);
-                    coilMap2D.create(&dim, pCoilMap + dst*RO*E1);
+                    kerIm2D.create(dim, pKerIm + src*RO*E1 + dst*RO*E1*srcCHA);
+                    coilMap2D.create(dim, pCoilMap + dst*RO*E1);
                     Gadgetron::multiplyConj(kerIm2D, coilMap2D, coeffTmp);
                     Gadgetron::add(coeff2D, coeffTmp, coeff2D);
                 }
@@ -818,7 +818,7 @@ void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedI
 
         if (!complexIm.dimensions_equal(&dimIm))
         {
-            complexIm.create(&dimIm);
+            complexIm.create(dimIm);
         }
 
         size_t num = aliasedIm.get_number_of_elements() / (RO*E1*srcCHA);
@@ -879,7 +879,7 @@ void apply_unmix_coeff_kspace(const hoNDArray<T>& kspace, const hoNDArray<T>& un
 
         if (!complexIm.dimensions_equal(&dim))
         {
-            complexIm.create(&dim);
+            complexIm.create(dim);
         }
 
         Gadgetron::multiply(buffer2DT, unmixCoeff, buffer2DT);
@@ -911,7 +911,7 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
 
         if (!complexIm.dimensions_equal(&dim))
         {
-            complexIm.create(&dim);
+            complexIm.create(dim);
         }
 
         hoNDArray<T> buffer2DT(aliasedIm);

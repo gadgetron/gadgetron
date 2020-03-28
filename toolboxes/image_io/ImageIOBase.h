@@ -244,7 +244,7 @@ public:
         {
             typedef typename Gadgetron::realType<T>::Type value_type;
 
-            hoNDArray<value_type> buf(a.get_dimensions());
+            hoNDArray<value_type> buf(a.dimensions());
 
             long long num = (long long)a.get_number_of_elements();
 
@@ -283,10 +283,10 @@ public:
             typedef typename Gadgetron::realType<T>::Type value_type;
 
             hoNDArray<value_type> rpart, ipart, mag, phs;
-            rpart.create(a.get_dimensions());
-            ipart.create(a.get_dimensions());
-            mag.create(a.get_dimensions());
-            phs.create(a.get_dimensions());
+            rpart.create(a.dimensions());
+            ipart.create(a.dimensions());
+            mag.create(a.dimensions());
+            phs.create(a.dimensions());
 
             long long num = (long long)a.get_number_of_elements();
 
@@ -339,7 +339,7 @@ public:
             filenameImag.append("_IMAG");
             GADGET_CATCH_THROW(import_array(imag, filenameImag));
 
-            a.create(real.get_dimensions());
+            a.create(real.dimensions());
             long long num = (long long)real.get_number_of_elements();
 
             long long n;
@@ -366,7 +366,7 @@ public:
             GADGET_CATCH_THROW(import_array(real, filename_real));
             GADGET_CATCH_THROW(import_array(imag, filename_imag));
 
-            a.create(real.get_dimensions());
+            a.create(real.dimensions());
             long long num = (long long)real.get_number_of_elements();
 
             long long n;

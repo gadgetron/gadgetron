@@ -176,7 +176,7 @@ namespace {
         auto y1      = min(max(int(y) - 1, 0), int(dims[1] - 1));
         auto y2      = min(max(int(y) + 1, 0), int(dims[1] - 1));
 
-        return vector_td<T, 2>{ (image[x2 + y * dims[0]] - image[x1 + y * dims[1]]) / 2,
+        return vector_td<T, 2>{ (image[x2 + y * dims[0]] - image[x1 + y * dims[0]]) / 2,
             (image[x + y2 * dims[0]] - image[x + y1 * dims[0]]) / 2 };
     }
 
@@ -233,12 +233,18 @@ namespace {
             index[1] = y;
             for (size_t x = 0; x < dims[0]; x++) {
                 index[0]                = x;
-                result[x + y * dims[0]] = demons_point(fixed, moving, alpha, beta, index, dims);
+                result(x,y) = demons_point(fixed, moving, alpha, beta, index, dims);
             }
         }
 
         return result;
     }
+}
+
+
+
+hoNDArray<vector_td<float, 2>> Gadgetron::Registration::demons_step_ext(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, float alpha, float beta){
+    return demons_step<float,2>(fixed,moving,alpha,beta);
 }
 
 namespace {
@@ -352,18 +358,19 @@ template hoNDArray<double> Gadgetron::Registration::gaussian_filter(const hoNDAr
 template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::gaussian_filter(const hoNDArray<vector_td<float, 2>>& image, float sigma);
 template hoNDArray<vector_td<float, 3>> Gadgetron::Registration::gaussian_filter(const hoNDArray<vector_td<float, 3>>& image, float sigma);
 
-namespace {
-    using namespace Gadgetron::Registration;
-    template <class T, unsigned int D>
-    hoNDArray<vector_td<T, D>> compose_fields(
+template <class T, unsigned int D>
+    hoNDArray<vector_td<T, D>> Gadgetron::Registration::compose_fields(
         const hoNDArray<vector_td<T, D>>& update_field, const hoNDArray<vector_td<T, D>>& vfield) {
         auto resulting_field = deform_image(vfield, update_field);
         resulting_field += update_field;
         return resulting_field;
-    }
+}
+
+template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::compose_fields(const hoNDArray<vector_td<float, 2>>& , const hoNDArray<vector_td<float, 2>>& );
+    
 
     template <class T, unsigned int D>
-    hoNDArray<vector_td<T, D>> vector_field_exponential(const hoNDArray<vector_td<T, D>>& vector_field) {
+    hoNDArray<vector_td<T, D>> Gadgetron::Registration::vector_field_exponential(const hoNDArray<vector_td<T, D>>& vector_field) {
 
         auto maximum_vector_length = std::accumulate(vector_field.begin(), vector_field.end(), T(0),
             [](auto current, const auto& next) { return std::max(current, norm(next)); });
@@ -377,6 +384,12 @@ namespace {
         }
         return field_exponent;
     }
+
+    template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::vector_field_exponential(const hoNDArray<vector_td<float, 2>>& vector_field);
+namespace {
+    using namespace Gadgetron::Registration;
+    
+
     template <class T, unsigned int D>
     hoNDArray<vector_td<T, D>> diffeomorphic_demons_impl(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
         hoNDArray<vector_td<T, D>> vector_field, hoNDArray<vector_td<T, D>> predictor_field, unsigned int iterations,

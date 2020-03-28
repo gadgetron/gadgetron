@@ -52,6 +52,14 @@ namespace Gadgetron { namespace Registration {
         // TEMPORARY STUFF GOES HERE
 
          template <class T> hoNDArray<T> gaussian_filter(const hoNDArray<T>& image, float sigma);
-        
+         
+         template<class T, unsigned int D>
+         hoNDArray<vector_td<T, D>> compose_fields(
+        const hoNDArray<vector_td<T, D>>& update_field, const hoNDArray<vector_td<T, D>>& vfield);
 
+          template <class T, unsigned int D>
+          hoNDArray<vector_td<T, D>> vector_field_exponential(const hoNDArray<vector_td<T, D>>& vector_field);
+
+
+         hoNDArray<vector_td<float, 2>> demons_step_ext(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, float alpha, float beta);
     }}

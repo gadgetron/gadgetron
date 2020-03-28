@@ -624,7 +624,7 @@ bool ImageIOAnalyze::header_to_array(hoNDArray<T>& a, const HeaderType& header)
             }
         }
 
-        a.create(&dim);
+        a.create(dim);
     }
     catch(...)
     {
