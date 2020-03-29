@@ -67,3 +67,5 @@ install (FILES  gadgetron_gpupmri_export.h
                 DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(config)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

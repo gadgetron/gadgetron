@@ -186,7 +186,7 @@ cuNDFFT<T>::fft2_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 	cufftHandle plan;
 	cufftResult ftres;
 
-	std::vector<int> int_dims {int(input->get_size(0)),int(input->get_size(1))};
+	std::vector<int> int_dims {int(input->get_size(1)),int(input->get_size(0))};
 	int elements_in_ft = input->get_size(0)*input->get_size(1);
 	int batches = input->get_number_of_elements()/elements_in_ft;
 	ftres = cufftPlanMany(&plan,2,&int_dims[0], &int_dims[0], 1, elements_in_ft, &int_dims[0], 1, elements_in_ft, get_transform_type<T>(), batches);
@@ -220,7 +220,7 @@ cuNDFFT<T>::fft3_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 	cufftHandle plan;
 	cufftResult ftres;
 
-	std::vector<int> int_dims {int(input->get_size(0)),int(input->get_size(1)),int(input->get_size(2))};
+	std::vector<int> int_dims {int(input->get_size(2)),int(input->get_size(1)),int(input->get_size(0))};
 	int elements_in_ft = input->get_size(0)*input->get_size(1)*input->get_size(2);
 	int batches = input->get_number_of_elements()/elements_in_ft;
 	ftres = cufftPlanMany(&plan,3,&int_dims[0], &int_dims[0], 1, elements_in_ft, &int_dims[0], 1, elements_in_ft, get_transform_type<T>(), batches);

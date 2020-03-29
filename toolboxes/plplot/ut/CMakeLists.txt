@@ -11,3 +11,5 @@ add_executable(gadgetron_ut_plplot
 
 target_link_libraries(gadgetron_ut_plplot gadgetron_toolbox_plplot gadgetron_toolbox_image_analyze_io)
 install(TARGETS gadgetron_ut_plplot DESTINATION bin COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

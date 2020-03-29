@@ -75,3 +75,5 @@ install(TARGETS gadgetron_toolbox_cpuoperator
 install(FILES 
   ${cpu_operator_header_files}
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

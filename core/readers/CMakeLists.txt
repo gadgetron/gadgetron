@@ -24,3 +24,4 @@ install(TARGETS gadgetron_core_readers
         COMPONENT main
         )
 
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

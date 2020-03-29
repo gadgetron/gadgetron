@@ -279,6 +279,8 @@ target_link_libraries(FFTW INTERFACE ${FFTW3_LIBRARIES})
 set_property(TARGET FFTW PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 install(TARGETS FFTW EXPORT gadgetron-export)
 
+set(GADGETRON_BUILD_RPATH "")
+
 option(USE_MKL OFF)
 if (USE_MKL)
     find_package(MKL REQUIRED)
@@ -289,6 +291,7 @@ if (USE_MKL)
 
 
     add_definitions(-DUSE_MKL)
+    set(GADGETRON_BUILD_RPATH "${MKL_LIB_DIR};${MKL_COMPILER_LIB_DIR}")
 else ()
 
     find_package(CBLAS REQUIRED)
@@ -358,9 +361,8 @@ find_package(PLplot)
 
 add_subdirectory(core)
 add_subdirectory(toolboxes)
-add_subdirectory(apps)
-
 add_subdirectory(gadgets)
+add_subdirectory(apps)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)
