@@ -1098,7 +1098,7 @@ namespace Gadgetron {
 
             template<unsigned int DIMS, unsigned int CUR_DIM, class ASSIGNEE, class OTHER>
             struct looper {
-                static void assign_loop(const vector_td<size_t, DIMS> &dims, vector_td<size_t, DIMS> &idx,
+                static void assign_loop(const vector_td<size_t, DIMS> &dims, std::array<size_t, DIMS> &idx,
                                         ASSIGNEE &self, const OTHER &other) {
                     for (idx[CUR_DIM] = 0; idx[CUR_DIM] < dims[CUR_DIM]; idx[CUR_DIM]++) {
                         looper<DIMS, CUR_DIM - 1, ASSIGNEE, OTHER>::assign_loop(dims, idx, self, other);
@@ -1108,10 +1108,10 @@ namespace Gadgetron {
 
             template<unsigned int DIMS, class ASSIGNEE, class OTHER>
             struct looper<DIMS, 0, ASSIGNEE, OTHER> {
-                static void assign_loop(const vector_td<size_t, DIMS> &dims, vector_td<size_t, DIMS> &idx,
+                static void assign_loop(const vector_td<size_t, DIMS> &dims, std::array<size_t, DIMS> &idx,
                                         ASSIGNEE &self, const OTHER &other) {
                     for (idx[0] = 0; idx[0] < dims[0]; idx[0]++) {
-                        Core::apply([&](auto &&... indices) { self(indices...) = other(indices...); }, idx);
+                        std::apply([&](auto &&... indices) { self(indices...) = other(indices...); }, idx);
                     }
                 }
             };
@@ -1217,7 +1217,7 @@ namespace Gadgetron {
             this->create(other_dims);
         }
 
-        auto idx = vector_td<size_t, D>{};
+        auto idx = std::array<size_t, D>{};
         hondarray_detail::looper<D, D - 1, hoNDArray<T>, hoNDArrayView<T, D, C>>::assign_loop(view.dimensions, idx,
                                                                                               *this, view);
 
@@ -1227,7 +1227,10 @@ namespace Gadgetron {
     template<class T, size_t D, bool C>
     hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArrayView<T, D, C> &other) {
         if (&other == this) return *this;
-        auto idx = vector_td<size_t, D>{};
+        if (this->dimensions != other.dimensions){
+            throw std::runtime_error("Dimensions must be the same for slice assignment");
+        }
+        auto idx = std::array<size_t, D>{};
         hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArrayView<T, D,C>>::assign_loop(dimensions, idx,
                                                                                                      *this, other);
         return *this;
@@ -1235,8 +1238,10 @@ namespace Gadgetron {
     }
     template<class T, size_t D, bool C>
     hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArrayView<T, D, !C> &other) {
-        if (&other == this) return *this;
-        auto idx = vector_td<size_t, D>{};
+        if (this->dimensions != other.dimensions){
+            throw std::runtime_error("Dimensions must be the same for slice assignment");
+        }
+        auto idx = std::array<size_t, D>{};
         hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArrayView<T, D,!C>>::assign_loop(dimensions, idx,
                                                                                                      *this, other);
         return *this;
@@ -1247,7 +1252,11 @@ namespace Gadgetron {
 
     template<class T, size_t D, bool C>
     hoNDArrayView<T, D, C> &hoNDArrayView<T, D, C>::operator=(const hoNDArray<T> &other) {
-        auto idx = vector_td<size_t, D>{};
+        if (this->dimensions.size() != other.dimensions().size() && !std::equal(dimensions.begin(),dimensions.end(),other.dimensions().begin())){
+            throw std::runtime_error("Dimensions must be the same for slice assignment");
+        }
+
+        auto idx = std::array<size_t, D>{};
         hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArray<T>>::assign_loop(dimensions, idx, *this,
                                                                                               other);
         return *this;
