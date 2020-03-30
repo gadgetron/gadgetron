@@ -20,7 +20,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 execute.name
         };
 
-        if(execute.target) args.push_back(execute.target.get());
+        if(execute.target) args.push_back(execute.target.value());
 
         boost::process::child module(
                 boost::process::search_path("python3"),

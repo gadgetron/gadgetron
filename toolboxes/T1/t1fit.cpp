@@ -204,27 +204,42 @@ namespace {
     
 
 
-}
 
-    std::tuple<hoNDArray<std::complex<float>>,hoNDArray<vector_td<float,2>>> Gadgetron::T1::register_and_deform_groups(const hoNDArray<float>& phase_corrected_data,
-        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>> vector_field) {
+
+    hoNDArray<vector_td<float,2>> register_groups(const hoNDArray<float>& phase_corrected_data,
+        const hoNDArray<float>& predicted, hoNDArray<vector_td<float,2>> vector_field) {
         using namespace Indexing;
-        hoNDArray<std::complex<float>> result(predicted.dimensions());
 
         auto abs_corrected = abs(phase_corrected_data);
         auto abs_predicted = abs(predicted);
 
 #pragma omp parallel for
-        for (long long cha = 0; cha < (long long)data.get_size(2); cha++) {
+        for (long long cha = 0; cha < (long long)predicted.get_size(2); cha++) {
             vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
                 abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), 40, 2.0);
-            result(slice, slice, cha)
-                = Registration::deform_image<std::complex<float>, 2,float >(data(slice, slice, cha), vector_field(slice,slice,cha));
         }
 
-        return {result,vector_field};
+        return vector_field;
     }
-T1_3param Gadgetron::T1::motion_compensated_t1_fit(
+}
+
+
+hoNDArray<std::complex<float>> Gadgetron::T1::deform_groups(const hoNDArray<std::complex<float>>& data,const hoNDArray<vector_td<float,2>>& vector_field){
+    using namespace Indexing;
+    assert(data.dimensions() == vector_field.dimensions());
+    assert(data.dimensions().size() == 3);
+
+    auto output = hoNDArray<std::complex<float>>(data.dimensions());
+    for (long long cha = 0; cha < (long long)data.get_size(2); cha++){
+        output(slice,slice,cha) = Registration::deform_image<std::complex<float>,2,float>(data(slice,slice,cha),vector_field(slice,slice,cha));
+    }
+    return output;
+
+}
+
+
+
+hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_registration(
     const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations) {
     if (data.get_size(2) != TI.size()) {
         throw std::runtime_error("Data and TI do not match");
@@ -234,26 +249,16 @@ T1_3param Gadgetron::T1::motion_compensated_t1_fit(
 
     auto corrected_orig = corrected;
 
-    std::cout << std::endl;
-
-    auto parameters = fit_T1_2param(corrected, TI);
-
-    auto predicted = predict_signal(parameters, TI);
-
     auto vector_field = hoNDArray<vector_td<float,2>>(data.dimensions());
     vector_field.fill(vector_td<float,2>(0));
 
     for (int i = 0; i < iterations; i++) {
-        auto [deformed_data,updated_vector_field] = register_and_deform_groups(corrected_orig, predicted, data,vector_field);
+        auto parameters = fit_T1_2param(corrected, TI);
+        auto predicted = predict_signal(parameters, TI);
+        auto updated_vector_field = register_groups(corrected_orig, predicted, vector_field);
         vector_field = updated_vector_field;
+        auto deformed_data = deform_groups(data,vector_field);
         corrected = phase_correct(deformed_data, TI);
-
-        parameters = fit_T1_2param(corrected, TI);
-
-        predicted = predict_signal(parameters, TI);
     }
-
-    auto result = fit_T1_3param(corrected, TI);
-
-    return result;
+    return vector_field;
 };

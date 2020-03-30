@@ -60,13 +60,13 @@ namespace Gadgetron{
     //
   
     boost::shared_ptr< std::vector<size_t> > disp_dims = _gradient_image->get_dimensions();
-    boost::shared_ptr< hoNDArray<T> > displacements_ping( new hoNDArray<T>(disp_dims.get()) );
-    boost::shared_ptr< hoNDArray<T> > displacements_pong( new hoNDArray<T>(disp_dims.get()) );
+    boost::shared_ptr< hoNDArray<T> > displacements_ping( new hoNDArray<T>(*disp_dims) );
+    boost::shared_ptr< hoNDArray<T> > displacements_pong( new hoNDArray<T>(*disp_dims) );
     clear(displacements_ping.get());
     clear(displacements_pong.get());
     
     // We use "shared memory" to hold the averaged displacements
-    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(disp_dims.get()));
+    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(*disp_dims));
     T *shared_mem = _shared_mem->get_data_ptr();
     clear( _shared_mem.get());
 

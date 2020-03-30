@@ -89,18 +89,18 @@ namespace {
         void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
 
             if(previous_line[slice_of(acquisition)]) {
-                if (line_of(acquisition) < previous_line[slice_of(acquisition)].get()) {
+                if (line_of(acquisition) < previous_line[slice_of(acquisition)].value()) {
                     acceleration[slice_of(acquisition)] = none;
                 }
                 else {
-                    acceleration[slice_of(acquisition)] = line_of(acquisition) - previous_line[slice_of(acquisition)].get();
+                    acceleration[slice_of(acquisition)] = line_of(acquisition) - previous_line[slice_of(acquisition)].value();
                 }
             }
             previous_line[slice_of(acquisition)] = line_of(acquisition);
         }
 
         size_t acceleration_factor(size_t slice) const {
-            return acceleration[slice].get();
+            return acceleration[slice].value();
         }
 
         void clear(size_t slice) {

@@ -8,6 +8,7 @@
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection::Stream;
+using namespace Gadgetron;
 
 namespace {
 

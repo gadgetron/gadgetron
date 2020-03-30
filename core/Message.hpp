@@ -167,7 +167,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class T, class... TYPES>
                 static hana::tuple<optional < T>, TYPES...>
-                convert(Iterator & it,  const Iterator &it_end, const hana::basic_type<boost::optional<T>> &,
+                convert(Iterator & it,  const Iterator &it_end, const hana::basic_type<Core::optional<T>> &,
                     const hana::basic_type<TYPES> &... xs
                 ) {
 

@@ -138,7 +138,7 @@ namespace Gadgetron
   {
   public:
     IsmrmrdDataBuffered data_;
-    boost::optional<IsmrmrdDataBuffered> ref_;
+    Core::optional<IsmrmrdDataBuffered> ref_;
 
 
   };

@@ -35,18 +35,22 @@ namespace Gadgetron::T1 {
     T1_3param fit_T1_3param(const hoNDArray<float>& data, const std::vector<float>& TI);
 
 
-    T1_3param motion_compensated_t1_fit(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations=5);
+    /**
+     * Performs registration on a T1 dataset by iteratively creating synthetic data based 
+     * on a two parameter T1 fit, and registering it to the original data using intensity based registration.
+     * @param data Input data of shape (X,Y,TI)
+     * @param TI inversion times
+     * @param iterations Number of iterations to be used.
+     * @return Deformation vector fields for bringing each dataset into a common reference frame
+     **/ 
+    hoNDArray<vector_td<float,2>> t1_registration(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations=5);
 
+    hoNDArray<std::complex<float>> deform_groups(const hoNDArray<std::complex<float>>& data,const hoNDArray<vector_td<float,2>>& vector_field);
 
     hoNDArray<float> predict_signal(const T1_2param& params, const std::vector<float>& TI);
 
     hoNDArray<float> predict_signal(const T1_3param& params, const std::vector<float>& TI);
 
-
     hoNDArray<float> phase_correct(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI);
-
-
-    std::tuple<hoNDArray<std::complex<float>>,hoNDArray<vector_td<float,2>>> register_and_deform_groups(const hoNDArray<float>& phase_corrected_data,
-        const hoNDArray<float>& predicted, const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>> vector_field);
 
 }

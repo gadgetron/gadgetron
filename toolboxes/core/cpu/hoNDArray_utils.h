@@ -99,7 +99,7 @@ namespace Gadgetron {
     std::vector<size_t> dims;
     for (size_t i = 0; i < dim_order.size(); i++)
       dims.push_back(in.get_dimensions()->at(dim_order[i]));
-    hoNDArray<T> out(&dims);
+    hoNDArray<T> out(dims);
     permute( in, out, dim_order);
     return out;
   }

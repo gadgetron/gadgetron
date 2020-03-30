@@ -153,7 +153,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                // recon_bit_->rbit_[e].ref_ = boost::none;
+                // recon_bit_->rbit_[e].ref_ = Core::none;
             }
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
@@ -183,7 +183,7 @@ namespace Gadgetron {
             }
 
 //            recon_bit_->rbit_[e].ref_->clear();
-            recon_bit_->rbit_[e].ref_ = boost::none;
+            recon_bit_->rbit_[e].ref_ = Core::none;
             recon_obj_[e].recon_res_.data_.clear();
             recon_obj_[e].recon_res_.headers_.clear();
             recon_obj_[e].recon_res_.meta_.clear();

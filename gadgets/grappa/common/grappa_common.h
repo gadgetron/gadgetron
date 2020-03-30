@@ -32,13 +32,13 @@ namespace Gadgetron::Grappa {
 
     template<class T>
     uint64_t combined_channels(const T &acquisition) {
-        boost::optional<ChannelAnnotation> optional_annotation = std::get<Core::optional<ChannelAnnotation>>(acquisition);
+        Core::optional<ChannelAnnotation> optional_annotation = std::get<Core::optional<ChannelAnnotation>>(acquisition);
         return optional_annotation ? optional_annotation->number_of_combined_channels : channels_in(acquisition);
     }
 
     template<class T>
     uint64_t uncombined_channels(const T &acquisition) {
-        boost::optional<ChannelAnnotation> optional_annotation = std::get<Core::optional<ChannelAnnotation>>(acquisition);
+        Core::optional<ChannelAnnotation> optional_annotation = std::get<Core::optional<ChannelAnnotation>>(acquisition);
         return optional_annotation ? optional_annotation->number_of_uncombined_channels : 0;
     }
 

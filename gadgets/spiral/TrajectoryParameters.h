@@ -20,7 +20,7 @@ namespace Spiral {
         calculate_trajectories_and_weight(const ISMRMRD::AcquisitionHeader &acq_header);
 
     private:
-        boost::optional<hoNDArray<std::complex<float>>> girf_kernel;
+        Core::optional<hoNDArray<std::complex<float>>> girf_kernel;
         float girf_sampling_time_us;
         long Tsamp_ns_;
         long Nints_;

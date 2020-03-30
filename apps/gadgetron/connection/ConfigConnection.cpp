@@ -13,6 +13,7 @@
 #include "io/primitives.h"
 #include "Context.h"
 #include "MessageID.h"
+#include "Types.h"
 
 namespace {
 
@@ -74,7 +75,7 @@ namespace {
 
     class ConfigStreamContext {
     public:
-        boost::optional<Config> config;
+        Gadgetron::Core::optional<Config> config;
         const StreamContext::Paths paths;
     };
 
@@ -112,7 +113,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         GINFO_STREAM("Connection state: [CONFIG]");
 
         ConfigStreamContext context{
-            boost::none,
+            Core::none,
             paths
         };
 
@@ -136,7 +137,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         output_thread.join();
 
         if (context.config) {
-            HeaderConnection::process(stream, paths, args, context.config.get(), error_handler);
+            HeaderConnection::process(stream, paths, args, context.config.value(), error_handler);
         }
     }
 }

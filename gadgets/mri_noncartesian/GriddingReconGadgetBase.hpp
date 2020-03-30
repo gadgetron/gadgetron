@@ -78,7 +78,7 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 				return GADGET_FAIL;
 			}
 			
-			if (buffer->trajectory_ == boost::none) {
+			if (buffer->trajectory_ == Core::none) {
 				GERROR("Trajectories not found. Bailing out.\n");
 				m1->release();
 				return GADGET_FAIL;

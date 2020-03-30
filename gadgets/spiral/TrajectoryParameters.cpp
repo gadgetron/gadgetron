@@ -79,7 +79,7 @@ namespace Gadgetron {
                     auto user_params_double = to_map(h.userParameters->userParameterDouble);
 
                     auto girf_kernel_string = user_params_string.at("GIRF_kernel");
-                    this->girf_kernel = boost::make_optional<hoNDArray<std::complex<float>>>(
+                    this->girf_kernel = std::make_optional<hoNDArray<std::complex<float>>>(
                             GIRF::load_girf_kernel(girf_kernel_string));
 
                     girf_sampling_time_us = user_params_double.at("GIRF_sampling_time_us");
