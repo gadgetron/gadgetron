@@ -22,6 +22,8 @@ Server::Server(
 void Server::serve() {
 
     Gadgetron::Core::Context::Paths paths{args["home"].as<path>(), args["dir"].as<path>()};
+    GINFO_STREAM("Gadgetron home directory: " << paths.gadgetron_home);
+    GINFO_STREAM("Gadgetron working directory: " << paths.working_folder);
 
 #if(BOOST_VERSION >= 107000)
     boost::asio::io_context executor;

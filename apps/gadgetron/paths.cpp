@@ -91,7 +91,7 @@ namespace Gadgetron::Server {
                 .parent_path()
                 .parent_path();
 
-        GDEBUG_STREAM("Gadgetron home: " << gadgetron_home);
+        GDEBUG_STREAM("Default Gadgetron home: " << gadgetron_home);
 
         return gadgetron_home;
     }
