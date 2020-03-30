@@ -99,7 +99,7 @@ namespace Gadgetron {
     std::vector<size_t> dims;
     for (size_t i = 0; i < dim_order.size(); i++)
       dims.push_back(in.get_dimensions()->at(dim_order[i]));
-    hoNDArray<T> out(&dims);
+    hoNDArray<T> out(dims);
     permute( in, out, dim_order);
     return out;
   }
@@ -252,7 +252,7 @@ namespace Gadgetron {
               if (i != dim) dims.push_back(in.get_size(i));
           }
 
-          auto  out = hoNDArray<T>(&dims);
+          auto  out = hoNDArray<T>(dims);
           auto orig_dims = *in.get_dimensions();
           auto stride = std::accumulate(orig_dims.begin(),orig_dims.begin()+dim,1,std::multiplies<size_t>());
 
@@ -772,7 +772,7 @@ namespace Gadgetron {
 
     const REAL *in = _in.get_data_ptr();
 
-     hoNDArray<REAL>  _out( &dims );
+     hoNDArray<REAL>  _out( dims );
     REAL *out = _out.get_data_ptr();
 
     typedef vector_td<size_t,D> uint64d;

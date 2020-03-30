@@ -53,13 +53,13 @@ namespace Gadgetron{
     // Allocate array for result
     //
 
-    hoNDArray< std::complex<float> > result( &dims );
+    hoNDArray< std::complex<float> > result( dims );
 
     // And copy over the first profile
     //
 
     {
-      hoNDArray< std::complex<float> > tmp( &dims_profile, result.get_data_ptr() );
+      hoNDArray< std::complex<float> > tmp( dims_profile, result.get_data_ptr() );
       tmp = *entry;
     }
 

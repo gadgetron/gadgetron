@@ -26,7 +26,7 @@ void hoWavelet3DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T
 {
     if (!complexIm_fft_.dimensions_equal(&x))
     {
-        complexIm_fft_.create(x.get_dimensions());
+        complexIm_fft_.create(x.dimensions());
     }
 
     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(x, im, complexIm_fft_);
@@ -37,7 +37,7 @@ void hoWavelet3DOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray
 {
     if (!kspace_fft_.dimensions_equal(&im))
     {
-        kspace_fft_.create(im.get_dimensions());
+        kspace_fft_.create(im.dimensions());
     }
 
     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(im, x, kspace_fft_);
@@ -48,8 +48,7 @@ void hoWavelet3DOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y)
 {
     try
     {
-        std::vector<size_t> dims;
-        x.get_dimensions(dims);
+        std::vector<size_t> dims = x.dimensions();
         size_t NDim = dims.size();
 
         size_t RO = dims[0];
@@ -89,8 +88,7 @@ void hoWavelet3DOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y)
 {
     try
     {
-        std::vector<size_t> dims;
-        x.get_dimensions(dims);
+        std::vector<size_t> dims = x.dimensions();
         size_t NDim = dims.size();
 
         size_t RO = dims[0];
@@ -219,7 +217,7 @@ void hoWavelet3DOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
 
         if (!y->dimensions_equal(&dimR))
         {
-            y->create(&dimR);
+            y->create(dimR);
         }
 
         this->adjoint_wav(*x, this->complexIm_wav_);

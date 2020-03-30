@@ -6,7 +6,6 @@ endif (WIN32)
 
 
 set(cpucore_math_header_files
-    cpucore_math_export.h
     hoNDArray_math.h
     hoNDImage_util.h
     hoNDImage_util.hxx
@@ -26,12 +25,14 @@ set(cpucore_math_src_files
          )
 
     set(cpucore_math_src_files 
-        ${cpucore_math_src_files} 
+        ${cpucore_math_src_files}
         hoNDArray_reductions.cpp
         hoNDArray_elemwise.cpp
-        cpp_blas.cpp)
+        cpp_blas.cpp
+        cpp_lapack.cpp
+            )
 
-set_source_files_properties(cpp_blas.cpp PROPERTIES COMPILE_FLAGS -fpermissive)
+#set_source_files_properties(cpp_blas.cpp PROPERTIES COMPILE_FLAGS -fpermissive)
 add_library(gadgetron_toolbox_cpucore_math SHARED  ${cpucore_math_src_files} ${cpucore_math_header_files})
 set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
     target_link_libraries(gadgetron_toolbox_cpucore_math
@@ -43,6 +44,7 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
             )
 
 install(TARGETS gadgetron_toolbox_cpucore_math
+        EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

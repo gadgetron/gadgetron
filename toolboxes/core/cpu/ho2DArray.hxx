@@ -11,11 +11,7 @@ template <typename T>
 ho2DArray<T>::ho2DArray(size_t sx, size_t sy)
 : accesser_(NULL)
 {
-    std::vector<size_t> dim(2);
-    dim[0] = sx;
-    dim[1] = sy;
-
-    this->create(&dim);
+    this->create(sx,sy);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -29,7 +25,7 @@ ho2DArray<T>::ho2DArray(std::vector<size_t> *dimensions)
 
 template <typename T> 
 ho2DArray<T>::ho2DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
+: BaseClass(*dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
     GADGET_CHECK_THROW(dimensions->size()==2);
     GADGET_CHECK_THROW(init_accesser());
@@ -111,14 +107,14 @@ void ho2DArray<T>::create(std::vector<size_t>& dimensions)
 template <typename T> 
 void ho2DArray<T>::create(std::vector<size_t> *dimensions)
 {
-    BaseClass::create(dimensions);
+    BaseClass::create(*dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
 void ho2DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
 {
-    BaseClass::create(dimensions, data, delete_data_on_destruct);
+    BaseClass::create(*dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
 }
 

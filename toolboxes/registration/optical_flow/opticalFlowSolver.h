@@ -112,7 +112,7 @@ namespace Gadgetron{
 
       grad_dims.push_back(D+1); 
 
-      boost::shared_ptr<ARRAY_TYPE_REAL> grad_image(new ARRAY_TYPE_REAL(&grad_dims));
+      boost::shared_ptr<ARRAY_TYPE_REAL> grad_image(new ARRAY_TYPE_REAL(grad_dims));
 
       // Setup for the spatial partial derivatives
       //

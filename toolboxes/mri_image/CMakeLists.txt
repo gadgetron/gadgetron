@@ -19,7 +19,9 @@ target_link_libraries(gadgetron_toolbox_mri_image
                      )
 target_include_directories(gadgetron_toolbox_mri_image
        INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+install(TARGETS gadgetron_toolbox_mri_image EXPORT gadgetron-export)
 
 
 install(FILES ${mri_image_header_files}

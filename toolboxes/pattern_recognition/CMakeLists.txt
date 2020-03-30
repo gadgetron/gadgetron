@@ -15,7 +15,7 @@ add_library(gadgetron_toolbox_pr SHARED
 set_target_properties(gadgetron_toolbox_pr PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_toolbox_pr
-                    ${ISMRMRD_LIBRARIES}
+        			ISMRMRD::ISMRMRD
                     gadgetron_toolbox_cpucore
                     gadgetron_toolbox_log
                     gadgetron_toolbox_cpucore_math

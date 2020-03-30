@@ -1,4 +1,4 @@
-#include <cpu/hoNDArray_fileio.h>
+#include "cpu/hoNDArray_fileio.h"
 #include "Unmixing.h"
 
 #include "parallel/Merge.h"
@@ -25,7 +25,7 @@ namespace {
             consume_all_pending_weights();
             consume_weights_until_present(slice);
 
-            return weights[slice].get();
+            return weights[slice].value();
         }
 
     private:

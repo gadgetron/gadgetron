@@ -78,7 +78,7 @@ namespace Gadgetron{
         GadgetContainerMessage< hoNDArray<std::complex<float> > >* m3 =
             new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
 
-        try{ m3->getObjectPtr()->create(&dims_out);}
+        try{ m3->getObjectPtr()->create(dims_out);}
         catch (std::runtime_error &err){
             GEXCEPTION(err,"Unable to create storage for reduced dataset size\n");
             return GADGET_FAIL;

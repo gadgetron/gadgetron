@@ -4,6 +4,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_utils.h"
+#include "hoArmadillo.h"
 
 namespace Gadgetron{
 
@@ -102,7 +103,10 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
         arma::Mat<T> Um;
         arma::Col<value_type> Sv;
 
+		
+
         arma::svd_econ(Um, Sv, Vm, Am, 'r');
+		
 
         for (n = 0; n < N; n++)
         {

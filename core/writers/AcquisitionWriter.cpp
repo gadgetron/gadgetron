@@ -7,7 +7,7 @@ namespace Gadgetron::Core::Writers {
     void AcquisitionWriter::serialize(
             std::ostream &stream,
             const ISMRMRD::AcquisitionHeader& header,
-            const boost::optional<Gadgetron::hoNDArray<float>>& trajectory,
+            const Core::optional<Gadgetron::hoNDArray<float>>& trajectory,
             const Gadgetron::hoNDArray<std::complex<float>>& data
     ) {
         IO::write(stream, GADGET_MESSAGE_ISMRMRD_ACQUISITION);

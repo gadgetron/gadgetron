@@ -14,7 +14,7 @@ set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VE
 target_include_directories(
         gadgetron_toolbox_cpufft
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 target_link_libraries(gadgetron_toolbox_cpufft
@@ -29,7 +29,8 @@ target_link_libraries(gadgetron_toolbox_cpufft
 
 
 install(TARGETS gadgetron_toolbox_cpufft
-	LIBRARY DESTINATION lib
+		EXPORT gadgetron-export
+		LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	COMPONENT main

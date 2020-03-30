@@ -45,7 +45,7 @@ namespace {
 
     class HeaderContext {
     public:
-        boost::optional<Header> header;
+        Gadgetron::Core::optional<Header> header;
         const StreamContext::Paths paths;
     };
 
@@ -82,7 +82,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
         GINFO_STREAM("Connection state: [HEADER]");
 
         HeaderContext context{
-                boost::none,
+                Core::none,
                 paths
         };
 
@@ -106,7 +106,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
         output_thread.join();
 
         if (context.header) {
-            StreamConnection::process(stream, StreamContext{context.header.get(), paths, args}, config, error_handler);
+            StreamConnection::process(stream, StreamContext{context.header.value(), paths, args}, config, error_handler);
         }
         else {
             VoidConnection::process(stream, paths, config, error_handler);

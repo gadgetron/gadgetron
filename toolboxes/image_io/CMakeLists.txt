@@ -18,10 +18,11 @@ set_target_properties(gadgetron_toolbox_image_analyze_io PROPERTIES VERSION ${GA
 target_link_libraries(gadgetron_toolbox_image_analyze_io gadgetron_toolbox_log gadgetron_toolbox_cpucore boost)
 target_include_directories(gadgetron_toolbox_image_analyze_io
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 
 install(TARGETS gadgetron_toolbox_image_analyze_io
+		EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

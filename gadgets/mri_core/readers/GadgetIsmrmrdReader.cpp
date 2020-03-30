@@ -16,7 +16,7 @@ namespace Gadgetron {
 
         auto header = IO::read<ISMRMRD::AcquisitionHeader>(stream);
 
-        optional<hoNDArray<float>> trajectory = boost::none;
+        optional<hoNDArray<float>> trajectory = Core::none;
         if (header.trajectory_dimensions) {
             trajectory = hoNDArray<float>(header.trajectory_dimensions,
                                                header.number_of_samples);

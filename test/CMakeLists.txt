@@ -1,17 +1,8 @@
-if (GTEST_FOUND AND ARMADILLO_FOUND)
 include(GoogleTest)
-    enable_testing()
 
     if (WIN32)
         link_directories(${Boost_LIBRARY_DIRS})
     endif ()
-
-
-    if (CUDA_FOUND)
-        include_directories(${CUDA_INCLUDE_DIRS})
-    endif ()
-
-
     set(test_src_files
             tests.cpp
             hoNDArray_elemwise_test.cpp
@@ -35,9 +26,7 @@ include(GoogleTest)
             cmr_strain_test.cpp
             cmr_thickening_test.cpp
             cmr_analytical_strain_test.cpp
-            cmr_strain_test.cpp
-      cmr_thickening_test.cpp
-      cmr_analytical_strain_test.cpp
+            #lapack_test.cpp
             gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp )
 
     if (PYTHONLIBS_FOUND)
@@ -45,8 +34,6 @@ include(GoogleTest)
     endif ()
 
     if (CUDA_FOUND)
-
-        include_directories(${CUDA_INCLUDE_DIRS})
 
         cuda_add_executable(test_all
                 ${test_src_files}
@@ -89,8 +76,8 @@ include(GoogleTest)
             gadgetron_toolbox_cpu_image
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
-            GTest::GTest
-            GTest::Main
+
+            ${GTEST_LIBRARIES}
 
             )
 
@@ -100,7 +87,7 @@ include(GoogleTest)
                 python)
     endif ()
 
+    gtest_add_tests(TARGET test_all)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 
-endif ()

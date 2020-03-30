@@ -30,7 +30,8 @@ target_link_libraries(gadgetron_toolbox_python
 
 target_include_directories(gadgetron_toolbox_python
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		)
 set_target_properties(gadgetron_toolbox_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 if (WIN32)
     # only add this definition to the library, not the example binaries
@@ -38,6 +39,7 @@ if (WIN32)
 endif ()
 
 install(TARGETS gadgetron_toolbox_python
+	EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

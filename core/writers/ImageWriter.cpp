@@ -25,7 +25,7 @@ namespace {
 
 
     template<class T>
-    class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, boost::optional<ISMRMRD::MetaContainer>> {
+    class TypedImageWriter : public TypedWriter<ISMRMRD::ImageHeader, hoNDArray<T>, Core::optional<ISMRMRD::MetaContainer>> {
     public:
         void serialize(
                 std::ostream &stream,

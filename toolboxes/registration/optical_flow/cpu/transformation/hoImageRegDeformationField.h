@@ -548,7 +548,7 @@ namespace Gadgetron {
             std::vector<size_t> dimJac(D+2, D);
             memcpy(&dimJac[0]+2, &dim[0], sizeof(size_t)*D);
 
-            jac.create(&dimJac);
+            jac.create(dimJac);
             Gadgetron::clear(&jac);
 
             std::vector<size_t> offset(D);

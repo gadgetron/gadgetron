@@ -417,7 +417,7 @@ namespace Gadgetron {
     }
     hoNDArray<float> calculate_weights(const hoNDArray<floatd2> &gradients, const hoNDArray<floatd2> &trajectories) {
 
-        hoNDArray<float> weights(gradients.get_dimensions());
+        hoNDArray<float> weights(gradients.dimensions());
 
 
         boost::transform(gradients,trajectories,weights.begin(),
@@ -434,7 +434,7 @@ namespace Gadgetron {
 
     hoNDArray<float> calculate_weights_Hoge(const hoNDArray<floatd2> &gradients, const hoNDArray<floatd2> &trajectories) {
 
-        hoNDArray<float> weights(gradients.get_dimensions());
+        hoNDArray<float> weights(gradients.dimensions());
 
 
         boost::transform(gradients,trajectories,weights.begin(),
@@ -454,7 +454,7 @@ namespace Gadgetron {
                 const int nints = gradients.get_size(1);
         const int ngrad = gradients.get_size(0);
 
-        auto trajectory = hoNDArray < floatd2 > (gradients.get_dimensions());
+        auto trajectory = hoNDArray < floatd2 > (gradients.dimensions());
 
         for (int interleave = 0; interleave < nints; interleave++) {
             trajectory(0, interleave) = floatd2(0, 0);
@@ -491,7 +491,7 @@ namespace Gadgetron {
 
 
     hoNDArray<floatd2>  create_rotations(const hoNDArray<floatd2>& trajectories,int nints) {
-        auto dims = *trajectories.get_dimensions();
+        auto dims = trajectories.dimensions();
         dims.push_back(nints);
          hoNDArray < floatd2 > result(dims);
 

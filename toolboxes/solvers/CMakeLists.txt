@@ -24,7 +24,8 @@ install(FILES
 add_library(gadgetron_toolbox_solvers INTERFACE)
 target_include_directories(gadgetron_toolbox_solvers
         INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+install(TARGETS gadgetron_toolbox_solvers EXPORT gadgetron-export)
 
 add_subdirectory(cpu)
 

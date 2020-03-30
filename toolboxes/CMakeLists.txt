@@ -29,7 +29,7 @@ add_subdirectory(pattern_recognition)
 add_subdirectory(denoise)
 
 add_subdirectory(image_io)
-
+add_subdirectory(T1)
 # Should we compile the python toolbox
 if (BUILD_PYTHON_SUPPORT)
     message("Find python; build gadgetron toolbox python")

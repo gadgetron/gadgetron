@@ -7,11 +7,7 @@
 #include "NDArray.h"
 #include "complext.h"
 #include "vector_td.h"
-
-#include "cpucore_export.h"
-
-#include <string.h>
-#include <float.h>
+#include <type_traits>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include "TypeTraits.h"
@@ -31,14 +27,51 @@ namespace Gadgetron{
    struct ValidIndex<Indexing::Slice,ARGS...> : ValidIndex<ARGS...> {};
 
 
+    namespace {
+       namespace gadgetron_detail {
+
+           template <size_t count, class... ARGS> struct count_slices { static constexpr size_t value = count; };
+
+           template <size_t count, class... ARGS>
+           struct count_slices<count, Indexing::Slice, ARGS...> : count_slices<count + 1, ARGS...> {};
+
+           template <size_t count, class T, class... ARGS>
+           struct count_slices<count, T, ARGS...> : count_slices<count, ARGS...> {};
+
+           template <class... ARGS> struct is_contiguous_index {
+                static constexpr bool value = true;
+           };
+           template<class T, class... ARGS> struct is_contiguous_index<T,ARGS...>{
+
+               static constexpr bool value = !Core::any_of_v<std::is_same_v<Indexing::Slice,ARGS>...>;
+           };
+
+           template<class... ARGS> struct is_contiguous_index<Indexing::Slice,ARGS...> {
+               static constexpr bool value = is_contiguous_index<ARGS...>::value;
+           };
+
+           void test(){
+               static_assert(is_contiguous_index<Indexing::Slice>::value);
+               static_assert(is_contiguous_index<Indexing::Slice,size_t>::value);
+               static_assert(is_contiguous_index<Indexing::Slice,long long >::value);
+               static_assert(is_contiguous_index<Indexing::Slice,Indexing::Slice,size_t>::value);
+               static_assert(is_contiguous_index<Indexing::Slice,Indexing::Slice,long long>::value);
+               static_assert(!is_contiguous_index<size_t ,Indexing::Slice,Indexing::Slice,size_t>::value);
+               static_assert(!is_contiguous_index<int,Indexing::Slice,Indexing::Slice,size_t>::value);
+               static_assert(!is_contiguous_index<long long,Indexing::Slice,Indexing::Slice,size_t>::value);
+           }
+
+       }
+    }
    template<class T> class hoNDArray;
 
 
-   template<class T, size_t D>
+   template<class T, size_t D, bool contigous = false>
    class hoNDArrayView {
    public:
+       hoNDArrayView& operator=(const hoNDArrayView<T,D,!contigous>&);
        hoNDArrayView& operator=(const hoNDArrayView&);
-       hoNDArrayView& operator=(const hoNDArray<T>&);
+       hoNDArrayView<T,D,contigous>& operator=(const hoNDArray<T>&);
 
         template<class... INDICES>
        std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
@@ -47,6 +80,14 @@ namespace Gadgetron{
        template<class... INDICES>
        std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),const T&>
        operator()(INDICES... indices) const;
+
+
+       template<typename Dummy1 = void, typename  = std::enable_if_t<contigous,Dummy1>>
+       operator hoNDArray<T>();
+       operator const hoNDArray<T>() const;
+
+
+
    private:
        friend class hoNDArray<T>;
        hoNDArrayView(const std::array<size_t,D>& strides, const std::array<size_t,D>& dimensions, T*);
@@ -72,11 +113,18 @@ namespace Gadgetron{
     hoNDArray();
 
     explicit hoNDArray(const std::vector<size_t> &dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     explicit hoNDArray(const std::vector<size_t> *dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     explicit hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
 
+    [[deprecated("Pass vector as reference instead")]]
     hoNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+
+    [[deprecated("Pass vector as reference instead")]]
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
     hoNDArray(std::initializer_list<size_t> dimensions);
@@ -115,16 +163,26 @@ namespace Gadgetron{
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
+    template<unsigned int D, bool C>
+    hoNDArray& operator=(const hoNDArrayView<T,D,C>& view);
+
     bool operator==(const hoNDArray& rhs) const;
     virtual void create(const std::vector<size_t>& dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(const std::vector<size_t> *dimensions);
+
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
     virtual void create(std::initializer_list<size_t> dimensions);
     virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
 
     virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    [[deprecated("Pass vector as reference instead")]]
     virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(size_t len);
@@ -177,14 +235,11 @@ namespace Gadgetron{
     T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u );
     const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
 
-    template<class... INDICES>
-    std::enable_if_t<ValidIndex<Indexing::Slice,INDICES...>::value, hoNDArray<T>>
-    operator()(const Indexing::Slice&, const INDICES&... );
+    template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
+    auto operator()(const INDICES&... );
 
-
-
-  template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
-  auto operator()(const INDICES&... );
+    template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
+    auto operator()(const INDICES&... ) const -> const hoNDArrayView<T,gadgetron_detail::count_slices<0, INDICES...>::value, gadgetron_detail::is_contiguous_index<INDICES...>::value>;
 
     void fill(T value);
 
@@ -212,7 +267,7 @@ namespace Gadgetron{
         {
             if (!this->dimensions_equal(&aArray))
             {
-                this->create(aArray.get_dimensions());
+                this->create(aArray.dimensions());
             }
 
             long long i;

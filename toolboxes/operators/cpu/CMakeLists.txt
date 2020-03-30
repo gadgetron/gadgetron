@@ -50,7 +50,8 @@ set_target_properties(gadgetron_toolbox_cpuoperator PROPERTIES VERSION ${GADGETR
 
 target_include_directories(gadgetron_toolbox_cpuoperator
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
 target_link_libraries(gadgetron_toolbox_cpuoperator
                     gadgetron_toolbox_operator
                     gadgetron_toolbox_cpucore
@@ -64,6 +65,7 @@ target_link_libraries(gadgetron_toolbox_cpuoperator
                     gadgetron_toolbox_image_analyze_io )
 
 install(TARGETS gadgetron_toolbox_cpuoperator
+		EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

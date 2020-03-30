@@ -57,7 +57,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* f
     dim_array.push_back(static_cast<size_t>(tmp));
   }
 
-  boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(&dim_array) );
+  boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(dim_array) );
   f.read(reinterpret_cast<char*>(out->get_data_ptr()),sizeof(T)*out->get_number_of_elements());
   
   return out;

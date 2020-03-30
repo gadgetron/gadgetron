@@ -4,17 +4,22 @@
 #include <ismrmrd/meta.h>
 #include <ismrmrd/waveform.h>
 
-#include <boost/optional.hpp>
 #include <tuple>
-#include "variant.hpp"
 #include "hoNDArray.h"
 #include "TypeTraits.h"
+#include <optional>
+#include <variant>
 
 namespace Gadgetron::Core {
-    using namespace mpark;
     template<class T>
-    using optional = boost::optional<T>;
-    static const auto none = boost::none;
+    using optional = std::optional<T>;
+    constexpr auto none = std::nullopt;
+
+    template<class... TYPES>
+    using variant= std::variant<TYPES...>;
+    using std::visit;
+    using std::holds_alternative;
+    using std::get;
 
 
     template<class... ARGS>

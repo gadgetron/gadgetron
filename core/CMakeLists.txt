@@ -8,38 +8,29 @@ add_subdirectory(parallel)
 add_subdirectory(distributed)
 
 add_library(gadgetron_core SHARED
-        Types.h
-        variant.hpp
-        Channel.h
-        Channel.hpp
         Channel.cpp
-        ChannelIterator.h
-        Gadget.h
         Gadget.cpp
-        Reader.h
-        Writer.h
         LegacyACE.cpp
         Message.cpp
-        Writer.hpp
-        Response.h
         Response.cpp
-        PureGadget.h
-        io/primitives.h Types.hpp MessageID.h MPMCChannel.h io/from_string.h io/from_string.cpp io/ismrmrd_types.h io/adapt_struct.h TypeTraits.h ChannelAlgorithms.h io/iostream_operators.h )
+        io/from_string.cpp)
 
 target_link_libraries(gadgetron_core
+        ISMRMRD::ISMRMRD
         gadgetron_toolbox_cpucore
         boost)
 
 target_include_directories(gadgetron_core PUBLIC
-        .
-        ${ISMRMRD_INCLUDE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        )
 
-install(TARGETS gadgetron_core 
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-   RUNTIME DESTINATION bin
-   COMPONENT main
-)
+install(TARGETS gadgetron_core
+        EXPORT gadgetron-export
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        COMPONENT main
+        )
 
 
 install(FILES

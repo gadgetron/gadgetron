@@ -353,7 +353,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
 
         if ( !residual.dimensions_equal(&value) )
         {
-            residual.create(value.get_dimensions());
+            residual.create(value.dimensions());
             Gadgetron::clear(residual);
         }
 
@@ -444,8 +444,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
         {
             hoNDArray<T> dx2D(sx, sy, dx.begin()+d*sx*sy*sizeof(T));
 
-            std::vector<size_t> dim;
-            this->ctrl_pt_[d].get_dimensions(dim);
+            auto dim = this->ctrl_pt_[d].dimensions();
             hoNDArray<T> tmpCtrlPt(dim, this->ctrl_pt_[d].begin(), false);
 
             vector_td<size_t, 2> crop_offset;

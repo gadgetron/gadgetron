@@ -122,7 +122,7 @@ namespace Gadgetron {
                 // ---------------------------------------------------------------
 
                 recon_bit_->rbit_[e].ref_->clear();
-                recon_bit_->rbit_[e].ref_ = boost::none;
+                recon_bit_->rbit_[e].ref_ = Core::none;
             }
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
