@@ -5,10 +5,7 @@
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
 #include <cstring>
-<<<<<<< HEAD
-=======
 #include <numeric>
->>>>>>> T1Mapping
 
 namespace Gadgetron {
     template<typename T>
@@ -1187,17 +1184,10 @@ namespace Gadgetron {
     template<class T>
     template<class... INDICES, class UNUSED>
     auto hoNDArray<T>::operator()(const INDICES &... indices) {
-<<<<<<< HEAD
 
         auto strides = hondarray_detail::calculate_strides(*this, indices...);
         auto dims = hondarray_detail::calculate_dimensions(*this, indices...);
 
-=======
-
-        auto strides = hondarray_detail::calculate_strides(*this, indices...);
-        auto dims = hondarray_detail::calculate_dimensions(*this, indices...);
-
->>>>>>> T1Mapping
         T *offset = Core::apply([this](auto &&... indices) -> T * { return &this->operator()(indices...); },
                                 std::make_tuple(hondarray_detail::slice_start_index(indices)...));
 

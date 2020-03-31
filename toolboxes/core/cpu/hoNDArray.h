@@ -90,6 +90,7 @@ namespace Gadgetron{
 
    private:
        friend class hoNDArray<T>;
+       friend class hoNDArrayView<T,D,!contigous>;
        hoNDArrayView(const std::array<size_t,D>& strides, const std::array<size_t,D>& dimensions, T*);
 
        vector_td<size_t, D> strides;
