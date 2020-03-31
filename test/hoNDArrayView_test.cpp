@@ -121,3 +121,30 @@ TEST(hoNDArrayView,assignment2){
     ASSERT_FLOAT_EQ(asum(y),48.0f);
 
 }
+
+TEST(hoNDArrayView,assignment4){
+    hoNDArray<float> x(4,27,3);
+    std::fill(x.begin(),x.end(),2.0f);
+
+
+    hoNDArray<float> y(27,4,3);
+
+    std::fill(y.begin(),y.end(),0.0f);
+
+    y(slice,1,slice) = x(3,slice,slice);
+
+    ASSERT_FLOAT_EQ(asum(y),27*3*2.0f);
+
+
+}
+TEST(hoNDArrayView,failure){
+    hoNDArray<float> x(4,27,3);
+    std::fill(x.begin(),x.end(),2.0f);
+
+
+    hoNDArray<float> y(27,4,3);
+
+    std::fill(y.begin(),y.end(),0.0f);
+
+    ASSERT_ANY_THROW(y(slice,1,slice) = x(slice,slice,3));
+}

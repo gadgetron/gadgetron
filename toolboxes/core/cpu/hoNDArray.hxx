@@ -5,6 +5,7 @@
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
 #include <cstring>
+#include <numeric>
 
 namespace Gadgetron {
     template<typename T>
@@ -1229,6 +1230,11 @@ namespace Gadgetron {
         if (&other == this) return *this;
         if (this->dimensions != other.dimensions){
             throw std::runtime_error("Dimensions must be the same for slice assignment");
+        }
+        if constexpr(C){
+            size_t elements = std::accumulate(dimensions.begin(),dimensions.end(),size_t(1),std::multiplies<>());
+            std::copy_n(other.data,elements,this->data);
+            return *this;
         }
         auto idx = std::array<size_t, D>{};
         hondarray_detail::looper<D, D - 1, hoNDArrayView<T, D, C>, hoNDArrayView<T, D,C>>::assign_loop(dimensions, idx,
