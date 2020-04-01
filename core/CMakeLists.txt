@@ -13,7 +13,7 @@ add_library(gadgetron_core SHARED
         LegacyACE.cpp
         Message.cpp
         Response.cpp
-        io/from_string.cpp)
+        io/from_string.cpp Storage.h Storage.cpp)
 
 target_link_libraries(gadgetron_core
         ISMRMRD::ISMRMRD
