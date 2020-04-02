@@ -13,12 +13,6 @@
 
 namespace Gadgetron {
 
-    class NoiseAdjustGadget : public Core::ChannelGadget<Core::Acquisition> {
-    public:
-        NoiseAdjustGadget(const Core::Context& contex, const Core::GadgetProperties& props);
-
-        void process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) override;
-
         struct NoiseCovariance {
             ISMRMRD::IsmrmrdHeader header;
             float noise_dwell_time_us;
@@ -42,6 +36,12 @@ namespace Gadgetron {
         };
 
         struct IgnoringNoise {};
+    class NoiseAdjustGadget : public Core::ChannelGadget<Core::Acquisition> {
+    public:
+        NoiseAdjustGadget(const Core::Context& contex, const Core::GadgetProperties& props);
+
+        void process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) override;
+
 
         using NoiseHandler = Core::variant<NoiseGatherer, LoadedNoise, Prewhitener, IgnoringNoise>;
 

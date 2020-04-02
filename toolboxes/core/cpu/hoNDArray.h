@@ -43,7 +43,7 @@ namespace Gadgetron{
            };
            template<class T, class... ARGS> struct is_contiguous_index<T,ARGS...>{
 
-               static constexpr bool value = !Core::any_of_v<std::is_same_v<Indexing::Slice,ARGS>...>;
+               static constexpr bool value = !Core::any_of_v<Core::is_same_v<Indexing::Slice,ARGS>...>;
            };
 
            template<class... ARGS> struct is_contiguous_index<Indexing::Slice,ARGS...> {

@@ -79,7 +79,7 @@ int gpuBufferSensePrepGadget::process(
 	//Use reference data if available.
 	if (reconbit.ref_){
 		GDEBUG("Using Reference data for CSM estimation\n");
-		buffer = reconbit.ref_.get_ptr();
+		buffer = &reconbit.ref_.value();
 	}
 
 	size_t ncoils = buffer->headers_[0].active_channels;
