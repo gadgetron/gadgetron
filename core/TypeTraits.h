@@ -31,7 +31,6 @@ namespace Gadgetron { namespace Core {
 
     template <bool... ARGS> struct any_of<false, ARGS...> : any_of<ARGS...> {};
 
-
     template <bool... ARGS> constexpr bool any_of_v = any_of<ARGS...>::value;
 
     template<class T>

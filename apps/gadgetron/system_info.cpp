@@ -23,8 +23,8 @@
 
 #if USE_CUDA
 // CUDA-C includes
-#include <cuda/cuda.h>
-#include <cuda/cuda_runtime.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 #endif
 
 namespace Gadgetron::Server::Info {
