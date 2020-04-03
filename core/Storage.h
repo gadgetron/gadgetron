@@ -14,8 +14,8 @@ namespace Gadgetron::Core {
         public:
             virtual ~StreamProvider() = default;
 
-            virtual std::istream istream(const std::string& key) = 0;
-            virtual std::ostream ostream(const std::string& key) = 0;
+            virtual std::unique_ptr<std::istream> istream(const std::string& key) = 0;
+            virtual std::unique_ptr<std::ostream> ostream(const std::string& key) = 0;
         };
 
         explicit StorageSpace(std::unique_ptr<StreamProvider> provider);
