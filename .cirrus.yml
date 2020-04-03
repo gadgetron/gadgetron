@@ -1,8 +1,7 @@
 build_task:
   container:
     matrix:
-      image: gadgetron/ubuntu_1604_cuda101_cudnn7_base
-      image: gadgetron/ubuntu_1804_cuda101_cudnn7_base
+      image: gradientsoftware/ubuntu_1804_integration
     cpu: 8
     memory: 24
 
