@@ -65,7 +65,7 @@ build_task:
   make_script:
     - ls -lh
     - cd build
-    - cmake .. -DCMAKE_MODULE_PATH=../cmake
+    - cmake .. -DCMAKE_MODULE_PATH=$(pwd)/cmake
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
     - ninja
     - ninja install
