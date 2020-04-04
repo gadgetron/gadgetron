@@ -65,10 +65,10 @@ build_task:
   make_script:
     - ls -lh
     - cd build
-    - cmake ..
+    - cmake .. -DCMAKE_MODULE_PATH=../cmake
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
-    - make -j8
-    - make install
+    - ninja
+    - ninja install
     - cd /usr/local/share/gadgetron/config
 
 
