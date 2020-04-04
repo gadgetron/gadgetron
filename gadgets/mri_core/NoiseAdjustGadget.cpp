@@ -55,7 +55,7 @@ namespace Gadgetron {
             return full_name_stored_noise_dependency;
         }
 
-        Gadgetron::Core::optional<NoiseAdjustGadget::NoiseCovariance> loadNoiseCovariance(
+        Gadgetron::Core::optional<NoiseCovariance> loadNoiseCovariance(
             const bf::path& noise_dependency_file) {
             using namespace Core::IO;
             if (!bf::exists(noise_dependency_file))
@@ -78,11 +78,11 @@ namespace Gadgetron {
             read<size_t>(infile); //We really don't need this value, so let's skip it.
             auto cov_matrix = read<hoNDArray<std::complex<float>>>(infile);
 
-            return NoiseAdjustGadget::NoiseCovariance{ header, noise_dwell_time_us, cov_matrix };
+            return NoiseCovariance{ header, noise_dwell_time_us, cov_matrix };
         }
 
 
-        void normalize_covariance(NoiseAdjustGadget::NoiseGatherer& ng){
+        void normalize_covariance(NoiseGatherer& ng){
             if (ng.number_of_samples > 1) {
                 ng.tmp_covariance /= std::complex<float>(ng.number_of_samples - 1);
                 ng.number_of_samples = 1;
@@ -90,7 +90,7 @@ namespace Gadgetron {
         }
 
         void saveNoiseCovariance(
-            const NoiseAdjustGadget::NoiseCovariance& ncov, const bf::path& noise_dependency_file) {
+            const NoiseCovariance& ncov, const bf::path& noise_dependency_file) {
 
             using namespace Core::IO;
 
