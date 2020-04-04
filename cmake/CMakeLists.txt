@@ -10,7 +10,6 @@ install(FILES
     FindOctave.cmake
     FindPLplot.cmake
     FindZFP.cmake
-    FindBART.cmake
     FindCBLAS.cmake
     DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
