@@ -271,7 +271,7 @@ find_package(ISMRMRD CONFIG REQUIRED)
 
 if (CUDA_FOUND AND USE_CUDA)
 # bart needs cuda
-    find_package(BART)
+    find_package(BART CONFIG QUIET)
 endif()
 
 find_package(FFTW3 REQUIRED COMPONENTS single double)
