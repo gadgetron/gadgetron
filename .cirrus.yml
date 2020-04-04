@@ -63,6 +63,7 @@ build_task:
     - mkdir build
 
   make_script:
+    - ls -lh
     - cd build
     - cmake ..
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
