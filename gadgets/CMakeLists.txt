@@ -24,16 +24,6 @@ include_directories(
   )
 
 if (BUILD_PYTHON_SUPPORT)
-  if(BUILD_WITH_PYTHON3)
-    find_package(Boost COMPONENTS python3 system thread REQUIRED)
-    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
-  else()
-    find_package(Boost COMPONENTS python system thread REQUIRED)
-    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
-  endif()
-
-  # Note: main CMakeLists.txt already finds PythonLibs and NumPy
-
   if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     message(STATUS "PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
     message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
