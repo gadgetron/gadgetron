@@ -265,9 +265,63 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED)
+  set(BOOST_LIB_LIST system thread date_time chrono program_options filesystem timer)
 else()
-  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED)
+  set(BOOST_LIB_LIST system thread program_options filesystem timer)
+endif()
+
+find_package(Boost COMPONENTS ${BOOST_LIB_LIST} REQUIRED)
+
+if (NOT DEFINED Boost_VERSION_STRING)
+    set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+endif()
+
+option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
+if (BUILD_PYTHON_SUPPORT)
+
+  option(BUILD_WITH_PYTHON3 "Build with Python 3.x" On)
+
+  if (BUILD_WITH_PYTHON3)
+    find_package(Python3)
+  else()
+    find_package(PythonLibs 2)
+  endif ()
+
+  string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
+  list(GET PYTHON_VERSION_MAJOR 0 PYVER)
+  add_definitions(-DPYVER=${PYVER})
+
+  find_package(NumPy)
+  if(NOT PYTHONLIBS_FOUND)
+    message(STATUS "Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
+    set(BUILD_PYTHON_SUPPORT OFF)
+  endif()
+  if(NOT NUMPY_FOUND)
+    message("NumPy NOT found, NOT compiling Python Gadgets")
+    set(BUILD_PYTHON_SUPPORT OFF)
+  else()
+    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES}")
+  endif()
+
+  if(BUILD_WITH_PYTHON3)
+    message("Boost_VERSION ${Boost_VERSION_STRING}")
+    if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
+        set(BOOST_LIB_LIST ${BOOST_LIB_LIST} python3)
+    else()
+        string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
+        set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
+        set(BOOST_LIB_LIST ${BOOST_LIB_LIST} python3${PYTHON_MINOR_VERSION})        
+    endif()
+  else()
+    set(BOOST_LIB_LIST ${BOOST_LIB_LIST} python)
+  endif()
+
+  message("BOOST_LIB_LIST is ${BOOST_LIB_LIST}")
+  find_package(Boost COMPONENTS ${BOOST_LIB_LIST} REQUIRED)
+  message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
+  message("Boost_SYSTEM_FOUND is ${Boost_SYSTEM_FOUND}")
+  message("Boost_THREAD_FOUND is ${Boost_THREAD_FOUND}")
+  message("Boost_LIBRARIES is ${Boost_LIBRARIES}")
 endif()
 
 find_package(ACE REQUIRED)
@@ -388,37 +442,6 @@ if(EXISTS $ENV{TORCH_HOME})
   endif ()
 else()
   message("Do not find TORCH_HOME")
-endif()
-
-option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
-
-if (BUILD_PYTHON_SUPPORT)
-
-  option(BUILD_WITH_PYTHON3 "Build with Python 3.x" Off)
-
-
-  if (BUILD_WITH_PYTHON3)
-    find_package(Python3)
-  else()
-    find_package(PythonLibs 2)
-  endif ()
-
-  string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
-  list(GET PYTHON_VERSION_MAJOR 0 PYVER)
-  add_definitions(-DPYVER=${PYVER})
-
-  find_package(NumPy)
-  if(NOT PYTHONLIBS_FOUND)
-    message(STATUS "Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
-    set(BUILD_PYTHON_SUPPORT OFF)
-  endif()
-  if(NOT NUMPY_FOUND)
-    message("NumPy NOT found, NOT compiling Python Gadgets")
-    set(BUILD_PYTHON_SUPPORT OFF)
-  else()
-    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES}")
-  endif()
-
 endif()
 
 option(BUILD_MATLAB_SUPPORT "Build of MATLAB gadgets etc" On)

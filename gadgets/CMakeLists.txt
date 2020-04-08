@@ -26,7 +26,7 @@ include_directories(
 if (BUILD_PYTHON_SUPPORT)
   if(BUILD_WITH_PYTHON3)
     find_package(Boost COMPONENTS python3 system thread REQUIRED)
-        message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
+    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
   else()
     find_package(Boost COMPONENTS python system thread REQUIRED)
     message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
