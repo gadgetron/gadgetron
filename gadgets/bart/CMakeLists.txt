@@ -6,7 +6,6 @@ cmake_policy(SET CMP0028 NEW) # double colon only for imported or alias librarie
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
-find_package(BART REQUIRED CONFIG)
 
 # ==============================================================================
 

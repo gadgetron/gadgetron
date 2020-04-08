@@ -1058,6 +1058,7 @@ namespace Gadgetron {
         GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
         return this->data_[idx];
     }
+    #if __cplusplus > 201402L
 
     namespace {
         struct hondarray_detail {
@@ -1316,5 +1317,6 @@ namespace Gadgetron {
     hoNDArrayView<T, D, contigous>::operator hoNDArray<T>() {
         return hoNDArray<T>(to_std_vector(dimensions), data);
     }
+    #endif
 
 }

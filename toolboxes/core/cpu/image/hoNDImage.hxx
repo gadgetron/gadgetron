@@ -943,7 +943,7 @@ namespace Gadgetron
     inline void hoNDImage<T, D>::set_image_position(unsigned int d, coord_type pos)
     {
         GADGET_DEBUG_CHECK_THROW(d<3);
-        pos = image_position_patient_[d];
+        image_position_patient_[d] = pos;
     }
 
     template <typename T, unsigned int D> 

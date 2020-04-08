@@ -1,8 +1,7 @@
 build_task:
   container:
     matrix:
-      image: gadgetron/ubuntu_1604_cuda101_cudnn7_base
-      image: gadgetron/ubuntu_1804_cuda101_cudnn7_base
+      image: gradientsoftware/ubuntu_1804_integration
     cpu: 8
     memory: 24
 
@@ -65,10 +64,10 @@ build_task:
 
   make_script:
     - cd build
-    - cmake ..
+    - cmake .. -G Ninja
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
-    - make -j8
-    - make install
+    - ninja
+    - ninja install
     - cd /usr/local/share/gadgetron/config
 
 

@@ -227,12 +227,13 @@ endif()
 add_definitions(-DUSE_CUDA)
 set( GADGETRON_CUDA_FOUND_BOOL 1 )
 include_directories( ${CUDA_INCLUDE_DIRS} )
-#  if (NOT WIN32)
-#    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-#  endif ()
+set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
 set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+set(CMAKE_CUDA_STANDARD 17)
+#  endif ()
 #set(CUDA_VERBOSE_BUILD ON)
+
 
 # Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
 # Support compute model 3.0 from Cuda 4.2 and up
@@ -270,7 +271,7 @@ find_package(ISMRMRD CONFIG REQUIRED)
 
 if (CUDA_FOUND AND USE_CUDA)
 # bart needs cuda
-    find_package(BART)
+    find_package(BART CONFIG QUIET)
 endif()
 
 find_package(FFTW3 REQUIRED COMPONENTS single double)
