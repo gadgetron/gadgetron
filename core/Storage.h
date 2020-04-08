@@ -7,6 +7,8 @@
 
 namespace Gadgetron::Core {
 
+
+
     class StorageSpace {
     public:
 
@@ -14,8 +16,8 @@ namespace Gadgetron::Core {
         public:
             virtual ~StreamProvider() = default;
 
-            virtual std::unique_ptr<std::istream> istream(const std::string& key) = 0;
-            virtual std::unique_ptr<std::ostream> ostream(const std::string& key) = 0;
+            virtual std::unique_ptr<std::istream> fetch(const std::string& key) = 0;
+            virtual store(const std::string& key, const std::function<void(std::ostream&)>& datastream) = 0;
         };
 
         explicit StorageSpace(std::unique_ptr<StreamProvider> provider);

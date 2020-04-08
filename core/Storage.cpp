@@ -23,7 +23,8 @@ namespace {
 
         }
 
-        std::unique_ptr<std::istream> istream(const std::string &key) override {
+        std::unique_ptr<std::istream> fetch(const std::string &key) override {
+            
             uri_builder builder;
             builder.append(U("/sessions/"));
             builder.append(U(key));
@@ -32,7 +33,7 @@ namespace {
                         return response.extract_json();
                     })
                     .then([=](json::value node){
-                        auto id = node["contents"]["id"].as_string();
+                        auto id = node["contents"][0]["id"].as_string();
                         uri_builder builder;
                         builder.append("/blobs/");
                         builder.append(id);
@@ -49,18 +50,30 @@ namespace {
 
         }
 
-        std::unique_ptr<std::ostream> ostream(const std::string &key) override {
+        void store(const std::string &key, const std::function<void(std::ostream&)>& data) override {
             uri_builder builder;
-            builder.append(U("/sessions/"));
-            builder.append(U(key))
+            builder.append(U("/sessions"));
+            builder.append(U("/blobs"));
             ;
+
+            client.request(methods::POST,builder.to_string(),)
+            
             json::value message = json::value::object();
             message["operation"]= json::value::string("push");
             message["arguments"]= json::value::array(std::vector<json::value>{json::value::string(key)});
 
             auto response = client.request(methods::PATCH,builder.to_string(),message)
                     .then([=](http_response response){
-            })
+                        return response.extract_json();
+                    })
+                    .then([=](json::value node )){
+                        auto id = node["contents"][0]["id"].as_string();
+                        uri_builder builder;
+                        builder.append("/blobs/");
+                        builder.append(id);
+                        return builder.to_string();
+
+                    }
             ;
 
 
