@@ -318,6 +318,14 @@ if (BUILD_PYTHON_SUPPORT)
 
   message("BOOST_LIB_LIST is ${BOOST_LIB_LIST}")
   find_package(Boost COMPONENTS ${BOOST_LIB_LIST} REQUIRED)
+
+  if(BUILD_WITH_PYTHON3)
+    message("Boost_PYTHON38_FOUND is ${Boost_PYTHON38_FOUND}")
+    if(Boost_PYTHON37_FOUND OR Boost_PYTHON38_FOUND)
+      set(Boost_PYTHON3_FOUND ON)
+    endif()
+  endif()
+  
   message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
   message("Boost_SYSTEM_FOUND is ${Boost_SYSTEM_FOUND}")
   message("Boost_THREAD_FOUND is ${Boost_THREAD_FOUND}")
