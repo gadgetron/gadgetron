@@ -58,7 +58,7 @@ build_task:
   make_build_cache:
     folder: build
     fingerprint_script:
-      - git branch | grep \* | cut -d ' ' -f2
+      - echo "ninja $(git branch | grep \* | cut -d ' ' -f2)"
     populate_script:
     - mkdir build
 
