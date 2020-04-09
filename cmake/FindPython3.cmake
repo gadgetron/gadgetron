@@ -112,7 +112,15 @@ else ()
     endif()
 
     string(REGEX MATCH "[0-9].[0-9]" PYTHON_MAJOR_VERSION ${PYTHONLIBS_VERSION_STRING})
-    find_library(PYTHON_LIBRARIES libpython${PYTHON_MAJOR_VERSION}m.so)
+
+    if (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.8/patchlevel.h)
+        find_library(PYTHON_LIBRARIES libpython${PYTHON_MAJOR_VERSION}.so)
+    else()
+        find_library(PYTHON_LIBRARIES libpython${PYTHON_MAJOR_VERSION}m.so)
+    endif()
+
+    message("PYTHON_LIBRARIES is ${PYTHON_LIBRARIES}")
+    
     set(PYTHON_LIBRARY ${PYTHON_LIBRARIES})
     UNSET(PYTHON_EXECUTABLE CACHE)
     find_file(PYTHON_EXECUTABLE python3 PATHS /usr/bin /bin /usr/local/bin)
