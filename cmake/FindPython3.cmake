@@ -101,7 +101,10 @@ else ()
     elseif (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.5m/patchlevel.h)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR3}/python3.5m)
     endif()
-            # find the python version
+
+    message("PYTHON_INCLUDE_DIRS is ${PYTHON_INCLUDE_DIRS}")
+
+    # find the python version
     if(EXISTS "${PYTHON_INCLUDE_DIRS}/patchlevel.h")
         file(STRINGS "${PYTHON_INCLUDE_DIRS}/patchlevel.h" python_version_str
             REGEX "^#define[ \t]+PY_VERSION[ \t]+\"[^\"]+\"")
@@ -114,12 +117,14 @@ else ()
     string(REGEX MATCH "[0-9].[0-9]" PYTHON_MAJOR_VERSION ${PYTHONLIBS_VERSION_STRING})
 
     if (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.8/patchlevel.h)
-        find_library(PYTHON_LIBRARIES libpython${PYTHON_MAJOR_VERSION}.so)
+        message("Found Python 3.8")
+        find_library(PYTHON_LIBRARIES libpython3.8.so)
     else()
+	message("FOund earlier python")
         find_library(PYTHON_LIBRARIES libpython${PYTHON_MAJOR_VERSION}m.so)
     endif()
 
-    message("PYTHON_LIBRARIES is ${PYTHON_LIBRARIES}")
+    message("PYTHON_LIBRARIES IS ${PYTHON_LIBRARIES}")
     
     set(PYTHON_LIBRARY ${PYTHON_LIBRARIES})
     UNSET(PYTHON_EXECUTABLE CACHE)
