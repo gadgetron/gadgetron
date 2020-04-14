@@ -10,6 +10,7 @@ Welcome to Gadgetron's documentation!
    :maxdepth: 3
    :caption: Contents:
 
+   tutorial
    release_notes
    gadget
    type_matching
