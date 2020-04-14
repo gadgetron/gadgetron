@@ -265,9 +265,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  set(BOOST_LIB_LIST system thread date_time chrono program_options filesystem timer)
+  set(BOOST_LIB_LIST system thread date_time chrono program_options filesystem timer iostreams)
 else()
-  set(BOOST_LIB_LIST system thread program_options filesystem timer)
+  set(BOOST_LIB_LIST system thread program_options filesystem timer iostreams)
 endif()
 
 find_package(Boost COMPONENTS ${BOOST_LIB_LIST} REQUIRED)
