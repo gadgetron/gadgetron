@@ -5,7 +5,6 @@
 #pragma once
 
 #include "NDArray.h"
-#include "complext.h"
 #include "vector_td.h"
 #include <type_traits>
 #include <boost/shared_ptr.hpp>
@@ -320,36 +319,6 @@ namespace Gadgetron{
       delete [] data;
     }
 
-    // Overload these instances to avoid invoking the element class constructor/destructor
-    //
-
-    virtual void _allocate_memory( size_t size, float** data );
-    virtual void _deallocate_memory( float* data );
-
-    virtual void _allocate_memory( size_t size, double** data );
-    virtual void _deallocate_memory( double* data );
-
-    virtual void _allocate_memory( size_t size, std::complex<float>** data );
-    virtual void _deallocate_memory( std::complex<float>* data );
-
-    virtual void _allocate_memory( size_t size, std::complex<double>** data );
-    virtual void _deallocate_memory( std::complex<double>* data );
-
-    virtual void _allocate_memory( size_t size, float_complext** data );
-    virtual void _deallocate_memory( float_complext* data );
-
-    virtual void _allocate_memory( size_t size, double_complext** data );
-    virtual void _deallocate_memory( double_complext* data );
-
-    template<class TYPE, unsigned int D> void _allocate_memory( size_t size, vector_td<TYPE,D>** data )
-    {
-      *data = (vector_td<TYPE,D>*) malloc( size*sizeof(vector_td<TYPE,D>) );
-    }
-
-    template<class TYPE, unsigned int D>  void _deallocate_memory( vector_td<TYPE,D>* data )
-    {
-      free( data );
-    }
   };
 
 }

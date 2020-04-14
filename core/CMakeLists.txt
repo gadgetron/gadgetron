@@ -55,6 +55,7 @@ install(FILES
         ChannelAlgorithms.h
         variant.hpp
         MessageID.h
+        PureGadget.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES
