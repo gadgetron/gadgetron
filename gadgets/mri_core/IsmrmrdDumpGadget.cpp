@@ -98,6 +98,12 @@ namespace Gadgetron
                     break;
                 }
             }
+
+            if(host_name=="MARS" || host_name=="mars")
+            {
+                this->save_ismrmrd_data_ = false;
+                GDEBUG_STREAM("IsmrmrdDumpGadget, do not save data, find hostname : " << host_name);
+            }
         }
 
         if (this->save_ismrmrd_data_)
