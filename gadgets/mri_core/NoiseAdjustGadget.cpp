@@ -17,6 +17,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/filesystem.hpp>
 
 namespace Gadgetron {
 
@@ -297,6 +298,66 @@ namespace Gadgetron {
         return true;
     }
 
+    void clean_items_older_than(const std::string& workingdirectory, double hours)
+    {
+        try
+        {
+            // get current time
+            std::time_t curr_time_UTC_;
+
+            std::time(&curr_time_UTC_);
+            struct tm* currTm = std::gmtime(&curr_time_UTC_);
+            curr_time_UTC_ = std::mktime(currTm);
+
+            // list and clean the content in the workingdirectory
+            boost::filesystem::path p(workingdirectory);
+
+            if (boost::filesystem::exists(p))
+            {
+                if (boost::filesystem::is_directory(p))
+                {
+                    typedef std::vector<boost::filesystem::path> vec;
+                    vec v;
+                    v.reserve(100);
+
+                    std::copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
+                    std::sort(v.begin(), v.end());
+
+                    GDEBUG_STREAM("A total of " << v.size() << " items are found ... ");
+
+                    // if needed, clean the storage first
+                    std::string filename;
+
+                    for (vec::const_iterator it(v.begin()); it != v.end(); ++it)
+                    {
+                        filename = it->string();
+
+                        // find the file creation/modification time
+                        std::time_t lastWriteTime = last_write_time(*it);
+                        struct tm* lastWriteTm = std::gmtime(&lastWriteTime);
+                        lastWriteTime = std::mktime(lastWriteTm);
+
+                        if (std::abs((double)lastWriteTime - (double)curr_time_UTC_) > hours * 3600.0)
+                        {
+                            boost::filesystem::remove(*it);
+                        }
+                    }
+
+                    // update the file list
+                    v.clear();
+                    std::copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
+                    std::sort(v.begin(), v.end());
+
+                    GDEBUG_STREAM("A total of " << v.size() << " items are found after cleaning ... ");
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Exceptions happened in clean_items_older_than(...) ... ");
+        }
+    }
+
     bool NoiseAdjustGadget::saveNoiseCovariance()
     {
         char* buf = NULL;
@@ -306,6 +367,8 @@ namespace Gadgetron {
         if (noise_covariance_matrixf_.get_number_of_elements() == 0) {
             return true;
         }
+
+        clean_items_older_than(this->noise_dependency_folder_, this->clean_items_older_than_thres.value());
 
         //Scale the covariance matrix before saving
         hoNDArray< std::complex<float> > covf(noise_covariance_matrixf_);

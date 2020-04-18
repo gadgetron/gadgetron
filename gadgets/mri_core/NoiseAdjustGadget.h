@@ -30,6 +30,7 @@ namespace Gadgetron {
       GADGET_PROPERTY(pass_nonconformant_data, bool, "Whether to pass data that does not conform", false);
       GADGET_PROPERTY(noise_dwell_time_us_preset, float, "Preset dwell time for noise measurement", 0.0);
       GADGET_PROPERTY(scale_only_channels_by_name, std::string, "List of named channels that should only be scaled", "");
+      GADGET_PROPERTY(clean_items_older_than_thres, double, "Clean items older than this number of hours", 24.0);
 
       bool noise_decorrelation_calculated_;
       hoNDArray< std::complex<float> > noise_covariance_matrixf_;
