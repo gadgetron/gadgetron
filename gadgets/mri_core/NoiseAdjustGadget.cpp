@@ -13,6 +13,7 @@
 #ifndef _WIN32
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #endif // _WIN32
 
 #include <boost/algorithm/string.hpp>
@@ -62,7 +63,15 @@ namespace Gadgetron {
 
                         if (std::abs((double)lastWriteTime - (double)curr_time_UTC_) > hours * 3600.0)
                         {
+#ifdef _WIN32
                             boost::filesystem::remove(*it);
+#else
+                            int res = remove(filename.c_str());
+                            if (res != 0)
+                            {
+                                GERROR_STREAM("clean_items_older_than. error removing " << filename);
+                            }
+#endif // _WIN32
                         }
                     }
 
