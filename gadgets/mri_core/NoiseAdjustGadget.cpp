@@ -46,7 +46,7 @@ namespace Gadgetron {
                     std::copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
                     std::sort(v.begin(), v.end());
 
-                    GDEBUG_STREAM("A total of " << v.size() << " items are found ... ");
+                    GDEBUG_STREAM("A total of " << v.size() << " items are found in " << workingdirectory);
 
                     // if needed, clean the storage first
                     std::string filename;
