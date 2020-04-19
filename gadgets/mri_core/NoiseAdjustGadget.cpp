@@ -55,6 +55,11 @@ namespace Gadgetron {
                     for (vec::const_iterator it(v.begin()); it != v.end(); ++it)
                     {
                         filename = it->string();
+                        if (boost::filesystem::is_directory(*it))
+                        {
+                            GDEBUG_STREAM("clean_items_older_than. found folder " << filename);
+                            continue;
+                        }
 
                         // find the file creation/modification time
                         std::time_t lastWriteTime = last_write_time(*it);
@@ -63,10 +68,7 @@ namespace Gadgetron {
 
                         if (std::abs((double)lastWriteTime - (double)curr_time_UTC_) > hours * 3600.0)
                         {
-                            if (boost::filesystem::is_directory(*it))
-                            {
-                                continue;
-                            }
+                            
 #ifdef _WIN32
                             boost::filesystem::remove(*it);
 #else
