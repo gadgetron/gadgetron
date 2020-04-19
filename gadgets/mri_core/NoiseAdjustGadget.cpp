@@ -63,6 +63,10 @@ namespace Gadgetron {
 
                         if (std::abs((double)lastWriteTime - (double)curr_time_UTC_) > hours * 3600.0)
                         {
+                            if (boost::filesystem::is_directory(*it))
+                            {
+                                continue;
+                            }
 #ifdef _WIN32
                             boost::filesystem::remove(*it);
 #else
@@ -70,6 +74,10 @@ namespace Gadgetron {
                             if (res != 0)
                             {
                                 GERROR_STREAM("clean_items_older_than. error removing " << filename);
+                            }
+                            else
+                            {
+                                GDEBUG_STREAM("clean_items_older_than. successfully remove " << filename);
                             }
 #endif // _WIN32
                         }
