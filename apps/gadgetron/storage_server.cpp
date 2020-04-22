@@ -59,7 +59,7 @@ namespace {
                                      })
                                      .get();
 
-            return json_repsonse["contents"].size() > 0;
+            return json_response["contents"].size() > 0;
         }
 
         void store(const std::string& key, std::istream& data) const override {
@@ -92,14 +92,19 @@ namespace {
 Gadgetron::Core::Storage Gadgetron::Server::setup_storage(
     const StorageServer::Address& address, const Core::Context::Header& header) {
 
-    auto session_uid = header.measurementInformation.is_present()
-                           ? (header.measurementInformation->seriesInstanceUIDRoot.is_present()
-                                   ? header.measurementInformation->seriesInstanceUIDRoot.get()
-                                   : "default")
-                           : "default";
+    using namespace std::string_literals;
+
+    std::string session_uid;
+    if (header.measurementInformation.is_present()) {
+        session_uid = header.measurementInformation->seriesInstanceUIDRoot.is_present()
+                          ? header.measurementInformation->seriesInstanceUIDRoot.get()
+                          : "default";
+    } else {
+        session_uid = "default";
+    }
 
   return Core::Storage{
-      Core::StorageSpace(std::make_shared<RestStorage>(address,"session/" + session_uid),
+      Core::StorageSpace(std::make_shared<RestStorage>(address,"session/"s + session_uid)),
       Core::StorageSpace(std::make_shared<RestStorage>(address,"noise")),
       Core::StorageSpace(std::make_shared<RestStorage>(address,"debug")),
   };

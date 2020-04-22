@@ -10,13 +10,25 @@
 #ifdef USE_OMP
 #include "omp.h"
 #endif // USE_OMP
-
+#include "io/adapt_struct.h"
+#include "io/ismrmrd_types.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <typeinfo>
 using namespace std::string_literals;
 namespace bf = boost::filesystem;
+
+namespace {
+        struct NoiseCovariance {
+            ISMRMRD::IsmrmrdHeader header;
+            float noise_dwell_time_us;
+            hoNDArray<std::complex<float>> noise_covariance_matrix;
+        };
+}
+
+GADGETRON_ADAPT_STRUCT(NoiseCovariance,GADGETRON_ACCESS_ELEMENT(header),GADGETRON_ACCESS_ELEMENT(noise_dwell_time_us),GADGETRON_ACCESS_ELEMENT(noise_covariance_matrix))
+
 namespace Gadgetron {
     namespace {
 
@@ -71,7 +83,7 @@ namespace Gadgetron {
         }
 
         void saveNoiseCovariance(
-            const NoiseCovariance& ncov, const std::string& key, Core::Storage& storage) {
+            const NoiseCovariance& ncov, const std::string& key, const Core::Storage& storage) {
             GDEBUG_STREAM("Saving noise to " << key);
             storage.noise.store(key,ncov);
 
@@ -221,7 +233,8 @@ namespace Gadgetron {
         : Core::ChannelGadget<Core::Acquisition>(context, props)
         , current_ismrmrd_header(context.header)
         , receiver_noise_bandwidth{ bandwidth_from_header(context.header) }
-        , measurement_id{ value_or(context.header.measurementInformation->measurementID, ""s) } {
+        , measurement_id{ value_or(context.header.measurementInformation->measurementID, ""s) },
+        storage(context.storage) {
 
         if (!perform_noise_adjust)
             return;
@@ -258,12 +271,11 @@ namespace Gadgetron {
         auto noise_dependency = *val;
         GDEBUG("Measurement ID of noise dependency is %s\n", noise_dependency.measurementID.c_str());
 
-        auto noise_dependency_file = generateNoiseDependencyFilePath(
-            generateMeasurementIdOfNoiseDependency(noise_dependency.measurementID, measurement_id),
-            noise_dependency_folder, noise_dependency_prefix);
+        auto noise_dependency_file = generateNoiseDependencyFilePath(generateMeasurementIdOfNoiseDependency(noise_dependency.measurementID, measurement_id),
+            noise_dependency_prefix);
         GDEBUG("Stored noise dependency is %s\n", noise_dependency_file.c_str());
 
-        auto noise_covariance = loadNoiseCovariance(noise_dependency_file);
+        auto noise_covariance = loadNoiseCovariance(noise_dependency_file,storage);
         // try to load the precomputed noise prewhitener
         if (!noise_covariance) {
             GDEBUG("Stored noise dependency is NOT found : %s\n", noise_dependency_file.c_str());
@@ -356,7 +368,7 @@ namespace Gadgetron {
 
         saveNoiseCovariance(
             NoiseCovariance{ this->current_ismrmrd_header, ng.noise_dwell_time_us, ng.tmp_covariance },
-            generateNoiseDependencyFilePath(measurement_id, noise_dependency_folder, noise_dependency_prefix));
+            generateNoiseDependencyFilePath(measurement_id, noise_dependency_prefix),storage);
     }
 
     template <> void NoiseAdjustGadget::save_noisedata(NoiseHandler& nh) const {
@@ -431,7 +443,7 @@ namespace Gadgetron {
                                   : std::vector<size_t>{};
 
         auto filepath
-            = generateNoiseDependencyFilePath(measurement_id, noise_dependency_folder, noise_dependency_prefix);
+            = generateNoiseDependencyFilePath(measurement_id, noise_dependency_prefix);
 
         for (auto acq : input) {
             if (is_noise(acq)) {

@@ -30,7 +30,7 @@ namespace Gadgetron::Core {
         template<class T>
         T fetch(const std::string& key) const {
             auto istream = provider->fetch(key);
-            return IO::read<T>(istream);
+            return IO::read<T>(*istream);
         }
 
         template<class T>

@@ -1,4 +1,6 @@
 #pragma once
+#include <boost/hana/adapt_struct.hpp>
+#include "primitives.h"
 
 #define GADGETRON_ADAPT_STRUCT(STRUCTNAME, ...) \
 namespace boost {\
