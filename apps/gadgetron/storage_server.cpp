@@ -15,7 +15,7 @@ Gadgetron::Server::StorageServer Gadgetron::Server::start_storage_server(
 
     auto process = bp::child(
         bp::search_path("python3"), "storage_server.py", "--storage_dir", working_directory.string(), "--port", "9102");
-    return { std::move(process), "localhost:9102" };
+    return { std::move(process), "http://localhost:9102" };
 }
 
 namespace {

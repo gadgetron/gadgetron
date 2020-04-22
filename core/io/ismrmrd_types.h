@@ -6,6 +6,7 @@
 #include <iostream>
 #include <ismrmrd/meta.h>
 #include <ismrmrd/waveform.h>
+#include <ismrmrd/xml.h>
 
 namespace Gadgetron::Core::IO {
 
@@ -14,6 +15,9 @@ namespace Gadgetron::Core::IO {
 
     void write(std::ostream& stream, const ISMRMRD::Waveform& wave);
     void read(std::istream& stream, ISMRMRD::Waveform& wave);
+
+    void write(std::ostream& stream, const ISMRMRD::IsmrmrdHeader&);
+    void read(std::istream& stream, ISMRMRD::IsmrmrdHeader&);
 
 }
 
@@ -43,3 +47,16 @@ inline void Gadgetron::Core::IO::read(std::istream& stream, ISMRMRD::Waveform& w
 
         wave.head = header;
 }
+
+
+ inline void Gadgetron::Core::IO::write(std::ostream& stream, const ISMRMRD::IsmrmrdHeader& header){
+     std::stringstream sstream;
+     ISMRMRD::serialize(header,sstream);
+    auto data = sstream.str();
+     IO::write_string_to_stream(stream,data);
+ }
+  inline  void Gadgetron::Core::IO::read(std::istream& stream, ISMRMRD::IsmrmrdHeader& header){
+      auto data = IO::read_string_from_stream(stream);
+      
+      ISMRMRD::deserialize(data.data(),header);
+  }

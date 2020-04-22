@@ -19,11 +19,10 @@ namespace Gadgetron::Server::Connection {
 #if _WIN32 || !NDEBUG || GADGETRON_DISABLE_FORK
 
     void handle(
-            const Gadgetron::Core::StreamContext::Paths& paths,
-            const Gadgetron::Core::StreamContext::Args& args,
+        const Settings& settings,
             std::unique_ptr<std::iostream> stream
     ) {
-        auto thread = std::thread(handle_connection, std::move(stream), paths, args);
+        auto thread = std::thread(handle_connection, std::move(stream), settings);
         thread.detach();
     }
 
