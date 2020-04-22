@@ -107,7 +107,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     External::External(
             const Config::External &config,
-            const Core::StreamContext &context,
+            const StreamContext &context,
             Loader &loader
     ) : serialization(std::make_shared<Serialization>(
                 loader.load_default_and_additional_readers(config),
@@ -119,7 +119,7 @@ namespace Gadgetron::Server::Connection::Stream {
         )) {
         channel = std::async(
                 std::launch::async,
-                [=](auto config, auto context) { return open_external_channel(config, context); },
+                [=](auto config, auto context) { return open_external_channel(config, context.context); },
                 config,
                 context
         );

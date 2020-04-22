@@ -320,6 +320,12 @@ else()
     message("Do not find TORCH_HOME")
 endif()
 
+#Ubuntu installs cpprestsdk cmake files in the wrong directory. Because ofcourse it does
+if (UNIX)
+set(cpprestsdk_DIR /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/cmake/)
+endif()
+find_package(cpprestsdk REQUIRED)
+
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)

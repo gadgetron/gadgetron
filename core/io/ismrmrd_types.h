@@ -19,21 +19,21 @@ namespace Gadgetron::Core::IO {
 
 #include "primitives.h"
 
-void Gadgetron::Core::IO::write(std::ostream& stream, const ISMRMRD::MetaContainer& meta) {
+inline void Gadgetron::Core::IO::write(std::ostream& stream, const ISMRMRD::MetaContainer& meta) {
     std::stringstream meta_stream;
     ISMRMRD::serialize(meta, meta_stream);
     write_string_to_stream(stream, meta_stream.str());
 }
-void Gadgetron::Core::IO::read(std::istream& stream, ISMRMRD::MetaContainer& meta) {
+inline void Gadgetron::Core::IO::read(std::istream& stream, ISMRMRD::MetaContainer& meta) {
     auto meta_string = read_string_from_stream(stream);
     ISMRMRD::deserialize(meta_string.c_str(), meta);
 }
-void Gadgetron::Core::IO::write(std::ostream& stream, const ISMRMRD::Waveform& wave) {
+inline void Gadgetron::Core::IO::write(std::ostream& stream, const ISMRMRD::Waveform& wave) {
         IO::write(stream,wave.head);
         IO::write(stream,wave.begin_data(),wave.size());
 }
 
-void Gadgetron::Core::IO::read(std::istream& stream, ISMRMRD::Waveform& wave) {
+inline void Gadgetron::Core::IO::read(std::istream& stream, ISMRMRD::Waveform& wave) {
 
         auto header = IO::read<ISMRMRD::WaveformHeader>(stream);
 

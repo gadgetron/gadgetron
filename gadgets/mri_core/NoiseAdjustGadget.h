@@ -53,7 +53,7 @@ namespace Gadgetron {
         NODE_PROPERTY(noise_dwell_time_us_preset, float, "Preset dwell time for noise measurement", 0.0);
         NODE_PROPERTY(
             scale_only_channels_by_name, std::string, "List of named channels that should only be scaled", "");
-        NODE_PROPERTY(noise_dependency_folder, boost::filesystem::path, "Path to the working directory",
+        NODE_PROPERTY(noise_dependency_folder, boost::filesystem::path, "Path to the working directory (deprecated and ignored)",
             boost::filesystem::temp_directory_path() / "gadgetron");
 
         const float receiver_noise_bandwidth;

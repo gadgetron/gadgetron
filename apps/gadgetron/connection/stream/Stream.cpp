@@ -52,7 +52,7 @@ namespace {
         GDEBUG("Loading Gadget %s of class %s from \n",conf.name.c_str(),conf.classname.c_str(),conf.dll.c_str());
         auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname,
                                                                           conf.dll);
-        return std::make_shared<NodeProcessable>(factory(context, conf.properties), Config::name(conf));
+        return std::make_shared<NodeProcessable>(factory(context.context, conf.properties), Config::name(conf));
     }
 
     std::shared_ptr<Processable> load_node(const Config::Parallel &conf, const StreamContext &context, Loader &loader) {
@@ -72,7 +72,7 @@ namespace {
 
     std::shared_ptr<Processable> load_node(const Config::ParallelProcess& conf, const StreamContext& context, Loader& loader){
         GDEBUG("Loading ParalleProcess block\n");
-        return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context,loader);
+        return std::make_shared<Gadgetron::Server::Connection::Stream::ParallelProcess>(conf,context.context,loader);
     }
 
     std::shared_ptr<Processable> load_node(const Config::PureDistributed& conf, const StreamContext& context, Loader& loader){
@@ -83,7 +83,7 @@ namespace {
 
 namespace Gadgetron::Server::Connection::Stream {
 
-    Stream::Stream(const Config::Stream &config, const Core::StreamContext &context, Loader &loader) : key(config.key) {
+    Stream::Stream(const Config::Stream &config, const StreamContext &context, Loader &loader) : key(config.key) {
         for (auto &node_config : config.nodes) {
             nodes.emplace_back(
                     Core::visit([&](auto n) { return load_node(n, context, loader); }, node_config)

@@ -24,7 +24,7 @@ namespace Gadgetron::Server::Connection::Stream {
     public:
         PureDistributed(
                 const Config::PureDistributed &,
-                const Core::StreamContext &,
+                const StreamContext &,
                 Loader &
         );
 

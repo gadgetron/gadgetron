@@ -20,7 +20,7 @@ namespace Gadgetron::Server::Connection::Stream {
     public:
         Distributed(
                 const Config::Distributed &,
-                const Core::StreamContext &,
+                const StreamContext &,
                 Loader &
         );
 

@@ -1,19 +1,26 @@
 #ifndef GADGETRON_SERVER_H
 #define GADGETRON_SERVER_H
 
-#include <boost/asio.hpp>
+
 #include <boost/filesystem/path.hpp>
-#include <boost/program_options/variables_map.hpp>
+#include "storage_server.h"
 
 namespace Gadgetron::Server {
 
+  struct Settings {
+    Core::Context::Paths paths;
+    std::uint16_t port;
+    StorageServer::Address storage_address;
+  };
+
     class Server {
     public:
-        Server(const boost::program_options::variables_map &args);
-        void serve();
+        explicit Server(const Settings& settings);
+        [[noreturn]] void serve();
 
     private:
-        const boost::program_options::variables_map &args;
+      Settings settings;
+
     };
 }
 

@@ -1,17 +1,17 @@
 
 #include "HeaderConnection.h"
 
-#include <map>
 #include <iostream>
+#include <map>
 
+#include "Config.h"
+#include "Handlers.h"
 #include "StreamConnection.h"
 #include "VoidConnection.h"
-#include "Handlers.h"
-#include "Config.h"
 
-#include "io/primitives.h"
 #include "Context.h"
 #include "MessageID.h"
+#include "io/primitives.h"
 
 #define CONFIG_ERROR "Received second config file. Only one allowed."
 
@@ -22,15 +22,14 @@ namespace {
     using namespace Gadgetron::Server::Connection;
     using namespace Gadgetron::Server::Connection::Handlers;
 
-    using Header = Gadgetron::Core::StreamContext::Header;
+    using Header = Gadgetron::Core::Context::Header;
 
     class HeaderHandler : public Handler {
     public:
-        explicit HeaderHandler(
-                std::function<void(Header)> header_callback
-        ) : header_callback(std::move(header_callback)) {}
+        explicit HeaderHandler(std::function<void(Header)> header_callback)
+            : header_callback(std::move(header_callback)) { }
 
-        void handle(std::istream &stream, OutputChannel&) override {
+        void handle(std::istream& stream, OutputChannel&) override {
             std::string raw_header(read_string_from_stream<uint32_t>(stream));
 
             ISMRMRD::IsmrmrdHeader header{};
@@ -46,13 +45,10 @@ namespace {
     class HeaderContext {
     public:
         Gadgetron::Core::optional<Header> header;
-        const StreamContext::Paths paths;
+        const Context::Paths paths;
     };
 
-    std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(
-            std::function<void()> close,
-            HeaderContext &context
-    ) {
+    std::map<uint16_t, std::unique_ptr<Handler>> prepare_handlers(std::function<void()> close, HeaderContext& context) {
         std::map<uint16_t, std::unique_ptr<Handler>> handlers{};
 
         auto header_callback = [=, &context](Header header) {
@@ -72,44 +68,29 @@ namespace {
 
 namespace Gadgetron::Server::Connection::HeaderConnection {
 
-    void process(
-            std::iostream &stream,
-            const Core::StreamContext::Paths &paths,
-            const Core::StreamContext::Args &args,
-            const Config &config,
-            ErrorHandler &error_handler
-    ) {
+    void process(std::iostream& stream, const Settings& settings, const Config& config, ErrorHandler& error_handler) {
         GINFO_STREAM("Connection state: [HEADER]");
 
-        HeaderContext context{
-                Core::none,
-                paths
-        };
+        HeaderContext context{ Core::none, settings.paths };
 
         auto channel = make_channel<MessageChannel>();
 
         std::thread input_thread = start_input_thread(
-                stream,
-                std::move(channel.output),
-                [&](auto close) { return prepare_handlers(close, context); },
-                error_handler
-        );
+            stream, std::move(channel.output), [&](auto close) { return prepare_handlers(close, context); },
+            error_handler);
 
-        std::thread output_thread = start_output_thread(
-                stream,
-                std::move(channel.input),
-                default_writers,
-                error_handler
-        );
+        std::thread output_thread
+            = start_output_thread(stream, std::move(channel.input), default_writers, error_handler);
 
         input_thread.join();
         output_thread.join();
 
         if (context.header) {
-            StreamConnection::process(stream, StreamContext{context.header.value(), paths, args}, config, error_handler);
-        }
-        else {
-            VoidConnection::process(stream, paths, config, error_handler);
+            StreamConnection::process(stream,
+                StreamContext{ context.header.value(), settings, setup_storage(settings.storage_address,context.header.value()) },
+                config, error_handler);
+        } else {
+            VoidConnection::process(stream, settings, config, error_handler);
         }
     }
 }

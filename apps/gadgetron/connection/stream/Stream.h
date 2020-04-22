@@ -9,6 +9,7 @@
 
 #include "Channel.h"
 #include "Context.h"
+#include "Connection.h"
 
 namespace Gadgetron::Server::Connection {
     class Loader;
@@ -19,7 +20,7 @@ namespace Gadgetron::Server::Connection::Stream {
     class Stream : public Processable {
     public:
         const std::string key;
-        Stream(const Config::Stream &, const Core::StreamContext &, Loader &);
+        Stream(const Config::Stream &, const StreamContext &, Loader &);
 
         void process(
                 Core::GenericInputChannel input,

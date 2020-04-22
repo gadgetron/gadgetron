@@ -25,7 +25,7 @@ namespace Gadgetron::Server::Connection::Stream {
         using InputChannel = Core::GenericInputChannel;
         using OutputChannel = Core::OutputChannel;
 
-        External(const Config::External &, const Core::StreamContext &, Loader &);
+        External(const Config::External &, const StreamContext &, Loader &);
 
         void process(
                 InputChannel input,

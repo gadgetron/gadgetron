@@ -30,21 +30,21 @@ namespace Gadgetron::Server::Connection::Stream {
 
     void Configuration::send(std::iostream &stream) const {
         send_config(stream, config);
-        send_header(stream, context.header);
+        send_header(stream, context.context.header);
     }
 
     Configuration::Configuration(
-            Core::StreamContext context,
+            StreamContext context,
             Config config
     ) : context(std::move(context)), config{config} {}
 
     Configuration::Configuration(
-            Core::StreamContext context,
+            StreamContext context,
             Config::External config
     ) : context(std::move(context)), config{config} {}
 
     Configuration::Configuration(
-            Core::StreamContext context,
+            StreamContext context,
             Config::Distributed config
     ) : Configuration(
             std::move(context),
@@ -56,7 +56,7 @@ namespace Gadgetron::Server::Connection::Stream {
     ) {}
 
     Configuration::Configuration(
-            Core::StreamContext context,
+            StreamContext context,
             Config::PureDistributed config
     ) : Configuration(
             std::move(context),

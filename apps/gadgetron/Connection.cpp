@@ -4,6 +4,7 @@
 
 #include "Context.h"
 
+#include "Server.h"
 #include "connection/Core.h"
 #if !(_WIN32)
 #include <cstdlib>
@@ -29,13 +30,12 @@ namespace Gadgetron::Server::Connection {
 #else
 
     void handle(
-            const Gadgetron::Core::StreamContext::Paths& paths,
-            const Gadgetron::Core::StreamContext::Args& args,
+            const Settings& settings,
             std::unique_ptr<std::iostream> stream
     ) {
         auto pid = fork();
         if (pid == 0) {
-            handle_connection(std::move(stream), paths, args);
+            handle_connection(std::move(stream), settings);
             std::exit(0);
         }
         auto listen_for_close = [](auto pid) {int status; waitpid(pid,&status,0);};

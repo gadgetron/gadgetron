@@ -68,7 +68,7 @@ namespace Gadgetron::Server::Connection::StreamConnection {
 
     void process(
             std::iostream &stream,
-            const Core::StreamContext &context,
+            const StreamContext &context,
             const Config &config,
             ErrorHandler &error_handler
     ) {

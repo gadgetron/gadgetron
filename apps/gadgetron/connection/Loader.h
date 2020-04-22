@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "stream/Stream.h"
+#include "Connection.h"
 #include "Config.h"
 
 #include "Context.h"
@@ -23,7 +24,7 @@ namespace Gadgetron::Server::Connection {
 
         using GadgetProperties = Core::GadgetProperties;
     public:
-        explicit Loader(const Core::StreamContext &);
+        explicit Loader(const StreamContext &);
 
         std::unique_ptr<Reader> load(const Config::Reader &);
         std::unique_ptr<Writer> load(const Config::Writer &);
@@ -91,7 +92,7 @@ namespace Gadgetron::Server::Connection {
     private:
         boost::dll::shared_library load_library(const std::string &shared_library_name);
 
-        const Core::StreamContext context;
+        const StreamContext context;
 
         std::vector<boost::dll::shared_library> libraries = std::vector<boost::dll::shared_library>();
     };

@@ -19,7 +19,7 @@ namespace Gadgetron::Server::Connection::Stream {
         using Merge  = Core::Parallel::Merge;
 
     public:
-        Parallel(const Config::Parallel &, const Core::StreamContext &, Loader &);
+        Parallel(const Config::Parallel &, const StreamContext &, Loader &);
 
         void process(
                 Core::GenericInputChannel input,

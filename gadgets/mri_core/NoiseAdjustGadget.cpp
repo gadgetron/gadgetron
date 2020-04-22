@@ -47,38 +47,19 @@ namespace Gadgetron {
             return value_or(header.acquisitionSystemInformation->relativeReceiverNoiseBandwidth, 0.793f);
         }
 
-        bf::path generateNoiseDependencyFilePath(const std::string& measurement_id,
-            const bf::path& noise_dependency_folder, const std::string& noise_dependency_prefix) {
-            auto full_name_stored_noise_dependency
-                = noise_dependency_folder / (noise_dependency_prefix + "_"s + measurement_id);
-
-            return full_name_stored_noise_dependency;
+        std::string generateNoiseDependencyFilePath(const std::string& measurement_id,
+            const std::string& noise_dependency_prefix) {
+            return (noise_dependency_prefix + "_"s + measurement_id);
         }
 
         Gadgetron::Core::optional<NoiseCovariance> loadNoiseCovariance(
-            const bf::path& noise_dependency_file) {
+            const std::string& key, const Core::Storage& storage) {
             using namespace Core::IO;
-            if (!bf::exists(noise_dependency_file))
+
+            if (!storage.noise.contains(key))
                 return Core::none;
 
-            std::ifstream infile;
-            infile.open(noise_dependency_file.string(), std::ios::in | std::ios::binary);
-            if (!infile.good())
-                return Core::none;
-
-            // Read the XML header of the noise scan
-
-            auto xml_str = read_string_from_stream<uint32_t>(infile);
-
-            ISMRMRD::IsmrmrdHeader header;
-            ISMRMRD::deserialize(xml_str.c_str(), header);
-
-            auto noise_dwell_time_us = read<float>(infile);
-
-            read<size_t>(infile); //We really don't need this value, so let's skip it.
-            auto cov_matrix = read<hoNDArray<std::complex<float>>>(infile);
-
-            return NoiseCovariance{ header, noise_dwell_time_us, cov_matrix };
+            return storage.noise.fetch<NoiseCovariance>(key);
         }
 
 
@@ -90,31 +71,9 @@ namespace Gadgetron {
         }
 
         void saveNoiseCovariance(
-            const NoiseCovariance& ncov, const bf::path& noise_dependency_file) {
-
-            using namespace Core::IO;
-
-            GDEBUG_STREAM("Saving noise to " << noise_dependency_file.string());
-            boost::filesystem::create_directories(noise_dependency_file.parent_path());
-
-            std::ofstream outfile;
-            outfile.open(noise_dependency_file.string(), std::ios::out | std::ios::binary);
-
-            {
-                std::stringstream sstream;
-                ISMRMRD::serialize(ncov.header, sstream);
-                write_string_to_stream<uint32_t>(outfile, sstream.str());
-            }
-            write(outfile, ncov.noise_dwell_time_us);
-
-            size_t silly_length_we_dont_really_need = (1+ncov.noise_covariance_matrix.dimensions().size())*sizeof(size_t) + ncov.noise_covariance_matrix.get_number_of_bytes();
-            write(outfile, silly_length_we_dont_really_need);
-            write(outfile, ncov.noise_covariance_matrix);
-
-            {
-                using namespace boost::filesystem;
-                permissions(noise_dependency_file,owner_read | owner_write | others_read | group_read);
-            }
+            const NoiseCovariance& ncov, const std::string& key, Core::Storage& storage) {
+            GDEBUG_STREAM("Saving noise to " << key);
+            storage.noise.store(key,ncov);
 
         }
 

@@ -163,7 +163,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     Distributed::Distributed(
             const Config::Distributed& config,
-            const Core::StreamContext& context,
+            const StreamContext& context,
             Loader& loader
     ) : serialization(std::make_shared<Serialization>(
                 loader.load_readers(config),
@@ -173,7 +173,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 context,
                 config
         )),
-        distributor(load_distributor(loader, context, config.distributor)) {}
+        distributor(load_distributor(loader, context.context, config.distributor)) {}
 
     const std::string& Distributed::name() {
         static const std::string n = "Distributed";

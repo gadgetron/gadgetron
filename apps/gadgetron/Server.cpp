@@ -10,27 +10,29 @@
 #include "Server.h"
 #include "Connection.h"
 #include "connection/SocketStreamBuf.h"
-
+#include "storage_server.h"
 using namespace boost::filesystem;
 using namespace Gadgetron::Server;
 
 
-Server::Server(
-        const boost::program_options::variables_map &args
-) : args(args) {}
+Server::
+    Server(
+        const Settings& settings
+) : settings(settings) {}
 
-void Server::serve() {
+[[noreturn]] void Server::serve() {
 
-    Gadgetron::Core::Context::Paths paths{args["home"].as<path>(), args["dir"].as<path>()};
-    GINFO_STREAM("Gadgetron home directory: " << paths.gadgetron_home);
-    GINFO_STREAM("Gadgetron working directory: " << paths.working_folder);
+
+    GINFO_STREAM("Gadgetron home directory: " << settings.paths.gadgetron_home);
+    GINFO_STREAM("Gadgetron working directory: " << settings.paths.working_folder);
+
 
 #if(BOOST_VERSION >= 107000)
     boost::asio::io_context executor;
 #else
     boost::asio::io_service executor;
 #endif
-    boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), args["port"].as<unsigned short>());
+    boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), settings.port);
     boost::asio::ip::tcp::acceptor acceptor(executor, local);
 
     acceptor.set_option(boost::asio::socket_base::reuse_address(true));
@@ -41,6 +43,6 @@ void Server::serve() {
 
         GINFO_STREAM("Accepted connection from: " << socket->remote_endpoint().address());
 
-        Connection::handle(paths, args, Gadgetron::Connection::stream_from_socket(std::move(socket)));
+        Connection::handle(settings, Gadgetron::Connection::stream_from_socket(std::move(socket)));
     }
 }

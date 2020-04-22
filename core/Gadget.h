@@ -121,11 +121,6 @@ namespace Gadgetron {
 
     public:
 
-        Gadget() {
-
-
-        }
-
         virtual ~Gadget() {
             GDEBUG("Shutting down Gadget (%s)\n", this->name.c_str());
         }

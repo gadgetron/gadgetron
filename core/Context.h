@@ -26,17 +26,6 @@ namespace Gadgetron::Core {
         Storage storage;
     };
 
-    struct StreamContext : Context {
-        using Arguments = boost::program_options::variables_map;
-        Arguments args;
-
-        StreamContext(
-                ISMRMRD::IsmrmrdHeader header,
-                Paths paths,
-                Storage storage,
-                Arguments args
-        ) : Context{std::move(header), std::move(paths), std::move(storage)}, args{std::move(args)} {}
-    };
 }
 
 

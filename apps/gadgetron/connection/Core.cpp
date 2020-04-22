@@ -3,6 +3,7 @@
 
 #include "ConfigConnection.h"
 #include "Writers.h"
+#include "Server.h"
 
 namespace {
 
@@ -51,8 +52,7 @@ namespace Gadgetron::Server::Connection {
 
     void handle_connection(
             std::unique_ptr<std::iostream> stream,
-            Gadgetron::Core::StreamContext::Paths paths,
-            Gadgetron::Core::StreamContext::Args args
+            Settings settings
     ) {
 
         stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
@@ -61,7 +61,7 @@ namespace Gadgetron::Server::Connection {
         ErrorHandler error_handler(sender,"Connection Main Thread");
 
         error_handler.handle([&]() {
-            ConfigConnection::process(*stream, paths, args, error_handler);
+            ConfigConnection::process(*stream, settings, error_handler);
         });
 
         try {
