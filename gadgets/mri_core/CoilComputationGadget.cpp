@@ -1,8 +1,6 @@
 #include "CoilComputationGadget.h"
-#include "gadgetron/hoNDArray_elemwise.h"
-#include "gadgetron/hoNDImage_util.h"
-
 #include "gadgetron/mri_core_coil_map_estimation.h"
+
 /*
 *       CoilComputationGadget.cpp
 *       Author: Johannes Mayer
