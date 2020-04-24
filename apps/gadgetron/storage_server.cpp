@@ -8,6 +8,7 @@
 #include <boost/process.hpp>
 #include <cpprest/http_client.h>
 #include <cpprest/interopstream.h>
+#include <cpprest/producerconsumerstream.h>
 
 Gadgetron::Server::StorageServer Gadgetron::Server::start_storage_server(
     const boost::filesystem::path& working_directory) {
@@ -25,6 +26,63 @@ namespace {
     using namespace web::http;         // Common HTTP functionality
     using namespace web::http::client; // HTTP client features
     using namespace concurrency::streams;
+
+    class storage_iostream : public async_iostream<char> {
+        public:
+
+        storage_iostream(const std::string& key, const std::string& group, const std::string& server_address, producer_consumer_buffer<char> buffer = producer_consumer_buffer<char>{}) : async_iostream<char>(buffer),  internal_buffer(buffer){
+
+            http_client client(U(server_address));
+            uri_builder builder;
+            builder.append(U("/v1/blobs"));
+
+            auto other_buffer = streambuf<uint8_t>(internal_buffer);
+
+            task = 
+                client.request(methods::PUT,builder.to_string(),other_buffer.create_istream())
+                .then([=](http_response response){ return response.extract_json();})
+                .then([=](json::value node){
+                    auto id = node["id"].as_string();
+                    return id;
+                })
+                .then([=](std::string id) mutable {
+                    json::value message  = json::value::object();
+                    message["operation"] = json::value::string("push");
+                    message["arguments"] = json::value::array(std::vector<json::value>{ json::value::string(id) });
+                    uri_builder builder(U("/v1"));
+                    builder.append(group);
+                    builder.append(key);
+
+                    return client.request(methods::PATCH,builder.to_string(),message);
+                })
+                .then([=](http_response response){
+                    return response.extract_json();
+                })
+                .then([=](json::value node){
+
+                });
+
+        }
+
+        ~storage_iostream(){
+            internal_buffer.sync().wait();
+            internal_buffer.close(std::ios_base::out).wait();
+            
+            task.wait();
+
+        }
+
+        private: 
+
+        producer_consumer_buffer<char> internal_buffer;
+        
+        pplx::task<void> task;
+
+
+    };
+   
+
+
 
     class RestStorage : public StorageSpace::StreamProvider {
     public:
@@ -59,28 +117,12 @@ namespace {
                                      })
                                      .get();
 
-            return json_response["contents"].size() > 0;
+
+            return json_response.size() > 0;
         }
 
-        void store(const std::string& key, std::istream& data) const override {
-
-            http_client client(U(server_address));
-            uri_builder builder;
-            builder.append(U("/v1/blobs"));
-
-            json::value message  = json::value::object();
-            message["operation"] = json::value::string("push");
-            message["arguments"] = json::value::array(std::vector<json::value>{ json::value::string(key) });
-
-            auto response = client.request(methods::PATCH, builder.to_string(), message)
-                                .then([=](http_response response) { return response.extract_json(); })
-                                .then([=](json::value node) {
-                                    auto id = node["contents"][0]["id"].as_string();
-                                    uri_builder builder;
-                                    builder.append("/blobs/");
-                                    builder.append(id);
-                                    return builder.to_string();
-                                });
+        std::unique_ptr<std::ostream> store(const std::string& key) const override {
+            return std::make_unique<storage_iostream>(key,group,server_address);
         }
 
     private:

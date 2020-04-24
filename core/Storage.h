@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <istream>
+#include <ostream>
 
 #include "io/ismrmrd_types.h"
 #include "io/adapt_struct.h"
@@ -19,7 +20,7 @@ namespace Gadgetron::Core {
             virtual ~StreamProvider() = default;
 
             virtual std::unique_ptr<std::istream> fetch(const std::string& key) const = 0;
-            virtual void store(const std::string& key, std::istream& datastream) const = 0;
+            virtual std::unique_ptr<std::ostream> store(const std::string& key) const = 0;
             virtual bool contains(const std::string& key) const = 0;
         };
 
@@ -35,10 +36,8 @@ namespace Gadgetron::Core {
 
         template<class T>
         void store(const std::string& key, const T& t) const {
-            std::stringstream stream;
-            IO::write(stream, t);
-            provider->store(key,stream);
-
+            auto stream = provider->store(key);
+            IO::write(*stream, t);
         }
 
         bool contains(const std::string& key) const {
