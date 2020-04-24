@@ -9,13 +9,14 @@
 #include <cpprest/http_client.h>
 #include <cpprest/interopstream.h>
 #include <cpprest/producerconsumerstream.h>
+#include "gadgetron_config.h"
 
 Gadgetron::Server::StorageServer Gadgetron::Server::start_storage_server(
     const boost::filesystem::path& working_directory) {
     namespace bp = boost::process;
 
     auto process = bp::child(
-        bp::search_path("python3"), "storage_server.py", "--storage_dir", working_directory.string(), "--port", "9102");
+        GADGETRON_PYTHON_EXECUTABLE, "storage_server.py", "--storage-dir", working_directory.string(), "--port", "9102");
     return { std::move(process), "http://localhost:9102" };
 }
 
