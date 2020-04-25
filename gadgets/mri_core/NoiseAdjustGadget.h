@@ -12,6 +12,19 @@
 #include <ismrmrd/xml.h>
 
 namespace Gadgetron {
+        struct NoiseCovariance {
+            ISMRMRD::IsmrmrdHeader header;
+            float noise_dwell_time_us;
+            hoNDArray<std::complex<float>> noise_covariance_matrix;
+        };
+}
+GADGETRON_ADAPT_STRUCT(Gadgetron::NoiseCovariance,GADGETRON_ACCESS_ELEMENT(header),GADGETRON_ACCESS_ELEMENT(noise_dwell_time_us),GADGETRON_ACCESS_ELEMENT(noise_covariance_matrix))
+
+
+
+
+
+namespace Gadgetron {
         struct NoiseGatherer {
             hoNDArray<std::complex<float>> tmp_covariance;
             size_t number_of_samples = 0;

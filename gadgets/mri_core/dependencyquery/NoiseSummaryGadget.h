@@ -12,29 +12,17 @@
 
 namespace Gadgetron
 {
-    class EXPORTGADGETSMRICORE NoiseSummaryGadget : public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+    class NoiseSummaryGadget : public Core::ChannelGadget<void>
     {
     public:
-        GADGET_DECLARE(NoiseSummaryGadget);
+        NoiseSummaryGadget(const Core::Context& context, const Core::GadgetProperties& props);
         
-        using BaseClass = Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >;
-        
-        NoiseSummaryGadget();
-        virtual ~NoiseSummaryGadget();
+    	NODE_PROPERTY(noise_file, std::string, "Name of noise file", "");
 
-        virtual int close(unsigned long flags);
+        void process(Core::InputChannel<void>& input, Core::OutputChannel& output) override;
 
-    protected:
-	GADGET_PROPERTY(noise_file, std::string, "Name of noise file", "");
+    private:
+        Core::Context context;
 
-        std::string noise_dependency_folder_;
-        bool processed_in_close_;
-
-        virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-                            GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-        {
-            m1->release();
-            return GADGET_OK;
-        }
     };
 }

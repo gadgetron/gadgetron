@@ -19,16 +19,6 @@
 using namespace std::string_literals;
 namespace bf = boost::filesystem;
 
-namespace {
-        struct NoiseCovariance {
-            ISMRMRD::IsmrmrdHeader header;
-            float noise_dwell_time_us;
-            hoNDArray<std::complex<float>> noise_covariance_matrix;
-        };
-}
-
-GADGETRON_ADAPT_STRUCT(NoiseCovariance,GADGETRON_ACCESS_ELEMENT(header),GADGETRON_ACCESS_ELEMENT(noise_dwell_time_us),GADGETRON_ACCESS_ELEMENT(noise_covariance_matrix))
-
 namespace Gadgetron {
     namespace {
 

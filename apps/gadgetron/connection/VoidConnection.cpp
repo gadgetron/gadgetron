@@ -8,7 +8,7 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
-
+#include "storage_server.h"
 
 namespace {
 
@@ -37,7 +37,7 @@ namespace Gadgetron::Server::Connection::VoidConnection {
         GINFO_STREAM("Connection state: [VOID]");
 
         // Please note the empty header initialization crime. TODO: Fight crime.
-        StreamContext context{Context::Header{},settings,Storage{}};
+        StreamContext context{Context::Header{},settings,setup_storage(settings.storage_address,Context::Header{})};
         Loader loader{context};
 
 
