@@ -23,6 +23,7 @@ Gadgetron::Server::StorageServer Gadgetron::Server::start_storage_server(
 namespace {
     using namespace Gadgetron::Core;
     using namespace utility;           // Common utilities like string conversions
+	using namespace utility::conversions;
     using namespace web;               // Common features like URIs.
     using namespace web::http;         // Common HTTP functionality
     using namespace web::http::client; // HTTP client features
@@ -33,34 +34,35 @@ namespace {
 
         storage_iostream(const std::string& key, const std::string& group, const std::string& server_address, producer_consumer_buffer<char> buffer = producer_consumer_buffer<char>{}) : async_iostream<char>(buffer),  internal_buffer(buffer){
 
-            http_client client(U(server_address));
+            http_client restclient(to_string_t(server_address));
             uri_builder builder;
             builder.append(U("/v1/blobs"));
 
             auto other_buffer = streambuf<uint8_t>(internal_buffer);
 
-            task = 
-                client.request(methods::PUT,builder.to_string(),other_buffer.create_istream())
+			
+
+            task = restclient.request(methods::PUT,builder.to_string(),other_buffer.create_istream())
                 .then([=](http_response response){ return response.extract_json();})
                 .then([=](json::value node){
-                    auto id = node["id"].as_string();
+                    auto id = node[U("id")].as_string();
                     return id;
                 })
-                .then([=](std::string id) mutable {
+                .then([=](string_t id) mutable {
                     json::value message  = json::value::object();
-                    message["operation"] = json::value::string("push");
-                    message["arguments"] = json::value::array(std::vector<json::value>{ json::value::string(id) });
+                    message[U("operation")] = json::value::string(U("push"));
+                    message[U("arguments")] = json::value::array(std::vector<json::value>{ json::value::string(to_string_t(id)) });
                     uri_builder builder(U("/v1"));
-                    builder.append(group);
-                    builder.append(key);
+                    builder.append(to_string_t(group));
+                    builder.append(to_string_t(key));
 
-                    return client.request(methods::PATCH,builder.to_string(),message);
+                    return restclient.request(methods::PATCH,builder.to_string(),message);
                 })
                 .then([=](http_response response){
                     return response.extract_json();
                 })
                 .then([=](json::value node){
-
+					
                 });
 
         }
@@ -91,15 +93,15 @@ namespace {
             : server_address(server_address), group(group) { }
 
         std::unique_ptr<std::istream> fetch(const std::string& key) const override {
-            http_client client(U(server_address));
+            http_client client(to_string_t(server_address));
             uri_builder builder;
             builder.append(U("/v1/"));
-            builder.append(U(group));
-            builder.append(U(key));
+            builder.append(to_string_t(group));
+            builder.append(to_string_t(key));
             auto data = client.request(methods::GET, builder.to_string())
                             .then([=](http_response response) { return response.extract_json(); })
                             .then([=](json::value node) mutable {
-                                auto blob_uri = node["contents"][0]["uri"].as_string();
+                                auto blob_uri = node[U("contents")][0][U("uri")].as_string();
                                 return client.request(methods::GET, blob_uri);
                             })
                             .then([=](http_response response) { return new async_istream<char>(response.body()); });
@@ -107,11 +109,11 @@ namespace {
         }
 
         bool contains(const std::string& key) const override {
-            http_client client(U(server_address));
+            http_client client(to_string_t(server_address));
             uri_builder builder;
             builder.append(U("/v1/"));
-            builder.append(U(group));
-            builder.append(U(key));
+            builder.append(to_string_t(group));
+            builder.append(to_string_t(key));
             auto json_response = client.request(methods::GET, builder.to_string())
                                      .then([=](http_response response) {
                                          return response.extract_json();

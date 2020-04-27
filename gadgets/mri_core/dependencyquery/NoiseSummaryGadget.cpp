@@ -1,3 +1,4 @@
+
 #include "NoiseSummaryGadget.h"
 
 #include "Dependency.h"
