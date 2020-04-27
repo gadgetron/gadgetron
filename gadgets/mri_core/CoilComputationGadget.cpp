@@ -1,5 +1,5 @@
 #include "CoilComputationGadget.h"
-#include "gadgetron/mri_core_coil_map_estimation.h"
+#include "mri_core_coil_map_estimation.h"
 
 /*
 *       CoilComputationGadget.cpp

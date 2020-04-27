@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "gadgetron/Gadget.h"
-#include "gadgetron/hoNDArray.h"
+#include "Gadget.h"
+#include "hoNDArray.h"
 
 #include "ismrmrd/meta.h"
 #include <ismrmrd/ismrmrd.h>
