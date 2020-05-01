@@ -68,6 +68,8 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageAccumulatorGadget.h
         writers/GadgetIsmrmrdWriter.h
         ImageResizingGadget.h
+        ImageArraySendMixin.h
+        ImageArraySendMixin.hpp
         DenoiseGadget.h
         CoilComputationGadget.h)
 
@@ -204,7 +206,7 @@ target_link_libraries(gadgetron_mricore
 
 target_include_directories(gadgetron_mricore
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 if (ZFP_FOUND)
     message("ZFP Found")
@@ -234,6 +236,7 @@ install(FILES
 install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_mricore
+        EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

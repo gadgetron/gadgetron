@@ -69,6 +69,7 @@ install(FILES ${gadgetron_cmr_header_files} DESTINATION ${GADGETRON_INSTALL_INCL
 install(FILES ${config_cmr_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_cmr
+        EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

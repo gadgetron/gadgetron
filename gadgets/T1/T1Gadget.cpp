@@ -23,6 +23,7 @@ namespace Gadgetron {
         Core::Image<float> process_function(IsmrmrdImageArray images) const final {
 
 
+
             auto vector_field = T1::t1_registration(images.data_,TIs);
 
             auto moco_images = T1::deform_groups(images.data_,vector_field);
@@ -40,6 +41,19 @@ namespace Gadgetron {
             header.image_series_index = ISMRMRD::ISMRMRD_IMTYPE_REAL;
             return Core::Image<float>{header,T1,Core::none};
 
+
+        }
+
+
+        std::vector<float> exctract_MOLLI_TI(const hoNDArray<ISMRMRD::AcquisitionHeader>& acq_headers){
+
+            auto dims = acq_headers.dimensions(); //Do we know what these dimensions are?
+            std::cout << "MOLLI HEADER DIMENSIONS REMOVE THIS LINE";
+            for (auto dim : dims)
+                std::cout << ' ' << dim;
+            std::cout << std::endl;
+
+            return {};
 
         }
 

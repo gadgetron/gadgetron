@@ -19,6 +19,7 @@ target_link_libraries(gadgetron_toolbox_cpu_solver INTERFACE
                     gadgetron_toolbox_cpucore_math )
 target_include_directories(gadgetron_toolbox_cpu_solver
         INTERFACE
+        $<INSTALL_INTERFACE:include/gadgetron>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 install(TARGETS gadgetron_toolbox_cpu_solver EXPORT gadgetron-export DESTINATION lib COMPONENT main)

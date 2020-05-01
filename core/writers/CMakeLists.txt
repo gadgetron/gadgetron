@@ -23,6 +23,7 @@ set_target_properties(gadgetron_core_writers PROPERTIES
         SOVERSION ${GADGETRON_SOVERSION})
 
 install(TARGETS gadgetron_core_writers
+        EXPORT gadgetron-export
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin

@@ -19,7 +19,7 @@ namespace Gadgetron{
         auto meta_string = meta_stream.str();
 
         IO::write(stream,meta_string.size());
-        stream.write(meta_string.c_str(),meta_string.size()+1);
+        stream.write(meta_string.data(),meta_string.size());
 
     }
 

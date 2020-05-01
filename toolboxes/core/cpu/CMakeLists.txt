@@ -64,6 +64,7 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/apps/gadgetron>
+    $<INSTALL_INTERFACE:include/gadgetron>
 )
 
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

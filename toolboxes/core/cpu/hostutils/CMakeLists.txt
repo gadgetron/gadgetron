@@ -24,6 +24,7 @@ set_target_properties(gadgetron_toolbox_hostutils PROPERTIES VERSION ${GADGETRON
 
 
 install(TARGETS gadgetron_toolbox_hostutils
+		EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

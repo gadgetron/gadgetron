@@ -153,6 +153,8 @@ namespace Gadgetron{
 
     // Copy constructors
     hoNDArray(const hoNDArray<T> &a);
+
+    [[deprecated]]
     explicit hoNDArray(const hoNDArray<T> *a);
     //Move constructors
 

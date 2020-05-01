@@ -30,6 +30,7 @@ target_link_libraries(gadgetron_toolbox_python
 
 target_include_directories(gadgetron_toolbox_python
         PUBLIC
+        $<INSTALL_INTERFACE:include/gadgetron>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		)
 set_target_properties(gadgetron_toolbox_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

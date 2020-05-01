@@ -18,10 +18,12 @@ target_link_libraries(gadgetron_toolbox_cpu_image
 
 target_include_directories(gadgetron_toolbox_cpu_image
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<INSTALL_INTERFACE:include/gadgetron>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         )
 
 install(TARGETS gadgetron_toolbox_cpu_image
+		EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

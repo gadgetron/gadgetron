@@ -14,6 +14,7 @@ set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VE
 target_include_directories(
         gadgetron_toolbox_cpufft
         PUBLIC
+        $<INSTALL_INTERFACE:include/gadgetron>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 

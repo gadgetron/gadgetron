@@ -22,6 +22,7 @@ target_link_libraries(gadgetron_core
 
 target_include_directories(gadgetron_core PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/gadgetron>
         )
 
 install(TARGETS gadgetron_core

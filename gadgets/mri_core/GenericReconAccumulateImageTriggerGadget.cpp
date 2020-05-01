@@ -588,7 +588,7 @@ namespace Gadgetron {
                                                                             // if in close call, send out all unsent images
                                                                             if ( img.get_number_of_elements()>0 && !sentFlag )
                                                                             {
-                                                                                imageSentBuffer_(image_sent_ind) = img;
+                                                                                imageSentBuffer_(image_sent_ind) = std::move(img);
                                                                                 buf(image_ind) = ImageType();
                                                                                 needTrigger = true;
                                                                             }

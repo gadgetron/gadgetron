@@ -1124,27 +1124,23 @@ public:
             throw GadgetronClientException("Unable to create socket.");
         }
 
-        GadgetMessageIdentifier id;
         while (socket_->is_open()) {
-      try {
-            boost::asio::read(*socket_, boost::asio::buffer(&id,sizeof(GadgetMessageIdentifier)));
+
+            GadgetMessageIdentifier id;
+            boost::asio::read(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
 
             if (id.id == GADGET_MESSAGE_CLOSE) {
-          break;
+                break;
             }
 
             GadgetronClientMessageReader* r = find_reader(id.id);
 
             if (!r) {
-          std::cout << "Message received with ID: " << id.id << std::endl;
-          throw GadgetronClientException("Unknown Message ID");
+                std::cout << "Message received with ID: " << id.id << std::endl;
+                throw GadgetronClientException("Unknown Message ID");
             } else {
-          r->read(socket_);
+                r->read(socket_);
             }
-      } catch (...) {
-        std::cout << "Input stream has terminated" << std::endl;
-        return;
-      }
         }
     }
 
