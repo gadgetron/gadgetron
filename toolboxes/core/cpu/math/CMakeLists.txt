@@ -21,7 +21,10 @@ set(cpucore_math_src_files
         hoNDArray_reductions.hxx
         hoArmadillo.h
         hoNDArray_elemwise.h
-        cpp_blas.h
+        hoNDArray_elemwise.hpp
+
+            cpp_blas.h
+            cpp_lapack.h
          )
 
     set(cpucore_math_src_files 

@@ -42,17 +42,14 @@ namespace Gadgetron {
             return _imag;
         }
 
-        __inline__ __host__ __device__ complext() {}
+        __inline__ complext() = default;
 
         __inline__ __host__ __device__ complext(T real, T imag) {
             _real = real;
             _imag = imag;
         }
 
-        __inline__ __host__ __device__ complext(const complext<T> &tmp) {
-            _real = tmp._real;
-            _imag = tmp._imag;
-        }
+        __inline__ complext(const complext<T> &tmp) = default;
 
         template<class R>
         __inline__ __host__ __device__ complext(const complext<R> &tmp) {

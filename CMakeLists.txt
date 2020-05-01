@@ -428,6 +428,7 @@ configure_package_config_file(
         ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
         ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
+        PATH_VARS GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH GADGETRON_SOVERSION GADGETRON_VERSION_STRING
 )
 
 write_basic_package_version_file(

@@ -16,6 +16,8 @@ target_link_libraries(gadgetron_toolbox_t1
         )
 target_include_directories(gadgetron_toolbox_t1
         PUBLIC
+
+                $<INSTALL_INTERFACE:include/gadgetron>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         )
 

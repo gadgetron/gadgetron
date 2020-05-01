@@ -78,6 +78,8 @@
                 )
         target_include_directories(gadgetron_toolbox_cpureg
                 PUBLIC
+
+                $<INSTALL_INTERFACE:include/gadgetron>
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/transformation>
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>

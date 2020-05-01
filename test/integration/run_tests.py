@@ -9,6 +9,7 @@ import json
 import argparse
 import itertools
 import subprocess
+from pathlib import Path
 
 
 def output_csv(stats, filename):
@@ -22,6 +23,9 @@ def output_csv(stats, filename):
 
 def main():
 
+
+    script_dir = Path(sys.argv[0]).parent
+    subscript = script_dir / "run_gadgetron_test.py"
     stats = []
     passed = []
     failed = []
@@ -73,7 +77,7 @@ def main():
 
     for i, test in enumerate(tests, start=1):
         print("\nTest {} of {}: {}\n".format(i, len(tests), test))
-        proc = subprocess.run([sys.executable, 'run_gadgetron_test.py',
+        proc = subprocess.run([sys.executable, str(subscript),
                                '-a', str(args.host),
                                '-d', str(args.data_folder),
                                '-t', str(args.test_folder),

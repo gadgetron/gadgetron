@@ -45,18 +45,21 @@ target_link_libraries(gadgetron_toolbox_cmr
                     gadgetron_toolbox_mri_core 
                     gadgetron_toolbox_cpudwt 
                     gadgetron_toolbox_cpuoperator
-                    gadgetron_toolbox_cpuffd
+
                     gadgetron_toolbox_cpu_image )
 
 target_include_directories(gadgetron_toolbox_cmr
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include/gadgetron>
+		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/ffd>)
 
 install(TARGETS gadgetron_toolbox_cmr
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	RUNTIME DESTINATION bin
-	COMPONENT main
+		EXPORT gadgetron-export
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION bin
+		COMPONENT main
 )
 
 

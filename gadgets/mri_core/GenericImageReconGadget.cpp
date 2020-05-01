@@ -1239,7 +1239,7 @@ namespace Gadgetron {
         std::vector<std::string> dataRole;
 
         Image2DBufferType ori = *m1->getObjectPtr();
-        m1->release();
+        //m1->release();
 
         if (ori.get_number_of_elements() == 1)
         {
@@ -1492,7 +1492,7 @@ namespace Gadgetron {
         size_t E1 = ori(0).get_size(1);
         size_t E2 = ori(0).get_size(2);
 
-        std::vector<size_t> dims = ori.get_dimensions();
+        std::vector<size_t> dims = ori.dimensions();
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
             << dims[0] << " " << dims[1] << " " << dims[2] << " "
@@ -1513,7 +1513,7 @@ namespace Gadgetron {
         size_t E1 = ori(0).get_size(1);
         size_t E2 = ori(0).get_size(2);
 
-        std::vector<size_t> dims = ori.get_dimensions();
+        std::vector<size_t> dims = ori.dimensions();
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
             << dims[0] << " " << dims[1] << " " << dims[2] << " "

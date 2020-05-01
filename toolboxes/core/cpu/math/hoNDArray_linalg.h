@@ -3,7 +3,7 @@
 
 #include "hoNDArray.h"
 
-#include <cpp_lapack.h>
+#include "cpp_lapack.h"
 #include "TypeTraits.h"
 //#include "hoArmadillo.h"
 

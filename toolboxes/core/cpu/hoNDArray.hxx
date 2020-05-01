@@ -209,18 +209,15 @@ namespace Gadgetron {
         }
     }
 
-    template<typename T>
-    hoNDArray<T>::hoNDArray(const hoNDArray<T> *a) {
+    template <typename T> hoNDArray<T>::hoNDArray(const hoNDArray<T>* a) {
         if (!a)
             throw std::runtime_error("hoNDArray<T>::hoNDArray(): 0x0 pointer provided");
-        this->data_ = 0;
-
+        this->data_       = 0;
         this->dimensions_ = a->dimensions_;
-        this->offsetFactors_ = a->offsetFactors_;
-
+        offsetFactors_    = a->offsetFactors_;
         if (!this->dimensions_.empty()) {
-            allocate_memory();
-            memcpy(this->data_, a->data_, this->elements_ * sizeof(T));
+            this->allocate_memory();
+            std::copy(a->begin(), a->end(), this->begin());
         } else {
             this->elements_ = 0;
         }
@@ -233,8 +230,8 @@ namespace Gadgetron {
         offsetFactors_ = a.offsetFactors_;
 
         if (!this->dimensions_.empty()) {
-            allocate_memory();
-            memcpy(this->data_, a.data_, this->elements_ * sizeof(T));
+            this->allocate_memory();
+            std::copy(a.begin(),a.end(),this->begin());
         } else {
             this->elements_ = 0;
         }
@@ -265,16 +262,14 @@ namespace Gadgetron {
         }
 
         // Are the dimensions the same? Then we can just memcpy
-        if (this->dimensions_equal(&rhs)) {
-            memcpy(this->data_, rhs.data_, this->elements_ * sizeof(T));
-        } else {
+        if (!this->dimensions_equal(&rhs)) {
             deallocate_memory();
             this->data_ = 0;
             this->dimensions_ = rhs.dimensions_;
             offsetFactors_ = rhs.offsetFactors_;
             allocate_memory();
-            memcpy(this->data_, rhs.data_, this->elements_ * sizeof(T));
         }
+        std::copy(rhs.begin(),rhs.end(),this->begin());
         return *this;
     }
 
@@ -711,9 +706,8 @@ namespace Gadgetron {
             for (size_t jj = 0; jj < start.size(); jj++) {
                 ind[jj] += start[jj];
             }
-
             // now, copy size[0] elements:
-            memcpy(&out.data_[ind1D], &((*this)(ind)), size[0] * sizeof(T));
+            std::copy_n(&((*this)(ind)),&out.data_[ind1D],size[0]);
         }
     }
 
@@ -864,7 +858,10 @@ namespace Gadgetron {
     }
 
     template<typename T>
+
     bool hoNDArray<T>::serialize(char *&buf, size_t &len) const {
+        if (!Gadgetron::Core::is_trivially_copyable_v<T> ) throw std::runtime_error("Serialize only works for trivial types");
+
         if (buf != NULL)
             delete[] buf;
 
@@ -887,6 +884,7 @@ namespace Gadgetron {
 
     template<typename T>
     bool hoNDArray<T>::deserialize(char *buf, size_t &len) {
+        if (!Gadgetron::Core::is_trivially_copyable_v<T> ) throw std::runtime_error("deserialize only works for trivial types");
         size_t NDim;
         memcpy(&NDim, buf, sizeof(size_t));
 

@@ -12,8 +12,9 @@ namespace {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
 
-    template<class T> inline constexpr uint16_t ismrmrd_data_type(){ return 0;}
+    template<class T> inline constexpr uint16_t ismrmrd_data_type(){ return T::this_function_is_not_defined; }
     template<> inline constexpr uint16_t ismrmrd_data_type<unsigned short>(){return ISMRMRD::ISMRMRD_USHORT;}
+    template<> inline constexpr uint16_t ismrmrd_data_type<short>(){return ISMRMRD::ISMRMRD_SHORT;}
     template<> inline constexpr uint16_t ismrmrd_data_type<unsigned int>(){return ISMRMRD::ISMRMRD_UINT;}
     template<> inline constexpr uint16_t ismrmrd_data_type<int>(){return ISMRMRD::ISMRMRD_INT;}
     template<> inline constexpr uint16_t ismrmrd_data_type<float>(){return ISMRMRD::ISMRMRD_FLOAT;}
