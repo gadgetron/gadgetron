@@ -150,7 +150,7 @@ namespace Gadgetron {
             size_t inner_batches
                 = std::accumulate(dimensions.begin(), dimensions.begin() + dimension, 1, std::multiplies<>());
             size_t outer_batches
-                = std::accumulate(dimensions.begin() + dimension, dimensions.end(), 1, std::multiplies<>());
+                = std::accumulate(dimensions.begin() + dimension + 1, dimensions.end(), 1, std::multiplies<>());
             size_t outer_batchsize = inner_batches * dimensions[dimension];
 
 #pragma omp parallel for default(none) shared(plan, a, r , outer_batches, inner_batches, outer_batchsize ) collapse(2)
