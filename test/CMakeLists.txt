@@ -34,9 +34,7 @@ include(GoogleTest)
     endif ()
 
     if (CUDA_FOUND)
-
-        cuda_add_executable(test_all
-                ${test_src_files}
+        set(test_src_files ${test_src_files}
                 cuNDArray_elemwise_test.cpp
                 cuNDArray_operators_test.cpp
                 cuNDArray_blas_test.cpp
@@ -45,6 +43,10 @@ include(GoogleTest)
                 cuVector_td_test_kernels.h
                 cuVector_td_test_kernels.cu
                 cuNDFFT_test.cpp
+                )
+
+        cuda_add_executable(test_all
+                ${test_src_files}
                 )
     else ()
         add_executable(test_all
@@ -87,7 +89,7 @@ include(GoogleTest)
                 python)
     endif ()
 
-    gtest_add_tests(TARGET test_all)
+    gtest_add_tests(TARGET test_all SOURCES ${test_src_files})
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 
