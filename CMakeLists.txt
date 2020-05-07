@@ -155,14 +155,7 @@ else ()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
         endif ()
     endif ()
-
-
-    check_cxx_compiler_flag(-std=c++${CXX_STANDARD} COMPILER_SUPPORTS_stdcxx${CXX_STANDARD})
-    if (COMPILER_SUPPORTS_stdcxx${CXX_STANDARD})
-        set(CXX_STANDARD_FOUND 1)
-        message(STATUS "Compiling using C++${CXX_STANDARD} standard")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${CXX_STANDARD}")
-    endif ()
+  
     check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
     if (COMPILER_SUPPORTS_WRETURNTYPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
