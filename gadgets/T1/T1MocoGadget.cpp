@@ -15,10 +15,10 @@
 
 namespace Gadgetron {
 
-    class T1Gadget : public Core::PureGadget<Core::Image<float>, IsmrmrdImageArray> {
+    class T1MocoGadget : public Core::PureGadget<Core::Image<float>, IsmrmrdImageArray> {
 
     public:
-        T1Gadget(const Core::Context& context, const Core::GadgetProperties& properties)
+        T1MocoGadget(const Core::Context& context, const Core::GadgetProperties& properties)
             : Core::PureGadget<Core::Image<float>, IsmrmrdImageArray>(context, properties)
             , TIs{ *(context.header.sequenceParameters->TI) } { }
 
@@ -103,5 +103,5 @@ namespace Gadgetron {
         const std::vector<float> TIs;
     };
 
-    GADGETRON_GADGET_EXPORT(T1Gadget)
+    GADGETRON_GADGET_EXPORT(T1MocoGadget)
 }
