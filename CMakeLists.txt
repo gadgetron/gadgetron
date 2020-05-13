@@ -156,7 +156,6 @@ else ()
         endif ()
     endif ()
 
-
     check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
     if (COMPILER_SUPPORTS_WRETURNTYPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
@@ -285,6 +284,8 @@ if (USE_MKL)
     set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
 
 
+    string(REPLACE ";" ":" MKL_COMPILER_LIB_DIR_NO_SEMICOLON "${MKL_COMPILER_LIB_DIR}")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${MKL_LIB_DIR}:${MKL_COMPILER_LIB_DIR_NO_SEMICOLON}")
     add_definitions(-DUSE_MKL)
     set(GADGETRON_BUILD_RPATH "${MKL_LIB_DIR};${MKL_COMPILER_LIB_DIR}")
 else ()
