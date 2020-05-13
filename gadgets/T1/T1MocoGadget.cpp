@@ -97,7 +97,7 @@ namespace Gadgetron {
             meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_T1MAP);
             meta.append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_T1MAP);
             meta.append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_T1MAP);
-            return Core::Image<float>{ header, T1, Core::none };
+            return Core::Image<float>{ header, T1, meta };
         }
 
         const std::vector<float> TIs;

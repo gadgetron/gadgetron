@@ -31,7 +31,6 @@ install(TARGETS gadgetron_toolbox_t1
 )
 
 
-install(FILES config/MOLLI_T1_Moco.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 install(FILES
         t1fit.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
