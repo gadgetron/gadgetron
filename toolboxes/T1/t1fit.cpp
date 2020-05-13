@@ -68,21 +68,36 @@ namespace {
 
         Solver::HybridLMSolver<T> solver(data.size(), 2);
         arma::Col<T> params{ T1, A };
-        solver.solve(f, params);
+        auto status = solver.solve(f, params);
+        switch (status) {
+            case Solver::ReturnStatus::LINEAR_SOLVER_FAILED:
+                return {std::numeric_limits<T>::quiet_NaN(),std::numeric_limits<T>::quiet_NaN()};
+            case Solver::ReturnStatus::MAX_ITERATIONS_REACHED:
+                return {0,0};
+            case Solver::ReturnStatus::SUCCESS: break;
+            }
+
         return { params[0], params[1] };
     }
 
     template <class T> std::tuple<T, T, T> fit_T1_3param_single(const std::vector<T>& TI, const std::vector<T>& data) {
 
-        T A  = *std::max_element(data.begin(), data.end()) - *std::min_element(data.begin(), data.end());
-        T B  = *std::max_element(data.begin(), data.end()) - *std::min_element(data.begin(), data.end());
+        T A  = *std::max_element(data.begin(), data.end());
+        T B  = A - *std::min_element(data.begin(), data.end());
         T T1 = 800;
 
         T1Residual_3param<T> f{ TI, data };
 
         Solver::HybridLMSolver<T> solver(data.size(), 3);
         arma::Col<T> params{ T1, A, B };
-        solver.solve(f, params);
+        auto status = solver.solve(f, params);
+        switch (status) {
+        case Solver::ReturnStatus::LINEAR_SOLVER_FAILED:
+            return {std::numeric_limits<T>::quiet_NaN(),std::numeric_limits<T>::quiet_NaN(), std::numeric_limits<T>::quiet_NaN()};
+        case Solver::ReturnStatus::MAX_ITERATIONS_REACHED:
+            return {0,0,0};
+        case Solver::ReturnStatus::SUCCESS: break;
+        }
         return { params[0], params[1], params[2] };
     }
 

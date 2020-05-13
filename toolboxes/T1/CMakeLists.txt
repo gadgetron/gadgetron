@@ -12,6 +12,7 @@ target_link_libraries(gadgetron_toolbox_t1
         gadgetron_toolbox_cpucore_math
 		gadgetron_toolbox_cpu_solver
 		gadgetron_toolbox_demons
+		gadgetron_toolbox_cmr
         armadillo
         )
 target_include_directories(gadgetron_toolbox_t1
@@ -30,6 +31,7 @@ install(TARGETS gadgetron_toolbox_t1
 )
 
 
+install(FILES config/MOLLI_T1_Moco.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 install(FILES
         t1fit.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -14,9 +14,10 @@
 #include <array>
 #include <algorithm>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/cast.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <numeric>
 
 namespace Gadgetron{
 
@@ -46,7 +47,13 @@ namespace Gadgetron{
         void reshape(const std::vector<size_t> *dims);
         void reshape(const std::vector<size_t> & dims){ this->reshape(&dims);}
         void reshape(boost::shared_ptr< std::vector<size_t> > dims);
-        void reshape(std::initializer_list<size_t> dims){ this->reshape(std::vector<size_t>(dims));}
+
+        /**
+         * Reshapes the array to the given dimensions.
+         * One of the dimensions can be -1, in which case that dimension will be calculated based on the other.
+         * @param dims
+         */
+        void reshape(std::initializer_list<ssize_t> dims);
 
         bool dimensions_equal(const std::vector<size_t> *d) const;
         bool dimensions_equal(const std::vector<size_t>& d) const;
@@ -235,6 +242,21 @@ namespace Gadgetron{
         this->calculate_offset_factors(dimensions_);
     }
 
+    template <typename T> void NDArray<T>::reshape(std::initializer_list<ssize_t> dims) {
+        std::vector<ssize_t> dim_vec(dims);
+        auto negatives = std::count(dims.begin(), dims.end(), -1);
+        if (negatives > 1)
+            throw std::runtime_error("Only a single reshape dimension can be negative");
+
+        if (negatives == 1) {
+            auto elements    = std::accumulate(dims.begin(), dims.end(), -1, std::multiplies<ssize_t>());
+            auto neg_element = std::find(dim_vec.begin(), dim_vec.end(), -1);
+            *neg_element     = this->elements_ / elements;
+        }
+
+        auto new_dims = std::vector<size_t>(dim_vec.begin(), dim_vec.end());
+        this->reshape(new_dims);
+    }
     template <typename T> 
     inline void NDArray<T>::reshape( boost::shared_ptr< std::vector<size_t> > dims )
     {
@@ -630,5 +652,9 @@ namespace Gadgetron{
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==9);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]) && (p<dimensions_[4]) && (r<dimensions_[5]) && (a<dimensions_[6]) && (q<dimensions_[7]) && (u<dimensions_[8]));
     }
+
+
+
+
 }
 

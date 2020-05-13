@@ -1,5 +1,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
 #include "complext.h"
 #include "GadgetronTimer.h"
 
@@ -224,4 +225,21 @@ TYPED_TEST(hoNDArray_utils_TestCplx,sumTest){
   fill(&this->Array,v1);
   EXPECT_FLOAT_EQ(real(TypeParam(19)*v1),real(sum(this->Array,3)[idx]));
   EXPECT_FLOAT_EQ(imag(TypeParam(19)*v1),imag(sum(this->Array,3)[idx]));
+}
+
+TYPED_TEST(hoNDArray_utils_TestReal,repeatTest){
+
+    fill(&this->Array,TypeParam(2));
+
+    unsigned int repeats = 5;
+    auto repeated = repeat(this->Array,repeats);
+
+    auto expected_dims = this->Array.dimensions();
+    expected_dims.push_back(repeats);
+
+    EXPECT_EQ(expected_dims,repeated.dimensions());
+
+    EXPECT_FLOAT_EQ(sum(this->Array)*repeats,sum(repeated));
+
+
 }
