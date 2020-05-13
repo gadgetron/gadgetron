@@ -1,5 +1,5 @@
 add_library(gadgetron_t1 SHARED
-        T1Gadget.cpp)
+        T1MocoGadget.cpp)
 
 set_target_properties(gadgetron_t1 PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -19,3 +19,5 @@ install(TARGETS gadgetron_t1
 	RUNTIME DESTINATION bin
 	COMPONENT main
 )
+
+install(FILES config/MOLLI_T1_Moco.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

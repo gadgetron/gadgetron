@@ -964,7 +964,7 @@ namespace Gadgetron {
   }
 
   template<class T> hoNDArray<T> repeat(const hoNDArray<T>& array,unsigned int repeats){
-      auto dims = *array.get_dimensions();
+      auto dims = array.dimensions();
       dims.push_back(repeats);
 
       hoNDArray<T> output(dims);

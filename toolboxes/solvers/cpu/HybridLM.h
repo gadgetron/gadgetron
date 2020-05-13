@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#define ARMA_DONT_PRINT_ERRORS
 #include "hoArmadillo.h"
 namespace Gadgetron { namespace Solver {
 
@@ -37,14 +38,14 @@ namespace Gadgetron { namespace Solver {
                 auto new_params    = params;
                 auto old_residuals = residuals;
                 bool better        = false;
-                bool result;
+                StepStatus result;
                 if (use_lm_step) {
                     result = lm_step(func, new_params, better, use_lm_step);
                 } else {
                     result = qm_step(func, new_params, better, use_lm_step);
                 }
-                if (result)
-                    return ReturnStatus::SUCCESS;
+                if (result == StepStatus::CONVERGED) return ReturnStatus::SUCCESS;
+                if (result == StepStatus::LINEAR_SOLVER_FAILED) return ReturnStatus::LINEAR_SOLVER_FAILED;
 
                 JTJ = J_new.t() * J_new;
 
@@ -70,17 +71,20 @@ namespace Gadgetron { namespace Solver {
         }
 
     private:
-        template <class F> bool lm_step(F& func, arma::Col<Scalar>& params, bool& better, bool& use_lm_step) {
+
+        enum class StepStatus { CONVERGED, CONTINUE, LINEAR_SOLVER_FAILED };
+        template <class F> StepStatus lm_step(F& func, arma::Col<Scalar>& params, bool& better, bool& use_lm_step) {
             using namespace arma;
-            Col<Scalar> g = J.t() * residuals;
+            const Col<Scalar> g = J.t() * residuals;
 
             for (long long i = 0; i < DTD.n_elem; i++) {
                 DTD[i] = std::max(DTD[i], JTJ(i, i));
             }
+            Mat<Scalar> h;
+            if (!arma::solve(h, JTJ + mu * diagmat(DTD), -g, solve_opts::fast)) return StepStatus::LINEAR_SOLVER_FAILED;
 
-            Mat<Scalar> h = arma::solve(JTJ + mu * diagmat(DTD), -g, solve_opts::fast);
             if (norm(h) < minimum_step_size * (norm(params) + minimum_step_size)) {
-                return true;
+                return StepStatus::CONVERGED;
             }
 
             params += h;
@@ -96,7 +100,7 @@ namespace Gadgetron { namespace Solver {
 
                 Scalar gradient_norm = max(abs(J_new.t() * residuals));
                 if (gradient_norm <= minimum_gradient) {
-                    return true;
+                    return StepStatus::CONVERGED;
                 }
                 if (gradient_norm < 0.02 * new_cost) {
                     count++;
@@ -114,15 +118,17 @@ namespace Gadgetron { namespace Solver {
                 v     = 2 * v;
                 count = 0;
             }
-            return false;
+            return StepStatus::CONTINUE;
         }
 
-        template <class F> bool qm_step(F& func, arma::Col<Scalar>& params, bool& better, bool& use_lm_step) {
+        template <class F> StepStatus qm_step(F& func, arma::Col<Scalar>& params, bool& better, bool& use_lm_step) {
             using namespace arma;
-            Col<Scalar> g = J.t() * residuals;
-            Col<Scalar> h = arma::solve(B, -g, solve_opts::fast);
+            const Col<Scalar> g = J.t() * residuals;
+            Col<Scalar> h;
+            if (!arma::solve(h,B, -g, solve_opts::fast)) return StepStatus::LINEAR_SOLVER_FAILED;
+
             if (norm(h) < minimum_step_size * (norm(params) + minimum_step_size)) {
-                return true;
+                return StepStatus::CONVERGED;
             }
 
             if (norm(h) > delta) {
@@ -139,7 +145,7 @@ namespace Gadgetron { namespace Solver {
             Scalar new_gradient_norm = max(abs(J_new.t() * residuals));
 
             if (new_gradient_norm <= minimum_gradient) {
-                return true;
+                return StepStatus::CONVERGED;
             }
 
             Scalar rho = (old_cost - new_cost) / (dot(h, mu * h - g) / 2);
@@ -156,7 +162,7 @@ namespace Gadgetron { namespace Solver {
             if (new_gradient_norm >= old_gradient_norm)
                 use_lm_step = true;
 
-            return false;
+            return StepStatus::CONTINUE;
         }
         arma::Mat<Scalar> B;
         arma::Mat<Scalar> J;

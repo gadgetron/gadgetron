@@ -155,7 +155,7 @@ else ()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
         endif ()
     endif ()
-  
+
     check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
     if (COMPILER_SUPPORTS_WRETURNTYPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
@@ -423,7 +423,7 @@ configure_package_config_file(
         ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
         ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
-        PATH_VARS GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH GADGETRON_SOVERSION GADGETRON_VERSION_STRING
+        PATH_VARS GADGETRON_INSTALL_PYTHON_MODULE_PATH GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH
 )
 
 write_basic_package_version_file(
