@@ -49,7 +49,7 @@ namespace {
     };
 
     std::shared_ptr<Processable> load_node(const Config::Gadget &conf, const StreamContext &context, Loader &loader) {
-        GDEBUG("Loading Gadget %s of class %s from \n",conf.name.c_str(),conf.classname.c_str(),conf.dll.c_str());
+        GDEBUG("Loading Gadget %s of class %s from %s\n", conf.name.c_str(), conf.classname.c_str(), conf.dll.c_str());
         auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname,
                                                                           conf.dll);
         return std::make_shared<NodeProcessable>(factory(context, conf.properties), Config::name(conf));
