@@ -1,9 +1,8 @@
 
 #include "initialization.h"
 
-
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS
-#include <openblas/cblas.h>
+#include <cblas.h>
 #endif
 
 namespace Gadgetron::Server {
