@@ -275,7 +275,7 @@ install(TARGETS FFTW EXPORT gadgetron-export)
 
 set(GADGETRON_BUILD_RPATH "")
 
-option(USE_MKL OFF)
+option(USE_MKL Off)
 if (USE_MKL)
     find_package(MKL REQUIRED)
     add_library(BLAS INTERFACE)
@@ -289,15 +289,22 @@ if (USE_MKL)
     add_definitions(-DUSE_MKL)
     set(GADGETRON_BUILD_RPATH "${MKL_LIB_DIR};${MKL_COMPILER_LIB_DIR}")
 else ()
-
     find_package(CBLAS REQUIRED)
     find_package(LAPACK REQUIRED)
     find_package(LAPACKE REQUIRED)
+
     add_library(BLAS INTERFACE)
     set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CBLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR} ${LAPACKE_INCLUDE_DIR})
     set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${CBLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES})
+
     find_package(PkgConfig)
     pkg_check_modules(PC_lapacke lapacke)
+
+    string(COMPARE EQUAL ${BLA_VENDOR} "OpenBLAS" USING_OPENBLAS)
+    if (USING_OPENBLAS)
+        message("OpenBLAS detected; setting max number of OpenBLAS pthreads to one.")
+        add_definitions(-DFORCE_LIMIT_OPENBLAS_NUM_THREADS)
+    endif()
 endif ()
 
 install(TARGETS BLAS EXPORT gadgetron-export)

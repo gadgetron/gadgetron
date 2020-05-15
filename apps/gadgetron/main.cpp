@@ -6,6 +6,7 @@
 
 #include "log.h"
 #include "paths.h"
+#include "initialization.h"
 
 #include "system_info.h"
 #include "gadgetron_config.h"
@@ -50,6 +51,8 @@ int main(int argc, char *argv[]) {
     GINFO("Running on port %d\n", args["port"].as<unsigned short>());
 
     try {
+        configure_blas_libraries();
+
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
