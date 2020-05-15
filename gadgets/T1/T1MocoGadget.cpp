@@ -5,26 +5,101 @@
 #include <unordered_set>
 
 #include "PureGadget.h"
+#include "cmr_parametric_mapping.h"
+#include "hoNDArray_fileio.h"
 #include "hoNDArray_math.h"
 #include "hoNDArray_utils.h"
-#include "hoNDArray_fileio.h"
 #include "mri_core_data.h"
 #include "mri_core_def.h"
-#include "cmr_parametric_mapping.h"
 #include "t1fit.h"
 
 namespace Gadgetron {
 
-    class T1MocoGadget : public Core::PureGadget<Core::Image<float>, IsmrmrdImageArray> {
+    class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
     public:
         T1MocoGadget(const Core::Context& context, const Core::GadgetProperties& properties)
-            : Core::PureGadget<Core::Image<float>, IsmrmrdImageArray>(context, properties)
-            , TIs{ *(context.header.sequenceParameters->TI) } { }
+            : Core::ChannelGadget<IsmrmrdImageArray>(context, properties)
+            , TIs{ *(context.header.sequenceParameters->TI) }
+            , field_strength{ *context.header.acquisitionSystemInformation->systemFieldStrength_T } { }
 
         NODE_PROPERTY(correction_factor, float, "Empirical correction factor for T1", 1.0365f);
 
     private:
+        void process(Core::InputChannel<IsmrmrdImageArray>& input, Core::OutputChannel& out) final override {
+
+            for (auto images : input ) {
+
+                auto TI_values = extract_MOLLI_TI(*images.acq_headers_);
+
+                auto data_dims = images.data_.dimensions();
+                images.data_.reshape({ data_dims[0], data_dims[1], -1 });
+                auto vector_field = T1::t1_registration(images.data_, TI_values);
+
+                auto moco_images = T1::deform_groups(images.data_, vector_field);
+
+                auto phase_corrected = T1::phase_correct(moco_images, TI_values);
+
+                auto [A, B, T1star] = T1::fit_T1_3param(phase_corrected, TI_values);
+
+                B /= A;
+                B -= 1;
+
+                auto T1 = T1star;
+                T1 *= B;
+                T1 *= correction_factor;
+
+                clean_image(T1);
+
+                perform_hole_filling(T1);
+                auto header               = images.headers_[0];
+                header.data_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
+                header.image_series_index = 3;
+                auto meta                 = create_T1_meta(images.meta_.front());
+                out.push(Core::Image<float>{ header, T1, meta });
+
+
+                images.data_.reshape(data_dims);
+                out.push(images);
+
+                images.data_ = hoNDArray<std::complex<float>>(phase_corrected);
+                images.data_.reshape(data_dims);
+                for (auto& header : images.headers_ ) header.image_series_index = 2;
+                out.push(images);
+
+            }
+        }
+
+        ISMRMRD::MetaContainer create_T1_meta(ISMRMRD::MetaContainer meta) const {
+
+            double scaling_factor = 1;
+            double window_center  = 1300;
+            std::string lut
+                = std::abs(field_strength - float(1.5)) < 1e-1 ? "GadgetronT1_IR_1_5T.pal" : "GadgetronT1_IR_3T.pal";
+
+            std::ostringstream ostr;
+            ostr << "x" << scaling_factor;
+            std::string scalingStr = ostr.str();
+
+            std::ostringstream ostr_unit;
+            ostr_unit << std::setprecision(3) << 1.0f / scaling_factor << "ms";
+            std::string unitStr = ostr_unit.str();
+
+            meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_T1MAP);
+            meta.append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_T1MAP);
+            meta.append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_T1MAP);
+
+            meta.set(GADGETRON_IMAGE_SCALE_RATIO, scaling_factor);
+            meta.set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center * scaling_factor));
+            meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_center * scaling_factor));
+            meta.set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
+
+            meta.set(GADGETRON_IMAGECOMMENT, meta.as_str(GADGETRON_DATA_ROLE));
+            meta.append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
+            meta.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+
+            return std::move(meta);
+        }
         std::vector<float> extract_MOLLI_TI(const hoNDArray<ISMRMRD::AcquisitionHeader>& acq_headers) const {
 
             std::map<int, std::vector<ISMRMRD::AcquisitionHeader>> look_locker_sets;
@@ -46,61 +121,34 @@ namespace Gadgetron {
                     });
 
                 for (auto& header : headers) {
-                    float TI_value = (header.acquisition_time_stamp - minimum_acquisition_time_stamp) * 2.5f
-                                    + header.user_int[4];
+                    float TI_value
+                        = (header.acquisition_time_stamp - minimum_acquisition_time_stamp) * 2.5f + header.user_int[4];
                     TI_values.push_back(TI_value);
-                    GDEBUG("set %d look-locker %d ti: %f  acq_time_stamp: %d  \n",header.idx.set,set,TI_value,header.acquisition_time_stamp);
+                    GDEBUG("set %d look-locker %d ti: %f  acq_time_stamp: %d  \n", header.idx.set, set, TI_value,
+                        header.acquisition_time_stamp);
                 }
             }
 
             return TI_values;
         }
 
-        static void clean_image(hoNDArray<float>& data){
-            std::transform(data.begin(),data.end(),data.begin(),[](auto val){
-                if (val <= 0) return 0.0f;
-                if (val >= 5000) return 0.0f;
-                if (std::isnan(val)) return 0.0f;
+        static void clean_image(hoNDArray<float>& data) {
+            std::transform(data.begin(), data.end(), data.begin(), [](auto val) {
+                if (val <= 0)
+                    return 0.0f;
+                if (val >= 5000)
+                    return 0.0f;
+                if (std::isnan(val))
+                    return 0.0f;
                 return val;
             });
         }
 
-        Core::Image<float> process_function(IsmrmrdImageArray images) const final override {
-
-            auto TI_values = extract_MOLLI_TI(*images.acq_headers_);
-
-            auto data_dims = images.data_.dimensions();
-            images.data_.reshape({data_dims[0],data_dims[1],-1});
-            auto vector_field = T1::t1_registration(images.data_, TI_values);
-
-            auto moco_images = T1::deform_groups(images.data_, vector_field);
-
-            auto phase_corrected = T1::phase_correct(moco_images, TI_values);
 
 
-            auto [A, B, T1star] = T1::fit_T1_3param(phase_corrected, TI_values);
-
-            B /= A;
-            B -= 1;
-
-            auto T1 = T1star;
-            T1 *= B;
-            T1 *= correction_factor;
-
-            clean_image(T1);
-
-            perform_hole_filling(T1);
-            auto header               = images.headers_[0];
-            header.image_series_index = ISMRMRD::ISMRMRD_IMTYPE_REAL;
-
-            auto meta = images.meta_.front();
-            meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_T1MAP);
-            meta.append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_T1MAP);
-            meta.append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_T1MAP);
-            return Core::Image<float>{ header, T1, meta };
-        }
 
         const std::vector<float> TIs;
+        float field_strength;
     };
 
     GADGETRON_GADGET_EXPORT(T1MocoGadget)

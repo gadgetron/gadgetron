@@ -237,6 +237,16 @@ namespace Gadgetron {
         }
     }
 
+    template<typename T>
+    template<class S>
+    hoNDArray<T>::hoNDArray(const hoNDArray<S> &a) {
+        this->create(a.dimensions());
+
+        if (!this->dimensions_.empty()) {
+            std::copy(a.begin(),a.end(),this->begin());
+        }
+
+    }
 
 
     template<typename T>
@@ -797,65 +807,6 @@ namespace Gadgetron {
         }
     }
 
-    template<typename T>
-    inline void hoNDArray<T>::_allocate_memory(size_t size, float **data) {
-        *data = (float *) malloc(size * sizeof(float));
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_deallocate_memory(float *data) {
-        free(data);
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_allocate_memory(size_t size, double **data) {
-        *data = (double *) malloc(size * sizeof(double));
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_deallocate_memory(double *data) {
-        free(data);
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_allocate_memory(size_t size, std::complex<float> **data) {
-        *data = (std::complex<float> *) malloc(size * sizeof(std::complex<float>));
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_deallocate_memory(std::complex<float> *data) {
-        free(data);
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_allocate_memory(size_t size, std::complex<double> **data) {
-        *data = (std::complex<double> *) malloc(size * sizeof(std::complex<double>));
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_deallocate_memory(std::complex<double> *data) {
-        free(data);
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_allocate_memory(size_t size, float_complext **data) {
-        *data = (float_complext *) malloc(size * sizeof(float_complext));
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_deallocate_memory(float_complext *data) {
-        free(data);
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_allocate_memory(size_t size, double_complext **data) {
-        *data = (double_complext *) malloc(size * sizeof(double_complext));
-    }
-
-    template<typename T>
-    inline void hoNDArray<T>::_deallocate_memory(double_complext *data) {
-        free(data);
-    }
 
     template<typename T>
 
