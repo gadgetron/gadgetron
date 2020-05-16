@@ -92,7 +92,7 @@
         <!-- Recon -->
         <gadget>
             <name>Recon</name>
-            <dll>gadgetron_siemens_sasha_hc</dll>
+            <dll>gadgetron_mricore</dll>
             <classname>GenericReconCartesianGrappaGadget</classname>
 
             <!-- image series -->
