@@ -1,3 +1,8 @@
+
+set(gadgetron_t1_config_files config/MOLLI_T1_Moco.xml config/MOLLI_T1_Moco_istore.xml)
+
+source_group(config FILES ${gadgetron_t1_config_files})
+
 add_library(gadgetron_t1 SHARED
         T1MocoGadget.cpp)
 
@@ -9,8 +14,8 @@ target_link_libraries(gadgetron_t1
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_demons
-	gadgetron_toolbox_t1
-		gadgetron_toolbox_mri_core
+    gadgetron_toolbox_t1
+    gadgetron_toolbox_mri_core
 )
 
 install(TARGETS gadgetron_t1
@@ -20,4 +25,4 @@ install(TARGETS gadgetron_t1
 	COMPONENT main
 )
 
-install(FILES config/MOLLI_T1_Moco.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES ${gadgetron_t1_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
