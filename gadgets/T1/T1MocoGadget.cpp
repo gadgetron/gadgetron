@@ -51,6 +51,12 @@ namespace Gadgetron {
 
                 clean_image(T1);
 
+                perform_hole_filling(T1);
+                auto header               = images.headers_[0];
+                header.data_type          = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+                header.image_series_index = 3;
+                auto meta                 = create_T1_meta(images.meta_.front());
+
                 // send original images
                 images.data_.reshape(data_dims);
                 out.push(images);
@@ -64,12 +70,7 @@ namespace Gadgetron {
                 set_PSIR_headers_and_meta(images, TI_sorted);
                 out.push(std::move(images));
 
-                // send out T1 map
-                perform_hole_filling(T1);
-                auto header               = images.headers_[0];
-                header.data_type          = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-                header.image_series_index = 3;
-                auto meta                 = create_T1_meta(images.meta_.front());
+                // send out T1 map                
                 out.push(Core::Image<float>{ header, std::move(T1), meta });
             }
         }
@@ -178,12 +179,12 @@ namespace Gadgetron {
 
             float min_element = std::min_element(images.data_.begin(),images.data_.end(),[](auto val1,auto val2){return val1.real() < val2.real();})->real();
 
-            images.data_ += 4096;
+            images.data_ += 4096.0;
             size_t ind = 0;
             for (auto& meta : images.meta_){
                 meta.set(GADGETRON_DATA_ROLE,GADGETRON_IMAGE_PSIR);
                 meta.append(GADGETRON_DATA_ROLE,GADGETRON_IMAGE_MOCO);
-                meta.set(GADGETRON_IMAGE_SCALE_OFFSET,4096);
+                meta.set(GADGETRON_IMAGE_SCALE_OFFSET, (double)(4096.0));
                 meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_sorted[ind++]));
             }
         }
