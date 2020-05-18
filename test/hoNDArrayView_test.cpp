@@ -95,11 +95,14 @@ TEST(hoNDArrayView,assignment){
 
     hoNDArray<float> y(2,4,5);
 
-    std::fill(y.begin(),y.end(),1.0f);
+    std::fill(y.begin(),y.end(),2.0f);
 
     x(slice,slice,2) = y(slice,slice,0);
 
-    ASSERT_FLOAT_EQ(asum(x),8.0f);
+    ASSERT_FLOAT_EQ(asum(x),16.0f);
+
+    x(slice,slice,1) = y(slice,slice,4);
+    ASSERT_FLOAT_EQ(asum(x),32.0f);
 
 }
 

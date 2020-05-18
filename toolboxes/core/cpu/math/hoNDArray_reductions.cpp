@@ -173,7 +173,6 @@ namespace Gadgetron {
     // --------------------------------------------------------------------------------
 
     template  float max(const hoNDArray<float>*);
-    template  float max(const hoNDArray<float>&);
     template  float min(const hoNDArray<float>*);
     template  float mean(const hoNDArray<float>*);
     template  float median(const hoNDArray<float>*);
@@ -182,7 +181,6 @@ namespace Gadgetron {
     template  float var(const hoNDArray<float>*);
 
     template  double max(const hoNDArray<double>*);
-    template  double max(const hoNDArray<double>&);
     template  double min(const hoNDArray<double>*);
     template  double mean(const hoNDArray<double>*);
     template  double median(const hoNDArray<double>*);
@@ -211,6 +209,46 @@ namespace Gadgetron {
     template  std::complex<float> sum(const hoNDArray<std::complex<float>>*);
     template  std::complex<float> stddev(const hoNDArray<std::complex<float>>*);
     template  std::complex<float> var(const hoNDArray<std::complex<float>>*);
+
+
+
+    template  float max(const hoNDArray<float>&);
+    template  float min(const hoNDArray<float>&);
+    template  float mean(const hoNDArray<float>&);
+    template  float median(const hoNDArray<float>&);
+    template  float sum(const hoNDArray<float>&);
+    template  float stddev(const hoNDArray<float>&);
+    template  float var(const hoNDArray<float>&);
+
+    template  double max(const hoNDArray<double>&);
+    template  double min(const hoNDArray<double>&);
+    template  double mean(const hoNDArray<double>&);
+    template  double median(const hoNDArray<double>&);
+    template  double sum(const hoNDArray<double>&);
+    template  double stddev(const hoNDArray<double>&);
+    template  double var(const hoNDArray<double>&);
+
+    template  complext<double> mean(const hoNDArray<complext<double>>&);
+    template  complext<double> median(const hoNDArray<complext<double>>&);
+    template  complext<double> sum(const hoNDArray<complext<double>>&);
+    template  complext<double> stddev(const hoNDArray<complext<double>>&);
+    template  complext<double> var(const hoNDArray<complext<double>>&);
+
+    template  complext<float> mean(const hoNDArray<complext<float>>&);
+    template  complext<float> median(const hoNDArray<complext<float>>&);
+    template  complext<float> sum(const hoNDArray<complext<float>>&);
+    template  complext<float> stddev(const hoNDArray<complext<float>>&);
+    template  complext<float> var(const hoNDArray<complext<float>>&);
+
+    template  std::complex<double> mean(const hoNDArray<std::complex<double>>&);
+    template  std::complex<double> sum(const hoNDArray<std::complex<double>>&);
+    template  std::complex<double> stddev(const hoNDArray<std::complex<double>>&);
+    template  std::complex<double> var(const hoNDArray<std::complex<double>>&);
+
+    template  std::complex<float> mean(const hoNDArray<std::complex<float>>&);
+    template  std::complex<float> sum(const hoNDArray<std::complex<float>>&);
+    template  std::complex<float> stddev(const hoNDArray<std::complex<float>>&);
+    template  std::complex<float> var(const hoNDArray<std::complex<float>>&);
 
     template  size_t amin<std::complex<float>>(const hoNDArray<std::complex<float>>*);
     template  size_t amin<std::complex<double>>(const hoNDArray<std::complex<double>>*);
