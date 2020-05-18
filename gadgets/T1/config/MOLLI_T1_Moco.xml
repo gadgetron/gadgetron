@@ -192,7 +192,6 @@
             <property><name>scalingFactor_dedicated</name><value>100.0</value></property>
         </gadget>
 
-
         <gadget>
             <name>T1Gadget</name>
             <dll>gadgetron_t1</dll>
@@ -211,5 +210,15 @@
             <dll>gadgetron_mricore</dll>
             <classname>ComplexToFloatGadget</classname>
         </gadget>
+
+        <gadget>
+            <name>FloatToShortAttrib</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>FloatToUShortGadget</classname>
+            <property><name>max_intensity</name><value>32767</value></property>
+            <property><name>min_intensity</name><value>0</value></property>
+            <property><name>intensity_offset</name><value>0</value></property>
+        </gadget>
+
     </stream>
 </configuration>
