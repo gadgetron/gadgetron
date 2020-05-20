@@ -40,7 +40,7 @@ namespace {
                 ISMRMRD::serialize(*meta, meta_stream);
                 serialized_meta = meta_stream.str();
             }
-            uint64_t meta_size = serialized_meta.size();
+            uint64_t meta_size = serialized_meta.size()+1;
 
             auto corrected_header = header;
             corrected_header.data_type = ismrmrd_data_type<T>();
