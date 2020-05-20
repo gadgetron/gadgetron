@@ -14,6 +14,9 @@ add_library(gadgetron_core SHARED
         Message.cpp
         Response.cpp
         io/from_string.cpp)
+set_target_properties(gadgetron_core PROPERTIES
+        VERSION ${GADGETRON_VERSION_STRING}
+        SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_core
         ISMRMRD::ISMRMRD
