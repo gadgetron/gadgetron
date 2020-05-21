@@ -136,9 +136,11 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 
 			NonCartesian::append_image_header(imarray,recon_bit_->rbit_[e], e);
 			this->prepare_image_array(imarray, e, ((int)e + 1), GADGETRON_IMAGE_REGULAR);
-			
 
-			//Is this where we measure SNR?
+                        this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(std::move(imarray)));
+
+
+                    //Is this where we measure SNR?
 			if (replicas.value() > 0 && snr_frame.value() == process_called_times) {
 
 				pseudo_replica(buffer->data_,*traj,*dcw,csm,recon_bit_->rbit_[e],e,CHA);
