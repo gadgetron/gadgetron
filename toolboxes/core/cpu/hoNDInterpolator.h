@@ -85,7 +85,7 @@ namespace Gadgetron
 
         hoNDInterpolator() : array_(NULL), data_(NULL), bh_(NULL), sx_(0), sy_(0), sz_(0), st_(0) {}
 
-        hoNDInterpolator(ArrayType& a, BoundHanlderType& bh)
+        hoNDInterpolator(const ArrayType& a, BoundHanlderType& bh)
         {
             array_ = &a;
             data_ = array_->begin();
@@ -99,7 +99,7 @@ namespace Gadgetron
 
         virtual ~hoNDInterpolator() { array_ = NULL; bh_ = NULL; }
 
-        virtual void setArray(ArrayType& a)
+        virtual void setArray(const ArrayType& a)
         {
             array_ = &a;
             data_ = array_->begin();
@@ -127,8 +127,8 @@ namespace Gadgetron
 
     protected:
 
-        ArrayType* array_;
-        T* data_;
+        const ArrayType* array_;
+        const T* data_;
         BoundHanlderType* bh_;
 
         size_t sx_;
@@ -149,7 +149,7 @@ namespace Gadgetron
         typedef typename BaseClass::BoundHanlderType BoundHanlderType;
 
         hoNDInterpolatorNearestNeighbor() : BaseClass() {}
-        hoNDInterpolatorNearestNeighbor(ArrayType& a, BoundHanlderType& bh) : BaseClass(a, bh) {}
+        hoNDInterpolatorNearestNeighbor(const ArrayType& a, BoundHanlderType& bh) : BaseClass(a, bh) {}
         virtual ~hoNDInterpolatorNearestNeighbor() {}
 
         /// access the pixel value
@@ -190,7 +190,7 @@ namespace Gadgetron
 
         hoNDInterpolatorLinear() : BaseClass() {}
 
-        hoNDInterpolatorLinear(ArrayType& a, BoundHanlderType& bh) : BaseClass(a, bh)
+        hoNDInterpolatorLinear(const ArrayType& a, BoundHanlderType& bh) : BaseClass(a, bh)
         {
             number_of_points_ = 1<<a.get_number_of_dimensions();
         }
@@ -237,7 +237,7 @@ namespace Gadgetron
         typedef typename BaseClass::BoundHanlderType BoundHanlderType;
 
         hoNDInterpolatorBSpline(unsigned int order=5) : BaseClass(), order_(order) { derivative_.resize(D, 0); }
-        hoNDInterpolatorBSpline(ArrayType& a, BoundHanlderType& bh, unsigned int order=5);
+        hoNDInterpolatorBSpline(const ArrayType& a, BoundHanlderType& bh, unsigned int order=5);
         virtual ~hoNDInterpolatorBSpline();
 
         virtual void setArray(ArrayType& a);

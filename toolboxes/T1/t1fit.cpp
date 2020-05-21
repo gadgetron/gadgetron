@@ -246,7 +246,7 @@ hoNDArray<std::complex<float>> Gadgetron::T1::deform_groups(const hoNDArray<std:
 
     auto output = hoNDArray<std::complex<float>>(data.dimensions());
     for (long long cha = 0; cha < (long long)data.get_size(2); cha++){
-        output(slice,slice,cha) = Registration::deform_image<std::complex<float>,2,float>(data(slice,slice,cha),vector_field(slice,slice,cha));
+        output(slice,slice,cha) = Registration::deform_image_bspline<std::complex<float>,2,float>(data(slice,slice,cha),vector_field(slice,slice,cha));
     }
     return output;
 

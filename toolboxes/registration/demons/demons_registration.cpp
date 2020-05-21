@@ -6,6 +6,8 @@
 #include "hoNDArray_elemwise.h"
 #include "vector_td_utilities.h"
 #include <numeric>
+
+#include "hoNDInterpolator.h"
 using namespace Gadgetron;
 
 namespace {
@@ -31,6 +33,37 @@ namespace {
     //
     //
     //    }
+    template <class T, class R>
+    inline void interpolation_loop(
+        hoNDArray<T>& output, const hoNDArray<vector_td<R, 2>>& deformation_field, hoNDInterpolatorBSpline<hoNDArray<T>,2>& interpolator) {
+        const vector_td<size_t, 2> dims{ output.dimensions()[0], output.dimensions()[1] };
+        for (size_t y = 0; y < dims[1]; y++) {
+            size_t offset = y * dims[0];
+            for (size_t x = 0; x < dims[0]; x++) {
+                const auto& deformation = deformation_field[x + offset];
+                output[x + offset]      = interpolator(deformation[0] + x, deformation[1] + y);
+            }
+        }
+    }
+
+    template <class T, class R>
+    void interpolation_loop(
+        hoNDArray<T>& output,  const hoNDArray<vector_td<R, 3>>& deformation_field, hoNDInterpolatorBSpline<hoNDArray<T>,3>& interpolator) {
+        const vector_td<size_t, 3> dims{ output.dimensions()[0], output.dimensions()[1], output.dimensions()[2] };
+        for (size_t z = 0; z < dims[2]; z++) {
+            for (size_t y = 0; y < dims[1]; y++) {
+                size_t offset = y * dims[0];
+                for (size_t x = 0; x < dims[0]; x++) {
+                    const auto& deformation = deformation_field[x + offset];
+                    output[x + offset]
+                        = interpolator(deformation[0] + x, deformation[1] + y, deformation[2] + z);
+                }
+            }
+        }
+    }
+
+
+
 
     template <class T, class R>
     T interpolate_point(const hoNDArray<T>& image, R x, R y, R z, const vector_td<size_t, 3>& dims) {
@@ -102,6 +135,7 @@ namespace {
                + image[x1 + y2stride] * x1weight * y2weight + image[x2 + y2stride] * x2weight * y2weight;
     }
 
+
     template <class T, class R>
     void interpolation_loop(
         hoNDArray<T>& output, const hoNDArray<T>& image, const hoNDArray<vector_td<R, 2>>& deformation_field) {
@@ -129,6 +163,7 @@ Gadgetron::hoNDArray<T> Gadgetron::Registration::deform_image(
     return output;
 }
 
+
 template hoNDArray<float> Gadgetron::Registration::deform_image(
     const hoNDArray<float>& image, const hoNDArray<vector_td<float, 2>>& deformation_field);
 template hoNDArray<float> Gadgetron::Registration::deform_image(
@@ -142,6 +177,29 @@ template hoNDArray<std::complex<float>> Gadgetron::Registration::deform_image(
 template hoNDArray<std::complex<float>> Gadgetron::Registration::deform_image(
     const hoNDArray<std::complex<float>>& image, const hoNDArray<vector_td<float, 3>>& deformation_field);
 
+template <class T, unsigned int D, class R>
+hoNDArray<T> Gadgetron::Registration::deform_image_bspline(
+    const hoNDArray<T>& image, const hoNDArray<vector_td<R, D>>& deformation_field) {
+
+    assert(image.dimensions().size() == D);
+    assert(deformation_field.dimensions() == image.dimensions());
+
+    hoNDBoundaryHandlerBorderValue<hoNDArray<T>> boundaryhandler(image);
+    hoNDInterpolatorBSpline<hoNDArray<T>,D> interpolator(image,boundaryhandler);
+
+    auto output = hoNDArray<T>(image.dimensions());
+    interpolation_loop(output, deformation_field, interpolator);
+    return output;
+}
+
+template hoNDArray<float> Gadgetron::Registration::deform_image_bspline(
+    const hoNDArray<float>& image, const hoNDArray<vector_td<float, 2>>& deformation_field);
+template hoNDArray<float> Gadgetron::Registration::deform_image_bspline(
+    const hoNDArray<float>& image, const hoNDArray<vector_td<float, 3>>& deformation_field);
+template hoNDArray<std::complex<float>> Gadgetron::Registration::deform_image_bspline(
+    const hoNDArray<std::complex<float>>& image, const hoNDArray<vector_td<float, 2>>& deformation_field);
+template hoNDArray<std::complex<float>> Gadgetron::Registration::deform_image_bspline(
+    const hoNDArray<std::complex<float>>& image, const hoNDArray<vector_td<float, 3>>& deformation_field);
 namespace {
 
     template <class T>

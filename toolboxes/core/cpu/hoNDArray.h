@@ -106,7 +106,7 @@ namespace Gadgetron{
   public:
 
     typedef NDArray<T> BaseClass;
-    typedef float coord_type;
+    typedef double coord_type;
     typedef T value_type;
     using iterator = T*;
     using const_iterator = const T*;

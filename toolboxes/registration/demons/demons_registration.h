@@ -20,6 +20,8 @@ namespace Gadgetron { namespace Registration {
     hoNDArray<T> deform_image(const hoNDArray<T>& image, const hoNDArray<vector_td<R, D>>& deformation_field);
 
 
+        template <class T, unsigned int D, class R = realType_t<T>>
+        hoNDArray<T> deform_image_bspline(const hoNDArray<T>& image, const hoNDArray<vector_td<R, D>>& deformation_field);
     /**
      *
      * @tparam T datatype of the image. Float or double
