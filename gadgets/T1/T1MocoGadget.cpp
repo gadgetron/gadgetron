@@ -59,15 +59,19 @@ namespace Gadgetron {
 
                 // send original images
                 images.data_.reshape(data_dims);
+                set_RAW_headers_and_meta(images,TI_values);
                 out.push(images);
 
                 // send MOCO images
                 images.data_ = hoNDArray<std::complex<float>>(phase_corrected);
                 images.data_.reshape(data_dims);
 
-                std::vector<float> TI_sorted;
-                sort_images(images,TI_values,TI_sorted);
-                set_PSIR_headers_and_meta(images, TI_sorted);
+
+                auto mag_images = images;
+                set_MOCO_MAG_headers_and_meta(mag_images,TI_values);
+                out.push(std::move(mag_images));
+
+                set_PSIR_headers_and_meta(images, TI_values);
                 out.push(std::move(images));
 
                 // send out T1 map                
@@ -169,23 +173,45 @@ namespace Gadgetron {
             for (size_t i=0; i<TI_values.size(); i++)
                 TI_sorted[i] = TI_values[ sorted_index[i] ];
         }
-
-
-        void  set_PSIR_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_sorted){
+        void  set_RAW_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values){
             for (auto& header : images.headers_ ) {
-                header.image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
+                header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+                header.image_series_index = 1;
+            }
+
+            for (size_t ind = 0; ind < images.meta_.size(); ind++){
+                auto& meta = images.meta_[ind];
+                meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_values[ind]));
+            }
+        }
+
+        void  set_MOCO_MAG_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values){
+            for (auto& header : images.headers_ ) {
+                header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
                 header.image_series_index = 2;
             }
 
-            float min_element = std::min_element(images.data_.begin(),images.data_.end(),[](auto val1,auto val2){return val1.real() < val2.real();})->real();
+            for (size_t ind = 0; ind < images.meta_.size(); ind++){
+                auto& meta = images.meta_[ind];
+                meta.set(GADGETRON_DATA_ROLE,GADGETRON_IMAGE_MOCO);
+                meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_values[ind]));
+            }
+        }
+
+        void  set_PSIR_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values){
+            for (auto& header : images.headers_ ) {
+                header.image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
+                header.image_series_index = 3;
+            }
+
 
             images.data_ += 4096.0;
-            size_t ind = 0;
-            for (auto& meta : images.meta_){
+            for (size_t ind = 0; ind < images.meta_.size(); ind++){
+                auto& meta = images.meta_[ind];
                 meta.set(GADGETRON_DATA_ROLE,GADGETRON_IMAGE_PSIR);
                 meta.append(GADGETRON_DATA_ROLE,GADGETRON_IMAGE_MOCO);
                 meta.set(GADGETRON_IMAGE_SCALE_OFFSET, (double)(4096.0));
-                meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_sorted[ind++]));
+                meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_values[ind]));
             }
         }
 
