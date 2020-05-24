@@ -33,7 +33,7 @@ namespace Gadgetron { namespace Registration {
      * @return The vector field deforming fixed to moving.
      */
     template<class T, unsigned int D>
-    hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations = 20,float sigma = 2.0);
+    hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0);
 
         /**
      *
@@ -47,11 +47,10 @@ namespace Gadgetron { namespace Registration {
      * @return The vector field deforming fixed to moving.
      */
         template<class T, unsigned int D>
-        hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, hoNDArray<vector_td<T,D>> vector_field, unsigned int iterations = 20,float sigma = 2.0);
+        hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, hoNDArray<vector_td<T,D>> vector_field, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0);
 
 
 
-        // TEMPORARY STUFF GOES HERE
 
          template <class T> hoNDArray<T> gaussian_filter(const hoNDArray<T>& image, float sigma);
          

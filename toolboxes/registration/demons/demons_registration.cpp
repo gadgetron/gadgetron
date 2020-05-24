@@ -451,12 +451,12 @@ namespace {
     template <class T, unsigned int D>
     hoNDArray<vector_td<T, D>> diffeomorphic_demons_impl(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
         hoNDArray<vector_td<T, D>> vector_field, hoNDArray<vector_td<T, D>> predictor_field, unsigned int iterations,
-        float sigma) {
+        float sigma, float step_size) {
 
         predictor_field *= 0.5;
         for (size_t i = 0; i < iterations; i++) {
             auto current_fixed = deform_image(fixed, vector_field);
-            auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / 2.0f, 1e-6f);
+            auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / step_size, 1e-6f);
             update_field       = compose_fields(predictor_field, update_field);
             update_field       = vector_field_exponential(update_field);
             vector_field       = compose_fields(update_field, vector_field);
@@ -470,26 +470,26 @@ namespace {
 
 template <class T, unsigned int D>
 hoNDArray<vector_td<T, D>> Gadgetron::Registration::diffeomorphic_demons(
-    const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations, float sigma) {
-    auto vector_field = demons_step<T, D>(fixed, moving, 1 / 2.0f, 1e-6f);
+    const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations, float sigma, float step_size) {
+    auto vector_field = demons_step<T, D>(fixed, moving, 1.0/step_size, 1e-6f);
     vector_field      = vector_field_exponential(vector_field);
     vector_field      = gaussian_filter(vector_field, sigma);
-    return diffeomorphic_demons_impl(fixed, moving, vector_field, vector_field, iterations - 1, sigma);
+    return diffeomorphic_demons_impl(fixed, moving, vector_field, vector_field, iterations - 1, sigma, step_size);
 }
 
 template <class T, unsigned int D>
 hoNDArray<vector_td<T, D>> Registration::diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
-    hoNDArray<vector_td<T, D>> vector_field, unsigned int iterations, float sigma) {
+    hoNDArray<vector_td<T, D>> vector_field, unsigned int iterations, float sigma, float step_size) {
     auto current_fixed = deform_image(fixed, vector_field);
-    auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / 2.0f, 1e-6f);
+    auto update_field  = demons_step<T, D>(current_fixed, moving, 1.0 / step_size, 1e-6f);
     update_field       = vector_field_exponential(update_field);
     vector_field       = compose_fields(update_field, vector_field);
     vector_field       = gaussian_filter(vector_field, sigma);
     return diffeomorphic_demons_impl(
-        fixed, moving, std::move(vector_field), std::move(update_field), iterations-1, sigma);
+        fixed, moving, std::move(vector_field), std::move(update_field), iterations-1, sigma, step_size);
 }
 
 template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
-    const hoNDArray<float>&, const hoNDArray<float>&, unsigned int, float);
+    const hoNDArray<float>&, const hoNDArray<float>&, unsigned int, float, float);
 template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
-    const hoNDArray<float>&, const hoNDArray<float>&, hoNDArray<vector_td<float, 2>>, unsigned int, float);
+    const hoNDArray<float>&, const hoNDArray<float>&, hoNDArray<vector_td<float, 2>>, unsigned int, float,float);

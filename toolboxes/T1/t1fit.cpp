@@ -222,7 +222,7 @@ namespace {
 
 
     hoNDArray<vector_td<float,2>> register_groups(const hoNDArray<float>& phase_corrected_data,
-        const hoNDArray<float>& predicted, hoNDArray<vector_td<float,2>> vector_field) {
+        const hoNDArray<float>& predicted, hoNDArray<vector_td<float,2>> vector_field, const registration_params& params) {
         using namespace Indexing;
 
         auto abs_corrected = abs(phase_corrected_data);
@@ -231,7 +231,7 @@ namespace {
 #pragma omp parallel for
         for (long long cha = 0; cha < (long long)predicted.get_size(2); cha++) {
             vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
-                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), 40, 2.0);
+                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size);
         }
 
         return vector_field;
@@ -255,7 +255,7 @@ hoNDArray<std::complex<float>> Gadgetron::T1::deform_groups(const hoNDArray<std:
 
 
 hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_registration(
-    const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations) {
+    const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations, registration_params params) {
     if (data.get_size(2) != TI.size()) {
         throw std::runtime_error("Data and TI do not match");
     }
@@ -270,7 +270,7 @@ hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_registration(
     for (int i = 0; i < iterations; i++) {
         auto parameters = fit_T1_2param(corrected, TI);
         auto predicted = predict_signal(parameters, TI);
-        auto updated_vector_field = register_groups(corrected_orig, predicted, vector_field);
+        auto updated_vector_field = register_groups(corrected_orig, predicted, vector_field, params);
         vector_field = updated_vector_field;
         auto deformed_data = deform_groups(data,vector_field);
         corrected = phase_correct(deformed_data, TI);

@@ -23,10 +23,17 @@ namespace Gadgetron {
             , TIs{ *(context.header.sequenceParameters->TI) }
             , field_strength{ *context.header.acquisitionSystemInformation->systemFieldStrength_T } { }
 
+
         NODE_PROPERTY(correction_factor, float, "Empirical correction factor for T1", 1.0365f);
+        NODE_PROPERTY(regularization_sigma,float,"Gaussian regularizatin for registration",2.0f);
+        NODE_PROPERTY(demons_iterations,unsigned int ,"Number of iterations for the demons registration",40);
+        NODE_PROPERTY(step_size,float,"Maximum step size for demons registration (between 0.1 and 2.0)",2.0f);
+        NODE_PROPERTY(iterations, unsigned int, "Number of iterations of demons registration and T1 fit",5);
 
     private:
         void process(Core::InputChannel<IsmrmrdImageArray>& input, Core::OutputChannel& out) final override {
+
+            GDEBUG("Sigma %f demons_iterations %i Step size %f iterations %i\n",regularization_sigma,demons_iterations,step_size, iterations);
 
             for (auto images : input) {
 
@@ -34,7 +41,7 @@ namespace Gadgetron {
 
                 auto data_dims = images.data_.dimensions();
                 images.data_.reshape({ data_dims[0], data_dims[1], -1 });
-                auto vector_field = T1::t1_registration(images.data_, TI_values);
+                auto vector_field = T1::t1_registration(images.data_, TI_values,iterations,{demons_iterations,regularization_sigma,step_size});
 
                 auto moco_images = T1::deform_groups(images.data_, vector_field);
 
@@ -54,7 +61,7 @@ namespace Gadgetron {
                 perform_hole_filling(T1);
                 auto header               = images.headers_[0];
                 header.data_type          = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-                header.image_series_index = 3;
+                header.image_series_index = 4;
                 auto meta                 = create_T1_meta(images.meta_.front());
 
                 // send original images
