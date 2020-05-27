@@ -7,8 +7,8 @@
 
 namespace Gadgetron
 {
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineCoefficients(const hoNDArray<T>& data, unsigned int SplineDegree, hoNDArray<T>& coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const hoNDArray<T>& data, unsigned int SplineDegree, hoNDArray<T>& coeff)
     {
         size_t NDim = data.get_number_of_dimensions();
 
@@ -64,8 +64,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline bool hoNDBSpline<T, D>::computeBSplineCoefficients(const hoNDImage<T, D>& data, unsigned int SplineDegree, hoNDArray<T>& coeff)
+template <typename T, unsigned int D, typename coord_type>
+    inline bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const hoNDImage<T, D>& data, unsigned int SplineDegree, hoNDArray<T>& coeff)
     {
         std::vector<size_t> dim;
         data.get_dimensions(dim);
@@ -73,8 +73,8 @@ namespace Gadgetron
         return this->computeBSplineCoefficients(dataTmp, SplineDegree, coeff);
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, const std::vector<size_t>& dimension, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, const std::vector<size_t>& dimension, unsigned int SplineDegree, T* coeff)
     {
         try
         {
@@ -188,15 +188,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, const std::vector<size_t>& dimension, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, const std::vector<size_t>& dimension, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    inline bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t len, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    inline bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t len, unsigned int SplineDegree, T* coeff)
     {
         try
         {
@@ -209,15 +209,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t len, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t len, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, unsigned int SplineDegree, T* coeff)
     {
         try
         {
@@ -273,15 +273,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff)
     {
         try
         {
@@ -375,15 +375,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, unsigned int SplineDegree, T* coeff)
     {
         try
         {
@@ -515,15 +515,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree, T* coeff)
     {
         try
         {
@@ -702,15 +702,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    inline bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    inline bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, unsigned int SplineDegree, T* coeff)
     {
         std::vector<size_t> dim(6);
         dim[0] = sx;
@@ -723,8 +723,8 @@ namespace Gadgetron
         return this->computeBSplineCoefficients(data, dim, SplineDegree, coeff);
     }
 
-    template <typename T, unsigned int D>
-    inline bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    inline bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, unsigned int SplineDegree, T* coeff)
     {
         std::vector<size_t> dim(7);
         dim[0] = sx;
@@ -738,8 +738,8 @@ namespace Gadgetron
         return this->computeBSplineCoefficients(data, dim, SplineDegree, coeff);
     }
 
-    template <typename T, unsigned int D>
-    inline bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    inline bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, unsigned int SplineDegree, T* coeff)
     {
         std::vector<size_t> dim(8);
         dim[0] = sx;
@@ -754,8 +754,8 @@ namespace Gadgetron
         return this->computeBSplineCoefficients(data, dim, SplineDegree, coeff);
     }
 
-    template <typename T, unsigned int D>
-    inline bool hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, unsigned int SplineDegree, T* coeff)
+    template <typename T, unsigned int D, typename coord_type>
+    inline bool hoNDBSpline<T, D, coord_type>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, unsigned int SplineDegree, T* coeff)
     {
         std::vector<size_t> dim(9);
         dim[0] = sx;
@@ -771,8 +771,8 @@ namespace Gadgetron
         return this->computeBSplineCoefficients(data, dim, SplineDegree, coeff);
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
         const std::vector<unsigned int>& derivative, const coord_type* pos)
     {
         if (D != dimension.size())
@@ -828,15 +828,15 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
         const std::vector<unsigned int>& derivative, const std::vector<coord_type>& pos)
     {
         return this->evaluateBSpline(coeff, dimension, SplineDegree, derivative, &pos[0]);
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t len, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t len, unsigned int SplineDegree,
         unsigned int dx,
         coord_type x)
     {
@@ -855,8 +855,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy,
         coord_type x, coord_type y)
     {
@@ -883,8 +883,8 @@ namespace Gadgetron
     }
 
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz,
         coord_type x, coord_type y, coord_type z)
     {
@@ -920,8 +920,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz, unsigned int dt,
         coord_type x, coord_type y, coord_type z, coord_type t)
     {
@@ -964,8 +964,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz, unsigned int dt, unsigned int dp,
         coord_type x, coord_type y, coord_type z, coord_type t, coord_type p)
     {
@@ -1016,8 +1016,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz, unsigned int dt, unsigned int dp, unsigned int dq,
         coord_type x, coord_type y, coord_type z, coord_type t, coord_type p, coord_type q)
     {
@@ -1079,8 +1079,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz, unsigned int dt, unsigned int dp, unsigned int dq, unsigned int dr,
         coord_type x, coord_type y, coord_type z, coord_type t, coord_type p, coord_type q, coord_type r)
     {
@@ -1150,8 +1150,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz, unsigned int dt, unsigned int dp, unsigned int dq, unsigned int dr, unsigned int ds,
         coord_type x, coord_type y, coord_type z, coord_type t, coord_type p, coord_type q, coord_type r, coord_type s)
     {
@@ -1229,8 +1229,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, unsigned int SplineDegree,
         unsigned int dx, unsigned int dy, unsigned int dz, unsigned int dt, unsigned int dp, unsigned int dq, unsigned int dr, unsigned int ds, unsigned int du,
         coord_type x, coord_type y, coord_type z, coord_type t, coord_type p, coord_type q, coord_type r, coord_type s, coord_type u)
     {
@@ -1316,8 +1316,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, unsigned int SplineDegree,
         bspline_float_type* xWeight, bspline_float_type* yWeight,
         coord_type x, coord_type y)
     {
@@ -1343,8 +1343,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree,
         bspline_float_type* xWeight, bspline_float_type* yWeight, bspline_float_type* zWeight,
         coord_type x, coord_type y, coord_type z)
     {
@@ -1380,8 +1380,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, size_t sx, size_t sy, size_t sz, size_t st, unsigned int SplineDegree,
         bspline_float_type* xWeight, bspline_float_type* yWeight, bspline_float_type* zWeight, bspline_float_type* tWeight,
         coord_type x, coord_type y, coord_type z, coord_type t)
     {
@@ -1424,8 +1424,8 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
         bspline_float_type** weight, const coord_type* pos)
     {
         long long index[D][10];
@@ -1475,15 +1475,15 @@ namespace Gadgetron
         return res;
     }
 
-    template <typename T, unsigned int D>
-    inline T hoNDBSpline<T, D>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
+    template <typename T, unsigned int D, typename coord_type>
+    inline T hoNDBSpline<T, D, coord_type>::evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
         bspline_float_type** weight, const std::vector<coord_type>& pos)
     {
         return this->evaluateBSpline(coeff, dimension, SplineDegree, weight, &pos[0]);
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv)
     {
         try
         {
@@ -1598,15 +1598,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Errors happened in hoNDBSpline<T, D>::computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv) ... ");
+            GERROR_STREAM("Errors happened in hoNDBSpline<T, D, coord_type>::computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineDerivative(const hoNDImage<T, D>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDImage<T, D>& deriv)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineDerivative(const hoNDImage<T, D>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDImage<T, D>& deriv)
     {
         hoNDArray<T> dataTmp(data.get_dimensions(), const_cast<T*>(data.begin()), false);
 
@@ -1620,8 +1620,8 @@ namespace Gadgetron
         return computeBSplineDerivative(dataTmp, coeff, SplineDegree, derivative, derivTmp);
     }
 
-    template <typename T, unsigned int D>
-    bool hoNDBSpline<T, D>::computeBSplineDerivativePoints(const hoNDArray<T>& pts, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv)
+    template <typename T, unsigned int D, typename coord_type>
+    bool hoNDBSpline<T, D, coord_type>::computeBSplineDerivativePoints(const hoNDArray<T>& pts, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv)
     {
         try
         {
@@ -1718,15 +1718,15 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GERROR_STREAM("Errors happened in hoNDBSpline<T, D>::computeBSplineDerivativePoints(const hoNDArray<T>& pts, const hoNDArray<T>& coeff, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv) ... ");
+            GERROR_STREAM("Errors happened in hoNDBSpline<T, D, coord_type>::computeBSplineDerivativePoints(const hoNDArray<T>& pts, const hoNDArray<T>& coeff, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv) ... ");
             return false;
         }
 
         return true;
     }
 
-    template <typename T, unsigned int D>
-    void hoNDBSpline<T, D>::print(std::ostream& os) const
+    template <typename T, unsigned int D, typename coord_type>
+    void hoNDBSpline<T, D, coord_type>::print(std::ostream& os) const
     {
         using namespace std;
 
@@ -1736,8 +1736,8 @@ namespace Gadgetron
         os << "Data type is : " << elemTypeName << std::endl;
     }
 
-    template <typename T, unsigned int D>
-    void hoNDBSpline<T, D>::ConvertToInterpolationCoefficients(T c[], size_t DataLength, bspline_float_type z[], long NbPoles, bspline_float_type Tolerance)
+    template <typename T, unsigned int D, typename coord_type>
+    void hoNDBSpline<T, D, coord_type>::ConvertToInterpolationCoefficients(T c[], size_t DataLength, bspline_float_type z[], long NbPoles, bspline_float_type Tolerance)
     { /* begin ConvertToInterpolationCoefficients */
 
         double Lambda = 1.0;
@@ -1784,8 +1784,8 @@ namespace Gadgetron
         }
     } /* end ConvertToInterpolationCoefficients */
 
-    template <typename T, unsigned int D>
-    T hoNDBSpline<T, D>::InitialCausalCoefficient(T c[], size_t DataLength, bspline_float_type z, bspline_float_type Tolerance)
+    template <typename T, unsigned int D, typename coord_type>
+    T hoNDBSpline<T, D, coord_type>::InitialCausalCoefficient(T c[], size_t DataLength, bspline_float_type z, bspline_float_type Tolerance)
     { /* begin InitialCausalCoefficient */
 
         T Sum;
@@ -1828,16 +1828,16 @@ namespace Gadgetron
         }
     } /* end InitialCausalCoefficient */
 
-    template <typename T, unsigned int D>
-    T hoNDBSpline<T, D>::InitialAntiCausalCoefficient(T c[], size_t DataLength, bspline_float_type z)
+    template <typename T, unsigned int D, typename coord_type>
+    T hoNDBSpline<T, D, coord_type>::InitialAntiCausalCoefficient(T c[], size_t DataLength, bspline_float_type z)
     { /* begin InitialAntiCausalCoefficient */
 
         /* this initialization corresponds to mirror boundaries */
         return((z / (z * z - (bspline_float_type)1.0)) * (z * c[DataLength - 2L] + c[DataLength - 1L]));
     } /* end InitialAntiCausalCoefficient */
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::Pole(bspline_float_type * Pole, unsigned int SplineDegree, unsigned int& NbPoles)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::Pole(bspline_float_type * Pole, unsigned int SplineDegree, unsigned int& NbPoles)
     {
         switch (SplineDegree)
         {
@@ -1901,8 +1901,8 @@ namespace Gadgetron
         }
     }
 
-    template <typename T, unsigned int D>
-    inline typename hoNDBSpline<T, D>::bspline_float_type hoNDBSpline<T, D>::BSpline(bspline_float_type x, unsigned int SplineDegree)
+    template <typename T, unsigned int D, typename coord_type>
+    inline typename hoNDBSpline<T, D, coord_type>::bspline_float_type hoNDBSpline<T, D, coord_type>::BSpline(bspline_float_type x, unsigned int SplineDegree)
     {
         if (x < -((bspline_float_type)SplineDegree + 1) / 2.0)
         {
@@ -1937,8 +1937,8 @@ namespace Gadgetron
         return value;
     }
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::BSplineInterpolationLocation(bspline_float_type x, unsigned int SplineDegree, long long* xIndex)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::BSplineInterpolationLocation(bspline_float_type x, unsigned int SplineDegree, long long* xIndex)
     {
         long long i, k;
 
@@ -1961,8 +1961,8 @@ namespace Gadgetron
         }
     }
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::BSplineInterpolationMirrorBoundaryCondition(unsigned int SplineDegree, long long* xIndex, size_t Width)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::BSplineInterpolationMirrorBoundaryCondition(unsigned int SplineDegree, long long* xIndex, size_t Width)
     {
         long long Width2 = 2 * Width - 2;
 
@@ -1982,8 +1982,8 @@ namespace Gadgetron
         }
     }
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::BSplineDiscrete(bspline_float_type x, unsigned int SplineDegree, bspline_float_type * xWeight, long long* xIndex)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::BSplineDiscrete(bspline_float_type x, unsigned int SplineDegree, bspline_float_type * xWeight, long long* xIndex)
     {
         bspline_float_type w, w2, w4, t, t0, t1;
 
@@ -2178,8 +2178,8 @@ namespace Gadgetron
         }
     }
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::BSplineDiscreteFirstOrderDerivative(bspline_float_type x, unsigned int SplineDegree, bspline_float_type * weight, long long* xIndex)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::BSplineDiscreteFirstOrderDerivative(bspline_float_type x, unsigned int SplineDegree, bspline_float_type * weight, long long* xIndex)
     {
         unsigned int k;
         for (k = 0; k < SplineDegree; k++)
@@ -2188,8 +2188,8 @@ namespace Gadgetron
         }
     }
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::BSplineDiscreteSecondOrderDerivative(bspline_float_type x, unsigned int SplineDegree, bspline_float_type * weight, long long* xIndex)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::BSplineDiscreteSecondOrderDerivative(bspline_float_type x, unsigned int SplineDegree, bspline_float_type * weight, long long* xIndex)
     {
         unsigned int k;
         for (k = 0; k < SplineDegree; k++)
@@ -2198,20 +2198,20 @@ namespace Gadgetron
         }
     }
 
-    template <typename T, unsigned int D>
-    inline typename hoNDBSpline<T, D>::bspline_float_type hoNDBSpline<T, D>::BSplineFirstOrderDerivative(bspline_float_type x, unsigned int SplineDegree)
+    template <typename T, unsigned int D, typename coord_type>
+    inline typename hoNDBSpline<T, D, coord_type>::bspline_float_type hoNDBSpline<T, D, coord_type>::BSplineFirstOrderDerivative(bspline_float_type x, unsigned int SplineDegree)
     {
         return (BSpline(x + 0.5, SplineDegree - 1) - BSpline(x - 0.5, SplineDegree - 1));
     }
 
-    template <typename T, unsigned int D>
-    inline typename hoNDBSpline<T, D>::bspline_float_type hoNDBSpline<T, D>::BSplineSecondOrderDerivative(bspline_float_type x, unsigned int SplineDegree)
+    template <typename T, unsigned int D, typename coord_type>
+    inline typename hoNDBSpline<T, D, coord_type>::bspline_float_type hoNDBSpline<T, D, coord_type>::BSplineSecondOrderDerivative(bspline_float_type x, unsigned int SplineDegree)
     {
         return (BSpline(x + 1, SplineDegree - 2) + BSpline(x - 1, SplineDegree - 2) - 2 * BSpline(x, SplineDegree - 2));
     }
 
-    template <typename T, unsigned int D>
-    inline void hoNDBSpline<T, D>::computeBSplineInterpolationLocationsAndWeights(size_t len, unsigned int SplineDegree, unsigned int dx, coord_type x, bspline_float_type * weight, long long* xIndex)
+    template <typename T, unsigned int D, typename coord_type>
+    inline void hoNDBSpline<T, D, coord_type>::computeBSplineInterpolationLocationsAndWeights(size_t len, unsigned int SplineDegree, unsigned int dx, coord_type x, bspline_float_type * weight, long long* xIndex)
     {
         BSplineInterpolationLocation(x, SplineDegree, xIndex);
 

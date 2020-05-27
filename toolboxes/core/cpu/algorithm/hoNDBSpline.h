@@ -20,7 +20,7 @@
 
 namespace Gadgetron
 {
-    template <typename T, unsigned int D>
+    template <typename T, unsigned int D, typename coord_type = double>
     class hoNDBSpline
     {
     public:
@@ -29,7 +29,6 @@ namespace Gadgetron
 
         typedef T element_type;
         typedef T value_type;
-        typedef double coord_type;
 
         /// type for bspline computation, can be 'float' or 'double'
         typedef typename realType<T>::Type bspline_float_type;
