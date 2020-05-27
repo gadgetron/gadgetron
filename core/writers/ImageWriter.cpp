@@ -35,12 +35,14 @@ namespace {
                 const optional<ISMRMRD::MetaContainer>& meta
         ) override {
             std::string serialized_meta;
+            uint64_t meta_size = 0;
+
             if(meta) {
                 std::stringstream meta_stream;
                 ISMRMRD::serialize(*meta, meta_stream);
                 serialized_meta = meta_stream.str();
+                meta_size = serialized_meta.size() + 1;
             }
-            uint64_t meta_size = serialized_meta.size()+1;
 
             auto corrected_header = header;
             corrected_header.data_type = ismrmrd_data_type<T>();
