@@ -61,14 +61,19 @@ namespace Gadgetron {
         if (dcm_filename_message) {
             unsigned long long len = dcm_filename_message->length();
             Core::IO::write_string_to_stream<unsigned long long>(stream, *dcm_filename_message);
+        } else {
+            Core::IO::write(stream, (unsigned long long)0);
+        }
 
-            if (dcm_meta_message) {
+        if (dcm_meta_message) {
                 std::stringstream str;
                 ISMRMRD::serialize(*dcm_meta_message, str);
                 std::string attribContent = str.str();
                 Core::IO::write_string_to_stream(stream, attribContent);
-            }
+        } else {
+            Core::IO::write(stream, (unsigned long long)0);
         }
+
     }
     GADGETRON_WRITER_EXPORT(DicomImageWriter)
 } /* namespace Gadgetron */
