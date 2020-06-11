@@ -43,7 +43,7 @@ namespace Gadgetron
     // --------------------------------------------------------------------------
     /// write ismrmrd image into a dcm image
     // --------------------------------------------------------------------------
-    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
     // with image attribute
-    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
 }
