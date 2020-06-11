@@ -633,10 +633,6 @@ namespace Gadgetron
             }
             T mean_pix_val = (T)((sum_pix_val * 4) / (T)data.get_number_of_elements());
 
-            /* update the image data_type.
-            * There is currently no SIGNED SHORT type so this will have to suffice */
-            m1.data_type = ISMRMRD::ISMRMRD_USHORT;
-
             unsigned int BUFSIZE = 1024;
             std::vector<char> bufVec(BUFSIZE);
             char *buf = &bufVec[0];
