@@ -40,7 +40,7 @@ namespace Gadgetron {
                 auto TI_values = extract_MOLLI_TI(*images.acq_headers_);
 
                 auto data_dims = images.data_.dimensions();
-                images.data_.reshape({ data_dims[0], data_dims[1], -1 });
+                images.data_.reshape( data_dims[0], data_dims[1], -1 );
                 auto vector_field = T1::t1_registration(images.data_, TI_values,iterations,{demons_iterations,regularization_sigma,step_size});
 
                 auto moco_images = T1::deform_groups(images.data_, vector_field);
@@ -165,7 +165,7 @@ namespace Gadgetron {
             auto sorted_index = argsort(TI_values);
 
             auto dims = images.data_.dimensions();
-            images.data_.reshape({dims[0],dims[1],-1});
+            images.data_.reshape(dims[0],dims[1],-1);
             auto data_copy = images.data_;
             std::fill(images.data_.begin(),images.data_.end(),std::complex<float>(1));
 
