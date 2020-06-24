@@ -9,7 +9,7 @@
 
 namespace Gadgetron {
     GenericReconPartialFourierHandlingGadget::GenericReconPartialFourierHandlingGadget(
-        const Core::Context& context, const Core::GadgetProperties& props) : BaseClass(props) {
+        const Core::Context& context, const Core::GadgetProperties& props) : BaseClass(context,props) {
 
         const auto& h = context.header;
 

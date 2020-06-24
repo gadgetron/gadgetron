@@ -177,6 +177,11 @@ namespace Gadgetron
   };
 
 
+  using ReconData = IsmrmrdReconData;
+  using ImageArray = IsmrmrdImageArray;
+  using DataBuffered = IsmrmrdDataBuffered;
+
+
 
 }
 #endif //MRI_CORE_DATA_H

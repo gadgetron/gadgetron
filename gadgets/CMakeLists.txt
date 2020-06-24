@@ -22,11 +22,11 @@ if (CUDA_FOUND)
   add_subdirectory(radial)  
   add_subdirectory(hyper)
   add_subdirectory(gpu)
-  add_subdirectory(mri_noncartesian)
 else ()
   message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
 endif()
 
+add_subdirectory(mri_noncartesian)
 add_subdirectory(spiral)
 add_subdirectory(grappa)
 

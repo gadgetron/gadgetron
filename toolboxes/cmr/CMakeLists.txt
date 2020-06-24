@@ -51,7 +51,7 @@ target_link_libraries(gadgetron_toolbox_cmr
 target_include_directories(gadgetron_toolbox_cmr
         PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:include/gadgetron>
+    $<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/ffd>)
 
 install(TARGETS gadgetron_toolbox_cmr
