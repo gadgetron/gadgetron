@@ -3,7 +3,7 @@
 
 #include <dcmtk/dcmdata/dctk.h>
 #include "gadgetron_dicom_export.h"
-#include "GadgetMRIHeaders.h"
+// #include "GadgetMRIHeaders.h"
 #include "ismrmrd/ismrmrd.h"
 #include "Writer.h"
 

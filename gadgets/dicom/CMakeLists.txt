@@ -83,6 +83,10 @@ target_link_libraries(gadgetron_dicom
     ISMRMRD::ISMRMRD
     ${GT_DICOM_LIBRARIES} )
 
+if (WIN32)
+    target_link_libraries(gadgetron_dicom netapi32.lib wsock32.lib WS2_32.Lib)
+endif(WIN32)
+
 if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
 endif()

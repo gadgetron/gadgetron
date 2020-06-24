@@ -184,21 +184,27 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
-set(Boost_NO_BOOST_CMAKE ON)
+# set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
-add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
+  add_definitions( -DBOOST_ALL_NO_LIB )
+  add_definitions( -DBOOST_ALL_DYN_LINK )
+  #add_definitions( -DBOOST_NO_EXCEPTIONS )
 endif()
+
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
+  set(BOOST_LIB_LIST system thread date_time chrono program_options filesystem timer iostreams)
 else()
-find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
+  set(BOOST_LIB_LIST system thread program_options filesystem timer iostreams)
 endif()
+
+find_package(Boost COMPONENTS ${BOOST_LIB_LIST} REQUIRED)
+
 add_library(boost INTERFACE)
 set_target_properties(boost PROPERTIES
 INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-#set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
+message(${Boost_LIBRARIES})
 target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
 
 if (NOT DEFINED Boost_VERSION_STRING)

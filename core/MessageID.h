@@ -2,6 +2,10 @@
 
 #include <cstdint>
 
+#ifdef ERROR
+    #undef ERROR
+#endif // ERROR
+
 namespace Gadgetron::Core {
     enum MessageID : uint16_t {
         FILENAME                                           = 1,

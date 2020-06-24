@@ -18,6 +18,8 @@
 #include "dcmtk/dcmdata/dcostrmb.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "MessageID.h"
+
 namespace Gadgetron {
 
     void DicomImageWriter::serialize(std::ostream& stream, const DcmFileFormat& dcmInput,
@@ -50,7 +52,7 @@ namespace Gadgetron {
         dcmFile.transferEnd();
 
 
-        Core::IO::write(stream, GADGET_MESSAGE_DICOM_WITHNAME);
+        Core::IO::write(stream, Core::GADGET_MESSAGE_DICOM_WITHNAME);
 
         uint32_t nbytes = (uint32_t)serialized_length;
         Core::IO::write(stream, nbytes);

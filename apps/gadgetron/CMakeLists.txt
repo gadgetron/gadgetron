@@ -1,5 +1,6 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
+include_directories(${PUGIXML_INCLUDE_DIRS})
 
 add_executable(gadgetron
         main.cpp
@@ -69,7 +70,8 @@ target_link_libraries(gadgetron
         gadgetron_core
         gadgetron_toolbox_log
         boost
-        BLAS)
+        BLAS 
+        ${PUGIXML_LIBRARIES} )
 
 target_include_directories(gadgetron
         PRIVATE

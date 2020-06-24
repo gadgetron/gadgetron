@@ -14,6 +14,7 @@ add_library(gadgetron_core SHARED
         Message.cpp
         Response.cpp
         io/from_string.cpp)
+
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
         SOVERSION ${GADGETRON_SOVERSION})
@@ -21,7 +22,7 @@ set_target_properties(gadgetron_core PROPERTIES
 target_link_libraries(gadgetron_core
         ISMRMRD::ISMRMRD
         gadgetron_toolbox_cpucore
-        boost)
+        )
 
 target_include_directories(gadgetron_core PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -37,7 +38,7 @@ install(TARGETS gadgetron_core
         )
 
 
-install(FILES
+install(FILES 
         Channel.h
         Channel.hpp
         ChannelIterator.h
