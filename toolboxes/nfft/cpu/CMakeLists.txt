@@ -8,7 +8,7 @@ add_library(gadgetron_toolbox_cpunfft SHARED
     hoNFFT.cpp
     hoNFFT_sparseMatrix.h
     hoNFFT_sparseMatrix.cpp
-    hoNFFTOperator.cpp
+	hoNFFTOperator.cpp
   )
 
 set_target_properties(gadgetron_toolbox_cpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -22,7 +22,7 @@ target_link_libraries(gadgetron_toolbox_cpunfft
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_log
     gadgetron_toolbox_hostutils
-    gadgetron_toolbox_operator
+	gadgetron_toolbox_operator
   )
 
 install(TARGETS gadgetron_toolbox_cpunfft

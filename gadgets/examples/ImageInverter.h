@@ -6,7 +6,7 @@
 namespace Gadgetron::Examples {
     class ImageInverter : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
     public:
-        ImageInverter(const Core::Context &, const Core::GadgetProperties &);
+      using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
         Core::AnyImage process_function(Core::AnyImage image) const override;
     };
 }

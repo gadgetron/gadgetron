@@ -20,49 +20,104 @@
 
 namespace Gadgetron {
 
-    namespace FFT {
+  namespace FFT {
 
-        /**
+/**
          * Performs a standard in-place FFT over the specified dimensions
          * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
          * @param data Complex input data to be transformed
          * @param dimensions List of dimensions along which to perform the transform
-         */
-        template <class ComplexType, class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
-        void fft(hoNDArray<ComplexType>& data, std::vector<size_t> dimensions);
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+void fft(hoNDArray<ComplexType> &data, std::vector<size_t> dimensions);
 
-        /**
+/**
          * \overload
-         */
-        template <class ComplexType, class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
-        void fft(hoNDArray<ComplexType>& data, size_t dimensions);
-        template <class ComplexType, class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+void fft(hoNDArray<ComplexType> &data, size_t dimensions);
 
-        /**
+/**
          * Performs a standard in-place inverse FFT over the specified dimensions
          * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
          * @param data Complex input data to be transformed
          * @param dimensions List of dimensions along which to perform the transform
-         */
+ */
 
-        void ifft(hoNDArray<ComplexType>& data, std::vector<size_t> dimensions);
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+void ifft(hoNDArray<ComplexType> &data, std::vector<size_t> dimensions);
 
-        /**
+/**
          * \overload
-         */
-        template <class ComplexType, class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
-        void ifft(hoNDArray<ComplexType>& data, size_t dimensions);
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+void ifft(hoNDArray<ComplexType> &data, size_t dimensions);
 
-    }
+/**
+     * Performs a centered FFT over the 1st dimension
+     * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
+     * @param data Complex input data to be transformed
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+hoNDArray<ComplexType> fft1c(const hoNDArray<ComplexType> &data);
+/**
+      * Performs a centered FFT over the 1st and 2nd dimensions
+      * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
+      * @param data Complex input data to be transformed
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+hoNDArray<ComplexType> fft2c(const hoNDArray<ComplexType> &data);
+/**
+  * Performs a centered FFT over the 1st, 2nd and 3rd dimension
+  * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
+  * @param data Complex input data to be transformed
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+hoNDArray<ComplexType> fft3c(const hoNDArray<ComplexType> &data);
+
+/**
+    * Performs a centered FFT over the 1st dimension
+    * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
+    * @param data Complex input data to be transformed
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+hoNDArray<ComplexType> ifft1c(const hoNDArray<ComplexType> &data);
+/**
+      * Performs a centered FFT over the 1st and 2nd dimensions
+      * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
+      * @param data Complex input data to be transformed
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+hoNDArray<ComplexType> ifft2c(const hoNDArray<ComplexType> &data);
+/**
+  * Performs a centered FFT over the 1st, 2nd and 3rd dimension
+  * @tparam ComplexType Complex type, such as std::complex<float> or complex<double>
+  * @param data Complex input data to be transformed
+ */
+template <class ComplexType,
+          class ENABLER = std::enable_if_t<is_complex_type_v<ComplexType>>>
+hoNDArray<ComplexType> ifft3c(const hoNDArray<ComplexType> &data);
+
+}
+
 
     /**
-    Generic class for Fast Fourier Transforms using FFTW on the hoNDArray class.
-    This class is a singleton because the planning and memory allocation routines of FFTW are NOT threadsafe.
-    The class' template type is a REAL, ie. float or double.
+Generic class for Fast Fourier Transforms using FFTW on the hoNDArray class.
+This class is a singleton because the planning and memory allocation routines of FFTW are NOT threadsafe.
+The class' template type is a REAL, ie. float or double.
 
-                Note that scaling is 1/sqrt(N) fir both FFT and IFFT, where N is the number of elements along the FFT
-    dimensions Access using e.g. FFT<float>::instance()
-    */
+            Note that scaling is 1/sqrt(N) fir both FFT and IFFT, where N is the number of elements along the FFT
+dimensions Access using e.g. FFT<float>::instance()
+*/
     template <typename T> class EXPORTCPUFFT hoNDFFT {
     public:
         typedef std::complex<T> ComplexType;

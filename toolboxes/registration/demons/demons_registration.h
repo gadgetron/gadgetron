@@ -33,7 +33,7 @@ namespace Gadgetron { namespace Registration {
      * @return The vector field deforming fixed to moving.
      */
     template<class T, unsigned int D>
-    hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0);
+    hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0, float noise_sigma = 0.0f);
 
         /**
      *
@@ -47,7 +47,7 @@ namespace Gadgetron { namespace Registration {
      * @return The vector field deforming fixed to moving.
      */
         template<class T, unsigned int D>
-        hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, hoNDArray<vector_td<T,D>> vector_field, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0);
+        hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, hoNDArray<vector_td<T,D>> vector_field, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0, float noise_sigma=0.0f);
 
 
 
@@ -62,5 +62,5 @@ namespace Gadgetron { namespace Registration {
           hoNDArray<vector_td<T, D>> vector_field_exponential(const hoNDArray<vector_td<T, D>>& vector_field);
 
 
-         hoNDArray<vector_td<float, 2>> demons_step_ext(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, float alpha, float beta);
+         hoNDArray<vector_td<float, 2>> demons_step_ext(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, float alpha, float beta, float noise_sigma);
     }}
