@@ -51,7 +51,7 @@ namespace Gadgetron::Grappa {
     ImageAccumulator::ImageAccumulator(
             const Core::Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : ChannelGadget<Slice>(props), context(context) {}
+    ) : ChannelGadget<Slice>(context,props), context(context) {}
 
     void ImageAccumulator::process(InputChannel<Slice> &in, OutputChannel &out) {
 

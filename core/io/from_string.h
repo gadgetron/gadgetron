@@ -17,12 +17,12 @@ namespace Gadgetron::Core::IO {
         val = static_cast<T>(tmp);
     }
 
-    void from_string(const std::string&, double& val);
+  void from_string(const std::string&, double&);
 
-    template <class T> auto from_string(const std::string& str, T& val) -> std::enable_if_t<std::is_floating_point<T>::value> {
+template <class T> auto from_string(const std::string& str, T& val) -> std::enable_if_t<std::is_floating_point<T>::value> {
         double tmp;
         from_string(str, tmp);
-        if (tmp < std::numeric_limits<T>::min() || tmp > std::numeric_limits<T>::max())
+        if (tmp < std::numeric_limits<T>::lowest() || tmp > std::numeric_limits<T>::max())
             throw std::runtime_error("Value does not fit in desired type");
         val = static_cast<T>(tmp);
     }

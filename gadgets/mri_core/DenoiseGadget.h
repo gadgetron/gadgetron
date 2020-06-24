@@ -22,7 +22,7 @@ namespace Gadgetron {
         : public Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes> {
 
     public:
-        DenoiseGadget(const Core::Context& context, const Core::GadgetProperties&);
+        using Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes>::PureGadget;
 
         DenoiseSupportedTypes process_function(DenoiseSupportedTypes input) const;
         NODE_PROPERTY(image_std, float, "Standard deviation of the noise in the produced image", 1);

@@ -240,7 +240,7 @@ namespace {
 
     template <class T, unsigned int D>
     vector_td<T, D> demons_point(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha, T beta,
-        const vector_td<size_t, D>& index, const vector_td<size_t, D>& dims) {
+        const vector_td<size_t, D>& index, const vector_td<size_t, D>& dims, T noise_sigma) {
 
         auto fixed_grad   = demons_gradient(fixed, index, dims);
         auto moving_grad  = demons_gradient(moving, index, dims);
@@ -249,13 +249,14 @@ namespace {
         auto it = moving[co_to_idx(index, dims)] - fixed[co_to_idx(index, dims)];
         //
         auto result = it * average_grad / (norm_squared(average_grad) + (alpha * it) * (alpha * it) + beta);
+        if (noise_sigma > 0)  result *= T(1)-std::exp(-(it*it)/(2*noise_sigma));
         return result;
         //        return average_grad*it;
     }
 
     template <class T, unsigned int D>
     std::enable_if_t<D == 3, hoNDArray<vector_td<T, D>>> demons_step(
-        const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha, T beta) {
+        const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha, T beta, T noise_sigma) {
         assert(fixed.get_number_of_dimensions() == D);
         assert(fixed.dimensions() == moving.dimensions());
 
@@ -280,7 +281,7 @@ namespace {
 
     template <class T, unsigned int D>
     std::enable_if_t<D == 2, hoNDArray<vector_td<T, D>>> demons_step(
-        const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha, T beta) {
+        const hoNDArray<T>& fixed, const hoNDArray<T>& moving, T alpha, T beta, T noise_sigma) {
         assert(fixed.get_number_of_dimensions() == D);
         assert(fixed.dimensions() == moving.dimensions());
 
@@ -291,7 +292,7 @@ namespace {
             index[1] = y;
             for (size_t x = 0; x < dims[0]; x++) {
                 index[0]                = x;
-                result(x,y) = demons_point(fixed, moving, alpha, beta, index, dims);
+                result(x,y) = demons_point(fixed, moving, alpha, beta, index, dims,noise_sigma);
             }
         }
 
@@ -301,8 +302,8 @@ namespace {
 
 
 
-hoNDArray<vector_td<float, 2>> Gadgetron::Registration::demons_step_ext(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, float alpha, float beta){
-    return demons_step<float,2>(fixed,moving,alpha,beta);
+hoNDArray<vector_td<float, 2>> Gadgetron::Registration::demons_step_ext(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, float alpha, float beta, float noise_sigma){
+    return demons_step<float,2>(fixed,moving,alpha,beta,noise_sigma);
 }
 
 namespace {
@@ -451,12 +452,12 @@ namespace {
     template <class T, unsigned int D>
     hoNDArray<vector_td<T, D>> diffeomorphic_demons_impl(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
         hoNDArray<vector_td<T, D>> vector_field, hoNDArray<vector_td<T, D>> predictor_field, unsigned int iterations,
-        float sigma, float step_size) {
+        float sigma, float step_size, float noise_sigma) {
 
         predictor_field *= 0.5;
         for (size_t i = 0; i < iterations; i++) {
             auto current_fixed = deform_image(fixed, vector_field);
-            auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / step_size, 1e-6f);
+            auto update_field  = demons_step<T, D>(current_fixed, moving, 1 / step_size, 1e-6f,noise_sigma);
             update_field       = compose_fields(predictor_field, update_field);
             update_field       = vector_field_exponential(update_field);
             vector_field       = compose_fields(update_field, vector_field);
@@ -470,26 +471,26 @@ namespace {
 
 template <class T, unsigned int D>
 hoNDArray<vector_td<T, D>> Gadgetron::Registration::diffeomorphic_demons(
-    const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations, float sigma, float step_size) {
-    auto vector_field = demons_step<T, D>(fixed, moving, 1.0/step_size, 1e-6f);
+    const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations, float sigma, float step_size, float noise_sigma) {
+    auto vector_field = demons_step<T, D>(fixed, moving, 1.0/step_size, 1e-6f,noise_sigma);
     vector_field      = vector_field_exponential(vector_field);
     vector_field      = gaussian_filter(vector_field, sigma);
-    return diffeomorphic_demons_impl(fixed, moving, vector_field, vector_field, iterations - 1, sigma, step_size);
+    return diffeomorphic_demons_impl(fixed, moving, vector_field, vector_field, iterations - 1, sigma, step_size, noise_sigma);
 }
 
 template <class T, unsigned int D>
 hoNDArray<vector_td<T, D>> Registration::diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving,
-    hoNDArray<vector_td<T, D>> vector_field, unsigned int iterations, float sigma, float step_size) {
+    hoNDArray<vector_td<T, D>> vector_field, unsigned int iterations, float sigma, float step_size, float noise_sigma) {
     auto current_fixed = deform_image(fixed, vector_field);
-    auto update_field  = demons_step<T, D>(current_fixed, moving, 1.0 / step_size, 1e-6f);
+    auto update_field  = demons_step<T, D>(current_fixed, moving, 1.0 / step_size, 1e-6f,noise_sigma);
     update_field       = vector_field_exponential(update_field);
     vector_field       = compose_fields(update_field, vector_field);
     vector_field       = gaussian_filter(vector_field, sigma);
     return diffeomorphic_demons_impl(
-        fixed, moving, std::move(vector_field), std::move(update_field), iterations-1, sigma, step_size);
+        fixed, moving, std::move(vector_field), std::move(update_field), iterations-1, sigma, step_size, noise_sigma);
 }
 
 template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
-    const hoNDArray<float>&, const hoNDArray<float>&, unsigned int, float, float);
+    const hoNDArray<float>&, const hoNDArray<float>&, unsigned int, float, float,float);
 template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
-    const hoNDArray<float>&, const hoNDArray<float>&, hoNDArray<vector_td<float, 2>>, unsigned int, float,float);
+    const hoNDArray<float>&, const hoNDArray<float>&, hoNDArray<vector_td<float, 2>>, unsigned int, float,float,float);

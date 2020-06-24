@@ -39,6 +39,7 @@ namespace Gadgetron::T1 {
         unsigned int iterations = 40;
         float regularization_sigma = 2.0f;
         float step_size = 2.0;
+        float noise_sigma = 0.0f;
     }
     ;
 

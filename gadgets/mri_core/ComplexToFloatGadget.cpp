@@ -7,7 +7,7 @@
 #include "hoNDArray_elemwise.h"
 Gadgetron::ComplexToFloatGadget::ComplexToFloatGadget(
     const Gadgetron::Core::Context& context, const Gadgetron::Core::GadgetProperties& props)
-    : PureGadget(props) {
+    : PureGadget(context,props) {
 
     converters = { { ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE, [](const auto& image) { return abs(image); } },
                    { ISMRMRD::ISMRMRD_IMTYPE_PHASE,     [](const auto& image) { return argument(image); } },

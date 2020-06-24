@@ -24,8 +24,12 @@ namespace Gadgetron::Core {
 
     class GenericChannelGadget : public Node, public PropertyMixin {
     public:
-        using PropertyMixin::PropertyMixin;
-        GenericChannelGadget(const Context& context, const GadgetProperties& properties) : PropertyMixin(properties) {}
+        GenericChannelGadget(const Context& context, const GadgetProperties& properties) : PropertyMixin(properties), header{context.header} {}
+
+//        [[deprecated("ChannelGadget should be called with both context and properties")]]
+//        GenericChannelGadget(const GadgetProperties& properties) : PropertyMixin(properties) {}
+    protected:
+        const ISMRMRD::IsmrmrdHeader header ={};
     };
 
     /**
