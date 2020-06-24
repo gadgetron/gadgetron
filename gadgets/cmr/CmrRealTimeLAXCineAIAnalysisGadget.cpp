@@ -617,7 +617,7 @@ namespace Gadgetron {
                 {
                     boost::python::object* pModel = &model;
                     PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-                    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel, 1.0, 0.1, this->oper_RO.value(), this->oper_E1.value());
+                    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
                 }
 
                 pts.print(std::cout);  

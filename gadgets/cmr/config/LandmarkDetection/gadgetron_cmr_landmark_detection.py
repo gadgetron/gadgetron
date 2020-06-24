@@ -128,7 +128,7 @@ def perform_cmr_landmark_detection(im, model, fast_mode=0.0, batch_size=8, p_thr
     #        scores = model(images)
     #else:
 
-    ind = np.arange(0, N, batch_size)
+    ind = np.arange(0, N, int(batch_size))
     scores = torch.zeros((N, 4, images.shape[2], images.shape[3]))
 
     model.eval() 
