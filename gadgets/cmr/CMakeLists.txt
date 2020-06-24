@@ -48,10 +48,13 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
     ${CMAKE_SOURCE_DIR}/toolboxes/cmr
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core
+    ${CMAKE_SOURCE_DIR}/toolboxes/python
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
+    ${PYTHON_INCLUDE_PATH}
+    ${NUMPY_INCLUDE_DIRS}
 )
 
 set( gadgetron_cmr_header_files 
@@ -59,13 +62,15 @@ set( gadgetron_cmr_header_files
     CmrCartesianKSpaceBinningCineGadget.h 
     CmrParametricMappingGadget.h 
     CmrParametricT1SRMappingGadget.h 
-    CmrParametricT2MappingGadget.h )
+    CmrParametricT2MappingGadget.h 
+    CmrRealTimeLAXCineAIAnalysisGadget.h )
 
 set( gadgetron_cmr_src_files 
     CmrCartesianKSpaceBinningCineGadget.cpp 
     CmrParametricMappingGadget.cpp 
     CmrParametricT1SRMappingGadget.cpp 
-    CmrParametricT2MappingGadget.cpp )
+    CmrParametricT2MappingGadget.cpp 
+    CmrRealTimeLAXCineAIAnalysisGadget.cpp )
 
 set( config_BinningCine_files 
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning.xml
@@ -82,9 +87,22 @@ set( config_Mapping_files
 
 source_group(config/Mapping FILES ${config_Mapping_files})
 
+set( config_LandmarkDetection_files 
+    config/LandmarkDetection/CMR_RTCine_LAX_AI.xml
+    )
+
+set( python_LandmarkDetection_files 
+    config/LandmarkDetection/gadgetron_cmr_landmark_detection.py
+    config/LandmarkDetection/gadgetron_cmr_landmark_detection_util.py
+    )
+
+source_group(config/LandmarkDetection FILES ${config_LandmarkDetection_files} ${python_LandmarkDetection_files})
+
 set( config_cmr_files 
     ${config_BinningCine_files} 
-    ${config_Mapping_files} )
+    ${config_Mapping_files} 
+    ${config_LandmarkDetection_files} 
+    ${python_LandmarkDetection_files} )
 
 add_library(gadgetron_cmr SHARED 
     ${gadgetron_cmr_header_files} 
@@ -112,8 +130,14 @@ target_link_libraries(gadgetron_cmr
     ${Boost_LIBRARIES}
 )
 
+if(PYTHONLIBS_FOUND)
+    target_link_libraries(gadgetron_cmr
+                gadgetron_toolbox_python ${PYTHON_LIBRARIES} )
+endif (PYTHONLIBS_FOUND)
+
 install(FILES ${gadgetron_cmr_header_files} DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES ${config_cmr_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES ${python_LandmarkDetection_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_cmr DESTINATION lib COMPONENT main)
