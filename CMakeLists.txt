@@ -130,11 +130,11 @@ if (WIN32)
     add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS -DWIN -D_AMD64_)
     add_definitions(-Zc:__cplusplus)
     #add_definitions(-DUNICODE -D_UNICODE)
-    add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
+    add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients/
     if (HAS_64_BIT)
         add_definitions(-DWIN64 -D_WIN64)
     endif ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17 /openmp:experimental")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17 /openmp:experimental /DNOGDI")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w1")
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
