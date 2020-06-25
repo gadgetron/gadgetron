@@ -93,6 +93,11 @@ namespace Gadgetron {
             {
                 GILLock lg;
                 Gadgetron::initialize_python();
+
+                PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
+                lax_landmark_detection_model_ = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
+                bp::incref(lax_landmark_detection_model_.ptr());
+
                 //PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
                 //lax_landmark_detection_model_ = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
                 //bp::incref(lax_landmark_detection_model_.ptr());
@@ -610,12 +615,12 @@ namespace Gadgetron {
                 // Gadgetron::fill(lax_images, 1.0f);
 
                 //GILLock lg;
-                PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
+                /*PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
                 boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
 
-                bp::incref(model.ptr());
+                bp::incref(model.ptr());*/
                 {
-                    boost::python::object* pModel = &model;
+                    boost::python::object* pModel = &lax_landmark_detection_model_;
                     PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
                     std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
                 }
