@@ -35,7 +35,7 @@ if (BUILD_PYTHON_SUPPORT)
     add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
 endif () # BUILD_PYTHON_SUPPORT
 
-find_package(DCMTK)
+find_package(DCMTK CONFIG)
 if(DCMTK_FOUND)
   message("Compiling DICOM gadget")
   add_subdirectory(dicom)
