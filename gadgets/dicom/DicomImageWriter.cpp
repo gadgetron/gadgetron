@@ -10,16 +10,18 @@
 #include "ismrmrd/meta.h"
 
 // DCMTK includes
-#include "dcmtk/config/osconfig.h"
-#include "dcmtk/ofstd/ofstdinc.h"
 #define INCLUDE_CSTDLIB
 #define INCLUDE_CSTDIO
 #define INCLUDE_CSTRING
+#define NOGDI
+#include "dcmtk/config/osconfig.h"
+#include "dcmtk/ofstd/ofstdinc.h"
+
 #include "dcmtk/dcmdata/dcostrmb.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-namespace Gadgetron {
 
+namespace Gadgetron {
     void DicomImageWriter::serialize(std::ostream& stream, const DcmFileFormat& dcmInput,
         const Core::optional<std::string>& dcm_filename_message,
         const Core::optional<ISMRMRD::MetaContainer>& dcm_meta_message) {
