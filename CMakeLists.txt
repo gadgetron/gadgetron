@@ -184,7 +184,6 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
-set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
 add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
@@ -220,7 +219,7 @@ endif()
 add_definitions(-DUSE_CUDA)
 set( GADGETRON_CUDA_FOUND_BOOL 1 )
 include_directories( ${CUDA_INCLUDE_DIRS} )
-#set(CUDA_PROPAGATE_HOST_FLAGS ON)
+set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
 set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 #set(CMAKE_CUDA_STANDARD 17)
