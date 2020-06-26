@@ -45,6 +45,29 @@ set( config_cmr_files
     ${config_BinningCine_files} 
     ${config_Mapping_files})
 
+if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+
+    message("Build python cmr gadgets ... ")
+    include_directories(
+      ${CMAKE_SOURCE_DIR}/core
+      ${CMAKE_SOURCE_DIR}/toolboxes/python
+      ${PYTHON_INCLUDE_PATH}
+      ${NUMPY_INCLUDE_DIRS}
+      )
+
+    set( gadgetron_cmr_header_files ${gadgetron_cmr_header_files} CmrRealTimeLAXCineAIAnalysisGadget.h)
+    set( gadgetron_cmr_src_files ${gadgetron_mricore_src_files} CmrRealTimeLAXCineAIAnalysisGadget.cpp)
+    set( config_cmr_files ${config_cmr_files} config/LandmarkDetection/CMR_RTCine_LAX_AI.xml)
+
+
+    set( python_LandmarkDetection_files 
+        config/LandmarkDetection/gadgetron_cmr_landmark_detection.py
+        config/LandmarkDetection/gadgetron_cmr_landmark_detection_util.py
+        )
+
+    install(FILES ${python_LandmarkDetection_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+endif ()
+
 add_library(gadgetron_cmr SHARED 
     ${gadgetron_cmr_header_files} 
     ${gadgetron_cmr_src_files})
