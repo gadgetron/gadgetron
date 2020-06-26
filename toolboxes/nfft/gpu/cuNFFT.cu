@@ -29,7 +29,6 @@
 #include "cudaDeviceManager.h"
 #include "check_CUDA.h"
 
-#include <thrust/system/cuda/detail/cub/cub.cuh>
 // Includes - CUDA
 #include <cuda_runtime.h>
 #include <math_constants.h>
@@ -524,8 +523,7 @@ Gadgetron::cuNFFT_impl<REAL, D, CONV>::compute_deapodization_filter(bool FFTed) 
 template<class REAL, unsigned int D>
     void cuNFFT::convolverNC2C<REAL, D, ConvolutionType::SPARSE_MATRIX>::prepare(cuNFFT_impl<REAL, D, ConvolutionType::SPARSE_MATRIX> *plan,
                                          const thrust::device_vector<vector_td<REAL, D>> &trajectory) {
-        matrix = ::make_NFFT_matrix(trajectory,plan->get_matrix_size_os(),plan->beta,plan->W);
-        transposed = transpose(matrix);
+        matrix = std::make_unique<cuCsrMatrix<complext<REAL>>>(::make_NFFT_matrix(trajectory,plan->get_matrix_size_os(),plan->beta,plan->W));
 }
 
 template<class REAL, unsigned int D>
@@ -559,7 +557,7 @@ cuNDArray <complext<REAL>> samples_view(sample_dims, const_cast<complext<REAL>*>
 //
 //sparseMV(complext<REAL>(1.0), complext<REAL>(1.0), transposed, samples_view, image_view,false);
 //}
-sparseMM(complext<REAL>(1.0),complext<REAL>(1.0),transposed,samples_view,image_view,false);
+sparseMM(complext<REAL>(1.0),complext<REAL>(1.0),*matrix,samples_view,image_view,true);
 
 
 }
