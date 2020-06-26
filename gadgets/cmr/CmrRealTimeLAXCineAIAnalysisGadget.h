@@ -7,11 +7,6 @@
 
 #include "gadgetron_cmr_export.h"
 #include "GenericReconBase.h"
-
-#ifdef PYVER
-    #include "python_toolbox.h"
-#endif // PYVER
-
 #include "hoNDImage_util.h"
 #include "hoMRImage.h"
 #include "hoNDImageContainer2D.h"
@@ -41,16 +36,7 @@ namespace Gadgetron {
 
     protected:
 
-        /// -------------------------------------------------
-        /// parameters for AI
-        /// -------------------------------------------------
-#ifdef PYVER
-        boost::python::object lax_landmark_detection_model_;
-#endif // PYVER
-
         std::string gt_home_;
-        hoNDArray<float> logo_;
-
         ISMRMRD::EncodingCounters meas_max_idx_;
 
         // --------------------------------------------------

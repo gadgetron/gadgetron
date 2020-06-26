@@ -1,5 +1,9 @@
 
 #include "CmrRealTimeLAXCineAIAnalysisGadget.h"
+#ifdef PYVER
+    #include "python_toolbox.h"
+#endif // PYVER
+
 #include "gadgetron_home.h"
 #include "GadgetronTimer.h"
 #include "mri_core_def.h"
@@ -83,56 +87,6 @@ namespace Gadgetron {
 
         GDEBUG_STREAM("meas_max_idx_.slice is " << meas_max_idx_.slice);
 
-        // ---------------------------------------------------------
-        // load AI model
-        // ---------------------------------------------------------
-#ifdef PYVER
-        if (this->perform_AI.value())
-        {
-            try
-            {
-                GILLock lg;
-                Gadgetron::initialize_python();
-
-                PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-                lax_landmark_detection_model_ = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
-                bp::incref(lax_landmark_detection_model_.ptr());
-
-                //PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-                //lax_landmark_detection_model_ = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
-                //bp::incref(lax_landmark_detection_model_.ptr());
-
-                // PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-
-                // lax_landmark_detection_model_ = load_model_cmr_landmark_detection(this->gt_home_, "CMR_landmark_network_ch2_ch3_ch4_myo_pts_LossMultiSoftProb_KLD_Dice_CMR_View__Pytorch_1.5.0_2020-06-06_20200606_034214.pts");
-
-                // bp::incref(lax_landmark_detection_model_.ptr());
-
-                // hoNDArray<float> pts, probs;
-
-                // hoNDArray<float> lax_images;
-                // lax_images.create(256, 256, 1);
-                // Gadgetron::fill(lax_images, 1.0f);
-
-                // {
-                //     boost::python::object* pModel = &lax_landmark_detection_model_;
-                //     PythonFunction< hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-                //     pts = perform_cmr_landmark_detection(lax_images, *pModel);
-                // }
-
-                // pts.print(std::cout);
-
-                /*PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-                lax_landmark_detection_model_ = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
-                bp::incref(lax_landmark_detection_model_.ptr());*/
-            }
-            catch (...)
-            {
-                GERROR_STREAM("Loading CMR RTCine LAX model failed ... ");
-            }
-        }
-#endif // PYVER
-
         return GADGET_OK;
     }
 
@@ -195,33 +149,6 @@ namespace Gadgetron {
             m1->release();
             return GADGET_FAIL;
         }
-
-        // hoNDArray<float> pts, probs;
-        // {
-        //     hoNDArray<float> lax_images;
-        //     lax_images.create(256, 256, 1);
-        //     Gadgetron::fill(lax_images, 1.0f);
-                
-        //     GILLock lg;
-        //     PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-
-        //     boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, "CMR_landmark_network_ch2_ch3_ch4_myo_pts_LossMultiSoftProb_KLD_Dice_CMR_View__Pytorch_1.5.0_2020-06-06_20200606_034214.pts");
-
-        //     // bp::incref(model.ptr());
-
-                
-
-        //     {
-        //         boost::python::object* pModel = &model;
-        //         PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-        //         std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel);
-        //     }
-
-        //     pts.print(std::cout);  
-        //     probs.print(std::cout);
-        // }
-
-        // return GADGET_OK;
 
         // call the AI analysis
         IsmrmrdImageArray lax_ai, report;
@@ -426,31 +353,6 @@ namespace Gadgetron {
                 gt_exporter_.export_array(output, this->debug_folder_full_path_ + "/" + str.str());
             }
 
-            // {
-            //     GDEBUG_STREAM("=============================================");
-            //     hoNDArray<float> pts, probs;
-            //     hoNDArray<float> lax_images;
-            //     lax_images.create(256, 256, 1);
-            //     Gadgetron::fill(lax_images, 1.0f);
-                    
-            //     GILLock lg;
-            //     PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-
-            //     boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, "CMR_landmark_network_ch2_ch3_ch4_myo_pts_LossMultiSoftProb_KLD_Dice_CMR_View__Pytorch_1.5.0_2020-06-06_20200606_034214.pts");
-
-            //     // bp::incref(model.ptr());
-            //     {
-            //         boost::python::object* pModel = &model;
-            //         PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-            //         std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel);
-            //     }
-
-            //     pts.print(std::cout);  
-            //     probs.print(std::cout);
-
-            //     GDEBUG_STREAM("=============================================");
-            //     return GADGET_FAIL;
-            // }
             // -------------------------------------------
             // resample to 1mm2
             ImageContainerMagType lax_highres;
@@ -483,32 +385,6 @@ namespace Gadgetron {
                 gt_exporter_.export_array(output, this->debug_folder_full_path_ + "/" + str.str());
             }
 
-            // {
-            //     GDEBUG_STREAM("=============================================");
-            //     hoNDArray<float> pts, probs;
-            //     hoNDArray<float> lax_images;
-            //     lax_images.create(256, 256, 1);
-            //     Gadgetron::fill(lax_images, 1.0f);
-                    
-            //     GILLock lg;
-            //     PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-
-            //     boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, "CMR_landmark_network_ch2_ch3_ch4_myo_pts_LossMultiSoftProb_KLD_Dice_CMR_View__Pytorch_1.5.0_2020-06-06_20200606_034214.pts");
-
-            //     // bp::incref(model.ptr());
-            //     {
-            //         boost::python::object* pModel = &model;
-            //         PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-            //         std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel);
-            //     }
-
-            //     pts.print(std::cout);  
-            //     probs.print(std::cout);
-
-            //     GDEBUG_STREAM("=============================================");
-            //     return GADGET_FAIL;
-            // }
-
             // -------------------------------------------
             // convert to dicom orientation
 
@@ -529,31 +405,6 @@ namespace Gadgetron {
             RO = lax_highres_dicom(0, 0).get_size(0);
             E1 = lax_highres_dicom(0, 0).get_size(1);
 
-            // {
-            //     GDEBUG_STREAM("=============================================");
-            //     hoNDArray<float> pts, probs;
-            //     hoNDArray<float> lax_images;
-            //     lax_images.create(RO, E1, 1);
-            //     Gadgetron::fill(lax_images, 1.0f);
-                    
-            //     GILLock lg;
-            //     PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-
-            //     boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, "CMR_landmark_network_ch2_ch3_ch4_myo_pts_LossMultiSoftProb_KLD_Dice_CMR_View__Pytorch_1.5.0_2020-06-06_20200606_034214.pts");
-
-            //     // bp::incref(model.ptr());
-            //     {
-            //         boost::python::object* pModel = &model;
-            //         PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-            //         std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel);
-            //     }
-
-            //     pts.print(std::cout);  
-            //     probs.print(std::cout);
-
-            //     GDEBUG_STREAM("=============================================");
-            //     return GADGET_FAIL;
-            // }
             // -------------------------------------------
 
             size_t PHS_detected = PHS;
@@ -574,55 +425,21 @@ namespace Gadgetron {
 
             lax_images.print(std::cout);
 
-            // {
-            //     GDEBUG_STREAM("=============================================");
-            //     hoNDArray<float> pts, probs;
-            //     hoNDArray<float> lax_images;
-            //     lax_images.create(RO, E1, 8);
-            //     Gadgetron::fill(lax_images, 1.0f);
-                    
-            //     GILLock lg;
-            //     PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
-
-            //     boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, "CMR_landmark_network_ch2_ch3_ch4_myo_pts_LossMultiSoftProb_KLD_Dice_CMR_View__Pytorch_1.5.0_2020-06-06_20200606_034214.pts");
-
-            //     // bp::incref(model.ptr());
-            //     {
-            //         boost::python::object* pModel = &model;
-            //         PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-            //         std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel);
-            //     }
-
-            //     pts.print(std::cout);  
-            //     probs.print(std::cout);
-
-            //     GDEBUG_STREAM("=============================================");
-            //     return GADGET_FAIL;
-            // }
-
             // ---------------------------------------------------------
             // call cmr landmark detection
             hoNDArray<float> pts, probs;
-
-            //pts.create(3, 2, 8);
-            //Gadgetron::fill(pts, 1.0f);
-            //if(false)
             {
                 GDEBUG_STREAM("=============================================");
-                    
-                // hoNDArray<float> lax_images;
-                // lax_images.create(RO, E1, 8);
-                // Gadgetron::fill(lax_images, 1.0f);
 
-                //GILLock lg;
-                /*PythonFunction<boost::python::object> load_model_cmr_landmark_detection("cmr_landmark_detection", "load_model_cmr_landmark_detection");
+                // load model
+                PythonFunction<boost::python::object> load_model_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "load_model_cmr_landmark_detection");
                 boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
+                bp::incref(model.ptr());
 
-                bp::incref(model.ptr());*/
+                // apply model
                 {
-                    boost::python::object* pModel = &lax_landmark_detection_model_;
-                    PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("cmr_landmark_detection", "perform_cmr_landmark_detection");
-                    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, *pModel, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
+                    PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
+                    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, model, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
                 }
 
                 pts.print(std::cout);  

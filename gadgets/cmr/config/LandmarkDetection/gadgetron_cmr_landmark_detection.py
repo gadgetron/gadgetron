@@ -28,17 +28,11 @@ def load_model_cmr_landmark_detection(model_dir, model_file):
     m = None
 
     try:
-        #curr_dir = os.getcwd()
-        #os.chdir(model_dir)
-
         print("Load cmr landmark model : %s" % os.path.join(model_dir, model_file), file=sys.stderr)
         t0 = time.time()
         m = torch.jit.load(os.path.join(model_dir, model_file))
         t1 = time.time()
         print("Model loading took %f seconds " % (t1-t0), file=sys.stderr)
-
-        #os.chdir(curr_dir)
-
         sys.stderr.flush()
     except Exception as e:
         print("Error happened in load_model_cmr_landmark_detection for %s" % model_file, file=sys.stderr)
