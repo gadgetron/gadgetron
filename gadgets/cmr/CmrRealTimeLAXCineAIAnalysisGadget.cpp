@@ -22,13 +22,30 @@ namespace Gadgetron {
         {
             Gadgetron::initialize_python();
 
-            boost::filesystem::path gadgetron_python_path
-                = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
+            // boost::filesystem::path gadgetron_python_path
+            //     = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
 
-            Gadgetron::add_python_path(gadgetron_python_path.generic_string());
+            // Gadgetron::add_python_path(gadgetron_python_path.generic_string());
 
-            this->gt_home_ = gadgetron_python_path.generic_string();
-            GDEBUG_STREAM("Set up python path : " << this->gt_home_);
+            // this->gt_home_ = gadgetron_python_path.generic_string();
+            // GDEBUG_STREAM("Set up python path : " << this->gt_home_);
+
+            char* gt_home = std::getenv("GADGETRON_HOME");
+            std::string path_name;
+            if (gt_home != NULL)
+            {
+                size_t pos = std::string(gt_home).rfind("gadgetron");
+                gt_home[pos - 1] = '\0';
+                path_name = std::string(gt_home) + std::string("/share/gadgetron/python");
+
+                if (Gadgetron::add_python_path(path_name) == GADGET_FAIL)
+                {
+                    GERROR_STREAM("Failed to add path: " << path_name << " to python ... ");
+                }
+
+                this->gt_home_ = path_name;
+                GDEBUG_STREAM("Set up python path : " << this->gt_home_);
+            }
         }
         catch (...)
         {
