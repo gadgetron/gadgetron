@@ -6,8 +6,11 @@
 #pragma once
 
 #include "gadgetron_cmr_export.h"
+#ifdef PYVER
+    #include "python_toolbox.h"
+#endif // PYVER
+
 #include "GenericReconBase.h"
-#include "hoNDImage_util.h"
 #include "hoMRImage.h"
 #include "hoNDImageContainer2D.h"
 
