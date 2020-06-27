@@ -7,11 +7,41 @@ namespace Gadgetron {
 
     GenericReconCartesianGrappaAIGadget::GenericReconCartesianGrappaAIGadget() : BaseClass()
     {
-        Gadgetron::initialize_python();
-        boost::filesystem::path gadgetron_python_path
-            = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
-        Gadgetron::add_python_path(gadgetron_python_path.generic_string());
-        this->gt_home_ = gadgetron_python_path.generic_string();
+        try
+        {
+            Gadgetron::initialize_python();
+
+            std::string gadgetron_home = this->context.paths.gadgetron_home.generic_string();
+
+            if (!gadgetron_home.empty())
+            {
+                boost::filesystem::path gadgetron_python_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
+                Gadgetron::add_python_path(gadgetron_python_path.generic_string());
+
+                this->gt_home_ = gadgetron_python_path.generic_string();
+                GDEBUG_STREAM("Set up python path using context : " << this->gt_home_);
+            }
+            else
+            {
+                char* gt_home = std::getenv("GADGETRON_HOME");
+                std::string path_name;
+                if (gt_home != NULL)
+                {
+                    size_t pos = std::string(gt_home).rfind("gadgetron");
+                    gt_home[pos - 1] = '\0';
+                    path_name = std::string(gt_home) + std::string("/share/gadgetron/python");
+
+                    Gadgetron::add_python_path(path_name);
+                    this->gt_home_ = path_name;
+                    GDEBUG_STREAM("Set up python path using env variable : " << this->gt_home_);
+                }
+            }
+        }
+        catch (...)
+        {
+            this->gt_home_.clear();
+            GERROR_STREAM("Exception happened when adding path to python ... ");
+        }
     }
 
     GenericReconCartesianGrappaAIGadget::~GenericReconCartesianGrappaAIGadget()
