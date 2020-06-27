@@ -4,8 +4,6 @@ endif ()
 
 find_package(ZFP)
 
-
-
 include_directories(${HDF5_INCLUDE_DIR})
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
@@ -179,6 +177,7 @@ if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
       set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} GenericReconCartesianGrappaAIGadget.cpp)
       set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} config/Generic_Cartesian_Grappa_AI.xml)
 
+      set( gadgetron_python_models_files models/grappa_ai.py )
 endif ()
 
 add_library(gadgetron_mricore SHARED
@@ -225,8 +224,11 @@ if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
    target_link_libraries(gadgetron_mricore
                         gadgetron_toolbox_python
                          )
-endif ()
 
+    install(FILES
+        ${gadgetron_python_models_files}
+        DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+endif ()
 
 install(FILES
         gadgetron_mricore_export.h
@@ -237,11 +239,10 @@ install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_
 
 install(TARGETS gadgetron_mricore
         EXPORT gadgetron-export
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	RUNTIME DESTINATION bin
-	COMPONENT main
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        COMPONENT main
 )
-
 
 set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
