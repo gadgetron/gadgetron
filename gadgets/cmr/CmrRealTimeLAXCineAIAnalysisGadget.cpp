@@ -424,15 +424,24 @@ namespace Gadgetron {
                 GDEBUG_STREAM("=============================================");
 
                 // load model
-                PythonFunction<boost::python::object> load_model_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "load_model_cmr_landmark_detection");
-                boost::python::object model = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
-                bp::incref(model.ptr());
+                //boost::python::object model;
+                //{
+                //    GILLock lg;
+                //    PythonFunction<boost::python::object> load_model_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "load_model_cmr_landmark_detection");
+                //    model = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
+                //    bp::incref(model.ptr());
+                //}
 
-                // apply model
-                {
-                    PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
-                    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, model, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
-                }
+                //// apply model
+                //{
+                //    GILLock lg;
+                //    PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
+                //    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, model, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
+                //}
+
+                GILLock lg;
+                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection_with_model("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection_with_model");
+                std::tie(pts, probs) = perform_cmr_landmark_detection_with_model(lax_images, this->gt_home_, this->lax_landmark_detection_model.value(), 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
 
                 pts.print(std::cout);  
                 probs.print(std::cout);

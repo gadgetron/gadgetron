@@ -40,18 +40,20 @@ def load_model_cmr_landmark_detection(model_dir, model_file):
 
     return m
 
-def perform_cmr_landmark_detection_with_model(im, model_dir, model_file, p_thresh=0.1, oper_RO=352, oper_E1=352):
-    model = torch.jit.load(os.path.join(model_dir, model_file))
-    #print(model, file=sys.stderr)
+def perform_cmr_landmark_detection_with_model(im, model_dir, model_file, fast_mode=0.0, batch_size=8, p_thresh=0.1, oper_RO=352, oper_E1=352):
+
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+
+    print('perform_cmr_landmark_detection, using device:', device, file=sys.stderr)
+
+    model = torch.jit.load(f=os.path.join(model_dir, model_file), map_location=device)
+    print(model, file=sys.stderr)
     sys.stderr.flush()
 
-    pts, probs = perform_cmr_landmark_detection(im, model, p_thresh=p_thresh, oper_RO=oper_RO, oper_E1=oper_E1)
-    return pts, probs
-
-def perform_cmr_landmark_detection_fast(im, model, p_thresh=0.1, oper_RO=352, oper_E1=352):
-    pts, probs = perform_cmr_landmark_detection(im, model, fast_mode=1.0, p_thresh=p_thresh, oper_RO=oper_RO, oper_E1=oper_E1)
-
-    print("perform_cmr_landmark_detection_fast, pos 1 ", file=sys.stderr)
+    pts, probs = perform_cmr_landmark_detection(im, model, fast_mode=fast_mode, batch_size=batch_size, p_thresh=p_thresh, oper_RO=oper_RO, oper_E1=oper_E1)
     return pts, probs
 
 def perform_cmr_landmark_detection(im, model, fast_mode=0.0, batch_size=8, p_thresh=0.1, oper_RO=352, oper_E1=352):
@@ -113,8 +115,8 @@ def perform_cmr_landmark_detection(im, model, fast_mode=0.0, batch_size=8, p_thr
 
     print('perform_cmr_landmark_detection, using device:', device, file=sys.stderr)
 
-    model = model.to(device=device)
     images = images.to(device=device, dtype=torch.float32)
+    model = model.to(device=device)
 
     #if(device == torch.device('cpu')):
     #    model.eval() 
