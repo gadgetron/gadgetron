@@ -15,6 +15,9 @@ set(cmr_header_fiels cmr_export.h
                     cmr_strain_analysis.h 
                     cmr_radial_thickening.h 
                     cmr_analytical_strain.h 
+                    cmr_file_and_directory_handling.h 
+                    cmr_image_container_util.h 
+                    cmr_ismrmrd_util.h 
                     )
 
 set(cmr_src_fiels cmr_kspace_binning.cpp 
@@ -27,6 +30,9 @@ set(cmr_src_fiels cmr_kspace_binning.cpp
                 cmr_strain_analysis.cpp 
                 cmr_radial_thickening.cpp 
                 cmr_analytical_strain.cpp 
+                cmr_file_and_directory_handling.cpp 
+                cmr_image_container_util.cpp 
+                cmr_ismrmrd_util.cpp 
                 )
 
 add_library(gadgetron_toolbox_cmr SHARED 
@@ -45,7 +51,6 @@ target_link_libraries(gadgetron_toolbox_cmr
                     gadgetron_toolbox_mri_core 
                     gadgetron_toolbox_cpudwt 
                     gadgetron_toolbox_cpuoperator
-
                     gadgetron_toolbox_cpu_image )
 
 target_include_directories(gadgetron_toolbox_cmr
