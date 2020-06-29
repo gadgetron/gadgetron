@@ -7,11 +7,8 @@ namespace Gadgetron {
 
     GenericReconCartesianGrappaAIGadget::GenericReconCartesianGrappaAIGadget() : BaseClass()
     {
-        Gadgetron::initialize_python();
-        boost::filesystem::path gadgetron_python_path
-            = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
-        Gadgetron::add_python_path(gadgetron_python_path.generic_string());
-        this->gt_home_ = gadgetron_python_path.generic_string();
+        
+        
     }
 
     GenericReconCartesianGrappaAIGadget::~GenericReconCartesianGrappaAIGadget()
@@ -20,6 +17,13 @@ namespace Gadgetron {
 
     int GenericReconCartesianGrappaAIGadget::process_config(ACE_Message_Block *mb)
     {
+        boost::filesystem::path gadgetron_python_path
+            = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
+        GDEBUG_STREAM("PYTHON_PATH " << gadgetron_python_path.string());
+        Gadgetron::initialize_python();
+        Gadgetron::add_python_path(gadgetron_python_path.generic_string());
+        this->gt_home_ = gadgetron_python_path.generic_string();
+
         GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
 
         // -------------------------------------------------
