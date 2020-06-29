@@ -7,8 +7,6 @@ namespace Gadgetron {
 
     GenericReconCartesianGrappaAIGadget::GenericReconCartesianGrappaAIGadget() : BaseClass()
     {
-        
-        
     }
 
     GenericReconCartesianGrappaAIGadget::~GenericReconCartesianGrappaAIGadget()
