@@ -13,7 +13,7 @@ target_link_libraries(gadgetron_spiral
   gadgetron_mricore
   gadgetron_toolbox_mri_core
   gadgetron_toolbox_log
-	gadetron_toolbox_spiral
+	gadgetron_toolbox_spiral
   gadgetron_toolbox_cpucore)
 
 if (CUDA_FOUND)
