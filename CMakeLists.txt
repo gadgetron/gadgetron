@@ -184,7 +184,6 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
-set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
 add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
@@ -215,8 +214,6 @@ endif()
 add_definitions(-DUSE_CUDA)
 set( GADGETRON_CUDA_FOUND_BOOL 1 )
 include_directories( ${CUDA_INCLUDE_DIRS} )
-set(CUDA_PROPAGATE_HOST_FLAGS ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-std=c++17" )
 set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
@@ -345,7 +342,7 @@ if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
 endif()
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_PYTHON3_TARGET})
 install(TARGETS python EXPORT gadgetron-export)
 endif()
 
