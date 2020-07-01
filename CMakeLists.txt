@@ -184,6 +184,7 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
+set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
 add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
@@ -194,6 +195,11 @@ find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options fil
 else()
 find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 endif()
+add_library(boost INTERFACE)
+set_target_properties(boost PROPERTIES
+INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+#set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
+target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
 
 if (NOT DEFINED Boost_VERSION_STRING)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
@@ -216,8 +222,10 @@ set( GADGETRON_CUDA_FOUND_BOOL 1 )
 include_directories( ${CUDA_INCLUDE_DIRS} )
 set(CUDA_PROPAGATE_HOST_FLAGS ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
+set(CUDA_PROPAGATE_HOST_FLAGS ON)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-std=c++17" )
 set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-#set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 17)
 #  endif ()
 #set(CUDA_VERBOSE_BUILD ON)
 

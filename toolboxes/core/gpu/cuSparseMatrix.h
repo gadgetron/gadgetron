@@ -12,72 +12,49 @@
 #include "cuNDArray.h"
 #include "cudaDeviceManager.h"
 
-namespace Gadgetron{
+namespace Gadgetron
+{
 
 
+	template <class T>
+	struct cuCsrMatrix
+	{
 
-EXPORTGPUCORE std::string gadgetron_getCusparseErrorString(cusparseStatus_t err);
+		cuCsrMatrix(size_t rows, size_t cols, thrust::device_vector<int> csrRow, thrust::device_vector<int> csrColdnd, thrust::device_vector<T> data) : csrRow{std::move(csrRow)}, csrColdnd{std::move(csrColdnd)}, data{std::move(data)}, rows{rows}, cols{cols}
+		{
+			cusparseCreateCsr(&descr, rows, cols, this->data.size(), 
+				thrust::raw_pointer_cast(this->csrRow.data()), thrust::raw_pointer_cast(this->csrColdnd.data()), thrust::raw_pointer_cast(this->data.data()), 
+				CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO, Gadgetron::cuda_datatype<T>());
+		}
 
-inline void copysparseMatDescr(cusparseMatDescr_t& destination, const cusparseMatDescr_t& source){
-    CUSPARSE_CALL(cusparseSetMatType(destination,cusparseGetMatType(source)));
-    CUSPARSE_CALL(cusparseSetMatFillMode(destination,cusparseGetMatFillMode(source)));
-    CUSPARSE_CALL(cusparseSetMatDiagType(destination,cusparseGetMatDiagType(source)));
-    CUSPARSE_CALL(cusparseSetMatIndexBase(destination,cusparseGetMatIndexBase(source)));
-}
+		~cuCsrMatrix()
+		{
+			if (this->descr)
+				cusparseDestroySpMat(this->descr);
+		}
 
-template<class T> struct cuCsrMatrix {
+		cuCsrMatrix(cuCsrMatrix &&other)
+		{
+			*this = std::move(other);
+		}
 
-	cuCsrMatrix(){
-	CUSPARSE_CALL(cusparseCreateMatDescr(&descr));
-	}
+		cuCsrMatrix &operator=(cuCsrMatrix &&other)
+		{
+			this->descr = other.descr;
+			other.descr = nullptr;
+			this->csrColdnd = std::move(other.csrColdnd);
+			this->csrRow = std::move(other.csrRow);
+			this->data = std::move(this->data);
+			return *this;
+		}
 
-	~cuCsrMatrix(){
-		cusparseDestroyMatDescr(descr);
-	}
+		size_t rows, cols;
+		thrust::device_vector<int> csrRow, csrColdnd;
+		thrust::device_vector<T> data;
+		cusparseSpMatDescr_t descr;
+	};
 
-
-	cuCsrMatrix(cuCsrMatrix&& other){
-		CUSPARSE_CALL(cusparseCreateMatDescr(&descr));
-		*this = std::move(other);
-	}
-
-	cuCsrMatrix(const cuCsrMatrix& other){
-		CUSPARSE_CALL(cusparseCreateMatDescr(&descr));
-		*this = other;
-	}
-
-	cuCsrMatrix& operator=(cuCsrMatrix&& other){
-		copysparseMatDescr(descr,other.descr);
-		csrRow = std::move(other.csrRow);
-		csrColdnd = std::move(other.csrColdnd);
-		data = std::move(other.data);
-		m = other.m;
-		n = other.n;
-		nnz = other.nnz;
-		return *this;
-	}
-
-	cuCsrMatrix& operator=(const cuCsrMatrix& other){
-		copysparseMatDescr(descr,other.descr);
-		csrRow = other.csrRow;
-		csrColdnd = other.csrColdnd;
-		data = other.data;
-		m = other.m;
-		n = other.n;
-		nnz = other.nnz;
-		return *this;
-	}
-
-	int m,n, nnz;
-	thrust::device_vector<int> csrRow, csrColdnd;
-	thrust::device_vector<T> data;
-	cusparseMatDescr_t descr;
-};
-
-
-
-
-/**
+	/**
  * Performs a sparse matrix vector multiplication: vec_out = alpha*Mat * beta*vec_in
  * @param alpha
  * @param beta
@@ -86,10 +63,10 @@ template<class T> struct cuCsrMatrix {
  * @param vec_out
  * @param adjoint
  */
-template<class T> EXPORTGPUCORE void sparseMV(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & vec_in, cuNDArray<T>& vec_out, bool adjoint=false);
+	template <class T>
+	EXPORTGPUCORE void sparseMV(T alpha, T beta, const cuCsrMatrix<T> &mat, const cuNDArray<T> &vec_in, cuNDArray<T> &vec_out, bool adjoint = false);
 
-template<class T> EXPORTGPUCORE void sparseMM(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & mat_in, cuNDArray<T>& mat_out, bool adjoint=false);
+	template <class T>
+	EXPORTGPUCORE void sparseMM(T alpha, T beta, const cuCsrMatrix<T> &mat, const cuNDArray<T> &mat_in, cuNDArray<T> &mat_out, bool adjoint = false);
 
-template<class T> EXPORTGPUCORE cuCsrMatrix<T> transpose(const cuCsrMatrix<T>& matrix);
-
-}
+} // namespace Gadgetron
