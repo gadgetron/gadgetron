@@ -76,15 +76,6 @@ Gadgetron::NFFT_internal::NFFT_Matrix<REAL>
 Gadgetron::NFFT_internal::make_NFFT_matrix(const Gadgetron::hoNDArray<Gadgetron::vector_td<REAL, D>> trajectories,
                                   const Gadgetron::vector_td<size_t, D> &image_dims, REAL W,
                                   const Gadgetron::vector_td<REAL, D> &beta) {
-    GadgetronTimer timer("Make NFFT");
-//    std::vector<std::vector<size_t>> rowind;
-//    rowind.reserve(trajectories.get_number_of_elements() * std::ceil(std::pow(W, 3)));
-
-//    std::vector<size_t> colptr;
-//    colptr.reserve(trajectories.get_number_of_elements() + 1);
-
-//    std::vector<std::vector<REAL>> weights;
-//    weights.reserve(trajectories.get_number_of_elements() * std::ceil(std::pow(W, 3)));
 
     NFFT_Matrix<REAL> matrix(trajectories.get_number_of_elements(),prod(image_dims));
 #pragma omp parallel for 
@@ -99,7 +90,6 @@ Gadgetron::NFFT_internal::make_NFFT_matrix(const Gadgetron::hoNDArray<Gadgetron:
 template<class REAL>
 Gadgetron::NFFT_internal::NFFT_Matrix<REAL>
 Gadgetron::NFFT_internal::transpose(const Gadgetron::NFFT_internal::NFFT_Matrix<REAL> &matrix) {
-    GadgetronTimer timer("Transpose");
 
     auto work_index = boost::irange(size_t(0),matrix.n_cols);
 

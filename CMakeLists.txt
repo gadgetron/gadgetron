@@ -194,11 +194,6 @@ find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options fil
 else()
 find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 endif()
-add_library(boost INTERFACE)
-set_target_properties(boost PROPERTIES
-INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
-#set_property(TARGET boost PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-target_link_libraries(boost INTERFACE ${Boost_LIBRARIES} ${CMAKE_DL_LIBS})
 
 if (NOT DEFINED Boost_VERSION_STRING)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
@@ -346,11 +341,9 @@ endif()
 set_property(TARGET python PROPERTY
 INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(boost INTERFACE python)
 install(TARGETS python EXPORT gadgetron-export)
 endif()
 
-install(TARGETS boost EXPORT gadgetron-export)
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
 message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")

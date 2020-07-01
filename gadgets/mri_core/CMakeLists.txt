@@ -201,7 +201,6 @@ target_link_libraries(gadgetron_mricore
         gadgetron_toolbox_cpuoperator
         gadgetron_toolbox_cpuklt
         gadgetron_toolbox_mri_core
-        boost
         )
 
 target_include_directories(gadgetron_mricore
