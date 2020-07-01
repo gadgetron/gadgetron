@@ -9,8 +9,8 @@ target_link_libraries(cpu_denoise_TV
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math 
                     gadgetron_toolbox_hostutils
-                    boost
                     BLAS
+                    Boost::system
                     )
 
 

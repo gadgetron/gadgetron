@@ -2,11 +2,11 @@
 #define SpiralToGenericGadget_H
 #pragma once
 
-#include "gadgetron_spiral_export.h"
+#include "../../toolboxes/mri/spiral/TrajectoryParameters.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
+#include "gadgetron_spiral_export.h"
 #include "hoNDArray.h"
-#include "TrajectoryParameters.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>

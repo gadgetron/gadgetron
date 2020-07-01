@@ -39,7 +39,6 @@ target_link_libraries(gadgetron_toolbox_mri_core
         gadgetron_toolbox_cpucore_math
         ISMRMRD::ISMRMRD
         armadillo
-        boost
         gadgetron_toolbox_cpufft
         gadgetron_toolbox_cpuklt
         gadgetron_toolbox_image_analyze_io
