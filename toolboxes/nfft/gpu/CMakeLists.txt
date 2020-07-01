@@ -29,13 +29,13 @@ target_link_libraries(gadgetron_toolbox_gpunfft
   ${CUDA_CUBLAS_LIBRARIES}
   ${CUDA_CUSPARSE_LIBRARIES}
   )
-
-  install(TARGETS gadgetron_toolbox_gpunfft
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	RUNTIME DESTINATION bin
-	COMPONENT main
-)
+install(TARGETS gadgetron_toolbox_gpunfft
+		EXPORT gadgetron-export
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION bin
+		COMPONENT main
+		)
 
 
 install(FILES 

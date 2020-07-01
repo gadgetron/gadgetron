@@ -11,19 +11,15 @@
 #include "vector_td_operators.h"
 #include "vector_td_io.h"
 
-#include <math.h>
 #include <algorithm>
 #include <vector>
 #include <cmath>
 #include <stdexcept>
-#include <boost/make_shared.hpp>
 
 #include "hoNFFT_sparseMatrix.h"
-#include <boost/math/constants/constants.hpp>
-#include <KaiserBessel_kernel.h>
+#include "KaiserBessel_kernel.h"
 #include <boost/range/algorithm/transform.hpp>
 
-#include <cpu/hoNDArray_fileio.h>
 #include "GadgetronTimer.h"
 
 #include "NFFT.hpp"
@@ -182,7 +178,6 @@ namespace Gadgetron {
     void hoNFFT_plan<REAL, D>::preprocess(
             const hoNDArray<vector_td<REAL, D>> &trajectories, NFFT_prep_mode mode) {
 
-        GadgetronTimer timer("Preprocess");
         NFFT_plan<hoNDArray,REAL,D>::preprocess(trajectories,mode);
         auto trajectories_scaled = trajectories;
         auto matrix_size_os_real = vector_td<REAL,D>(this->matrix_size_os);
@@ -247,12 +242,12 @@ namespace Gadgetron {
             const hoNDArray<REAL>* dcw
     ) {
         std::vector<size_t> dims = {this->number_of_samples,this->number_of_frames};
-        auto batches = in.get_number_of_elements()/(prod(this->matrix_size_os)*this->number_of_frames);
+        auto batches = in.get_number_of_elements()/(prod(this->matrix_size)*this->number_of_frames);
         dims.push_back(batches);
 
         hoNDArray<ComplexType> tmp(dims);
-        compute(in, tmp, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
-        compute(tmp, out,dcw, NFFT_comp_mode::FORWARDS_C2NC);
+        compute(in, tmp, dcw, NFFT_comp_mode::FORWARDS_C2NC);
+        compute(tmp, out,dcw, NFFT_comp_mode::BACKWARDS_NC2C);
     }
 
     template<class REAL, unsigned int D>
@@ -287,7 +282,6 @@ namespace Gadgetron {
             NFFT_fft_mode mode,
             bool do_scale
     ) {
-        GadgetronTimer timer("FFT");
         FFTD<std::complex<REAL>, D>::fft(d, mode,do_scale);
     }
     template<class REAL, unsigned int D>
@@ -369,7 +363,6 @@ namespace Gadgetron {
     ) {
                 size_t nbatches = cartesian.get_number_of_elements()/convolution_matrix.front().n_rows;
         assert(nbatches == non_cartesian.get_number_of_elements()/convolution_matrix.front().n_cols);
-        GadgetronTimer timer("Convolution");
         if (!accumulate) clear(&cartesian);
 #pragma omp parallel for
         for (int b = 0; b < (int)nbatches; b++) {
@@ -413,29 +406,29 @@ namespace Gadgetron {
 }
 
 template
-class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 1>;
+class Gadgetron::hoNFFT_plan<float, 1>;
 
 template
-class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 2>;
+class Gadgetron::hoNFFT_plan<float, 2>;
 
 template
-class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 3>;
+class Gadgetron::hoNFFT_plan<float, 3>;
 
 template
-class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 1>;
+class Gadgetron::hoNFFT_plan<double, 1>;
 
 template
-class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 2>;
+class Gadgetron::hoNFFT_plan<double, 2>;
 
 template
-class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 3>;
+class Gadgetron::hoNFFT_plan<double, 3>;
 
-template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,1>;
-template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,2>;
-template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,3>;
+template class Gadgetron::NFFT<Gadgetron::hoNDArray,float,1>;
+template class Gadgetron::NFFT<Gadgetron::hoNDArray,float,2>;
+template class Gadgetron::NFFT<Gadgetron::hoNDArray,float,3>;
 
 
 
-template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,1>;
-template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,2>;
-template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,3>;
+template class Gadgetron::NFFT<Gadgetron::hoNDArray,double,1>;
+template class Gadgetron::NFFT<Gadgetron::hoNDArray,double,2>;
+template class Gadgetron::NFFT<Gadgetron::hoNDArray,double,3>;

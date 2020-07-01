@@ -2,10 +2,14 @@
 // Created by dchansen on 10/2/18.
 //
 
-#include <cpu/hoNDArray_utils.h>
-#include <cpu/hoNDArray_fileio.h>
+#include "hoNDArray_utils.h"
+#include "hoNDArray_fileio.h"
 #include "TrajectoryParameters.h"
 #include "vector_td_utilities.h"
+#include "mri_core_utility.h"
+#include "mri_core_girf_correction.h"
+#include "hoArmadillo.h"
+
 
 namespace Gadgetron {
     namespace Spiral {
@@ -20,7 +24,6 @@ namespace Gadgetron {
             auto base_gradients = calculate_vds(smax_,gmax_,sample_time,sample_time,Nints_,&fov_,nfov,krmax_,ngmax,acq_header.number_of_samples);
             int samples_per_interleave_ = base_gradients.get_number_of_elements();
 
-            GDEBUG("Using %d samples per interleave\n", samples_per_interleave_);
 
             base_gradients = create_rotations(base_gradients,Nints_);
 

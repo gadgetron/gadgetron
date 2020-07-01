@@ -22,11 +22,11 @@
 #endif 
 
 namespace Gadgetron {
-
   class ArrayIterator
   {
   public:
 
+    [[deprecated]]
     ArrayIterator(std::vector<size_t> *dimensions, std::vector<size_t> *order)
     {
       block_sizes_.push_back(1);
