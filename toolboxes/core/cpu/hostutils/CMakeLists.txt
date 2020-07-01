@@ -18,6 +18,7 @@ add_library(gadgetron_toolbox_hostutils SHARED
 
 target_link_libraries(gadgetron_toolbox_hostutils
         gadgetron_toolbox_log
+        Boost::system
         )
 
 set_target_properties(gadgetron_toolbox_hostutils PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
