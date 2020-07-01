@@ -381,6 +381,9 @@ namespace Gadgetron {
             size_t new_RO = (size_t)(FOV_RO / pixel_size + 0.5);
             size_t new_E1 = (size_t)(FOV_E1 / pixel_size + 0.5);
 
+            if (new_RO % 2 == 1) new_RO++;
+            if (new_E1 % 2 == 1) new_E1++;
+
             std::vector<size_t> dim2D_out(2);
             dim2D_out[0] = new_RO;
             dim2D_out[1] = new_E1;
