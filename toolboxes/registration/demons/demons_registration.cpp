@@ -4,6 +4,7 @@
 
 #include "demons_registration.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_utils.h"
 #include "vector_td_utilities.h"
 #include <numeric>
 
@@ -12,27 +13,7 @@ using namespace Gadgetron;
 
 namespace {
 
-    //    template<class T, class R, unsigned int D, class...INDEX>
-    //    std::enable_if_t< sizeof...(INDEX) < D> interpolation_loop(hoNDArray<T>& output,const hoNDArray<T>& image,
-    //    const hoNDArray<vector_td<R,D>>& deformation_field, const vector_td<size_t,D> image_dims, INDEX... index){
-    //        constexpr size_t COUNTER= sizeof...(INDEX);
-    //        for (size_t i =0; i < image_dims[COUNTER]; i++){
-    //            interpolation_loop(output,image,deformation_field,image_dims,i,index...);
-    //        }
-    //    }
-    //
-    //    template<class T, class R, unsigned int D, class...INDEX>
-    //    std::enable_if_t< sizeof...(INDEX) == D> interpolation_loop(hoNDArray<T>& output,const hoNDArray<T>& image,
-    //    const hoNDArray<vector_td<R,D>>& deformation_field, const vector_td<size_t,D> image_dims, INDEX... index){
-    //
-    //        auto index_vector = vector_td<size_t,D>{index...};
-    //        auto idx = dot(index_vector,image_dims);
-    //        const auto coords = deformation_field[idx]+index_vector;
-    //        auto deformed_index =
-    //
-    //
-    //
-    //    }
+
     template <class T, class R>
     inline void interpolation_loop(
         hoNDArray<T>& output, const hoNDArray<vector_td<R, 2>>& deformation_field, hoNDInterpolatorBSpline<hoNDArray<T>,2>& interpolator) {
@@ -494,3 +475,38 @@ template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_d
     const hoNDArray<float>&, const hoNDArray<float>&, unsigned int, float, float,float);
 template hoNDArray<vector_td<float, 2>> Gadgetron::Registration::diffeomorphic_demons(
     const hoNDArray<float>&, const hoNDArray<float>&, hoNDArray<vector_td<float, 2>>, unsigned int, float,float,float);
+
+
+namespace {
+template<class T, unsigned int D, class REGISTRATION>
+hoNDArray<vector_td<T,D>> multi_scale_registration(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int levels, REGISTRATION reg, vector_td<T,D> tag){
+  auto fixed_pyramid = std::vector<hoNDArray<T>>{fixed};
+  auto moving_pyramid = std::vector<hoNDArray<T>>{moving};
+
+  for (int i = 0; i < int(levels)-1; i++){
+    fixed_pyramid.push_back(downsample<T,D>(fixed_pyramid.back()));
+    moving_pyramid.push_back(downsample<T,D>(moving_pyramid.back()))
+        ;
+  }
+
+
+  auto current_vfield = hoNDArray<vector_td<T,D>>(fixed_pyramid.back().dimensions());
+  current_vfield.fill(vector_td<T,D>(0));
+
+  for (int i = fixed_pyramid.size()-1; i > 0; i--){
+    current_vfield = reg(fixed_pyramid[i],moving_pyramid[i],current_vfield);
+    current_vfield = upsample<vector_td<T,D>,D>(current_vfield);
+  }
+  return reg(fixed,moving,current_vfield);
+
+}
+
+}
+
+template<class T, unsigned int D>
+hoNDArray<vector_td<T,D>> Gadgetron::Registration::multi_scale_diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int levels,unsigned int iterations, float sigma, float step_size, float noise_sigma){
+  return multi_scale_registration(fixed,moving,levels, [&](auto& f, auto& m, auto& vf){return diffeomorphic_demons(f, m, vf, iterations, sigma, step_size, noise_sigma);}, vector_td<T,D>{});
+
+}
+
+template hoNDArray<vector_td<float,2>> Gadgetron::Registration::multi_scale_diffeomorphic_demons(const hoNDArray<float>& fixed, const hoNDArray<float>& moving, unsigned int levels,unsigned int iterations, float sigma, float step_size, float noise_sigma);

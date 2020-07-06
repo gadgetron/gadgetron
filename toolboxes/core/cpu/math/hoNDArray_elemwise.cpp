@@ -281,6 +281,15 @@ namespace Gadgetron {
     }
 
     // --------------------------------------------------------------------------------
+    namespace {
+
+    template<class T>
+    std::complex<T> sgn(std::complex<T> x) {
+      if (std::norm(x) <= T(0)) return std::complex<T>(0);
+      return (x / std::abs(x));
+    }
+
+    }
 
     template <class T> boost::shared_ptr<hoNDArray<T>> sgn(hoNDArray<T>* x) {
         if (x == 0x0)
@@ -301,12 +310,10 @@ namespace Gadgetron {
         if (x == 0x0)
             throw std::runtime_error("Gadgetron::sgn_inplace(): Invalid input array");
 
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif
         for (long long i = 0; i < (long long)x->get_number_of_elements(); i++)
             x->get_data_ptr()[i] = sgn(x->get_data_ptr()[i]);
     }
+
 
     template<class T> hoNDArray<realType_t<T>> real(const hoNDArray<T>& x){
         return Gadgetron::transform(x,[](const auto& cplx){return real(cplx);});
@@ -1399,7 +1406,8 @@ namespace Gadgetron {
     template  boost::shared_ptr<hoNDArray<std::complex<float>>> sqrt<std::complex<float>>(
         hoNDArray<std::complex<float>>*);
     template  void sqrt_inplace<std::complex<float>>(hoNDArray<std::complex<float>>*);
-    template  boost::shared_ptr<hoNDArray<std::complex<float>>> square<std::complex<float>>(
+    template  void sgn_inplace<std::complex<float>>(hoNDArray<std::complex<float>>*);
+template  boost::shared_ptr<hoNDArray<std::complex<float>>> square<std::complex<float>>(
         hoNDArray<std::complex<float>>*);
     template  void square_inplace<std::complex<float>>(hoNDArray<std::complex<float>>*);
     template  boost::shared_ptr<hoNDArray<std::complex<float>>> reciprocal<std::complex<float>>(
@@ -1429,7 +1437,8 @@ namespace Gadgetron {
     template  boost::shared_ptr<hoNDArray<std::complex<double>>> sqrt<std::complex<double>>(
         hoNDArray<std::complex<double>>*);
     template  void sqrt_inplace<std::complex<double>>(hoNDArray<std::complex<double>>*);
-    template  boost::shared_ptr<hoNDArray<std::complex<double>>> square<std::complex<double>>(
+    template  void sgn_inplace<std::complex<double>>(hoNDArray<std::complex<double>>*);
+template  boost::shared_ptr<hoNDArray<std::complex<double>>> square<std::complex<double>>(
         hoNDArray<std::complex<double>>*);
     template  void square_inplace<std::complex<double>>(hoNDArray<std::complex<double>>*);
     template  boost::shared_ptr<hoNDArray<std::complex<double>>> reciprocal<std::complex<double>>(

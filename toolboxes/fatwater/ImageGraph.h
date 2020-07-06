@@ -122,7 +122,7 @@ namespace Gadgetron {
                 size_t index_offset = e - normal_vertex_id * edges_per_vertex;
                 if (index_offset < edges_per_vertex - 2) {
                     vector_td<int,D> offset = index_to_offset[index_offset];
-                    vector_td<int,D> co = Gadgetron::idx_to_co(normal_vertex_id, dims_);
+                    vector_td<int,D> co = Gadgetron::idx_to_co<int>(normal_vertex_id, dims_);
                     vector_td<int,D> co2 = (co + offset + dims_) % dims_;
                     return Gadgetron::co_to_idx(co2, dims_);
                 } else {
@@ -194,8 +194,8 @@ namespace Gadgetron {
                 result = u * edges_per_vertex + edges_per_vertex - 1;
             } else {
 
-                vector_td<int, D> co1 = Gadgetron::idx_to_co(u, dims_);
-                vector_td<int, D> co2 = Gadgetron::idx_to_co(v, dims_);
+                vector_td<int, D> co1 = Gadgetron::idx_to_co<int,D>(u, dims_);
+                vector_td<int, D> co2 = Gadgetron::idx_to_co<int,D>(v, dims_);
 
                 auto diff = co2 - co1;
                 for (int i = 0; i < D; i++){ //Fix wrapping boundary conditions

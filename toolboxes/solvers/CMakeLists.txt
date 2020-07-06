@@ -19,6 +19,7 @@ install(FILES
   osMOMSolver.h
   osSPSSolver.h
   osLALMSolver.h
+        MOMSolver.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_library(gadgetron_toolbox_solvers INTERFACE)

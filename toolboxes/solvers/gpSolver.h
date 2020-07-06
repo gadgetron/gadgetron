@@ -141,7 +141,7 @@ namespace Gadgetron{
         ARRAY_TYPE* x2 = x;
         if (this->prior.get()){
           x2 = new ARRAY_TYPE(*x);
-          axpy(REAL(-1),this->prior.get(),x2);
+          axpy(ELEMENT_TYPE(-1),this->prior.get(),x2);
         }
         op->gradient(x,g,accumulate);
       }
@@ -182,13 +182,13 @@ namespace Gadgetron{
         if (this->prior.get()){
           x2 = new ARRAY_TYPE;
           *x2 = *x;
-          axpy(REAL(-1),this->prior.get(),x2);
+          axpy(ELEMENT_TYPE(-1),this->prior.get(),x2);
 
         }
         op->mult_M(x2,&tmp);
         sgn_inplace(&tmp);
         op->mult_MH(&tmp,&q,false);
-        axpy(op->get_weight(),&q,g);
+        axpy(ELEMENT_TYPE(op->get_weight()),&q,g);
         if (this->prior.get()) delete x2;
       }
 
@@ -265,7 +265,7 @@ namespace Gadgetron{
           boost::shared_ptr<ARRAY_TYPE> tmp = data[i];
           *tmp *= gData;
           op->mult_MH(tmp.get(),&q,false);
-          axpy(op->get_weight(),&q,g);
+          axpy(ELEMENT_TYPE(op->get_weight()),&q,g);
         }
       }
 
