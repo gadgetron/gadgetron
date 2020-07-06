@@ -110,12 +110,12 @@ namespace Gadgetron{
   // Grid <-> index transformations
   //
 
-  template<unsigned int D> __inline__ __host__ __device__
-  typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned,D> dims )
+  template<class T, unsigned int D> __inline__ __host__ __device__
+  vector_td<T,D> idx_to_co( T idx, const vector_td<T,D> dims )
   {
-    typename uintd<D>::Type co;
-    unsigned int idx_tmp = idx;
-    for (unsigned int i=0; i<D; i++) {
+    vector_td<T,D> co;
+    auto idx_tmp = idx;
+    for (int i=0; i<D; i++) {
       co[i] = idx_tmp%dims[i];
       idx_tmp -= co[i];
       idx_tmp /= dims[i];
@@ -123,92 +123,19 @@ namespace Gadgetron{
     return co;
   } 
 
-  template<unsigned int D> __inline__ __host__ __device__
-  typename uint64d<D>::Type idx_to_co( size_t idx, const vector_td<size_t,D> dims )
-  {
-    typename uint64d<D>::Type co;
-    size_t idx_tmp = idx;
-    for (unsigned int i=0; i<D; i++) {
-      co[i] = idx_tmp%dims[i];
-      idx_tmp -= co[i];
-      idx_tmp /= dims[i];
-    }
-    return co;
-  } 
 
-  template<unsigned int D> __inline__ __host__ __device__
-  typename intd<D>::Type idx_to_co( int idx, const vector_td<int,D> dims )
+  template<class T, unsigned int D> __inline__ __host__ __device__
+  T co_to_idx( const vector_td<T,D> co, const vector_td<T,D> dims )
   {
-    typename intd<D>::Type co;
-    int idx_tmp = idx;
-    for (unsigned int i=0; i<D; i++) {
-      co[i] = idx_tmp%dims[i];
-      idx_tmp -= co[i];
-      idx_tmp /= dims[i];
-    }
-    return co;
-  } 
-
-  template<unsigned int D> __inline__ __host__ __device__
-  typename int64d<D>::Type idx_to_co( long long idx, const vector_td<long long,D> dims )
-  {
-    typename int64d<D>::Type co;
-    long long idx_tmp = idx;
-    for (unsigned int i=0; i<D; i++) {
-      co[i] = idx_tmp%dims[i];
-      idx_tmp -= co[i];
-      idx_tmp /= dims[i];
-    }
-    return co;
-  } 
-
-  template<unsigned int D> __inline__ __host__ __device__
-  unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsigned int,D> dims )
-  {
-    unsigned int idx = 0;
-    unsigned int block_size = 1;
-    for (unsigned int i=0; i<D; i++) {
+    T idx = 0;
+    T block_size = 1;
+    for (int i=0; i<D; i++) {
       idx += (block_size*co[i]);
       block_size *= dims[i];
     }
     return idx;
   }
 
-  template<unsigned int D> __inline__ __host__ __device__
-  size_t co_to_idx( const vector_td< size_t,D> co, const vector_td<size_t,D> dims )
-  {
-    size_t idx = 0;
-    size_t block_size = 1;
-    for (unsigned int i=0; i<D; i++) {
-      idx += (block_size*co[i]);
-      block_size *= dims[i];
-    }
-    return idx;
-  }
-
-  template<unsigned int D> __inline__ __host__ __device__
-  int co_to_idx( const vector_td<int,D> co, const vector_td<int,D> dims )
-  {
-    int idx = 0;
-    int block_size = 1;
-    for (unsigned int i=0; i<D; i++) {
-      idx += (block_size*co[i]);
-      block_size *= dims[i];
-    }
-    return idx;
-  }
-
-  template<unsigned int D> __inline__ __host__ __device__
-  long long co_to_idx( const vector_td<long long,D> co, const vector_td<long long,D> dims )
-  {
-    long long idx = 0;
-    long long block_size = 1;
-    for (unsigned int i=0; i<D; i++) {
-      idx += (block_size*co[i]);
-      block_size *= dims[i];
-    }
-    return idx;
-  }
   
   template<unsigned int D> __inline__ __host__ __device__
   unsigned int co_to_idx( const vector_td<unsigned int,D> co, 

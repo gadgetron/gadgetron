@@ -120,7 +120,7 @@ public:
 				calc_regMultM(x,regEnc);
 				for (int n = 0; n < regEnc.size(); n++)
 					if (reg_priors[n].get())
-						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
+						axpy(ELEMENT_TYPE(-std::sqrt(this->regularization_operators_[n]->get_weight())),reg_priors[n].get(),&regEnc[n]);
 				add_linear_gradient(regEnc,&g_linear);
 				g = g_linear;
 				this->add_gradient(x,&g);
@@ -221,12 +221,12 @@ public:
 
 			if (non_negativity_constraint_){
 				//Restore encoding space and gradient. Why not keep a copy? Memory!
-				axpy(-alpha,&encoding_space2,&encoding_space);
+				axpy(ELEMENT_TYPE(-alpha),&encoding_space2,&encoding_space);
 				reg_axpy(-alpha,regEnc2,regEnc);
-				axpy(-alpha,&g_step,&g_linear);
+				axpy(ELEMENT_TYPE(-alpha),&g_step,&g_linear);
 
 				ARRAY_TYPE x2 = *x;
-				axpy(alpha,&d,&x2);
+				axpy(ELEMENT_TYPE(alpha),&d,&x2);
 
 				clamp_min(&x2,REAL(0));
 
@@ -249,13 +249,13 @@ public:
 				alpha = backtracking(f,alpha0,gd,rho,old_norm);
 
 				//alpha = cg_linesearch(f,alpha0,gd,old_norm);
-				axpy(alpha,&d,x);
+				axpy(ELEMENT_TYPE(alpha),&d,x);
 				if (alpha == 0){
 					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
 					return boost::shared_ptr<ARRAY_TYPE>(x);
 				}
 			} else {
-				axpy(alpha,&d,x);
+				axpy(ELEMENT_TYPE(alpha),&d,x);
 
 			}
 
@@ -368,7 +368,7 @@ protected:
 		ARRAY_TYPE tmp(g->get_dimensions());
 		for (int i = 0; i <elems.size(); i++){
 			this->regularization_operators_[i]->mult_MH(&elems[i],&tmp);
-			axpy(std::sqrt(this->regularization_operators_[i]->get_weight()),&tmp,g);
+			axpy(ELEMENT_TYPE(std::sqrt(this->regularization_operators_[i]->get_weight())),&tmp,g);
 		}
 	}
 
@@ -381,7 +381,7 @@ protected:
 
 	void reg_axpy(REAL alpha, std::vector<ARRAY_TYPE>& x, std::vector<ARRAY_TYPE>& y){
 		for (int i = 0; i <x.size(); i++){
-			axpy(alpha,&x[i],&y[i]);
+			axpy(ELEMENT_TYPE(alpha),&x[i],&y[i]);
 
 		}
 	}
@@ -409,11 +409,11 @@ protected:
 
 
 		REAL operator () (REAL alpha){
-			axpy(alpha-alpha_old,encoding_step,encoding_space);
+			axpy(ELEMENT_TYPE(alpha-alpha_old),encoding_step,encoding_space);
 
-			axpy(alpha-alpha_old,g_step,g);
+			axpy(ELEMENT_TYPE(alpha-alpha_old),g_step,g);
 			parent->reg_axpy(alpha-alpha_old,*regEnc_step,*regEnc);
-			axpy(alpha-alpha_old,d,&xtmp);
+			axpy(ELEMENT_TYPE(alpha-alpha_old),d,&xtmp);
 
 			alpha_old = alpha;
 			REAL res = parent->functionValue(encoding_space,*regEnc,&xtmp);

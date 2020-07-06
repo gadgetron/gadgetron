@@ -50,6 +50,20 @@ namespace Gadgetron { namespace Registration {
         hoNDArray<vector_td<T,D>> diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, hoNDArray<vector_td<T,D>> vector_field, unsigned int iterations = 20,float sigma = 2.0, float step_size = 2.0, float noise_sigma=0.0f);
 
 
+/**
+   *
+   * @tparam T datatype of the image. Float or double
+   * @tparam D Image dimension.
+   * @param vector_field Deformation field used as initial guess.
+   * @param fixed
+   * @param moving
+   * @param levels Number of pyramid levels
+   * @param iterations Number of iterations
+   * @param sigma Sigma for smoothing the motion field
+   * @return The vector field deforming fixed to moving.
+   */
+   template<class T, unsigned int D>
+      hoNDArray<vector_td<T,D>> multi_scale_diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int levels,unsigned int iterations, float sigma, float step_size, float noise_sigma);
 
 
          template <class T> hoNDArray<T> gaussian_filter(const hoNDArray<T>& image, float sigma);
