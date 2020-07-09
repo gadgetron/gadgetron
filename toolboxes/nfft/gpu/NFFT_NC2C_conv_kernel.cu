@@ -118,7 +118,7 @@ NFFT_H_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,
   const unsigned int domainIdx = index; 
 
   // Compute global domain position
-  const vector_td<unsigned int,D> domainPos = idx_to_co<D>( domainIdx, domain_count_grid );
+  const vector_td<unsigned int,D> domainPos = idx_to_co( domainIdx, domain_count_grid );
 	
   // Number of cells
   const unsigned int num_reals = number_of_batches<<1;

@@ -451,7 +451,7 @@ compute_deapodization_filter_kernel(typename uintd<D>::Type matrix_size_os,
     if (idx < num_elements) {
 
         // Compute weight from Kaiser-Bessel filter
-        const typename uintd<D>::Type cell_pos = idx_to_co<D>(idx, matrix_size_os);
+        const typename uintd<D>::Type cell_pos = idx_to_co(idx, matrix_size_os);
 
         // Sample position ("origin")
         const vector_td<REAL, D> sample_pos = REAL(0.5) * matrix_size_os_real;
@@ -790,7 +790,7 @@ image_wrap_kernel(typename uintd<D>::Type matrix_size_os, typename uintd<D>::Typ
     const unsigned int num_elements_per_image_src = prod(matrix_size_os + matrix_size_wrap);
     const unsigned int image_offset_src = blockIdx.y * num_elements_per_image_src;
 
-    const typename uintd<D>::Type co = idx_to_co<D>(idx, matrix_size_os);
+    const typename uintd<D>::Type co = idx_to_co(idx, matrix_size_os);
     const typename uintd<D>::Type half_wrap = matrix_size_wrap >> 1;
 
     // Make "boolean" vectors denoting whether wrapping needs to be performed in a given direction (forwards/backwards)
@@ -799,7 +799,7 @@ image_wrap_kernel(typename uintd<D>::Type matrix_size_os, typename uintd<D>::Typ
     vector_td<bool, D>
     B_r = vector_greater_equal(co, matrix_size_os - half_wrap);
 
-    complext <REAL> result = in[co_to_idx<D>(co + half_wrap, matrix_size_os + matrix_size_wrap) + image_offset_src];
+    complext <REAL> result = in[co_to_idx(co + half_wrap, matrix_size_os + matrix_size_wrap) + image_offset_src];
 
     if (sum(B_l + B_r) > 0) {
 
@@ -871,7 +871,7 @@ image_wrap_kernel(typename uintd<D>::Type matrix_size_os, typename uintd<D>::Typ
                     typename intd<D>::Type co_offset_int =
                             src_co_int + component_wise_mul<int, D>(stride, matrix_size_os_int);
                     typename uintd<D>::Type co_offset = vector_td<unsigned int, D>(co_offset_int);
-                    result += in[co_to_idx<D>(co_offset, matrix_size_os + matrix_size_wrap) + image_offset_src];
+                    result += in[co_to_idx(co_offset, matrix_size_os + matrix_size_wrap) + image_offset_src];
                     break; // only one stride per combination can contribute (e.g. one edge, one corner)
                 }
             }

@@ -58,7 +58,7 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
     
     // Determine the grid cell idx
     unsigned int grid_idx = 
-      (batch*num_frames+frame)*prod(matrix_size_os) + co_to_idx<D>( vector_td<unsigned int, D>(grid_position), matrix_size_os );
+      (batch*num_frames+frame)*prod(matrix_size_os) + co_to_idx( vector_td<unsigned int, D>(grid_position), matrix_size_os );
 
     // Atomic update of real and imaginary component
     atomicAdd( &(((REAL*)image)[(grid_idx<<1)+0]), weight*real(sample_value) );

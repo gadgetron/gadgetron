@@ -20,6 +20,7 @@ if (CUDA_FOUND)
     target_link_libraries(gadgetron_spiral
                                 gadgetron_gpuparallelmri
                                 gadgetron_toolbox_gpucore
+                                gadgetron_core
                                 gadgetron_toolbox_gpunfft 
                                 gadgetron_toolbox_gpusolvers 
                                 gadgetron_toolbox_gpuoperators

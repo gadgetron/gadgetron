@@ -23,7 +23,7 @@ partial_derivative_kernel2_forwards( typename intd<D>::Type dims,
 
     T valN1, valC;
 
-    const typename intd<D>::Type co = idx_to_co<D>(idx, dims);
+    const typename intd<D>::Type co = idx_to_co(idx, dims);
 
     typename intd<D>::Type coN1 = co;
     coN1[D-1] +=1;
@@ -31,7 +31,7 @@ partial_derivative_kernel2_forwards( typename intd<D>::Type dims,
 
 
 
-    valN1 = in[co_to_idx<D>(coN1, dims)];
+    valN1 = in[co_to_idx(coN1, dims)];
 
     valC = in[idx];
     out[idx] += valC-valN1;
@@ -48,7 +48,7 @@ partial_derivative_kernel2_backwards( typename intd<D>::Type dims,
 
     T valN1, valC;
 
-    const typename intd<D>::Type co = idx_to_co<D>(idx, dims);
+    const typename intd<D>::Type co = idx_to_co(idx, dims);
 
     if (co[D-1] == 0) out[idx] += in[idx];
     else {
@@ -56,13 +56,13 @@ partial_derivative_kernel2_backwards( typename intd<D>::Type dims,
 		coN1[D-1] -=1;
 
 
-		valN1 = in[co_to_idx<D>(coN1, dims)];
+		valN1 = in[co_to_idx(coN1, dims)];
 
 		valC = in[idx];
 		T val = valC-valN1;
 		if (co[D-1]== dims[D-1]-2){
 			coN1[D-1] += 2;
-			val -= in[co_to_idx<D>(coN1, dims)];
+			val -= in[co_to_idx(coN1, dims)];
 		}
 		out[idx] += val;
     }
@@ -78,7 +78,7 @@ second_order_partial_derivative_kernel2( typename intd<D>::Type dims,
 
     T valN1, valN2, valC;
 
-    const typename intd<D>::Type co = idx_to_co<D>(idx, dims);
+    const typename intd<D>::Type co = idx_to_co(idx, dims);
 
     typename intd<D>::Type coN1 = co;
     coN1[D-1] +=1;
@@ -88,9 +88,9 @@ second_order_partial_derivative_kernel2( typename intd<D>::Type dims,
 
 
 
-    valN1 = in[co_to_idx<D>(coN1, dims)];
+    valN1 = in[co_to_idx(coN1, dims)];
     if (co[D-1] == 0)  valN2 = 0;
-    else valN2 = in[co_to_idx<D>(coN2, dims)];
+    else valN2 = in[co_to_idx(coN2, dims)];
 
     valC = in[idx];
     T val;
