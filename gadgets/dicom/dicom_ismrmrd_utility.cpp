@@ -147,7 +147,7 @@ namespace Gadgetron
 
             // Specific Character Set
             key.set(0x0008, 0x0005);
-            write_dcm_string(dataset, key, "ISO_IR 100");
+            write_dcm_string(dataset, key, "ISO_IR 192");
 
             // Image Type
             // ORIGINAL or DERIVED describes origin of pixel data
