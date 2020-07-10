@@ -18,7 +18,6 @@ build_task:
     - gem install mtime_cache
 
   mkdir_script:
-    - mkdir /opt
     - mkdir /opt/code
   ismrmrd_cache:
     folder: /opt/code/ismrmrd
