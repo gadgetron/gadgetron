@@ -7,6 +7,7 @@ build_task:
 
 
   depdendencies_script:
+    - apt-get update
     - apt-get install build-essential \
       git-core wget make cmake gcc-multilib libgtest-dev libboost-all-dev \
       libarmadillo-dev libopenblas-dev libfftw3-dev liblapack-dev liblapacke-dev \
