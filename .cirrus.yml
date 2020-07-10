@@ -8,10 +8,10 @@ build_task:
 
   depdendencies_script:
     - apt-get update
-    - apt-get install build-essential git-core wget make cmake gcc-multilib libgtest-dev libboost-all-dev 
+    - apt-get install -y build-essential git-core wget make cmake gcc-multilib libgtest-dev libboost-all-dev 
       libarmadillo-dev libopenblas-dev libfftw3-dev liblapack-dev liblapacke-dev 
       libxml2-dev libxslt-dev libpugixml-dev libhdf5-dev libplplot-dev libdcmtk-dev 
-      python3-dev python3-pip python3-h5py python3-scipy python3-pyxb ninja-build
+      python3-dev python3-pip python3-h5py python3-scipy python3-pyxb ninja-build 
   mtime_script:
     - apt-get update
     - apt-get install ruby-full -y
