@@ -29,6 +29,7 @@ namespace Gadgetron {
         NODE_PROPERTY(demons_iterations,unsigned int ,"Number of iterations for the demons registration",40);
         NODE_PROPERTY(step_size,float,"Maximum step size for demons registration (between 0.1 and 2.0)",2.0f);
         NODE_PROPERTY(iterations, unsigned int, "Number of iterations of demons registration and T1 fit",5);
+        NODE_PROPERTY(scales, unsigned int, "Number of image scales to use",1);
 
     private:
         void process(Core::InputChannel<IsmrmrdImageArray>& input, Core::OutputChannel& out) final override {
@@ -41,7 +42,7 @@ namespace Gadgetron {
 
                 auto data_dims = images.data_.dimensions();
                 images.data_.reshape( data_dims[0], data_dims[1], -1 );
-                auto vector_field = T1::t1_registration(images.data_, TI_values,iterations,{demons_iterations,regularization_sigma,step_size});
+                auto vector_field = T1::multi_scale_t1_registration(images.data_, TI_values,scales,iterations,{demons_iterations,regularization_sigma,step_size});
 
                 auto moco_images = T1::deform_groups(images.data_, vector_field);
 
