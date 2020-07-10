@@ -52,6 +52,7 @@ namespace Gadgetron::T1 {
      * @return Deformation vector fields for bringing each dataset into a common reference frame
      **/ 
     hoNDArray<vector_td<float,2>> t1_registration(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations=5, registration_params params = {});
+    hoNDArray<vector_td<float, 2>> multi_scale_t1_registration(   const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int levels=3, unsigned int iterations=5, registration_params params = {});
 
     hoNDArray<std::complex<float>> deform_groups(const hoNDArray<std::complex<float>>& data,const hoNDArray<vector_td<float,2>>& vector_field);
 
