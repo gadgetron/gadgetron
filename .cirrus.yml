@@ -17,7 +17,9 @@ build_task:
     - apt-get install ruby-full -y
     - gem install mtime_cache
 
-
+  mkdir_script:
+    - mkdir /opt
+    - mkdir /opt/code
   ismrmrd_cache:
     folder: /opt/code/ismrmrd
     populate_script:
