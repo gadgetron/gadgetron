@@ -10,16 +10,18 @@
 #include "ismrmrd/meta.h"
 
 // DCMTK includes
-#include "dcmtk/config/osconfig.h"
-#include "dcmtk/ofstd/ofstdinc.h"
 #define INCLUDE_CSTDLIB
 #define INCLUDE_CSTDIO
 #define INCLUDE_CSTRING
+#define NOGDI
+#include "dcmtk/config/osconfig.h"
+#include "dcmtk/ofstd/ofstdinc.h"
+
 #include "dcmtk/dcmdata/dcostrmb.h"
 #include "dcmtk/dcmdata/dctk.h"
 
-namespace Gadgetron {
 
+namespace Gadgetron {
     void DicomImageWriter::serialize(std::ostream& stream, const DcmFileFormat& dcmInput,
         const Core::optional<std::string>& dcm_filename_message,
         const Core::optional<ISMRMRD::MetaContainer>& dcm_meta_message) {
@@ -61,14 +63,19 @@ namespace Gadgetron {
         if (dcm_filename_message) {
             unsigned long long len = dcm_filename_message->length();
             Core::IO::write_string_to_stream<unsigned long long>(stream, *dcm_filename_message);
+        } else {
+            Core::IO::write(stream, (unsigned long long)0);
+        }
 
-            if (dcm_meta_message) {
+        if (dcm_meta_message) {
                 std::stringstream str;
                 ISMRMRD::serialize(*dcm_meta_message, str);
                 std::string attribContent = str.str();
                 Core::IO::write_string_to_stream(stream, attribContent);
-            }
+        } else {
+            Core::IO::write(stream, (unsigned long long)0);
         }
+
     }
     GADGETRON_WRITER_EXPORT(DicomImageWriter)
 } /* namespace Gadgetron */

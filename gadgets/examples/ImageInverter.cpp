@@ -29,7 +29,6 @@ namespace {
 
 namespace Gadgetron::Examples {
 
-    ImageInverter::ImageInverter(const Context &, const GadgetProperties &properties) : PureGadget(properties) {}
 
     AnyImage ImageInverter::process_function(AnyImage image) const {
         GINFO_STREAM("Inverting image.")

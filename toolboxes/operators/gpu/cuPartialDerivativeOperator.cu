@@ -20,11 +20,11 @@ namespace Gadgetron{
 
       T valN, valC;
 
-      typename intd<D>::Type co = idx_to_co<D>(idx, dims);
+      typename intd<D>::Type co = idx_to_co(idx, dims);
       typename intd<D>::Type coN = (co+dims+stride)%dims;
     
-      valN = in[co_to_idx<D>(coN, dims)];
-      valC = in[co_to_idx<D>(co, dims)];
+      valN = in[co_to_idx(coN, dims)];
+      valC = in[co_to_idx(co, dims)];
     
       T val = valN-valC;
     
@@ -43,13 +43,13 @@ namespace Gadgetron{
 
       T valN1, valN2, valC;
 
-      typename intd<D>::Type co = idx_to_co<D>(idx, dims);
+      typename intd<D>::Type co = idx_to_co(idx, dims);
       typename intd<D>::Type coN1 = (co+dims+forwards_stride)%dims;
       typename intd<D>::Type coN2 = (co+dims+adjoint_stride)%dims;
     
-      valN1 = in[co_to_idx<D>(coN1, dims)];
-      valN2 = in[co_to_idx<D>(coN2, dims)];
-      valC = in[co_to_idx<D>(co, dims)];
+      valN1 = in[co_to_idx(coN1, dims)];
+      valN2 = in[co_to_idx(coN2, dims)];
+      valC = in[co_to_idx(co, dims)];
     
       T val = valC+valC-valN1-valN2;
     

@@ -19,12 +19,13 @@ install(FILES
   osMOMSolver.h
   osSPSSolver.h
   osLALMSolver.h
+        
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_library(gadgetron_toolbox_solvers INTERFACE)
 target_include_directories(gadgetron_toolbox_solvers
         INTERFACE
-        $<INSTALL_INTERFACE:include/gadgetron>
+        $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 install(TARGETS gadgetron_toolbox_solvers EXPORT gadgetron-export)
 

@@ -22,11 +22,11 @@
 #endif 
 
 namespace Gadgetron {
-
   class ArrayIterator
   {
   public:
 
+    [[deprecated]]
     ArrayIterator(std::vector<size_t> *dimensions, std::vector<size_t> *order)
     {
       block_sizes_.push_back(1);
@@ -780,10 +780,10 @@ namespace Gadgetron {
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for( long long idx=0; idx < num_elements*num_batches; idx++ ){
+    for( int64_t idx=0; idx < num_elements*num_batches; idx++ ){
 
       const size_t frame_offset = idx/num_elements;
-      const uint64d co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const uint64d co_out = idx_to_co<uint64_t,D>( idx-frame_offset*num_elements, matrix_size_out );
       const uint64d co_in = co_out << 1;
       const uint64d twos(2);
       const size_t num_adds = 1 << D;
@@ -792,9 +792,9 @@ namespace Gadgetron {
       REAL res = REAL(0);
 
       for( size_t i=0; i<num_adds; i++ ){
-	const uint64d local_co = idx_to_co<D>( i, twos );
+	const uint64d local_co = idx_to_co( i, twos );
 	if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of size 1
-	const size_t in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
+	const size_t in_idx = co_to_idx(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
 	actual_adds++;
 	res += in[in_idx];
       }

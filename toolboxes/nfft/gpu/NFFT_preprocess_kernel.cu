@@ -53,7 +53,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
   unsigned int frame_offset = frame*prod(matrix_size_os+matrix_size_wrap);
   for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
     typename uintd<1>::Type co; co.vec[0] = x;
-    tuples_first[write_offset+pair_idx] = co_to_idx<1>(co, matrix_size_os+matrix_size_wrap)+frame_offset;
+    tuples_first[write_offset+pair_idx] = co_to_idx(co, matrix_size_os+matrix_size_wrap)+frame_offset;
     tuples_last[write_offset+pair_idx] = sample_idx;
     pair_idx++;
   }
@@ -75,7 +75,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
   for( unsigned int y=lower_limit_y; y<=upper_limit_y; y++ ){
     for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
       typename uintd<2>::Type co; co.vec[0] = x; co.vec[1] = y;
-      tuples_first[write_offset+pair_idx] = co_to_idx<2>(co, matrix_size_os+matrix_size_wrap)+frame_offset;
+      tuples_first[write_offset+pair_idx] = co_to_idx(co, matrix_size_os+matrix_size_wrap)+frame_offset;
       tuples_last[write_offset+pair_idx] = sample_idx;
       pair_idx++;
     }
@@ -101,7 +101,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
     for( unsigned int y=lower_limit_y; y<=upper_limit_y; y++ ){
       for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
 	typename uintd<3>::Type co; co.vec[0] = x; co.vec[1] = y; co.vec[2] = z;
-	tuples_first[write_offset+pair_idx] = co_to_idx<3>(co, matrix_size_os+matrix_size_wrap)+frame_offset;
+	tuples_first[write_offset+pair_idx] = co_to_idx(co, matrix_size_os+matrix_size_wrap)+frame_offset;
 	tuples_last[write_offset+pair_idx] = sample_idx;
 	pair_idx++;
       }
@@ -131,7 +131,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
       for( unsigned int y=lower_limit_y; y<=upper_limit_y; y++ ){
 	for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
 	  typename uintd<4>::Type co; co.vec[0] = x; co.vec[1] = y; co.vec[2] = z; co.vec[3] = w;
-	  tuples_first[write_offset+pair_idx] = co_to_idx<4>(co, matrix_size_os+matrix_size_wrap)+frame_offset;
+	  tuples_first[write_offset+pair_idx] = co_to_idx(co, matrix_size_os+matrix_size_wrap)+frame_offset;
 	  tuples_last[write_offset+pair_idx] = sample_idx;
 	  pair_idx++;
 	}

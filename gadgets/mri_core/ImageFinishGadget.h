@@ -11,7 +11,7 @@ namespace Gadgetron {
         ImageFinishGadget(
                 const Core::Context &context,
                 const Core::GadgetProperties &properties
-        ) : GenericChannelGadget(properties) {};
+        ) : GenericChannelGadget(context,properties) {};
 
     protected:
         void process(Core::GenericInputChannel& in,

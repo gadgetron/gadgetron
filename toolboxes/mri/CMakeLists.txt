@@ -1,4 +1,5 @@
 add_subdirectory(pmri)
+add_subdirectory(spiral)
 
 add_subdirectory(epi)
 if (CUDA_FOUND)

@@ -39,7 +39,7 @@ target_link_libraries(gadgetron_toolbox_mri_core
         gadgetron_toolbox_cpucore_math
         ISMRMRD::ISMRMRD
         armadillo
-        boost
+        Boost::filesystem
         gadgetron_toolbox_cpufft
         gadgetron_toolbox_cpuklt
         gadgetron_toolbox_image_analyze_io
@@ -47,7 +47,7 @@ target_link_libraries(gadgetron_toolbox_mri_core
 target_include_directories(
         gadgetron_toolbox_mri_core
         PUBLIC
-        $<INSTALL_INTERFACE:include/gadgetron>
+        $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 

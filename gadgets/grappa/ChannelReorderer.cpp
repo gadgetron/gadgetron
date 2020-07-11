@@ -41,7 +41,7 @@ namespace Gadgetron::Grappa
     ChannelReorderer::ChannelReorderer(
             const Gadgetron::Core::Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : PureGadget<AnnotatedAcquisition, Acquisition>(props),
+    ) : PureGadget<AnnotatedAcquisition, Acquisition>(context,props),
             context(context),
             channel_labels(build_channel_label_map()),
             uncombined_indices(parse_uncombined_channels()) {}
