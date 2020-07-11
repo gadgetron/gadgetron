@@ -21,11 +21,11 @@ set_target_properties(gadgetron_core PROPERTIES
 target_link_libraries(gadgetron_core
         ISMRMRD::ISMRMRD
         gadgetron_toolbox_cpucore
-        boost)
+        Boost::boost)
 
 target_include_directories(gadgetron_core PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:include/gadgetron>
+        $<INSTALL_INTERFACE:include>
         )
 
 install(TARGETS gadgetron_core
@@ -53,6 +53,7 @@ install(FILES
         TypeTraits.h
         Writer.h
         Node.h
+        PureGadget.h
         LegacyACE.h
         PropertyMixin.h
         GadgetContainerMessage.h

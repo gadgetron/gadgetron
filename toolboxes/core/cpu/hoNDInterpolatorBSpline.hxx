@@ -30,7 +30,7 @@ namespace Gadgetron
     }
 
     template <typename ArrayType, unsigned int D> 
-    void hoNDInterpolatorBSpline<ArrayType, D>::setArray(ArrayType& a)
+    void hoNDInterpolatorBSpline<ArrayType, D>::setArray(const ArrayType& a)
     {
         this->array_ = &a;
 

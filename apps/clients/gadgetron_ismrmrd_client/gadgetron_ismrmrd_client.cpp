@@ -1151,7 +1151,10 @@ public:
     void connect(std::string hostname, std::string port)
     {
         tcp::resolver resolver(io_service);
-        tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str());
+        // numeric_service flag is required to send data if the Linux machine has no internet connection (in this case the loopback device is the only network device with an address).
+        // https://stackoverflow.com/questions/5971242/how-does-boost-asios-hostname-resolution-work-on-linux-is-it-possible-to-use-n
+        // https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/ip__basic_resolver_query.html
+        tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str(), boost::asio::ip::resolver_query_base::numeric_service);
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         tcp::resolver::iterator end;
 

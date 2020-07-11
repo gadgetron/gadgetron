@@ -11,8 +11,13 @@ cuda_add_library(gadgetron_toolbox_gpufft SHARED
 
 set_target_properties(gadgetron_toolbox_gpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_include_directories(gadgetron_toolbox_gpufft PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(gadgetron_toolbox_gpufft
+        PUBLIC
+		$<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
+    
+    
 
 target_link_libraries(gadgetron_toolbox_gpufft
   gadgetron_toolbox_cpucore
@@ -23,6 +28,7 @@ target_link_libraries(gadgetron_toolbox_gpufft
   )
 
 install(TARGETS gadgetron_toolbox_gpufft
+  EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin

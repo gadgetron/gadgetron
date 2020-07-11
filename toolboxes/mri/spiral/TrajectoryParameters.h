@@ -3,10 +3,7 @@
 #include <ismrmrd/xml.h>
 #include "log.h"
 #include "Gadget.h"
-#include "mri_core_utility.h"
 #include "vds.h"
-#include "armadillo"
-#include <mri_core_girf_correction.h>
 
 namespace Gadgetron {
 namespace Spiral {

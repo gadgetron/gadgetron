@@ -1,18 +1,18 @@
 #include "gpuSpiralSensePrepGadget.h"
+#include "../../toolboxes/mri/spiral/vds.h"
+#include "GPUTimer.h"
 #include "GenericReconJob.h"
-#include "cuNDArray_utils.h"
+#include "b1_map.h"
+#include "check_CUDA.h"
 #include "cuNDArray_reductions.h"
-#include "vector_td_utilities.h"
+#include "cuNDArray_utils.h"
 #include "hoNDArray_fileio.h"
+#include "ismrmrd/xml.h"
+#include "mri_core_girf_correction.h"
 #include "vector_td.h"
 #include "vector_td_operators.h"
-#include "check_CUDA.h"
-#include "b1_map.h"
-#include "GPUTimer.h"
-#include "vds.h"
-#include "ismrmrd/xml.h"
+#include "vector_td_utilities.h"
 #include <armadillo>
-#include "mri_core_girf_correction.h"
 
 #include <algorithm>
 #include <vector>

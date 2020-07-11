@@ -1,6 +1,6 @@
 #include "SpiralToGenericGadget.h"
+#include "../../toolboxes/mri/spiral/vds.h"
 #include "ismrmrd/xml.h"
-#include "vds.h"
 
 #include <algorithm>
 #include <vector>

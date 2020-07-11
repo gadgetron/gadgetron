@@ -240,7 +240,7 @@ namespace Gadgetron
         hoNDInterpolatorBSpline(const ArrayType& a, BoundHanlderType& bh, unsigned int order=5);
         virtual ~hoNDInterpolatorBSpline();
 
-        virtual void setArray(ArrayType& a);
+        void setArray(const ArrayType& a) override ;
 
         void setDerivative(const std::vector<unsigned int>& derivative) { GADGET_CHECK_THROW(derivative.size()>=D); derivative_ = derivative; }
 
@@ -268,7 +268,7 @@ namespace Gadgetron
         using BaseClass::sz_;
         using BaseClass::st_;
 
-        hoNDBSpline<T, D> bspline_;
+        hoNDBSpline<T, D,coord_type> bspline_;
         std::vector<size_t> dimension_;
         std::vector<unsigned int> derivative_;
         unsigned int order_;

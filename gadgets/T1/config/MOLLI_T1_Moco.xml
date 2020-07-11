@@ -200,6 +200,8 @@
             <property name="step_size" value="2.0"/>
             <property name="demons_iterations" value="40"/>
             <property name="iterations" value="5"/>
+            <property name="noise_sigma" value="0"/>
+            <property name="scales" value="5"/>
         </gadget>
         <!-- ImageArray to images -->
         <gadget>

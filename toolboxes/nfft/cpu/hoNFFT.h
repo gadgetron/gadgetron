@@ -14,12 +14,11 @@
 #include "vector_td.h"
 #include "complext.h"
 #include <complex>
-#include "../NFFT.h"
+#include "NFFT.h"
 
 #include <boost/shared_ptr.hpp>
 #include "hoArmadillo.h"
 
-#include "../nfft_export.h"
 #include "hoNFFT_sparseMatrix.h"
 
 namespace Gadgetron{
@@ -33,7 +32,7 @@ namespace Gadgetron{
     */
 
     template<class REAL, unsigned int D>
-    class EXPORTNFFT hoNFFT_plan : public NFFT_plan<hoNDArray,REAL,D>
+    class hoNFFT_plan : public NFFT_plan<hoNDArray,REAL,D>
     {
         using ComplexType = std::complex<REAL>;
 
@@ -55,8 +54,8 @@ namespace Gadgetron{
 
              hoNFFT_plan(
                     const vector_td<size_t,D>& matrix_size,
-                    REAL oversampling_factor,
-                    REAL W
+                    REAL oversampling_factor = 1.5f,
+                    REAL W = 5.5f
             );
 
 

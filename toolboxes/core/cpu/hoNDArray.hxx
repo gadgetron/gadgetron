@@ -717,7 +717,7 @@ namespace Gadgetron {
                 ind[jj] += start[jj];
             }
             // now, copy size[0] elements:
-            std::copy_n(&((*this)(ind)),&out.data_[ind1D],size[0]);
+            std::copy_n(&((*this)(ind)), size[0], &out.data_[ind1D]);
         }
     }
 

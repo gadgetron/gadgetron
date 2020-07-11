@@ -1,3 +1,4 @@
+#pragma once
 #include "GriddingReconGadgetBase.h"
 #include "mri_core_grappa.h"
 
@@ -183,9 +184,15 @@ template<template<class> class ARRAY> 	boost::shared_ptr<ARRAY<float_complext> >
 
 			auto E = boost::make_shared<NFFTOperator<ARRAY,float,2>>();
 
+                        auto data_cpy = data;
+
 			E->setup(from_std_vector<size_t,2>(image_dims_),image_dims_os_,kernel_width_);
 			if (dcw){
-				E->set_dcw(boost::make_shared<ARRAY<float>>(*dcw));
+                              auto dcw_sqrt = boost::make_shared<ARRAY<float>>(*dcw);
+                              sqrt_inplace(dcw_sqrt.get());
+                              E->set_dcw(boost::make_shared<ARRAY<float>>(*dcw_sqrt));
+                                data_cpy = new ARRAY<float_complext>(*data);
+                                *data_cpy *= *dcw_sqrt;
 			}
 			std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 			ARRAY<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
@@ -198,7 +205,10 @@ template<template<class> class ARRAY> 	boost::shared_ptr<ARRAY<float_complext> >
 			solver.set_output_mode(decltype(solver)::OUTPUT_SILENT);
 			E->set_codomain_dimensions(data->get_dimensions().get());
 			E->preprocess(flat_traj);
-			auto res = solver.solve(data);
+			auto res = solver.solve(data_cpy);
+
+                        if (dcw) delete data_cpy;
+
 			return res;
 		}
 	}

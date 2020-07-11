@@ -124,10 +124,9 @@ template<class REAL> void check_csrMatrix(cuCsrMatrix<complext<REAL> > &matrix){
 
 template<class REAL, unsigned int D> cuCsrMatrix<complext<REAL> >  make_NFFT_matrix(const thrust::device_vector<vector_td<REAL,D> > & points,  const vector_td<size_t,D>& image_dims, const vector_td<REAL,D>& beta, const REAL W ){
 
-	cuCsrMatrix<complext<REAL>> matrix;
 
-	matrix.csrRow = thrust::device_vector<int>(points.size()+1);
-	matrix.csrRow[0] = 0;
+	auto csrRow = thrust::device_vector<int>(points.size()+1);
+	csrRow[0] = 0;
 	CHECK_FOR_CUDA_ERROR();
 
 	REAL half_W = REAL(0.5)*W;
@@ -135,14 +134,14 @@ template<class REAL, unsigned int D> cuCsrMatrix<complext<REAL> >  make_NFFT_mat
 		thrust::device_vector<int> c_p_s(points.size());
 		thrust::transform(points.begin(), points.end(), c_p_s.begin(), compute_num_cells_per_sample<REAL,D>(half_W));
 
-		thrust::inclusive_scan( c_p_s.begin(), c_p_s.end(), matrix.csrRow.begin()+1, thrust::plus<int>()); // prefix sum
+		thrust::inclusive_scan( c_p_s.begin(), c_p_s.end(), csrRow.begin()+1, thrust::plus<int>()); // prefix sum
 
 
 	}
-	unsigned int num_pairs = matrix.csrRow.back();
+	unsigned int num_pairs = csrRow.back();
 	//cuNDArray<int> row_indices(ind_dims);
-	matrix.csrColdnd = thrust::device_vector<int>(num_pairs);
-	matrix.data = thrust::device_vector<complext<REAL> >(num_pairs);
+	auto csrColdnd = thrust::device_vector<int>(num_pairs);
+	auto data = thrust::device_vector<complext<REAL> >(num_pairs);
 	//cuNDArray<complext<REAL> > values(ind_dims);
 
 
@@ -150,20 +149,11 @@ template<class REAL, unsigned int D> cuCsrMatrix<complext<REAL> >  make_NFFT_mat
 	dim3 dimGrid;
 	setup_grid(points.size(),&dimBlock,&dimGrid);
 
-	make_NFFT_matrix_kernel<<<dimGrid,dimBlock>>>(thrust::raw_pointer_cast(&points[0]),thrust::raw_pointer_cast(&matrix.csrRow[0]), thrust::raw_pointer_cast(&matrix.data[0]), thrust::raw_pointer_cast(&matrix.csrColdnd[0]),vector_td<int,D>(image_dims),beta,W, points.size() );
+	make_NFFT_matrix_kernel<<<dimGrid,dimBlock>>>(thrust::raw_pointer_cast(points.data()),thrust::raw_pointer_cast(csrRow.data()), thrust::raw_pointer_cast(data.data()), thrust::raw_pointer_cast(csrColdnd.data()),vector_td<int,D>(image_dims),beta,W, points.size() );
 	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR();
-	matrix.m = points.size();
-	matrix.n = prod(image_dims);
-	matrix.nnz = num_pairs;
 
- std::cout << " Matrix sum: " << thrust::reduce(matrix.data.begin(),matrix.data.end()) << std::endl;
-	//cusparseSet
-//	CUSPARSE_CALL(cusparseCreateMatDescr(matrix.descr));
-	CUSPARSE_CALL(cusparseSetMatType(matrix.descr,CUSPARSE_MATRIX_TYPE_GENERAL));
-	CUSPARSE_CALL(cusparseSetMatDiagType(matrix.descr,CUSPARSE_DIAG_TYPE_NON_UNIT));
-	CUSPARSE_CALL(cusparseSetMatIndexBase(matrix.descr,CUSPARSE_INDEX_BASE_ZERO));
-
+	cuCsrMatrix<complext<REAL>> matrix(prod(image_dims), points.size(),std::move(csrRow),std::move(csrColdnd),std::move(data));
 	return matrix;
 }
 

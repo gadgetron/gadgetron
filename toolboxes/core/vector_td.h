@@ -29,7 +29,7 @@ namespace Gadgetron {
         T vec[D];
         __inline__ vector_td() = default;
 
-        template <typename... X> constexpr __inline__ __host__ __device__ explicit vector_td(X... xs) : vec{ T(xs)... } {}
+        template <typename... X, typename = std::enable_if_t<(sizeof...(X) > 1)>> constexpr __inline__ __host__ __device__ explicit vector_td(X... xs) : vec{ T(xs)... } {}
 
         __inline__ vector_td(const vector_td& other) = default;
 

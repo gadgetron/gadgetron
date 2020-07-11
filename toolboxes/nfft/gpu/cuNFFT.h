@@ -244,8 +244,7 @@ namespace cuNFFT {
             void prepare(cuNFFT_impl<REAL,D,ConvolutionType::SPARSE_MATRIX>* plan, const thrust::device_vector<vector_td<REAL,D>> &trajectory);
 
         protected:
-            cuCsrMatrix<complext<REAL>> matrix;
-            cuCsrMatrix<complext<REAL>> transposed;
+            std::unique_ptr<cuCsrMatrix<complext<REAL>>> matrix;
         };
 
         template<class REAL, unsigned int D, ConvolutionType CONV>

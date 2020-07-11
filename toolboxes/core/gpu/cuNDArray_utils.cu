@@ -218,9 +218,9 @@ namespace {
     const unsigned int frame_offset = idx/num_elements;
     
     if( idx < num_elements*num_batches ){
-      const typename uintd<D>::Type co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const typename uintd<D>::Type co = idx_to_co( idx-frame_offset*num_elements, matrix_size_out );
       const typename uintd<D>::Type co_os = offset + co;
-      const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*prod(matrix_size_in);
+      const unsigned int in_idx = co_to_idx(co_os, matrix_size_in)+frame_offset*prod(matrix_size_in);
       out[idx] = in[in_idx];
     }
   }
@@ -279,7 +279,7 @@ namespace {
 
     if( idx < num_elements*number_of_batches ){
 
-      const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const typename uintd<D>::Type co_out = idx_to_co( idx-frame_offset*num_elements, matrix_size_out );
       typename uintd<D>::Type offset;
       for(unsigned int d=0; d<D; d++)
       {
@@ -290,7 +290,7 @@ namespace {
       bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
       if( inside )
-        _out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+frame_offset*prod(matrix_size_in)];
+        _out = in[co_to_idx(co_out-offset, matrix_size_in)+frame_offset*prod(matrix_size_in)];
       else{      
         _out = val;
       }
@@ -355,7 +355,7 @@ namespace {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
     if( idx < number_of_elements ){
-      const vector_td<unsigned int,D> co_out = idx_to_co<D>( idx, matrix_size_out );
+      const vector_td<unsigned int,D> co_out = idx_to_co( idx, matrix_size_out );
       const vector_td<unsigned int,D> offset = (matrix_size_out-matrix_size_in)>>1;
       if( weak_less( co_out, offset ) || weak_greater_equal( co_out, matrix_size_in+offset ) ){
 	      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
@@ -402,7 +402,7 @@ namespace {
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
     if( idx < number_of_elements ){
-      const vector_td<typename realType<T>::Type,D> co_out( (matrix_size>>1) - idx_to_co<D>( idx, matrix_size ));
+      const vector_td<typename realType<T>::Type,D> co_out( (matrix_size>>1) - idx_to_co( idx, matrix_size ));
       if(  norm(co_out) > radius ){
 	      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
           image[idx+batch*number_of_elements] = val;
@@ -453,7 +453,7 @@ namespace {
       const unsigned int batch = idx/num_elements_out;
       const unsigned int batch_offset_in = batch*prod(matrix_size_in);
       
-      const typename uintd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
+      const typename uintd<D>::Type co_out = idx_to_co( idx-batch*num_elements_out, matrix_size_out );
       const typename uintd<D>::Type co_in = co_out >> 1;
       const typename uintd<D>::Type ones(1);
       const typename uintd<D>::Type twos(2);
@@ -466,7 +466,7 @@ namespace {
       
       for( unsigned int i=0; i<num_cells; i++ ){
         
-        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        const typename uintd<D>::Type stride = idx_to_co( i, twos );
         
         if( offset >= stride ){
           cellsum += image_in[batch_offset_in+co_to_idx(amin(co_in+stride, matrix_size_in-ones), matrix_size_in)];
@@ -542,7 +542,7 @@ namespace {
       const int batch = idx/num_elements_out;
       const int batch_offset_in = batch*prod(matrix_size_in);
       
-      const typename intd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
+      const typename intd<D>::Type co_out = idx_to_co( idx-batch*num_elements_out, matrix_size_out );
       const typename intd<D>::Type co_in = co_out << 1;
       
       T cellsum[D+1];
@@ -561,7 +561,7 @@ namespace {
         const typename intd<D>::Type zeros(0);
         const typename intd<D>::Type ones(1);
         const typename intd<D>::Type threes(3);
-        const typename intd<D>::Type stride = idx_to_co<D>(i,threes)-ones; // in the range [-1;1]^D
+        const typename intd<D>::Type stride = idx_to_co(i,threes)-ones; // in the range [-1;1]^D
         
         int distance = 0;
         for( int d=0; d<D; d++ ){
