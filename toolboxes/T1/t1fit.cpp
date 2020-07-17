@@ -5,7 +5,7 @@
 #include "hoNDArray_math.h"
 
 #include "demons_registration.h"
-#include "hoNDArray_fileio.h"
+#include "hoNDArray_utils.h"
 
 namespace {
     using namespace Gadgetron;
@@ -230,8 +230,14 @@ namespace {
 
 #pragma omp parallel for
         for (long long cha = 0; cha < (long long)predicted.get_size(2); cha++) {
-            vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
+//            vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
+//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
+            vector_field(slice,slice,cha) = Registration::ngf_diffeomorphic_demons<float, 2>(
                 abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
+//            vector_field(slice,slice,cha) = Registration::multi_scale_diffeomorphic_demons<float, 2>(
+//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
+//            vector_field(slice,slice,cha) = Registration::multi_scale_ngf_diffeomorphic_demons<float, 2>(
+//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,1e-6);
         }
 
         return vector_field;
@@ -277,3 +283,55 @@ hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_registration(
     }
     return vector_field;
 };
+
+
+namespace {
+auto t1_registration_vfield(
+    const hoNDArray<std::complex<float>>& data, hoNDArray<vector_td<float,2>> vector_field, const std::vector<float>& TI, unsigned int iterations, registration_params params) {
+    if (data.get_size(2) != TI.size()) {
+        throw std::runtime_error("Data and TI do not match");
+    }
+
+    auto corrected = phase_correct(data, TI);
+    auto corrected_orig = corrected;
+    {
+        auto deformed_data = deform_groups(data, vector_field);
+        corrected = phase_correct(deformed_data, TI);
+    }
+
+    for (int i = 0; i < iterations; i++) {
+        auto parameters = fit_T1_2param(corrected, TI);
+        auto predicted = predict_signal(parameters, TI);
+        auto updated_vector_field = register_groups(corrected_orig, predicted, vector_field, params);
+        vector_field = updated_vector_field;
+        auto deformed_data = deform_groups(data,vector_field);
+        corrected = phase_correct(deformed_data, TI);
+    }
+    return vector_field;
+};
+}
+
+
+hoNDArray<vector_td<float, 2>> Gadgetron::T1::multi_scale_t1_registration(   const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int levels, unsigned int iterations, registration_params params){
+    if (levels <= 1)
+        return t1_registration(data,TI,iterations,params);
+
+    auto data_pyramid = std::vector{data};
+
+    for (int i = 0; i < int(levels) - 1; i++) {
+        data_pyramid.push_back(downsample<std::complex<float>, 2>(data_pyramid.back()));
+    }
+
+    auto current_vfield = t1_registration(data_pyramid.back(),TI,iterations,params);
+    current_vfield = upsample<vector_td<float, 2>, 2>(current_vfield);
+    current_vfield *= vector_td<float, 2>(2);
+
+    for (int i = data_pyramid.size() - 2; i > 0; i--) {
+        current_vfield = t1_registration_vfield(data_pyramid[i],current_vfield,TI,iterations,params);
+        current_vfield = upsample<vector_td<float, 2>, 2>(current_vfield);
+        current_vfield *= vector_td<float, 2>(2);
+    }
+
+    current_vfield = t1_registration_vfield(data,current_vfield,TI,iterations,params);
+    return current_vfield;
+}
