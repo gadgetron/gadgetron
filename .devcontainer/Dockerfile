@@ -4,7 +4,7 @@ FROM gadgetron/ubuntu_2004_base_basic
 # property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
 # will be updated to match your local UID/GID (when using the dockerFile property).
 # See https://aka.ms/vscode-remote/containers/non-root-user for details.
-ARG USERNAME=vscode
+ARG USERNAME=gadgetron
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
@@ -29,6 +29,10 @@ RUN apt-get update \
     && apt-get install -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
     && chmod 0440 /etc/sudoers.d/$USERNAME \
+    #
+    # Let the non-root user use DOcker without sudo
+    && groupadd -g 800 docker \
+    && sermod -a -G docker $USER_UID \
     #
     # Install Docker
     && apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release \
