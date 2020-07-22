@@ -39,3 +39,6 @@ RUN cd /opt/code && \
     cmake ../ && \
     make -j $(nproc) && \
     make install
+
+RUN apt-get install -y locales && \
+    locale-gen
