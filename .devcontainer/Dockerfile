@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM gadgetron/ubuntu_2004_base_basic
 
 # This Dockerfile adds a non-root user with sudo access. Use the "remoteUser"
 # property in devcontainer.json to use it. On Linux, the container user's GID/UIDs
@@ -14,7 +14,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Configure apt and install packages
 ARG HELM_VERSION="v3.1.2"
 ARG KUBE_VERSION="v1.18.1"
-ARG AZURE_CLI_VERSION="2.5.1-1~buster"
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
@@ -49,22 +48,13 @@ RUN apt-get update \
     && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" > /etc/apt/sources.list.d/azure-cli.list \
     && curl -sL https://packages.microsoft.com/keys/microsoft.asc | apt-key add - 2>/dev/null \
     && apt-get update \
-    && apt-get install -y azure-cli=${AZURE_CLI_VERSION} \
+    && apt-get install -y azure-cli \
     #
     # Install the Azure Container Registry's Docker Credential Helper
     && curl -L https://aka.ms/acr/installaad/bash | /bin/bash \
     #
     # Install jq
-    && apt-get install -y jq \
-    #
-    # Install some gadgetron dependencies
-    && apt install -yes wget build-essential cython3 \
-        libcrypto++-dev  python3-dev python3-pip libhdf5-serial-dev \
-        cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf5-tools \
-        liblapack-dev libatlas-base-dev libxml2-dev libfreetype6-dev \
-        pkg-config libxslt-dev libarmadillo-dev libace-dev libgtest-dev \
-        liblapacke-dev libplplot-dev gcc-multilib supervisor net-tools \
-        cpio libpugixml-dev jove libopenblas-base libopenblas-dev \
+    && apt-get install -y jq 
 
 RUN apt-get install -y locales && \
     locale-gen
