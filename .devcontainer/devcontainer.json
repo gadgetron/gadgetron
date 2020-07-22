@@ -2,5 +2,12 @@
     "dockerFile": "Dockerfile",
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash"
-	}
+	},
+	"extensions": [
+		"ms-vscode.cpptools",
+		"ms-azuretools.vscode-docker",
+		"ms-python.python",
+		"eamodio.gitlens",
+		"visualstudioexptteam.vscodeintellicode"
+	]
 }
