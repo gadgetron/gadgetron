@@ -1,3 +1,6 @@
 {
-    "image": "gadgetron/ubuntu_2004_base_basic:latest"
+    "dockerFile": "Dockerfile",
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/bash"
+	}
 }
