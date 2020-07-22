@@ -32,7 +32,7 @@ RUN apt-get update \
     #
     # Let the non-root user use DOcker without sudo
     && groupadd -g 800 docker \
-    && sermod -a -G docker $USER_UID \
+    && usermod -a -G docker $USER_UID \
     #
     # Install Docker
     && apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release \
