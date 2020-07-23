@@ -102,3 +102,7 @@ RUN cd /opt/code && \
     cmake ../ && \
     make -j $(nproc) && \
     make install
+
+# Copy the contents of the .devcontainer folder into image to bake the file versions into image digest
+# devcontainer.json file is excluded by .dockerignore file
+COPY . /.devcontainer
