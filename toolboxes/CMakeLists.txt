@@ -4,6 +4,7 @@ endif ()
 
 
 add_subdirectory(log)
+add_subdirectory(metrics)
 
 add_subdirectory(operators)
 add_subdirectory(solvers)
