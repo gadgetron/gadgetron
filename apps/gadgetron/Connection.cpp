@@ -11,6 +11,8 @@
 #include <wait.h>
 #endif
 
+#include "metrics.h"
+
 using namespace Gadgetron::Server::Connection;
 
 namespace Gadgetron::Server::Connection {

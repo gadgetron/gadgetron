@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "log.h"
+#include "metrics.h"
 #include "paths.h"
 #include "initialization.h"
 
@@ -49,6 +50,8 @@ int main(int argc, char *argv[]) {
 
     GINFO("Gadgetron %s [%s]\n", GADGETRON_VERSION_STRING, GADGETRON_GIT_SHA1_HASH);
     GINFO("Running on port %d\n", args["port"].as<unsigned short>());
+
+    auto tmp = Gadgetron::Metrics::instance();
 
     try {
         configure_blas_libraries();
