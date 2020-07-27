@@ -1,7 +1,7 @@
 
 #include "Core.h"
-
 #include "ConfigConnection.h"
+#include "Metrics.h"
 #include "Writers.h"
 
 namespace {
@@ -73,7 +73,11 @@ namespace Gadgetron::Server::Connection {
         }
         catch (...) {}
 
-        GINFO_STREAM("Connection state: [FINISHED]");
+#if GADGETRON_DISABLE_FORK
+        // If we are not using forks, we should signal recon finish here.
+        Metrics::instance()->ReconFinish();
+#endif
+        GINFO_STREAM("Connection state : [FINISHED]");
     }
 
     std::vector<std::unique_ptr<Core::Writer>> default_writers() {

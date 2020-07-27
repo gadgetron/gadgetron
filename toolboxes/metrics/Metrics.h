@@ -5,13 +5,9 @@
 #ifndef METRICS_H
 #define METRICS_H
 
+#include <memory>
 #include "metrics_export.h"
-
-#ifdef PROMETHEUS_METRICS
-#include <prometheus/counter.h>
-#include <prometheus/exposer.h>
-#include <prometheus/registry.h>
-#endif
+#include "MetricsSink.h"
 
 namespace Gadgetron
 {
@@ -19,13 +15,13 @@ namespace Gadgetron
     {
     public:
         static Metrics* instance();
+        void ReconStart();
+        void ReconFinish();
 
     protected:
         Metrics();
         static Metrics* instance_;
-#ifdef PROMETHEUS_METRICS
-        prometheus::Exposer exposer_;
-#endif
+        std::shared_ptr<MetricsSink> metricsSink_;
     };
 }
 

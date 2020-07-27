@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "log.h"
-#include "metrics.h"
+#include "Metrics.h"
 #include "paths.h"
 #include "initialization.h"
 
