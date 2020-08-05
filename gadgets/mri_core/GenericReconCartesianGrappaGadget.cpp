@@ -40,6 +40,9 @@ namespace Gadgetron {
 
         recon_obj_.resize(NE);
 
+
+        GDEBUG("PATHNAME %s 'n",this->context.paths.gadgetron_home.c_str());
+
         return GADGET_OK;
     }
 

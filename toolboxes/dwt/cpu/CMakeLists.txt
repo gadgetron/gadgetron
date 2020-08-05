@@ -16,7 +16,7 @@ add_library(gadgetron_toolbox_cpudwt SHARED
 target_include_directories(gadgetron_toolbox_cpudwt
         PUBLIC
 
-        $<INSTALL_INTERFACE:include/gadgetron>
+        $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 set_target_properties(gadgetron_toolbox_cpudwt PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

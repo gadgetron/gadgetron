@@ -24,7 +24,6 @@ target_link_libraries(gadgetron_toolbox_cpufft
         gadgetron_toolbox_cpucore_math
         FFTW
         armadillo
-        boost
         )
 
 

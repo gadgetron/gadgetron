@@ -834,6 +834,42 @@ namespace Gadgetron {
     template <class ComplexType, class ENABLER> void FFT::ifft(hoNDArray<ComplexType>& data, size_t dimension) {
         single_fft(dimension,data,data,false,true);
     }
+    template <class ComplexType, class ENABLER>
+    hoNDArray<ComplexType> FFT::fft1c(const hoNDArray<ComplexType> &data) {
+      hoNDArray<ComplexType> output(data.dimensions());
+      hoNDFFT<realType_t<ComplexType>>::instance()->fft1c(data,output);
+      return output;
+    }
+    template <class ComplexType, class ENABLER>
+    hoNDArray<ComplexType> FFT::fft2c(const hoNDArray<ComplexType> &data) {
+      hoNDArray<ComplexType> output(data.dimensions());
+      hoNDFFT<realType_t<ComplexType>>::instance()->fft2c(data,output);
+      return output;
+    }
+    template <class ComplexType, class ENABLER>
+    hoNDArray<ComplexType> FFT::fft3c(const hoNDArray<ComplexType> &data) {
+      hoNDArray<ComplexType> output(data.dimensions());
+      hoNDFFT<realType_t<ComplexType>>::instance()->fft3c(data,output);
+      return output;
+    }
+    template <class ComplexType, class ENABLER>
+    hoNDArray<ComplexType> FFT::ifft1c(const hoNDArray<ComplexType> &data) {
+      hoNDArray<ComplexType> output(data.dimensions());
+      hoNDFFT<realType_t<ComplexType>>::instance()->ifft1c(data, output);
+      return output;
+    }
+    template <class ComplexType, class ENABLER>
+    hoNDArray<ComplexType> FFT::ifft2c(const hoNDArray<ComplexType> &data) {
+      hoNDArray<ComplexType> output(data.dimensions());
+      hoNDFFT<realType_t<ComplexType>>::instance()->ifft2c(data, output);
+      return output;
+    }
+    template <class ComplexType, class ENABLER>
+    hoNDArray<ComplexType> FFT::ifft3c(const hoNDArray<ComplexType> &data) {
+      hoNDArray<ComplexType> output(data.dimensions());
+      hoNDFFT<realType_t<ComplexType>>::instance()->ifft3c(data, output);
+      return output;
+    }
 
     // -----------------------------------------------------------------------------------------
 
@@ -854,4 +890,21 @@ namespace Gadgetron {
     template void FFT::ifft<std::complex<double>>(hoNDArray<std::complex<double>>& data, std::vector<size_t> dimensions);
     template void FFT::ifft<std::complex<float>>(hoNDArray<std::complex<float>>& data, size_t dimensions);
     template void FFT::ifft<std::complex<double>>(hoNDArray<std::complex<double>>& data, size_t dimensions);
+
+    template hoNDArray<std::complex<float>> FFT::fft1c(const hoNDArray<std::complex<float>> &data);
+    template hoNDArray<std::complex<float>> FFT::fft2c(const hoNDArray<std::complex<float>> &data);
+    template hoNDArray<std::complex<float>> FFT::fft3c(const hoNDArray<std::complex<float>> &data);
+    template hoNDArray<std::complex<float>> FFT::ifft1c(const hoNDArray<std::complex<float>> &data);
+    template hoNDArray<std::complex<float>> FFT::ifft2c(const hoNDArray<std::complex<float>> &data);
+    template hoNDArray<std::complex<float>> FFT::ifft3c(const hoNDArray<std::complex<float>> &data);
+
+
+    template hoNDArray<std::complex<double>> FFT::fft1c(const hoNDArray<std::complex<double>> &data);
+    template hoNDArray<std::complex<double>> FFT::fft2c(const hoNDArray<std::complex<double>> &data);
+    template hoNDArray<std::complex<double>> FFT::fft3c(const hoNDArray<std::complex<double>> &data);
+    template hoNDArray<std::complex<double>> FFT::ifft1c(const hoNDArray<std::complex<double>> &data);
+    template hoNDArray<std::complex<double>> FFT::ifft2c(const hoNDArray<std::complex<double>> &data);
+    template hoNDArray<std::complex<double>> FFT::ifft3c(const hoNDArray<std::complex<double>> &data);
+
+
 }

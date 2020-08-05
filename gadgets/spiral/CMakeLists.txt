@@ -1,11 +1,8 @@
 
-set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h TrajectoryParameters.h)
-set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp TrajectoryParameters.cpp)
 
 if (CUDA_FOUND)
-set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h gpuSpiralDeblurGadget.h)
-set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp gpuSpiralDeblurGadget.cpp)
-endif()
+set(SPIRAL_HEADER_FILES gpuSpiralSensePrepGadget.h gpuSpiralDeblurGadget.h)
+set(SPIRAL_SRC_FILES  gpuSpiralSensePrepGadget.cpp gpuSpiralDeblurGadget.cpp)
 
 add_library(gadgetron_spiral SHARED ${SPIRAL_HEADER_FILES} ${SPIRAL_SRC_FILES})
 
@@ -16,12 +13,14 @@ target_link_libraries(gadgetron_spiral
   gadgetron_mricore
   gadgetron_toolbox_mri_core
   gadgetron_toolbox_log
+	gadgetron_toolbox_spiral
   gadgetron_toolbox_cpucore)
 
 if (CUDA_FOUND)
     target_link_libraries(gadgetron_spiral
                                 gadgetron_gpuparallelmri
                                 gadgetron_toolbox_gpucore
+                                gadgetron_core
                                 gadgetron_toolbox_gpunfft 
                                 gadgetron_toolbox_gpusolvers 
                                 gadgetron_toolbox_gpuoperators
@@ -42,3 +41,4 @@ install (FILES ${SPIRAL_HEADER_FILES}
 add_subdirectory(config)
 
 set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+endif()

@@ -22,11 +22,11 @@ if (CUDA_FOUND)
   add_subdirectory(radial)  
   add_subdirectory(hyper)
   add_subdirectory(gpu)
-  add_subdirectory(mri_noncartesian)
 else ()
   message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
 endif()
 
+add_subdirectory(mri_noncartesian)
 add_subdirectory(spiral)
 add_subdirectory(grappa)
 
@@ -35,7 +35,7 @@ if (BUILD_PYTHON_SUPPORT)
     add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
 endif () # BUILD_PYTHON_SUPPORT
 
-find_package(DCMTK)
+find_package(DCMTK CONFIG)
 if(DCMTK_FOUND)
   message("Compiling DICOM gadget")
   add_subdirectory(dicom)

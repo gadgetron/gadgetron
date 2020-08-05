@@ -261,7 +261,7 @@ namespace Gadgetron{
 
     if( idx < num_image_elements ){
     
-      const intd2 co = idx_to_co<2>(idx, image_dims);
+      const intd2 co = idx_to_co(idx, image_dims);
     
       const int x = co.vec[0];
       const int y = co.vec[1];
@@ -316,7 +316,7 @@ namespace Gadgetron{
 
     if( idx < num_image_elements ){
     
-      const intd3 co = idx_to_co<3>(idx, image_dims);
+      const intd3 co = idx_to_co(idx, image_dims);
     
       const int x = co.vec[0];
       const int y = co.vec[1];
@@ -367,7 +367,7 @@ namespace Gadgetron{
 
     if( idx < num_image_elements ){
     
-      const intd4 co = idx_to_co<4>(idx, image_dims);
+      const intd4 co = idx_to_co(idx, image_dims);
     
       const int x = co.vec[0];
       const int y = co.vec[1];
@@ -489,7 +489,7 @@ namespace Gadgetron{
           }
         }
       }
-      corrm_smooth[batch*num_image_elements+co_to_idx<2>(co,image_dims)] = scale*result;  
+      corrm_smooth[batch*num_image_elements+co_to_idx(co,image_dims)] = scale*result;  
     }
   }
 
@@ -600,7 +600,7 @@ namespace Gadgetron{
           }
         }
       }
-      corrm_smooth[batch*num_image_elements+co_to_idx<3>(co,image_dims)] = scale*result;  
+      corrm_smooth[batch*num_image_elements+co_to_idx(co,image_dims)] = scale*result;  
     }
   }
 

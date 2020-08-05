@@ -219,7 +219,7 @@ namespace Gadgetron{
     if( legal_idx ){
       
       // Local co to the image
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uintd<D>::Type co = idx_to_co( idx_in_batch, matrix_size );
       
       const typename intd<D>::Type zeros(0);
       const typename intd<D>::Type ones(1);
@@ -236,7 +236,7 @@ namespace Gadgetron{
       for( int i=0; i<num_neighbors; i++ ){
 	
         // Find the stride of the neighbor {-1, 0, 1}^D
-        const typename intd<D>::Type stride = idx_to_co<D>( i, threes ) - ones;
+        const typename intd<D>::Type stride = idx_to_co( i, threes ) - ones;
 	
         // Verify that the neighbor is not out of bounds (and not the thread itself)
         if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){
@@ -245,7 +245,7 @@ namespace Gadgetron{
           //
 	  
           const unsigned int base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
-          const unsigned int neighbor_idx = (unsigned int) co_to_idx<D>( vector_td<int,D>(co)+stride, vector_td<int,D>(matrix_size)) + base_offset;
+          const unsigned int neighbor_idx = (unsigned int) co_to_idx( vector_td<int,D>(co)+stride, vector_td<int,D>(matrix_size)) + base_offset;
 	  
           shared_mem[shared_idx] += in_disp[neighbor_idx];
           num_contribs += REAL(1);

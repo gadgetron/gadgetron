@@ -47,7 +47,7 @@ namespace Gadgetron{
      * Set the domain dimension (image size) of the operator
      * @param[in] dims Domain dimensions
      */
-    virtual void set_domain_dimensions( std::vector<size_t> *dims )
+    virtual void set_domain_dimensions( const std::vector<size_t> *dims )
     {
       if( dims == 0x0 ) throw std::runtime_error("Null pointer provided");
       domain_dims_ = *dims;  

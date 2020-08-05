@@ -13,11 +13,13 @@
 #include <stdexcept>
 #include <array>
 #include <algorithm>
+#include <stdint.h>
 
 #include <boost/cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <numeric>
+#include "TypeTraits.h"
 
 namespace Gadgetron{
 
@@ -53,7 +55,13 @@ namespace Gadgetron{
          * One of the dimensions can be -1, in which case that dimension will be calculated based on the other.
          * @param dims
          */
-        void reshape(std::initializer_list<ssize_t> dims);
+        void reshape(std::initializer_list<std::int64_t> dims);
+
+        template<class... INDICES>
+        std::enable_if_t<Core::all_of_v<std::is_integral_v<INDICES>...>> reshape(INDICES ... ind) {
+            //static_assert(std::is_integral_v<INDICES> && ...);
+            this->reshape(std::initializer_list<std::int64_t>{std::int64_t(ind)...});
+        }
 
         bool dimensions_equal(const std::vector<size_t> *d) const;
         bool dimensions_equal(const std::vector<size_t>& d) const;
@@ -242,14 +250,14 @@ namespace Gadgetron{
         this->calculate_offset_factors(dimensions_);
     }
 
-    template <typename T> void NDArray<T>::reshape(std::initializer_list<ssize_t> dims) {
-        std::vector<ssize_t> dim_vec(dims);
+    template <typename T> void NDArray<T>::reshape(std::initializer_list<std::int64_t> dims) {
+        std::vector<std::int64_t> dim_vec(dims);
         auto negatives = std::count(dims.begin(), dims.end(), -1);
         if (negatives > 1)
             throw std::runtime_error("Only a single reshape dimension can be negative");
 
         if (negatives == 1) {
-            auto elements    = std::accumulate(dims.begin(), dims.end(), -1, std::multiplies<ssize_t>());
+            auto elements    = std::accumulate(dims.begin(), dims.end(), -1, std::multiplies<std::int64_t>());
             auto neg_element = std::find(dim_vec.begin(), dim_vec.end(), -1);
             *neg_element     = this->elements_ / elements;
         }

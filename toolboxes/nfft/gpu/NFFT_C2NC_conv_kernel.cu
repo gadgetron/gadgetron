@@ -77,7 +77,7 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
 
   REAL *shared_mem = (REAL*) _shared_mem;
 
-  unsigned int image_idx = ((blockIdx.y)*prod(matrix_size_os) + co_to_idx<D>( vector_td<unsigned int, D>(grid_position), matrix_size_os ))*number_of_batches;
+  unsigned int image_idx = ((blockIdx.y)*prod(matrix_size_os) + co_to_idx( vector_td<unsigned int, D>(grid_position), matrix_size_os ))*number_of_batches;
 
   for( unsigned int batch=0; batch<number_of_batches; batch++ ){
     

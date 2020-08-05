@@ -142,7 +142,7 @@ def prepare_rules(args, requirements):
 
     rules = {
         'system_memory': lambda req: Rule('gadgetron::info::memory', "Insufficient system memory.",
-                                          lambda val: float(req) <= float(val)),
+                                          lambda val: float(req) * 1024 * 1024 <= float(val)),
         'python_support': lambda req: Rule('gadgetron::info::python', "Python support required.", is_enabled),
         'matlab_support': lambda req: Rule('gadgetron::info::matlab', "MATLAB support required.", is_enabled),
         'gpu_support': lambda req: Rule('gadgetron::info::cuda', "CUDA support required.", is_enabled),

@@ -16,7 +16,6 @@ target_link_libraries(gadgetron_toolbox_fatwater
   gadgetron_toolbox_cpucore_math
   gadgetron_toolbox_cpufft
   armadillo
-  boost
   )
 
 target_include_directories(

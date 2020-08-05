@@ -1,6 +1,5 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
-
 add_executable(gadgetron
         main.cpp
         Server.cpp
@@ -63,13 +62,18 @@ add_executable(gadgetron
         connection/stream/common/Configuration.h
         connection/stream/distributed/Pool.h
         connection/stream/distributed/Worker.cpp
-        connection/stream/distributed/Worker.h connection/stream/common/Closer.h connection/stream/distributed/Pool.cpp )
+        connection/stream/distributed/Worker.h
+        connection/stream/common/Closer.h
+        connection/stream/distributed/Pool.cpp )
 
 target_link_libraries(gadgetron
         gadgetron_core
         gadgetron_toolbox_log
-        boost
-        BLAS)
+        Boost::system
+        Boost::filesystem
+        Boost::program_options
+        BLAS
+        ${CMAKE_DL_LIBS})
 
 target_include_directories(gadgetron
         PRIVATE

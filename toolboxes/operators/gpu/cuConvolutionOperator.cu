@@ -13,7 +13,7 @@ namespace Gadgetron {
     
     if( idx < prod(matrix_size) ){
       
-      vector_td<unsigned int,D> in_co = idx_to_co<D>( idx, matrix_size );
+      vector_td<unsigned int,D> in_co = idx_to_co( idx, matrix_size );
       vector_td<unsigned int,D> out_co = matrix_size-in_co;
     
       bool wrap = false;
@@ -24,8 +24,8 @@ namespace Gadgetron {
 	}
       }
     
-      const unsigned int in_idx = co_to_idx<D>(in_co, matrix_size);
-      const unsigned int out_idx = co_to_idx<D>(out_co, matrix_size);
+      const unsigned int in_idx = co_to_idx(in_co, matrix_size);
+      const unsigned int out_idx = co_to_idx(out_co, matrix_size);
 
       if( wrap && zero_fill )
 	out[out_idx] = T(0);

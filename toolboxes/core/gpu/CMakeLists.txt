@@ -53,14 +53,20 @@ target_link_libraries(gadgetron_toolbox_gpucore
   ${MKL_LIBRARIES}
   )
 
-
-target_include_directories(
-  gadgetron_toolbox_gpucore
-  PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
+target_include_directories(gadgetron_toolbox_gpucore
+        PUBLIC
+		$<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
+ 
 
-install(TARGETS gadgetron_toolbox_gpucore DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpucore
+  EXPORT gadgetron-export
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES
   gpucore_export.h

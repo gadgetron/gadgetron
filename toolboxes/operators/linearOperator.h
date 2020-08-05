@@ -58,7 +58,7 @@ namespace Gadgetron{
       this->mult_M(in,&tmp);
       return std::sqrt(this->get_weight())*real(dot(&tmp,&tmp));
     }
-    virtual void set_codomain_dimensions( std::vector<size_t> *dims )
+    virtual void set_codomain_dimensions( const std::vector<size_t> *dims )
     {
       if( dims == 0x0 )
 	throw std::runtime_error("linearOperator::set_codomain_dimensions: illegal dimensions array provided");

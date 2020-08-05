@@ -1,7 +1,6 @@
 install(FILES 	
     FindArmadillo.cmake
     FindCUDA_advanced.cmake
-    FindDCMTK.cmake
     FindFFTW3.cmake
     FindGLEW.cmake
     FindGperftools.cmake
