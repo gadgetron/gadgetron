@@ -12,5 +12,4 @@ target_include_directories(gadgetron_toolbox_sdc
 install(FILES
     mri_sdc_export.h
     SDC.h
-    SDC_kernel.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

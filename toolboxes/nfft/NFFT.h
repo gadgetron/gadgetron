@@ -1,8 +1,12 @@
 #pragma once
 
+#include <vector>
+
 #include "complext.h"
 #include "vector_td.h"
-#include <vector>
+
+#include "GriddingConvolution.h"
+
 /**
   Enum specifying the direction of the NFFT standalone FFT.
 */
@@ -61,7 +65,7 @@ namespace Gadgetron {
            \param mode enum class specifying the preprocessing mode
         */
         virtual void preprocess(const ARRAY<vector_td<REAL,D>> &trajectory,
-                                NFFT_prep_mode mode = NFFT_prep_mode::ALL) ;
+                                NFFT_prep_mode mode = NFFT_prep_mode::ALL);
 
 
         /**
@@ -97,9 +101,8 @@ namespace Gadgetron {
            \param[in] accumulate specifies whether the result is added to the output (accumulation) or if the output is overwritten.
         */
         virtual void convolve(const ARRAY<complext<REAL>>& in, ARRAY<complext < REAL>>& out,
-        NFFT_conv_mode   mode,
-        bool accumulate = false
-        ) = 0;
+        NFFT_conv_mode mode,
+        bool accumulate = false);
 
 
         /**
@@ -130,21 +133,21 @@ namespace Gadgetron {
            Get the matrix size.
         */
         inline typename uint64d<D>::Type get_matrix_size() {
-            return matrix_size;
+            return matrix_size_;
         }
 
         /**
            Get the oversampled matrix size.
         */
         inline typename uint64d<D>::Type get_matrix_size_os() {
-            return matrix_size_os;
+            return matrix_size_os_;
         }
 
         /**
            Get the convolution kernel size
         */
         inline REAL get_W() {
-            return W;
+            return width_;
         }
 
 
@@ -158,19 +161,17 @@ namespace Gadgetron {
 
         void compute_NFFT_NC2C(const ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
 
-
         void compute_NFFTH_NC2C(const ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
 
         void compute_NFFTH_C2NC(ARRAY <complext<REAL>>& in, ARRAY <complext<REAL>>& out);
 
-
-        typename uint64d<D>::Type matrix_size;          // Matrix size
-        typename uint64d<D>::Type matrix_size_os;       // Oversampled matrix size
-        size_t number_of_samples;
+        typename uint64d<D>::Type matrix_size_;
+        typename uint64d<D>::Type matrix_size_os_;
+        REAL width_;
         size_t number_of_frames;
-        REAL W;
+        size_t number_of_samples;
 
-
+        std::unique_ptr<GriddingConvolutionBase<ARRAY, complext<REAL>, D, KaiserKernel>> conv_;
     };
 
 

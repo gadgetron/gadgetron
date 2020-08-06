@@ -4,11 +4,7 @@ if (WIN32)
 endif ()
 
 add_library(gadgetron_toolbox_cpusdc SHARED
-  hoSDC.h
   hoSDC.cpp
-  hoSDC_conv.h
-  hoSDC_conv.cpp
-  hoSDC_kernel.h
 )
 
 set_target_properties(gadgetron_toolbox_cpusdc PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -24,6 +20,8 @@ target_link_libraries(gadgetron_toolbox_cpusdc
   gadgetron_toolbox_hostutils
   gadgetron_toolbox_log
   gadgetron_toolbox_operator
+  gadgetron_toolbox_nfft
+  gadgetron_toolbox_cpunfft
 )
 
 install(TARGETS gadgetron_toolbox_cpusdc
@@ -34,9 +32,6 @@ install(TARGETS gadgetron_toolbox_cpusdc
 )
 
 install(FILES 
-  hoSDC.h
-  hoSDC_conv.h
-  hoSDC_kernel.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}
   COMPONENT main
 )
