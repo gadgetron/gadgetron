@@ -29,6 +29,7 @@ namespace Gadgetron {
             using complex                      = fftwf_complex;
             using plan                         = fftwf_plan_s;
             static constexpr auto plan_guru    = fftwf_plan_guru64_dft;
+            static constexpr auto plan_dft     = fftwf_plan_dft;
             static constexpr auto execute_dft  = fftwf_execute_dft;
             static constexpr auto destroy_plan = fftwf_destroy_plan;
         };
@@ -37,6 +38,7 @@ namespace Gadgetron {
             using complex                      = fftw_complex;
             using plan                         = fftw_plan_s;
             static constexpr auto plan_guru    = fftw_plan_guru64_dft;
+            static constexpr auto plan_dft     = fftw_plan_dft;
             static constexpr auto execute_dft  = fftw_execute_dft;
             static constexpr auto destroy_plan = fftw_destroy_plan;
         };
@@ -94,8 +96,11 @@ namespace Gadgetron {
                 for (int i = 0; i < rank; i++) {
                     fftw_dimensions[i] = { (int64_t)dimensions[i], (int64_t)strides[i], (int64_t)strides[i] };
                 }
+                std::reverse(fftw_dimensions.begin(),fftw_dimensions.end());
                 plan = fftw_types<T>::plan_guru(rank, fftw_dimensions.data(), 0, nullptr, (FFTWComplex*)input.data(),
                     (FFTWComplex*)output.data(), forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
+
+                if (plan == nullptr) throw std::runtime_error("Illegal FFT plan created");
             }
             ~ContigousFFTPlan() {
                 std::lock_guard<std::mutex> guard(lock);
@@ -110,7 +115,6 @@ namespace Gadgetron {
             typename fftw_types<T>::plan* plan;
         };
 
-        const int num_max_threads = omp_get_max_threads();
 
         int contigous_rank(const boost::container::flat_set<int>& dimensions) {
             if (!dimensions.count(0))
@@ -123,22 +127,22 @@ namespace Gadgetron {
         }
 
         template <typename T>
-        static void contigous_fftn(const hoNDArray<std::complex<T>>& a, hoNDArray<std::complex<T>>& r, int rank,
+        static void contigous_fftn(const hoNDArray<std::complex<T>>& input, hoNDArray<std::complex<T>>& output, int rank,
             bool forward, bool normalize) {
 
-            auto plan = ContigousFFTPlan<T>(rank, a, r, forward);
+            auto plan = ContigousFFTPlan<T>(rank, input, output, forward);
             size_t batch_size
-                = std::accumulate(a.dimensions().begin(), a.dimensions().begin() + rank, 1, std::multiplies<>());
-            size_t batches = a.size() / batch_size;
+                = std::accumulate(input.dimensions().begin(), input.dimensions().begin() + rank, 1, std::multiplies<>());
+            size_t batches = input.size() / batch_size;
 
-#pragma omp parallel for default(none) shared(plan,  a, r, batches, batch_size)
+#pragma omp parallel for default(none) shared(plan,  input, output, batches, batch_size)
             for (long long i = 0; i < batches; i++) {
 
-                plan.execute(a.data() + i * batch_size, r.data() + i * batch_size);
+                plan.execute(input.data() + i * batch_size, output.data() + i * batch_size);
             }
 
             if (normalize)
-                r *= T(1) / std::sqrt<T>(batch_size);
+                output *= T(1) / std::sqrt<T>(batch_size);
         }
 
         template <typename T>
@@ -444,8 +448,10 @@ namespace Gadgetron {
     template <typename T> inline void hoNDFFT<T>::fftshift3D(hoNDArray<ComplexType>& a) {
         size_t n = a.get_number_of_elements() / (a.get_size(0) * a.get_size(1) * a.get_size(2));
 
-        fftshiftPivot3D(a.begin(), a.get_size(0), a.get_size(1), a.get_size(2), n, fftshiftPivot(a.get_size(0)),
-            fftshiftPivot(a.get_size(1)), fftshiftPivot(a.get_size(2)));
+        fftshiftPivot3D(a.begin(), a.get_size(0), a.get_size(1), a.get_size(2), n,
+                        fftshiftPivot(a.get_size(0)),
+                        fftshiftPivot(a.get_size(1)),
+                        fftshiftPivot(a.get_size(2)));
     }
 
     template <typename T>
@@ -617,8 +623,6 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::fft3(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        /*r = a;
-        return fft3(r);*/
         if (!r.dimensions_equal(&a)) {
             r.create(a.dimensions());
         }
@@ -627,13 +631,11 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::ifft3(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        /*r = a;
-        return ifft3(r);*/
         if (!r.dimensions_equal(&a)) {
             r.create(a.dimensions());
         }
 
-        contigous_fftn(a, r, 3, true, true);
+        contigous_fftn(a, r, 3, false, true);
     }
 
     template <typename T> inline void hoNDFFT<T>::fft3c(hoNDArray<ComplexType>& a) {
@@ -726,15 +728,15 @@ namespace Gadgetron {
 
     // TODO: implement more optimized threading strategy
     inline int get_num_threads_fft1(size_t n0, size_t num) {
-        if (num_max_threads == 1)
+        if (omp_get_max_threads() == 1)
             return 1;
 
         if (n0 * num > 1024 * 128) {
-            return num_max_threads;
+            return omp_get_max_threads();
         } else if (n0 * num > 512 * 128) {
-            return ((num_max_threads > 8) ? 8 : num_max_threads);
+            return ((omp_get_max_threads() > 8) ? 8 : omp_get_max_threads());
         } else if (n0 * num > 256 * 128) {
-            return ((num_max_threads > 4) ? 4 : num_max_threads);
+            return ((omp_get_max_threads() > 4) ? 4 : omp_get_max_threads());
         } else if (n0 * num > 128 * 128) {
             return 2;
         }
@@ -743,15 +745,15 @@ namespace Gadgetron {
     }
 
     inline int get_num_threads_fft2(size_t n0, size_t n1, size_t num) {
-        if (num_max_threads == 1)
+        if (omp_get_max_threads() == 1)
             return 1;
 
         if (n0 * n1 * num > 128 * 128 * 64) {
-            return num_max_threads;
+            return omp_get_max_threads();
         } else if (n0 * n1 * num > 128 * 128 * 32) {
-            return ((num_max_threads > 8) ? 8 : num_max_threads);
+            return ((omp_get_max_threads() > 8) ? 8 : omp_get_max_threads());
         } else if (n0 * n1 * num > 128 * 128 * 16) {
-            return ((num_max_threads > 4) ? 4 : num_max_threads);
+            return ((omp_get_max_threads() > 4) ? 4 : omp_get_max_threads());
         } else if (n0 * n1 * num > 128 * 128 * 8) {
             return 2;
         }
@@ -760,11 +762,11 @@ namespace Gadgetron {
     }
 
     inline int get_num_threads_fft3(size_t n0, size_t n1, size_t n2, size_t num) {
-        if (num_max_threads == 1)
+        if (omp_get_max_threads() == 1)
             return 1;
 
-        if (num >= num_max_threads) {
-            return num_max_threads;
+        if (num >= omp_get_max_threads()) {
+            return omp_get_max_threads();
         }
 
         return 1;
@@ -780,7 +782,7 @@ namespace Gadgetron {
         case 3:
             return get_num_threads_fft3(dimensions[0], dimensions[1], dimensions[2], num);
         default:
-            return std::min<long long>(num_max_threads, num);
+            return std::min<long long>(omp_get_max_threads(), num);
         }
     }
 
