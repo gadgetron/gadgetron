@@ -26,7 +26,6 @@ namespace Gadgetron {
   {
   public:
 
-    [[deprecated]]
     ArrayIterator(std::vector<size_t> *dimensions, std::vector<size_t> *order)
     {
       block_sizes_.push_back(1);
@@ -58,7 +57,7 @@ namespace Gadgetron {
       return current_idx_;
     }
 
-    inline size_t get_current_idx() {
+    inline size_t get_current_idx() const {
       return current_idx_;
     }
 

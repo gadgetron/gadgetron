@@ -42,9 +42,10 @@ namespace Gadgetron {
 
                 auto data_dims = images.data_.dimensions();
                 images.data_.reshape( data_dims[0], data_dims[1], -1 );
-                auto vector_field = T1::multi_scale_t1_registration(images.data_, TI_values,scales,iterations,{demons_iterations,regularization_sigma,step_size});
+//                auto vector_field = T1::multi_scale_t1_registration(images.data_, TI_values,scales,iterations,{demons_iterations,regularization_sigma,step_size});
 
-                auto moco_images = T1::deform_groups(images.data_, vector_field);
+//                auto moco_images = T1::deform_groups(images.data_, vector_field);
+                auto moco_images = T1::t1_moco_cmr(images.data_,TI_values,iterations);
 
                 auto phase_corrected = T1::phase_correct(moco_images, TI_values);
 

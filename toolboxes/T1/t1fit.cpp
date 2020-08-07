@@ -6,6 +6,8 @@
 
 #include "demons_registration.h"
 #include "hoNDArray_utils.h"
+#include "hoNDImage.h"
+#include "cmr_motion_correction.h"
 
 namespace {
     using namespace Gadgetron;
@@ -216,10 +218,6 @@ hoNDArray<float> Gadgetron::T1::phase_correct(const hoNDArray<std::complex<float
     }
 namespace {
 
-    
-
-
-
 
     hoNDArray<vector_td<float,2>> register_groups(const hoNDArray<float>& phase_corrected_data,
         const hoNDArray<float>& predicted, hoNDArray<vector_td<float,2>> vector_field, const registration_params& params) {
@@ -230,14 +228,9 @@ namespace {
 
 #pragma omp parallel for
         for (long long cha = 0; cha < (long long)predicted.get_size(2); cha++) {
-//            vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
-//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
-            vector_field(slice,slice,cha) = Registration::ngf_diffeomorphic_demons<float, 2>(
+            vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
                 abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
-//            vector_field(slice,slice,cha) = Registration::multi_scale_diffeomorphic_demons<float, 2>(
-//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
-//            vector_field(slice,slice,cha) = Registration::multi_scale_ngf_diffeomorphic_demons<float, 2>(
-//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,1e-6);
+
         }
 
         return vector_field;
@@ -335,3 +328,82 @@ hoNDArray<vector_td<float, 2>> Gadgetron::T1::multi_scale_t1_registration(   con
     current_vfield = t1_registration_vfield(data,current_vfield,TI,iterations,params);
     return current_vfield;
 }
+
+
+namespace {
+
+using ImageType = hoNDImage<float, 2>;
+using RegType = Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double>;
+auto register_groups_CMR(const hoNDArray<float>& phase_corrected_data,
+                         const hoNDArray<float>& predicted ) {
+    RegType reg;
+    auto abs_corrected = abs(phase_corrected_data);
+    auto abs_predicted = abs(predicted);
+
+    std::vector<unsigned int> iters = {32,64,100,100}; //Stolen from MocoSASAH
+
+    perform_moco_pair_wise_frame_2DT(abs_predicted, abs_corrected,0.1f,iters,  true,false, reg);
+    return reg;
+}
+
+auto deform_groups_cmr(const hoNDArray<std::complex<float>> & data, RegType& reg){
+    hoNDArray<double> dx;
+    hoNDArray<double> dy;
+    reg.deformation_field_[0].to_NDArray(0, dx);
+    reg.deformation_field_[1].to_NDArray(0, dy);
+    GDEBUG("REG ROWS %i\n",reg.deformation_field_[0].rows());
+
+    std::stringstream ss;
+    for (auto d : dx.dimensions()){
+        ss << " " << d;
+    }
+    GDEBUG_STREAM("DEFORMATION DIMS " << ss.str());
+
+    //Have to split into real and imag parts, because someone decided ALL registration code had to live in a single GOD object, so we can't deform std::complex<float>
+
+    auto real_part = real(data);
+
+    auto real_out = real_part;
+    apply_deformation_field(real_part,dx,dy,real_out);
+
+    auto imag_part = imag(data);
+    auto imag_out = imag_part;
+
+    apply_deformation_field(imag_part,dx,dy,imag_out);
+
+    auto output = data;
+    for (int64_t i = 0; i < output.size(); i++){
+        output[i] = {real_out[i],imag_out[i]};
+    }
+
+
+    return output;
+
+}
+}
+
+
+
+hoNDArray<std::complex<float>> Gadgetron::T1::t1_moco_cmr(
+    const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations) {
+    if (data.get_size(2) != TI.size()) {
+        throw std::runtime_error("Data and TI do not match");
+    }
+
+    auto corrected = phase_correct(data, TI);
+
+    auto corrected_orig = corrected;
+    auto deformed_data = hoNDArray<std::complex<float>>{};
+
+    auto vector_field = hoNDArray<vector_td<float,2>>(data.dimensions());
+    vector_field.fill(vector_td<float,2>(0));
+
+    for (int i = 0; i < iterations; i++) {
+        auto parameters = fit_T1_2param(corrected, TI);
+        auto predicted = predict_signal(parameters, TI);
+        auto reg = register_groups_CMR(corrected_orig, predicted);
+        deformed_data = deform_groups_cmr(data,reg);
+        corrected = phase_correct(deformed_data, TI);
+    }
+    return deformed_data;
+};

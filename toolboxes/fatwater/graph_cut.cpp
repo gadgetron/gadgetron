@@ -141,7 +141,7 @@ namespace Gadgetron {
                      const hoNDArray<float> &residuals_map, const hoNDArray<float> &lambda_map) {
 
 
-        hoNDArray<float> residual_diff_map(field_map_index.get_dimensions());
+        hoNDArray<float> residual_diff_map(field_map_index.dimensions());
         const auto X = field_map_index.get_size(0);
         const auto Y = field_map_index.get_size(1);
         const auto Z = field_map_index.get_size(2);

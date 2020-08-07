@@ -625,7 +625,6 @@ void compute_3d_filter(const hoNDArray<T>& fx, const hoNDArray<T>& fy, const hoN
 
         T vz, vy, vx;
 
-        size_t ind = 0;
         for (z = 0; z<E2; z++)
         {
             vz = pz[z];
@@ -636,7 +635,6 @@ void compute_3d_filter(const hoNDArray<T>& fx, const hoNDArray<T>& fy, const hoN
                 {
                     vx = px[x];
                     pFxyz[x+y*RO+z*RO*E1] = (vx*vz*vy);
-                    ind++;
                 }
             }
         }

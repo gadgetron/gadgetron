@@ -75,10 +75,10 @@ namespace Gadgetron
             kspace.get_dimensions(dim);
             acquired_points_.create(dim, kspace.begin());
 
-            acquired_points_indicator_.create(kspace.get_dimensions());
+            acquired_points_indicator_.create(kspace.dimensions());
             Gadgetron::clear(acquired_points_indicator_);
 
-            unacquired_points_indicator_.create(kspace.get_dimensions());
+            unacquired_points_indicator_.create(kspace.dimensions());
             Gadgetron::clear(unacquired_points_indicator_);
 
             size_t N = kspace.get_number_of_elements();
@@ -99,8 +99,8 @@ namespace Gadgetron
             }
 
             // allocate the helper memory
-            kspace_.create(kspace.get_dimensions());
-            complexIm_.create(kspace.get_dimensions());
+            kspace_.create(kspace.dimensions());
+            complexIm_.create(kspace.dimensions());
         }
         catch (...)
         {

@@ -1,5 +1,3 @@
-#include <boost/filesystem/operations.hpp>
-
 #include "log.h"
 #include "paths.h"
 
@@ -57,7 +55,7 @@ namespace {
             return get_executable_path(buffer_size * 2);
         }
 
-        return std::string(buffer.get(), len);
+        return std::string(buffer.get(), size_t(len));
     }
 #endif
 }
