@@ -13,6 +13,9 @@
 #include "mri_core_def.h"
 #include "t1fit.h"
 
+#include <range/v3/view.hpp>
+#include <algorithm>
+
 namespace Gadgetron {
 
     class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
@@ -40,12 +43,19 @@ namespace Gadgetron {
 
                 auto TI_values = extract_MOLLI_TI(*images.acq_headers_);
 
+                auto group_data = extract_groups(*images.acq_headers_, images.data_, TI_values);
+
+//                auto [vector_field, resorted_images] = group_t1_registration(group_data);
+
+
                 auto data_dims = images.data_.dimensions();
                 images.data_.reshape( data_dims[0], data_dims[1], -1 );
+
+                auto vector_fields = group_t1_registration(group_data);
 //                auto vector_field = T1::multi_scale_t1_registration(images.data_, TI_values,scales,iterations,{demons_iterations,regularization_sigma,step_size});
 
-//                auto moco_images = T1::deform_groups(images.data_, vector_field);
-                auto moco_images = T1::t1_moco_cmr(images.data_,TI_values,iterations);
+                auto vector_field = T1::t1_moco_cmr(images.data_,TI_values,iterations);
+                auto moco_images = T1::deform_groups(images.data_, vector_field);
 
                 auto phase_corrected = T1::phase_correct(moco_images, TI_values);
 
@@ -119,7 +129,97 @@ namespace Gadgetron {
 
             return std::move(meta);
         }
-        std::vector<float> extract_MOLLI_TI(const hoNDArray<ISMRMRD::AcquisitionHeader>& acq_headers) const {
+
+        struct T1Data {
+            hoNDArray<std::complex<float>> data;
+            std::vector<float> TI_values;
+        };
+
+        static std::vector<T1Data> extract_groups(const hoNDArray<ISMRMRD::AcquisitionHeader>& acq_headers, const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI_values){
+
+
+            std::vector<int> sets;
+            for (auto subarray : spans(acq_headers, 1)){
+                auto& header
+                    = *std::find_if(subarray.begin(), subarray.end(), [](ISMRMRD::AcquisitionHeader& acq_header) {
+                      return acq_header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+                    });
+                sets.push_back(header.user_int[5]);
+            }
+
+            auto distinct_sets = std::set(sets.begin(),sets.end());
+
+            std::vector<std::vector<int>> groups;
+            for (auto s : distinct_sets){
+                std::vector<int> group;
+                for (int i = 0; i < sets.size(); i++){
+                    if (sets[i] == s) group.push_back(i);
+                }
+                groups.push_back(std::move(group));
+            }
+
+            std::vector<T1Data> result;
+            for (const auto& group : groups){
+                using namespace Gadgetron::Indexing;
+                auto group_dims = std::vector<size_t>(data.dimensions().begin(),data.dimensions().end()-1);
+                group_dims.push_back(group.size());
+                hoNDArray<std::complex<float>> group_data(group_dims);
+                for (int i = 0; i < group.size(); i++){
+                    group_data(slice,slice,i) = data(slice,slice,group[i]);
+                }
+                std::vector<float> group_TI;
+                for (auto d : group) group_TI.push_back(TI_values[d]);
+                result.push_back({std::move(group_data), std::move(group_TI)});
+
+            }
+            return result;
+
+
+        }
+
+        std::vector<hoNDArray<vector_td<float,2>>> group_t1_registration(const std::vector<T1Data>& t1data) const{
+            using namespace ranges;
+            auto vector_fields = t1data | views::transform([this](const T1Data& data){ return T1::t1_moco_cmr(data.data,data.TI_values, iterations); }) | to<std::vector>();
+
+            return vector_fields;
+        }
+
+
+        auto register_group_and_compose(const T1Data& t1data, const hoNDArray<vector_td<float,2>>& vector_fields, const hoNDArray<std::complex<float>>& reference_frame){
+            using namespace Gadgetron::Indexing;
+            auto max_TI_index = std::max_element(t1data.TI_values.begin(),t1data.TI_values.end())-t1data.TI_values.begin();
+
+
+            auto largest_TI_image = t1data(slice,slice,max_TI_index);
+
+        }
+
+        static hoNDArray<vector_td<float,2>> register_groups(const std::vector<T1Data>& t1data, const std::vector<hoNDArray<vector_td<float,2>>>& vector_fields){
+            using namespace ranges;
+            using namespace Gadgetron::Indexing;
+            auto max_TIs = t1data | view::transform([](const auto& data){ return *std::max_element(data.TI_values.begin(),data.TI_values.end());}) | to<std::vector>();
+                auto max_TI_group = std::max_element(begin(max_TIs),end(max_TIs)) - begin(max_TIs);
+
+            const auto& [reference_data, reference_TIs] = t1data[max_TI_group];
+            auto deformed_reference = T1::deform_groups(reference_data,vector_fields[max_TI_group]);
+            auto max_TI_index = std::max_element(reference_TIs.begin(),reference_TIs.end())-reference_TIs.begin();
+            const hoNDArray<std::complex<float>> reference_frame = deformed_reference(slice,slice,max_TI_index);
+
+
+            auto result_dimensions = reference_data.dimensions();
+            result_dimensions.back() = ranges::accumulate(t1data | view::transform([](const auto& data){return data.data.dimensions.back();}),0);
+            hoNDArray<vector_td<float,2>> result;
+
+            for (int i = 0; i < t1data.size(); i++ ){
+                if (i == max_TI_group) continue;
+            }
+
+
+        }
+
+
+
+        static std::vector<float> extract_MOLLI_TI(const hoNDArray<ISMRMRD::AcquisitionHeader>& acq_headers) {
 
             std::map<int, std::vector<ISMRMRD::AcquisitionHeader>> look_locker_sets;
 

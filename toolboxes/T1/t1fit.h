@@ -69,6 +69,6 @@ namespace Gadgetron::T1 {
      * @param iterations Number of iterations between synthetic and registration
      * @return Motion corrected data
      */
-    hoNDArray<std::complex<float>> t1_moco_cmr(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations);
+    hoNDArray<vector_td<float,2>> t1_moco_cmr(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations);
 
 }

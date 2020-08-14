@@ -9,6 +9,9 @@
 
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <boost/range/adaptor/strided.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
+#include <range/v3/action.hpp>
 
 #ifdef USE_OMP
 #include <omp.h>
@@ -19,7 +22,7 @@
 
 #ifdef min
 #undef min
-#endif 
+#endif
 
 namespace Gadgetron {
   class ArrayIterator
@@ -975,18 +978,78 @@ namespace Gadgetron {
       return output;
   }
 
-  template<class COLL, class T = typename COLL::value_type::value_type>
-  hoNDArray<T> concat(const COLL &arrays) {
+  /**
+   * This functions takes a collection of hoNDArrays and concatenates them along the specified dimension
+   * @tparam COLL Collection of hoNDArray such as std::vector<hoNDArray<float>>.
+   * @param arrays The hoNDArrays. Must be of equal size, except along the concat dimension
+   * @param dimension Dimension along which to concatenate
+   * @return The concatenated arrays.
+   */
 
+  template <class COLL> auto concat_along_dimension(const COLL& arrays, size_t dimension) {
+      using namespace ranges;
+      using T = std::decay_t<decltype(*std::begin(*std::begin(arrays)))>;
+      if (arrays.empty())
+          return hoNDArray<T>();
+
+      const hoNDArray<T>& first = *std::begin(arrays);
+      std::vector dims = first.dimensions();
+
+      size_t count = ranges::accumulate(arrays | view::transform([dimension](const auto& array) {
+                                            return array.dimensions().at(dimension);
+                                        }),
+                                        size_t(0));
+      dims[dimension] = count;
+
+      auto dimensions_valid = [&dims,dimension](const auto& array) {
+          bool result = true;
+          const auto& d = array.dimensions();
+          for (size_t i = 0; i < d.size(); i++) {
+              if (i == dimension)
+                  continue;
+              result &= d[i] == dims[i];
+          }
+          return result && (d.size() == dims.size());
+      };
+
+      bool all_dimensions_valid = ranges::accumulate(arrays | view::transform(dimensions_valid), true, std::logical_and() );
+      if (!all_dimensions_valid) throw std::runtime_error("The dimensions of all provided arrays must be equal except along the concatenate dimension");
+
+      auto result = hoNDArray<T>(dims);
+
+      const size_t inner_stride = ranges::accumulate(dims | views::slice(size_t(0), dimension),
+                                                     size_t(1), std::multiplies());
+      const size_t outer_stride = inner_stride * count;
+      size_t current_slice = 0;
+
+      for (const auto& array : arrays) {
+          size_t slice_count = array.dimensions()[dimension];
+          auto array_inner_stride = slice_count * inner_stride;
+          auto repetitions = array.size() / array_inner_stride;
+
+          for (int i = 0; i < repetitions; i++) {
+              std::copy_n(array.begin() + i * array_inner_stride, array_inner_stride,
+                          result.begin() + current_slice * inner_stride + outer_stride * i);
+          }
+          current_slice += slice_count;
+      }
+      return result;
+  }
+  template<class COLL>
+  auto concat(const COLL &arrays) {
+
+      using T = std::decay_t<decltype(*std::begin(*std::begin(arrays)))>;
       if (arrays.empty()) return hoNDArray<T>();
 
       const hoNDArray<T> &first = *std::begin(arrays);
 
       auto dims = first.dimensions();
       auto size = first.size();
+      using std::begin;
+      using std::end;
 
-      if (!std::all_of(begin(arrays), end(arrays), [&](auto &array) { return dims == array.dimensions(); }) ||
-          !std::all_of(begin(arrays), end(arrays), [&](auto &array) { return size == array.size(); })) {
+      if (!std::all_of(begin(arrays), end(arrays), [&](const auto &array) { return dims == array.dimensions(); }) ||
+          !std::all_of(begin(arrays), end(arrays), [&](const auto &array) { return size == array.size(); })) {
           throw std::runtime_error("Array size or dimensions do not match.");
       }
 
@@ -995,11 +1058,20 @@ namespace Gadgetron {
 
       auto output_iterator = spans(output, first.get_number_of_dimensions()).begin();
 
-      for (auto& array : arrays) {
+      for (const auto& array : arrays) {
           *output_iterator = array;
           ++output_iterator;
       }
 
       return output;
   }
+
+  template<class T, class...  ARRAYS>
+  hoNDArray<T> concat(const hoNDArray<T>& first_array, const ARRAYS& ... arrays){
+
+      static_assert((std::is_same_v<hoNDArray<T>,std::decay_t<ARRAYS>> && ...));
+      using namespace ranges;
+      return concat(view::concat(view::single(first_array),view::single(arrays)...));
+  }
 }
+

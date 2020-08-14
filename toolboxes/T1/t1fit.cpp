@@ -342,49 +342,28 @@ auto register_groups_CMR(const hoNDArray<float>& phase_corrected_data,
 
     std::vector<unsigned int> iters = {32,64,100,100}; //Stolen from MocoSASAH
 
-    perform_moco_pair_wise_frame_2DT(abs_predicted, abs_corrected,0.1f,iters,  true,false, reg);
-    return reg;
-}
+    perform_moco_pair_wise_frame_2DT( abs_predicted,abs_corrected, 24.0f,iters,  true,false, reg);
 
-auto deform_groups_cmr(const hoNDArray<std::complex<float>> & data, RegType& reg){
     hoNDArray<double> dx;
     hoNDArray<double> dy;
     reg.deformation_field_[0].to_NDArray(0, dx);
     reg.deformation_field_[1].to_NDArray(0, dy);
-    GDEBUG("REG ROWS %i\n",reg.deformation_field_[0].rows());
 
-    std::stringstream ss;
-    for (auto d : dx.dimensions()){
-        ss << " " << d;
+    hoNDArray<vector_td<float,2>> vfield(dx.dimensions());
+
+    for (int64_t i = 0; i < vfield.size(); i++){
+        vfield[i] = vector_td<float,2>(dx[i],dy[i]);
     }
-    GDEBUG_STREAM("DEFORMATION DIMS " << ss.str());
-
-    //Have to split into real and imag parts, because someone decided ALL registration code had to live in a single GOD object, so we can't deform std::complex<float>
-
-    auto real_part = real(data);
-
-    auto real_out = real_part;
-    apply_deformation_field(real_part,dx,dy,real_out);
-
-    auto imag_part = imag(data);
-    auto imag_out = imag_part;
-
-    apply_deformation_field(imag_part,dx,dy,imag_out);
-
-    auto output = data;
-    for (int64_t i = 0; i < output.size(); i++){
-        output[i] = {real_out[i],imag_out[i]};
-    }
-
-
-    return output;
+    return vfield;
 
 }
+
+
 }
 
 
 
-hoNDArray<std::complex<float>> Gadgetron::T1::t1_moco_cmr(
+hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_moco_cmr(
     const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations) {
     if (data.get_size(2) != TI.size()) {
         throw std::runtime_error("Data and TI do not match");
@@ -401,9 +380,9 @@ hoNDArray<std::complex<float>> Gadgetron::T1::t1_moco_cmr(
     for (int i = 0; i < iterations; i++) {
         auto parameters = fit_T1_2param(corrected, TI);
         auto predicted = predict_signal(parameters, TI);
-        auto reg = register_groups_CMR(corrected_orig, predicted);
-        deformed_data = deform_groups_cmr(data,reg);
+        vector_field = register_groups_CMR(corrected_orig, predicted);
+        deformed_data = deform_groups(data,vector_field);
         corrected = phase_correct(deformed_data, TI);
     }
-    return deformed_data;
+    return vector_field;
 };
