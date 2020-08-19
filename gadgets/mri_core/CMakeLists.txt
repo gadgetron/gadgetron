@@ -59,6 +59,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericReconAccumulateImageTriggerGadget.h
         GenericImageReconArrayToImageGadget.h
         GenericReconReferenceKSpaceDelayedBufferGadget.h
+        GenericReconImageToImageArrayGadget.h 
         WhiteNoiseInjectorGadget.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
@@ -69,7 +70,9 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageArraySendMixin.h
         ImageArraySendMixin.hpp
         DenoiseGadget.h
-        CoilComputationGadget.h)
+        CoilComputationGadget.h 
+        ImageFFTGadget.h 
+        )
 
 set(gadgetron_mricore_src_files
         AcquisitionPassthroughGadget.cpp
@@ -124,6 +127,7 @@ set(gadgetron_mricore_src_files
         GenericImageReconGadget.cpp
         GenericReconAccumulateImageTriggerGadget.cpp
         GenericImageReconArrayToImageGadget.cpp
+        GenericReconImageToImageArrayGadget.cpp 
         WhiteNoiseInjectorGadget.cpp
         RateLimitGadget.cpp
         dependencyquery/NoiseSummaryGadget.cpp
@@ -132,7 +136,9 @@ set(gadgetron_mricore_src_files
         ImageResizingGadget.cpp
         AutoScaleGadget.cpp
         DenoiseGadget.cpp
-        CoilComputationGadget.cpp)
+        CoilComputationGadget.cpp
+        ImageFFTGadget.cpp
+        )
 
 set(gadgetron_mricore_config_files
         config/default.xml
@@ -158,6 +164,7 @@ set(gadgetron_mricore_config_files
         config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
         config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
         config/Generic_Cartesian_Grappa_Cine_Denoise.xml
+        config/Generic_Cartesian_Image_Chain_FFT.xml
         config/NoiseSummary.xml
         config/ismrmrd_dump.xml
         )
@@ -184,6 +191,7 @@ add_library(gadgetron_mricore SHARED
     gadgetron_mricore_export.h
     ${gadgetron_mricore_header_files}
     ${gadgetron_mricore_src_files}
+    ${gadgetron_mricore_config_files}
     DenoiseGadget.cpp DenoiseGadget.h)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
