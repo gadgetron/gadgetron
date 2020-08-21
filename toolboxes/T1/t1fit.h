@@ -62,6 +62,8 @@ namespace Gadgetron::T1 {
 
     hoNDArray<float> phase_correct(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI);
 
+    hoNDArray<vector_td<float,2>> register_groups_CMR(const hoNDArray<float>& phase_corrected_data,
+                                                  const hoNDArray<float>& predicted );
     /**
      * Preforms registration on a T1 dataset by iteratively creating synthetic data. Uses the CMR motion correction code, and returns the deformed data
      * @param data Input data of shape (X,Y,TI)

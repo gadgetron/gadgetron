@@ -330,19 +330,15 @@ hoNDArray<vector_td<float, 2>> Gadgetron::T1::multi_scale_t1_registration(   con
 }
 
 
-namespace {
-
-using ImageType = hoNDImage<float, 2>;
-using RegType = Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double>;
-auto register_groups_CMR(const hoNDArray<float>& phase_corrected_data,
+hoNDArray<vector_td<float,2>> Gadgetron::T1::register_groups_CMR(const hoNDArray<float>& phase_corrected_data,
                          const hoNDArray<float>& predicted ) {
+    using ImageType = hoNDImage<float, 2>;
+    using RegType = Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double>;
     RegType reg;
-    auto abs_corrected = abs(phase_corrected_data);
-    auto abs_predicted = abs(predicted);
 
     std::vector<unsigned int> iters = {32,64,100,100}; //Stolen from MocoSASAH
 
-    perform_moco_pair_wise_frame_2DT( abs_predicted,abs_corrected, 24.0f,iters,  true,false, reg);
+    perform_moco_pair_wise_frame_2DT( predicted,phase_corrected_data, 12.0f,iters,  true,false, reg);
 
     hoNDArray<double> dx;
     hoNDArray<double> dy;
@@ -359,19 +355,17 @@ auto register_groups_CMR(const hoNDArray<float>& phase_corrected_data,
 }
 
 
-}
-
-
-
 hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_moco_cmr(
     const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI, unsigned int iterations) {
+
     if (data.get_size(2) != TI.size()) {
         throw std::runtime_error("Data and TI do not match");
     }
 
     auto corrected = phase_correct(data, TI);
 
-    auto corrected_orig = corrected;
+    auto corrected_orig = abs(corrected);
+
     auto deformed_data = hoNDArray<std::complex<float>>{};
 
     auto vector_field = hoNDArray<vector_td<float,2>>(data.dimensions());
@@ -380,7 +374,7 @@ hoNDArray<vector_td<float,2>> Gadgetron::T1::t1_moco_cmr(
     for (int i = 0; i < iterations; i++) {
         auto parameters = fit_T1_2param(corrected, TI);
         auto predicted = predict_signal(parameters, TI);
-        vector_field = register_groups_CMR(corrected_orig, predicted);
+        vector_field = register_groups_CMR(corrected_orig, abs(predicted));
         deformed_data = deform_groups(data,vector_field);
         corrected = phase_correct(deformed_data, TI);
     }
