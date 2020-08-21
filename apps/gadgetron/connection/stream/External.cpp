@@ -10,7 +10,7 @@
 
 #include <boost/asio/use_future.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include "system_info.h"
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server::Connection;
@@ -60,7 +60,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
     std::shared_ptr<ExternalChannel> External::open_connection(Config::Execute execute, const Context &context) {
 
-        tcp::endpoint endpoint(tcp::v6(), 0);
+        tcp::endpoint endpoint(Info::tcp_protocol(), 0);
         auto acceptor = std::make_shared<tcp::acceptor>(io_service, endpoint);
 
         auto port = acceptor->local_endpoint().port();

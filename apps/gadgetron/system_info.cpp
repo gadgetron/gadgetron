@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sstream>
+#include <boost/filesystem.hpp>
 
 #endif
 #if defined(BSD)
@@ -201,4 +202,16 @@ namespace Gadgetron::Server::Info {
         CUDA::print_cuda_information(os);
         os << std::endl;
     }
-}
+    namespace {
+        boost::asio::ip::tcp get_max_tcp_protocol(){
+#ifdef __linux__
+            bool has_ipv6 = exists(boost::filesystem::path("/proc/net/ip_v6"));
+            if (!has_ipv6) return boost::asio::ip::tcp::v4();
+#endif
+            return boost::asio::ip::tcp::v6();
+        }
+        const boost::asio::ip::tcp gadgetron_tcp_protocol = get_max_tcp_protocol();
+    }
+
+    boost::asio::ip::tcp tcp_protocol() { return gadgetron_tcp_protocol; }
+    }
