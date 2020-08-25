@@ -138,7 +138,7 @@ set(gadgetron_mricore_src_files
         DenoiseGadget.cpp
         CoilComputationGadget.cpp
         ImageFFTGadget.cpp
-        )
+        FlagTriggerGadget.cpp FlagTriggerGadget.h)
 
 set(gadgetron_mricore_config_files
         config/default.xml
