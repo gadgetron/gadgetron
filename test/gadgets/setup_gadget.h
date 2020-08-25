@@ -5,6 +5,7 @@
 
 #include <Channel.h>
 #include <Context.h>
+#include <Node.h>
 #include <PropertyMixin.h>
 #include <array>
 #include <ismrmrd/ismrmrd.h>
