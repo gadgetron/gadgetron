@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include <Channel.h>
-#include <Context.h>
-#include <Node.h>
-#include <PropertyMixin.h>
+#include "Channel.h"
+#include "Context.h"
+#include "Node.h"
+#include "PropertyMixin.h"
 #include <array>
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
