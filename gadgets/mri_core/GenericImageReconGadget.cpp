@@ -1603,7 +1603,7 @@ namespace Gadgetron {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
                                         hoMRImage<ValueType, 2>* pImage = &images(cha, slc, con, phs, rep, set, ave);
-                                        if (pImage != NULL)
+                                        if (pImage != NULL && pImage->get_number_of_elements()>0)
                                         {
                                             T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
@@ -1760,7 +1760,7 @@ namespace Gadgetron {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
                                         hoMRImage<ValueType, 2>* pImage = &images(cha, slc, con, phs, rep, set, ave);
-                                        if (pImage != NULL)
+                                        if (pImage != NULL && pImage->get_number_of_elements() > 0)
                                         {
                                             T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
@@ -1896,7 +1896,7 @@ namespace Gadgetron {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
                                         hoMRImage<ValueType, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
-                                        if (pImage != NULL)
+                                        if (pImage != NULL && pImage->get_number_of_elements()>0)
                                         {
                                             T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
@@ -2052,7 +2052,7 @@ namespace Gadgetron {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
                                         hoMRImage<ValueType, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
-                                        if (pImage != NULL)
+                                        if (pImage != NULL && pImage->get_number_of_elements() > 0)
                                         {
                                             T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
