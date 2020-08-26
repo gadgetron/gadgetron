@@ -38,6 +38,7 @@
 #include <boost/make_shared.hpp>
 
 #include "NHLBICompression.h"
+#include "GadgetronTimer.h"
 
 #if defined GADGETRON_COMPRESSION_ZFP
 #include "zfp/zfp.h"
@@ -1092,6 +1093,7 @@ public:
         , timeout_ms_(10000)
         , uncompressed_bytes_sent_(0)
         , compressed_bytes_sent_(0)
+        , header_bytes_sent_(0)
     {
 
     }
@@ -1111,6 +1113,15 @@ public:
         }
 
         return uncompressed_bytes_sent_/compressed_bytes_sent_;
+    }
+
+    double get_bytes_transmitted()
+    {
+        if (compressed_bytes_sent_ <= 0) {
+            return header_bytes_sent_ + uncompressed_bytes_sent_;
+        } else {
+            return header_bytes_sent_ + compressed_bytes_sent_;
+        }
     }
     
     void set_timeout(unsigned int t)
@@ -1198,23 +1209,23 @@ public:
         }
         GadgetMessageIdentifier id;
         id.id = GADGET_MESSAGE_CLOSE;    
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
     }
 
     void send_gadgetron_info_query(const std::string &query, uint64_t correlation_id = 0) {
         GadgetMessageIdentifier id{ 6 }; // 6 = QUERY; Deal with it.
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(id)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(id)));
 
         uint64_t reserved = 0;
 
-        boost::asio::write(*socket_, boost::asio::buffer(&reserved, sizeof(reserved)));
-        boost::asio::write(*socket_, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&reserved, sizeof(reserved)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
 
         uint64_t query_length = query.size();
 
-        boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(query_length)));
-        boost::asio::write(*socket_, boost::asio::buffer(query));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(query_length)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(query));
     }
 
     void send_gadgetron_configuration_file(std::string config_xml_name) {
@@ -1230,8 +1241,8 @@ public:
         memset(&ini,0,sizeof(GadgetMessageConfigurationFile));
         strncpy(ini.configuration_file, config_xml_name.c_str(),config_xml_name.size());
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&ini, sizeof(GadgetMessageConfigurationFile)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&ini, sizeof(GadgetMessageConfigurationFile)));
 
     }
 
@@ -1247,10 +1258,9 @@ public:
         GadgetMessageScript conf;
         conf.script_length = (uint32_t)xml_string.size();
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
-        boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
-
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));
     }
 
     void  send_gadgetron_parameters(std::string xml_string)
@@ -1265,9 +1275,9 @@ public:
         GadgetMessageScript conf;
         conf.script_length = (uint32_t)xml_string.size();
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
-        boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));
     }
 
     void send_ismrmrd_acquisition(ISMRMRD::Acquisition& acq) 
@@ -1279,19 +1289,19 @@ public:
         GadgetMessageIdentifier id;
         id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;;
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
         if (data_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getDataPtr()[0], 2*sizeof(float)*data_elements));
+            uncompressed_bytes_sent_ +=boost::asio::write(*socket_, boost::asio::buffer(&acq.getDataPtr()[0], 2*sizeof(float)*data_elements));
         }
     }
 
@@ -1308,14 +1318,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION2);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
@@ -1348,14 +1358,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION2);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
@@ -1395,14 +1405,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
@@ -1454,14 +1464,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
         float local_tolerance = compression_tolerance;
@@ -1514,14 +1524,14 @@ public:
         GadgetMessageIdentifier id;
         id.id = GADGET_MESSAGE_ISMRMRD_WAVEFORM;;
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&wav.head, sizeof(ISMRMRD::ISMRMRD_WaveformHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&wav.head, sizeof(ISMRMRD::ISMRMRD_WaveformHeader)));
 
         unsigned long data_elements = wav.head.channels*wav.head.number_of_samples;
 
         if (data_elements)
         {
-            boost::asio::write(*socket_, boost::asio::buffer(wav.begin_data(), sizeof(uint32_t)*data_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(wav.begin_data(), sizeof(uint32_t)*data_elements));
         }
     }
 
@@ -1550,6 +1560,7 @@ protected:
     std::thread reader_thread_;
     maptype readers_;
     unsigned int timeout_ms_;
+    double header_bytes_sent_;
     double uncompressed_bytes_sent_;
     double compressed_bytes_sent_;
 };
@@ -1706,6 +1717,7 @@ int main(int argc, char **argv)
     float compression_tolerance = 0.0;
     bool use_zfp_compression = false;
     bool verbose = false;
+    Gadgetron::GadgetronTimer timer(false);
 
     po::options_description desc("Allowed options");
 
@@ -1870,6 +1882,7 @@ int main(int argc, char **argv)
 
     try
     {
+        timer.start();
         con.connect(host_name,port);
 
         if (vm.count("info")) {
@@ -2023,6 +2036,14 @@ int main(int argc, char **argv)
 
         if (compression_precision > 0 || compression_tolerance > 0.0) {
             std::cout << "Compression ratio: " << con.compression_ratio() << std::endl;
+        }
+
+        if (verbose) {
+            double transmission_time_s = timer.stop()/1e6;
+            double transmitted_mb = con.get_bytes_transmitted()/(1024*1024);
+            std::cout << "Time sending: " << transmission_time_s << "s" << std::endl;
+            std::cout << "Data sent: " << transmitted_mb << "MB" << std::endl;
+            std::cout << "Transmission rate: " << transmitted_mb/transmission_time_s << "MB/s" << std::endl;
         }
 
         con.send_gadgetron_close();
