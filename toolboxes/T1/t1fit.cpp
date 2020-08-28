@@ -232,10 +232,10 @@ namespace {
         for (long long cha = 0; cha < (long long)predicted.get_size(2); cha++) {
 //            vector_field(slice,slice,cha) = Registration::diffeomorphic_demons<float, 2>(
 //                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
-            vector_field(slice,slice,cha) = Registration::ngf_diffeomorphic_demons<float, 2>(
-                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
-//            vector_field(slice,slice,cha) = Registration::multi_scale_diffeomorphic_demons<float, 2>(
-//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
+//            vector_field(slice,slice,cha) = Registration::ngf_diffeomorphic_demons<float, 2>(
+//                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),vector_field(slice,slice,cha), params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
+            vector_field(slice,slice,cha) = Registration::multi_scale_diffeomorphic_demons<float, 2>(
+                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,params.noise_sigma);
 //            vector_field(slice,slice,cha) = Registration::multi_scale_ngf_diffeomorphic_demons<float, 2>(
 //                abs_corrected(slice, slice, cha), abs_predicted(slice, slice, cha),3, params.iterations,params.regularization_sigma, params.step_size,1e-6);
         }
