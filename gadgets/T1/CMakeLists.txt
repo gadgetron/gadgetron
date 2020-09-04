@@ -4,7 +4,7 @@ set(gadgetron_t1_config_files config/MOLLI_T1_Moco.xml config/MOLLI_T1_Moco_isto
 source_group(config FILES ${gadgetron_t1_config_files})
 
 add_library(gadgetron_t1 SHARED
-        T1MocoGadget.cpp T1_utils.hpp)
+        T1MocoGadget.cpp)
 
 set_target_properties(gadgetron_t1 PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

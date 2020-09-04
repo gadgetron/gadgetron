@@ -56,6 +56,27 @@ namespace Gadgetron {
         return nrm2(&x);
     }
 
-}
+    template <class REAL>
+    std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val,
+                                  REAL max_val) {
+
+        auto span_val = max_val - min_val;
+        auto result = std::vector<size_t>(bins, 0);
+
+        for (auto val : data) {
+            size_t bin = std::min(
+                    std::max<size_t>(std::floor((val - min_val) / span_val * bins), 0),
+                    bins - 1);
+            result[bin]++;
+        }
+
+        return result;
+    }
+    template <class REAL> std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins) {
+        return histogram(data, bins, min(data), max(data));
+    }
+
+
+    }
 
 
