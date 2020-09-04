@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "openmp-use-default-none"
 #include "t1fit.h"
 #include "HybridLM.h"
 #include "hoArmadillo.h"
@@ -553,5 +551,3 @@ Gadgetron::T1::t1_moco_cmr(const hoNDArray<std::complex<float>>& data, const std
     }
     return vector_field;
 };
-
-#pragma clang diagnostic pop

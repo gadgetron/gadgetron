@@ -35,39 +35,9 @@ namespace Gadgetron {
             throw std::runtime_error("Illegal enum");
         }
 
-        void add_stats(AcquisitionBucketStats& stats, const ISMRMRD::AcquisitionHeader& header) {
-            stats.average.insert(header.idx.average);
-            stats.kspace_encode_step_1.insert(header.idx.kspace_encode_step_1);
-            stats.kspace_encode_step_2.insert(header.idx.kspace_encode_step_2);
-            stats.slice.insert(header.idx.slice);
-            stats.contrast.insert(header.idx.contrast);
-            stats.phase.insert(header.idx.phase);
-            stats.repetition.insert(header.idx.repetition);
-            stats.set.insert(header.idx.set);
-            stats.segment.insert(header.idx.segment);
-        }
 
-        void add_acquisition(AcquisitionBucket& bucket, Core::Acquisition acq) {
-            auto& head  = std::get<ISMRMRD::AcquisitionHeader>(acq);
-            auto espace = head.encoding_space_ref;
 
-            if (ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(head.flags)
-                || ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(head.flags)) {
-                bucket.ref_.push_back(acq);
-                if (bucket.refstats_.size() < (espace + 1)) {
-                    bucket.refstats_.resize(espace + 1);
-                }
-                add_stats(bucket.refstats_[espace], head);
-            }
-            if (!(ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(head.flags)
-                    || ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA).isSet(head.flags))) {
-                if (bucket.datastats_.size() < (espace + 1)) {
-                    bucket.datastats_.resize(espace + 1);
-                }
-                add_stats(bucket.datastats_[espace], head);
-                bucket.data_.emplace_back(std::move(acq));
-            }
-        }
+
 
         struct EqualityTrigger {
             explicit EqualityTrigger(TriggerDimension trig) : trigger{ trig } {}
@@ -188,7 +158,7 @@ namespace Gadgetron {
             unsigned short sorting_index = get_index(head, sorting_dimension);
 
             AcquisitionBucket& bucket = buckets[sorting_index];
-            add_acquisition(bucket, std::move(acq));
+            bucket.add_acquisition(std::move(acq));
 
             if (trigger_after(trigger, head))
                 send_data(out, buckets, waveforms);
