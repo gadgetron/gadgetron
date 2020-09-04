@@ -12,6 +12,14 @@
 #include "mri_core_data.h"
 #include "mri_core_acquisition_bucket.h"
 
+
+
+#include <boost/config/warning_disable.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+
 using namespace Gadgetron;
 static const std::unordered_map<std::string, Gadgetron::FlagTriggerGadget::TriggerFlags> flag_map =
     {
@@ -86,14 +94,35 @@ void Gadgetron::FlagTriggerGadget::process(Core::InputChannel<Core::Acquisition>
     }
 }
 
+
+namespace {
+struct AcquisitionFlags_ : boost::spirit::qi::symbols<char,FlagTriggerGadget::TriggerFlags>{
+    AcquisitionFlags_() {
+        for (auto [key,value] : flag_map) this->add(key,value);
+    }
+
+};
+
+template<typename Iterator>
+std::bitset<64> parse_triggers(Iterator first, Iterator last) {
+    using namespace boost::spirit::qi;
+    namespace qi = boost::spirit::qi;
+    using boost::spirit::ascii::space;
+    AcquisitionFlags_ flag;
+    std::vector<FlagTriggerGadget::TriggerFlags> v;
+    bool r = phrase_parse(first, last,flag % '|',  space, v);
+    if (!r || first != last) // fail if we did not get a full match
+        throw std::runtime_error("Unable to parse trigger flags");
+    using namespace ranges;
+    return accumulate( v | views::transform([](auto triggerflag ){return static_cast<uint64_t>(triggerflag);}), uint64_t(0), std::bit_or());
+
+
+}
+}
+
 Gadgetron::FlagTriggerGadget::FlagTriggerGadget(const Core::Context& context,
                                                 const Core::GadgetProperties& props)
     : ChannelGadget(context, props) {
     using namespace ranges;
-    flags = accumulate(
-        trigger_flags | views::split(',') | views::transform([](const auto& rng) {
-            return static_cast<uint64_t>(
-                Core::IO::from_string<FlagTriggerGadget::TriggerFlags>(rng | to<std::string>()));
-        }),
-        uint64_t(0), std::bit_or());
+    flags = parse_triggers(trigger_flags.begin(),trigger_flags.end());
 }
