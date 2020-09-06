@@ -155,6 +155,12 @@ Gadgetron::ConvInternal::make_conv_matrix<float, 3, Gadgetron::KaiserKernel>(
     const Gadgetron::vector_td<size_t, 3> &matrix_size,
     const ConvolutionKernel<float, 3, Gadgetron::KaiserKernel>& kernel);
 
+template Gadgetron::ConvInternal::ConvolutionMatrix<float>
+Gadgetron::ConvInternal::make_conv_matrix<float, 4, Gadgetron::KaiserKernel>(
+    const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 4>> trajectory,
+    const Gadgetron::vector_td<size_t, 4> &matrix_size,
+    const ConvolutionKernel<float, 4, Gadgetron::KaiserKernel>& kernel);
+
 template Gadgetron::ConvInternal::ConvolutionMatrix<double>
 Gadgetron::ConvInternal::make_conv_matrix<double, 1, Gadgetron::KaiserKernel>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<double, 1>> trajectory,
@@ -172,6 +178,12 @@ Gadgetron::ConvInternal::make_conv_matrix<double, 3, Gadgetron::KaiserKernel>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<double, 3>> trajectory,
     const Gadgetron::vector_td<size_t, 3> &matrix_size,
     const ConvolutionKernel<double, 3, Gadgetron::KaiserKernel>& kernel);
+
+template Gadgetron::ConvInternal::ConvolutionMatrix<double>
+Gadgetron::ConvInternal::make_conv_matrix<double, 4, Gadgetron::KaiserKernel>(
+    const Gadgetron::hoNDArray<Gadgetron::vector_td<double, 4>> trajectory,
+    const Gadgetron::vector_td<size_t, 4> &matrix_size,
+    const ConvolutionKernel<double, 4, Gadgetron::KaiserKernel>& kernel);
 
 template Gadgetron::ConvInternal::ConvolutionMatrix<float>
 Gadgetron::ConvInternal::make_conv_matrix<float, 1, Gadgetron::JincKernel>(
@@ -191,6 +203,12 @@ Gadgetron::ConvInternal::make_conv_matrix<float, 3, Gadgetron::JincKernel>(
     const Gadgetron::vector_td<size_t, 3> &matrix_size,
     const ConvolutionKernel<float, 3, Gadgetron::JincKernel>& kernel);
 
+template Gadgetron::ConvInternal::ConvolutionMatrix<float>
+Gadgetron::ConvInternal::make_conv_matrix<float, 4, Gadgetron::JincKernel>(
+    const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 4>> trajectory,
+    const Gadgetron::vector_td<size_t, 4> &matrix_size,
+    const ConvolutionKernel<float, 4, Gadgetron::JincKernel>& kernel);
+
 template Gadgetron::ConvInternal::ConvolutionMatrix<double>
 Gadgetron::ConvInternal::make_conv_matrix<double, 1, Gadgetron::JincKernel>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<double, 1>> trajectory,
@@ -208,6 +226,12 @@ Gadgetron::ConvInternal::make_conv_matrix<double, 3, Gadgetron::JincKernel>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<double, 3>> trajectory,
     const Gadgetron::vector_td<size_t, 3> &matrix_size,
     const ConvolutionKernel<double, 3, Gadgetron::JincKernel>& kernel);
+
+template Gadgetron::ConvInternal::ConvolutionMatrix<double>
+Gadgetron::ConvInternal::make_conv_matrix<double, 4, Gadgetron::JincKernel>(
+    const Gadgetron::hoNDArray<Gadgetron::vector_td<double, 4>> trajectory,
+    const Gadgetron::vector_td<size_t, 4> &matrix_size,
+    const ConvolutionKernel<double, 4, Gadgetron::JincKernel>& kernel);
 
 template Gadgetron::ConvInternal::ConvolutionMatrix<float>
 Gadgetron::ConvInternal::transpose(
