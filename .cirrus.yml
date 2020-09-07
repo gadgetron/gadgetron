@@ -1,7 +1,7 @@
 build_task:
   container:
     matrix:
-      image: nvidia/cuda:11.0-devel-ubuntu18.04
+      image: nvidia/cuda:11.0-devel-ubuntu20.04
     cpu: 8
     memory: 24
 
