@@ -703,7 +703,7 @@ namespace Gadgetron{
         }
 
         if( out->get_number_of_elements() != this->get_number_of_elements() ){	
-            out->create( this->get_dimensions().get());
+            out->create(*this->get_dimensions());
         }
 
         if( cudaMemcpy( out->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
