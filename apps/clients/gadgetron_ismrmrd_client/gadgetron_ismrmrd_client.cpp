@@ -24,18 +24,15 @@
 #include <ismrmrd/xml.h>
 #include <ismrmrd/waveform.h>
 
-#include <fstream>
 #include <streambuf>
 #include <time.h>
 #include <iomanip>
-#include <sstream>
 #include <iostream>
 #include <exception>
 #include <map>
 #include <thread>
 #include <chrono>
 #include <condition_variable>
-#include <boost/make_shared.hpp>
 
 #include "NHLBICompression.h"
 #include "GadgetronTimer.h"

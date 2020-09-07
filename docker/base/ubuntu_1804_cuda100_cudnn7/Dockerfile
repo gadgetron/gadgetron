@@ -13,7 +13,7 @@ RUN apt-get update --quiet && \
     git-core libboost-all-dev libfftw3-dev h5utils jq hdf5-tools libxml2-dev \
     libfreetype6-dev pkg-config libxslt-dev gcc-multilib libgtest-dev python3-dev \
     libplplot-dev libdcmtk-dev supervisor cmake-curses-gui neofetch supervisor net-tools \
-    cpio gpg-agent libpugixml-dev
+    cpio gpg-agent libpugixml-dev librange-v3-dev
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-dev libarmadillo-dev
 

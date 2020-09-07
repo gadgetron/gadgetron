@@ -1,7 +1,6 @@
 
 #include <boost/asio.hpp>
 
-#include <memory>
 
 #include <Context.h>
 

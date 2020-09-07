@@ -28,7 +28,7 @@ void hoSPIRIT2DOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im
         {
             if (!fft_im_buffer_.dimensions_equal(&x))
             {
-                fft_im_buffer_.create(x.get_dimensions());
+                fft_im_buffer_.create(x.dimensions());
             }
 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, fft_im_buffer_);
@@ -53,7 +53,7 @@ void hoSPIRIT2DOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& 
         {
             if (!fft_kspace_buffer_.dimensions_equal(&im))
             {
-                fft_kspace_buffer_.create(im.get_dimensions());
+                fft_kspace_buffer_.create(im.dimensions());
             }
 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, fft_kspace_buffer_);

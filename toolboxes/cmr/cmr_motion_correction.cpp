@@ -645,9 +645,7 @@ void apply_deformation_field(const Gadgetron::hoNDArray<T>& target, const Gadget
 }
 
 template EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<float>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<float>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
-
 template EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<double>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<double>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
-
 // ------------------------------------------------------------------------
 
 template <typename T>

@@ -385,6 +385,7 @@ if (NOT GTEST_FOUND)
     endif ()
 
 endif ()
+MESSAGE("GTEST FOUND: ${GTEST_FOUND}")
 add_subdirectory(test)
 endif()
 add_subdirectory(cmake)

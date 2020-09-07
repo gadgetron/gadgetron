@@ -589,7 +589,6 @@ base_diffeomorphic_demons_impl(const hoNDArray<T>& fixed, hoNDArray<vector_td<T,
 
     predictor_field *= 0.5;
     for (size_t i = 0; i < iterations; i++) {
-        GDEBUG("Starting iteration %d\n",i);
         auto current_fixed = deform_image(fixed, vector_field);
         auto update_field = stepper(current_fixed);
         update_field = compose_fields(predictor_field, update_field);

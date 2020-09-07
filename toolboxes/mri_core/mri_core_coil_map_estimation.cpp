@@ -779,7 +779,7 @@ void coil_combine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, size_t 
 
         std::vector<size_t> dimCombined(dim);
         dimCombined.erase(dimCombined.begin() + cha_dim);
-        combined.create(&dimCombined);
+        combined.create(dimCombined);
 
         size_t N = data.get_size(cha_dim+1);
         size_t coilN = coilMap.get_size(cha_dim + 1);
@@ -882,14 +882,14 @@ namespace {
 
     template<class REAL> struct coil_algorithm_wrapper<REAL,2> {
         static hoNDArray<complext<REAL>> estimate_b1_map(const hoNDArray<complext<REAL>>& data){
-            hoNDArray<float_complext> output(data.get_dimensions());
+            hoNDArray<float_complext> output(data.dimensions());
             coil_map_2d_Inati(data,output);
             return output;
         }
     };
     template<class REAL> struct coil_algorithm_wrapper<REAL,3> {
         static hoNDArray<complext<REAL>> estimate_b1_map(const hoNDArray<complext<REAL>>& data){
-            hoNDArray<float_complext> output(data.get_dimensions());
+            hoNDArray<float_complext> output(data.dimensions());
             coil_map_3d_Inati_Iter(data,output);
             return output;
         }

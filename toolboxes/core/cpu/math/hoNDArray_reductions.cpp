@@ -1,5 +1,8 @@
 #include "hoNDArray_reductions.h"
 #include "hoArmadillo.h"
+#include <range/v3/core.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view/zip_with.hpp>
 
 #ifndef lapack_int
 #define lapack_int int
@@ -409,21 +412,7 @@ namespace Gadgetron {
     template  void maxValue(const hoNDArray<float>& a, float& v);
     template  void maxValue(const hoNDArray<double>& a, double& v);
 
-    template <class REAL>
-    static std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val, REAL max_val) {
 
-        auto span_val = max_val - min_val;
-        auto result   = std::vector<size_t>(bins, 0);
-
-        for (auto val : data) {
-            size_t bin = std::max<size_t>(std::floor((val - min_val) / span_val * bins), 0);
-            if (bin > bins)
-                bin = bins - 1;
-            result[bin]++;
-        }
-
-        return result;
-    }
 
     template <class REAL> REAL percentile_approx(const hoNDArray<REAL>& data, REAL fraction, size_t bins) {
         auto max_val = max(data);
@@ -472,6 +461,44 @@ namespace Gadgetron {
     }
     template float percentile(const hoNDArray<float>& data, float fraction);
     template double percentile(const hoNDArray<double>& data, double fraction);
+
+    float jensen_shannon_divergence(const hoNDArray<float>& dataset1, const hoNDArray<float>& dataset2,
+                                   size_t bins) {
+        using namespace ranges;
+        const auto maximum_value = std::max(max(dataset1), max(dataset2));
+        const auto minimum_value = std::min(min(dataset1), min(dataset2));
+        auto normalized_histogram = [=](const auto& data){
+            auto int_hist = histogram(data, bins, minimum_value, maximum_value);
+            auto hist = std::vector<float>(int_hist.begin(),int_hist.end());
+            auto d_sum = accumulate(hist,size_t(0));
+            for (auto& h : hist) h /= d_sum;
+            return hist;
+        };
+
+        auto rel_entr = [](auto x, auto y){
+            if ((x > 0) && (y > 0)) return x*std::log(x/y);
+            if ((x == 0) && (y >= 0)) return 0.0f;
+            return std::numeric_limits<decltype(x)>::infinity();
+        };
+
+        const auto prob_p = normalized_histogram(dataset1);
+        const auto prob_q = normalized_histogram(dataset2);
+
+        auto prob_m = view::zip_with([](auto val1, auto val2){return (val1+val2)/2;},prob_p, prob_q);
+
+
+        auto left = accumulate( view::zip_with([&rel_entr](const auto& d1,const auto& d2) -> float{
+            return rel_entr(d1,d2);
+        },prob_p,prob_m),0.0f);
+
+        auto right = accumulate( view::zip_with([&rel_entr](const auto& d1,const auto& d2){
+            return rel_entr(d1,d2);
+        },prob_q,prob_m),0.0f);
+
+        return std::sqrt((left+right)/2);
+    }
+
+
     // --------------------------------------------------------------------------------
 
     // --------------------------------------------------------------------------------

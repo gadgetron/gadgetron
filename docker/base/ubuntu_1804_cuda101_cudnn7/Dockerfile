@@ -8,7 +8,7 @@ RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
 5-tools libatlas-base-dev liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
-ervisor cmake-curses-gui neofetch supervisor net-tools cpio gpg-agent libpugixml-dev
+ervisor cmake-curses-gui neofetch supervisor net-tools cpio gpg-agent libpugixml-dev librange-v3-dev
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
