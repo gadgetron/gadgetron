@@ -27,7 +27,8 @@ include(GoogleTest)
             cmr_thickening_test.cpp
             cmr_analytical_strain_test.cpp
             #lapack_test.cpp
-            gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp )
+            gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp
+            hoSDC_test.cpp)
 
     if (PYTHONLIBS_FOUND)
         set(test_src_files ${test_src_files} python_converter_test.cpp)
@@ -43,6 +44,7 @@ include(GoogleTest)
                 cuVector_td_test_kernels.h
                 cuVector_td_test_kernels.cu
                 cuNDFFT_test.cpp
+                cuSDC_test.cpp
                 )
 
         cuda_add_executable(test_all
@@ -57,6 +59,7 @@ include(GoogleTest)
         target_link_libraries(test_all
                 gadgetron_toolbox_gpucore
                 gadgetron_toolbox_gpufft
+                gadgetron_toolbox_gpusdc
                 )
     endif ()
     target_link_libraries(test_all
@@ -78,6 +81,7 @@ include(GoogleTest)
             gadgetron_toolbox_cpu_image
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
+            gadgetron_toolbox_cpusdc
 
             ${GTEST_LIBRARIES}
 

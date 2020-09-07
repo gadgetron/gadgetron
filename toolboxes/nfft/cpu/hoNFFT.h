@@ -19,8 +19,6 @@
 #include <boost/shared_ptr.hpp>
 #include "hoArmadillo.h"
 
-#include "hoNFFT_sparseMatrix.h"
-
 namespace Gadgetron{
 
     /**
@@ -42,22 +40,17 @@ namespace Gadgetron{
 
         public:
 
-
-
-
-
             hoNFFT_plan(
                     const vector_td<size_t,D>& matrix_size,
                     const vector_td<size_t,D>& matrix_size_os,
                     REAL W
             );
 
-             hoNFFT_plan(
+            hoNFFT_plan(
                     const vector_td<size_t,D>& matrix_size,
                     REAL oversampling_factor = 1.5f,
                     REAL W = 5.5f
             );
-
 
 
             /** 
@@ -67,9 +60,9 @@ namespace Gadgetron{
                 \param mode: enum specifying the preprocessing mode
             */
 
-            virtual void preprocess(
-                const hoNDArray<vector_td<REAL, D>>& k, NFFT_prep_mode prep_mode = NFFT_prep_mode::ALL
-            ) override;
+            // virtual void preprocess(
+            //     const hoNDArray<vector_td<REAL, D>>& k, NFFT_prep_mode prep_mode = NFFT_prep_mode::ALL
+            // ) override;
 
 
             void compute(
@@ -111,28 +104,6 @@ namespace Gadgetron{
 
         public:
 
-
-            /** 
-                Perform standalone convolution
-
-                \param d: input array
-                \param m: output array
-                \param mode: enum specifying the mode of the convolution
-            */
-
-            void convolve(
-                const hoNDArray<ComplexType> &d,
-                hoNDArray<ComplexType> &m,
-                NFFT_conv_mode mode,
-                bool accumulate = false
-            );
-
-            virtual void convolve(
-                const hoNDArray<complext<REAL>> &d,
-                hoNDArray<complext<REAL>> &m,
-                NFFT_conv_mode mode,
-                bool accumulate = false
-            ) override;
             /**
                 Cartesian fft. Making use of the hoNDFFT class.
 
@@ -169,46 +140,11 @@ namespace Gadgetron{
                 bool fourierDomain = false
             ) override;
 
-        /**
-            Private implementation methods
-        */
 
         private:
 
-            /**
-                Dedicated convolutions
-
-                The two methods below are entirely symmetric in 
-                thier implementation. They could probably be
-                combined for conciseness.
-            */
-
-            void convolve_NFFT_C2NC(
-                const hoNDArray<ComplexType> &d,
-                hoNDArray<ComplexType> &m, bool accumulate
-            );
-
-            void convolve_NFFT_NC2C(
-                const hoNDArray<ComplexType> &d,
-                hoNDArray<ComplexType> &m, bool accumulate
-            );
-
-
-            static vector_td<REAL,D> compute_beta(REAL W, const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os);
-
-
-        /** 
-            Implementation variables
-        */
-
-        private:
-
-        vector_td<REAL,D> beta;
-        std::vector<NFFT_internal::NFFT_Matrix<REAL>> convolution_matrix;
-        std::vector<NFFT_internal::NFFT_Matrix<REAL>> convolution_matrix_T;
-
-        hoNDArray<ComplexType> deapodization_filter_IFFT;
-        hoNDArray<ComplexType> deapodization_filter_FFT;
+            hoNDArray<ComplexType> deapodization_filter_IFFT;
+            hoNDArray<ComplexType> deapodization_filter_FFT;
 
     };
 
