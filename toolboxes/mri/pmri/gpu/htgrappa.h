@@ -31,6 +31,7 @@ namespace Gadgetron
 
   template <class T> void ht_grappa_solve_spd_system(hoNDArray<T> *A, hoNDArray<T> *B);
 
+    template <class T> void ht_grappa_solve_spd_system(cuNDArray<T>& A, cuNDArray<T>& B);
 }
 
 #endif //HTGRAPPA_H
