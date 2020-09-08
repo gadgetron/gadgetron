@@ -3,11 +3,10 @@
 //
 #pragma once
 #include "Node.h"
-#include <range/v3/core.hpp>
 
 namespace Gadgetron {
 
-class FlagTriggerGadget : Core::ChannelGadget<Core::Acquisition> {
+class FlagTriggerGadget : public Core::ChannelGadget<Core::Acquisition> {
   public:
     enum class TriggerFlags : uint64_t {
         first_in_encode_step1 = 0,
@@ -55,16 +54,16 @@ class FlagTriggerGadget : Core::ChannelGadget<Core::Acquisition> {
     };
 
     FlagTriggerGadget(const Core::Context& context, const Core::GadgetProperties& props);
+    ~FlagTriggerGadget() override = default;
+
     void process(Core::InputChannel<Core::Acquisition>& input,
                  Core::OutputChannel& output) override;
 
     NODE_PROPERTY(trigger_flags, std::string, "Trigger flags (seperated by comma)", "");
 
   private:
-    std::bitset<64> flags;
+    std::function<bool(const Core::Acquisition&)> predicate;
 };
-
-void from_string(const std::string& str, FlagTriggerGadget::TriggerFlags& flag);
 
 
 } // namespace Gadgetron
