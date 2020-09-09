@@ -6,10 +6,12 @@ endif ()
 
 
 cuda_add_library(gadgetron_toolbox_gpunfft SHARED 
+    cuGriddingConvolution.h
+    cuGriddingConvolution.cu
     cuNFFT.h
-    gpunfft_export.h
-    cuNFFT.cu 
+    cuNFFT.cu
     cuNFFTOperator.cpp
+    gpunfft_export.h
   )
 
 target_include_directories(gadgetron_toolbox_gpunfft
@@ -40,7 +42,8 @@ install(TARGETS gadgetron_toolbox_gpunfft
 
 
 install(FILES 
-  cuNFFT.h 
+  cuGriddingConvolution.h 
+  cuNFFT.h
   gpunfft_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
