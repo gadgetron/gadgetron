@@ -65,8 +65,6 @@ static const std::unordered_map<std::string, Gadgetron::FlagTriggerGadget::Trigg
     {"user7", FlagTriggerGadget::TriggerFlags::user7},
     {"user8", FlagTriggerGadget::TriggerFlags::user8}};
 
-
-
 namespace {
 
 namespace ast {
@@ -81,71 +79,72 @@ struct AcquisitionFlags_ : x3::symbols<FlagTriggerGadget::TriggerFlags> {
     }
 };
 
-enum class BinaryOperator { AND, OR };
-
-struct BinaryOperator_ : x3::symbols<BinaryOperator> {
-    BinaryOperator_() {
-        this->add("&&", BinaryOperator::AND)("||", BinaryOperator::OR)("AND", BinaryOperator::AND)("OR",
-                                                                                                   BinaryOperator::OR);
-    }
-};
-
-struct BinaryOperation;
+struct ANDOperation;
+struct OROperation;
 struct NegateOperation;
 
 struct Term {
     FlagTriggerGadget::TriggerFlags trigger;
-    Term& operator=(FlagTriggerGadget::TriggerFlags flags){ trigger = flags; return *this;}
+    Term& operator=(FlagTriggerGadget::TriggerFlags flags) {
+        trigger = flags;
+        return *this;
+    }
 };
 
-struct Expression : x3::variant < Term,x3::forward_ast<NegateOperation>,
-    x3::forward_ast<BinaryOperation>>{
+struct Expression
+    : x3::variant<Term, x3::forward_ast<NegateOperation>, x3::forward_ast<ANDOperation>, x3::forward_ast<OROperation>> {
     using base_type::base_type;
     using base_type::operator=;
 };
 
 struct NegateOperation {
-    int unused;
+    char unused;
     Expression expression;
-    NegateOperation& operator=(const Expression& exp) { expression = exp; return *this;}
+    NegateOperation& operator=(const Expression& exp) {
+        expression = exp;
+        return *this;
+    }
 };
-struct BinaryOperation {
+
+struct ANDOperation {
     Expression left;
-    BinaryOperator op;
     Expression right;
 };
 
-
+struct OROperation {
+    Expression left;
+    Expression right;
+};
 
 struct eval {
-    bool operator()(Term const & term, uint64_t flags) {
-        return (uint64_t(1) >> static_cast<uint64_t>(term.trigger)) & flags;
+    bool operator()(Term const& term, uint64_t flags) {
+        return (uint64_t(1) << static_cast<uint64_t>(term.trigger)) & flags;
     }
 
-    bool operator()(NegateOperation const& op, uint64_t flags) { return !(*this)( (Expression const &)op, flags); }
+    bool operator()(NegateOperation const& op, uint64_t flags) { return !(*this)(op.expression, flags); }
 
-    bool operator()(BinaryOperation const& op, uint64_t flags) {
+    bool operator()(ANDOperation const& op, uint64_t flags) {
         bool left = (*this)(op.left, flags);
         bool right = (*this)(op.right, flags);
+        return left && right;
+    }
 
-        switch (op.op) {
-        case BinaryOperator::AND:
-            return left && right;
-        case BinaryOperator::OR:
-            return left || right;
-        }
-        throw std::runtime_error("This really cannot happen.");
+    bool operator()(OROperation const& op, uint64_t flags) {
+        bool left = (*this)(op.left, flags);
+        bool right = (*this)(op.right, flags);
+        return left || right;
     }
 
     bool operator()(Expression const& expression, uint64_t flags) {
-        return boost::apply_visitor([this,flags](auto const & val){return (*this)(val, flags);},expression);
+        return boost::apply_visitor([this, flags](auto const& val) { return (*this)(val, flags); }, expression);
     }
 };
 
 } // namespace ast
 } // namespace
-BOOST_FUSION_ADAPT_STRUCT(ast::NegateOperation, unused,expression);
-BOOST_FUSION_ADAPT_STRUCT(ast::BinaryOperation, left, op,right);
+BOOST_FUSION_ADAPT_STRUCT(ast::NegateOperation, unused, expression);
+BOOST_FUSION_ADAPT_STRUCT(ast::ANDOperation, left, right);
+BOOST_FUSION_ADAPT_STRUCT(ast::OROperation, left, right);
 BOOST_FUSION_ADAPT_STRUCT(ast::Term, trigger);
 
 namespace boolean_grammer {
@@ -153,44 +152,45 @@ namespace x3 = boost::spirit::x3;
 using x3::char_;
 
 x3::rule<class expression, ast::Expression> const expression = "expression";
-x3::rule<class binop, ast::BinaryOperation> const binop = "binop";
+x3::rule<class andop, ast::ANDOperation> const andop = "andop";
+x3::rule<class orop, ast::OROperation> const orop = "andop";
 x3::rule<class negateop, ast::NegateOperation> const negateop = "negateop";
 x3::rule<class term, ast::Term> const term = "term";
 
 ast::AcquisitionFlags_ acquisitionflags;
-ast::BinaryOperator_ binaryoperator;
 
-auto const binop_def = expression >> binaryoperator >> expression;
-auto const negateop_def = x3::lit('!') >> x3::attr(1) >>
-                          expression;
+auto const andop_def = (negateop | term | x3::lit('(') >> expression >> x3::lit(')') ) >> x3::lit("&&") >> expression;
+auto const orop_def = (andop | negateop | term | x3::lit('(') >> expression >> x3::lit(')') ) >> x3::lit("||") >> expression;
+auto const negateop_def = x3::char_('!') >> expression;
 auto const term_def = acquisitionflags;
-auto const expression_def = term | negateop | binop | x3::lit('(') >> expression >> x3::lit(')');
+auto const expression_def = andop | orop | negateop | term | x3::lit('(') >> expression >> x3::lit(')');
 
-BOOST_SPIRIT_DEFINE(expression, binop, negateop, term);
+BOOST_SPIRIT_DEFINE(expression, andop, orop, negateop, term);
 
 } // namespace boolean_grammer
-namespace {
-template <class Iterator> ast::Expression parse_triggers(Iterator first, Iterator last) {
+std::function<bool(const Core::Acquisition& acq)>
+FlagTriggerGadget::create_trigger_filter(const std::string& trigger_string) {
     namespace x3 = boost::spirit::x3;
 
     ast::Expression expression;
-    ast::BinaryOperation bop;
-    ast::NegateOperation nop;
-    ast::Term term;
     x3::ascii::space_type space;
-    bool r = x3::phrase_parse(first, last, boolean_grammer::expression, space, expression);
+    auto iter = trigger_string.begin();
+    auto last = trigger_string.end();
+    bool r = x3::phrase_parse(iter, last, boolean_grammer::expression, space, expression);
 
-    if (!r || first != last) {
+    if (!r || iter != last) {
         throw std::runtime_error("Not passing");
     }
-    return expression;
-}
+    return [expression](const Core::Acquisition& acq) {
+        auto& [head, data, traj] = acq;
+        ast::eval eval;
+        return eval(expression, head.flags);
+    };
 }
 
 void Gadgetron::FlagTriggerGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
 
-    for (const auto& group : Core::Algorithm::buffer(in, this->predicate))
-    {
+    for (const auto& group : Core::Algorithm::buffer(in, this->predicate)) {
         auto bucket = AcquisitionBucket();
         for (auto acq : group) {
             bucket.add_acquisition(std::move(acq));
@@ -202,12 +202,7 @@ void Gadgetron::FlagTriggerGadget::process(Core::InputChannel<Core::Acquisition>
 Gadgetron::FlagTriggerGadget::FlagTriggerGadget(const Core::Context& context, const Core::GadgetProperties& props)
     : ChannelGadget(context, props) {
     using namespace ranges;
-    auto expression = parse_triggers(trigger_flags.begin(),trigger_flags.end());
-    this->predicate = [expression](const Core::Acquisition& acq){
-        auto& [head,data,traj] = acq;
-        ast::eval eval;
-        return eval(expression,head.flags);
-    };
+    this->predicate = create_trigger_filter(trigger_flags);
 }
 
 namespace Gadgetron {

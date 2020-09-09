@@ -61,6 +61,8 @@ class FlagTriggerGadget : public Core::ChannelGadget<Core::Acquisition> {
 
     NODE_PROPERTY(trigger_flags, std::string, "Trigger flags (seperated by comma)", "");
 
+    static std::function<bool(const Core::Acquisition& acq)> create_trigger_filter(const std::string& trigger_string);
+
   private:
     std::function<bool(const Core::Acquisition&)> predicate;
 };
