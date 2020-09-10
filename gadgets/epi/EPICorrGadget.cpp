@@ -171,7 +171,7 @@ namespace Gadgetron {
     void EPICorrGadget::process_phase_correction_data(ISMRMRD::AcquisitionHeader &hdr,
                                                       arma::cx_fmat &adata) {// Increment the navigator counter
         navNumber_ += 1;
-        //GDEBUG("Nav number: %i, %i\n",navNumber_,numNavigators_);
+        
 
         // If the number of navigators per shot is exceeded, then
         // we are at the beginning of the next shot
