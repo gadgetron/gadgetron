@@ -145,14 +145,50 @@ namespace Gadgetron{
     template <class T>  
     void maxValue(const hoNDArray<T>& a, T& v);
 
+    /**
+     * Creates a 1D histogram of the data. Data outside min_value and max_value will be put in the
+     * first and last bin respectively
+     * @param data
+     * @param bins Number of bins to use
+     * @param min_val Minimum value to bin within
+     * @param max_val Maximum value to bin within
+     * @return
+     */
+    template <class REAL>
+    std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins, REAL min_val,
+                                  REAL max_val);
+    template <class REAL> std::vector<size_t> histogram(const hoNDArray<REAL>& data, size_t bins);
+    /**
+     * Calculates a fast, but approximate, percentile of the data.
+     * @tparam REAL
+     * @param data
+     * @param fraction Fraction of the data. Should be in the range [0,1]
+     * @param bins Number of bins used for the internal binning
+     * @return
+     */
+    template <class REAL>
+    REAL percentile_approx(const hoNDArray<REAL>& data, REAL fraction, size_t bins = 100);
 
-    template<class REAL>
-    REAL percentile_approx(const hoNDArray<REAL>& data, REAL fraction,size_t bins = 100);
+    /**
+     * Calculate the percentile of the data, using linear interpolation between points.
+     * @tparam REAL
+     * @param data
+     * @param fraction Fraction of the data. Should be in the range [0,1]
+     * @return
+     */
+    template <class REAL> REAL percentile(const hoNDArray<REAL>& data, REAL fraction);
 
-     template<class REAL>
-    REAL percentile(const hoNDArray<REAL>& data, REAL fraction);
 
-}
+    /**
+     * Calculates the Kullback-Leibler divergence, which measure the difference of distributions between two datasets.
+     * @tparam REAL
+     * @param dataset1
+     * @param dataset2
+     * @return
+     */
+    float jensen_shannon_divergence(const hoNDArray<float>& dataset1, const hoNDArray<float>& dataset2, size_t bins = 100);
+
+    }
 
 
 #include "hoNDArray_reductions.hxx"

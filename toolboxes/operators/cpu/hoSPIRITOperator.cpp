@@ -54,14 +54,13 @@ void hoSPIRITOperator<T>::set_acquired_points(ARRAY_TYPE& kspace)
 {
     try
     {
-        std::vector<size_t> dim;
-        kspace.get_dimensions(dim);
+        std::vector<size_t> dim = kspace.dimensions();
         acquired_points_.create(dim, kspace.begin());
 
-        acquired_points_indicator_.create(kspace.get_dimensions());
+        acquired_points_indicator_.create(kspace.dimensions());
         Gadgetron::clear(acquired_points_indicator_);
 
-        unacquired_points_indicator_.create(kspace.get_dimensions());
+        unacquired_points_indicator_.create(kspace.dimensions());
         Gadgetron::clear(unacquired_points_indicator_);
 
         size_t N = kspace.get_number_of_elements();
@@ -82,8 +81,8 @@ void hoSPIRITOperator<T>::set_acquired_points(ARRAY_TYPE& kspace)
         }
 
         // allocate the helper memory
-        kspace_.create(kspace.get_dimensions());
-        complexIm_.create(kspace.get_dimensions());
+        kspace_.create(kspace.dimensions());
+        complexIm_.create(kspace.dimensions());
     }
     catch (...)
     {
@@ -162,7 +161,7 @@ void hoSPIRITOperator<T>::sum_over_src_channel(const ARRAY_TYPE& x, ARRAY_TYPE& 
 
         if (!r.dimensions_equal(&dimR))
         {
-            r.create(&dimR);
+            r.create(dimR);
         }
 
         if (x.get_size(NDim - 2) <= 1)
@@ -270,7 +269,7 @@ void hoSPIRITOperator<T>::compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_TYPE
     {
         if (no_null_space_)
         {
-            b.create(x.get_dimensions());
+            b.create(x.dimensions());
             Gadgetron::clear(b);
         }
         else

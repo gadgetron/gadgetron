@@ -42,7 +42,7 @@ namespace Gadgetron{
 
       ARRAY_TYPE* tmp = out;
       if (accumulate) {
-	tmp = new ARRAY_TYPE(out->get_dimensions());
+	tmp = new ARRAY_TYPE(out->dimensions());
       }
       mult_MH_M(in,tmp,false);
       *tmp *= this->weight_;
@@ -54,7 +54,7 @@ namespace Gadgetron{
 
 
     virtual REAL magnitude(ARRAY_TYPE* in){
-      ARRAY_TYPE tmp(&this->codomain_dims_);
+      ARRAY_TYPE tmp(this->codomain_dims_);
       this->mult_M(in,&tmp);
       return std::sqrt(this->get_weight())*real(dot(&tmp,&tmp));
     }
@@ -82,7 +82,7 @@ namespace Gadgetron{
       }
 
       ARRAY_TYPE tmp;
-      tmp.create(&codomain_dims_);
+      tmp.create(codomain_dims_);
       mult_M( in, &tmp, false );
       mult_MH( &tmp, out, accumulate );
     }

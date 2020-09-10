@@ -1,7 +1,6 @@
 
 #include <boost/asio.hpp>
 
-#include <memory>
 
 #include <Context.h>
 
@@ -10,6 +9,7 @@
 #include "Server.h"
 #include "Connection.h"
 #include "connection/SocketStreamBuf.h"
+#include "system_info.h"
 
 using namespace boost::filesystem;
 using namespace Gadgetron::Server;
@@ -30,7 +30,7 @@ void Server::serve() {
 #else
     boost::asio::io_service executor;
 #endif
-    boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), args["port"].as<unsigned short>());
+    boost::asio::ip::tcp::endpoint local(Info::tcp_protocol(), args["port"].as<unsigned short>());
     boost::asio::ip::tcp::acceptor acceptor(executor, local);
 
     acceptor.set_option(boost::asio::socket_base::reuse_address(true));

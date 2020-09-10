@@ -463,7 +463,7 @@ void hoWavelet2DTOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumul
 
         if (!y->dimensions_equal(&dimR))
         {
-            y->create(&dimR);
+            y->create(dimR);
         }
 
         // W'

@@ -54,6 +54,7 @@ if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
 
     set( config_LandmarkDetection_files 
         config/LandmarkDetection/CMR_RTCine_LAX_AI.xml
+        config/LandmarkDetection/CMR_Image_Chain_RTCine_LAX_AI.xml
         )
 
     set( config_cmr_files ${config_cmr_files} ${config_LandmarkDetection_files})

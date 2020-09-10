@@ -9,4 +9,4 @@ Language: Cpp
 # Force pointers to the type for C++.
 DerivePointerAlignment: false
 PointerAlignment: Left
-ColumnLimit: 100
+ColumnLimit: 120
