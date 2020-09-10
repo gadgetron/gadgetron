@@ -27,8 +27,8 @@ include(GoogleTest)
             cmr_thickening_test.cpp
             cmr_analytical_strain_test.cpp
             #lapack_test.cpp
-            gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp
-            hoSDC_test.cpp)
+            hoSDC_test.cpp
+            gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp gadgets/FlagTriggerParsing_test.cpp )
 
     if (PYTHONLIBS_FOUND)
         set(test_src_files ${test_src_files} python_converter_test.cpp)
