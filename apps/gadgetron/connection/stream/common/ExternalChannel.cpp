@@ -45,10 +45,10 @@ namespace Gadgetron::Server::Connection::Stream {
             return channel->serialization->read(
                     *channel->stream,
                     [&]() {
-                        auto &remote_errors = channel->remote_errors;
+                        auto &c_remote_errors = channel->remote_errors;
                         channel->inbound->close();
 
-                        if (remote_errors.empty()) throw ChannelClosed(); else throw RemoteError(remote_errors);
+                        if (c_remote_errors.empty()) throw ChannelClosed(); else throw RemoteError(c_remote_errors);
                     },
                     [&](auto message) {
                         channel->outbound->close();

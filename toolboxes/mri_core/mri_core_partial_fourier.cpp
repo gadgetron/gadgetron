@@ -312,8 +312,8 @@ namespace Gadgetron
 
             hoNDArray<T> kspaceIter(kspace);
             // magnitude of complex images
-            hoNDArray<typename realType<T>::Type> mag(kspace.get_dimensions());
-            hoNDArray<T> magComplex(kspace.get_dimensions());
+            hoNDArray<typename realType<T>::Type> mag(kspace.dimensions());
+            hoNDArray<T> magComplex(kspace.dimensions());
 
             // kspace filter
             hoNDArray<T> buffer_partial_fourier(kspaceIter), buffer(kspaceIter);

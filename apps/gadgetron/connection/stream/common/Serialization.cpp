@@ -52,6 +52,7 @@ namespace Gadgetron::Server::Connection::Stream {
         };
 
         for (; handlers.count(id); id = IO::read<uint16_t>(stream)) handlers.at(id)(stream);
+        if (!readers.count(id)) illegal_message(stream);
         return readers.at(id)->read(stream);
     }
 

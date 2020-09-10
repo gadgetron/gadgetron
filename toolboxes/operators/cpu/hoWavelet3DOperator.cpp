@@ -72,7 +72,7 @@ void hoWavelet3DOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y)
 
         if (!y.dimensions_equal(&dimR))
         {
-            y.create(&dimR);
+            y.create(dimR);
         }
 
         p_active_wav_->transform(x, y, 3, num_of_wav_levels_, true);
@@ -111,7 +111,7 @@ void hoWavelet3DOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y)
 
         if (!y.dimensions_equal(&dimR))
         {
-            y.create(&dimR);
+            y.create(dimR);
         }
 
         p_active_wav_->transform(x, y, 3, num_of_wav_levels_, false);

@@ -14,41 +14,24 @@
 
 #pragma once
 
+#include <boost/shared_ptr.hpp>
+#include <thrust/device_vector.h>
+
 #include "cuNDArray.h"
 #include "vector_td.h"
 #include "complext.h"
-#include "gpunfft_export.h"
-
-#include <thrust/device_vector.h>
-#include <boost/shared_ptr.hpp>
 #include "cuSparseMatrix.h"
+
+#include "gpunfft_export.h"
 #include "NFFT.h"
+#include "cuGriddingConvolution.h"
 
 
-enum class ConvolutionType {
-    STANDARD,
-    ATOMIC,
-    SPARSE_MATRIX
+namespace Gadgetron
+{
 
-};
-
-
-
-
-
-namespace Gadgetron {
-
-
-
-namespace cuNFFT {
-    template<class REAL, unsigned int D, ConvolutionType CONV>
-    struct convolverNC2C;
-        template<class REAL, unsigned int D, ConvolutionType CONV>
-    struct convolverC2NC;
-}
-
-        template <class REAL, unsigned int D>
-        using cuNFFT_plan = NFFT_plan<cuNDArray,REAL,D>;
+    template <class REAL, unsigned int D>
+    using cuNFFT_plan = NFFT_plan<cuNDArray,REAL,D>;
 
 
     /** \class cuNFFT_impl
@@ -92,32 +75,6 @@ namespace cuNFFT {
         */
         virtual ~cuNFFT_impl();
 
-
-        /**
-           Perform NFFT preprocessing for a given trajectory.
-           \param trajectory the NFFT non-Cartesian trajectory normalized to the range [-1/2;1/2].
-           \param mode enum class specifying the preprocessing mode
-        */
-        virtual void preprocess(const cuNDArray<typename reald<REAL, D>::Type>& trajectory, NFFT_prep_mode mode = NFFT_prep_mode::ALL) override;
-
-
-
-    public: // Utilities
-
-
-
-        /**
-           Perform "standalone" convolution
-           \param[in] in the input array.
-           \param[out] out the output array.
-           \param[in] dcw optional density compensation weights.
-           \param[in] mode enum class specifying the mode of the convolution
-           \param[in] accumulate specifies whether the result is added to the output (accumulation) or if the output is overwritten.
-        */
-        virtual void convolve(const cuNDArray <complext<REAL>> & in, cuNDArray <complext<REAL>> & out,
-                              NFFT_conv_mode mode, bool accumulate = false) override;
-
-
         /**
            Cartesian FFT. For completeness, just invokes the cuNDFFT class.
            \param[in,out] data the data for the inplace FFT.
@@ -132,62 +89,19 @@ namespace cuNFFT {
         */
         virtual void deapodize(cuNDArray <complext<REAL>> &image, bool fourier_domain = false);
 
-
-        friend class cuNFFT::convolverNC2C<REAL, D, CONV>;
-        friend class cuNFFT::convolverC2NC<REAL, D, CONV>;
-
-
-
-    private: // Internal to the implementation
-
-        void check_consistency(const cuNDArray <complext<REAL>> *samples, const cuNDArray <complext<REAL>> *image,
-                               const cuNDArray <REAL> *dcw);
-
-        // Shared barebones constructor
-        void barebones();
-
-        // Compute beta control parameter for Kaiser-Bessel kernel
-        void compute_beta();
-
-        // Compute deapodization filter
-        boost::shared_ptr<cuNDArray < complext < REAL> > >
-
-        compute_deapodization_filter(bool FFTed = false);
-
-
-
-        // Internal utility
-        void image_wrap(cuNDArray <complext<REAL>> *in, cuNDArray <complext<REAL>> *out, bool accumulate);
-
     private:
 
+        void initialize(int device);
 
-        typename uint64d<D>::Type matrix_size_wrap;     // Wrap size at border
+        boost::shared_ptr<cuNDArray<complext<REAL>>> compute_deapodization_filter(bool FFTed = false);
 
-        typename reald<REAL, D>::Type alpha;           // Oversampling factor (for each dimension)
-        typename reald<REAL, D>::Type beta;            // Kaiser-Bessel convolution kernel control parameter
+        // Inverse fourier transformed deapodization filter.
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filter; 
 
-        cuNFFT::convolverNC2C<REAL,D,CONV> convNC2C;
-        cuNFFT::convolverC2NC<REAL,D,CONV> convC2NC;
-        //
-        // Internal data structures for convolution and deapodization
-        //
+        // Fourier transformed deapodization filter.
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT; 
 
-        boost::shared_ptr<cuNDArray < complext < REAL> > >
-        deapodization_filter; //Inverse fourier transformed deapodization filter
-
-        boost::shared_ptr<cuNDArray < complext < REAL> > >
-        deapodization_filterFFT; //Fourier transformed deapodization filter
-
-        thrust::device_vector<vector_td<REAL, D>> trajectory_positions;
-        int device;
-
-        //
-        // State variables
-        //
-
-        bool preprocessed_C2NC, preprocessed_NC2C;
-
+        int device_;
     };
 
     // Pure virtual class to cause compile errors if you try to use NFFT with double and atomics
@@ -197,78 +111,23 @@ namespace cuNFFT {
         virtual void atomics_not_supported_for_type_double() = 0;
     };
 
-
-
-    namespace cuNFFT {
-
-        template<class REAL, unsigned int D, ConvolutionType>
-        class convolverNC2C {
-        };
-
-
-        template<class REAL, unsigned int D>
-        class convolverNC2C<REAL, D, ConvolutionType::STANDARD> {
-        public:
-            void
-            convolve_NC2C(cuNFFT_impl<REAL, D, ConvolutionType::STANDARD> *plan, const cuNDArray<complext<REAL>> *samples,
-                          cuNDArray<complext<REAL>> *image, bool accumulate);
-
-            void prepare(cuNFFT_impl<REAL,D,ConvolutionType::STANDARD>* plan, const thrust::device_vector<vector_td<REAL,D>> &trajectory);
-
-        protected:
-            thrust::device_vector<unsigned int> tuples_last;
-            thrust::device_vector<unsigned int> bucket_begin, bucket_end;
-
-
-        };
-
-
-
-        template<unsigned int D>
-        class convolverNC2C<float, D, ConvolutionType::ATOMIC> {
-        public:
-            void
-            convolve_NC2C(cuNFFT_impl<float, D, ConvolutionType::ATOMIC> *plan, const cuNDArray<complext<float>> *samples,
-                          cuNDArray<complext<float>> *image, bool accumulate);
-
-            void prepare(cuNFFT_impl<float,D,ConvolutionType::ATOMIC>* plan, const thrust::device_vector<vector_td<float,D>> &trajectory){};
-        };
-
-        template<class REAL, unsigned int D>
-        class convolverNC2C<REAL, D, ConvolutionType::SPARSE_MATRIX> {
-        public:
-            void convolve_NC2C(cuNFFT_impl<REAL, D, ConvolutionType::SPARSE_MATRIX> *plan,
-                               const cuNDArray<complext<REAL>> *samples,
-                               cuNDArray<complext<REAL>> *image, bool accumulate);
-
-            void prepare(cuNFFT_impl<REAL,D,ConvolutionType::SPARSE_MATRIX>* plan, const thrust::device_vector<vector_td<REAL,D>> &trajectory);
-
-        protected:
-            std::unique_ptr<cuCsrMatrix<complext<REAL>>> matrix;
-        };
-
-        template<class REAL, unsigned int D, ConvolutionType CONV>
-        class convolverC2NC {
-        public:
-            void convolve_C2NC(cuNFFT_impl<REAL,D,CONV>* plan, const cuNDArray<complext<REAL>> * image, cuNDArray<complext<REAL>> *samples, bool accumulate);
-        };
-
-
-    }
-
-
-   template<class REAL, unsigned int D> EXPORTGPUNFFT struct NFFT<cuNDArray,REAL,D> {
-
-
-       static boost::shared_ptr<cuNFFT_plan<REAL,D>> make_plan(const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os,
-                    REAL W,ConvolutionType conv = ConvolutionType::STANDARD);
-    };
-   template<unsigned int D> EXPORTGPUNFFT struct NFFT<cuNDArray,double,D> {
-
-       static boost::shared_ptr<cuNFFT_plan<double,D>> make_plan(const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os,
-                    double W,ConvolutionType conv = ConvolutionType::STANDARD);
+    template<class REAL, unsigned int D>
+    EXPORTGPUNFFT struct NFFT<cuNDArray,REAL,D> 
+    {
+        static boost::shared_ptr<cuNFFT_plan<REAL,D>> make_plan(
+            const vector_td<size_t,D>& matrix_size,
+            const vector_td<size_t,D>& matrix_size_os,
+            REAL W,
+            ConvolutionType conv = ConvolutionType::STANDARD);
     };
 
-
-
+    template<unsigned int D>
+    EXPORTGPUNFFT struct NFFT<cuNDArray,double,D>
+    {
+        static boost::shared_ptr<cuNFFT_plan<double,D>> make_plan(
+            const vector_td<size_t,D>& matrix_size,
+            const vector_td<size_t,D>& matrix_size_os,
+            double W,
+            ConvolutionType conv = ConvolutionType::STANDARD);
+    };
 }

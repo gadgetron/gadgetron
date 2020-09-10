@@ -15,8 +15,8 @@ namespace Gadgetron {
     {
     public:
 
-        GenericReconCartesianFFTObj() {}
-        virtual ~GenericReconCartesianFFTObj() {}
+        GenericReconCartesianFFTObj()  = default;
+        virtual ~GenericReconCartesianFFTObj() = default;
 
         // ------------------------------------
         /// recon outputs
@@ -30,7 +30,6 @@ namespace Gadgetron {
         /// [RO E1 E2 srcCHA Nor1 Sor1 SLC]
         hoNDArray<T> ref_calib_;
         /// [RO E1 E2 dstCHA Nor1 Sor1 SLC]
-        hoNDArray<T> ref_calib_dst_;
 
         /// reference data ready for coil map estimation
         /// [RO E1 E2 dstCHA Nor1 Sor1 SLC]
@@ -51,8 +50,8 @@ namespace Gadgetron {
         typedef GenericReconGadget BaseClass;
         typedef Gadgetron::GenericReconCartesianFFTObj< std::complex<float> > ReconObjType;
 
-        GenericReconCartesianFFTGadget();
-        ~GenericReconCartesianFFTGadget();
+        GenericReconCartesianFFTGadget() = default;
+        ~GenericReconCartesianFFTGadget() override = default;
 
         /// ------------------------------------------------------------------------------------
         /// parameters to control the reconstruction
@@ -60,22 +59,15 @@ namespace Gadgetron {
 
 
     protected:
-
-        // --------------------------------------------------
-        // variable for recon
-        // --------------------------------------------------
-        // record the recon kernel, coil maps etc. for every encoding space
-        std::vector< ReconObjType > recon_obj_;
-
         // --------------------------------------------------
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        int process_config(ACE_Message_Block* mb) override;
+        int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1) override ;
 
 	// fft and coil combination
-        virtual void perform_fft_combine(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        void perform_fft_combine(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
        
     };
 }
