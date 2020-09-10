@@ -82,9 +82,7 @@ namespace Gadgetron {
             GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
             GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2) {
 
-        //GDEBUG_STREAM("Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl);
-
-        // Get a reference to the acquisition header
+         // Get a reference to the acquisition header
         ISMRMRD::AcquisitionHeader &hdr = *m1->getObjectPtr();
 
         // Pass on the non-EPI data (e.g. FLASH Calibration)
@@ -211,8 +209,7 @@ namespace Gadgetron {
 
             // mean of the reference navigator (across RO and channels):
             std::complex<float> navMean = mean(vectorise(navdata_.slice(referenceNavigatorNumber.value())));
-            //GDEBUG_STREAM("navMean = " << navMean);
-
+    
             // for clarity, we'll use the following when filtering navigator parameters:
             size_t set(hdr.idx.set), slc(hdr.idx.slice), exc(0);
             if (navigatorParameterFilterLength.value() > 1) {
