@@ -19,7 +19,7 @@ namespace Gadgetron
         }
     }
 
-    void fill_dicom_image_from_ismrmrd_header(ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile)
+    void fill_dicom_image_from_ismrmrd_header(const ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile)
     {
         try
         {

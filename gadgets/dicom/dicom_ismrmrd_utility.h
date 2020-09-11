@@ -33,7 +33,7 @@ namespace Gadgetron
     // --------------------------------------------------------------------------
     /// fill dicom image from ismrmrd header
     // --------------------------------------------------------------------------
-    EXPORTGADGETSDICOM void fill_dicom_image_from_ismrmrd_header(ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile);
+    EXPORTGADGETSDICOM void fill_dicom_image_from_ismrmrd_header(const ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile);
 
     // --------------------------------------------------------------------------
     /// write a key and its value into dicom image
