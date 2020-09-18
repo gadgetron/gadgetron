@@ -16,6 +16,39 @@
 */
 
 
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
+#else
+/**
+ * \brief Atomic addition for double-precision floating-point types.
+ *
+ * Atomic addition is not available by default on devices with compute
+ * capability lower than 6.0, so it needs to be defined manually.
+ *
+ * This implementation is based on the CUDA C Programming Guide.
+ * 
+ * \param address Address of data.
+ * \param val Value to be added.
+ * \return double Result.
+ */
+__device__ double atomicAdd(double* address, double val)
+{
+    unsigned long long int* address_as_ull =
+                              (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                        __longlong_as_double(assumed)));
+
+    } while (assumed != old);
+
+    return __longlong_as_double(old);
+}
+#endif
+
+
 template<class T, unsigned int D, template<class, unsigned int> class K>
 __inline__ __device__
 static void NFFT_iterate_body(vector_td<unsigned int, D> matrix_size_os, 
