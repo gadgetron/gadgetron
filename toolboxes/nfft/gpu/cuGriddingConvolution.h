@@ -194,22 +194,22 @@ namespace Gadgetron
 
     public:
 
-        Convolver(cuGriddingConvolution<T, D, K>* plan)
+        Convolver(cuGriddingConvolution<T, D, K>& plan)
           : plan_(plan) { };
         
         virtual ~Convolver() { };
 
         virtual void prepare(
-            const thrust::device_vector<vector_td<REAL, D>>& trajectory);
+            const thrust::device_vector<vector_td<REAL, D>>& trajectory) = 0;
 
         virtual void compute(
             const cuNDArray<T>& input,
             cuNDArray<T>& output,
-            bool accumulate);
+            bool accumulate) = 0;
 
     protected:
 
-        cuGriddingConvolution<T, D, K>* plan_;
+        cuGriddingConvolution<T, D, K>& plan_;
     };
 
 
@@ -221,7 +221,7 @@ namespace Gadgetron
 
     public:
 
-        ConvolverC2NC(cuGriddingConvolution<T, D, K>* plan)
+        ConvolverC2NC(cuGriddingConvolution<T, D, K>& plan)
           : Convolver<T, D, K>(plan) { };
 
         void prepare(
@@ -242,7 +242,7 @@ namespace Gadgetron
 
     public:      
 
-        ConvolverNC2C(cuGriddingConvolution<T, D, K>* plan)
+        ConvolverNC2C(cuGriddingConvolution<T, D, K>& plan)
           : Convolver<T, D, K>(plan) { };
 
         void prepare(
@@ -273,7 +273,7 @@ namespace Gadgetron
 
     public:
 
-        ConvolverNC2C(cuGriddingConvolution<T, D, K>* plan)
+        ConvolverNC2C(cuGriddingConvolution<T, D, K>& plan)
           : Convolver<T, D, K>(plan) { };
 
         void prepare(
@@ -294,7 +294,7 @@ namespace Gadgetron
 
     public:
 
-        ConvolverNC2C(cuGriddingConvolution<T, D, K>* plan)
+        ConvolverNC2C(cuGriddingConvolution<T, D, K>& plan)
           : Convolver<T, D, K>(plan) { };
 
         void prepare(
