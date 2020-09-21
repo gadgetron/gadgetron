@@ -1,3 +1,4 @@
+#pragma once
 /*
   CUDA implementation of the NFFT.
 

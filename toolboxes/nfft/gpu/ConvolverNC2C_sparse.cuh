@@ -1,8 +1,10 @@
+#pragma once
 #include "vector_td.h"
 #include "vector_td_utilities.h"
 #include "setup_grid.h"
 #include "cuSparseMatrix.h"
 #include <thrust/fill.h>
+#include "ConvolverNC2C_standard.cuh"
 namespace Gadgetron {
 
 template<unsigned int N> struct iteration_counter{};

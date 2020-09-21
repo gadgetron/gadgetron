@@ -7,10 +7,10 @@
 #include "cuNDArray_utils.h"
 #include "cudaDeviceManager.h"
 
-#include "ConvolverC2NC.cu"
-#include "ConvolverNC2C_standard.cu"
-#include "ConvolverNC2C_atomic.cu"
-#include "ConvolverNC2C_sparse.cu"
+#include "ConvolverC2NC.cuh"
+#include "ConvolverNC2C_atomic.cuh"
+#include "ConvolverNC2C_sparse.cuh"
+#include "ConvolverNC2C_standard.cuh"
 
 #define CUDA_CONV_MAX_COILS             (16)
 #define CUDA_CONV_THREADS_PER_KERNEL    (192)
@@ -103,20 +103,20 @@ namespace Gadgetron
         {
             case ConvolutionType::STANDARD:
             {
-                this->conv_C2NC_ = std::make_unique<ConvolverC2NC<T, D, K, ConvolutionType::STANDARD>>(this);
-                this->conv_NC2C_ = std::make_unique<ConvolverNC2C<T, D, K, ConvolutionType::STANDARD>>(this);
+                this->conv_C2NC_ = std::make_unique<ConvolverC2NC<T, D, K, ConvolutionType::STANDARD>>(*this);
+                this->conv_NC2C_ = std::make_unique<ConvolverNC2C<T, D, K, ConvolutionType::STANDARD>>(*this);
                 break;
             }
             case ConvolutionType::ATOMIC:
             {
-                this->conv_C2NC_ = std::make_unique<ConvolverC2NC<T, D, K, ConvolutionType::ATOMIC>>(this);
-                this->conv_NC2C_ = std::make_unique<ConvolverNC2C<T, D, K, ConvolutionType::ATOMIC>>(this);
+                this->conv_C2NC_ = std::make_unique<ConvolverC2NC<T, D, K, ConvolutionType::ATOMIC>>(*this);
+                this->conv_NC2C_ = std::make_unique<ConvolverNC2C<T, D, K, ConvolutionType::ATOMIC>>(*this);
                 break;
             }
             case ConvolutionType::SPARSE_MATRIX:
             {
-                this->conv_C2NC_ = std::make_unique<ConvolverC2NC<T, D, K, ConvolutionType::SPARSE_MATRIX>>(this);
-                this->conv_NC2C_ = std::make_unique<ConvolverNC2C<T, D, K, ConvolutionType::SPARSE_MATRIX>>(this);
+                this->conv_C2NC_ = std::make_unique<ConvolverC2NC<T, D, K, ConvolutionType::SPARSE_MATRIX>>(*this);
+                this->conv_NC2C_ = std::make_unique<ConvolverNC2C<T, D, K, ConvolutionType::SPARSE_MATRIX>>(*this);
                 break;
             }
         }
@@ -285,7 +285,7 @@ namespace Gadgetron
         unsigned int num_batches = 1;
         for (unsigned int d = D; d < image.get_number_of_dimensions(); d++)
             num_batches *= image.get_size(d);
-        num_batches /= this->plan_->num_frames_;
+        num_batches /= this->plan_.num_frames_;
 
         // Set up grid and threads. We can convolve only max_coils batches per
         // run due to shared memory issues.
@@ -302,16 +302,16 @@ namespace Gadgetron
 
         // Block and grid dimensions.
         dim3 dimBlock(threads_per_block);
-        dim3 dimGrid((this->plan_->num_samples_ + dimBlock.x - 1) / dimBlock.x,
-                     this->plan_->num_frames_);
+        dim3 dimGrid((this->plan_.num_samples_ + dimBlock.x - 1) / dimBlock.x,
+                     this->plan_.num_frames_);
 
         // Calculate how much shared memory to use per thread.
         size_t bytes_per_thread = domain_size_coils * sizeof(T);
         size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof(T);
         
         // Image view dimensions.
-        auto view_dims = to_std_vector(this->plan_->matrix_size_os_);
-        view_dims.push_back(this->plan_->num_frames_);
+        auto view_dims = to_std_vector(this->plan_.matrix_size_os_);
+        view_dims.push_back(this->plan_.num_frames_);
         view_dims.push_back(0); // Placeholder for num_coils.
 
         for (unsigned int repetition = 0; repetition < num_repetitions; repetition++)
@@ -339,17 +339,17 @@ namespace Gadgetron
             // Launch CUDA kernel.
             NFFT_convolve_kernel<T, D, K>
                 <<<dimGrid, dimBlock, sharedMemSize>>>(
-                vector_td<unsigned int, D>(this->plan_->matrix_size_os_),
-                vector_td<unsigned int, D>(this->plan_->matrix_padding_),
-                this->plan_->num_samples_,
+                vector_td<unsigned int, D>(this->plan_.matrix_size_os_),
+                vector_td<unsigned int, D>(this->plan_.matrix_padding_),
+                this->plan_.num_samples_,
                 num_coils,
-                raw_pointer_cast(&this->plan_->trajectory_[0]),
+                raw_pointer_cast(&this->plan_.trajectory_[0]),
                 image_permuted.get_data_ptr(),
-                samples.get_data_ptr() + repetition * this->plan_->num_samples_ *
-                    this->plan_->num_frames_ * domain_size_coils,
-                this->plan_->warp_size_power_,
+                samples.get_data_ptr() + repetition * this->plan_.num_samples_ *
+                    this->plan_.num_frames_ * domain_size_coils,
+                this->plan_.warp_size_power_,
                 accumulate,
-                this->plan_->d_kernel_);
+                this->plan_.d_kernel_);
 
             CHECK_FOR_CUDA_ERROR();
         }
@@ -366,7 +366,7 @@ namespace Gadgetron
         thrust::device_vector<unsigned int> c_p_s_ps(trajectory.size());
         CHECK_FOR_CUDA_ERROR();
 
-        REAL radius = this->plan_->kernel_.get_radius();
+        REAL radius = this->plan_.kernel_.get_radius();
         transform(trajectory.begin(), trajectory.end(),
                   c_p_s.begin(), compute_num_cells_per_sample<REAL, D>(radius));
         inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
@@ -383,10 +383,10 @@ namespace Gadgetron
         CHECK_FOR_CUDA_ERROR();
 
         // Fill tuple vector.
-        write_pairs<REAL, D>(vector_td<unsigned int, D>(this->plan_->matrix_size_os_),
-                             vector_td<unsigned int, D>(this->plan_->matrix_padding_),
-                             this->plan_->num_samples_, this->plan_->num_frames_,
-                             this->plan_->kernel_.get_width(),
+        write_pairs<REAL, D>(vector_td<unsigned int, D>(this->plan_.matrix_size_os_),
+                             vector_td<unsigned int, D>(this->plan_.matrix_padding_),
+                             this->plan_.num_samples_, this->plan_.num_frames_,
+                             this->plan_.kernel_.get_width(),
                              raw_pointer_cast(&trajectory[0]),
                              raw_pointer_cast(&c_p_s_ps[0]),
                              raw_pointer_cast(&tuples_first[0]),
@@ -399,23 +399,23 @@ namespace Gadgetron
         // Each bucket_begin[i] indexes the first element of bucket i's list of points.
         // Each bucket_end[i] indexes one past the last element of bucket i's list of points.
         bucket_begin = thrust::device_vector<unsigned int>(
-            this->plan_->num_frames_ * prod(this->plan_->matrix_size_os_ + this->plan_->matrix_padding_));
+            this->plan_.num_frames_ * prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_));
         bucket_end = thrust::device_vector<unsigned int>(
-            this->plan_->num_frames_ * prod(this->plan_->matrix_size_os_ + this->plan_->matrix_padding_));
+            this->plan_.num_frames_ * prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_));
 
         CHECK_FOR_CUDA_ERROR();
 
         // Find the beginning of each bucket's list of points.
         thrust::counting_iterator<unsigned int> search_begin(0);
         thrust::lower_bound(tuples_first.begin(), tuples_first.end(),
-                            search_begin, search_begin + this->plan_->num_frames_ *
-                            prod(this->plan_->matrix_size_os_ + this->plan_->matrix_padding_),
+                            search_begin, search_begin + this->plan_.num_frames_ *
+                            prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_),
                             bucket_begin.begin());
 
         // Find the end of each bucket's list of points.
         thrust::upper_bound(tuples_first.begin(), tuples_first.end(),
-                            search_begin, search_begin + this->plan_->num_frames_ *
-                            prod(this->plan_->matrix_size_os_ + this->plan_->matrix_padding_),
+                            search_begin, search_begin + this->plan_.num_frames_ *
+                            prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_),
                             bucket_end.begin());
     }
 
@@ -428,8 +428,8 @@ namespace Gadgetron
     {
         // Check if warp_size is a power of two. We do some modulus tricks in
         // the kernels that depend on this.
-        if (!((cudaDeviceManager::Instance()->warp_size(this->plan_->device_) &
-            (cudaDeviceManager::Instance()->warp_size(this->plan_->device_) - 1)) == 0))
+        if (!((cudaDeviceManager::Instance()->warp_size(this->plan_.device_) &
+            (cudaDeviceManager::Instance()->warp_size(this->plan_.device_) - 1)) == 0))
         {
             throw cuda_error("cuGriddingConvolution: Unsupported hardware "
                              "(warp size is not a power of 2).");
@@ -439,7 +439,7 @@ namespace Gadgetron
         unsigned int num_batches = 1;
         for (unsigned int d = D; d < image.get_number_of_dimensions(); d++)
             num_batches *= image.get_size(d);
-        num_batches /= this->plan_->num_frames_;
+        num_batches /= this->plan_.num_frames_;
 
         // Set up grid and threads. We can convolve only max_coils batches per
         // run due to shared memory issues.
@@ -456,8 +456,8 @@ namespace Gadgetron
 
         // Block and grid dimensions.
         dim3 dimBlock(threads_per_block);
-        dim3 dimGrid((prod(this->plan_->matrix_size_os_ + this->plan_->matrix_padding_) +
-                      dimBlock.x - 1) / dimBlock.x, this->plan_->num_frames_);
+        dim3 dimGrid((prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_) +
+                      dimBlock.x - 1) / dimBlock.x, this->plan_.num_frames_);
 
         // Calculate how much shared memory to use per thread.
         size_t bytes_per_thread = domain_size_coils * sizeof(T);
@@ -465,9 +465,9 @@ namespace Gadgetron
 
         // Define temporary image that includes padding.
         std::vector<size_t> padded_image_dims = to_std_vector(
-            this->plan_->matrix_size_os_ + this->plan_->matrix_padding_);
-        if (this->plan_->num_frames_ > 1)
-            padded_image_dims.push_back(this->plan_->num_frames_);
+            this->plan_.matrix_size_os_ + this->plan_.matrix_padding_);
+        if (this->plan_.num_frames_ > 1)
+            padded_image_dims.push_back(this->plan_.num_frames_);
         if (num_batches > 1)
             padded_image_dims.push_back(num_batches);
         cuNDArray<T> padded_image(padded_image_dims);
@@ -478,8 +478,8 @@ namespace Gadgetron
         
         // Samples view dimensions.
         std::vector<size_t> view_dims = {
-            this->plan_->num_samples_,
-            this->plan_->num_frames_,
+            this->plan_.num_samples_,
+            this->plan_.num_frames_,
             0}; // Placeholder for num_coils.
 
         for (unsigned int repetition = 0; repetition < num_repetitions; repetition++)
@@ -492,8 +492,8 @@ namespace Gadgetron
             view_dims.back() = num_coils;
             cuNDArray<T> samples_view(view_dims,
                 const_cast<T*>(samples.get_data_ptr()) +
-                repetition * this->plan_->num_samples_ *
-                this->plan_->num_frames_ * domain_size_coils);
+                repetition * this->plan_.num_samples_ *
+                this->plan_.num_frames_ * domain_size_coils);
             std::vector<size_t> permute_order = {2, 0, 1};
             auto samples_permuted = permute(samples_view, permute_order);
             
@@ -505,22 +505,22 @@ namespace Gadgetron
             // Launch CUDA kernel.
             NFFT_H_convolve_kernel<T, D, K>
                 <<<dimGrid, dimBlock, sharedMemSize>>>(
-                vector_td<unsigned int, D>(this->plan_->matrix_size_os_ +
-                                           this->plan_->matrix_padding_),
-                this->plan_->num_samples_,
+                vector_td<unsigned int, D>(this->plan_.matrix_size_os_ +
+                                           this->plan_.matrix_padding_),
+                this->plan_.num_samples_,
                 num_coils,
-                raw_pointer_cast(&this->plan_->trajectory_[0]),
+                raw_pointer_cast(&this->plan_.trajectory_[0]),
                 padded_image.get_data_ptr() + repetition *
-                    prod(this->plan_->matrix_size_os_ +
-                         this->plan_->matrix_padding_) *
-                    this->plan_->num_frames_ * 
+                    prod(this->plan_.matrix_size_os_ +
+                         this->plan_.matrix_padding_) *
+                    this->plan_.num_frames_ *
                     domain_size_coils,
                 samples_permuted.get_data_ptr(),
                 raw_pointer_cast(&tuples_last[0]),
                 raw_pointer_cast(&bucket_begin[0]),
                 raw_pointer_cast(&bucket_end[0]),
-                this->plan_->warp_size_power_,
-                this->plan_->d_kernel_);
+                this->plan_.warp_size_power_,
+                this->plan_.d_kernel_);
         }
 
         CHECK_FOR_CUDA_ERROR();
@@ -539,16 +539,16 @@ namespace Gadgetron
         unsigned int num_batches = 1;
         for (unsigned int d = D; d < source.get_number_of_dimensions(); d++)
             num_batches *= source.get_size(d);
-        num_batches /= this->plan_->num_frames_;
+        num_batches /= this->plan_.num_frames_;
 
         // Set dimensions of grid/blocks.
         unsigned int bdim = 256;
         dim3 dimBlock(bdim);
-        dim3 dimGrid(prod(this->plan_->matrix_size_os_) / bdim,
-                          this->plan_->num_frames_ * num_batches);
+        dim3 dimGrid(prod(this->plan_.matrix_size_os_) / bdim,
+                          this->plan_.num_frames_ * num_batches);
 
         // Safety check.
-        if ((prod(this->plan_->matrix_size_os_) % bdim) != 0)
+        if ((prod(this->plan_.matrix_size_os_) % bdim) != 0)
         {
             std::stringstream ss;
             ss << "Error: cuNFFT : the number of oversampled image elements must be a multiplum of the block size: "
@@ -561,8 +561,8 @@ namespace Gadgetron
             <<<dimGrid, dimBlock>>>(
             source.get_data_ptr(),
             target.get_data_ptr(),
-            vector_td<unsigned int, D>(this->plan_->matrix_size_os_),
-            vector_td<unsigned int, D>(this->plan_->matrix_padding_),
+            vector_td<unsigned int, D>(this->plan_.matrix_size_os_),
+            vector_td<unsigned int, D>(this->plan_.matrix_padding_),
             accumulate);
 
         CHECK_FOR_CUDA_ERROR();
@@ -585,7 +585,7 @@ namespace Gadgetron
         bool accumulate)
     {
         // We need a device with compute capability >= 2.0 to use atomics.
-        if (cudaDeviceManager::Instance()->major_version(this->plan_->device_) == 1)
+        if (cudaDeviceManager::Instance()->major_version(this->plan_.device_) == 1)
         {
             throw cuda_error("cuGriddingConvolution: Atomic gridding "
                              "convolution supported only on devices with "
@@ -593,8 +593,8 @@ namespace Gadgetron
         }
 
         // We require the warp size to be a power of 2.
-        if (!((cudaDeviceManager::Instance()->warp_size(this->plan_->device_) &
-            (cudaDeviceManager::Instance()->warp_size(this->plan_->device_) - 1)) == 0))
+        if (!((cudaDeviceManager::Instance()->warp_size(this->plan_.device_) &
+            (cudaDeviceManager::Instance()->warp_size(this->plan_.device_) - 1)) == 0))
         {
             throw cuda_error("cuGriddingConvolution: Unsupported hardware "
                              "(warp size is not a power of 2).");
@@ -604,7 +604,7 @@ namespace Gadgetron
         unsigned int num_batches = 1;
         for (unsigned int d = D; d < image.get_number_of_dimensions(); d++)
             num_batches *= image.get_size(d);
-        num_batches /= this->plan_->num_frames_;
+        num_batches /= this->plan_.num_frames_;
 
         // Set up grid and threads. We can convolve only max_coils batches per
         // run due to shared memory issues.
@@ -621,8 +621,8 @@ namespace Gadgetron
 
         // Block and grid dimensions.
         dim3 dimBlock(threads_per_block);
-        dim3 dimGrid((this->plan_->num_samples_ + dimBlock.x - 1) / dimBlock.x,
-                     this->plan_->num_frames_);
+        dim3 dimGrid((this->plan_.num_samples_ + dimBlock.x - 1) / dimBlock.x,
+                     this->plan_.num_frames_);
 
         // Calculate how much shared memory to use per thread.
         size_t bytes_per_thread =
@@ -648,16 +648,16 @@ namespace Gadgetron
             // Launch CUDA kernel.
             NFFT_H_atomic_convolve_kernel<T, D, K>
                 <<<dimGrid, dimBlock, sharedMemSize>>>(
-                vector_td<unsigned int, D>(this->plan_->matrix_size_os_),
-                vector_td<unsigned int, D>(this->plan_->matrix_padding_),
-                this->plan_->num_samples_,
+                vector_td<unsigned int, D>(this->plan_.matrix_size_os_),
+                vector_td<unsigned int, D>(this->plan_.matrix_padding_),
+                this->plan_.num_samples_,
                 num_coils,
-                raw_pointer_cast(&this->plan_->trajectory_[0]),
-                samples.get_data_ptr() + repetition * this->plan_->num_samples_ *
-                    this->plan_->num_frames_ * domain_size_coils,
-                image.get_data_ptr() + repetition * prod(this->plan_->matrix_size_os_) *
-                    this->plan_->num_frames_ * domain_size_coils,
-                this->plan_->d_kernel_);
+                raw_pointer_cast(&this->plan_.trajectory_[0]),
+                samples.get_data_ptr() + repetition * this->plan_.num_samples_ *
+                    this->plan_.num_frames_ * domain_size_coils,
+                image.get_data_ptr() + repetition * prod(this->plan_.matrix_size_os_) *
+                    this->plan_.num_frames_ * domain_size_coils,
+                this->plan_.d_kernel_);
         }
 
         CHECK_FOR_CUDA_ERROR();
@@ -670,7 +670,7 @@ namespace Gadgetron
     {
         this->conv_matrix_ = std::make_unique<cuCsrMatrix<T>>(
             make_conv_matrix<T, D, K>(
-                trajectory, this->plan_->matrix_size_os_, this->plan_->d_kernel_));
+                trajectory, this->plan_.matrix_size_os_, this->plan_.d_kernel_));
     }
 
 
@@ -683,13 +683,13 @@ namespace Gadgetron
         unsigned int num_batches = 1;
         for (unsigned int d = D; d < image.get_number_of_dimensions(); d++)
             num_batches *= image.get_size(d);
-        num_batches /= this->plan_->num_frames_;
+        num_batches /= this->plan_.num_frames_;
 
         std::vector<size_t> sample_dims =
-            { this->plan_->num_samples_ * this->plan_->num_frames_, num_batches};
+            { this->plan_.num_samples_ * this->plan_.num_frames_, num_batches};
         std::vector<size_t> image_dims =
-            { prod(this->plan_->matrix_size_os_), num_batches };
-        image_dims.push_back(this->plan_->num_frames_);
+            { prod(this->plan_.matrix_size_os_), num_batches };
+        image_dims.push_back(this->plan_.num_frames_);
 
         cuNDArray<T> image_view(
             image_dims, image.get_data_ptr());
