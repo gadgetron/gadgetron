@@ -8,8 +8,8 @@ RUN apt update --quiet && \
 
 RUN pip3 install -U pip setuptools testresources
 RUN DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
-RUN pip3 install numpy scipy pandas Cython tk-tools matplotlib seaborn scikit-image opencv_python pydicom scikit-learn sympy Pillow==7.1.2 h5py pyxb
-RUN pip3 install torch torchvision
+RUN pip3 install numpy scipy pandas Cython tk-tools matplotlib seaborn scikit-image opencv_python pydicom scikit-learn sympy Pillow h5py pyxb
+RUN pip3 install torch==1.5.1 torchvision==0.6.1
 RUN pip3 install onnx onnxruntime
 
 # for embedded python plot, we need agg backend
