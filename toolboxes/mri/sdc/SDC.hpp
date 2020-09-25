@@ -54,6 +54,7 @@ std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
     // cudaPointerAttributes attributes;
     // cudaPointerGetAttributes(&attributes,traj.get_data_ptr());
 
+
     // if(attributes.devicePointer != NULL)
     //     //conv->initialize(ConvolutionType::ATOMIC);
 
@@ -113,14 +114,13 @@ std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>
 
     // Prepare gridding convolution.
     auto conv = GriddingConvolution<cuNDArray, REAL, D, JincKernel>::make(valid_matrix_size, valid_matrix_size_os, kernel,convtype);
-
     // cudaPointerAttributes attributes;
     // cudaPointerGetAttributes(&attributes,traj.get_data_ptr());
 
     // if(attributes.devicePointer != NULL)
     //     //conv->initialize(ConvolutionType::ATOMIC);
 
-    conv->preprocess(traj);
+    conv->preprocess(traj,GriddingConvolutionPrepMode::ALL);
 
     // Working arrays.
     cuNDArray<REAL> dcw(initial_dcw);
@@ -129,11 +129,14 @@ std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>
 
     // Iteration loop.
     for (size_t i = 0; i < num_iterations; i++) {
+               
         // To intermediate grid.
         conv->compute(dcw, grid, GriddingConvolutionMode::NC2C);
-
-        // To original trajectory.
+        
+         // To original trajectory.
         conv->compute(grid, tmp, GriddingConvolutionMode::C2NC);
+
+
 
         // Update weights.
         update_weights(tmp, dcw);
