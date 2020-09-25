@@ -143,35 +143,14 @@ namespace Gadgetron
 
 			NonCartesian::append_image_header(imarray, recon_bit_->rbit_[e], e);
 			this->prepare_image_array(imarray, e, ((int)e + 1), GADGETRON_IMAGE_REGULAR);
-<<<<<<< HEAD
+
 
                         this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(std::move(imarray)));
 
 
                     //Is this where we measure SNR?
 			if (replicas.value() > 0 && snr_frame.value() == process_called_times) {
-=======
-            
-			// Bug fix images were not pushed out 
-			if (this->next()->putq(m3) < 0)
-			{
-				GDEBUG("Failed to put job on queue. Stupid Griding Recon\n");
-				m3->release();
-				return GADGET_FAIL;
-			}
 
-			if (this->next()->putq(m4) < 0)
-			{
-				GDEBUG("Failed to put job on queue. Stupid Griding Recon\n");
-				m4->release();
-				return GADGET_FAIL;
-			}
-			// End Bug fix images were not pushed out 
-			
-			//Is this where we measure SNR?
-			if (replicas.value() > 0 && snr_frame.value() == process_called_times)
-			{
->>>>>>> 00b90c8148f9fd8778a9e0c4287a581a45ba0be6
 
 				pseudo_replica(buffer->data_, *traj, *dcw, csm, recon_bit_->rbit_[e], e, CHA);
 			}
@@ -223,6 +202,7 @@ namespace Gadgetron
                               E->set_dcw(boost::make_shared<ARRAY<float>>(*dcw_sqrt));
                                 data_cpy = new ARRAY<float_complext>(*data);
                                 *data_cpy *= *dcw_sqrt;
+
 
 			}
 			std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
