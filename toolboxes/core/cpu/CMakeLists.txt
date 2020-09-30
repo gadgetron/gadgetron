@@ -10,7 +10,8 @@ set(header_files ../NDArray.h
                 cpucore_export.h 
                 hoNDArray.h
                 hoNDArray.hxx
-				hoNDArray_iterators.h
+                hoNDArray_converter.h
+				        hoNDArray_iterators.h
                 hoNDObjectArray.h
                 hoNDArray_utils.h
                 hoNDArray_fileio.h

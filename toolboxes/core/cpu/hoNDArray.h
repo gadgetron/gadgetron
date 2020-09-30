@@ -317,7 +317,7 @@ namespace Gadgetron{
 
     template<class X> void _allocate_memory( size_t size, X** data )
     {
-      *data = new (std::nothrow) X[size];
+      *data = new X[size];
     }
 
     template<class X> void _deallocate_memory( X* data )

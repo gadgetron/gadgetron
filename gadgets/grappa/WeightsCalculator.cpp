@@ -45,36 +45,7 @@ namespace {
         return std::move(slices);
     }
 
-    class SupportMonitor {
-    public:
-        explicit SupportMonitor(const Context &context) {
-            auto e_limits = context.header.encoding[0].encodingLimits;
-            auto slices = e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
 
-            regions = std::vector<std::array<uint16_t, 4>>(slices, {0,0,std::numeric_limits<uint16_t>::max(),0});
-        }
-
-        void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
-            auto old_region = regions[slice_of(acquisition)];
-            regions[slice_of(acquisition)] = std::array<uint16_t, 4> {
-                0,
-                uint16_t(samples_in(acquisition) - 1u),
-                std::min(old_region[2], line_of(acquisition)),
-                std::max(old_region[3], line_of(acquisition))
-            };
-        }
-
-        std::array<uint16_t, 4> region_of_support(size_t slice) const {
-            return regions[slice];
-        }
-
-        void clear(size_t slice) {
-            regions[slice] = {0,0,std::numeric_limits<uint16_t>::max(),0};
-        }
-
-    private:
-        std::vector<std::array<uint16_t, 4>> regions;
-    };
 
     class AccelerationMonitor {
     public:
@@ -114,8 +85,8 @@ namespace {
 
     class DirectionMonitor {
     public:
-        explicit DirectionMonitor(Grappa::AcquisitionBuffer &buffer, SupportMonitor &support, AccelerationMonitor &acceleration)
-        : buffer(buffer), support(support), acceleration(acceleration) {
+        explicit DirectionMonitor(Grappa::AcquisitionBuffer &buffer,  AccelerationMonitor &acceleration)
+        : buffer(buffer),  acceleration(acceleration) {
             position = read_dir = phase_dir = slice_dir = {0.0, 0.0, 0.0};
         }
 
@@ -140,14 +111,12 @@ namespace {
 
         void clear(size_t slice) {
             buffer.clear(slice);
-            support.clear(slice);
             acceleration.clear(slice);
         }
 
 
     private:
         Grappa::AcquisitionBuffer &buffer;
-        SupportMonitor &support;
         AccelerationMonitor &acceleration;
 
         std::array<float, 3> position, read_dir, phase_dir, slice_dir;
@@ -162,7 +131,6 @@ namespace Gadgetron::Grappa {
             const AcquisitionBuffer &buffer,
             uint16_t n_combined_channels,
             uint16_t n_uncombined_channels,
-            const SupportMonitor &support_monitor,
             const AccelerationMonitor &acceleration_monitor,
             WeightsCore &core
     ) {
@@ -174,7 +142,7 @@ namespace Gadgetron::Grappa {
                 },
                 core.calculate_weights(
                         buffer.view(index),
-                        support_monitor.region_of_support(index),
+                        buffer.region_of_support(index),
                         acceleration_monitor.acceleration_factor(index),
                         n_combined_channels,
                         n_uncombined_channels
@@ -195,13 +163,11 @@ namespace Gadgetron::Grappa {
         uint16_t n_combined_channels = 0, n_uncombined_channels = 0;
 
         AcquisitionBuffer buffer{context};
-        SupportMonitor support_monitor{context};
         AccelerationMonitor acceleration_monitor{context};
 
-        buffer.add_pre_update_callback(DirectionMonitor{buffer, support_monitor, acceleration_monitor});
+        buffer.add_pre_update_callback(DirectionMonitor{buffer, acceleration_monitor});
         buffer.add_post_update_callback([&](auto &acq) { updated_slices.insert(slice_of(acq)); });
         buffer.add_post_update_callback([&](auto &acq) { acceleration_monitor(acq); });
-        buffer.add_post_update_callback([&](auto &acq) { support_monitor(acq); });
         buffer.add_post_update_callback([&](auto &acq) {
             n_combined_channels = combined_channels(acq);
             n_uncombined_channels = uncombined_channels(acq);
@@ -218,14 +184,12 @@ namespace Gadgetron::Grappa {
 
             for (auto index : updated_slices) {
 
-                if (!buffer.is_fully_sampled(index)) continue;
-
+                if (!buffer.is_sufficiently_sampled(index)) continue;
                 out.push(create_weights(
                         index,
                         buffer,
                         n_combined_channels,
                         n_uncombined_channels,
-                        support_monitor,
                         acceleration_monitor,
                         core
                 ));

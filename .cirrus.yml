@@ -1,17 +1,18 @@
 build_task:
   container:
     matrix:
-      image: nvidia/cuda:11.0-devel-ubuntu18.04-rc
+      image: nvidia/cuda:11.0-devel-ubuntu20.04
     cpu: 8
     memory: 24
 
 
   depdendencies_script:
     - apt-get update
-    - apt-get install -y build-essential git-core wget make cmake gcc-multilib libgtest-dev libboost-all-dev 
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git-core wget make cmake gcc-multilib libgtest-dev libboost-all-dev 
       libarmadillo-dev libopenblas-dev libfftw3-dev liblapack-dev liblapacke-dev 
-      libxml2-dev libxslt-dev libpugixml-dev libhdf5-dev libplplot-dev libdcmtk-dev 
-      python3-dev python3-pip python3-h5py python3-scipy python3-pyxb ninja-build 
+      libxml2-dev libxslt-dev libpugixml-dev libhdf5-dev libplplot-dev libdcmtk-dev librange-v3-dev
+      python3-dev python3-pip python3-h5py python3-scipy ninja-build 
+    - pip3 install pyxb
   mtime_script:
     - apt-get update
     - apt-get install ruby-full -y
