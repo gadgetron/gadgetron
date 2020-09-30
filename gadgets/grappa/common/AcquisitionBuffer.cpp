@@ -11,6 +11,11 @@
 
 #include "grappa_common.h"
 
+#include <range/v3/algorithm/max_element.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
+#include <range/v3/algorithm.hpp>
+
 namespace {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
@@ -83,10 +88,8 @@ namespace Gadgetron::Grappa {
         // Copy the acquisition data to the buffer for each channel.
         for (size_t channel = 0; channel < header.active_channels; channel++) {
 
-            auto destination = &buffer.data(0, size_t(current_line), channel);
-            auto source = &data(0, channel);
-
-            std::copy_n(source, header.number_of_samples, destination);
+            using namespace Gadgetron::Indexing;
+            buffer.data(slice,current_line,channel) = data(slice,channel);
         }
 
         for (auto &fn : post_update_callbacks) fn(acquisition);
@@ -106,8 +109,33 @@ namespace Gadgetron::Grappa {
         buffers.erase(index);
     }
 
-    bool AcquisitionBuffer::is_fully_sampled(size_t index) const {
-        return internals.expected_lines == buffers.at(index).sampled_lines;
+    std::pair<uint32_t,uint32_t> AcquisitionBuffer::fully_sampled_region(size_t slice) const {
+
+        const auto& e_limits = context.header.encoding[0].encodingLimits;
+        const auto& sampled_lines = buffers.at(slice).sampled_lines;
+
+        uint32_t lower_limit;
+        for (lower_limit = e_limits.kspace_encoding_step_1->center; sampled_lines.count(lower_limit-1) && lower_limit > 0; lower_limit--){}
+
+        uint32_t upper_limit;
+        for (upper_limit = e_limits.kspace_encoding_step_1->center; sampled_lines.count(upper_limit+1); upper_limit++){}
+
+        return  {lower_limit, upper_limit};
+    }
+
+
+    bool AcquisitionBuffer::is_sufficiently_sampled(size_t index) const {
+
+        auto [lower, upper] = fully_sampled_region(index);
+
+        return (upper-lower) >= minimum_calibration_region;
+    }
+
+    std::array<uint16_t, 4> AcquisitionBuffer::region_of_support(size_t index) const {
+
+        const auto& [lower, upper] = fully_sampled_region(index);
+
+        return std::array<uint16_t, 4>{0, buffers.at(index).data.get_size(0), lower+internals.line_offset, upper+internals.line_offset};
     }
 
     AcquisitionBuffer::buffer AcquisitionBuffer::create_buffer(const std::vector<size_t> &dimensions) {
