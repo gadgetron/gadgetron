@@ -6,7 +6,7 @@
 
 #include "mri_sdc_export.h"
 
-#include "gadgetron/cuGriddingConvolution.h"
+#include "cuGriddingConvolution.h"
 namespace Gadgetron
 {
     /**
