@@ -11,7 +11,9 @@ add_library(gadgetron_core_writers SHARED
         AcquisitionWriter.cpp
         AcquisitionWriter.h
         WaveformWriter.cpp
-        WaveformWriter.h)
+        WaveformWriter.h
+        FakeWriter.cpp
+        FakeWriter.h)
 
 target_link_libraries(gadgetron_core_writers
         gadgetron_core

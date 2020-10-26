@@ -80,7 +80,8 @@ namespace Gadgetron::Server::Connection {
                     Config::Writer { "gadgetron_core_writers", "ImageWriter" },
                     Config::Writer { "gadgetron_core_writers", "BufferWriter" },
                     Config::Writer { "gadgetron_core_writers", "IsmrmrdImageArrayWriter" },
-                    Config::Writer { "gadgetron_core_writers", "AcquisitionBucketWriter" }
+                    Config::Writer { "gadgetron_core_writers", "AcquisitionBucketWriter" },
+                    Config::Writer { "gadgetron_core_writers", "FakeWriter" }
             };
 
             auto configs = default_writers;
