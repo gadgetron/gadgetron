@@ -192,18 +192,29 @@ cmd_detach ()
 
 cmd_clean ()
 {
-    local mntpnt=$(complete_mount_point $1)
-    
-    if [ ! -e "$mntpnt" ]; then
-	echo "Unable to remove non-existent mount point"
-	return 1
+    if [ $1 = "all" ]; then
+        for m in ${MNTFOLDER}/${CHROOTPREFIX}*; do
+            if [ -d "$m" ]; then
+                echo "Stopping processes associated with: $m"
+                fuser -k -M -m $m
+            fi
+        done
+        MOUNTPOINT=$m
+    else
+        local mntpnt=$(complete_mount_point $1)
+        
+        if [ ! -e "$mntpnt" ]; then
+            echo "Unable to find mount point: $mntpnt"
+            return 1
+        fi
+ 
+        #Set global mount point variable
+        MOUNTPOINT=$mntpnt
+ 
+        echo "Stopping processes associated with: $MOUNTPOINT"
+        fuser -k -M -m $MOUNTPOINT
     fi
-
-    #Set global mount point variable
-    MOUNTPOINT=$mntpnt
-
-    fuser -k -m $MOUNTPOINT
-    
+ 
     return 0
 }
 
