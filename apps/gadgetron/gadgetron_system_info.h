@@ -3,6 +3,7 @@
 
 #include "gadgetron_config.h"
 
+#include <ostream>
 
 #if defined(_WIN32)
 #include <Windows.h>
