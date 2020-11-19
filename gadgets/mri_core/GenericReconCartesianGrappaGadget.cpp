@@ -482,15 +482,15 @@ namespace Gadgetron {
                     Gadgetron::grappa3d_unmixing_coeff(ker, coilMap, (size_t) acceFactorE1_[e],
                                                        (size_t) acceFactorE2_[e], unmixC, gFactor);
 
-                    //if (!debug_folder_full_path_.empty())
-                    //{
-                    //    gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_3D_" + suffix);
-                    //}
+                    if (!debug_folder_full_path_.empty())
+                    {
+                        gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_3D_" + suffix);
+                    }
 
-                    //if (!debug_folder_full_path_.empty())
-                    //{
-                    //    gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_3D_" + suffix);
-                    //}
+                    if (!debug_folder_full_path_.empty())
+                    {
+                        gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_3D_" + suffix);
+                    }
                 } else {
                     hoNDArray<std::complex<float> > acsSrc(ref_RO, ref_E1, srcCHA,
                                                            const_cast< std::complex<float> *>(ref_src.begin()));
@@ -534,7 +534,7 @@ namespace Gadgetron {
                     memcpy(&(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)), gFactor.begin(),
                            gFactor.get_number_of_bytes());
 
-                    /*if (!debug_folder_full_path_.empty())
+                    if (!debug_folder_full_path_.empty())
                     {
                         gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_" + suffix);
                     }
@@ -542,7 +542,7 @@ namespace Gadgetron {
                     if (!debug_folder_full_path_.empty())
                     {
                         gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_" + suffix);
-                    }*/
+                    }
                 }
 
                 // -----------------------------------
