@@ -48,4 +48,5 @@ namespace Gadgetron
         REAL os_factor = 2.1,
         unsigned int num_iterations = 10);
 
+
 } // namespace Gadgetron

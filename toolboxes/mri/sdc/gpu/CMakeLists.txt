@@ -31,6 +31,7 @@ install(TARGETS gadgetron_toolbox_gpusdc
 	COMPONENT main
 )
 
-install(FILES 
+install(FILES
+  cuSDC.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}
   COMPONENT main)

@@ -43,7 +43,7 @@ if [ $# -gt 1 ]; then
     
     chroot_img_dir=${chroot_base_name}
     mkdir -p ${chroot_img_dir}
-    dd if=/dev/zero of=${chroot_img_name} bs=${chroot_img_size}k seek=1024 count=0
+    dd if=/dev/zero of=${chroot_img_name} bs=1M count=${chroot_img_size}
     mke2fs -F -t ext3 ${chroot_img_name}
     mount -o loop ${chroot_img_name} ${chroot_img_dir}
     cp -rf ${chroot_tar_dir}/* ${chroot_img_dir}
