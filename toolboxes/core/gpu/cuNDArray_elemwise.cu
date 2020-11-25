@@ -5,6 +5,8 @@
 
 #include <complex>
 #include <thrust/functional.h>
+#include <thrust/transform.h>
+#include <thrust/complex.h>
 
 using namespace Gadgetron;
 //using namespace std;
@@ -12,6 +14,21 @@ using namespace Gadgetron;
 template<typename T> struct cuNDA_abs : public thrust::unary_function<T,typename realType<T>::Type>
 {
   __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const {return abs(x);}
+};
+
+template<typename T> struct cuNDA_exp : public thrust::unary_function<T,typename realType<T>::Type>
+{
+  __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const {return exp(x);}
+};
+
+template<typename T> struct cuNDA_cos : public thrust::unary_function<T,typename realType<T>::Type>
+{
+  __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const {return cos(x);}
+};
+
+template<typename T> struct cuNDA_sin: public thrust::unary_function<T,typename realType<T>::Type>
+{
+  __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const {return sin(x);}
 };
 
 template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> > 
@@ -37,6 +54,37 @@ Gadgetron::abs_inplace( cuNDArray<T> *x )
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_abs<T>());
 }  
+
+template<class T> void 
+Gadgetron::exp_inplace( cuNDArray<T> *x )
+{ 
+  if( x == 0x0 )
+    throw std::runtime_error("Gadgetron::exp_inplace(): Invalid input array");
+   
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_exp<T>());
+}  
+
+template<class T> void 
+Gadgetron::cos_inplace( cuNDArray<T> *x )
+{ 
+  if( x == 0x0 )
+    throw std::runtime_error("Gadgetron::exp_inplace(): Invalid input array");
+   
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_cos<T>());
+}  
+
+template<class T> void 
+Gadgetron::sin_inplace( cuNDArray<T> *x )
+{ 
+  if( x == 0x0 )
+    throw std::runtime_error("Gadgetron::exp_inplace(): Invalid input array");
+   
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_sin<T>());
+}  
+
   
 template<typename T> struct cuNDA_abs_square : public thrust::unary_function<T,typename realType<T>::Type>
 {
@@ -546,6 +594,9 @@ Gadgetron::pshrinkd( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, 
 //
 // Instantiation
 //
+template EXPORTGPUCORE void Gadgetron::exp_inplace<float>( cuNDArray<float>* );
+template EXPORTGPUCORE void Gadgetron::cos_inplace<float>( cuNDArray<float>* );
+template EXPORTGPUCORE void Gadgetron::sin_inplace<float>( cuNDArray<float>* );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs<float>( const cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::abs_inplace<float>( cuNDArray<float>* );
