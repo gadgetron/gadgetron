@@ -326,6 +326,25 @@ Gadgetron::real_to_complex( const cuNDArray<typename realType<T>::Type> *x )
   return result;
 }
 
+template <typename T> struct cuNDA_imag_to_complex : public thrust::unary_function<typename realType<T>::Type,T>
+{
+  __device__ float_complext operator()(const typename realType<T>::Type &x) const {return float_complext(0.0f,x);}
+};
+
+template<class T> boost::shared_ptr< cuNDArray<T> > 
+Gadgetron::imag_to_complex( const cuNDArray<typename realType<T>::Type> *x )
+{
+  if( x == 0x0 )
+    throw std::runtime_error("Gadgetron::real_to_complex(): Invalid input array");
+   
+  boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
+  result->create(x->get_dimensions());
+  thrust::device_ptr<T> resPtr = result->get_device_ptr();
+  thrust::device_ptr<typename realType<T>::Type> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_imag_to_complex<T>());
+  return result;
+}
+
 template <typename T,typename T2> struct cuNDA_convert_to : public thrust::unary_function<T,T2>
 {
   __device__ T2 operator()(T &x) const {return T2(x);}
@@ -736,6 +755,8 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::real<flo
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::imag<float_complext>( const cuNDArray<float_complext>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > Gadgetron::conj<float_complext>( const cuNDArray<float_complext>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > Gadgetron::real_to_complex<float_complext>( const cuNDArray<float>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > Gadgetron::imag_to_complex<float_complext>( const cuNDArray<float>* );
+
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::real<double>( const cuNDArray<double>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::imag<double>( const cuNDArray<double>* );
