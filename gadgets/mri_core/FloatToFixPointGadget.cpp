@@ -5,9 +5,11 @@
 *       Author: Hui Xue
 */
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "FloatToFixPointGadget.h"
 #include "mri_core_def.h"
+
+
+#include <boost/math/constants/constants.hpp>
 
 namespace Gadgetron
 {
@@ -43,7 +45,7 @@ namespace Gadgetron
 
         boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->get_dimensions();
 
-        try {cm2->getObjectPtr()->create(dims);}
+        try {cm2->getObjectPtr()->create(*dims);}
         catch (std::runtime_error &err){
             GEXCEPTION(err,"Unable to create unsigned fix point storage in Extract Magnitude Gadget");
             return GADGET_FAIL;
@@ -104,7 +106,7 @@ namespace Gadgetron
                 for (i=0; i<numOfPixels; i++)
                 {
                     float pix_val = src[i];
-                    pix_val *= (float)(intensity_offset_value_/3.14159265);
+                    pix_val *= (float)(intensity_offset_value_/boost::math::float_constants::pi);
                     pix_val += intensity_offset_value_;
                     if (pix_val < (float)min_intensity_value_) pix_val = (float)min_intensity_value_;
                     if (pix_val > (float)max_intensity_value_) pix_val = (float)max_intensity_value_;

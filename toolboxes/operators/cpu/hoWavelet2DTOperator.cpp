@@ -31,7 +31,7 @@ void hoWavelet2DTOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<
 {
     if (!complexIm_fft_.dimensions_equal(&x))
     {
-        complexIm_fft_.create(x.get_dimensions());
+        complexIm_fft_.create(x.dimensions());
     }
 
     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_fft_);
@@ -42,7 +42,7 @@ void hoWavelet2DTOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArra
 {
     if (!kspace_fft_.dimensions_equal(&im))
     {
-        kspace_fft_.create(im.get_dimensions());
+        kspace_fft_.create(im.dimensions());
     }
 
     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_fft_);
@@ -53,13 +53,13 @@ void hoWavelet2DTOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dims = x.get_dimensions();
-        size_t NDim = dims->size();
+        auto dims = x.dimensions();
+        size_t NDim = dims.size();
 
-        size_t RO = (*dims)[0];
-        size_t E1 = (*dims)[1];
-        size_t CHA = (*dims)[2];
-        size_t E2 = (*dims)[3];
+        size_t RO = dims[0];
+        size_t E1 = dims[1];
+        size_t CHA = dims[2];
+        size_t E2 = dims[3];
         size_t W = 1 + 7 * num_of_wav_levels_;
 
         std::vector<size_t> dimR(NDim + 1);
@@ -72,12 +72,12 @@ void hoWavelet2DTOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y
         size_t n;
         for (n = 4; n<NDim; n++)
         {
-            dimR[n + 1] = (*dims)[n];
+            dimR[n + 1] = dims[n];
         }
 
         if (!y.dimensions_equal(&dimR))
         {
-            y.create(&dimR);
+            y.create(dimR);
         }
 
         size_t num = x.get_number_of_elements() / (RO*E1*E2*CHA);
@@ -137,14 +137,14 @@ void hoWavelet2DTOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dims = x.get_dimensions();
-        size_t NDim = dims->size();
+        auto dims = x.dimensions();
+        size_t NDim = dims.size();
 
-        size_t RO = (*dims)[0];
-        size_t E1 = (*dims)[1];
-        size_t E2 = (*dims)[2];
-        size_t W = (*dims)[3];
-        size_t CHA = (*dims)[4];
+        size_t RO = dims[0];
+        size_t E1 = dims[1];
+        size_t E2 = dims[2];
+        size_t W = dims[3];
+        size_t CHA = dims[4];
 
         std::vector<size_t> dimR(NDim - 1);
         dimR[0] = RO;
@@ -155,12 +155,12 @@ void hoWavelet2DTOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y
         size_t n;
         for (n = 4; n<NDim - 1; n++)
         {
-            dimR[n] = (*dims)[n + 1];
+            dimR[n] = dims[n + 1];
         }
 
         if (!y.dimensions_equal(&dimR))
         {
-            y.create(&dimR);
+            y.create(dimR);
         }
 
         size_t num = x.get_number_of_elements() / (RO*E1*E2*W*CHA);
@@ -463,7 +463,7 @@ void hoWavelet2DTOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumul
 
         if (!y->dimensions_equal(&dimR))
         {
-            y->create(&dimR);
+            y->create(dimR);
         }
 
         // W'
@@ -645,7 +645,7 @@ void hoWavelet2DTOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres
 
         if (!mask_.dimensions_equal(&wavCoeff))
         {
-            mask_.create(wavCoeff.get_dimensions());
+            mask_.create(wavCoeff.dimensions());
         }
 
         Gadgetron::fill(mask_, T(thres));
@@ -678,27 +678,27 @@ void hoWavelet2DTOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<val
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dims = wavCoeff.get_dimensions();
+        auto dims = wavCoeff.dimensions();
 
-        std::vector<size_t> dimR(*dims);
+        auto dimR = dims;
         dimR[4] = 1;
 
         if (!wavCoeffNorm.dimensions_equal(&dimR))
         {
-            wavCoeffNorm.create(&dimR);
+            wavCoeffNorm.create(dimR);
         }
 
-        size_t RO = (*dims)[0];
-        size_t E1 = (*dims)[1];
-        size_t E2 = (*dims)[2];
-        size_t W = (*dims)[3];
-        size_t CHA = (*dims)[4];
+        size_t RO = dims[0];
+        size_t E1 = dims[1];
+        size_t E2 = dims[2];
+        size_t W = dims[3];
+        size_t CHA = dims[4];
 
         if (CHA > 1)
         {
             if (!complexIm_norm_.dimensions_equal(&wavCoeff))
             {
-                complexIm_norm_.create(wavCoeff.get_dimensions());
+                complexIm_norm_.create(wavCoeff.dimensions());
             }
 
             size_t n;
@@ -732,13 +732,13 @@ void hoWavelet2DTOperator<T>::shrink_wav_coeff(hoNDArray<T>& wavCoeff, const hoN
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dims = wavCoeff.get_dimensions();
+        auto dims = wavCoeff.dimensions();
 
-        long long RO = (long long)(*dims)[0];
-        long long E1 = (long long)(*dims)[1];
-        long long E2 = (long long)(*dims)[2];
-        long long W = (long long)(*dims)[3];
-        long long CHA = (long long)(*dims)[4];
+        long long RO = (long long)dims[0];
+        long long E1 = (long long)dims[1];
+        long long E2 = (long long)dims[2];
+        long long W = (long long)dims[3];
+        long long CHA = (long long)dims[4];
 
         T* pCoeff = wavCoeff.begin();
 
@@ -818,7 +818,7 @@ void hoWavelet2DTOperator<T>::divide_wav_coeff_by_norm(hoNDArray<T>& wavCoeff, c
 
         if (!wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm))
         {
-            wav_coeff_norm_approx_.create(wavCoeffNorm.get_dimensions());
+            wav_coeff_norm_approx_.create(wavCoeffNorm.dimensions());
         }
 
         long long ii;

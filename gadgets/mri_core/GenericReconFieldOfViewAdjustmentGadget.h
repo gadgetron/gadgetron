@@ -61,8 +61,7 @@ namespace Gadgetron {
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1);
 
-        // close call
-        int close(unsigned long flags);
+
 
         // adjust FOV
         int adjust_FOV(IsmrmrdImageArray& data);

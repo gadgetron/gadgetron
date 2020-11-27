@@ -15,10 +15,10 @@
 namespace Gadgetron {
 
     class EXPORTGADGETSMRICORE IsmrmrdDumpGadget :
-        public Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::ISMRMRD_WaveformHeader >
+        public Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::WaveformHeader >
     {
     public:
-        typedef Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::ISMRMRD_WaveformHeader > BaseClass;
+        typedef Gadgetron::Gadget1Of2<ISMRMRD::AcquisitionHeader, ISMRMRD::WaveformHeader > BaseClass;
 
         GADGET_DECLARE(IsmrmrdDumpGadget);
 
@@ -51,9 +51,9 @@ namespace Gadgetron {
         // TODO: remove this option
         GADGET_PROPERTY(pass_waveform_downstream, bool, "If true, waveform data is passed downstream", false);
 
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1);
-        virtual int process(GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1);
+        int process_config(ACE_Message_Block* mb) override;
+        int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1) override ;
+        int process(GadgetContainerMessage<ISMRMRD::WaveformHeader>* m1) override ;
 
     private:
 

@@ -40,9 +40,4 @@ include_directories(
 
 #add_subdirectory(MRI)
 add_subdirectory(denoising)
-#add_subdirectory(deblurring)
 add_subdirectory(registration)
-
-if(ISMRMRD_FOUND)
-  add_subdirectory(gtplus)
-endif()

@@ -78,7 +78,7 @@ int AsymmetricEchoAdjustROGadget
             data_out_dims[0] = maxRO_[encoding_ref];
             try
             {
-                m3->getObjectPtr()->create(&data_out_dims);
+                m3->getObjectPtr()->create(data_out_dims);
             }
             catch(...)
             {

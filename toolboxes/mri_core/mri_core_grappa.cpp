@@ -30,6 +30,7 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
+#include "ImageIOAnalyze.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -87,14 +88,15 @@ void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t& c
     return;
 }
 
-template <typename T> 
-void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& ker)
+// ------------------------------------------------------------------------
+
+template <typename T> EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& A_mem, hoNDArray<T>& B_mem)
 {
     try
     {
-        GADGET_CHECK_THROW(acsSrc.get_size(0)==acsDst.get_size(0));
-        GADGET_CHECK_THROW(acsSrc.get_size(1)==acsDst.get_size(1));
-        GADGET_CHECK_THROW(acsSrc.get_size(2)>=acsDst.get_size(2));
+        GADGET_CHECK_THROW(acsSrc.get_size(0) == acsDst.get_size(0));
+        GADGET_CHECK_THROW(acsSrc.get_size(1) == acsDst.get_size(1));
+        GADGET_CHECK_THROW(acsSrc.get_size(2) >= acsDst.get_size(2));
 
         size_t RO = acsSrc.get_size(0);
         size_t E1 = acsSrc.get_size(1);
@@ -104,18 +106,15 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
         const T* pSrc = acsSrc.begin();
         const T* pDst = acsDst.begin();
 
-        long long kROhalf = kRO/2;
-        if ( 2*kROhalf == kRO )
+        long long kROhalf = kRO / 2;
+        if (2 * kROhalf == kRO)
         {
-            GWARN_STREAM("grappa<T>::calib(...) - 2*kROhalf == kRO " << kRO);
+            GWARN_STREAM("grappa2d_prepare_calib(...) - 2*kROhalf == kRO " << kRO);
         }
-        kRO = 2*kROhalf + 1;
+        kRO = 2 * kROhalf + 1;
 
         size_t kNE1 = kE1.size();
         size_t oNE1 = oE1.size();
-
-        /// allocate kernel
-        ker.create(kRO, kNE1, srcCHA, dstCHA, oNE1);
 
         /// loop over the calibration region and assemble the equation
         /// Ax = b
@@ -123,32 +122,31 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
         size_t sRO = startRO + kROhalf;
         size_t eRO = endRO - kROhalf;
         size_t sE1 = std::abs(kE1[0]) + startE1;
-        size_t eE1 = endE1 - kE1[kNE1-1];
+        size_t eE1 = endE1 - kE1[kNE1 - 1];
 
         size_t lenRO = eRO - sRO + 1;
 
-        size_t rowA = (eE1-sE1+1)*lenRO;
-        size_t colA = kRO*kNE1*srcCHA;
-        size_t colB = dstCHA*oNE1;
+        size_t rowA = (eE1 - sE1 + 1)*lenRO;
+        size_t colA = kRO * kNE1*srcCHA;
+        size_t colB = dstCHA * oNE1;
 
         hoMatrix<T> A;
         hoMatrix<T> B;
-        hoMatrix<T> x( colA, colB );
 
-        hoNDArray<T> A_mem(rowA, colA);
-        A.createMatrix( rowA, colA, A_mem.begin() );
+        A_mem.create(rowA, colA);
+        A.createMatrix(rowA, colA, A_mem.begin());
         T* pA = A.begin();
 
-        hoNDArray<T> B_mem(rowA, colB);
-        B.createMatrix( A.rows(), colB, B_mem.begin() );
+        B_mem.create(rowA, colB);
+        B.createMatrix(A.rows(), colB, B_mem.begin());
         T* pB = B.begin();
 
         long long e1;
-        for ( e1=(long long)sE1; e1<=(long long)eE1; e1++ )
+        for (e1 = (long long)sE1; e1 <= (long long)eE1; e1++)
         {
-            for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
+            for (long long ro = sRO; ro <= (long long)eRO; ro++)
             {
-                long long rInd = (e1-sE1)*lenRO+ro-kROhalf;
+                long long rInd = (e1 - sE1)*lenRO + ro - kROhalf;
 
                 size_t src, dst, ke1, oe1;
                 long long kro;
@@ -156,15 +154,15 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
                 /// fill matrix A
                 size_t col = 0;
                 size_t offset = 0;
-                for ( src=0; src<srcCHA; src++ )
+                for (src = 0; src<srcCHA; src++)
                 {
-                    for ( ke1=0; ke1<kNE1; ke1++ )
+                    for (ke1 = 0; ke1<kNE1; ke1++)
                     {
-                        offset = src*RO*E1 + (e1+kE1[ke1])*RO;
-                        for ( kro=-kROhalf; kro<=kROhalf; kro++ )
+                        offset = src * RO*E1 + (e1 + kE1[ke1])*RO;
+                        for (kro = -kROhalf; kro <= kROhalf; kro++)
                         {
                             /// A(rInd, col++) = acsSrc(ro+kro, e1+kE1[ke1], src);
-                            pA[rInd + col*rowA] = pSrc[ro+kro+offset];
+                            pA[rInd + col * rowA] = pSrc[ro + kro + offset];
                             col++;
                         }
                     }
@@ -172,38 +170,332 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
 
                 /// fill matrix B
                 col = 0;
-                for ( oe1=0; oe1<oNE1; oe1++ )
+                for (oe1 = 0; oe1<oNE1; oe1++)
                 {
-                    for ( dst=0; dst<dstCHA; dst++ )
+                    for (dst = 0; dst<dstCHA; dst++)
                     {
-                        B(rInd, col++) = acsDst(ro, e1+oE1[oe1], dst);
+                        B(rInd, col++) = acsDst(ro, e1 + oE1[oe1], dst);
                     }
                 }
             }
         }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_prepare_calib(...) ... ");
+    }
+}
 
-        SolveLinearSystem_Tikhonov(A, B, x, thres);
+template EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& A_mem, hoNDArray< std::complex<float> >& B_mem);
+template EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& A_mem, hoNDArray< std::complex<double> >& B_mem);
+
+// ------------------------------------------------------------------------
+
+template <typename T> EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray<T>& A, const hoNDArray<T>& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray<T>& ker)
+{
+    try
+    {
+        size_t M = A.get_size(0);
+        size_t K = A.get_size(1);
+
+        size_t KB = B.get_size(1);
+
+        GADGET_CHECK_THROW(M == B.get_size(0));
+
+        long long kROhalf = kRO / 2;
+        if (2 * kROhalf == kRO)
+        {
+            GWARN_STREAM("grappa<T>::calib(...) - 2*kROhalf == kRO " << kRO);
+        }
+        kRO = 2 * kROhalf + 1;
+
+        size_t kNE1 = kE1.size();
+        size_t oNE1 = oE1.size();
+
+        size_t srcCHA = K / (kRO*kNE1);
+        size_t dstCHA = KB / oNE1;
+
+        ker.create(kRO, kNE1, srcCHA, dstCHA, oNE1);
+
+        hoNDArray<T> x;
+        x.create(K, KB);
+
+        SolveLinearSystem_Tikhonov( const_cast< hoNDArray<T>& >(A), const_cast< hoNDArray<T>& >(B), x, thres);
         memcpy(ker.begin(), x.begin(), ker.get_number_of_bytes());
 
-        for(size_t kk=0; kk>ker.get_number_of_elements(); kk++)
+        for (size_t kk = 0; kk>ker.get_number_of_elements(); kk++)
         {
-            if(std::isnan(ker(kk).real()) || std::isnan(ker(kk).imag()))
+            if (std::isnan(ker(kk).real()) || std::isnan(ker(kk).imag()))
             {
-                GERROR_STREAM("nan detected in grappa2d_calib ker ... ");
+                GERROR_STREAM("nan detected in grappa2d_perform_calib ker ... ");
                 throw;
             }
         }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_perform_calib(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray< std::complex<float> >& ker);
+template EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray< std::complex<double> >& ker);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& ker)
+{
+    try
+    {
+        GADGET_CHECK_THROW(acsSrc.get_size(0)==acsDst.get_size(0));
+        GADGET_CHECK_THROW(acsSrc.get_size(1)==acsDst.get_size(1));
+        GADGET_CHECK_THROW(acsSrc.get_size(2)>=acsDst.get_size(2));
+
+        hoNDArray<T> A, B;
+        Gadgetron::grappa2d_prepare_calib(acsSrc, acsDst, kRO, kE1, oE1, startRO, endRO, startE1, endE1, A, B);
+        Gadgetron::grappa2d_perform_calib(A, B, kRO, kE1, oE1, thres, ker);
     }
     catch(...)
     {
         GADGET_THROW("Errors in grappa2d_calib(...) ... ");
     }
-
-    return;
 }
 
 template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& ker);
 template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& ker);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_prepare_recon(const hoNDArray<T>& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray<T>& A, hoNDArray<unsigned short>& AInd)
+{
+    try
+    {
+        typedef typename realType<T>::Type value_type;
+
+        size_t RO = kspace.get_size(0);
+        size_t E1 = kspace.get_size(1);
+        size_t srcCHA = kspace.get_size(2);
+
+        size_t kNE1 = kE1.size();
+        size_t oNE1 = oE1.size();
+
+        long long kROhalf = kRO / 2;
+        if (2 * kROhalf == kRO)
+        {
+            GWARN_STREAM("grappa2d_prepare_recon(...) - 2*kROhalf == kRO " << kRO);
+        }
+        kRO = 2 * kROhalf + 1;
+
+        size_t R = (size_t)(kE1[1] - kE1[0]);
+
+        long long kro;
+        size_t ro, e1, src, ke1;
+
+        // first first sampled line along E1
+        size_t startE1 = E1, endE1 = 0;
+        for (e1 = 0; e1 < E1; e1++)
+        {
+            value_type v = std::abs(kspace(RO / 2, e1));
+
+            if(v>0)
+            {
+                if (e1<startE1) startE1 = e1;
+                if (e1>endE1) endE1 = e1;
+            }
+        }
+
+        size_t startRO = RO, endRO = 0;
+        for (ro = 0; ro < RO; ro++)
+        {
+            value_type v1 = std::abs(kspace(ro, startE1));
+            value_type v2 = std::abs(kspace(ro, endE1));
+
+            if (v1>0 || v2>0)
+            {
+                if (ro<startRO) startRO = ro;
+                if (ro>endRO) endRO = ro;
+            }
+        }
+
+        // start with first sampled line, assemble the data matrix
+        size_t num_E1 = 0;
+        for (e1 = startE1; e1 <= endE1; e1 += R) num_E1++;
+
+        size_t rowA = num_E1 * (endRO-startRO+1); // for every position in the valid kspace loc
+        size_t colA = kRO * kNE1 * srcCHA; // for every position in the valid kspace loc
+
+        A.create(rowA, colA);
+        AInd.create(rowA, 2);
+
+        num_E1 = 0;
+        for (e1 = startE1; e1 <= endE1; e1 += R)
+        {
+            for (ro=startRO; ro<=endRO; ro++)
+            {
+                size_t row = num_E1 * (endRO - startRO + 1) + (ro-startRO);
+
+                size_t col = 0;
+                // loop over srcCHA
+                for (src = 0; src<srcCHA; src++)
+                {
+                    if (periodic_boundary_condition)
+                    {
+                        for (ke1 = 0; ke1 < kNE1; ke1++)
+                        {
+                            long long src_e1 = e1 + kE1[ke1];
+                            if (src_e1 < 0) src_e1 += E1;
+                            if (src_e1 >= E1) src_e1 -= E1;
+
+                            for (kro = -kROhalf; kro <= kROhalf; kro++)
+                            {
+                                long long src_ro = ro + kro;
+                                if (src_ro < 0) src_ro += RO;
+                                if (src_ro >= RO) src_ro -= RO;
+
+                                A(row, col) = kspace(src_ro, src_e1, src);
+                                col++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (ke1 = 0; ke1 < kNE1; ke1++)
+                        {
+                            long long src_e1 = e1 + kE1[ke1];
+
+                            for (kro = -kROhalf; kro <= kROhalf; kro++)
+                            {
+                                long long src_ro = ro + kro;
+
+                                if ( (src_e1 < 0) || (src_e1 >= E1) || (src_ro < 0) || (src_ro >= RO) )
+                                {
+                                    A(row, col) = 0;
+                                }
+                                else
+                                {
+                                    A(row, col) = kspace(src_ro, src_e1, src);
+                                }
+
+                                col++;
+                            }
+                        }
+                    }
+                }
+
+                AInd(row, 0) = ro;
+                AInd(row, 1) = e1;
+            }
+
+            num_E1++;
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_prepare_recon(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_prepare_recon(const hoNDArray< std::complex<float> >& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<float> >& A, hoNDArray<unsigned short>& AInd);
+template EXPORTMRICORE void grappa2d_prepare_recon(const hoNDArray< std::complex<double> >& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<double> >& A, hoNDArray<unsigned short>& AInd);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_perform_recon(const hoNDArray<T>& A, const hoNDArray<T>& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray<T>& res)
+{
+    try
+    {
+        size_t M = A.get_size(0);
+        size_t K = A.get_size(1);
+
+        size_t KB = ker.get_number_of_elements() / K;
+
+        hoNDArray<T> x;
+        x.create(K, KB, const_cast<T*>(ker.begin()));
+
+        hoNDArray<T> recon;
+        Gadgetron::gemm(recon, A, false, x, false);
+
+        Gadgetron::grappa2d_fill_reconed_kspace(AInd, recon, oE1, RO, E1, res);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_perform_recon(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
+template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray<T>& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray<T>& res)
+{
+    try
+    {
+        size_t M = recon.get_size(0);
+        size_t KB = recon.get_size(1);
+
+        // for every row in data matrix, assign the recon data back to kspace
+        size_t oNE1 = oE1.size();
+        size_t dstCHA = KB / oNE1;
+
+        if (res.get_size(0) != RO || res.get_size(1) != E1 || res.get_size(2) != dstCHA)
+        {
+            res.create(RO, E1, dstCHA);
+            Gadgetron::clear(res);
+        }
+
+        size_t r, c, ro, e1, dst, oe1, de1;
+        for (r = 0; r < M; r++)
+        {
+            ro = AInd(r, 0);
+            e1 = AInd(r, 1);
+
+            for (oe1 = 0; oe1<oNE1; oe1++)
+            {
+                de1 = e1 + oE1[oe1];
+                if (de1 > E1) de1 -= E1;
+
+                for (dst = 0; dst<dstCHA; dst++)
+                {
+                    res(ro, de1, dst) = recon(r, dst + oe1 * dstCHA);
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_fill_reconed_kspace(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<float> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
+template EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<double> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_recon(const hoNDArray<T>& kspace, const hoNDArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray<T>& res)
+{
+    try
+    {
+        hoNDArray<T> A;
+        hoNDArray<unsigned short> AInd;
+        Gadgetron::grappa2d_prepare_recon(kspace, kRO, kE1, oE1, periodic_boundary_condition, A, AInd);
+        Gadgetron::grappa2d_perform_recon(A, ker, AInd, oE1, kspace.get_size(0), kspace.get_size(1), res);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_recon(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_recon(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<float> >& res);
+template EXPORTMRICORE void grappa2d_recon(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<double> >& res);
 
 // ------------------------------------------------------------------------
 
@@ -284,8 +576,6 @@ template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArr
 template <typename T>
 void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& convKer)
 {
-    try
-    {
         std::vector<int> kE1, oE1;
 
         bool fitItself = false;
@@ -299,14 +589,6 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
         grappa2d_calib(acsSrc, acsDst, thres, kRO, kE1, oE1, startRO, endRO, startE1, endE1, ker);
 
         grappa2d_convert_to_convolution_kernel(ker, kRO, kE1, oE1, convKer);
-
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in grappa2d_calib_convolution_kernel(...) ... ");
-    }
-
-    return;
 }
 
 template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer);
@@ -452,19 +734,19 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
 
 #pragma omp parallel default(none) private(src) shared(RO, E1, srcCHA, dstCHA, pKerIm, pCoilMap, pCoeff, dim)
         {
-            hoNDArray<T> coeff2D, coeffTmp(&dim);
+            hoNDArray<T> coeff2D, coeffTmp(dim);
             hoNDArray<T> coilMap2D;
             hoNDArray<T> kerIm2D;
 
 #pragma omp for
             for (src = 0; src<(int)srcCHA; src++)
             {
-                coeff2D.create(&dim, pCoeff + src*RO*E1);
+                coeff2D.create(dim, pCoeff + src*RO*E1);
 
                 for (size_t dst = 0; dst<dstCHA; dst++)
                 {
-                    kerIm2D.create(&dim, pKerIm + src*RO*E1 + dst*RO*E1*srcCHA);
-                    coilMap2D.create(&dim, pCoilMap + dst*RO*E1);
+                    kerIm2D.create(dim, pKerIm + src*RO*E1 + dst*RO*E1*srcCHA);
+                    coilMap2D.create(dim, pCoilMap + dst*RO*E1);
                     Gadgetron::multiplyConj(kerIm2D, coilMap2D, coeffTmp);
                     Gadgetron::add(coeff2D, coeffTmp, coeff2D);
                 }
@@ -536,7 +818,7 @@ void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedI
 
         if (!complexIm.dimensions_equal(&dimIm))
         {
-            complexIm.create(&dimIm);
+            complexIm.create(dimIm);
         }
 
         size_t num = aliasedIm.get_number_of_elements() / (RO*E1*srcCHA);
@@ -597,7 +879,7 @@ void apply_unmix_coeff_kspace(const hoNDArray<T>& kspace, const hoNDArray<T>& un
 
         if (!complexIm.dimensions_equal(&dim))
         {
-            complexIm.create(&dim);
+            complexIm.create(dim);
         }
 
         Gadgetron::multiply(buffer2DT, unmixCoeff, buffer2DT);
@@ -629,7 +911,7 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
 
         if (!complexIm.dimensions_equal(&dim))
         {
-            complexIm.create(&dim);
+            complexIm.create(dim);
         }
 
         hoNDArray<T> buffer2DT(aliasedIm);
@@ -1148,7 +1430,7 @@ void grappa3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
             hoNDArray<T> kImRes(RO, E1, E2);
 
     #pragma omp for 
-            for (n = 0; n < (long long)srcCHA*dstCHA; n++)
+            for (n = 0; n < (long long)(srcCHA*dstCHA); n++)
             {
                 long long d = n / srcCHA;
                 long long s = n - d*srcCHA;

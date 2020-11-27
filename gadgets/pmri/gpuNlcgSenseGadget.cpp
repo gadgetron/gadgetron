@@ -57,7 +57,6 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    pass_on_undesired_data_ = pass_on_undesired_data.value();
     set_number_ = setno.value();
     slice_number_ = sliceno.value();
 

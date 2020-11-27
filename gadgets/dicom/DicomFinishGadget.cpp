@@ -33,10 +33,7 @@ namespace Gadgetron {
 
     int DicomFinishGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1)
     {
-        if (!this->controller_) {
-            GERROR("Cannot return result to controller, no controller set");
-            return GADGET_FAIL;
-        }
+
 
         // --------------------------------------------------
         ISMRMRD::ImageHeader *img = m1->getObjectPtr();

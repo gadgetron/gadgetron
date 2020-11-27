@@ -229,13 +229,13 @@ solve(const Array_Type& b, Array_Type& x)
 
                 if (!proximal_WATb.dimensions_equal(&WATb))
                 {
-                    proximal_WATb.create(WATb.get_dimensions());
+                    proximal_WATb.create(WATb.dimensions());
                     Gadgetron::clear(proximal_WATb);
                 }
 
                 if (!proximal_WTATb.dimensions_equal(&WATb))
                 {
-                    proximal_WTATb.create(WATb.get_dimensions());
+                    proximal_WTATb.create(WATb.dimensions());
                     Gadgetron::clear(proximal_WTATb);
                 }
 

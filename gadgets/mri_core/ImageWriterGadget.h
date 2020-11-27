@@ -27,7 +27,7 @@ namespace Gadgetron{
   };
   
   class EXPORTGADGETSMRICORE ImageWriterGadgetUSHORT :
-  public ImageWriterGadget<ACE_UINT16>
+  public ImageWriterGadget<uint16_t >
   {
   public:
     GADGET_DECLARE(ImageWriterGadgetUSHORT)

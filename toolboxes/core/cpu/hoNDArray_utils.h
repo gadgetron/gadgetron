@@ -1,19 +1,30 @@
 #pragma once
 
 #include <boost/make_shared.hpp>
+#include <boost/range/combine.hpp>
 #include <numeric>
 #include "hoNDArray.h"
+#include "hoNDArray_iterators.h"
 #include "vector_td_utilities.h"
 
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <boost/range/adaptor/strided.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
+#include <range/v3/action.hpp>
 
 #ifdef USE_OMP
 #include <omp.h>
 #endif
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
 
 namespace Gadgetron {
-
   class ArrayIterator
   {
   public:
@@ -45,11 +56,11 @@ namespace Gadgetron {
       current_idx_ = 0;
       for (size_t i = 0; i < dimensions_.size(); i++) {
         current_idx_ += current_[i]*block_sizes_[i];
-      }	
+      }
       return current_idx_;
     }
 
-    inline size_t get_current_idx() {
+    inline size_t get_current_idx() const {
       return current_idx_;
     }
 
@@ -90,12 +101,12 @@ namespace Gadgetron {
     std::vector<size_t> dims;
     for (size_t i = 0; i < dim_order.size(); i++)
       dims.push_back(in.get_dimensions()->at(dim_order[i]));
-    hoNDArray<T> out(&dims);
+    hoNDArray<T> out(dims);
     permute( in, out, dim_order);
     return out;
   }
 
-  template<class T> void 
+  template<class T> void
   permute(const  hoNDArray<T>& in, hoNDArray<T>& out, const std::vector<size_t>& dim_order)
   {
 
@@ -243,7 +254,7 @@ namespace Gadgetron {
               if (i != dim) dims.push_back(in.get_size(i));
           }
 
-          auto  out = hoNDArray<T>(&dims);
+          auto  out = hoNDArray<T>(dims);
           auto orig_dims = *in.get_dimensions();
           auto stride = std::accumulate(orig_dims.begin(),orig_dims.begin()+dim,1,std::multiplies<size_t>());
 
@@ -339,7 +350,7 @@ namespace Gadgetron {
       {
           std::vector<size_t> ind;
 
-      #pragma omp for 
+      #pragma omp for
           for (k = 0; k < (long long)num; k++){
               ind = out.calculate_index(k*len);
               for (unsigned int d = 0; d < D; d++){
@@ -526,7 +537,7 @@ namespace Gadgetron {
   {
       std::vector<size_t> dim;
       src.get_dimensions(dim);
- 
+
       vector_td<size_t, D> offset_src, size;
 
       if (dim.size() < D)
@@ -620,7 +631,7 @@ namespace Gadgetron {
       {
           std::vector<size_t> ind;
 
-#pragma omp for 
+#pragma omp for
           for (k = 0; k < (long long)num; k++){
               ind = in.calculate_index(k*len);
               for (d = 0; d < D; d++){
@@ -674,7 +685,7 @@ namespace Gadgetron {
   }
 
   /// copy the sub array x(:, indLastDim) to all other places of the last dimensions
-  template<typename T> 
+  template<typename T>
   bool repmatLastDimension(hoNDArray<T>& x, size_t indLastDim)
   {
     try
@@ -727,54 +738,54 @@ namespace Gadgetron {
   }
 
   // Downsample
-  template<class REAL, unsigned int D> 
+  template<class REAL, unsigned int D>
    hoNDArray<REAL>  downsample(const  hoNDArray<REAL>& _in )
   {
-    // A few sanity checks 
+    // A few sanity checks
     if( _in.get_number_of_dimensions() < D ){
       throw std::runtime_error( "downsample(): the number of array dimensions should be at least D");
     }
-    
+
     for( size_t d=0; d<D; d++ ){
       if( (_in.get_size(d)%2) == 1 && _in.get_size(d) != 1 ){
 	throw std::runtime_error( "downsample(): uneven array dimensions larger than one not accepted");
       }
     }
-    
+
     typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( size_t d=0; d<D; d++ ){
-      if( matrix_size_out[d] == 0 ) 
+      if( matrix_size_out[d] == 0 )
 	matrix_size_out[d] = 1;
     }
-  
+
     size_t num_elements = prod(matrix_size_out);
     size_t num_batches = 1;
 
     for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
       num_batches *= _in.get_size(d);
     }
-  
+
     std::vector<size_t> dims = to_std_vector(matrix_size_out);
     for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
       dims.push_back(_in.get_size(d));
     }
-  
+
     const REAL *in = _in.get_data_ptr();
 
-     hoNDArray<REAL>  _out( &dims );
+     hoNDArray<REAL>  _out( dims );
     REAL *out = _out.get_data_ptr();
-    
+
     typedef vector_td<size_t,D> uint64d;
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for( long long idx=0; idx < num_elements*num_batches; idx++ ){
+    for( int64_t idx=0; idx < num_elements*num_batches; idx++ ){
 
       const size_t frame_offset = idx/num_elements;
-      const uint64d co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const uint64d co_out = idx_to_co<uint64_t,D>( idx-frame_offset*num_elements, matrix_size_out );
       const uint64d co_in = co_out << 1;
       const uint64d twos(2);
       const size_t num_adds = 1 << D;
@@ -783,12 +794,12 @@ namespace Gadgetron {
       REAL res = REAL(0);
 
       for( size_t i=0; i<num_adds; i++ ){
-	const uint64d local_co = idx_to_co<D>( i, twos );
+	const uint64d local_co = idx_to_co( i, twos );
 	if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of size 1
-	const size_t in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
+	const size_t in_idx = co_to_idx(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
 	actual_adds++;
 	res += in[in_idx];
-      }    
+      }
       out[idx] = res/REAL(actual_adds);
     }
 
@@ -951,23 +962,116 @@ namespace Gadgetron {
       out_ptr[idx] = in_ptr[in_idx];
 	}
 
-
-
     return out;
   }
 
-
-
   template<class T> hoNDArray<T> repeat(const hoNDArray<T>& array,unsigned int repeats){
-      auto dims = *array.get_dimensions();
+      auto dims = array.dimensions();
       dims.push_back(repeats);
 
       hoNDArray<T> output(dims);
-      T* out_ptr = output.get_data_ptr();
 
-      for (int i =0; i < repeats; i++){
-          std::copy(array.begin(),array.end(),out_ptr+i*array.get_number_of_elements());
+      for (auto span : spans(output, array.get_number_of_dimensions())) {
+          span = array;
       }
+
       return output;
   }
+
+  /**
+   * This functions takes a collection of hoNDArrays and concatenates them along the specified dimension
+   * @tparam COLL Collection of hoNDArray such as std::vector<hoNDArray<float>>.
+   * @param arrays The hoNDArrays. Must be of equal size, except along the concat dimension
+   * @param dimension Dimension along which to concatenate
+   * @return The concatenated arrays.
+   */
+
+  template <class COLL> auto concat_along_dimension(const COLL& arrays, size_t dimension) {
+      using namespace ranges;
+      using T = std::decay_t<decltype(*std::begin(*std::begin(arrays)))>;
+      if (arrays.empty())
+          return hoNDArray<T>();
+
+      const hoNDArray<T>& first = *std::begin(arrays);
+      std::vector dims = first.dimensions();
+
+      size_t count = ranges::accumulate(arrays | view::transform([dimension](const auto& array) {
+                                            return array.dimensions().at(dimension);
+                                        }),
+                                        size_t(0));
+      dims[dimension] = count;
+
+      auto dimensions_valid = [&dims,dimension](const auto& array) {
+          bool result = true;
+          const auto& d = array.dimensions();
+          for (size_t i = 0; i < d.size(); i++) {
+              if (i == dimension)
+                  continue;
+              result &= d[i] == dims[i];
+          }
+          return result && (d.size() == dims.size());
+      };
+
+      bool all_dimensions_valid = ranges::accumulate(arrays | view::transform(dimensions_valid), true, std::logical_and() );
+      if (!all_dimensions_valid) throw std::runtime_error("The dimensions of all provided arrays must be equal except along the concatenate dimension");
+
+      auto result = hoNDArray<T>(dims);
+
+      const size_t inner_stride = ranges::accumulate(dims | views::slice(size_t(0), dimension),
+                                                     size_t(1), std::multiplies());
+      const size_t outer_stride = inner_stride * count;
+      size_t current_slice = 0;
+
+      for (const auto& array : arrays) {
+          size_t slice_count = array.dimensions()[dimension];
+          auto array_inner_stride = slice_count * inner_stride;
+          auto repetitions = array.size() / array_inner_stride;
+
+          for (int i = 0; i < repetitions; i++) {
+              std::copy_n(array.begin() + i * array_inner_stride, array_inner_stride,
+                          result.begin() + current_slice * inner_stride + outer_stride * i);
+          }
+          current_slice += slice_count;
+      }
+      return result;
+  }
+  template<class COLL>
+  auto concat(const COLL &arrays) {
+
+      using T = std::decay_t<decltype(*std::begin(*std::begin(arrays)))>;
+      if (arrays.empty()) return hoNDArray<T>();
+
+      const hoNDArray<T> &first = *std::begin(arrays);
+
+      auto dims = first.dimensions();
+      auto size = first.size();
+      using std::begin;
+      using std::end;
+
+      if (!std::all_of(begin(arrays), end(arrays), [&](const auto &array) { return dims == array.dimensions(); }) ||
+          !std::all_of(begin(arrays), end(arrays), [&](const auto &array) { return size == array.size(); })) {
+          throw std::runtime_error("Array size or dimensions do not match.");
+      }
+
+      dims.push_back(arrays.size());
+      hoNDArray<T> output(dims);
+
+      auto output_iterator = spans(output, first.get_number_of_dimensions()).begin();
+
+      for (const auto& array : arrays) {
+          *output_iterator = array;
+          ++output_iterator;
+      }
+
+      return output;
+  }
+
+  template<class T, class...  ARRAYS>
+  hoNDArray<T> concat(const hoNDArray<T>& first_array, const ARRAYS& ... arrays){
+
+      static_assert((std::is_same_v<hoNDArray<T>,std::decay_t<ARRAYS>> && ...));
+      using namespace ranges;
+      return concat(view::concat(view::single(first_array),view::single(arrays)...));
+  }
 }
+

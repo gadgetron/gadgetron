@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "IsmrmrdDumpGadget.h"
 #include <iomanip>
 #include <boost/filesystem.hpp>
@@ -331,7 +330,7 @@ namespace Gadgetron
         return 0;
     }
 
-    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1)
+    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::WaveformHeader>* m1)
     {
         if (first_call_)
         {

@@ -112,14 +112,14 @@ void ho3DArray<T>::create(std::vector<size_t>& dimensions)
 template <typename T> 
 void ho3DArray<T>::create(std::vector<size_t> *dimensions)
 {
-    BaseClass::create(dimensions);
+    BaseClass::create(*dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
 void ho3DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
 {
-    BaseClass::create(dimensions, data, delete_data_on_destruct);
+    BaseClass::create(*dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
 }
 

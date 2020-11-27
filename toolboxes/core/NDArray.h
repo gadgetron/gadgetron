@@ -2,8 +2,6 @@
 \brief Abstract base class for all Gadgetron host and device arrays
 */
 
-#ifndef NDARRAY_H
-#define NDARRAY_H
 #pragma once
 
 #include "GadgetronException.h"
@@ -15,10 +13,13 @@
 #include <stdexcept>
 #include <array>
 #include <algorithm>
+#include <stdint.h>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/cast.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <numeric>
+#include "TypeTraits.h"
 
 namespace Gadgetron{
 
@@ -48,7 +49,19 @@ namespace Gadgetron{
         void reshape(const std::vector<size_t> *dims);
         void reshape(const std::vector<size_t> & dims){ this->reshape(&dims);}
         void reshape(boost::shared_ptr< std::vector<size_t> > dims);
-        void reshape(std::initializer_list<size_t> dims){ this->reshape(std::vector<size_t>(dims));}
+
+        /**
+         * Reshapes the array to the given dimensions.
+         * One of the dimensions can be -1, in which case that dimension will be calculated based on the other.
+         * @param dims
+         */
+        void reshape(std::initializer_list<std::int64_t> dims);
+
+        template<class... INDICES>
+        std::enable_if_t<Core::all_of_v<std::is_integral_v<INDICES>...>> reshape(INDICES ... ind) {
+            //static_assert(std::is_integral_v<INDICES> && ...);
+            this->reshape(std::initializer_list<std::int64_t>{std::int64_t(ind)...});
+        }
 
         bool dimensions_equal(const std::vector<size_t> *d) const;
         bool dimensions_equal(const std::vector<size_t>& d) const;
@@ -76,10 +89,18 @@ namespace Gadgetron{
         boost::shared_ptr< std::vector<size_t> > get_dimensions() const;
         void get_dimensions(std::vector<size_t>& dim) const;
 
+        std::vector<size_t> const &dimensions() const;
+
         const T* get_data_ptr() const;
         T* get_data_ptr();
 
+        const T* data() const;
+        T* data();
+
+        size_t size() const;
         size_t get_number_of_elements() const;
+
+        bool empty() const;
 
         size_t get_number_of_bytes() const;
 
@@ -113,35 +134,7 @@ namespace Gadgetron{
 
         void clear();
 
-        T& operator()( const std::vector<size_t>& ind );
-        const T& operator()( const std::vector<size_t>& ind ) const;
-
-        T& operator()( size_t x );
-        const T& operator()( size_t x ) const;
-
-        T& operator()( size_t x, size_t y );
-        const T& operator()( size_t x, size_t y ) const;
-
-        T& operator()( size_t x, size_t y, size_t z );
-        const T& operator()( size_t x, size_t y, size_t z ) const;
-
-        T& operator()( size_t x, size_t y, size_t z, size_t s );
-        const T& operator()( size_t x, size_t y, size_t z, size_t s ) const;
-
-        T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p );
-        const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p ) const;
-
-        T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r );
-        const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r ) const;
-
-        T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a );
-        const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a ) const;
-
-        T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q );
-        const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q ) const;
-
-        T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u );
-        const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
+    
 
         /// whether a point is within the array range
         bool point_in_range(const std::vector<size_t>& ind) const;
@@ -257,6 +250,21 @@ namespace Gadgetron{
         this->calculate_offset_factors(dimensions_);
     }
 
+    template <typename T> void NDArray<T>::reshape(std::initializer_list<std::int64_t> dims) {
+        std::vector<std::int64_t> dim_vec(dims);
+        auto negatives = std::count(dims.begin(), dims.end(), -1);
+        if (negatives > 1)
+            throw std::runtime_error("Only a single reshape dimension can be negative");
+
+        if (negatives == 1) {
+            auto elements    = std::accumulate(dims.begin(), dims.end(), -1, std::multiplies<std::int64_t>());
+            auto neg_element = std::find(dim_vec.begin(), dim_vec.end(), -1);
+            *neg_element     = this->elements_ / elements;
+        }
+
+        auto new_dims = std::vector<size_t>(dim_vec.begin(), dim_vec.end());
+        this->reshape(new_dims);
+    }
     template <typename T> 
     inline void NDArray<T>::reshape( boost::shared_ptr< std::vector<size_t> > dims )
     {
@@ -314,6 +322,12 @@ namespace Gadgetron{
         dim = dimensions_;
     }
 
+    template<class T>
+    inline std::vector<size_t> const &NDArray<T>::dimensions() const {
+        return dimensions_;
+    }
+
+
     template <typename T> 
     inline const T* NDArray<T>::get_data_ptr() const
     { 
@@ -325,10 +339,34 @@ namespace Gadgetron{
         return data_;
     }
 
-    template <typename T> 
-    inline size_t NDArray<T>::get_number_of_elements() const
+    template <typename T>
+    const T* NDArray<T>::data() const
+    {
+        return data_;
+    }
+
+    template <typename T>
+    T* NDArray<T>::data()
+    {
+        return data_;
+    }
+
+
+    template<class T>
+    inline size_t NDArray<T>::size() const
     {
         return elements_;
+    }
+
+    template<class T>
+    inline bool NDArray<T>::empty() const
+    {
+        return elements_ == 0;
+    }
+
+    template <class T>
+    inline size_t NDArray<T>::get_number_of_elements() const {
+        return size();
     }
 
     template <typename T> 
@@ -541,163 +579,6 @@ namespace Gadgetron{
         this->dimensions_.clear();
     }
 
-    template <typename T> 
-    inline T& NDArray<T>::operator()( const std::vector<size_t>& ind )
-    {
-        size_t idx = this->calculate_offset(ind);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( const std::vector<size_t>& ind ) const
-    {
-        size_t idx = this->calculate_offset(ind);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x )
-    {
-        GADGET_DEBUG_CHECK_THROW(x < this->get_number_of_elements());
-        return this->data_[x];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x ) const
-    {
-        GADGET_DEBUG_CHECK_THROW(x < this->get_number_of_elements());
-        return this->data_[x];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y )
-    {
-        size_t idx = this->calculate_offset(x, y);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y ) const
-    {
-        size_t idx = this->calculate_offset(x, y);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z )
-    {
-        size_t idx = this->calculate_offset(x, y, z);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s )
-    {
-        size_t idx = this->calculate_offset(x, y, z, s);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z, s);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p )
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r )
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a )
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r, a);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r, a);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q )
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u )
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q, u);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const
-    {
-        size_t idx = this->calculate_offset(x, y, z, s, p, r, a, q, u);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(const std::vector<size_t>& ind) const
@@ -779,6 +660,9 @@ namespace Gadgetron{
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==9);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]) && (p<dimensions_[4]) && (r<dimensions_[5]) && (a<dimensions_[6]) && (q<dimensions_[7]) && (u<dimensions_[8]));
     }
+
+
+
+
 }
 
-#endif //NDARRAY_H

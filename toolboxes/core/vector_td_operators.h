@@ -63,7 +63,7 @@ namespace Gadgetron{
   }
 
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   void operator*= ( vector_td<T,D> &v1, const R &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2;
@@ -93,7 +93,7 @@ namespace Gadgetron{
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] /= v2.vec[i];
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator+ ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -101,7 +101,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T,class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T,class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator+ ( const vector_td<T,D> &v1, const R &v2 )
   {
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -109,7 +109,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T,class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T,class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator- ( const vector_td<T,D> &v1, const R &v2 )
   {
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -117,13 +117,13 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator+ (const R &v2, const vector_td<T,D> &v1 )
   {
     return v1+v2;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator- ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -131,7 +131,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   vector_td<T,D> operator- ( const vector_td<T,D> &v1)
   {
     vector_td<T,D> res;
@@ -139,7 +139,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> component_wise_mul ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -155,7 +155,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator* ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   {
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -163,7 +163,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator* ( const vector_td<T,D> &v1, const R &v2 )
   { 
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -171,13 +171,13 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator* ( const R &v1, const vector_td<T,D> &v2 )
   { 
     return v2*v1;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator/ ( const vector_td<T,D> &v1, const R &v2 )
   {
     vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -185,7 +185,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> operator/ ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   {
     vector_td<typename vectorTDReturnType<T,R>::type,D> res = v1;
@@ -193,7 +193,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   vector_td<typename vectorTDReturnType<T,R>::type,D> component_wise_div ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     return v1/v2;
@@ -203,35 +203,35 @@ namespace Gadgetron{
   // "Strong" comparison operators
   //
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   bool operator== ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
     for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] == v2.vec[i])) return false;
     return true;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   bool operator!= ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
     for(unsigned int i=0; i<D; i++ ) if((v1.vec[i] != v2.vec[i])) return true;
     return false;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   bool operator&& ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
     for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] && v2.vec[i])) return false;
     return true;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   bool operator|| ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
     for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] || v2.vec[i])) return false;
     return true;
   }
 
-  template< class T,class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T,class R, unsigned int D > __inline__ __host__ __device__
   bool operator< ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] < v2.vec[i])) return false;
@@ -245,14 +245,14 @@ namespace Gadgetron{
     return true;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool operator> ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] > v2.vec[i])) return false;
     return true;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool operator>= ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] >= v2.vec[i])) return false;
@@ -263,7 +263,7 @@ namespace Gadgetron{
   // "Weak" comparison "operators"
   //
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool weak_equal ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(v1.vec[i] == v2.vec[i]) return true;
@@ -284,21 +284,21 @@ namespace Gadgetron{
     return false;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool weak_or ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(v1.vec[i] || v2.vec[i]) return true;
     return false;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool weak_less ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(v1.vec[i] < v2.vec[i]) return true;
     return false;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool weak_less_equal ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(v1.vec[i] <= v2.vec[i]) return true;
@@ -312,7 +312,7 @@ namespace Gadgetron{
     return false;
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, class R, unsigned int D > __inline__ __host__ __device__
   bool weak_greater_equal ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
   { 
     for(unsigned int i=0; i<D; i++ ) if(v1.vec[i] >= v2.vec[i]) return true;
@@ -391,19 +391,19 @@ namespace Gadgetron{
   // Integer only operators
   //
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   void operator<<= ( vector_td<T,D> &v1, size_t shifts ) 
   { 
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] <<= shifts;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   void operator>>= ( vector_td<T,D> &v1, size_t shifts ) 
   { 
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] >>= shifts;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   vector_td<T,D> operator<< ( const vector_td<T,D> &v1, size_t shifts ) 
   { 
     vector_td<T,D> res = v1;
@@ -411,7 +411,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   vector_td<T,D> operator>> ( const vector_td<T,D> &v1, size_t shifts ) 
   { 
     vector_td<T,D> res = v1;
@@ -419,13 +419,13 @@ namespace Gadgetron{
     return res;
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   void operator%= ( vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] %= v2.vec[i];
   }
 
-  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  template< class T, unsigned int D > __inline__ __host__ __device__
   vector_td<T,D> operator% ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
     vector_td<T,D> res = v1;

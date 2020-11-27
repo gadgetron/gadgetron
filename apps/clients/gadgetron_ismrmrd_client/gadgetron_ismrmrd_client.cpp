@@ -17,9 +17,6 @@
 
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/dataset.h>
@@ -27,11 +24,9 @@
 #include <ismrmrd/xml.h>
 #include <ismrmrd/waveform.h>
 
-#include <fstream>
 #include <streambuf>
 #include <time.h>
 #include <iomanip>
-#include <sstream>
 #include <iostream>
 #include <exception>
 #include <map>
@@ -40,7 +35,7 @@
 #include <condition_variable>
 
 #include "NHLBICompression.h"
-#include "log.h"
+#include "GadgetronTimer.h"
 
 #if defined GADGETRON_COMPRESSION_ZFP
 #include "zfp/zfp.h"
@@ -198,6 +193,8 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_PARAMETER_SCRIPT                       =   3,
     GADGET_MESSAGE_CLOSE                                  =   4,
     GADGET_MESSAGE_TEXT                                   =   5,
+    GADGET_MESSAGE_QUERY                                  =   6,
+    GADGET_MESSAGE_RESPONSE                               =   7,
     GADGET_MESSAGE_INT_ID_MAX                             = 999,
     GADGET_MESSAGE_EXT_ID_MIN                             = 1000,
     GADGET_MESSAGE_ACQUISITION                            = 1001, /**< DEPRECATED */
@@ -227,7 +224,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
-boost::mutex mtx;
+std::mutex mtx;
 
 struct GadgetMessageIdentifier
 {
@@ -275,6 +272,24 @@ public:
     */
     virtual void read(tcp::socket* s) = 0;
 
+};
+
+class GadgetronClientResponseReader : public GadgetronClientMessageReader
+{
+    void read(tcp::socket *stream) override {
+
+        uint64_t correlation_id = 0;
+        uint64_t response_length = 0;
+
+        boost::asio::read(*stream, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
+        boost::asio::read(*stream, boost::asio::buffer(&response_length, sizeof(response_length)));
+
+        std::vector<char> response(response_length + 1,0);
+
+        boost::asio::read(*stream, boost::asio::buffer(response.data(),response_length));
+
+        std::cout << response.data() << std::endl;
+    }
 };
 
 class GadgetronClientTextReader : public GadgetronClientMessageReader
@@ -421,7 +436,7 @@ public:
 
                 {
                     mtx.lock();
-                    dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary 
+                    dataset_ = std::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary
                     mtx.unlock();
                 }
             }
@@ -494,7 +509,7 @@ public:
 protected:
     std::string group_name_;
     std::string file_name_;
-    boost::shared_ptr<ISMRMRD::Dataset> dataset_;
+    std::shared_ptr<ISMRMRD::Dataset> dataset_;
 };
 
 // ----------------------------------------------------------------
@@ -1075,6 +1090,7 @@ public:
         , timeout_ms_(10000)
         , uncompressed_bytes_sent_(0)
         , compressed_bytes_sent_(0)
+        , header_bytes_sent_(0)
     {
 
     }
@@ -1095,6 +1111,15 @@ public:
 
         return uncompressed_bytes_sent_/compressed_bytes_sent_;
     }
+
+    double get_bytes_transmitted()
+    {
+        if (compressed_bytes_sent_ <= 0) {
+            return header_bytes_sent_ + uncompressed_bytes_sent_;
+        } else {
+            return header_bytes_sent_ + compressed_bytes_sent_;
+        }
+    }
     
     void set_timeout(unsigned int t)
     {
@@ -1107,27 +1132,23 @@ public:
             throw GadgetronClientException("Unable to create socket.");
         }
 
-        GadgetMessageIdentifier id;
         while (socket_->is_open()) {
-      try {
-            boost::asio::read(*socket_, boost::asio::buffer(&id,sizeof(GadgetMessageIdentifier)));
+
+            GadgetMessageIdentifier id;
+            boost::asio::read(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
 
             if (id.id == GADGET_MESSAGE_CLOSE) {
-          break;
+                break;
             }
 
             GadgetronClientMessageReader* r = find_reader(id.id);
 
             if (!r) {
-          std::cout << "Message received with ID: " << id.id << std::endl;
-          throw GadgetronClientException("Unknown Message ID");
+                std::cout << "Message received with ID: " << id.id << std::endl;
+                throw GadgetronClientException("Unknown Message ID");
             } else {
-          r->read(socket_);
+                r->read(socket_);
             }
-      } catch (...) {
-        std::cout << "Input stream has terminated" << std::endl;
-        return;
-      }
         }
     }
 
@@ -1138,7 +1159,10 @@ public:
     void connect(std::string hostname, std::string port)
     {
         tcp::resolver resolver(io_service);
-        tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str());
+        // numeric_service flag is required to send data if the Linux machine has no internet connection (in this case the loopback device is the only network device with an address).
+        // https://stackoverflow.com/questions/5971242/how-does-boost-asios-hostname-resolution-work-on-linux-is-it-possible-to-use-n
+        // https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/ip__basic_resolver_query.html
+        tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str(), boost::asio::ip::resolver_query_base::numeric_service);
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         tcp::resolver::iterator end;
 
@@ -1173,7 +1197,7 @@ public:
         if (error)
             throw GadgetronClientException("Error connecting using socket.");
 
-        reader_thread_ = boost::thread(boost::bind(&GadgetronClientConnector::read_task, this));
+        reader_thread_ = std::thread([&](){this->read_task();});
     }
 
     void send_gadgetron_close() { 
@@ -1182,7 +1206,23 @@ public:
         }
         GadgetMessageIdentifier id;
         id.id = GADGET_MESSAGE_CLOSE;    
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+    }
+
+    void send_gadgetron_info_query(const std::string &query, uint64_t correlation_id = 0) {
+        GadgetMessageIdentifier id{ 6 }; // 6 = QUERY; Deal with it.
+
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(id)));
+
+        uint64_t reserved = 0;
+
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&reserved, sizeof(reserved)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&correlation_id, sizeof(correlation_id)));
+
+        uint64_t query_length = query.size();
+
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&query_length, sizeof(query_length)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(query));
     }
 
     void send_gadgetron_configuration_file(std::string config_xml_name) {
@@ -1198,8 +1238,8 @@ public:
         memset(&ini,0,sizeof(GadgetMessageConfigurationFile));
         strncpy(ini.configuration_file, config_xml_name.c_str(),config_xml_name.size());
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&ini, sizeof(GadgetMessageConfigurationFile)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&ini, sizeof(GadgetMessageConfigurationFile)));
 
     }
 
@@ -1213,12 +1253,11 @@ public:
         id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
 
         GadgetMessageScript conf;
-        conf.script_length = (uint32_t)xml_string.size()+1;
+        conf.script_length = (uint32_t)xml_string.size();
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
-        boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
-
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));
     }
 
     void  send_gadgetron_parameters(std::string xml_string)
@@ -1231,11 +1270,11 @@ public:
         id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;
 
         GadgetMessageScript conf;
-        conf.script_length = (uint32_t)xml_string.size()+1;
+        conf.script_length = (uint32_t)xml_string.size();
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
-        boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));
     }
 
     void send_ismrmrd_acquisition(ISMRMRD::Acquisition& acq) 
@@ -1247,19 +1286,19 @@ public:
         GadgetMessageIdentifier id;
         id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;;
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
         if (data_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getDataPtr()[0], 2*sizeof(float)*data_elements));
+            uncompressed_bytes_sent_ +=boost::asio::write(*socket_, boost::asio::buffer(&acq.getDataPtr()[0], 2*sizeof(float)*data_elements));
         }
     }
 
@@ -1276,14 +1315,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION2);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
@@ -1316,14 +1355,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION2);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
@@ -1363,14 +1402,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
@@ -1422,14 +1461,14 @@ public:
         ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
         h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1);
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
         float local_tolerance = compression_tolerance;
@@ -1482,23 +1521,23 @@ public:
         GadgetMessageIdentifier id;
         id.id = GADGET_MESSAGE_ISMRMRD_WAVEFORM;;
 
-        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&wav.head, sizeof(ISMRMRD::ISMRMRD_WaveformHeader)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(&wav.head, sizeof(ISMRMRD::ISMRMRD_WaveformHeader)));
 
         unsigned long data_elements = wav.head.channels*wav.head.number_of_samples;
 
         if (data_elements)
         {
-            boost::asio::write(*socket_, boost::asio::buffer(wav.begin_data(), sizeof(uint32_t)*data_elements));
+            header_bytes_sent_ += boost::asio::write(*socket_, boost::asio::buffer(wav.begin_data(), sizeof(uint32_t)*data_elements));
         }
     }
 
-    void register_reader(unsigned short slot, boost::shared_ptr<GadgetronClientMessageReader> r) {
+    void register_reader(unsigned short slot, std::shared_ptr<GadgetronClientMessageReader> r) {
         readers_[slot] = r;
     }
 
 protected:
-    typedef std::map<unsigned short, boost::shared_ptr<GadgetronClientMessageReader> > maptype;
+    typedef std::map<unsigned short, std::shared_ptr<GadgetronClientMessageReader> > maptype;
 
     GadgetronClientMessageReader* find_reader(unsigned short r)
     {
@@ -1515,9 +1554,10 @@ protected:
 
     boost::asio::io_service io_service;
     tcp::socket* socket_;
-    boost::thread reader_thread_;
+    std::thread reader_thread_;
     maptype readers_;
     unsigned int timeout_ms_;
+    double header_bytes_sent_;
     double uncompressed_bytes_sent_;
     double compressed_bytes_sent_;
 };
@@ -1527,7 +1567,7 @@ class GadgetronClientQueryToStringReader : public GadgetronClientMessageReader
 {
   
 public:
-  GadgetronClientQueryToStringReader(std::string* result) : result_(result)
+  GadgetronClientQueryToStringReader(std::string& result) : result_(result)
   {
     
   }
@@ -1545,35 +1585,17 @@ public:
     size_t_type len(0);
     boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
 
-    char* buf = NULL;
-    try {
-      buf = new char[len];
-      memset(buf, '\0', len);
-      memcpy(buf, &len, sizeof(size_t_type));
-    } catch (std::runtime_error &err) {
-      std::cerr << "DependencyQueryReader, failed to allocate buffer" << std::endl;
-      throw;
-    }
-    
-    
-    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    std::vector<char> temp(len,0);
+    if (boost::asio::read(*stream, boost::asio::buffer(temp.data(), len)) != len)
     {
-      delete [] buf;
-      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");
     }
+    result_ = std::string(temp.data(),len);
     
-    if (!result_) {
-      delete [] buf;
-      throw GadgetronClientException("Result pointer is NULL");  
-    }
-    
-    *result_ = std::string(buf);
-
-    delete[] buf;
   }
   
   protected:
-    std::string* result_;
+    std::string& result_;
 };
 
 
@@ -1584,7 +1606,7 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
     std::string result;
     NoiseStatistics stat;
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientQueryToStringReader(&result)));
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, std::make_shared<GadgetronClientQueryToStringReader>(result));
     
     std::string xml_config;
     
@@ -1692,6 +1714,7 @@ int main(int argc, char **argv)
     float compression_tolerance = 0.0;
     bool use_zfp_compression = false;
     bool verbose = false;
+    Gadgetron::GadgetronTimer timer(false);
 
     po::options_description desc("Allowed options");
 
@@ -1699,6 +1722,7 @@ int main(int argc, char **argv)
         ("help,h", "Produce help message")
         ("query,q", "Dependency query mode")
         ("verbose,v", "Verbose mode")
+        ("info,Q", po::value<std::string>(), "Query Gadgetron information")
         ("port,p", po::value<std::string>(&port)->default_value("9002"), "Port")
         ("address,a", po::value<std::string>(&host_name)->default_value("localhost"), "Address (hostname) of Gadgetron host")
         ("filename,f", po::value<std::string>(&in_filename), "Input file")
@@ -1726,14 +1750,14 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!vm.count("filename") && !vm.count("query")) {
+    if (!vm.count("filename") && !vm.count("query") && !vm.count("info")) {
         std::cout << std::endl << std::endl << "\tYou must supply a filename" << std::endl << std::endl;
         std::cout << desc << std::endl;
         return -1;
     }
 
-    if (vm.count("query")) {
-      open_input_file = false;
+    if (vm.count("query") || vm.count("info")) {
+        open_input_file = false;
     }
 
     if (vm.count("verbose")) {
@@ -1766,15 +1790,15 @@ int main(int argc, char **argv)
     // Add check to see if input file exists
 
     //Let's open the input file
-    boost::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset;
+    std::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset;
     std::string xml_config;
     if (open_input_file) {
-      ismrmrd_dataset = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(in_filename.c_str(), hdf5_in_group.c_str(), false));
+      ismrmrd_dataset = std::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(in_filename.c_str(), hdf5_in_group.c_str(), false));
       // Read the header
       ismrmrd_dataset->readHeader(xml_config);
     }
 
-    if (!vm.count("query")) {
+    if (!vm.count("query") && !vm.count("info")) {
       std::cout << "Gadgetron ISMRMRD client" << std::endl;
       std::cout << "  -- host            :      " << host_name << std::endl;
       std::cout << "  -- port            :      " << port << std::endl;
@@ -1789,7 +1813,7 @@ int main(int argc, char **argv)
 
     //Let's figure out if this measurement has dependencies
     NoiseStatistics noise_stats; noise_stats.status = false;
-    if (!vm.count("query")) {
+    if (!vm.count("query") && !vm.count("info")) {
         ISMRMRD::IsmrmrdHeader h;
         ISMRMRD::deserialize(xml_config.c_str(),h);
 
@@ -1840,22 +1864,28 @@ int main(int argc, char **argv)
 
     if ( out_fileformat == "hdr" )
     {
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
     }
     else
     {
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader(out_filename, hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader(out_filename, hdf5_out_group)));
     }
 
-    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
+    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));
-    con.register_reader(GADGET_MESSAGE_TEXT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));
+    con.register_reader(GADGET_MESSAGE_TEXT, std::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
+    con.register_reader(7, std::shared_ptr<GadgetronClientResponseReader>(new GadgetronClientResponseReader()));
 
     try
     {
+        timer.start();
         con.connect(host_name,port);
-        if (vm.count("config-local"))
+
+        if (vm.count("info")) {
+            con.send_gadgetron_info_query(vm["info"].as<std::string>());
+        }
+        else if (vm.count("config-local"))
         {
             con.send_gadgetron_configuration_script(config_xml_local);
         }
@@ -1896,12 +1926,12 @@ int main(int argc, char **argv)
             if(waveforms>0)
             {
                 {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    std::lock_guard<std::mutex> scoped_lock(mtx);
                     ismrmrd_dataset->readAcquisition(i, acq_tmp);
                 }
 
                 {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    std::lock_guard<std::mutex> scoped_lock(mtx);
                     ismrmrd_dataset->readWaveform(j, wav_tmp);
                 }
 
@@ -1925,7 +1955,7 @@ int main(int argc, char **argv)
 
                         if(j<waveforms)
                         {
-                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            std::lock_guard<std::mutex> scoped_lock(mtx);
                             ismrmrd_dataset->readWaveform(j, wav_tmp);
                         }
                         else
@@ -1947,7 +1977,7 @@ int main(int argc, char **argv)
 
                         if(i<acquisitions)
                         {
-                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            std::lock_guard<std::mutex> scoped_lock(mtx);
                             ismrmrd_dataset->readAcquisition(i, acq_tmp);
                         }
                         else
@@ -1963,7 +1993,7 @@ int main(int argc, char **argv)
                         for (uint32_t ia=i+1; ia<acquisitions; ia++)
                         {
                             {
-                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                std::lock_guard<std::mutex> scoped_lock(mtx);
                                 ismrmrd_dataset->readAcquisition(ia, acq_tmp);
                             }
 
@@ -1978,7 +2008,7 @@ int main(int argc, char **argv)
                         for (uint32_t iw = j + 1; iw<waveforms; iw++)
                         {
                             {
-                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                std::lock_guard<std::mutex> scoped_lock(mtx);
                                 ismrmrd_dataset->readWaveform(iw, wav_tmp);
                             }
 
@@ -1992,7 +2022,7 @@ int main(int argc, char **argv)
                 for (i=0; i<acquisitions; i++)
                 {
                     {
-                        boost::mutex::scoped_lock scoped_lock(mtx);
+                        std::lock_guard<std::mutex> scoped_lock(mtx);
                         ismrmrd_dataset->readAcquisition(i, acq_tmp);
                     }
 
@@ -2003,6 +2033,14 @@ int main(int argc, char **argv)
 
         if (compression_precision > 0 || compression_tolerance > 0.0) {
             std::cout << "Compression ratio: " << con.compression_ratio() << std::endl;
+        }
+
+        if (verbose) {
+            double transmission_time_s = timer.stop()/1e6;
+            double transmitted_mb = con.get_bytes_transmitted()/(1024*1024);
+            std::cout << "Time sending: " << transmission_time_s << "s" << std::endl;
+            std::cout << "Data sent: " << transmitted_mb << "MB" << std::endl;
+            std::cout << "Transmission rate: " << transmitted_mb/transmission_time_s << "MB/s" << std::endl;
         }
 
         con.send_gadgetron_close();

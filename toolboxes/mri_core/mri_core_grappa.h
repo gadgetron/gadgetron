@@ -79,11 +79,34 @@ namespace Gadgetron {
     /// kE1: the kernel pattern along E1
     /// oE1: the output kernel pattern along E1
     /// ker : kernel array [kRO kE1 srcCHA dstCHA oE1]
-    template <typename T> EXPORTMRICORE void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& ker);
+    /// prepare calibration for A*ker = B
+    template <typename T> EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& A, hoNDArray<T>& B);
+
+    /// solve for ker
+    template <typename T> EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray<T>& A, const hoNDArray<T>& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray<T>& ker);
+
+    template <typename T> EXPORTMRICORE void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& ker);
 
     /// convert the grappa multiplication kernel computed from grappa2d_calib to convolution kernel
     /// convKer : [convRO convE1 srcCHA dstCHA]
     template <typename T> EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& convKer);
+
+    /// perform kspace multiplication grappa recon
+    /// if periodic_boundary_condition == true, use the periodic boundary condition; other wise, use zero-filling
+    /// kspace: [RO E1 srcCHA], every 2D kspace will be reconed to [RO E1 dstCHA]
+    /// data matrix A [M kRO*kNE1*srcCHA], using boundary condition for edge cells
+    /// data matrix indexes AInd, [M 2], the mth line of data matrix is for oE1 points at (ro, e1)
+    template <typename T> EXPORTMRICORE void grappa2d_prepare_recon(const hoNDArray<T>& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray<T>& A, hoNDArray<unsigned short>& AInd);
+
+    /// perform kspace recon, A*ker
+    /// and fill back points to kspace
+    template <typename T> EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray<T>& A, const hoNDArray<T>& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray<T>& res);
+
+    /// perform ksapce recon
+    template <typename T> EXPORTMRICORE void grappa2d_recon(hoNDArray<T>& kspace, const hoNDArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition);
+
+    /// in case the recon=A*ker has already been computed, assign them back to res
+    template <typename T> EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray<T>& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray<T>& res);
 
     /// ---------------------------------------------------------------------
     /// 3D grappa

@@ -439,11 +439,27 @@ namespace Gadgetron {
                             if (D>1) imgBuf(0).set_pixel_size(1, imgBuf(0).header_.field_of_view[1] / E1);
                             if (D>2) imgBuf(0).set_pixel_size(2, imgBuf(0).header_.field_of_view[2] / E2);
 
-                            imgBuf(0).set_image_position((float*)(imgBuf(0).header_.position));
+                            /*imgBuf(0).set_image_position((float*)(imgBuf(0).header_.position));
 
                             imgBuf(0).set_image_orientation(0, (float*)(imgBuf(0).header_.read_dir));
                             imgBuf(0).set_image_orientation(1, (float*)(imgBuf(0).header_.phase_dir));
-                            imgBuf(0).set_image_orientation(2, (float*)(imgBuf(0).header_.slice_dir));
+                            imgBuf(0).set_image_orientation(2, (float*)(imgBuf(0).header_.slice_dir));*/
+
+                            imgBuf(0).set_image_position(0, imgBuf(0).header_.position[0]);
+                            imgBuf(0).set_image_position(1, imgBuf(0).header_.position[1]);
+                            imgBuf(0).set_image_position(2, imgBuf(0).header_.position[2]);
+
+                            imgBuf(0).set_image_orientation(0, 0, imgBuf(0).header_.read_dir[0]);
+                            imgBuf(0).set_image_orientation(0, 1, imgBuf(0).header_.read_dir[1]);
+                            imgBuf(0).set_image_orientation(0, 2, imgBuf(0).header_.read_dir[2]);
+
+                            imgBuf(0).set_image_orientation(1, 0, imgBuf(0).header_.phase_dir[0]);
+                            imgBuf(0).set_image_orientation(1, 1, imgBuf(0).header_.phase_dir[1]);
+                            imgBuf(0).set_image_orientation(1, 2, imgBuf(0).header_.phase_dir[2]);
+
+                            imgBuf(0).set_image_orientation(2, 0, imgBuf(0).header_.slice_dir[0]);
+                            imgBuf(0).set_image_orientation(2, 1, imgBuf(0).header_.slice_dir[1]);
+                            imgBuf(0).set_image_orientation(2, 2, imgBuf(0).header_.slice_dir[2]);
 
                             imgBuf(0).attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)1);
 
@@ -572,7 +588,7 @@ namespace Gadgetron {
                                                                             // if in close call, send out all unsent images
                                                                             if ( img.get_number_of_elements()>0 && !sentFlag )
                                                                             {
-                                                                                imageSentBuffer_(image_sent_ind) = img;
+                                                                                imageSentBuffer_(image_sent_ind) = std::move(img);
                                                                                 buf(image_ind) = ImageType();
                                                                                 needTrigger = true;
                                                                             }
@@ -765,9 +781,17 @@ namespace Gadgetron {
                             storedImage.set_image_position(1, img.headers_(n, s, slc).position[1]);
                             storedImage.set_image_position(2, img.headers_(n, s, slc).position[2]);
 
-                            storedImage.set_image_orientation(0, (float*)(img.headers_(n, s, slc).read_dir));
-                            storedImage.set_image_orientation(1, (float*)(img.headers_(n, s, slc).phase_dir));
-                            storedImage.set_image_orientation(2, (float*)(img.headers_(n, s, slc).slice_dir));
+                            storedImage.set_image_orientation(0, 0, img.headers_(n, s, slc).read_dir[0]);
+                            storedImage.set_image_orientation(0, 1, img.headers_(n, s, slc).read_dir[1]);
+                            storedImage.set_image_orientation(0, 2, img.headers_(n, s, slc).read_dir[2]);
+
+                            storedImage.set_image_orientation(1, 0, img.headers_(n, s, slc).phase_dir[0]);
+                            storedImage.set_image_orientation(1, 1, img.headers_(n, s, slc).phase_dir[1]);
+                            storedImage.set_image_orientation(1, 2, img.headers_(n, s, slc).phase_dir[2]);
+
+                            storedImage.set_image_orientation(2, 0, img.headers_(n, s, slc).slice_dir[0]);
+                            storedImage.set_image_orientation(2, 1, img.headers_(n, s, slc).slice_dir[1]);
+                            storedImage.set_image_orientation(2, 2, img.headers_(n, s, slc).slice_dir[2]);
 
                             storedImage.attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)0);
 

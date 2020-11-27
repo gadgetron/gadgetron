@@ -11,4 +11,7 @@ export OMP_THREAD_LIMIT=$(($(nproc)*2))
 #export OMP_PROC_BIND=true
 export OPENBLAS_NUM_THREADS=1
 
+# if want to ensure high numerical reproducibility, turn on this option
+# export MKL_CBWR=COMPATIBLE
+
 /usr/bin/supervisord -c /opt/supervisord.conf 

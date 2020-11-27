@@ -5,7 +5,6 @@
  *      Author: Michael S. Hansen
  */
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "AutoScaleGadget.h"
 
 namespace Gadgetron{
@@ -45,7 +44,7 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 		}
 
 		for (unsigned long int i = 0; i < m2->getObjectPtr()->get_number_of_elements(); i++) {
-			size_t bin = static_cast<size_t>(floor((d[i]/max)*histogram_bins_));
+			size_t bin = static_cast<size_t>(std::floor((d[i]/max)*histogram_bins_));
 			if (bin >= histogram_bins_) {
 				bin = histogram_bins_-1;
 			}

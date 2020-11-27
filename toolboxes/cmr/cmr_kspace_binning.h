@@ -147,10 +147,10 @@ namespace Gadgetron {
         typedef Gadgetron::hoNDImageContainer2D<ComplexImageType> ComplexImageContinerType;
 
         // motion correction
-        typedef Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> RegContainer2DType;
+        typedef Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double> RegContainer2DType;
 
         // deformation field
-        typedef hoNDImageContainer2D< hoNDImage<float, 2> > DeformationFieldContinerType;
+        typedef hoNDImageContainer2D< hoNDImage<double, 2> > DeformationFieldContinerType;
 
         CmrKSpaceBinning();
         virtual ~CmrKSpaceBinning();
@@ -289,6 +289,7 @@ namespace Gadgetron {
         // ======================================================================================
         /// parameter for debugging
         // ======================================================================================
+        std::string suffix_;
         bool verbose_;
         std::string debug_folder_;
         bool perform_timing_;

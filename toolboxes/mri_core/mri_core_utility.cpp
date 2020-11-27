@@ -458,85 +458,80 @@ namespace Gadgetron
     template <typename T> 
     void compute_eigen_channel_coefficients(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT)
     {
-        try
+        
+        size_t RO = data.get_size(0);
+        size_t E1 = data.get_size(1);
+        size_t E2 = data.get_size(2);
+        size_t CHA = data.get_size(3);
+        size_t dataN = data.get_size(4);
+        size_t dataS = data.get_size(5);
+        size_t SLC = data.get_size(6);
+
+        typedef typename realType<T>::Type value_type;
+
+        size_t n, s, slc;
+
+        hoNDArray<T> dataAve;
+        GADGET_CATCH_THROW( Gadgetron::compute_averaged_data_N_S(data, average_N, average_S, count_sampling_freq, dataAve) );
+
+        size_t dataAveN = dataAve.get_size(4);
+        size_t dataAveS = dataAve.get_size(5);
+
+        if(KLT.size()!=SLC) KLT.resize(SLC);
+        for (slc = 0; slc < SLC; slc++)
         {
-            size_t RO = data.get_size(0);
-            size_t E1 = data.get_size(1);
-            size_t E2 = data.get_size(2);
-            size_t CHA = data.get_size(3);
-            size_t dataN = data.get_size(4);
-            size_t dataS = data.get_size(5);
-            size_t SLC = data.get_size(6);
-
-            typedef typename realType<T>::Type value_type;
-
-            size_t n, s, slc;
-
-            hoNDArray<T> dataAve;
-            GADGET_CATCH_THROW( Gadgetron::compute_averaged_data_N_S(data, average_N, average_S, count_sampling_freq, dataAve) );
-
-            size_t dataAveN = dataAve.get_size(4);
-            size_t dataAveS = dataAve.get_size(5);
-
-            if(KLT.size()!=SLC) KLT.resize(SLC);
-            for (slc = 0; slc < SLC; slc++)
+            if (KLT[slc].size() != S) KLT[slc].resize(S);
+            for (s = 0; s < S; s++)
             {
-                if (KLT[slc].size() != S) KLT[slc].resize(S);
-                for (s = 0; s < S; s++)
-                {
-                    if (KLT[slc][s].size() != N) KLT[slc][s].resize(N);
-                }
+                if (KLT[slc][s].size() != N) KLT[slc][s].resize(N);
             }
+        }
 
-            for (slc = 0; slc < SLC; slc++)
+        for (slc = 0; slc < SLC; slc++)
+        {
+            for (s = 0; s < S; s++)
             {
-                for (s = 0; s < S; s++)
+                size_t s_used = s;
+                if (s_used >= dataAveS) s_used = dataAveS - 1;
+
+                for (n = 0; n < N; n++)
                 {
-                    size_t s_used = s;
-                    if (s_used >= dataAveS) s_used = dataAveS - 1;
+                    size_t n_used = n;
+                    if (n_used >= dataAveN) n_used = dataAveN - 1;
 
-                    for (n = 0; n < N; n++)
+                    T* pDataAve = &(dataAve(0, 0, 0, 0, n_used, s_used, slc));
+                    hoNDArray<T> dataUsed(RO, E1, E2, CHA, pDataAve);
+
+                    if (slc == 0 && n == 0 && s == 0)
                     {
-                        size_t n_used = n;
-                        if (n_used >= dataAveN) n_used = dataAveN - 1;
-
-                        T* pDataAve = &(dataAve(0, 0, 0, 0, n_used, s_used, slc));
-                        hoNDArray<T> dataUsed(RO, E1, E2, CHA, pDataAve);
-
-                        if (slc == 0 && n == 0 && s == 0)
+                        if (compression_num_modesKept > 0)
                         {
-                            if (compression_num_modesKept > 0)
-                            {
-                                KLT[slc][s][n].prepare(dataUsed, 3, compression_num_modesKept);
-                            }
-                            else if (coil_compression_thres > 0)
-                            {
-                                KLT[slc][s][n].prepare(dataUsed, 3, (value_type)(coil_compression_thres));
-                            }
-                            else
-                            {
-                                KLT[slc][s][n].prepare(dataUsed, 3, (size_t)(0));
-                            }
+                            KLT[slc][s][n].prepare(dataUsed, 3, compression_num_modesKept);
+                        }
+                        else if (coil_compression_thres > 0)
+                        {
+                            KLT[slc][s][n].prepare(dataUsed, 3, (value_type)(coil_compression_thres));
                         }
                         else
                         {
-                            if(n>=dataAveN && s>=dataAveS)
-                            {
-                                KLT[slc][s][n] = KLT[slc][dataAveS - 1][dataAveN-1];
-                            }
-                            else
-                            {
-                                KLT[slc][s][n].prepare(dataUsed, 3, KLT[0][0][0].output_length());
-                            }
+                            KLT[slc][s][n].prepare(dataUsed, 3, (size_t)(0));
+                        }
+                    }
+                    else
+                    {
+                        if(n>=dataAveN && s>=dataAveS)
+                        {
+                            KLT[slc][s][n] = KLT[slc][dataAveS - 1][dataAveN-1];
+                        }
+                        else
+                        {
+                            KLT[slc][s][n].prepare(dataUsed, 3, KLT[0][0][0].output_length());
                         }
                     }
                 }
             }
         }
-        catch (...)
-        {
-            GADGET_THROW("Errors in compute_eigen_channel_coefficients(...) ... ");
-        }
+        
     }
 
     template EXPORTMRICORE void compute_eigen_channel_coefficients(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT);
@@ -1256,5 +1251,67 @@ namespace Gadgetron
 
     std::map<std::string, std::string> to_map(const std::vector<ISMRMRD::UserParameterString> & userparameters) {
         return to_map_internal(userparameters);
+    }
+    ISMRMRD::ImageHeader image_header_from_acquisition(
+        const ISMRMRD::AcquisitionHeader& acq_header, const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data) {
+
+        ISMRMRD::ImageHeader im_header;
+
+        im_header.version         = acq_header.version;
+        im_header.data_type       = ISMRMRD::ISMRMRD_CXFLOAT;
+        im_header.flags           = acq_header.flags;
+        im_header.measurement_uid = acq_header.measurement_uid;
+
+        im_header.matrix_size[0] = (uint16_t)data.get_size(0);
+        im_header.matrix_size[1] = (uint16_t)data.get_size(1);
+        im_header.matrix_size[2] = (uint16_t)data.get_size(2);
+
+        im_header.field_of_view[0] = header.encoding[0].reconSpace.fieldOfView_mm.x;
+        im_header.field_of_view[1] = header.encoding[0].reconSpace.fieldOfView_mm.y;
+        im_header.field_of_view[2] = header.encoding[0].reconSpace.fieldOfView_mm.z;
+
+        im_header.channels = (uint16_t)data.get_size(3);
+
+        im_header.position[0] = acq_header.position[0];
+        im_header.position[1] = acq_header.position[1];
+        im_header.position[2] = acq_header.position[2];
+
+        im_header.read_dir[0] = acq_header.read_dir[0];
+        im_header.read_dir[1] = acq_header.read_dir[1];
+        im_header.read_dir[2] = acq_header.read_dir[2];
+
+        im_header.phase_dir[0] = acq_header.phase_dir[0];
+        im_header.phase_dir[1] = acq_header.phase_dir[1];
+        im_header.phase_dir[2] = acq_header.phase_dir[2];
+
+        im_header.slice_dir[0] = acq_header.slice_dir[0];
+        im_header.slice_dir[1] = acq_header.slice_dir[1];
+        im_header.slice_dir[2] = acq_header.slice_dir[2];
+
+        im_header.patient_table_position[0] = acq_header.patient_table_position[0];
+        im_header.patient_table_position[1] = acq_header.patient_table_position[1];
+        im_header.patient_table_position[2] = acq_header.patient_table_position[2];
+
+        im_header.average    = acq_header.idx.average;
+        im_header.slice      = acq_header.idx.slice;
+        im_header.contrast   = acq_header.idx.contrast;
+        im_header.phase      = acq_header.idx.phase;
+        im_header.repetition = acq_header.idx.repetition;
+        im_header.set        = acq_header.idx.set;
+
+        im_header.acquisition_time_stamp = acq_header.acquisition_time_stamp;
+
+        im_header.physiology_time_stamp[0] = acq_header.physiology_time_stamp[0];
+        im_header.physiology_time_stamp[1] = acq_header.physiology_time_stamp[1];
+        im_header.physiology_time_stamp[2] = acq_header.physiology_time_stamp[2];
+
+        im_header.image_type         = ISMRMRD::ISMRMRD_IMTYPE_COMPLEX;
+        im_header.image_series_index = 0;
+
+        memcpy(im_header.user_int, acq_header.user_int, sizeof(int32_t) * ISMRMRD::ISMRMRD_USER_INTS);
+        memcpy(im_header.user_float, acq_header.user_float, sizeof(float) * ISMRMRD::ISMRMRD_USER_FLOATS);
+
+        im_header.attribute_string_len = 0;
+        return im_header;
     }
 }

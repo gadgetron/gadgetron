@@ -8,10 +8,10 @@ RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential python3-dev python3-pip libhdf5-serial-dev cmake git-core \
     libfftw3-dev jq libzmq-dev \
-    liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
+    libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools cpio
+    libgtest-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
+    supervisor net-tools cpio jove libpugixml-dev
 
 #Python stuff
 RUN pip3 install --upgrade pip
@@ -24,10 +24,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
-RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cpu/torch-1.0.0-cp35-cp35m-linux_x86_64.whl
-RUN pip3 install torchvision 
-RUN pip3 install tensorboardx visdom
+RUN pip3 install torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
@@ -76,4 +73,3 @@ ENV PATH=$PATH:$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
-

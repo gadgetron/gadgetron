@@ -35,10 +35,10 @@ namespace Gadgetron {
 
                 constexpr int D = 5;
 
-                hoNDArray<T> result(image.get_dimensions());
+                hoNDArray<T> result(image.dimensions());
                 const float noise_std2 = noise_std * noise_std;
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
-                        from_std_vector<size_t, 2>(*image.get_dimensions()));
+                        from_std_vector<size_t, 2>(image.dimensions()));
 
 #pragma omp parallel for
                 for (int ky = 0; ky < image.get_size(1); ky++) {
@@ -73,24 +73,25 @@ namespace Gadgetron {
             hoNDArray<T> non_local_means_T(const hoNDArray<T> &image, float noise_std, unsigned int search_radius) {
 
 
-                GadgetronTimer("Non local means");
-                size_t n_images = image.get_number_of_elements() / (image.get_size(0) * image.get_size(1));
+                GadgetronTimer timer("Non local means");
+                             size_t n_images = image.get_number_of_elements() / (image.get_size(0) * image.get_size(1));
 
                 std::vector<size_t> image_dims = {image.get_size(0), image.get_size(1)};
                 size_t image_elements = image_dims[0] * image_dims[1];
 
-                auto result = hoNDArray<T>(image.get_dimensions());
+                auto result = hoNDArray<T>(image.dimensions());
+
+                #pragma omp parallel for
                 for (int i = 0; i < n_images; i++) {
 
                     auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));
+                    auto result_view = non_local_means_single_image(image_view, noise_std,search_radius) ;
 
-                    auto result_view = hoNDArray<T>(image_dims, result.get_data_ptr() + i * image_elements);
-
-                    result_view = non_local_means_single_image(image_view, noise_std, search_radius);
-
-
+                    memcpy(result.begin() + i * image_elements, result_view.begin(), result_view.get_number_of_bytes());
+                    GDEBUG_STREAM("I finished one");
                 }
                 return result;
+
             }
         }
 

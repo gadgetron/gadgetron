@@ -59,7 +59,7 @@ int gpuCSICoilEstimationGadget::process(
 	{
 
 		hoNDArray<std::complex<float>> * ho_data = &bucket->rbit_.front().data_.data_;
-		hoNDArray<float>* ho_traj = bucket->rbit_.front().data_.trajectory_.get_ptr();
+		hoNDArray<float>* ho_traj = &bucket->rbit_.front().data_.trajectory_.value();
 
 
 		if (skip_lines_ > 0){
@@ -109,7 +109,7 @@ int gpuCSICoilEstimationGadget::process(
 		auto & ref = *bucket->rbit_.front().ref_;
 
 		hoNDArray<std::complex<float>> * ho_data = &ref.data_;
-		hoNDArray<float>* ho_traj = ref.trajectory_.get_ptr();
+		hoNDArray<float>* ho_traj = &ref.trajectory_.value();
 
 		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
 		if (ho_traj->get_size(0) > 2){

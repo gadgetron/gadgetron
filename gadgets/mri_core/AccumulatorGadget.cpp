@@ -64,7 +64,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		  return GADGET_FAIL;
 	  }
 
-	  try {buffer_->create(&dimensions_);}
+	  try {buffer_->create(dimensions_);}
 	  catch (std::runtime_error &err){
 		  GEXCEPTION(err,"Failed allocate buffer array\n");
 		  return GADGET_FAIL;
@@ -127,7 +127,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     img_dims[2] = dimensions_[2];
     img_dims[3] = dimensions_[3];
     
-    try{cm2->getObjectPtr()->create(&img_dims);}
+    try{cm2->getObjectPtr()->create(img_dims);}
     catch (std::runtime_error &err){
       GEXCEPTION(err,"Unable to allocate new image array\n");
       cm1->release();

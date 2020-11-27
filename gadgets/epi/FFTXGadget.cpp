@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "FFTXGadget.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"

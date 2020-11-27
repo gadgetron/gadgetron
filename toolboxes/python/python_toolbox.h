@@ -9,13 +9,13 @@ namespace Gadgetron
 {
 
 /// Initialize Python and NumPy. Called by each PythonFunction constructor
-EXPORTPYTHON int initialize_python(void);
+EXPORTPYTHON void initialize_python(void);
 /// Initialize NumPy
-EXPORTPYTHON int initialize_numpy(void);
+EXPORTPYTHON void initialize_numpy(void);
 /// Finalize Python, Called by user expclictly
-EXPORTPYTHON int finalize_python(void);
+EXPORTPYTHON void finalize_python(void);
 /// Add a path to the PYTHONPATH
-EXPORTPYTHON int add_python_path(const std::string& path);
+EXPORTPYTHON void add_python_path(const std::string& path);
 
 /// Extracts the exception/traceback to build and return a std::string
 EXPORTPYTHON std::string pyerr_to_string(void);

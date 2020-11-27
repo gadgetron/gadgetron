@@ -1,127 +1,99 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
-if (WIN32)
-  add_definitions(-DCROW_MSVC_WORKAROUND)
-endif()
+add_executable(gadgetron
+        main.cpp
+        Server.cpp
+        Server.h
+        Connection.cpp
+        Connection.h
+        paths.cpp
+        paths.h
+        initialization.cpp
+        initialization.h
+        system_info.cpp
+        connection/Config.cpp
+        connection/Config.h
+        connection/ConfigConnection.cpp
+        connection/ConfigConnection.h
+        connection/StreamConnection.cpp
+        connection/StreamConnection.h
+        connection/Handlers.cpp
+        connection/Handlers.h
+        connection/Writers.cpp
+        connection/Writers.h
+        connection/VoidConnection.cpp
+        connection/VoidConnection.h
+        connection/HeaderConnection.cpp
+        connection/HeaderConnection.h
+        connection/Loader.cpp
+        connection/Loader.h
+        connection/Core.cpp
+        connection/Core.h
+        connection/SocketStreamBuf.cpp
+        connection/SocketStreamBuf.h
+        connection/stream/Stream.cpp
+        connection/stream/Stream.h
+        connection/stream/Parallel.cpp
+        connection/stream/Parallel.h
+        connection/stream/Distributed.cpp
+        connection/stream/Distributed.h
+        connection/stream/External.cpp
+        connection/stream/External.h
+        connection/stream/Processable.h
+        connection/stream/common/ExternalChannel.cpp
+        connection/stream/common/ExternalChannel.h
+        connection/stream/external/Matlab.cpp
+        connection/stream/external/Matlab.h
+        connection/stream/external/Python.cpp
+        connection/stream/external/Python.h
+        connection/stream/common/Discovery.cpp
+        connection/stream/Processable.cpp
+        connection/stream/ParallelProcess.cpp
+        connection/stream/ParallelProcess.h
+        connection/stream/PureStream.cpp
+        connection/stream/PureStream.h
+        connection/stream/PureDistributed.cpp
+        connection/stream/PureDistributed.h
+        connection/stream/common/External.h
+        connection/stream/common/External.cpp
+        connection/stream/common/Serialization.cpp
+        connection/stream/common/Serialization.h
+        connection/stream/common/Configuration.cpp
+        connection/stream/common/Configuration.h
+        connection/stream/distributed/Pool.h
+        connection/stream/distributed/Worker.cpp
+        connection/stream/distributed/Worker.h
+        connection/stream/common/Closer.h
+        connection/stream/distributed/Pool.cpp )
 
-include_directories(
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/apps/gadgetron
-  ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
-  ${CMAKE_SOURCE_DIR}/toolboxes/rest
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-  ${Boost_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR}
-  )
+target_link_libraries(gadgetron
+        gadgetron_core
+        gadgetron_toolbox_log
+        Boost::system
+        Boost::filesystem
+        Boost::program_options
+        BLAS
+        ${CMAKE_DL_LIBS})
 
-if (CUDA_FOUND)
-  include_directories(${CUDA_INCLUDE_DIRS})
-endif()
-
-add_executable(gadgetron 
-  main.cpp 
-  GadgetServerAcceptor.h
-  GadgetServerAcceptor.cpp 
-  GadgetStreamController.h
-  # EndGadget.h
-  # EndGadget.cpp
-  # GadgetStreamInterface.cpp
-  Gadget.h 
-  GadgetContainerMessage.h 
-  GadgetMessageInterface.h
-  GadgetronExport.h 
-  gadgetron_xml.h
-  )
-
-target_link_libraries(gadgetron 
-  gadgetron_gadgetbase
-  gadgetron_toolbox_log
-  gadgetron_toolbox_rest
-  gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
- )
+target_include_directories(gadgetron
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR})
 
 if (BUILD_PYTHON_SUPPORT)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
-endif()
-
-add_executable(gadgetron_info
-  gadgetron_info.cpp
-  EndGadget.cpp
-  GadgetStreamInterface.cpp
-)
-
-target_link_libraries(gadgetron_info 
-  gadgetron_toolbox_log
-  gadgetron_gadgetbase
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
- )
+endif ()
 
 if (CUDA_FOUND)
-  target_link_libraries(gadgetron_info ${CUDA_LIBRARIES})
-  target_link_libraries(gadgetron ${CUDA_LIBRARIES})
-endif()
-
-add_library(gadgetron_gadgetbase SHARED
-  Gadget.h
-  Gadget.cpp
-  GadgetStreamController.h
-  GadgetStreamController.cpp
-  gadgetron_xml.h
-  gadgetron_xml.cpp
-  gadgetron_home.h
-  gadgetron_home.cpp
-  pugixml.cpp  
-  GadgetStreamInterface.h 
-  GadgetStreamInterface.cpp 
-  EndGadget.h
-  EndGadget.cpp
-)
-
-target_link_libraries(gadgetron_gadgetbase
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
-  gadgetron_toolbox_gadgettools
-  gadgetron_toolbox_cloudbus
-  gadgetron_toolbox_log
-)
+    target_link_libraries(gadgetron ${CUDA_LIBRARIES})
+endif ()
 
 if (GPERFTOOLS_PROFILER)
-  message("Adding gperftools cpu profiler to gadgetron link assemblage.")
-  target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
-endif()
+    message("Adding gperftools cpu profiler to gadgetron link assemblage.")
+    target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
+endif ()
+
+install(TARGETS gadgetron DESTINATION bin COMPONENT main)
 
 
-set_target_properties(gadgetron_gadgetbase PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")
-
-install(TARGETS gadgetron gadgetron_info DESTINATION bin COMPONENT main)
-install(TARGETS gadgetron_gadgetbase DESTINATION lib COMPONENT main)
-
-install(FILES
-  gadgetbase_export.h
-  EndGadget.h
-  Gadget.h
-  GadgetContainerMessage.h
-  GadgetMessageInterface.h
-  GadgetronExport.h
-  gadgetron_home.h
-  gadgetron_xml.h
-  GadgetServerAcceptor.h
-  GadgetStreamController.h
-  GadgetStreamInterface.h
-  gadgetron_home.h
-  ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_config.h
-  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main) 
-
-install(FILES 
-  gadgetron.xml.example
-  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-
-install(FILES 
-  schema/gadgetron.xsd
-  DESTINATION ${GADGETRON_INSTALL_SCHEMA_PATH} COMPONENT main)
 

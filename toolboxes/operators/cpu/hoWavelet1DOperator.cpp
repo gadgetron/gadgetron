@@ -48,7 +48,7 @@ void hoWavelet1DBaseOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>
 
             if (!y.dimensions_equal(&dimR))
             {
-                y.create(&dimR);
+                y.create(dimR);
             }
         }
 
@@ -127,7 +127,7 @@ void hoWavelet1DBaseOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>
 
             if (!y.dimensions_equal(&dimR))
             {
-                y.create(&dimR);
+                y.create(dimR);
             }
         }
 
@@ -209,7 +209,7 @@ void hoWavelet1DBaseOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<
 
         if (!wavCoeffNorm.dimensions_equal(&dimR))
         {
-            wavCoeffNorm.create(&dimR);
+            wavCoeffNorm.create(dimR);
         }
 
         size_t RO = (*dims)[0];
@@ -221,7 +221,7 @@ void hoWavelet1DBaseOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<
             // square the coefficients
             if (!complexIm_norm_.dimensions_equal(&wavCoeff))
             {
-                complexIm_norm_.create(wavCoeff.get_dimensions());
+                complexIm_norm_.create(wavCoeff.dimensions());
             }
 
             size_t n;
@@ -322,7 +322,7 @@ void hoWavelet1DBaseOperator<T>::divide_wav_coeff_by_norm(hoNDArray<T>& wavCoeff
 
         if (!wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm))
         {
-            wav_coeff_norm_approx_.create(wavCoeffNorm.get_dimensions());
+            wav_coeff_norm_approx_.create(wavCoeffNorm.dimensions());
         }
 
         long long N = (long long)wavCoeffNorm.get_number_of_elements();
@@ -411,7 +411,7 @@ void hoWavelet1DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T
 {
     if (!complexIm_fft_.dimensions_equal(&x))
     {
-        complexIm_fft_.create(x.get_dimensions());
+        complexIm_fft_.create(x.dimensions());
     }
 
     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(x, im, complexIm_fft_);
@@ -422,7 +422,7 @@ void hoWavelet1DOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray
 {
     if (!kspace_fft_.dimensions_equal(&im))
     {
-        kspace_fft_.create(im.get_dimensions());
+        kspace_fft_.create(im.dimensions());
     }
 
     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(im, x, kspace_fft_);

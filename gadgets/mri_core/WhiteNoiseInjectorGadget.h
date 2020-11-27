@@ -4,7 +4,6 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "gadgetron_mricore_export.h"
 #include <random>
 

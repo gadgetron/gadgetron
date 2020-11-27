@@ -172,7 +172,10 @@ namespace Gadgetron {
 
 	  // ===================================================================
 	  // Check status of bart commands script
-	  
+
+	  if (AbsoluteBartCommandScript_path.value().empty())
+	      AbsoluteBartCommandScript_path.value(context.paths.gadgetron_home.string() + "/share/gadgetron/bart");
+
 	  command_script_ = AbsoluteBartCommandScript_path.value();
 	  command_script_ /= BartCommandScript_name.value();
 

@@ -203,7 +203,7 @@ namespace Gadgetron{
                 //Let's figure out which time points we would like to interpolate on:
                 ///TODO: Deal with mode 1 and other future modes, we are only implementing mode 0 at the moment
                 float phase_interval = 1.0f/static_cast<float>(phases_to_reconstruct_);
-                float max_time = floor(relative_cycle_time[relative_cycle_time.size()-1]);
+                float max_time = std::floor(relative_cycle_time[relative_cycle_time.size()-1]);
                 std::vector<float> recon_cycle_time;
                 for (float t=1.0;t<(max_time-0.001);t+=phase_interval)
                 {
@@ -230,15 +230,15 @@ namespace Gadgetron{
                     tmpm1->cont(tmpm2);
 
                     (*tmpm1->getObjectPtr()) = (*hptrs[0]);
-                    tmpm2->getObjectPtr()->create(aptrs[0]->get_dimensions());
+                    tmpm2->getObjectPtr()->create(aptrs[0]->dimensions());
 
                     out_heads.push_back(tmpm1);
                     out_data.push_back(tmpm2);
 
-                    unsigned short current_cycle = static_cast<unsigned short>(floor(recon_cycle_time[i] + 0.0001));
+                    unsigned short current_cycle = static_cast<unsigned short>(std::floor(recon_cycle_time[i] + 0.0001));
                     unsigned short current_phase = static_cast<unsigned short>((recon_cycle_time[i]+0.0001-current_cycle)/(1.0/static_cast<float>(phases_to_reconstruct_)) + 0.0001);
 
-                    tmpm1->getObjectPtr()->physiology_time_stamp[phys_time_index_] = static_cast<unsigned>(floor((recon_cycle_time[i]+0.0001-current_cycle)*cycle_lengths[current_cycle])); 
+                    tmpm1->getObjectPtr()->physiology_time_stamp[phys_time_index_] = static_cast<unsigned>(std::floor((recon_cycle_time[i]+0.0001-current_cycle)*cycle_lengths[current_cycle]));
                     tmpm1->getObjectPtr()->phase = current_phase;
                     tmpm1->getObjectPtr()->image_index = current_phase+1;
                     tmpm1->getObjectPtr()->image_series_index = current_cycle * 10 + tmpm1->getObjectPtr()->slice;

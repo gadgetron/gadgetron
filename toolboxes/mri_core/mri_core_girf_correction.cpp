@@ -9,7 +9,6 @@
 #include "hoNDArray_math.h"
 #include <boost/filesystem.hpp>
 #include <cpu/hoNDArray_fileio.h>
-#include "gadgetron_config.h"
 #include <boost/math/constants/constants.hpp>
 
 #include <boost/config/warning_disable.hpp>
@@ -60,8 +59,8 @@ namespace Gadgetron {
                 }
 
 
-                hoNDFFT<float>::instance()->timeswitch(&rotated, 0);
                 hoNDFFT<float>::instance()->fft1(rotated);
+                hoNDFFT<float>::instance()->fftshift1D(rotated);
 //            auto padded_kernel = std::move(*pad<std::complex<float>,1>(uint64d1(nlines_new), &girf_kernel));
 
 //            rotated *= padded_kernel;
@@ -78,9 +77,8 @@ namespace Gadgetron {
 
 //                rotated = *pad<std::complex<float>, 1>(uint64d1(full_domain), &rotated);
 
+                hoNDFFT<float>::instance()->ifftshift1D(rotated);
                 hoNDFFT<float>::instance()->ifft1(rotated);
-
-                hoNDFFT<float>::instance()->timeswitch(&rotated, 0);
 
 
 //            hoNDFFT<float>::instance()->ifft(&rotated,0);

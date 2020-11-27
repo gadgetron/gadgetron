@@ -25,11 +25,11 @@ echo $DOCKER_LABELS
 cat << EOF > ${DOCKERFOLDER}/Dockerfile
 FROM ${IMG_IN}
 
-RUN apt-get remove --yes --autoremove emacs build-essential x11-common libgtk* make cmake
+RUN apt-get remove --yes --autoremove build-essential x11-common libgtk* make cmake
 RUN apt-get --yes remove *-dev
 #RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update
-RUN apt-get install --no-install-recommends --no-install-suggests --yes libplplot-dev
+RUN apt-get install --no-install-recommends --no-install-suggests --yes libplplot-dev libdcmtk-dev
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN rm -rf /opt/*.tar.gz
 RUN rm -rf /usr/local/cuda/bin

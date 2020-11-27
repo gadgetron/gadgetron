@@ -32,7 +32,7 @@ namespace Gadgetron
         hoNDPoint();
         hoNDPoint(const Self& p);
 
-        ~hoNDPoint();
+        virtual ~hoNDPoint();
 
         Self& operator=(const Self& p);
 

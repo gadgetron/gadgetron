@@ -86,7 +86,7 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
                     numOfControlPts = 2 * numOfControlPts - 1;
                 }
 
-                typedef typename Gadgetron::BSplineFFD2D<T, float, 1>::MaskArrayType MaskArrayType;
+                typedef typename Gadgetron::BSplineFFD2D<T, double, 1>::MaskArrayType MaskArrayType;
 
                 MaskArrayType mask;
                 mask.create(RO, E1);
@@ -111,12 +111,15 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
                     }
                 }
 
-                T totalResidual(0);
-                Gadgetron::BSplineFFD2D<T, float, 1> ffd(curr_map, gridSize[0], gridSize[1]);
+                hoNDImage<double, 2> curr_map_used;
+                curr_map_used.copyFrom(curr_map);
 
-                ffd.ffdApproxImage(&curr_map, mask, totalResidual, numOfRefinement);
+                double totalResidual(0);
+                Gadgetron::BSplineFFD2D<double, double, 1> ffd(curr_map_used, gridSize[0], gridSize[1]);
 
-                hoNDImage<T, 2> flowDual(curr_map);
+                ffd.ffdApproxImage(&curr_map_used, mask, totalResidual, numOfRefinement);
+
+                hoNDImage<double, 2> flowDual(curr_map_used);
                 ffd.evaluateFFDOnImage(flowDual);
 
                 for (n = 0; n < RO*E1; n++)
@@ -124,11 +127,11 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
                     if (mask(n) == 0)
                     {
                         std::vector<size_t> pt(3);
-                        curr_map.calculate_index(n, pt);
+                        curr_map_used.calculate_index(n, pt);
 
                         T v(0);
                         v = flowDual(n);
-                        if (v >= 0.9*minV && v <= 1.1*maxV) curr_map(n) = v;
+                        if (v >= 0.9*minV && v <= 1.1*maxV) curr_map(n) = (T)(v);
                     }
                 }
             }
@@ -500,7 +503,7 @@ void CmrParametricMapping<T>::compute_sd_impl(const VectorType& ti, const Vector
         Gadgetron::scal((T)(1.0 / (std*std)), hessian);
 
         // take inversion
-        Gadgetron::getri(hessian);
+        Gadgetron::invert(hessian);
 
         for (n = 0; n < N; n++)
         {

@@ -83,89 +83,89 @@ namespace Gadgetron{
     __device__ complext<T> operator()(const complext<T> &x, const T &y) const {return x/y;}
   };
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type > & operator+= (cuNDArray<T> &x, const  cuNDArray<T> &y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type > & operator+= (cuNDArray<T> &x, const  cuNDArray<T> &y){
     equals_transform< T,T,thrust::plus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type > & operator+= (cuNDArray<T> &x , T y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type > & operator+= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::plus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator+= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator+= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_plus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator+= (cuNDArray<complext<T> > &x , T y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator+= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_plus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator-= (cuNDArray<T> & x , const cuNDArray<T> & y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type >& operator-= (cuNDArray<T> & x , const cuNDArray<T> & y){
     equals_transform< T,T,thrust::minus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator-= (cuNDArray<T> &x , T y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type >& operator-= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::minus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator-= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator-= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_minus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator-= (cuNDArray<complext<T> > &x , T y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator-= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_minus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator*= (cuNDArray<T> &x , const cuNDArray<T> &y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type >& operator*= (cuNDArray<T> &x , const cuNDArray<T> &y){
     equals_transform< T,T,thrust::multiplies<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator*= (cuNDArray<T> &x , T y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type >& operator*= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::multiplies<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator*= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator*= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_multiply<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator*= (cuNDArray<complext<T> > &x , T y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator*= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_multiply<T>());
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator/= (cuNDArray<T> &x , const cuNDArray<T> &y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type >& operator/= (cuNDArray<T> &x , const cuNDArray<T> &y){
     equals_transform< T,T,thrust::divides<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator/= (cuNDArray<T> &x , T y){
+  template<class T> cuNDArray<typename std::enable_if<enable_operator<T>(), T >::type >& operator/= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::divides<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator/= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator/= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_divide<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator/= (cuNDArray<complext<T> > &x , T y){
+  template<class T> cuNDArray<complext<typename std::enable_if<enable_operator<T>(), T >::type > >& operator/= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_divide<T>());
     return x;

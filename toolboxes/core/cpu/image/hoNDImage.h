@@ -28,7 +28,7 @@ namespace Gadgetron
 
         typedef T element_type;
         typedef T value_type;
-        typedef float coord_type;
+        typedef double coord_type;
 
         typedef hoNDPoint<coord_type, D> a_axis_type;
         typedef std::vector<a_axis_type> axis_type;

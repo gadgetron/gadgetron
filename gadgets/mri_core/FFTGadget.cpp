@@ -45,15 +45,8 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = 
                             new GadgetContainerMessage<ISMRMRD::ImageHeader>();
                     GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = 
-                            new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
+                            new GadgetContainerMessage<hoNDArray< std::complex<float> > >(img_dims);
                     cm1->cont(cm2);
-                    //TODO do we want an image attribute string?  
-                    try{cm2->getObjectPtr()->create(&img_dims);}
-                    catch (std::runtime_error &err){
-                        GEXCEPTION(err,"Unable to allocate new image array\n");
-                        cm1->release();
-                        return GADGET_FAIL;
-                    }
 
                     //Set some information into the image header
                     //Use the middle header for some info

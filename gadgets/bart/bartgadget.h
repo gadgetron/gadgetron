@@ -18,7 +18,6 @@
 #include "GenericReconGadget.h"
 #include "gadgetron_mricore_export.h"
 #include "mri_core_data.h"
-#include "gadgetron_home.h"
 
 #include <vector>
 #include <cassert>
@@ -80,7 +79,7 @@ namespace Gadgetron {
 	  // The property controls how BART stores CFL files. Possible values are: BART_ALL_IN_MEM, BART_MIX_MEM_DISK, BART_ALL_ON_DISK
 	  GADGET_PROPERTY(BartFileBehaviour, std::string, "Controls how BART stores files: either all in memory, or mixed disk/memory behaviour", "BART_MIX_DISK_MEM");
 	  GADGET_PROPERTY(BartWorkingDirectory_path, std::string, "Absolute path to a temporary file location for generated BART files", "/tmp/gadgetron/");
-	  GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to BART script(s)", get_gadgetron_home().string() + "/share/gadgetron/bart");
+	  GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to BART script(s)", "");
 	  GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing BART command(s) to be loaded", "");
 	  GADGET_PROPERTY(isBartFileBeingStored, bool, "Keep generated BART files on the disk after the processing ends (has no effect if BART_ALL_IN_MEM is specified as behaviour)", false);
 	  GADGET_PROPERTY(image_series, int, "Set image series", 0);

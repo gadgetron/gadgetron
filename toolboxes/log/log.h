@@ -6,6 +6,7 @@
 #include <vector> //For mask fields
 
 #include <sstream> //For deprecated macros
+#include <mutex>
 
 #define GADGETRON_LOG_MASK_ENVIRONMENT "GADGETRON_LOG_MASK"
 #define GADGETRON_LOG_FILE_ENVIRONMENT "GADGETRON_LOG_FILE"
@@ -112,6 +113,7 @@ namespace Gadgetron
     static GadgetronLogger* instance_;
     std::vector<bool> level_mask_;
     std::vector<bool> print_mask_;
+    std::mutex m;
   };
 }
 
@@ -212,15 +214,6 @@ namespace Gadgetron
 #endif // GADGET_DEBUG_MODE
 
 
-namespace boost
-{
-#ifdef BOOST_NO_EXCEPTIONS
-    inline void throw_exception(std::exception const & e)
-    {
-        throw e; // or whatever
-    };
-#endif
 
-}// namespace boost
 
 #endif //GADGETRON_LOG_H

@@ -15,16 +15,16 @@ namespace Gadgetron
     if (!instance_) instance_ = new GadgetronLogger();
     return instance_;
   }
-  
+
   GadgetronLogger* GadgetronLogger::instance_ = NULL;
-  
+
   GadgetronLogger::GadgetronLogger()
     : level_mask_(GADGETRON_LOG_LEVEL_MAX,false)
     , print_mask_(GADGETRON_LOG_PRINT_MAX, false)
   {
     char* log_mask = getenv(GADGETRON_LOG_MASK_ENVIRONMENT);
     if ( log_mask != NULL) {
-      
+
       std::string log_mask_str(log_mask);
 
       //Which log levels are enabled
@@ -33,26 +33,26 @@ namespace Gadgetron
 	enableAllLogLevels();
 	return;
       }
-      
-      if (log_mask_str.find("LEVEL_DEBUG") != std::string::npos) 
+
+      if (log_mask_str.find("LEVEL_DEBUG") != std::string::npos)
 	enableLogLevel(GADGETRON_LOG_LEVEL_DEBUG);
 
-      if (log_mask_str.find("LEVEL_INFO") != std::string::npos) 
+      if (log_mask_str.find("LEVEL_INFO") != std::string::npos)
 	enableLogLevel(GADGETRON_LOG_LEVEL_INFO);
 
-      if (log_mask_str.find("LEVEL_WARNING") != std::string::npos) 
+      if (log_mask_str.find("LEVEL_WARNING") != std::string::npos)
 	enableLogLevel(GADGETRON_LOG_LEVEL_WARNING);
 
-      if (log_mask_str.find("LEVEL_ERROR") != std::string::npos) 
+      if (log_mask_str.find("LEVEL_ERROR") != std::string::npos)
 	enableLogLevel(GADGETRON_LOG_LEVEL_ERROR);
 
-      if (log_mask_str.find("PRINT_FILELOC") != std::string::npos) 
+      if (log_mask_str.find("PRINT_FILELOC") != std::string::npos)
 	enableOutputOption(GADGETRON_LOG_PRINT_FILELOC);
 
-      if (log_mask_str.find("PRINT_LEVEL") != std::string::npos) 
+      if (log_mask_str.find("PRINT_LEVEL") != std::string::npos)
 	enableOutputOption(GADGETRON_LOG_PRINT_LEVEL);
-      
-      if (log_mask_str.find("PRINT_DATETIME") != std::string::npos) 
+
+      if (log_mask_str.find("PRINT_DATETIME") != std::string::npos)
 	enableOutputOption(GADGETRON_LOG_PRINT_DATETIME);
     } else {
       enableLogLevel(GADGETRON_LOG_LEVEL_DEBUG);
@@ -82,6 +82,7 @@ namespace Gadgetron
     //Check if we should log this message
     if (!isLevelEnabled(LEVEL)) return;
 
+    std::unique_lock<std::mutex> lock(m);
     const char* fmt = cformatting;
     std::string fmt_str;
     bool append_cformatting_needed = false; //Will be set to true if we add any additional labels
@@ -136,7 +137,7 @@ namespace Gadgetron
 	  base_start++;
 	  fmt_str += std::string("[") + std::string(base_start);
 	} else {
-	  std::string("[") + std::string(filename);
+	  fmt_str += std::string("[") + std::string(filename);
 	}
       } else {
 	fmt_str += std::string("[") + std::string(filename);
@@ -148,8 +149,8 @@ namespace Gadgetron
     }
 
     if (append_cformatting_needed) {
-      fmt_str += std::string(cformatting); 
-      fmt = fmt_str.c_str();      
+      fmt_str += std::string(cformatting);
+      fmt = fmt_str.c_str();
     }
 
     va_list args;
@@ -157,6 +158,7 @@ namespace Gadgetron
     vprintf(fmt, args);
     va_end (args);
     fflush(stdout);
+
   }
 
   void GadgetronLogger::enableLogLevel(GadgetronLogLevel LEVEL)
@@ -172,13 +174,13 @@ namespace Gadgetron
       level_mask_[LEVEL] = false;
     }
   }
-  
+
   bool GadgetronLogger::isLevelEnabled(GadgetronLogLevel LEVEL)
   {
     if (LEVEL >= level_mask_.size()) return false;
     return level_mask_[LEVEL];
   }
-  
+
   void GadgetronLogger::enableAllLogLevels()
   {
     level_mask_.assign(GADGETRON_LOG_LEVEL_MAX,true);
@@ -189,20 +191,20 @@ namespace Gadgetron
     level_mask_.assign(GADGETRON_LOG_LEVEL_MAX,false);
   }
 
-  void GadgetronLogger::enableOutputOption(GadgetronLogOutput OUTPUT) 
+  void GadgetronLogger::enableOutputOption(GadgetronLogOutput OUTPUT)
   {
     if (OUTPUT < print_mask_.size()) {
       print_mask_[OUTPUT] = true;
     }
   }
 
-  void GadgetronLogger::disableOutputOption(GadgetronLogOutput OUTPUT) 
+  void GadgetronLogger::disableOutputOption(GadgetronLogOutput OUTPUT)
   {
     if (OUTPUT < print_mask_.size()) {
       print_mask_[OUTPUT] = false;
     }
   }
- 
+
   bool GadgetronLogger::isOutputOptionEnabled(GadgetronLogOutput OUTPUT)
   {
     if (OUTPUT < print_mask_.size()) {
@@ -210,13 +212,13 @@ namespace Gadgetron
     }
     return false;
   }
-  
-  void GadgetronLogger::enableAllOutputOptions() 
+
+  void GadgetronLogger::enableAllOutputOptions()
   {
     print_mask_.assign(GADGETRON_LOG_PRINT_MAX, true);
   }
 
-  void GadgetronLogger::disableAllOutputOptions() 
+  void GadgetronLogger::disableAllOutputOptions()
   {
     print_mask_.assign(GADGETRON_LOG_PRINT_MAX, false);
   }

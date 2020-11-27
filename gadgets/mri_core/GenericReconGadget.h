@@ -37,8 +37,14 @@ namespace Gadgetron {
         GADGET_PROPERTY_LIMITS(coil_map_algorithm, std::string, "Method for coil map estimation", "Inati",
             GadgetPropertyLimitsEnumeration, "Inati", "Inati_Iter");
 
+        GADGET_PROPERTY(coil_map_kernel_size_readout, size_t, "Coil map estimation, kernel size along read out", 7);
+        GADGET_PROPERTY(coil_map_kernel_size_phase, size_t, "Coil map estimation, kernel size along phase/slice encoding", 5);
+        GADGET_PROPERTY(coil_map_num_iter, size_t, "Coil map estimation, number of iterations", 10);
+        GADGET_PROPERTY(coil_map_thres_iter, double, "Coil map estimation, threshold to stop iteration", 1e-4);
+
     protected:
 
+        void send_out_image_array(IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);
         // --------------------------------------------------
         // variables for protocol
         // --------------------------------------------------

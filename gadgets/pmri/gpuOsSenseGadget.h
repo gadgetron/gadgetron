@@ -2,9 +2,6 @@
 #define gpuSbSenseGadget_H
 #pragma once
 
-#include <ace/Synch.h>
-#include <ace/Mutex.h>
-
 #include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"

@@ -11,7 +11,6 @@
 
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-#include "GadgetStreamController.h"
 
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"
@@ -34,7 +33,7 @@ namespace Gadgetron
     // --------------------------------------------------------------------------
     /// fill dicom image from ismrmrd header
     // --------------------------------------------------------------------------
-    EXPORTGADGETSDICOM void fill_dicom_image_from_ismrmrd_header(ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile);
+    EXPORTGADGETSDICOM void fill_dicom_image_from_ismrmrd_header(const ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile);
 
     // --------------------------------------------------------------------------
     /// write a key and its value into dicom image
@@ -44,7 +43,7 @@ namespace Gadgetron
     // --------------------------------------------------------------------------
     /// write ismrmrd image into a dcm image
     // --------------------------------------------------------------------------
-    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
     // with image attribute
-    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template<typename T> EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
 }

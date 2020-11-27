@@ -31,7 +31,7 @@ namespace Gadgetron {
         typedef typename BaseClass::Target3DType Target3DType;
         typedef typename BaseClass::Source3DType Source3DType;
 
-        typedef hoNDImage<float, D> DeformFieldType;
+        typedef hoNDImage<CoordType, D> DeformFieldType;
 
         typedef ValueType T;
         typedef ValueType element_type;

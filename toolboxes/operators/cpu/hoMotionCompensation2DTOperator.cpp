@@ -230,7 +230,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::warp_image(const hoNDArray<T
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<float>, float >;
-template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<double>, float >;
+template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<float>, double >;
+template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<double>, double >;
 
 }

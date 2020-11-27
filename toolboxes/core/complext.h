@@ -42,17 +42,14 @@ namespace Gadgetron {
             return _imag;
         }
 
-        __inline__ __host__ __device__ complext() {}
+        __inline__ complext() = default;
 
         __inline__ __host__ __device__ complext(T real, T imag) {
             _real = real;
             _imag = imag;
         }
 
-        __inline__ __host__ __device__ complext(const complext<T> &tmp) {
-            _real = tmp._real;
-            _imag = tmp._imag;
-        }
+        __inline__ complext(const complext<T> &tmp) = default;
 
         template<class R>
         __inline__ __host__ __device__ complext(const complext<R> &tmp) {
@@ -162,9 +159,13 @@ namespace Gadgetron {
     }
 
 
-
     typedef complext<float> float_complext;
     typedef complext<double> double_complext;
+
+    template <class T> struct is_complex_type { static constexpr bool value = false; };
+    template <class T> struct is_complex_type<std::complex<T>> { static constexpr bool value = true; };
+    template <class T> struct is_complex_type<complext<T>> { static constexpr bool value = true; };
+    template<class T> constexpr bool is_complex_type_v = is_complex_type<T>::value;
 
     template<class T>
     struct realType {
@@ -211,6 +212,9 @@ namespace Gadgetron {
     };
 
     template<class T>
+    using realType_t = typename realType<T>::Type;
+
+    template<class T>
     struct stdType {
         typedef T Type;
     };
@@ -238,6 +242,8 @@ namespace Gadgetron {
     struct stdType<float> {
         typedef float Type;
     };
+
+
 
     __inline__ __host__ __device__ double sgn(double x) {
         return (double(0) < x) - (x < double(0));

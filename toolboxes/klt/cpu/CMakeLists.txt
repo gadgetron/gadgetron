@@ -1,18 +1,6 @@
 if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_CPUKLT__)
 endif ()
-
-include_directories(
-  ${Boost_INCLUDE_DIR} 
-  ${ARMADILLO_INCLUDE_DIRS} 
-  ${MKL_INCLUDE_DIR} 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-  )
-
 add_library(gadgetron_toolbox_cpuklt SHARED 
   cpuklt_export.h 
   hoNDKLT.h
@@ -27,9 +15,28 @@ target_link_libraries(gadgetron_toolbox_cpuklt
                     gadgetron_toolbox_cpucore_math
                     )
 
-install(TARGETS gadgetron_toolbox_cpuklt DESTINATION lib COMPONENT main)
+
+
+target_include_directories(
+        gadgetron_toolbox_cpuklt
+        PUBLIC
+        $<INSTALL_INTERFACE:include/gadgetron>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+
+)
+
+install(TARGETS gadgetron_toolbox_cpuklt
+	EXPORT gadgetron-export
+		LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES
   cpuklt_export.h 
   hoNDKLT.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

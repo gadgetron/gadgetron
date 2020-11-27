@@ -4,24 +4,8 @@ elseif(WIN32)
     set(CMAKE_CXX_FLAGS -fpermissive)
 endif (WIN32)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${ARMADILLO_INCLUDE_DIRS}
-    ${CBLAS_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    )
-
-if (MKL_FOUND)
-    include_directories( ${MKL_INCLUDE_DIR} )
-    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif ()
 
 set(cpucore_math_header_files
-    cpucore_math_export.h
     hoNDArray_math.h
     hoNDImage_util.h
     hoNDImage_util.hxx
@@ -30,7 +14,6 @@ set(cpucore_math_header_files
 set(cpucore_math_src_files 
     hoNDArray_linalg.cpp )
 
-if (ARMADILLO_FOUND)
 
     set(cpucore_math_header_files 
         ${cpucore_math_header_files}
@@ -38,43 +21,42 @@ if (ARMADILLO_FOUND)
         hoNDArray_reductions.hxx
         hoArmadillo.h
         hoNDArray_elemwise.h
-        cpp_blas.h
+        hoNDArray_elemwise.hpp
+
+            cpp_blas.h
+            cpp_lapack.h
          )
 
     set(cpucore_math_src_files 
-        ${cpucore_math_src_files} 
+        ${cpucore_math_src_files}
         hoNDArray_reductions.cpp
         hoNDArray_elemwise.cpp
-        cpp_blas.cpp)
+        cpp_blas.cpp
+        cpp_lapack.cpp
+            )
 
-endif ()
+#set_source_files_properties(cpp_blas.cpp PROPERTIES COMPILE_FLAGS -fpermissive)
 add_library(gadgetron_toolbox_cpucore_math SHARED  ${cpucore_math_src_files} ${cpucore_math_header_files})
 set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-if (MKL_FOUND)
-    target_link_libraries(gadgetron_toolbox_cpucore_math 
+    target_link_libraries(gadgetron_toolbox_cpucore_math
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_log
-        ${ARMADILLO_LIBRARIES}
-        ${FFTW3_LIBRARIES} 
-        ${MKL_LIBRARIES}
-        ${CBLAS_LIBRARY}
-        ${Boost_LIBRARIES}
-    )
-else ()
-    target_link_libraries(gadgetron_toolbox_cpucore_math 
-        gadgetron_toolbox_cpucore
-        gadgetron_toolbox_log
-        ${ARMADILLO_LIBRARIES}
-        ${BLAS_LIBRARIES}
-        ${LAPACK_LIBRARIES}
-        ${FFTW3_LIBRARIES}
-        ${CBLAS_LIBRARY}
-        ${Boost_LIBRARIES}
-    )
-endif ()
+        armadillo
+        BLAS
+		${LAPACK_LIBRARIES}
+            )
 
-install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpucore_math
+        EXPORT gadgetron-export
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES 
     ${cpucore_math_header_files}
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

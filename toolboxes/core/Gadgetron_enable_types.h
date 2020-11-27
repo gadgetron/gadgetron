@@ -1,12 +1,14 @@
 #pragma once
 
-#include <boost/type_traits.hpp>
 #include "complext.h"
+#include <boost/type_traits.hpp>
 
 namespace Gadgetron {
-	template<class T> struct enable_operators : public boost::false_type{};
-	template<> struct enable_operators<float> : public boost::true_type{};
-	template<> struct enable_operators<Gadgetron::complext<float> > : public boost::true_type{};
-	template<> struct enable_operators<double> : public boost::true_type{};
-	template<> struct enable_operators<Gadgetron::complext<double> > : public boost::true_type{};
+
+    template <class T> constexpr bool enable_operator(){ return false; };
+    template <> constexpr bool enable_operator<float>(){ return true; };
+    template <> constexpr bool enable_operator<double>(){ return true; };
+
+    template <> constexpr bool enable_operator<complext<float>>(){ return true; };
+    template <> constexpr bool enable_operator<complext<double>>(){ return true; };
 }

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!--
+        Gadgetron generic recon chain for 2D and 3D cartesian FFT
+
+        This is an example of pure image processing chain
+
+        Author: Hui Xue
+        National Heart, Lung and Blood Institute, National Institutes of Health
+        10 Center Drive, Bethesda, MD 20814, USA
+        Email: hui.xue@nih.gov
+    -->
+
+    <!-- reader -->
+    <reader><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageReader</classname></reader>
+
+    <!-- writer -->
+    <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
+
+    <!-- perform FFT on incoming image -->
+    <gadget>
+        <name>ImageFFT</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFFTGadget</classname>
+    </gadget>
+
+    <!-- after recon processing -->
+    <gadget>
+        <name>ComplexToFloatAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ComplexToFloatGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>FloatToShortAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FloatToUShortGadget</classname>
+
+        <property><name>max_intensity</name><value>32767</value></property>
+        <property><name>min_intensity</name><value>0</value></property>
+        <property><name>intensity_offset</name><value>0</value></property>
+    </gadget>
+
+    <gadget>
+        <name>ImageFinish</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadget</classname>
+    </gadget>
+
+</gadgetronStreamConfiguration>

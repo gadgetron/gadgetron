@@ -4,6 +4,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_utils.h"
+#include "hoArmadillo.h"
 
 namespace Gadgetron{
 
@@ -53,20 +54,19 @@ hoNDKLT<T>& hoNDKLT<T>::operator=(const Self& v)
 template<typename T>
 void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean)
 {
-    try
-    {
-        size_t NDim = data.get_number_of_dimensions();
-        size_t N = data.get_size(NDim-1);
 
-        size_t M = data.get_number_of_elements() / N;
+    size_t NDim = data.get_number_of_dimensions();
+    size_t N = data.get_size(NDim-1);
 
-        hoNDArray<T> data2D;
-        data2D.create(M, N, const_cast<T*>(data.begin()));
+    size_t M = data.get_number_of_elements() / N;
 
-        V_.create(N, N);
-        E_.create(N, 1);
-        Gadgetron::clear(V_);
-        Gadgetron::clear(E_);
+    hoNDArray<T> data2D;
+    data2D.create(M, N, const_cast<T*>(data.begin()));
+
+    V_.create(N, N);
+    E_.create(N, 1);
+    Gadgetron::clear(V_);
+    Gadgetron::clear(E_);
 
         size_t m, n;
 
@@ -103,141 +103,87 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
         arma::Mat<T> Um;
         arma::Col<value_type> Sv;
 
-        GADGET_CHECK_THROW(arma::svd_econ(Um, Sv, Vm, Am, 'r'));
+		
+
+        arma::svd_econ(Um, Sv, Vm, Am, 'r');
+		
 
         for (n = 0; n < N; n++)
         {
             value_type v = Sv(n);
-            E_(n) = v*v; // the E is eigen value, the square of singular value
+            E_(n) = v * v; // the E is eigen value, the square of singular value
         }
 
-        //// compute mean
-        //hoNDArray<T> mean(N);
-
-
-        //// compute data'*data
-        //char uplo = 'L';
-        //bool isAHA = true;
-        //Gadgetron::herk(V, data2D, uplo, isAHA);
-
-        //hoMatrix<T> m;
-        //m.createMatrix(N, N, V.begin());
-        //m.copyLowerTriToUpper();
-
-        //if (remove_mean)
-        //{
-        //    // compute and subtract mean for every mode
-        //    hoNDArray<T> mean(N, 1);
-        //    hoNDArray<T> dataMean(1, N, mean.begin());
-        //    Gadgetron::sum_over_dimension(data2D, dataMean, 0);
-
-        //    Gadgetron::scal((T)(1.0 / M), mean);
-
-        //    hoNDArray<T> MMH(N, N);
-        //    Gadgetron::clear(MMH);
-
-        //    hoNDArray<T> meanCopy(mean);
-        //    Gadgetron::gemm(MMH, meanCopy, false, mean, true);
-        //    Gadgetron::subtract(V, MMH, V);
-        //}
-
-        //// compute eigen vector and values
-        //Gadgetron::heev(V, E);
-
-        //// make the first eigen channel with the largest eigen value
-        //hoNDArray<T> V_flipped(V), E_flipped(E);
-        //for (size_t r = 0; r < N; r++)
-        //{
-        //    for (size_t c = 0; c < N; c++)
-        //    {
-        //        V_flipped(r, c) = V(r, N - 1 - c);
-        //    }
-
-        //    E_flipped(r) = E(N - 1 - r);
-        //}
-
-        //V = V_flipped;
-        //E = E_flipped;
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDKLT<T>::compute_eigen_vector(output_length) ... ");
-    }
 }
 
 template<typename T>
 void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_length, bool remove_mean)
 {
-    try
+
+    size_t NDim = data.get_number_of_dimensions();
+    GADGET_CHECK_THROW(dim<NDim);
+
+    size_t N = data.get_size(dim);
+
+    if (output_length > 0 && output_length <= N)
     {
-        size_t NDim = data.get_number_of_dimensions();
-        GADGET_CHECK_THROW(dim<NDim);
-
-        size_t N = data.get_size(dim);
-
-        if (output_length > 0 && output_length <= N)
-        {
-            output_length_ = output_length;
-        }
-        else
-        {
-            output_length_ = N;
-        }
-
-        std::vector<size_t> dimD;
-        data.get_dimensions(dimD);
-
-        size_t K = 1;
-        for (size_t n = dim + 1; n < NDim; n++) K *= dimD[n];
-
-        if (dim == NDim - 1)
-        {
-            this->compute_eigen_vector(data, remove_mean);
-        }
-        else if (K == 1)
-        {
-            std::vector<size_t> dimShrinked(dim + 1);
-            memcpy(&dimShrinked[0], &dimD[0], sizeof(size_t)*(dim + 1));
-
-            hoNDArray<T> dataS;
-            dataS.create(dimShrinked, const_cast<T*>(data.begin()));
-
-            this->compute_eigen_vector(dataS, remove_mean);
-        }
-        else
-        {
-            std::vector<size_t> dimOrder(NDim), dimPermuted(dimD);
-
-            size_t l;
-            for (l = 0; l<NDim; l++)
-            {
-                dimOrder[l] = l;
-                dimPermuted[l] = dimD[l];
-            }
-
-            dimOrder[dim] = NDim - 1;
-            dimOrder[NDim - 1] = dim;
-
-            dimPermuted[dim] = dimD[NDim - 1];
-            dimPermuted[NDim - 1] = dimD[dim];
-
-            hoNDArray<T> dataP;
-            dataP.create(dimPermuted);
-            Gadgetron::permute( data, dataP, dimOrder);
-
-            this->compute_eigen_vector(dataP, remove_mean);
-        }
-
-        GADGET_CHECK_THROW(V_.get_size(0)==N);
-        GADGET_CHECK_THROW(V_.get_size(1) == N);
-        GADGET_CHECK_THROW(E_.get_size(0) == N);
-
-        M_.create(N, output_length_, V_.begin());
+        output_length_ = output_length;
     }
-    catch (...)
+    else
     {
-        GADGET_THROW("Errors in hoNDKLT<T>::prepare(output_length) ... ");
+        output_length_ = N;
     }
+
+    std::vector<size_t> dimD;
+    data.get_dimensions(dimD);
+
+    size_t K = 1;
+    for (size_t n = dim + 1; n < NDim; n++) K *= dimD[n];
+
+    if (dim == NDim - 1)
+    {
+        this->compute_eigen_vector(data, remove_mean);
+    }
+    else if (K == 1)
+    {
+        std::vector<size_t> dimShrinked(dim + 1);
+        memcpy(&dimShrinked[0], &dimD[0], sizeof(size_t)*(dim + 1));
+
+        hoNDArray<T> dataS;
+        dataS.create(dimShrinked, const_cast<T*>(data.begin()));
+
+        this->compute_eigen_vector(dataS, remove_mean);
+    }
+    else
+    {
+        std::vector<size_t> dimOrder(NDim), dimPermuted(dimD);
+
+        size_t l;
+        for (l = 0; l<NDim; l++)
+        {
+            dimOrder[l] = l;
+            dimPermuted[l] = dimD[l];
+        }
+
+        dimOrder[dim] = NDim - 1;
+        dimOrder[NDim - 1] = dim;
+
+        dimPermuted[dim] = dimD[NDim - 1];
+        dimPermuted[NDim - 1] = dimD[dim];
+
+        hoNDArray<T> dataP;
+        dataP.create(dimPermuted);
+        Gadgetron::permute( data, dataP, dimOrder);
+
+        this->compute_eigen_vector(dataP, remove_mean);
+    }
+
+    GADGET_CHECK_THROW(V_.get_size(0)==N);
+    GADGET_CHECK_THROW(V_.get_size(1) == N);
+    GADGET_CHECK_THROW(E_.get_size(0) == N);
+
+    M_.create(N, output_length_, V_.begin());
+ 
 }
 
 template<typename T>

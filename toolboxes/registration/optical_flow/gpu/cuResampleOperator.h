@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cuNDArray_math.h"
 #include "resampleOperator.h"
+#include "cuNDArray_math.h"
 #include "gpureg_export.h"
 
 #include <thrust/device_vector.h>

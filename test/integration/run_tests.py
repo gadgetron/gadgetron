@@ -9,6 +9,7 @@ import json
 import argparse
 import itertools
 import subprocess
+from pathlib import Path
 
 
 def output_csv(stats, filename):
@@ -21,28 +22,14 @@ def output_csv(stats, filename):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-G', '--gadgetron-home',
-                        default=os.environ.get('GADGETRON_HOME'),
-                        help="Gadgetron installation home")
-    parser.add_argument('-I', '--ismrmrd-home',
-                        default=os.environ.get('ISMRMRD_HOME'),
-                        help="ISMRMRD installation home")
 
-    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of Gadgetron instance")
-    parser.add_argument('-a', '--host', type=str, default="localhost", help="Address of (external) Gadgetron host")
-
-    parser.add_argument('-e', '--external', action='store_const', const=['-e'], default=[],
-                        help="Use external Gadgetron; don't start a new instance each test.")
-
-    parser.add_argument('-s', '--stats', type=str, default=None,
-                        help="Output individual test stats to CSV file.")
-
-    parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
-
-    args = parser.parse_args()
+    script_dir = Path(sys.argv[0]).parent
+    subscript = script_dir / "run_gadgetron_test.py"
+    stats = []
+    passed = []
+    failed = []
+    skipped = []
 
     def pass_handler(test):
         passed.append(test)
@@ -52,22 +39,48 @@ def main():
     def skip_handler(test):
         skipped.append(test)
 
-    def fail_handler(test):
+    def ignore_failure(test):
+        failed.append(test)
+
+    def exit_on_failure(_):
         sys.exit(1)
 
-    stats = []
-    passed = []
-    skipped = []
-    handlers = {0: pass_handler, 1: fail_handler, 2: skip_handler}
+    parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of Gadgetron instance")
+    parser.add_argument('-a', '--host', type=str, default="localhost", help="Address of (external) Gadgetron host")
+
+    parser.add_argument('-e', '--external', action='store_const', const=['-e'], default=[],
+                        help="Use external Gadgetron; don't start a new instance each test.")
+
+    parser.add_argument('-d', '--data-folder',
+                        type=str, default='data',
+                        help="Look for test data in the specified folder")
+    parser.add_argument('-t', '--test-folder',
+                        type=str, default='test',
+                        help="Save Gadgetron and Client output and logs to specified folder")
+
+    parser.add_argument('-F', '--ignore-failures', dest='failure_handler',
+                        action='store_const', const=ignore_failure, default=exit_on_failure,
+                        help="Ignore a failing cases; keep running tests.")
+    parser.add_argument('-s', '--stats', type=str, default=None,
+                        help="Output individual test stats to CSV file.")
+
+    parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
+
+    args = parser.parse_args()
+
+    handlers = {0: pass_handler, 1: args.failure_handler, 2: skip_handler}
 
     tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
     for i, test in enumerate(tests, start=1):
         print("\nTest {} of {}: {}\n".format(i, len(tests), test))
-        proc = subprocess.run(['python3', 'run_gadgetron_test.py',
-                               '-G', args.gadgetron_home,
-                               '-I', args.ismrmrd_home,
+        proc = subprocess.run([sys.executable, str(subscript),
                                '-a', str(args.host),
+                               '-d', str(args.data_folder),
+                               '-t', str(args.test_folder),
                                '-p', str(args.port)] + args.external + [test])
 
         handlers.get(proc.returncode)(test)
@@ -75,7 +88,12 @@ def main():
     if args.stats:
         output_csv(stats, args.stats)
 
-    print("\n{} tests passed. {} tests skipped.".format(len(passed), len(skipped)))
+    if failed:
+        print("\nFailed tests:")
+        for test in failed:
+            print("\t{}".format(test))
+
+    print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
 

@@ -2,18 +2,7 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_GPUOPERATORS__)
 endif ()
 
-if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
-include_directories(
-  ${CUDA_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CUDA_INCLUDE_DIRS}
-  )
 
 cuda_add_library(gadgetron_toolbox_gpuoperators SHARED 
   ../generalOperator.h
@@ -33,14 +22,25 @@ cuda_add_library(gadgetron_toolbox_gpuoperators SHARED
 
 set_target_properties(gadgetron_toolbox_gpuoperators PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_gpuoperators 
+target_link_libraries(gadgetron_toolbox_gpuoperators
+        gadgetron_toolbox_operator
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_gpuoperators DESTINATION lib COMPONENT main)
+
+target_include_directories(gadgetron_toolbox_gpuoperators
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR})
+
+install(TARGETS gadgetron_toolbox_gpuoperators
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES 
   cuImageOperator.h
@@ -64,3 +64,5 @@ install(FILES
   gpuoperators_export.h
   hoCuOperator.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

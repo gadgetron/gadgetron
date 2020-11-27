@@ -13,7 +13,6 @@
 #include "CUBLASContextProvider.h"
 #include "GPUTimer.h"
 #include "hoNDArray_fileio.h"
-#include "hoNDArray_utils.h"
 #include "htgrappa.h"
 
 #include <cublas_v2.h>
@@ -291,18 +290,7 @@ namespace Gadgetron {
     {
       //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
       //GPUTimer cpu_invert_time("CPU Inversion time");
-      boost::shared_ptr< hoNDArray<float_complext> > AHA_h = AHA.to_host();
-      boost::shared_ptr< hoNDArray<float_complext> > AHrhs_h = rhs.to_host();
-      
-      std::vector<size_t> perm_dim = {1,0};
-      
-      permute(*AHA_h,perm_dim);
-      permute(*AHrhs_h,perm_dim);
-      
-      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
-
-      permute(*AHrhs_h,perm_dim);
-      rhs = cuNDArray<float_complext>(*AHrhs_h);
+      ht_grappa_solve_spd_system(AHA, rhs);
     }
 
 

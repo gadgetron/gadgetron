@@ -15,7 +15,6 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-#include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDImageContainer2D.h"
 #include "hoNDArray_utils.h"
@@ -27,7 +26,6 @@
 #include "mri_core_data.h"
 #include "mri_core_utility.h"
 #include "ImageIOAnalyze.h"
-#include "GadgetStreamController.h"
 #include "GadgetronTimer.h"
 
 #ifdef USE_OMP
@@ -79,7 +77,7 @@ namespace Gadgetron {
         typedef Gadget1< Image2DBufferType > BaseClass;
 
         GenericImageReconGadgetBase();
-        ~GenericImageReconGadgetBase();
+        virtual ~GenericImageReconGadgetBase();
 
         /// get the 3D images from 2D buffer
         Image3DType* getImage3DFromImage2D(Image2DBufferType& ori, size_t cha, size_t slc, size_t con, size_t phs, size_t rep, size_t set, size_t ave);
@@ -235,7 +233,7 @@ namespace Gadgetron {
 
         virtual int process_config(ACE_Message_Block* mb);
 
-        int process(ACE_Message_Block* mb);
+        int process(ACE_Message_Block* mb) override;
 
         virtual int process_image(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1);
         int process2D(GadgetContainerMessage<Image2DBufferType>* m1);

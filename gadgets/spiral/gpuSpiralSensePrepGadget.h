@@ -13,13 +13,13 @@
 #include "vector_td.h"
 #include "cuNFFT.h"
 
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
+#include "../../toolboxes/mri/spiral/TrajectoryParameters.h"
 #include <boost/optional.hpp>
+#include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
+#include <complex>
+#include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
-#include "TrajectoryParameters.h"
 
 namespace Gadgetron {
 

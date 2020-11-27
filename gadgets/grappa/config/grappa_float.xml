@@ -1,105 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
-        xmlns="http://gadgetron.sf.net/gadgetron"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-         
-    <reader>
-      <slot>1008</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
-    </reader>
-    <reader>
-        <slot>1026</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
-    </reader>
+<configuration>
+    <version>2</version>
 
-     <writer>
-      <slot>1022</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriter</classname>
-    </writer>
+    <readers>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+    </readers>
 
-    <gadget>
-      <name>NoiseAdjust</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>NoiseAdjustGadget</classname>
-    </gadget>
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
 
-   <gadget>
-      <name>PCA</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>PCACoilGadget</classname>
-    </gadget>
+    <stream>
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>NoiseAdjustGadget</classname>
+        </gadget>
 
-    <gadget>
-      <name>CoilReduction</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>CoilReductionGadget</classname>
-      <property><name>coils_out</name><value>16</value></property>
-    </gadget>
-    
-    <!-- RO asymmetric echo handling -->
-    <gadget>
-        <name>AsymmetricEcho</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>AsymmetricEchoAdjustROGadget</classname>
-    </gadget>
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>PCACoilGadget</classname>
+        </gadget>
 
-    <gadget>
-      <name>RemoveROOversampling</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>RemoveROOversamplingGadget</classname>
-    </gadget>
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>CoilReductionGadget</classname>
+            <property name="coils_out" value="8"/>
+        </gadget>
 
-    <gadget>
-      <name>Grappa</name>
-      <dll>gadgetron_grappa</dll>
-      <classname>GrappaGadget</classname>
-      <property><name>target_coils</name><value>8</value></property>
-      <property><name>use_gpu</name><value>true</value></property>
-    </gadget>
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>AsymmetricEchoAdjustROGadget</classname>
+        </gadget>
 
-    <gadget>
-      <name>GrappaUnmixing</name>
-      <dll>gadgetron_grappa</dll>
-      <classname>GrappaUnmixingGadget</classname>
-    </gadget>
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>RemoveROOversamplingGadget</classname>
+        </gadget>
 
-     <gadget>
-      <name>Extract</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ExtractGadget</classname>
-    </gadget>
+        <gadget>
+            <dll>gadgetron_grappa</dll>
+            <classname>SliceAccumulator</classname>
+        </gadget>
 
-    <!--
-    <gadget>
-      <name>ImageWrite</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageWriterGadgetFLOAT</classname>
-    </gadget>
-    -->
+        <parallel>
+            <branch>
+                <dll>gadgetron_grappa</dll>
+                <classname>AcquisitionFanout</classname>
+            </branch>
 
-    <!--
-    <gadget>
-      <name>AutoScale</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>AutoScaleGadget</classname>
-    </gadget>
-    -->
-    
-    <!--
-    <gadget>
-      <name>FloatToShort</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>FloatToUShortGadget</classname>
-    </gadget>
-     -->
+            <stream key="images">
+                <gadget>
+                    <dll>gadgetron_grappa</dll>
+                    <classname>ImageAccumulator</classname>
+                </gadget>
+            </stream>
 
-    <gadget>
-      <name>ImageFinish</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadget</classname>
-    </gadget>
+            <stream key="weights">
+                <gadget>
+                    <dll>gadgetron_grappa</dll>
+                    <classname>gpuWeightsCalculator</classname>
+                </gadget>
+            </stream>
 
-</gadgetronStreamConfiguration>
+            <merge>
+                <dll>gadgetron_grappa</dll>
+                <classname>Unmixing</classname>
+            </merge>
+        </parallel>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>ExtractGadget</classname>
+        </gadget>
+    </stream>
+</configuration>

@@ -221,11 +221,11 @@ void coil_map_2d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
     }
 }
 
-template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
-template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
+template void coil_map_2d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
+template void coil_map_2d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
 
-template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t power);
-template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t power);
+template void coil_map_2d_Inati(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t power);
+template void coil_map_2d_Inati(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t power);
 // ------------------------------------------------------------------------
 
 template<typename T> 
@@ -398,11 +398,11 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
     }
 }
 
-template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t power);
-template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t power);
+template void coil_map_3d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t power);
+template void coil_map_3d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t power);
 
-template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t kz, size_t power);
-template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t kz, size_t power);
+template void coil_map_3d_Inati(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t kz, size_t power);
+template void coil_map_3d_Inati(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t kz, size_t power);
 // ------------------------------------------------------------------------
 
 template<typename T> 
@@ -512,11 +512,11 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
     }
 }
 
-template EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t iterNum, double thres);
+template void coil_map_2d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t iterNum, float thres);
+template void coil_map_2d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t iterNum, double thres);
 
-template EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t iterNum, double thres);
+template void coil_map_2d_Inati_Iter(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t iterNum, float thres);
+template void coil_map_2d_Inati_Iter(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t iterNum, double thres);
 // ------------------------------------------------------------------------
 
 template<typename T> 
@@ -611,11 +611,11 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
 }
 
-template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
+template void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
+template void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
 
-template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
+template void coil_map_3d_Inati_Iter(const hoNDArray< complext<float> >& data, hoNDArray< complext<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
+template void coil_map_3d_Inati_Iter(const hoNDArray< complext<double> >& data, hoNDArray< complext<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
 // ------------------------------------------------------------------------
 
 template<typename T> void coil_map_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t power)
@@ -674,9 +674,16 @@ template<typename T> void coil_map_Inati(const hoNDArray<T>& data, hoNDArray<T>&
     }
 }
 
-template EXPORTMRICORE void coil_map_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t power);
-template EXPORTMRICORE void coil_map_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t power);
+template void coil_map_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t power);
+template void coil_map_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t power);
 
+template <typename T> hoNDArray<T> coil_map_Inati(const hoNDArray<T>& data, size_t ks, size_t kz, size_t power) {
+    auto coilMap = hoNDArray<T>(data.dimensions());
+    coil_map_Inati(data, coilMap, ks, kz, power);
+    return coilMap;
+}
+template hoNDArray<std::complex<float>> coil_map_Inati(const hoNDArray< std::complex<float> >& data, size_t ks, size_t kz, size_t power);
+template hoNDArray<std::complex<double>> coil_map_Inati(const hoNDArray< std::complex<double> >& data, size_t ks, size_t kz, size_t power);
 // ------------------------------------------------------------------------
 
 template<typename T> void coil_map_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres)
@@ -735,8 +742,8 @@ template<typename T> void coil_map_Inati_Iter(const hoNDArray<T>& data, hoNDArra
     }
 }
 
-template EXPORTMRICORE void coil_map_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
+template void coil_map_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
+template void coil_map_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
 
 
 // ------------------------------------------------------------------------
@@ -772,7 +779,7 @@ void coil_combine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, size_t 
 
         std::vector<size_t> dimCombined(dim);
         dimCombined.erase(dimCombined.begin() + cha_dim);
-        combined.create(&dimCombined);
+        combined.create(dimCombined);
 
         size_t N = data.get_size(cha_dim+1);
         size_t coilN = coilMap.get_size(cha_dim + 1);
@@ -857,9 +864,17 @@ void coil_combine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, size_t 
     }
 }
 
-template EXPORTMRICORE void coil_combine(const hoNDArray< std::complex<float> >& data, const hoNDArray< std::complex<float> >& coilMap, size_t cha_dim, hoNDArray< std::complex<float> >& combined);
-template EXPORTMRICORE void coil_combine(const hoNDArray< std::complex<double> >& data, const hoNDArray< std::complex<double> >& coilMap, size_t cha_dim, hoNDArray< std::complex<double> >& combined);
+template void coil_combine(const hoNDArray< std::complex<float> >& data, const hoNDArray< std::complex<float> >& coilMap, size_t cha_dim, hoNDArray< std::complex<float> >& combined);
+template void coil_combine(const hoNDArray< std::complex<double> >& data, const hoNDArray< std::complex<double> >& coilMap, size_t cha_dim, hoNDArray< std::complex<double> >& combined);
 
+template<class T> hoNDArray<T> coil_combine(const hoNDArray< T >& data, const hoNDArray< T >& coilMap, size_t cha_dim){
+    auto combined = hoNDArray<T>{};
+    coil_combine(data,coilMap,cha_dim,combined);
+    return combined;
+}
+
+template hoNDArray<std::complex<float>> coil_combine(const hoNDArray< std::complex<float> >& data, const hoNDArray< std::complex<float> >& coilMap, size_t cha_dim);
+template hoNDArray<std::complex<double>> coil_combine(const hoNDArray< std::complex<double> >& data, const hoNDArray< std::complex<double> >& coilMap, size_t cha_dim);
 
 namespace {
     template<class REAL, unsigned int D>
@@ -867,14 +882,14 @@ namespace {
 
     template<class REAL> struct coil_algorithm_wrapper<REAL,2> {
         static hoNDArray<complext<REAL>> estimate_b1_map(const hoNDArray<complext<REAL>>& data){
-            hoNDArray<float_complext> output(data.get_dimensions());
+            hoNDArray<float_complext> output(data.dimensions());
             coil_map_2d_Inati(data,output);
             return output;
         }
     };
     template<class REAL> struct coil_algorithm_wrapper<REAL,3> {
         static hoNDArray<complext<REAL>> estimate_b1_map(const hoNDArray<complext<REAL>>& data){
-            hoNDArray<float_complext> output(data.get_dimensions());
+            hoNDArray<float_complext> output(data.dimensions());
             coil_map_3d_Inati_Iter(data,output);
             return output;
         }
@@ -889,8 +904,8 @@ hoNDArray<complext<REAL>> estimate_b1_map(const hoNDArray<complext<REAL>>& data)
 }
 
 
-template EXPORTMRICORE hoNDArray<complext<float>> estimate_b1_map<float,2>(const hoNDArray<float_complext>& data);
-template EXPORTMRICORE hoNDArray<complext<float>> estimate_b1_map<float,3>(const hoNDArray<float_complext>& data);
+template hoNDArray<complext<float>> estimate_b1_map<float,2>(const hoNDArray<float_complext>& data);
+template hoNDArray<complext<float>> estimate_b1_map<float,3>(const hoNDArray<float_complext>& data);
 
 
 

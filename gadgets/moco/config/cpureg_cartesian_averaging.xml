@@ -78,6 +78,7 @@
     <dll>gadgetron_mricore</dll>
     <classname>PhysioInterpolationGadget</classname>
     <property><name>mode</name><value>0</value></property>
+    <property><name>phase</name><value>30</value></property>
   </gadget>
 
   <gadget>
@@ -94,6 +95,7 @@
     <property><name>beta</name><value>1.0</value></property>
     <property><name>num_multiresolution_levels</name><value>3</value></property>
     <property><name>output_convergence</name><value>true</value></property>
+    <property><name>phase</name><value>phase@PhysioInterpolationGadget</value></property>
   </gadget>
   
   <!--

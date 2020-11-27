@@ -156,7 +156,7 @@ namespace Gadgetron {
     template <typename ValueType> 
     inline bool hoImageRegRigid2DTransformation<ValueType>::invertTransformation()
     {
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::getri(matrix_) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::invert(matrix_) );
         GADGET_CHECK_RETURN_FALSE( this->extractParametersFromTransformationMatrix(matrix_, tx_, ty_, rz_) );
         return true;
     }

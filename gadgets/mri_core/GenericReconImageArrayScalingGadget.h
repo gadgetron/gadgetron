@@ -67,7 +67,5 @@ namespace Gadgetron {
         // scale the recon images
         virtual int compute_and_apply_scaling_factor(IsmrmrdImageArray& res, size_t encoding);
 
-        // close call
-        int close(unsigned long flags);
     };
 }

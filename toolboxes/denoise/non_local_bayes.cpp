@@ -1,8 +1,3 @@
-//
-// Created by dchansen on 6/20/18.
-//
-// Needless comment
-
 #include "non_local_bayes.h"
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
@@ -12,7 +7,6 @@
 
 namespace Gadgetron {
     namespace Denoise {
-
 
         namespace {
 
@@ -123,7 +117,7 @@ namespace Gadgetron {
 
             template<class T>
             void
-            filter_patches(std::vector<ImagePatch<T>> &patches, int n_patches, const arma::Col<T> &reference_patch) {
+            filter_patches(std::vector<ImagePatch<T>> &patches, int max_n_patches, const arma::Col<T> &reference_patch) {
 
                 auto distances = std::vector<float>(patches.size());
                 transform(patches.begin(), patches.end(), distances.begin(),
@@ -135,7 +129,7 @@ namespace Gadgetron {
                 sort(patch_indices.begin(), patch_indices.end(),
                      [&](auto v1, auto v2) { return distances[v1] < distances[v2]; });
 
-
+                int n_patches = std::min<int>(patches.size(),max_n_patches);
                 std::vector<ImagePatch<T>> best_patches(n_patches);
 
                 for (int i = 0; i < n_patches; i++) {
@@ -169,11 +163,9 @@ namespace Gadgetron {
                     return;
                 }
 
-
                 auto covariance_matrix = get_covariance_matrix(patches, mean_patch);
                 arma::Mat<T> noise_covariance = covariance_matrix + noise_std * noise_std * arma::eye<arma::Mat<T>>(
                         arma::size(covariance_matrix));
-
                 auto inv_cov = arma::Mat<T>(arma::size(covariance_matrix));
                 if (inv(inv_cov, noise_covariance)) {
                     for (auto &patch : patches) {
@@ -190,46 +182,39 @@ namespace Gadgetron {
                 if (image.get_number_of_dimensions() != 2)
                     throw std::invalid_argument("non_local_bayes: image must be 2 dimensional");
 
-
                 constexpr int patch_size = 5;
+                constexpr int n_patches = 50;
 
-                const int n_patches = 50;
-
-                hoNDArray<T> result(image.get_dimensions());
+                hoNDArray<T> result(image.dimensions());
                 result.fill(0);
 
-                hoNDArray<bool> mask(image.get_dimensions());
+                hoNDArray<bool> mask(image.dimensions());
                 mask.fill(true);
 
-                hoNDArray<int> count(image.get_dimensions());
+                hoNDArray<int> count(image.dimensions());
                 count.fill(0);
 
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
-                        from_std_vector<size_t, 2>(*image.get_dimensions()));
+                        from_std_vector<size_t, 2>(image.dimensions())
+                );
 
 #pragma omp parallel for num_threads(4)
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
                         if (mask(kx, ky)) {
-
                             auto reference_patch = get_patch(image, kx, ky, patch_size, image_dims);
                             auto patches = create_patches(image, kx, ky, patch_size, search_window, image_dims);
 
                             filter_patches(patches, n_patches, reference_patch);
-
-
                             denoise_patches(patches, noise_std);
-
 
                             for (auto &patch : patches) {
                                 #pragma omp critical
                                 add_patch(patch, result, count, patch_size, image_dims);
                                 mask(patch.center_x, patch.center_y) = false;
                             }
-
                         }
-
                     }
                 }
 
@@ -250,10 +235,11 @@ namespace Gadgetron {
                 std::vector<size_t> image_dims = {image.get_size(0), image.get_size(1)};
                 size_t image_elements = image_dims[0] * image_dims[1];
 
-                auto result = hoNDArray<T>(image.get_dimensions());
+                auto result = hoNDArray<T>(image.dimensions());
 
                 hoNDArray<T> result_view;
                 result_view.create(image_dims);
+                #pragma omp parallel for
                 for (int i = 0; i < n_images; i++) {
 
                     auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));

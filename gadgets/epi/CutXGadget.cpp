@@ -60,7 +60,7 @@ namespace Gadgetron{
                 dim[0] = cutNx_;
                 dim[1] = m2->getObjectPtr()->get_size(1);
 
-                m3->getObjectPtr()->create(&dim);
+                m3->getObjectPtr()->create(dim);
 
                 size_t cha;
                 for ( cha=0; cha<dim[1]; cha++ )

@@ -67,7 +67,7 @@ namespace Gadgetron{
       // Determine image coordinate of current neighbor
       //
 
-      const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+      const typename uintd<D>::Type stride = idx_to_co( i, twos );
 
       if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
 
@@ -87,7 +87,7 @@ namespace Gadgetron{
       // Read corresponding pixel value
       //
     
-      T image_value = image[co_to_idx<D>(vector_td<unsigned int,D>(co_stride), matrix_size) + batch_no*prod(matrix_size)];
+      T image_value = image[co_to_idx(vector_td<unsigned int,D>(co_stride), matrix_size) + batch_no*prod(matrix_size)];
     
       // Determine weight
       //
@@ -129,7 +129,7 @@ namespace Gadgetron{
       const unsigned int batch_no = idx/num_elements_mat;
       const unsigned int idx_in_batch = idx-batch_no*num_elements_mat;
     
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uintd<D>::Type co = idx_to_co( idx_in_batch, matrix_size );
 
       typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co);
       for( unsigned int dim=0; dim<D; dim++ )
@@ -159,7 +159,7 @@ namespace Gadgetron{
         // Determine image coordinate of current neighbor
         //
         
-        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        const typename uintd<D>::Type stride = idx_to_co( i, twos );
         
         if( weak_greater_equal( stride, matrix_size ) ) non_zero = false; // For dimensions of size 1
         
@@ -180,7 +180,7 @@ namespace Gadgetron{
           // Write out sort keys (moving image resampling indices).
           //
           
-          sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(vector_td<unsigned int,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
+          sort_keys[idx+i*num_elements_ext] = co_to_idx(vector_td<unsigned int,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
         }
         else{
           sort_keys[idx+i*num_elements_ext] = idx; // Could be anything, weight is zero

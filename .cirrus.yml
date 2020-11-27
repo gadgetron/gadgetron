@@ -1,20 +1,24 @@
 build_task:
   container:
     matrix:
-      image: gadgetron/ubuntu_1604_cuda92_cudnn7_base
-      image: gadgetron/ubuntu_1604_cuda90_cudnn7_base
-      image: gadgetron/ubuntu_1804_cuda92_cudnn7_base
+      image: nvidia/cuda:11.0-devel-ubuntu20.04
     cpu: 8
     memory: 24
 
 
+  depdendencies_script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git-core wget make cmake gcc-multilib libgtest-dev libboost-all-dev 
+      libarmadillo-dev libopenblas-dev libfftw3-dev liblapack-dev liblapacke-dev 
+      libxml2-dev libxslt-dev libpugixml-dev libhdf5-dev libplplot-dev libdcmtk-dev librange-v3-dev
+      python3-dev python3-pip python3-h5py python3-scipy ninja-build 
+    - pip3 install pyxb
   mtime_script:
     - apt-get update
     - apt-get install ruby-full -y
     - gem install mtime_cache
 
-
-  mdkir_script:
+  mkdir_script:
     - mkdir /opt/code
   ismrmrd_cache:
     folder: /opt/code/ismrmrd
@@ -34,46 +38,25 @@ build_task:
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
     - make install
 
-  siemens_to_ismrmrd_cache:
-    folder: /opt/code/siemens_to_ismrmrd
-    populate_script:
-    - cd /opt/code
-    - git clone https://github.com/ismrmrd/siemens_to_ismrmrd.git
-    - cd siemens_to_ismrmrd
-    - mkdir build
-    - cd build
-    - cmake ..
-    - make -j8
-    fingerprint_script:
-      - git ls-remote https://github.com/ismrmrd/siemens_to_ismrmrd.git  | grep HEAD | awk '{ print $1}'
-
 
   ismrmrd_python_script:
     - pip3 install  git+https://github.com/ismrmrd/ismrmrd-python.git
     - pip3 install  git+https://github.com/ismrmrd/ismrmrd-python-tools.git
 
-  install_siemens_to_ismrmrd_script:
-  - cd /opt/code/siemens_to_ismrmrd/build
-  - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
-  - make install
-
-
-
   make_build_cache:
     folder: build
     fingerprint_script:
-      - git branch | grep \* | cut -d ' ' -f2
+      - echo "ninja $(git branch | grep \* | cut -d ' ' -f2)"
     populate_script:
     - mkdir build
 
   make_script:
     - cd build
-    - cmake .. -DBUILD_WITH_PYTHON3=ON
+    - cmake .. -G Ninja
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
-    - make -j8
-    - make install
+    - ninja
+    - ninja install
     - cd /usr/local/share/gadgetron/config
-    - cp gadgetron.xml.example gadgetron.xml
 
 
 

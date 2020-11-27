@@ -37,7 +37,7 @@ public:
 		T* in = in_array->get_data_ptr();
 		T* out = out_array->get_data_ptr();
 
-		vector_td<unsigned int,D> dims = from_std_vector<unsigned int, D>(*(in_array->get_dimensions()));
+		auto dims = vector_td<int64_t,D>(from_std_vector<size_t, D>(in_array->dimensions()));
 
 		if (!accumulate)
 			clear(out_array);
@@ -45,12 +45,12 @@ public:
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-		for (int idx=0; idx < in_array->get_number_of_elements(); idx++){
+		for (int64_t idx=0; idx < in_array->get_number_of_elements(); idx++){
 
 			T xi = in[idx];
 			T result = T(0);
 
-			vector_td<unsigned int,D> co = idx_to_co<D>(idx, dims);
+			vector_td<int64_t,D> co = idx_to_co(idx, dims);
 
 			REAL grad = gradient_(in,dims,co);
 
@@ -58,7 +58,7 @@ public:
 				result += REAL(D)*xi/grad;
 				for (int i = 0; i < D; i++){
 					co[i]+=1;
-					result -= in[co_to_idx<D>((co+dims)%dims,dims)]/grad;
+					result -= in[co_to_idx((co+dims)%dims,dims)]/grad;
 					co[i]-=1;
 				}
 			}
@@ -67,7 +67,7 @@ public:
 				co[i]-=1;
 				grad = gradient_(in,dims,co);
 				if (grad > limit_) {
-					result +=(xi-in[co_to_idx<D>((co+dims)%dims,dims)])/grad;
+					result +=(xi-in[co_to_idx((co+dims)%dims,dims)])/grad;
 				}
 				co[i]+=1;
 			}
@@ -81,14 +81,14 @@ public:
 
 		T* in = in_array->get_data_ptr();
 
-		vector_td<unsigned int,D> dims = from_std_vector<unsigned int, D>(*(in_array->get_dimensions()));
+		 auto dims = vector_td<int64_t,D>(from_std_vector<size_t, D>(in_array->dimensions()));
 
 		REAL result =0;
 #ifdef USE_OMP
 #pragma omp parallel for reduction(+:result)
 #endif
-		for (int idx=0; idx < in_array->get_number_of_elements(); idx++){
-			vector_td<unsigned int,D> co = idx_to_co<D>(idx, dims);
+		for (int64_t idx=0; idx < in_array->get_number_of_elements(); idx++){
+			auto co = idx_to_co(idx, dims);
 			REAL grad = gradient_(in,dims,co);
 			result += this->weight_*grad;
 		}
@@ -98,13 +98,13 @@ public:
 
 private:
 
-	REAL inline gradient_(T* in, const vector_td<unsigned int,D> dims, vector_td<unsigned int,D> co)
+	REAL inline gradient_(T* in, const vector_td<int64_t,D> dims, vector_td<int64_t,D> co)
 	{
 		REAL grad = REAL(0);
-		T xi = in[co_to_idx<D>((co+dims)%dims,dims)];
+		T xi = in[co_to_idx((co+dims)%dims,dims)];
 		for (int i = 0; i < D; i++){
 			co[i]+=1;
-			T dt = in[co_to_idx<D>((co+dims)%dims,dims)];
+			T dt = in[co_to_idx((co+dims)%dims,dims)];
 			grad += norm(xi-dt);
 			co[i]-=1;
 		}

@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "AcquisitionPassthroughGadget.h"
 
 namespace Gadgetron{

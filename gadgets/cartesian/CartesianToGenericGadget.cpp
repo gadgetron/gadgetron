@@ -65,7 +65,7 @@ namespace Gadgetron{
     trajectory_dimensions.push_back(samples_per_readout);
     
     GadgetContainerMessage< hoNDArray<float> > *cont = new GadgetContainerMessage< hoNDArray<float> >();
-    cont->getObjectPtr()->create(&trajectory_dimensions);
+    cont->getObjectPtr()->create(trajectory_dimensions);
     m2->cont(cont);
 
     float *traj_ptr = cont->getObjectPtr()->get_data_ptr();

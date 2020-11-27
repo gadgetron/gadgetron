@@ -806,7 +806,7 @@ void spirit3d_image_domain_kernel(const hoNDArray<T>& kImRO, size_t E1, size_t E
         dimR[0] = E1;
         dimR[1] = E2;
 
-        kIm.create(&dimR);
+        kIm.create(dimR);
         Gadgetron::clear(kIm);
 
         hoNDArray<T> kImROScaled(kImRO);
@@ -890,7 +890,7 @@ void spirit_adjoint_forward_kernel(const hoNDArray<T>& kImS2D, const hoNDArray<T
         std::vector<size_t> dimRes(dimS2D);
         dimRes[NDim - 2] = dstCHA;
 
-        kIm.create(&dimRes);
+        kIm.create(dimRes);
         Gadgetron::clear(&kIm);
 
         size_t N = kImS2D.get_number_of_elements() / srcCHA / dstCHA;
@@ -909,12 +909,12 @@ void spirit_adjoint_forward_kernel(const hoNDArray<T>& kImS2D, const hoNDArray<T
             {
                 for (long long dprime = 0; dprime<dstCHA; dprime++)
                 {
-                    dKer.create(&dim, kIm.begin() + d*N + dprime*N*dstCHA);
+                    dKer.create(dim, kIm.begin() + d*N + dprime*N*dstCHA);
 
                     for (long long s = 0; s<srcCHA; s++)
                     {
-                        kerS2D.create(&dim, const_cast<T*>(kImS2D.begin()) + s*N + dprime*N*srcCHA);
-                        kerD2S.create(&dim, const_cast<T*>(kImD2S.begin()) + d*N + s*N*dstCHA);
+                        kerS2D.create(dim, const_cast<T*>(kImS2D.begin()) + s*N + dprime*N*srcCHA);
+                        kerD2S.create(dim, const_cast<T*>(kImD2S.begin()) + d*N + s*N*dstCHA);
 
                         Gadgetron::multiply(kerS2D, kerD2S, ker);
                         Gadgetron::add(dKer, ker, dKer);

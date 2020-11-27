@@ -20,7 +20,7 @@ NFFTOperator<ARRAY, REAL, D>::mult_M(ARRAY <complext<REAL>> *in, ARRAY <complext
     ARRAY <complext<REAL>> *tmp_out;
 
     if (accumulate) {
-        tmp_out = new ARRAY <complext<REAL>>(out->get_dimensions());
+        tmp_out = new ARRAY <complext<REAL>>(out->dimensions());
     } else {
         tmp_out = out;
     }
@@ -43,7 +43,7 @@ NFFTOperator<ARRAY, REAL, D>::mult_MH(ARRAY <complext<REAL>> *in, ARRAY <complex
     ARRAY <complext<REAL>> *tmp_out;
 
     if (accumulate) {
-        tmp_out = new ARRAY <complext<REAL>>(out->get_dimensions());
+        tmp_out = new ARRAY <complext<REAL>>(out->dimensions());
     } else {
         tmp_out = out;
     }
@@ -70,7 +70,7 @@ NFFTOperator<ARRAY, REAL, D>::mult_MH_M(ARRAY <complext<REAL>> *in, ARRAY <compl
     ARRAY <complext<REAL>> *tmp_out;
 
     if (accumulate) {
-        tmp_out = new ARRAY <complext<REAL>>(out->get_dimensions());
+        tmp_out = new ARRAY <complext<REAL>>(out->dimensions());
     } else {
         tmp_out = out;
     }

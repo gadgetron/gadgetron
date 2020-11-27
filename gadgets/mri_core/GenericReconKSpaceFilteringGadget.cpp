@@ -449,18 +449,6 @@ namespace Gadgetron {
         if (r > len) r = len;
     }
 
-    int GenericReconKSpaceFilteringGadget::close(unsigned long flags)
-    {
-        GDEBUG_CONDITION_STREAM(true, "GenericReconKSpaceFilteringGadget - close(flags) : " << flags);
-
-        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
-
-        if (flags != 0)
-        {
-        }
-
-        return GADGET_OK;
-    }
 
     // ----------------------------------------------------------------------------------------
 

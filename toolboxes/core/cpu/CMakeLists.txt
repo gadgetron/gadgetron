@@ -2,26 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUCORE__)
 endif ()
 
-include_directories(
-    ${FFTW3_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${CMAKE_SOURCE_DIR}/apps/gadgetron
-)
-
-if(WIN32)
-    link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
-#if (MKL_FOUND)
-#    include_directories( ${MKL_INCLUDE_DIR} )
-#    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-#endif ()
 
 set(header_files ../NDArray.h
                 ../complext.h
@@ -30,6 +10,8 @@ set(header_files ../NDArray.h
                 cpucore_export.h 
                 hoNDArray.h
                 hoNDArray.hxx
+                hoNDArray_converter.h
+				        hoNDArray_iterators.h
                 hoNDObjectArray.h
                 hoNDArray_utils.h
                 hoNDArray_fileio.h
@@ -59,7 +41,7 @@ set(image_files image/hoNDImage.h
             image/hoNDImage.hxx 
             image/hoNDImageContainer2D.h )
 
-set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx)
+set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx )
 
 source_group(algorithm FILES ${algorithm_files})
 source_group(image FILES ${image_files})
@@ -70,14 +52,38 @@ add_library(gadgetron_toolbox_cpucore SHARED
                     ${image_files}  
                     ${algorithm_files} )
 
+
+target_include_directories(
+        gadgetron_toolbox_cpucore
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/core>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/toolboxes/core>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/apps/gadgetron>
+    $<INSTALL_INTERFACE:include/gadgetron>
+)
+
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
+  ISMRMRD::ISMRMRD
+	Boost::boost
   )
 
-install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpucore
+		EXPORT gadgetron-export
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
 
 install(FILES
         ${header_files}
@@ -90,3 +96,5 @@ install(FILES
 
 add_subdirectory(math)
 add_subdirectory(hostutils)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

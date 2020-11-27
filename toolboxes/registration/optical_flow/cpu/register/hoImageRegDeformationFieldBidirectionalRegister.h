@@ -165,7 +165,7 @@ namespace Gadgetron {
     template<typename TargetType, typename CoordType> 
     hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::
     hoImageRegDeformationFieldBidirectionalRegister(unsigned int resolution_pyramid_levels, bool use_world_coordinates, ValueType bg_value) 
-    : BaseClass(resolution_pyramid_levels, bg_value)
+    : BaseClass(resolution_pyramid_levels, use_world_coordinates, bg_value)
     {
         inverse_deform_enforce_iter_pyramid_level_.clear();
         inverse_deform_enforce_iter_pyramid_level_.resize(resolution_pyramid_levels, 10);

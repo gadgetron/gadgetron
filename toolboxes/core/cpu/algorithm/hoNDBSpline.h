@@ -20,7 +20,7 @@
 
 namespace Gadgetron
 {
-    template <typename T, unsigned int D>
+    template <typename T, unsigned int D, typename coord_type = double>
     class hoNDBSpline
     {
     public:
@@ -29,7 +29,6 @@ namespace Gadgetron
 
         typedef T element_type;
         typedef T value_type;
-        typedef float coord_type;
 
         /// type for bspline computation, can be 'float' or 'double'
         typedef typename realType<T>::Type bspline_float_type;
@@ -116,16 +115,21 @@ namespace Gadgetron
                         bspline_float_type* xWeight, bspline_float_type* yWeight, bspline_float_type* zWeight, bspline_float_type* tWeight, 
                         coord_type x, coord_type y, coord_type z, coord_type t);
 
-        T evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree, 
+        T evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
                         bspline_float_type** weight, const coord_type* pos);
 
-        T evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree, 
+        T evaluateBSpline(const T* coeff, const std::vector<size_t>& dimension, unsigned int SplineDegree,
                         bspline_float_type** weight, const std::vector<coord_type>& pos);
 
         /// compute the BSpline based derivative for an ND array
         /// derivative indicates the order of derivatives for every dimension
         bool computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv);
-        bool computeBSplineDerivative(const hoNDImage<T,D>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDImage<T,D>& deriv);
+        bool computeBSplineDerivative(const hoNDImage<T,D>& data, const hoNDArray<T>& coeff, unsigned int SplineDegree, const 
+          std::vector<unsigned int>& derivative, hoNDImage<T,D>& deriv);
+        /// evaluate BSpline at an array of points (not at array grid)
+        /// pts: N x D array, every line is a point to evaluate BSpline
+        /// deriv: N x 1 array, evaluation results
+        bool computeBSplineDerivativePoints(const hoNDArray<T>& pts, const hoNDArray<T>& coeff, unsigned int SplineDegree, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv);
 
         /// print out the image information
         void print(std::ostream& os) const;

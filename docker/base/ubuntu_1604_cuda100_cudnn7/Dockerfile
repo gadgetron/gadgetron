@@ -7,39 +7,52 @@ ARG BART_BRANCH=master
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
-RUN add-apt-repository ppa:lkoppel/ceres
+
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
+    apt-utils wget build-essential emacs python-dev python-pip libhdf5-serial-dev git-core \
     libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
-    libxslt-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
-    libceres-dev supervisor net-tools cpio
+    libxslt-dev gcc-multilib  \
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev \
+    supervisor cpio net-tools libpugixml-dev
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
+RUN apt-get install --no-install-recommends --no-install-suggests --yes \
+    libopenblas-base libopenblas-dev
+
+#Update cmake to something not entirely ancient
+RUN add-apt-repository ppa:litenstein/cmake310-xenial
+RUN apt-get update
+RUN apt-get -y install cmake
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
-RUN apt-get -y install gcc-6 g++-6
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+RUN apt-get -y install gcc-7 g++-7
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update
+RUN apt-get install -y python3.6
+RUN apt-get install -y python3.6-dev
+RUN apt-get install -y python3.6-venv
+
+RUN cd /tmp
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.6 get-pip.py
+RUN rm /usr/bin/python3
+RUN ln -s /usr/bin/python3.6 /usr/bin/python3
 
 #Python stuff
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install numpy==1.15.4 Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
-RUN pip3 uninstall h5py
-RUN apt-get install -y python3-h5py
+RUN pip3 install h5py psutil pyxb lxml Pillow configargparse numpy==1.15.4 Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+
+RUN apt-get install -y python3.6-tk
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.0-cp35-cp35m-linux_x86_64.whl
-RUN pip3 install torchvision 
-RUN pip3 install tensorboardx visdom
+RUN pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3 install tensorboardx visdom tqdm
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
@@ -47,23 +60,31 @@ RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
 
 # Compile boost
 RUN cd /opt && \
-    wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz && \
-    tar -xzvf boost_1_67_0.tar.gz && \
-    cd boost_1_67_0 && \
+    wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz && \
+    tar -xzvf boost_1_69_0.tar.gz && \
+    cd boost_1_69_0 && \
     ./bootstrap.sh --with-python=/usr/bin/python3 --prefix=/usr && \
     ./b2 -j$(nproc) address-model=64 stage && \
     ./b2 install
 
 # since cmake has problems to find python3 and boost-python3
-RUN ln -s /usr/lib/libboost_python35.so /usr/lib/libboost_python3.so
+RUN ln -s /usr/lib/libboost_python36.so /usr/lib/libboost_python3.so
 
 # Compile armadillo
 RUN cd /opt && \
-    wget http://sourceforge.net/projects/arma/files/armadillo-8.600.0.tar.xz && \
-    tar xvf armadillo-8.600.0.tar.xz && \
-    cd armadillo-8.600.0 && \
+    wget http://sourceforge.net/projects/arma/files/armadillo-9.200.8.tar.xz && \
+    tar xvf armadillo-9.200.8.tar.xz && \
+    cd armadillo-9.200.8 && \
     mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
+    make -j$(nproc) && \
+    make PREFIX=/usr/lib/x86_64-linux-gnu install
+
+# Compile PugiXML
+RUN cd /opt && \
+    git clone https://github.com/zeux/pugixml.git --branch v1.9 && cd pugixml && \
+    mkdir build && cd build &&\
+    cmake -DCMAKE_BUILD_TYPE=Release .. &&  \
     make -j$(nproc) && \
     make install
     
@@ -83,11 +104,10 @@ RUN cd /opt && \
 RUN cd /opt && \
     git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
     cd bart && \
-    mkdir build && \
-    cd build && \
-    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
     make install
+
+RUN apt-get clean
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \

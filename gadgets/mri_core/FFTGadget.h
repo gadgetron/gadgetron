@@ -1,6 +1,4 @@
-#ifndef FFTGADGET_H
-#define FFTGADGET_H
-
+#pragma once
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
@@ -23,4 +21,3 @@ namespace Gadgetron{
       long long image_counter_;      
     };
 }
-#endif //FFTGADGET_H

@@ -24,13 +24,13 @@
     <dll>gadgetron_mricore</dll>
     <classname>NoiseAdjustGadget</classname>
   </gadget>
-  
+
   <gadget>
     <name>PCA</name>
     <dll>gadgetron_mricore</dll>
     <classname>PCACoilGadget</classname>
   </gadget>
-  
+
   <gadget>
     <name>CoilReduction</name>
     <dll>gadgetron_mricore</dll>

@@ -1,43 +1,42 @@
-//
-// Created by dchansen on 6/19/18.
-//
 
 #ifndef GADGETRON_DENOISEGADGET_H
 #define GADGETRON_DENOISEGADGET_H
 
 #include "Gadget.h"
-#include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
+#include "hoNDArray.h"
 
+#include "PureGadget.h"
 #include <ismrmrd/ismrmrd.h>
-#include <string>
 #include <mri_core_data.h>
+#include <string>
 
 namespace Gadgetron {
-    class EXPORTGADGETSMRICORE DenoiseGadget : public BasicPropertyGadget{
 
+    template <class T> using DenoiseImage = Core::tuple<ISMRMRD::ImageHeader, hoNDArray<T>>;
+
+    using DenoiseSupportedTypes =
+        Core::variant<DenoiseImage<float>, DenoiseImage<std::complex<float>>, IsmrmrdImageArray>;
+
+    class EXPORTGADGETSMRICORE DenoiseGadget
+        : public Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes> {
 
     public:
-        GADGET_DECLARE(DenoiseGadget)
+        using Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes>::PureGadget;
 
-
-        GADGET_PROPERTY(image_std,float,"Standard deviation of the noise in the produced image",1);
-        GADGET_PROPERTY(search_radius,int,"Standard deviation of the noise in the produced image",25);
-        GADGET_PROPERTY(denoiser,std::string,"Type of denoiser - non_local_means or non_local_bayes","non_local_bayes");
-
-
+        DenoiseSupportedTypes process_function(DenoiseSupportedTypes input) const;
+        NODE_PROPERTY(image_std, float, "Standard deviation of the noise in the produced image", 1);
+        NODE_PROPERTY(search_radius, int, "Standard deviation of the noise in the produced image", 25);
+        NODE_PROPERTY(denoiser, std::string, "Type of denoiser - non_local_means or non_local_bayes", "non_local_bayes");
 
     protected:
-       int process(ACE_Message_Block* mb);
-       template<class T> int process(GadgetContainerMessage<ISMRMRD::ImageHeader>*, GadgetContainerMessage<hoNDArray<T>>*);
-       int process(GadgetContainerMessage<IsmrmrdImageArray>*);
+        template <class T>
+        DenoiseImage<T> denoise(DenoiseImage<T> image) const;
+        IsmrmrdImageArray denoise(IsmrmrdImageArray image_array) const;
 
-       template<class T> hoNDArray<T> denoise_function(const hoNDArray<T>&);
-
-
+        template <class T> hoNDArray<T> denoise_function(const hoNDArray<T>&) const;
     };
 
 }
 
-
-#endif //GADGETRON_DENOISEGADGET_H
+#endif // GADGETRON_DENOISEGADGET_H

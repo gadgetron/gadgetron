@@ -44,6 +44,14 @@
     "md5":"624ac3178e15e27e52489f330b3fffa5"
   },
   {
+    "file":"simple_gre/simple_gre_output.h5",
+    "md5":"d060a43f5505993e2216df73c6aafd3d"
+  },
+  {
+    "file":"denoise/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4/ref_20180709_denoised.h5",
+    "md5":"63ef3a7de32d9c912f2cc11a19916d39"
+  },
+  {
     "file":"simple_gre/simple_gre_out_20150110_msh.h5",
     "md5":"13870af335ec1708a15fc139d0ffd4bb"
   },
@@ -423,5 +431,17 @@
   {
     "file":"ut/spiral/w_spiral.img",
     "md5":"abb6820a558f30a8e22aa6c59ab01703"
+  },
+  {
+    "file":"spiral/meas_MID00080_FID16005_MiniIRT_B0.dat",
+    "md5":"31865ce197491bb675e095a1d6096d36"
+  },
+  {
+    "file":"spiral/spiral_rt_deblurring_out.h5",
+    "md5":"75cc7b2aec83ca854a5ad06e6afad76e"
+  },
+  {
+    "file":"simple_gre/pseudoreplica_out_20190731_192531.h5",
+    "md5":"5ca16d49d3b3ffd63c2bf39abe3b3222"
   }
 ]

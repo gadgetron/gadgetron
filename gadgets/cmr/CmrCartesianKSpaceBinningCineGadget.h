@@ -7,13 +7,13 @@
                 High spatial and temporal resolution retrospective cine cardiovascular magnetic resonance from shortened free breathing real-time acquisitions.
                 Journal of Cardiovascular Magnetic Resonance 2013; 15:102.
 
-            [2] Peter Kellman, Christophe Chefd’hotel, Christine H. Lorenz, Christine Mancini, Andrew E. Arai, Elliot R. McVeigh. 
+            [2] Peter Kellman, Christophe Chefdâ€™hotel, Christine H. Lorenz, Christine Mancini, Andrew E. Arai, Elliot R. McVeigh. 
                 High spatial and temporal resolution cardiac cine MRI from retrospective reconstruction of data acquired in real time using motion correction and resorting. 
-                Magn Reson Med. 2009; 62:1557–64.
+                Magn Reson Med. 2009; 62:1557â€“64.
 
-            [3] Michael S. Hansen, Thomas S. Sørensen, Andrew E. Arai, and Peter Kellman. 
+            [3] Michael S. Hansen, Thomas S. SÃ¸rensen, Andrew E. Arai, and Peter Kellman. 
                 Retrospective reconstruction of high temporal resolution cine images from real-time MRI using iterative motion correction. 
-                Magn Reson Med. 2012; 68:741–50.
+                Magn Reson Med. 2012; 68:741â€“50.
 
     \author Hui Xue
 */

@@ -3,33 +3,27 @@ if (WIN32)
   add_definitions(-D_USE_MATH_DEFINES)
 endif ()
 
-if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
-include_directories( 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-  )
 
 cuda_add_library(gadgetron_toolbox_gpunfft SHARED 
+    cuGriddingConvolution.h
+    cuGriddingConvolution.cu
     cuNFFT.h
-    gpunfft_export.h
     cuNFFT.cu
-        cuNFFTOperator.cpp
+    cuNFFTOperator.cpp
+    gpunfft_export.h
   )
 
+target_include_directories(gadgetron_toolbox_gpunfft
+        PUBLIC
+		$<INSTALL_INTERFACE:include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+    
 set_target_properties(gadgetron_toolbox_gpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_gpunfft 
+target_link_libraries(gadgetron_toolbox_gpunfft
+  gadgetron_toolbox_operator
   gadgetron_toolbox_gpufft
   gadgetron_toolbox_gpucore
   gadgetron_toolbox_log
@@ -38,11 +32,19 @@ target_link_libraries(gadgetron_toolbox_gpunfft
   ${CUDA_CUBLAS_LIBRARIES}
   ${CUDA_CUSPARSE_LIBRARIES}
   )
+install(TARGETS gadgetron_toolbox_gpunfft
+		EXPORT gadgetron-export
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION bin
+		COMPONENT main
+		)
 
-install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
+  cuGriddingConvolution.h 
   cuNFFT.h
-        ../NFFTOperator.h
-  gpunfft_export.h 
+  gpunfft_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

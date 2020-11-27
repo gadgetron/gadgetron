@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "CombineGadget.h"
 
 namespace Gadgetron{
@@ -26,7 +25,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
   dimensions[1] = ny; 
   dimensions[2] = nz;
 
-  try{m3->getObjectPtr()->create(&dimensions);}
+  try{m3->getObjectPtr()->create(dimensions);}
   catch (std::runtime_error &err){
   	GEXCEPTION(err,"CombineGadget, failed to allocate new array\n");
     return -1;
@@ -48,7 +47,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	  phase += mag_tmp*arg(d1[offset + c*img_block]);
 	  mag += mag_tmp;
 	}
-	d2[offset] = std::polar(std::sqrt(mag),phase);
+	d2[offset] = std::polar(std::sqrt(mag),phase/mag);
       }
     }
   }
