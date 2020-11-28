@@ -42,23 +42,18 @@ template <class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<typename realType<T
  */
 template <class T> EXPORTGPUCORE void abs_inplace(cuNDArray<T>* x);
 
-/**
- * @brief Calculates the element-wise exp inplate.
- * @param[in,out] x Input and output array.
- */
-template <class T> EXPORTGPUCORE void exp_inplace(cuNDArray<T>* x);
 
 /**
  * @brief Calculates the element-wise exp inplate.
  * @param[in,out] x Input and output array.
  */
 template <class T>
-EXPORTGPUCORE void cos_inplace(cuNDArray<T>* x); /**
+EXPORTGPUCORE void cos_inplace(cuNDArray<T>& x); /**
 
 * @brief Calculates the element-wise exp inplate.
 * @param[in,out] x Input and output array.
 */
-template <class T> EXPORTGPUCORE void sin_inplace(cuNDArray<T>* x);
+template <class T> EXPORTGPUCORE void sin_inplace(cuNDArray<T>& x);
 /**
  * @brief Calculates the element-wise squared absolute values of the array entries
  * @param[in] x Input array.
