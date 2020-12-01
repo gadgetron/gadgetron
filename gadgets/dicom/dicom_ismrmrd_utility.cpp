@@ -52,7 +52,7 @@ namespace Gadgetron
                 patient_info.patientID.set("XXXXXXXX");
 
             if(!h.subjectInformation.is_present() || !h.subjectInformation.get().patientBirthdate.is_present())
-                patient_info.patientBirthdate.set("19000101");
+                patient_info.patientBirthdate.set("1900-01-01");
 
             if(!h.subjectInformation.is_present() || !h.subjectInformation.get().patientGender.is_present())
                 patient_info.patientGender.set("o");
@@ -62,10 +62,10 @@ namespace Gadgetron
             ISMRMRD::StudyInformation study_info = *h.studyInformation;
 
             if(!h.studyInformation.is_present() || !h.studyInformation.get().studyDate.is_present())
-                study_info.studyDate.set("19000101");
+                study_info.studyDate.set("1900-01-01");
 
             if(!h.studyInformation.is_present() || !h.studyInformation.get().studyTime.is_present())
-                study_info.studyTime.set("121212");
+                study_info.studyTime.set("12:12:12");
 
             if(!h.studyInformation.is_present() || !h.studyInformation.get().studyID.is_present())
                 study_info.studyID.set("XXXXXXXX");
