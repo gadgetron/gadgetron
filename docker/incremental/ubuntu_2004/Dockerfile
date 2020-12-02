@@ -34,7 +34,7 @@ RUN cd /opt/code && \
     cp /opt/code/gadgetron/docker/supervisord.conf /opt/
 
 # Install Python interface.
-RUN pip3 install ismrmrd multimethod 
+RUN pip3 install ismrmrd multimethod
 RUN pip3 install gadgetron
 
 #HASH for ISMRMRD
