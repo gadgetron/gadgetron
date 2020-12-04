@@ -29,17 +29,9 @@ jobs:
 
       - name: Run tests
         run: |
-          if [ -f docker-compose.test.yml ]; then
-            docker-compose --file docker-compose.test.yml build
-            docker-compose --file docker-compose.test.yml run sut
-          else
-            cd docker
-            bash build_base_images.sh                   
-            cd incremental/ubuntu_2004_cuda11_cudnn8
-            docker build . --file Dockerfile
-            cd ../ubuntu_2004
-            docker build . --file Dockerfile
-          fi
+          cd docker
+          docker build . --file ubuntu_2004_cuda11_cudnn.Dockerfile
+          docker build . --file ubuntu_2004.Dockerfile
 
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -55,12 +47,9 @@ jobs:
 
       - name: Build image
         run: |
-          cd docker/
-          bash build_base_images.sh
-          cd incremental/ubuntu_2004_cuda11_cudnn8
-          docker build . --file Dockerfile --tag $IMAGE_NAME_CUDA
-          cd ../ubuntu_2004
-          docker build . --file Dockerfile --tag $IMAGE_NAME
+          cd docker
+          docker build . --file ubuntu_2004_cuda11_cudnn.Dockerfile --tag $IMAGE_NAME_CUDA
+          docker build . --file ubuntu_2004.Dockerfile --tag $IMAGE_NAME
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
@@ -104,5 +93,5 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
 
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME_CUDA $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION

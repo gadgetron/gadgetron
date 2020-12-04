@@ -27,3 +27,5 @@ RUN ./build_gadgetron.sh --source-repo-url ${GADGETRON_URL} --source-branch ${GA
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
+
+CMD ["/opt/start_supervisor"]
