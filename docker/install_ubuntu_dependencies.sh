@@ -5,7 +5,7 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-if [ -z "$(lsb_release -d | grep "Ubuntu 20.04")" ]; then
+if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ]; then
     echo "Error: This install script is intended for Ubuntu 20.04 only"
     exit 1
 fi
