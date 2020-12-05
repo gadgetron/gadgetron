@@ -54,7 +54,12 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
 
 pip3 install -U pip setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
-pip3 install numpy scipy Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn sympy Pillow h5py pyxb
+
+# h5py needs to be recompiled to compile agains HDF5 1.10, which is what we install on Ubuntu 20.04
+pip3 install --no-binary=h5py h5py
+
+# Rest of the Python "stuff"
+pip3 install numpy scipy Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn sympy Pillow pyxb
 
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
