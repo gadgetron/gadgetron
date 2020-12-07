@@ -1012,13 +1012,13 @@ namespace Gadgetron {
           return result && (d.size() == dims.size());
       };
 
-      bool all_dimensions_valid = ranges::accumulate(arrays | view::transform(dimensions_valid), true, std::logical_and() );
+      bool all_dimensions_valid = ranges::accumulate(arrays | view::transform(dimensions_valid), true, std::logical_and<T>() );
       if (!all_dimensions_valid) throw std::runtime_error("The dimensions of all provided arrays must be equal except along the concatenate dimension");
 
       auto result = hoNDArray<T>(dims);
 
       const size_t inner_stride = ranges::accumulate(dims | views::slice(size_t(0), dimension),
-                                                     size_t(1), std::multiplies());
+                                                     size_t(1), std::multiplies<T>());
       const size_t outer_stride = inner_stride * count;
       size_t current_slice = 0;
 
