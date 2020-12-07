@@ -14,6 +14,7 @@ cuNonCartesianSenseOperator<REAL,D>::cuNonCartesianSenseOperator(ConvolutionType
 template<class REAL, unsigned int D> void
 cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
+
   if( !in || !out ){
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted");
   }
@@ -40,6 +41,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> >* in, cu
 template<class REAL, unsigned int D> void
 cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
+
   if( !in || !out ){
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted");
   }
@@ -48,11 +50,34 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
 	  throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: input/output arrays do not match specified domain/codomains");
   }
   std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> tmp_dimensions_data = *this->get_codomain_dimensions();
+  tmp_dimensions_data.pop_back(); // Remove channel dimension 
+
+  cuNDArray<complext<REAL>> temp_ch_recon(&tmp_dimensions);
+  cuNDArray<complext<REAL>> temp_ch_data(&tmp_dimensions_data);
+
   tmp_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&tmp_dimensions);
 
+  auto RO = in->get_size(0);
+  auto E1E2 = in->get_size(1);
+  auto CHA = in->get_size(2);
+
+  for (int iCHA = 0; iCHA < CHA; iCHA++)
+    {
+      cudaMemcpy(temp_ch_data.get_data_ptr(),
+      in->get_data_ptr() + RO * E1E2 * iCHA,
+      RO * E1E2 * sizeof(complext<REAL>), cudaMemcpyDefault);
+               
+          plan_->compute(temp_ch_data, temp_ch_recon, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C);
+        //nfft_plan_->compute(data, *result, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+        cudaMemcpy(tmp.get_data_ptr() + tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * iCHA,
+                   temp_ch_recon.get_data_ptr(),
+                   tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * sizeof(complext<REAL>), cudaMemcpyDefault);
+    }
+
  // Do the NFFT
-  plan_->compute( *in, tmp, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C );
+  //plan_->compute( *in, tmp, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C );
 
   if( !accumulate ){
     clear(out);    

@@ -90,7 +90,7 @@ static void NFFT_iterate_body(vector_td<unsigned int, D> matrix_size_os,
         }
         else
         {
-            atomicAdd(&(((realType_t<T>*)image)[(grid_idx<<1)+0]), sample_value);
+            atomicAdd(&(image[grid_idx]), weight*sample_value);
         }
     }
 }
