@@ -6,8 +6,7 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+pool: gadgetron-gpu-nodes
 
 steps:
 - script: echo Hello, world!
