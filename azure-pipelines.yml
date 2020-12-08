@@ -13,7 +13,16 @@ steps:
   displayName: 'Run a one-line script'
 
 - script: |
+    echo "Build.Repository.Uri: $(Build.Repository.Uri)"
+    echo "system.pullRequest.pullRequestNumber: $(system.pullRequest.pullRequestNumber)"
+    echo "build.BuildNumber: $(build.BuildNumber)"
+    echo "Build.SourceBranch: $(Build.SourceBranch)"
+    echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+    echo "System.PullRequest.IsFork: $(System.PullRequest.IsFork)"
+    echo "System.PullRequest.SourceRepositoryURI: $(System.PullRequest.SourceRepositoryURI)"
+    echo "System.PullRequest.TargetBranch: $(System.PullRequest.TargetBranch)"
+    echo "System.PullRequest.PullRequestId: $(System.PullRequest.PullRequestId)"
     nvidia-smi
-    docker run hello-world
+    docker run --gpus all nvidia/cuda nvidia-smi
     docker images
   displayName: 'Run a multi-line script'
