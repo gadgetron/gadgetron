@@ -28,15 +28,15 @@ steps:
     echo "System.PullRequest.SourceRepositoryURI: $(System.PullRequest.SourceRepositoryURI)"
     echo "System.PullRequest.TargetBranch: $(System.PullRequest.TargetBranch)"
     echo "System.PullRequest.PullRequestId: $(System.PullRequest.PullRequestId)"
-    echo "gcr-user: $(gcr-user)"
-    echo "gcr-pat: $(gcr-pat)"
+    echo "ghcr-user: $(ghcr-user)"
+    echo "ghcr-pat: $(ghcr-pat)"
     nvidia-smi
     docker run --gpus all hello-world
     docker images
   displayName: 'Run a multi-line script'
 
 - script: |
-    echo "$(gcr-pat)" | docker login ghcr.io -u $(gcr-user) --password-stdin
+    echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
     docker pull hello-world
     IMAGE_NAME="ghcr.io/gadgetron/gadgetron/gadgetron-test-image:latest"
     docker tag hello-world $IMAGE_NAME
