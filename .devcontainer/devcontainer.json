@@ -1,7 +1,8 @@
 {
 	"name": "ubuntu_2004_cuda11_cudnn8",
 	"build": {
-		"dockerfile": "../docker/ubuntu_2004_cuda11_cudnn.Dockerfile"
+		"dockerfile": "../docker/ubuntu_2004_cuda11_cudnn.Dockerfile",
+		"context": ".."
 	},
 
 	// Set *default* container specific settings.json values on container create.
