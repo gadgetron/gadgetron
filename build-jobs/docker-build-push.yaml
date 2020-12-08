@@ -17,7 +17,8 @@ steps:
     keyVaultName: gadgetron-build-secrets
 
 - script: |
-      fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}/${{ parameters.imagetag }}
+      fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}/${{ parameters.imagetag }}"
+      echo "Building image ${fullImageName}"
       docker build . --file ${{ parameters.dockerfile }} --tag $fullImageName
       docker run --rm $fullImageName /opt/code/gadgetron/build/test/test_all
   displayName: 'Build docker and test images'
