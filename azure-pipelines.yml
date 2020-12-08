@@ -18,6 +18,7 @@ steps:
     echo "build.BuildNumber: $(build.BuildNumber)"
     echo "Build.SourceBranch: $(Build.SourceBranch)"
     echo "Build.SourceBranchName: $(Build.SourceBranchName)"
+    echo "Build.SourceVersion: $(Build.SourceVersion)"
     echo "System.PullRequest.IsFork: $(System.PullRequest.IsFork)"
     echo "System.PullRequest.SourceRepositoryURI: $(System.PullRequest.SourceRepositoryURI)"
     echo "System.PullRequest.TargetBranch: $(System.PullRequest.TargetBranch)"
