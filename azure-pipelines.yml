@@ -17,7 +17,7 @@ steps:
       echo "PR Source Branch: $(System.PullRequest.SourceBranch)"
       cd docker
       docker build ../ --file ubuntu_2004_cuda11_cudnn.Dockerfile --tag $IMAGE_NAME_CUDA
-      docker run --rm $IMAGE_NAME_CUDA /opt/gadgetron/build/test/test_all
+      docker run --rm $IMAGE_NAME_CUDA /opt/code/gadgetron/build/test/test_all
       docker build ../ --file ubuntu_2004.Dockerfile --tag $IMAGE_NAME
-      docker run --rm $IMAGE_NAME /opt/gadgetron/build/test/test_all
+      docker run --rm $IMAGE_NAME /opt/code/gadgetron/build/test/test_all
   displayName: 'Build docker and test images'
