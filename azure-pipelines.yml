@@ -16,8 +16,8 @@ steps:
       echo "PR Source Repo URL: $(System.PullRequest.SourceRepositoryURI)"
       echo "PR Source Branch: $(System.PullRequest.SourceBranch)"
       cd docker
-      docker build . --file ubuntu_2004_cuda11_cudnn.Dockerfile --tag $IMAGE_NAME_CUDA --build-arg GADGETRON_URL=$(System.PullRequest.SourceRepositoryURI)	 --build-arg GADGETRON_BRANCH=$(System.PullRequest.SourceBranch)
+      docker build ../ --file ubuntu_2004_cuda11_cudnn.Dockerfile --tag $IMAGE_NAME_CUDA
       docker run --rm $IMAGE_NAME_CUDA /opt/gadgetron/build/test/test_all
-      docker build . --file ubuntu_2004.Dockerfile --tag $IMAGE_NAME --build-arg GADGETRON_URL=$(System.PullRequest.SourceRepositoryURI) --build-arg GADGETRON_BRANCH=$(System.PullRequest.SourceBranch)
+      docker build ../ --file ubuntu_2004.Dockerfile --tag $IMAGE_NAME
       docker run --rm $IMAGE_NAME /opt/gadgetron/build/test/test_all
   displayName: 'Build docker and test images'

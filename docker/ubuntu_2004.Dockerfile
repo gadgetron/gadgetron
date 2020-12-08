@@ -1,11 +1,12 @@
 FROM ubuntu:20.04
 
 WORKDIR /opt
+RUN mkdir -p /opt/code/gadgetron
+COPY . /opt/code/gadgetron/
 
 # Install dependencies
-COPY install_ubuntu_dependencies.sh ./
-RUN chmod +x install_ubuntu_dependencies.sh
-RUN ./install_ubuntu_dependencies.sh
+RUN chmod +x /opt/code/gadgetron/docker/install_ubuntu_dependencies.sh
+RUN /opt/code/gadgetron/docker/install_ubuntu_dependencies.sh
 
 # for embedded python plot, we need agg backend
 RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc && echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
@@ -17,12 +18,20 @@ ENV GADGETRON_HOME=/usr/local \
 ENV PATH=$PATH:$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ISMRMRD_HOME/lib:$GADGETRON_HOME/lib
 
-ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
-ARG GADGETRON_BRANCH=master
+RUN chmod +x /opt/code/gadgetron/docker/build_gadgetron_dependencies.sh
+RUN /opt/code/gadgetron/docker/build_gadgetron_dependencies.sh
 
-COPY build_gadgetron.sh ./
-RUN chmod +x build_gadgetron.sh
-RUN ./build_gadgetron.sh --source-repo-url ${GADGETRON_URL} --source-branch ${GADGETRON_BRANCH}
+#GADGETRON
+RUN cd /opt/code/gadgetron && \
+    mkdir build && \
+    cd build && \
+    cmake ../ -G Ninja && \
+    ninja && \
+    ninja install && \
+    cp /opt/code/gadgetron/docker/start_supervisor /opt/ && \
+    cp /opt/code/gadgetron/docker/supervisord.conf /opt/
+
+RUN pip3 install gadgetron
 
 # Clean up packages.
 RUN  apt-get clean && \
