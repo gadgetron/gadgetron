@@ -19,7 +19,7 @@ jobs:
   - template: ./build-jobs/docker-build-push.yaml
     parameters:
         azureconnection: $(AzureConnection)
-        dockerfile: docker/dummy_ubuntu_2004.Dockerfile
+        dockerfile: docker/ubuntu_2004.Dockerfile
         imagename: gadgetron_ubuntu_2004
         imagetag: $(build.BuildNumber)
         containerregistry: $(ContainerRegistry)
@@ -30,7 +30,7 @@ jobs:
   - template: ./build-jobs/docker-build-push.yaml
     parameters:
         azureconnection: $(AzureConnection)
-        dockerfile: docker/dummy_ubuntu_2004_cuda11_cudnn.Dockerfile
+        dockerfile: docker/ubuntu_2004_cuda11_cudnn.Dockerfile
         imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
         imagetag: $(build.BuildNumber)
         containerregistry: $(ContainerRegistry)
