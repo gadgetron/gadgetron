@@ -1,22 +1,25 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-trigger:
-- master
+variables:
+  AzureConnection: 'BiomedicalImaging-NonProd(87d8acb3-5176-4651-b457-6ab9cefd8e3d)'
+  ContainerRegistry: 'ghcr.io/gadgetron/gadgetron'
 
 pool: gadgetron-gpu-nodes
 
-steps:
+# Trigger when merging to master
+trigger:
+- master
 
-- script: |
-      IMAGE_NAME_CUDA=gadgetron_ubuntu_2004_cuda11_cudnn8
-      IMAGE_NAME=gadgetron_ubuntu_2004
-      echo "PR Source Repo URL: $(System.PullRequest.SourceRepositoryURI)"
-      echo "PR Source Branch: $(System.PullRequest.SourceBranch)"
-      docker build . --file docker/dummy_ubuntu_2004_cuda11_cudnn.Dockerfile --tag $IMAGE_NAME_CUDA
-      docker run --rm $IMAGE_NAME_CUDA /opt/code/gadgetron/build/test/test_all
-      docker build . --file docker/dummy_ubuntu_2004.Dockerfile --tag $IMAGE_NAME
-      docker run --rm $IMAGE_NAME /opt/code/gadgetron/build/test/test_all
-  displayName: 'Build docker and test images'
+# Trigger for PRs that merge to master
+pr:
+- master
+
+jobs:
+- job:
+  displayName: "Build Ubuntu 20.04 (no CUDA)"
+  steps:
+  - template: ./build-jobs/docker-build-push.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        dockerfile: docker/dummy_ubuntu_2004.Dockerfile
+        imagename: gadgetron_ubuntu_2004
+        imagetag: $(build.BuildNumber)
+        containerregistry: $(ContainerRegistry)

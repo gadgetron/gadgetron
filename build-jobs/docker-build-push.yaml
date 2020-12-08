@@ -1,0 +1,23 @@
+parameters:
+- name: azureconnection
+  type: string
+- name: dockerfile
+  type: string
+- name: imagename
+  type: string
+- name: imagetag
+  type: string
+- name: containerregistry
+  type: string
+
+steps:
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: ${{ azureconnection }}
+    keyVaultName: gadgetron-build-secrets
+
+- script: |
+      fullImageName="${{ containerregistry }}/${{ imagename }}/${{ imagetag }}
+      docker build . --file ${{ dockerfile }} --tag $fullImageName
+      docker run --rm $fullImageName /opt/code/gadgetron/build/test/test_all
+  displayName: 'Build docker and test images'
