@@ -9,21 +9,11 @@ trigger:
 pool: gadgetron-gpu-nodes
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
 
 - script: |
-    echo "Build.Repository.Uri: $(Build.Repository.Uri)"
-    echo "system.pullRequest.pullRequestNumber: $(system.pullRequest.pullRequestNumber)"
-    echo "build.BuildNumber: $(build.BuildNumber)"
-    echo "Build.SourceBranch: $(Build.SourceBranch)"
-    echo "Build.SourceBranchName: $(Build.SourceBranchName)"
-    echo "Build.SourceVersion: $(Build.SourceVersion)"
-    echo "System.PullRequest.IsFork: $(System.PullRequest.IsFork)"
-    echo "System.PullRequest.SourceRepositoryURI: $(System.PullRequest.SourceRepositoryURI)"
-    echo "System.PullRequest.TargetBranch: $(System.PullRequest.TargetBranch)"
-    echo "System.PullRequest.PullRequestId: $(System.PullRequest.PullRequestId)"
-    nvidia-smi
-    docker run --gpus all nvidia/cuda nvidia-smi
-    docker images
-  displayName: 'Run a multi-line script'
+      IMAGE_NAME_CUDA=gadgetron_ubuntu_2004_cuda11_cudnn8
+      IMAGE_NAME=gadgetron_ubuntu_2004
+      cd docker
+      docker build . --file ubuntu_2004_cuda11_cudnn.Dockerfile --tag $IMAGE_NAME_CUDA
+      docker build . --file ubuntu_2004.Dockerfile --tag $IMAGE_NAME
+  displayName: 'Build docker images'
