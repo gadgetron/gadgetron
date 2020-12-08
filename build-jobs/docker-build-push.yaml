@@ -13,11 +13,11 @@ parameters:
 steps:
 - task: AzureKeyVault@1
   inputs:
-    azureSubscription: ${{ azureconnection }}
+    azureSubscription: ${{ parameters.azureconnection }}
     keyVaultName: gadgetron-build-secrets
 
 - script: |
-      fullImageName="${{ containerregistry }}/${{ imagename }}/${{ imagetag }}
-      docker build . --file ${{ dockerfile }} --tag $fullImageName
+      fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}/${{ parameters.imagetag }}
+      docker build . --file ${{ parameters.dockerfile }} --tag $fullImageName
       docker run --rm $fullImageName /opt/code/gadgetron/build/test/test_all
   displayName: 'Build docker and test images'
