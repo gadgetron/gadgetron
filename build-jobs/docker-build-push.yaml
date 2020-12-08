@@ -22,7 +22,7 @@ steps:
       fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
       echo "Building image ${fullImageName}"
       docker build . --file ${{ parameters.dockerfile }} --tag $fullImageName
-      docker run --rm $fullImageName /opt/code/gadgetron/build/test/test_all
+      docker run --gpus all --rm $fullImageName /opt/code/gadgetron/build/test/test_all
       echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
       docker push $fullImageName
 
