@@ -7,6 +7,8 @@ parameters:
   type: string
 - name: imagetag
   type: string
+- name: newimagetag
+  type: string
 - name: containerregistry
   type: string
 
@@ -20,10 +22,9 @@ steps:
       # Exit if anything fails
       set -e
       fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
-      echo "Building image ${fullImageName}"
-      docker build . --file ${{ parameters.dockerfile }} --tag $fullImageName
-      docker run --rm $fullImageName /opt/code/gadgetron/build/test/test_all
+      newFullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.newimagetag }}"
       echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
-      docker push $fullImageName
-
-  displayName: 'Build docker and test images'
+      docker pull $fullImageName
+      docker tag $fullImageName $newFullImageName
+      docker push $newFullImageName
+  displayName: 'Tag docker image'
