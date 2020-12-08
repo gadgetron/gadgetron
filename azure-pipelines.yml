@@ -16,11 +16,6 @@ steps:
   inputs:
     azureSubscription: $(AzureConnection)
     keyVaultName: gadgetron-build-secrets
-    secretsFilter: '*'
-    runAsPreJob: false
-
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
 
 - script: |
     echo "Build.Repository.Uri: $(Build.Repository.Uri)"
@@ -33,7 +28,16 @@ steps:
     echo "System.PullRequest.SourceRepositoryURI: $(System.PullRequest.SourceRepositoryURI)"
     echo "System.PullRequest.TargetBranch: $(System.PullRequest.TargetBranch)"
     echo "System.PullRequest.PullRequestId: $(System.PullRequest.PullRequestId)"
+    echo "gcr-user: $(gcr-user)"
+    echo "gcr-pat: $(gcr-pat)"
     nvidia-smi
-    docker run --gpus all nvidia/cuda nvidia-smi
+    docker run --gpus all hello-world
     docker images
   displayName: 'Run a multi-line script'
+
+- script: |
+    echo "$(gcr-pat)" | docker login ghcr.io -u $(gcr-user) --password-stdin
+    docker pull hello-world
+    IMAGE_NAME="ghcr.io/gadgetron/gadgetron/gadgetron-test-image:latest"
+    docker tag hello-world $IMAGE_NAME
+    docker push $IMAGE_NAME
