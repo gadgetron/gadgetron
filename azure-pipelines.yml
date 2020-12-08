@@ -24,10 +24,22 @@ jobs:
         imagetag: $(build.BuildNumber)
         containerregistry: $(ContainerRegistry)
 
+- job: buildUbuntu2004Cuda
+  displayName: "Build Ubuntu 20.04 (CUDA)"
+  steps:
+  - template: ./build-jobs/docker-build-push.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        dockerfile: docker/dummy_ubuntu_2004_cuda11_cudnn.Dockerfile
+        imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
+        imagetag: $(build.BuildNumber)
+        containerregistry: $(ContainerRegistry)
+
 - job:
   displayName: "Tag latest image"
   dependsOn:
   - buildUbuntu2004
+  - buildUbuntu2004Cuda
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
   steps:
   - template: ./build-jobs/tag-docker-image.yaml
