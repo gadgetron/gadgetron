@@ -3,12 +3,22 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+variables:
+  AzureConnection: 'BiomedicalImaging-NonProd(87d8acb3-5176-4651-b457-6ab9cefd8e3d)'
+
 trigger:
 - master
 
 pool: gadgetron-gpu-nodes
 
 steps:
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: $(AzureConnection)
+    keyVaultName: gadgetron-build-secrets
+    secretsFilter: '*'
+    runAsPreJob: false
+
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
