@@ -36,7 +36,7 @@ jobs:
         containerregistry: $(ContainerRegistry)
 
 - job:
-  displayName: "Tag latest image"
+  displayName: "Tag latest images"
   dependsOn:
   - buildUbuntu2004
   - buildUbuntu2004Cuda
@@ -45,8 +45,14 @@ jobs:
   - template: ./build-jobs/tag-docker-image.yaml
     parameters:
         azureconnection: $(AzureConnection)
-        dockerfile: docker/dummy_ubuntu_2004.Dockerfile
         imagename: gadgetron_ubuntu_2004
+        imagetag: $(build.BuildNumber)
+        newimagetag: 'latest'
+        containerregistry: $(ContainerRegistry)
+  - template: ./build-jobs/tag-docker-image.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
         imagetag: $(build.BuildNumber)
         newimagetag: 'latest'
         containerregistry: $(ContainerRegistry)

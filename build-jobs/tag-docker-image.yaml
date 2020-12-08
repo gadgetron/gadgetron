@@ -1,8 +1,6 @@
 parameters:
 - name: azureconnection
   type: string
-- name: dockerfile
-  type: string
 - name: imagename
   type: string
 - name: imagetag
