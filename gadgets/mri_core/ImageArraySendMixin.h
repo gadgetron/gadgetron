@@ -8,7 +8,7 @@
 #include <vector>
 #include <ismrmrd/ismrmrd.h>
 #include "mri_core_data.h"
-
+#include "mri_core_def.h"
 
 namespace Gadgetron {
 

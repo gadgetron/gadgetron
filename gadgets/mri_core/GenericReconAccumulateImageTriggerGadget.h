@@ -14,8 +14,11 @@
 
 #include <complex>
 #include "gadgetron_mricore_export.h"
+#include "hoNDArray_utils.h"
+#include "hoMRImage.h"
+#include "hoNDObjectArray.h"
+
 #include "Gadget.h"
-#include "hoNDArray.h"
 
 #include "GadgetronTimer.h"
 
@@ -23,17 +26,12 @@
 #include "ismrmrd/xml.h"
 #include "ismrmrd/meta.h"
 
-#include "mri_core_def.h"
-#include "mri_core_data.h"
-#include "mri_core_utility.h"
-
-#include "hoNDArray_utils.h"
-#include "hoMRImage.h"
-#include "hoNDObjectArray.h"
-
 #include "GenericReconBase.h"
 
 #include "ImageIOAnalyze.h"
+#include "mri_core_def.h"
+#include "mri_core_data.h"
+#include "mri_core_utility.h"
 
 namespace Gadgetron { 
 

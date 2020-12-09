@@ -1,5 +1,10 @@
 #pragma once
 
+#include <boost/range/adaptor/strided.hpp>
+#include <range/v3/action.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
+
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "gadgetron_plplot_export.h"

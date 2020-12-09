@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include <boost/range/adaptor/strided.hpp>
+#include <range/v3/action.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
+
 #include <complex>
 #include "gadgetron_mricore_export.h"
 #include "Gadget.h"

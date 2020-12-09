@@ -6,14 +6,21 @@
 
 #pragma once
 
-#include "GenericReconBase.h"
+#include <boost/range/adaptor/strided.hpp>
+#include <range/v3/action.hpp>
+#include <range/v3/numeric.hpp>
+#include <range/v3/view.hpp>
 
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDFFT.h"
 
+#include "mri_core_def.h"
+#include "mri_core_utility.h"
 #include "mri_core_coil_map_estimation.h"
 #include "ImageArraySendMixin.h"
+
+#include "GenericReconBase.h"
 
 namespace Gadgetron {
 

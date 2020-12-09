@@ -863,7 +863,7 @@ namespace Gadgetron {
 
                   for (size_t k = 0; k < stride; k++){
                       auto strided_iterator = std::make_pair(input_ptr+k,input_ptr+k+old_batch_size) | ba::strided(stride);
-                      auto spline = bm::cubic_b_spline<T>(boost::begin(strided_iterator),boost::end(strided_iterator),T(0.25)*scale,T(scale),T(0),T(0));
+                      auto spline = bm::cubic_b_spline<T>(boost::begin(strided_iterator), boost::end(strided_iterator), T(0.25) * scale, T(scale), T(0), T(0));
                       for (int i = 0; i < new_dims[dim]; i++){
                           result_ptr[k+i*stride] = spline(i);
                       }

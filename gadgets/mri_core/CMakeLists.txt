@@ -72,6 +72,9 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         DenoiseGadget.h
         CoilComputationGadget.h 
         ImageFFTGadget.h 
+        ImageArraySendMixin.h 
+        ImageArraySendMixin.hpp 
+        FlagTriggerGadget.h 
         )
 
 set(gadgetron_mricore_src_files
@@ -138,7 +141,7 @@ set(gadgetron_mricore_src_files
         DenoiseGadget.cpp
         CoilComputationGadget.cpp
         ImageFFTGadget.cpp
-        FlagTriggerGadget.cpp FlagTriggerGadget.h)
+        FlagTriggerGadget.cpp )
 
 set(gadgetron_mricore_config_files
         config/default.xml
