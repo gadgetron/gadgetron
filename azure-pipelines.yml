@@ -40,7 +40,7 @@ jobs:
   dependsOn:
   - buildUbuntu2004
   - buildUbuntu2004Cuda
-  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   steps:
   - template: ./build-jobs/tag-docker-image.yaml
     parameters:
