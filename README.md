@@ -28,7 +28,7 @@ Please follow instructionst at [Integration test in Gadgetron](https://github.co
 
 To deploy Gadgetron, it is convenient to use docker
 -------------------------------------------------
-Please follow instructionst at [Deploy Gadgetron via Docker](https://github.com/gadgetron/gadgetron/wiki/Using-Docker)
+Please follow instructionst at [Deploy Gadgetron via Docker](docker/)
 
 Gadgetron does support cluster/cloud deployment
 -------------------------------------------------
