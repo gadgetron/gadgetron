@@ -1,0 +1,28 @@
+parameters:
+- name: azureconnection
+  type: string
+- name: imagename
+  type: string
+- name: imagetag
+  type: string
+- name: newimagetag
+  type: string
+- name: containerregistry
+  type: string
+
+steps:
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: ${{ parameters.azureconnection }}
+    keyVaultName: gadgetron-build-secrets
+
+- script: |
+      # Exit if anything fails
+      set -e
+      fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
+      newFullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.newimagetag }}"
+      echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
+      docker pull $fullImageName
+      docker tag $fullImageName $newFullImageName
+      docker push $newFullImageName
+  displayName: 'Tag docker image'
