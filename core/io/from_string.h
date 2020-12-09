@@ -5,6 +5,15 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#ifdef min
+    #undef min
+#endif // min
+
+#ifdef max
+    #undef max
+#endif // max
+
 namespace Gadgetron::Core::IO {
 
     void from_string(const std::string&, long long& val);
