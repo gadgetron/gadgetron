@@ -59,7 +59,20 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
 pip3 install --no-binary=h5py h5py
 
 # Rest of the Python "stuff"
-pip3 install numpy scipy Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn sympy Pillow pyxb
+pip3 install \
+    backoff \
+    Cython \
+    matplotlib \
+    numpy \
+    opencv_python \
+    pydicom \
+    Pillow \
+    pyxb \
+    scikit-image \
+    scikit-learn \
+    scipy \
+    sympy \
+    tk-tools
 
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
