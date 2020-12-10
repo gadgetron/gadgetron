@@ -12,41 +12,41 @@ namespace Gadgetron{
   //NRM2
   //
 
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
+  template<class T> cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
+  template<class T> cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
+  template<class T> cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
+  template<class T> cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_nrm2<float>(cublasHandle_t hndl, int n, const float*  x, int inc, float* res){
+  template<> cublasStatus_t cublas_nrm2<float>(cublasHandle_t hndl, int n, const float*  x, int inc, float* res){
     return cublasSnrm2(hndl,n,x,inc,res);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_nrm2<double>(cublasHandle_t hndl, int n, const double*  x, int inc, double* res){
+  template<> cublasStatus_t cublas_nrm2<double>(cublasHandle_t hndl, int n, const double*  x, int inc, double* res){
     return cublasDnrm2(hndl,n,x,inc,res);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_nrm2<float_complext>(cublasHandle_t hndl, int n, const float_complext*  x, int inc, float* res){
+  template<> cublasStatus_t cublas_nrm2<float_complext>(cublasHandle_t hndl, int n, const float_complext*  x, int inc, float* res){
     return cublasScnrm2(hndl,n,(const cuComplex*)x,inc,res);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_nrm2<double_complext>(cublasHandle_t hndl, int n, const double_complext*  x, int inc, double* res){
+  template<> cublasStatus_t cublas_nrm2<double_complext>(cublasHandle_t hndl, int n, const double_complext*  x, int inc, double* res){
     return cublasDznrm2(hndl,n,(const cuDoubleComplex*) x,inc,res);
   }
 
   //DOT
   //
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_dot<float>(cublasHandle_t hndl, int n , const float* x , int incx, const  float* y , int incy, float* res, bool cc){
+  template<> cublasStatus_t cublas_dot<float>(cublasHandle_t hndl, int n , const float* x , int incx, const  float* y , int incy, float* res, bool cc){
     return cublasSdot( hndl, n, x, incx, y, incy, res);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_dot<double>(cublasHandle_t hndl, int n , const double* x , int incx, const  double* y , int incy, double* res, bool cc){
+  template<> cublasStatus_t cublas_dot<double>(cublasHandle_t hndl, int n , const double* x , int incx, const  double* y , int incy, double* res, bool cc){
     return cublasDdot( hndl, n, x, incx, y, incy, res);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_dot<float_complext>(cublasHandle_t hndl, int n , const float_complext* x ,
+  template<> cublasStatus_t cublas_dot<float_complext>(cublasHandle_t hndl, int n , const float_complext* x ,
 										int incx, const  float_complext* y , int incy, float_complext* res, bool cc){
     if(cc)
       return cublasCdotc( hndl, n, (const cuComplex*) x, incx, (const cuComplex*) y, incy, (cuComplex*) res);
@@ -54,7 +54,7 @@ namespace Gadgetron{
       return cublasCdotu( hndl, n, (const cuComplex*) x, incx, (const cuComplex*) y, incy, (cuComplex*) res);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_dot<double_complext>(cublasHandle_t hndl, int n , const double_complext* x ,
+  template<> cublasStatus_t cublas_dot<double_complext>(cublasHandle_t hndl, int n , const double_complext* x ,
 										 int incx, const  double_complext* y , int incy, double_complext* res, bool cc){
     if(cc)
       return cublasZdotc( hndl, n, (const cuDoubleComplex*) x, incx, (const cuDoubleComplex*) y, incy, (cuDoubleComplex*) res);
@@ -65,76 +65,76 @@ namespace Gadgetron{
   // AXPY
   //
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_axpy<float>(cublasHandle_t hndl , int n , const float* a , const float* x , int incx ,  float* y , int incy){
+  template<> cublasStatus_t cublas_axpy<float>(cublasHandle_t hndl , int n , const float* a , const float* x , int incx ,  float* y , int incy){
     return cublasSaxpy(hndl,n,a,x,incx,y,incy);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_axpy<double>(cublasHandle_t hndl , int n , const double* a , const double* x , int incx ,  double* y , int incy){
+  template<> cublasStatus_t cublas_axpy<double>(cublasHandle_t hndl , int n , const double* a , const double* x , int incx ,  double* y , int incy){
     return cublasDaxpy(hndl,n,a,x,incx,y,incy);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_axpy<float_complext>(cublasHandle_t hndl , int n , const float_complext* a , const float_complext* x , int incx ,  float_complext* y , int incy){
+  template<> cublasStatus_t cublas_axpy<float_complext>(cublasHandle_t hndl , int n , const float_complext* a , const float_complext* x , int incx ,  float_complext* y , int incy){
     return cublasCaxpy(hndl,n,(const cuComplex*) a, (const cuComplex*) x,incx, (cuComplex*)y,incy);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_axpy<double_complext>(cublasHandle_t hndl , int n , const double_complext* a , const double_complext* x , int incx ,  double_complext* y , int incy){
+  template<> cublasStatus_t cublas_axpy<double_complext>(cublasHandle_t hndl , int n , const double_complext* a , const double_complext* x , int incx ,  double_complext* y , int incy){
     return cublasZaxpy(hndl,n,(const cuDoubleComplex*) a, (const cuDoubleComplex*) x,incx, (cuDoubleComplex*)y,incy);
   }
 
   //SUM
   //
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_asum<float>(cublasHandle_t hndl, int n,const float *x, int incx, float *result){
+  template<> cublasStatus_t cublas_asum<float>(cublasHandle_t hndl, int n,const float *x, int incx, float *result){
     return cublasSasum(hndl,n,x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_asum<double>(cublasHandle_t hndl, int n,const double *x, int incx, double *result){
+  template<> cublasStatus_t cublas_asum<double>(cublasHandle_t hndl, int n,const double *x, int incx, double *result){
     return cublasDasum(hndl,n,x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_asum<float_complext>(cublasHandle_t hndl, int n,const float_complext *x, int incx, float *result){
+  template<> cublasStatus_t cublas_asum<float_complext>(cublasHandle_t hndl, int n,const float_complext *x, int incx, float *result){
     return cublasScasum(hndl,n,(const cuComplex*) x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_asum<double_complext>(cublasHandle_t hndl, int n,const double_complext *x, int incx, double *result){
+  template<> cublasStatus_t cublas_asum<double_complext>(cublasHandle_t hndl, int n,const double_complext *x, int incx, double *result){
     return cublasDzasum(hndl,n,(const cuDoubleComplex*) x,incx,result);
   }
 
   //AMIN
   //
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amin<float>(cublasHandle_t hndl, int n,const float *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amin<float>(cublasHandle_t hndl, int n,const float *x, int incx, int *result){
     return cublasIsamin(hndl,n,x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amin<double>(cublasHandle_t hndl, int n,const double *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amin<double>(cublasHandle_t hndl, int n,const double *x, int incx, int *result){
     return cublasIdamin(hndl,n,x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amin<float_complext>(cublasHandle_t hndl, int n,const float_complext *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amin<float_complext>(cublasHandle_t hndl, int n,const float_complext *x, int incx, int *result){
     return cublasIcamin(hndl,n, (const cuComplex* ) x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amin<double_complext>(cublasHandle_t hndl, int n,const double_complext *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amin<double_complext>(cublasHandle_t hndl, int n,const double_complext *x, int incx, int *result){
     return cublasIzamin(hndl,n, (const cuDoubleComplex* ) x,incx,result);
   }
 
   //AMAX
   //
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amax<float>(cublasHandle_t hndl, int n,const float *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amax<float>(cublasHandle_t hndl, int n,const float *x, int incx, int *result){
     return cublasIsamax(hndl,n,x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amax<double>(cublasHandle_t hndl, int n,const double *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amax<double>(cublasHandle_t hndl, int n,const double *x, int incx, int *result){
     return cublasIdamax(hndl,n,x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amax<float_complext>(cublasHandle_t hndl, int n,const float_complext *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amax<float_complext>(cublasHandle_t hndl, int n,const float_complext *x, int incx, int *result){
     return cublasIcamax(hndl,n, (const cuComplex* ) x,incx,result);
   }
 
-  template<> EXPORTGPUCORE cublasStatus_t cublas_amax<double_complext>(cublasHandle_t hndl, int n,const double_complext *x, int incx, int *result){
+  template<> cublasStatus_t cublas_amax<double_complext>(cublasHandle_t hndl, int n,const double_complext *x, int incx, int *result){
     return cublasIzamax(hndl,n, (const cuDoubleComplex* ) x,incx,result);
   }
 
@@ -280,33 +280,33 @@ namespace Gadgetron{
   // Instantiation
   //
   
-  template EXPORTGPUCORE float dot(cuNDArray<float>*,cuNDArray<float>*,bool);
-  template EXPORTGPUCORE float nrm2(cuNDArray<float>*);
-  template EXPORTGPUCORE void axpy(float,cuNDArray<float>*,cuNDArray<float>*);
-  template EXPORTGPUCORE size_t amin(cuNDArray<float>*);
-  template EXPORTGPUCORE size_t amax(cuNDArray<float>*);
-  template EXPORTGPUCORE float asum(cuNDArray<float>*);
+  template float dot(cuNDArray<float>*,cuNDArray<float>*,bool);
+  template float nrm2(cuNDArray<float>*);
+  template void axpy(float,cuNDArray<float>*,cuNDArray<float>*);
+  template size_t amin(cuNDArray<float>*);
+  template size_t amax(cuNDArray<float>*);
+  template float asum(cuNDArray<float>*);
 
-  template EXPORTGPUCORE double dot(cuNDArray<double>*,cuNDArray<double>*,bool);
-  template EXPORTGPUCORE double nrm2(cuNDArray<double>*);
-  template EXPORTGPUCORE void axpy(double,cuNDArray<double>*,cuNDArray<double>*);
-  template EXPORTGPUCORE size_t amin(cuNDArray<double>*);
-  template EXPORTGPUCORE size_t amax(cuNDArray<double>*);
-  template EXPORTGPUCORE double asum(cuNDArray<double>*);
+  template double dot(cuNDArray<double>*,cuNDArray<double>*,bool);
+  template double nrm2(cuNDArray<double>*);
+  template void axpy(double,cuNDArray<double>*,cuNDArray<double>*);
+  template size_t amin(cuNDArray<double>*);
+  template size_t amax(cuNDArray<double>*);
+  template double asum(cuNDArray<double>*);
 
-  template EXPORTGPUCORE float_complext dot(cuNDArray<float_complext>*,cuNDArray<float_complext>*,bool);
-  template EXPORTGPUCORE float nrm2(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE void axpy(float_complext,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
-  template EXPORTGPUCORE void axpy(float,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
-  template EXPORTGPUCORE size_t amin(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE size_t amax(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE float asum(cuNDArray<float_complext>*);
+  template float_complext dot(cuNDArray<float_complext>*,cuNDArray<float_complext>*,bool);
+  template float nrm2(cuNDArray<float_complext>*);
+  template void axpy(float_complext,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
+  template void axpy(float,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
+  template size_t amin(cuNDArray<float_complext>*);
+  template size_t amax(cuNDArray<float_complext>*);
+  template float asum(cuNDArray<float_complext>*);
 
-  template EXPORTGPUCORE double_complext dot(cuNDArray<double_complext>*,cuNDArray<double_complext>*,bool);
-  template EXPORTGPUCORE double nrm2(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE void axpy(double_complext,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
-  template EXPORTGPUCORE void axpy(double,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
-  template EXPORTGPUCORE size_t amin(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE size_t amax(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE double asum(cuNDArray<double_complext>*);
+  template double_complext dot(cuNDArray<double_complext>*,cuNDArray<double_complext>*,bool);
+  template double nrm2(cuNDArray<double_complext>*);
+  template void axpy(double_complext,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
+  template void axpy(double,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
+  template size_t amin(cuNDArray<double_complext>*);
+  template size_t amax(cuNDArray<double_complext>*);
+  template double asum(cuNDArray<double_complext>*);
 }

@@ -11,7 +11,6 @@ cuda_add_library(gadgetron_toolbox_gpunfft SHARED
     cuNFFT.h
     cuNFFT.cu
     cuNFFTOperator.cpp
-    gpunfft_export.h
   )
 
 target_include_directories(gadgetron_toolbox_gpunfft
@@ -44,7 +43,6 @@ install(TARGETS gadgetron_toolbox_gpunfft
 install(FILES 
   cuGriddingConvolution.h 
   cuNFFT.h
-  gpunfft_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

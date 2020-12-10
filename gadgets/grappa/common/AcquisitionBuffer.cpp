@@ -135,7 +135,7 @@ namespace Gadgetron::Grappa {
 
         const auto& [lower, upper] = fully_sampled_region(index);
 
-        return std::array<uint16_t, 4>{0, buffers.at(index).data.get_size(0), lower+internals.line_offset, upper+internals.line_offset};
+        return std::array<uint16_t, 4>{0, uint16_t(buffers.at(index).data.get_size(0)), uint16_t(lower+internals.line_offset), uint16_t(upper+internals.line_offset)};
     }
 
     AcquisitionBuffer::buffer AcquisitionBuffer::create_buffer(const std::vector<size_t> &dimensions) {

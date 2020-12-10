@@ -10,7 +10,6 @@
 
 #include "linearOperator.h"
 #include "cuNDArray.h"
-#include <thrust/device_vector.h>
 
 namespace Gadgetron {
 
@@ -23,9 +22,9 @@ public:
 	virtual void mult_MH(cuNDArray<complext<T>>* in, cuNDArray<complext<T>>* out,bool accumulate );
 
 	void set_senseOp(boost::shared_ptr<linearOperator<cuNDArray<complext<T>>>> op){ senseOp = op;}
-	void set_frequencies(std::vector<T> & freq) { frequencies=thrust::device_vector<T>(freq.begin(),freq.end());
-	}
-	thrust::device_vector<T> get_frequencies(){
+	void set_frequencies(std::vector<T>& freq);
+	
+	cuNDArray<T> get_frequencies(){
 		return frequencies;
 	}
 
@@ -37,7 +36,7 @@ protected:
 	boost::shared_ptr<linearOperator<cuNDArray<complext<T>>>> senseOp;
 	T dte_; //Time between echoes
 	T dtt_; //Time between k-space points
-	thrust::device_vector<T> frequencies;
+	cuNDArray<T> frequencies;
 };
 
 } /* namespace Gadgetron */

@@ -17,7 +17,6 @@
 #pragma once
 
 #include "cuNDArray.h"
-#include "gpucore_export.h"
 #include "Gadgetron_enable_types.h"
 
 namespace Gadgetron {
@@ -31,14 +30,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<std::enable_if_t<enable_operator<T>(), T > > & operator+= (cuNDArray<T> &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T> & operator+= (cuNDArray<T> &x, const cuNDArray<T> &y);
   
   /**
    * @brief Implementation of element-wise operator+= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<std::enable_if_t<enable_operator<T>(), T > > & operator+= (cuNDArray<T> &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T > & operator+= (cuNDArray<T> &x, T y );
     
   /**
    * @brief Implementation of element-wise operator+= on two cuNDArrays.
@@ -49,14 +48,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext<std::enable_if_t<enable_operator<T>(), T > > > & operator+= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > > & operator+= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
 
   /**
    * @brief Implementation of element-wise operator+= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > > & operator+= (cuNDArray<complext<T> > &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > > & operator+= (cuNDArray<complext<T> > &x, T y );
 
   /**
    * @brief Implementation of element-wise operator-= on two cuNDArrays.
@@ -67,14 +66,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<std::enable_if_t<enable_operator<T>(), T > > & operator-= (cuNDArray<T> &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T > & operator-= (cuNDArray<T> &x, const cuNDArray<T> &y);
   
   /**
    * @brief Implementation of element-wise operator-= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<std::enable_if_t<enable_operator<T>(), T > > & operator-= (cuNDArray<T> &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T > & operator-= (cuNDArray<T> &x, T y );
     
   /**
    * @brief Implementation of element-wise operator-= on two cuNDArrays.
@@ -85,14 +84,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > > & operator-= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > > & operator-= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
 
   /**
    * @brief Implementation of element-wise operator-= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > > & operator-= (cuNDArray<complext<T> > &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > > & operator-= (cuNDArray<complext<T> > &x, T y );
 
   /**
    * @brief Implementation of element-wise operator*= on two cuNDArrays.
@@ -103,14 +102,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray< std::enable_if_t<enable_operator<T>(), T > >  & operator*= (cuNDArray<T> &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray< T >  & operator*= (cuNDArray<T> &x, const cuNDArray<T> &y);
   
   /**
    * @brief Implementation of element-wise operator*= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray< std::enable_if_t<enable_operator<T>(), T > >  & operator*= (cuNDArray<T> &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator<T>()>> cuNDArray<T>  & operator*= (cuNDArray<T> &x, T y );
     
   /**
    * @brief Implementation of element-wise operator*= on two cuNDArrays.
@@ -121,14 +120,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > > & operator*= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > > & operator*= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
 
   /**
    * @brief Implementation of element-wise operator*= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > > & operator*= (cuNDArray<complext<T> > &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > > & operator*= (cuNDArray<complext<T> > &x, T y );
 
   /**
    * @brief Implementation of element-wise operator/= on two cuNDArrays.
@@ -139,14 +138,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray< std::enable_if_t<enable_operator<T>(), T > >  & operator/= (cuNDArray<T> &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray< T >  & operator/= (cuNDArray<T> &x, const cuNDArray<T> &y);
   
   /**
    * @brief Implementation of element-wise operator/= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray< std::enable_if_t<enable_operator<T>(), T > > & operator/= (cuNDArray<T> &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray< T > & operator/= (cuNDArray<T> &x, T y );
     
   /**
    * @brief Implementation of element-wise operator/= on two cuNDArrays.
@@ -157,14 +156,14 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > >  & operator/= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > >  & operator/= (cuNDArray<complext<T> > &x, const cuNDArray<T> &y);
 
   /**
    * @brief Implementation of element-wise operator/= on a cuNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
    */
-  template<class T> EXPORTGPUCORE cuNDArray<complext< std::enable_if_t<enable_operator<T>(), T > > >  & operator/= (cuNDArray<complext<T> > &x, T y );
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext< T > >  & operator/= (cuNDArray<complext<T> > &x, T y );
  /**
    * @brief Implementation of element-wise operator AND on two cuNDArrays.
    * @param[in,out] x Input and output array.
@@ -174,7 +173,7 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-   EXPORTGPUCORE cuNDArray<bool >  & operator&= (cuNDArray<bool > &x, cuNDArray<bool> &y);
+   cuNDArray<bool >  & operator&= (cuNDArray<bool > &x, cuNDArray<bool> &y);
 /**
    * @brief Implementation of element-wise operator OR on two cuNDArrays.
    * @param[in,out] x Input and output array.
@@ -184,5 +183,5 @@ namespace Gadgetron {
    * Then the sizes of the first n array dimensions must match between x and y.
    * If x contains further dimensions the operator is batched across those dimensions.
    */
-  EXPORTGPUCORE cuNDArray<bool >  & operator|= (cuNDArray<bool > &x, cuNDArray<bool> &y);
+  cuNDArray<bool >  & operator|= (cuNDArray<bool > &x, cuNDArray<bool> &y);
 }
