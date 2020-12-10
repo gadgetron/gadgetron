@@ -1,0 +1,58 @@
+variables:
+  AzureConnection: 'BiomedicalImaging-NonProd(87d8acb3-5176-4651-b457-6ab9cefd8e3d)'
+  ContainerRegistry: 'ghcr.io/gadgetron/gadgetron'
+
+pool: gadgetron-gpu-nodes
+
+# Trigger when merging to master
+trigger:
+- master
+
+# Trigger for PRs that merge to master
+pr:
+- master
+
+jobs:
+- job: buildUbuntu2004
+  displayName: "Build Ubuntu 20.04 (no CUDA)"
+  steps:
+  - template: ./build-jobs/docker-build-push.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        dockerfile: docker/ubuntu_2004.Dockerfile
+        imagename: gadgetron_ubuntu_2004
+        imagetag: $(build.BuildNumber)
+        containerregistry: $(ContainerRegistry)
+
+- job: buildUbuntu2004Cuda
+  displayName: "Build Ubuntu 20.04 (CUDA)"
+  steps:
+  - template: ./build-jobs/docker-build-push.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        dockerfile: docker/ubuntu_2004_cuda11_cudnn.Dockerfile
+        imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
+        imagetag: $(build.BuildNumber)
+        containerregistry: $(ContainerRegistry)
+
+- job:
+  displayName: "Tag latest images"
+  dependsOn:
+  - buildUbuntu2004
+  - buildUbuntu2004Cuda
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  steps:
+  - template: ./build-jobs/tag-docker-image.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        imagename: gadgetron_ubuntu_2004
+        imagetag: $(build.BuildNumber)
+        newimagetag: 'latest'
+        containerregistry: $(ContainerRegistry)
+  - template: ./build-jobs/tag-docker-image.yaml
+    parameters:
+        azureconnection: $(AzureConnection)
+        imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
+        imagetag: $(build.BuildNumber)
+        newimagetag: 'latest'
+        containerregistry: $(ContainerRegistry)
