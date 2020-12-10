@@ -7,10 +7,9 @@ import sys
 import time
 import json
 import hashlib
-import argparse
 import functools
+import argparse
 
-import urllib.request
 import requests
 from requests.adapters import TimeoutSauce
 import backoff
@@ -27,16 +26,13 @@ class CustomTimeout(TimeoutSauce):
             kwargs["read"] = REQUESTS_TIMEOUT_SECONDS
         super().__init__(*args, **kwargs)
 
+# Setting the global time out
 requests.adapters.TimeoutSauce = CustomTimeout
 
-class ServerError(requests.exceptions.HTTPError):
-    print("Server error called")
-
-# Re-usable decorator with exponential wait.
+# Retry decorator with exponential wait.
 retry_timeout = backoff.on_exception(
     wait_gen=backoff.expo,
     exception=(
-        ServerError,
         requests.exceptions.Timeout,
         requests.exceptions.ConnectionError
     ),
@@ -77,25 +73,6 @@ def download_file(entry):
         print("Downloaded file {} failed validation.".format(destination))
         sys.exit(1)
 
-def __update_handler(current_size, total_size):
-    print(' ' * 64, end='\r')
-    print("\t{:n} of {:n} bytes [{:.2%}]".format(current_size, total_size, current_size / total_size), end='\r')
-
-
-def __finish_handler(total_size, duration):
-    print(' ' * 64, end='\r')
-    print("Downloaded {:n} bytes at {:n} bytes per second.".format(total_size, int(total_size / duration)))
-
-
-def __progress_notification_handler(on_update, on_finish, start, blocks, block_size, total_size):
-    current_size = blocks * block_size
-
-    if total_size <= current_size:
-        on_finish(total_size, time.time() - start)
-    else:
-        on_update(current_size, total_size)
-
-
 
 def main():
 
@@ -111,10 +88,8 @@ def main():
     parser.add_argument('-H', '--host', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/',
                         help="Host from which to download the data.")
 
-    parser.add_argument('--mute-download-progress', dest='progress', action='store_const',
-                        const=functools.partial(__progress_notification_handler, lambda *_: None, __finish_handler),
-                        default=functools.partial(__progress_notification_handler, __update_handler, __finish_handler),
-                        help="Mute download progress messages.")
+    parser.add_argument('-t', '--threads', type=int, default=50,
+                        help="Number of download threads")
 
     args = parser.parse_args()
 
@@ -127,11 +102,8 @@ def main():
         destination = os.path.join(args.destination, entry['file'])
         resolved_entries.append({ 'url': url, 'destination': destination, 'md5': entry['md5'] })
 
-    print('Starting threadpool')
-    with Pool(30) as p:
+    with Pool(args.threads) as p:
         p.map(download_file, resolved_entries)
-
-    #ThreadPool(3).imap_unordered(download_file, entries)
 
     sys.exit(0)
 
