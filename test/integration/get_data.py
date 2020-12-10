@@ -12,16 +12,36 @@ import functools
 
 import urllib.request
 import requests
+from requests.adapters import TimeoutSauce
+import backoff
 from multiprocessing import Pool
 
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+REQUESTS_TIMEOUT_SECONDS = 10
+REQUESTS_MAX_RETRIES = 3
 
-retry_strategy = Retry(total=3)
-adapter = HTTPAdapter(max_retries=retry_strategy)
-http = requests.Session()
-http.mount("https://", adapter)
-http.mount("http://", adapter)
+class CustomTimeout(TimeoutSauce):
+    def __init__(self, *args, **kwargs):
+        if kwargs["connect"] is None:
+            kwargs["connect"] = REQUESTS_TIMEOUT_SECONDS
+        if kwargs["read"] is None:
+            kwargs["read"] = REQUESTS_TIMEOUT_SECONDS
+        super().__init__(*args, **kwargs)
+
+requests.adapters.TimeoutSauce = CustomTimeout
+
+class ServerError(requests.exceptions.HTTPError):
+    print("Server error called")
+
+# Re-usable decorator with exponential wait.
+retry_timeout = backoff.on_exception(
+    wait_gen=backoff.expo,
+    exception=(
+        ServerError,
+        requests.exceptions.Timeout,
+        requests.exceptions.ConnectionError
+    ),
+    max_tries=REQUESTS_MAX_RETRIES,
+)
 
 def is_valid(file, digest):
     if not os.path.isfile(file):
@@ -35,6 +55,7 @@ def is_valid(file, digest):
 
     return digest == md5.hexdigest()
 
+@retry_timeout
 def download_file(entry):
     url = entry['url']
     destination = entry['destination']
@@ -46,7 +67,7 @@ def download_file(entry):
 
     print("Downloading file: {}".format(destination))
  
-    r = http.get(url, stream=True, timeout=10)
+    r = requests.get(url, stream=True)
     if r.status_code == 200:
         with open(destination, 'wb') as f:
             for chunk in r:
@@ -55,7 +76,6 @@ def download_file(entry):
     if not is_valid(destination, entry['md5']):
         print("Downloaded file {} failed validation.".format(destination))
         sys.exit(1)
-
 
 def __update_handler(current_size, total_size):
     print(' ' * 64, end='\r')
