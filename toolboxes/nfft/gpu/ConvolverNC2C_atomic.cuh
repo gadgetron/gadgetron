@@ -49,6 +49,12 @@ __device__ double atomicAdd(double* address, double val)
 }
 #endif
 
+//This function does not return a value. Why? Because why we can atomically add things, we cannot atomically get the result back.
+template<class T>
+__device__ void atomicAdd(complext<T>* __restrict__ address, complext<T> val){
+    atomicAdd(reinterpret_cast<T*>(address),real(val));
+    atomicAdd(reinterpret_cast<T*>(address)+1,imag(val));
+}
 
 template<class T, unsigned int D, template<class, unsigned int> class K>
 __inline__ __device__
@@ -83,15 +89,7 @@ static void NFFT_iterate_body(vector_td<unsigned int, D> matrix_size_os,
             (batch*num_frames+frame)*prod(matrix_size_os) + co_to_idx( vector_td<unsigned int, D>(grid_position), matrix_size_os );
 
         // Atomic update.
-        if constexpr (is_complex_type_v<T>)
-        {
-            atomicAdd(&(((realType_t<T>*)image)[(grid_idx<<1)+0]), weight*real(sample_value));
-            atomicAdd(&(((realType_t<T>*)image)[(grid_idx<<1)+1]), weight*imag(sample_value));
-        }
-        else
-        {
-            atomicAdd(&(((realType_t<T>*)image)[(grid_idx<<1)+0]), sample_value);
-        }
+        atomicAdd(&(image[grid_idx]), weight*sample_value);
     }
 }
 
