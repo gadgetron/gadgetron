@@ -88,6 +88,10 @@ void MFIOperator::calc_MFI_coeff()
     int j;
     int i;
     float f;
+    //Have to make variables local to appease the OMP gods. 
+    float fmax = this->fmax;
+    size_t L = this->L;
+
     #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod)
     for(j = 0; j<L; j++){
       f = -fmax+float(j)*fmax*2./float(L-1);
@@ -96,8 +100,9 @@ void MFIOperator::calc_MFI_coeff()
       }
     }
 
-    #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod, b, x)
-    for(j = 0; j<fmax*2+1; j++){
+    int loop_limit = fmax * 2 + 1;
+    #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod, b, x, loop_limit)
+    for(j = 0; j<loop_limit; j++){
       f = -fmax+j;
       for(i = 0; i < R0; i++) {
         b(i,j) = exp(om*(float)i*(float)sample_time*f);
@@ -123,7 +128,7 @@ void MFIOperator::calc_phase_mask()
   nfft_plan_->compute( &gpu_data,ch_images, nullptr, NFFT_comp_mode::BACKWARDS_NC2C );
   nfft_plan_->fft(ch_images, NFFT_fft_mode::FORWARDS);
 
-  auto time_grid = *(ch_images.to_host());
+  auto time_grid = std::move(*(ch_images.to_host()));
   for (int i = 0; i < time_grid.get_number_of_elements(); i++) {
     phase_mask[i] = exp(complext<float>(0.0,2.*M_PI*f_step*(abs(time_grid[i]))));
   }

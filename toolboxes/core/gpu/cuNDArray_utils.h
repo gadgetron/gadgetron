@@ -5,31 +5,30 @@
 
 #include "cuNDArray.h"
 #include "vector_td.h"
-#include "gpucore_export.h"
 
 namespace Gadgetron{
 
 /**
  * @brief Cyclicly shifts the order of the array dimensions
  */
-template<class T> EXPORTGPUCORE cuNDArray<T>
+template<class T> cuNDArray<T>
 shift_dim( const cuNDArray<T>& in, int shift );
 /**
  * @brief Cyclicly shifts the order of the array dimensions
  */
-template<class T> EXPORTGPUCORE void
+template<class T> void
 shift_dim( const cuNDArray<T>& in, cuNDArray<T>& out, int shift );
 
 /**
  * @brief Permutes the array dimensions following the specified dimension order
  */
-template<class T> EXPORTGPUCORE cuNDArray<T>
+template<class T> cuNDArray<T>
 permute(const cuNDArray<T>& in, const std::vector<size_t>& dim_order );
 
 /**
  * @brief Permutes the array dimensions following the specified dimension order
  */
-template<class T> EXPORTGPUCORE void
+template<class T> void
 permute( const cuNDArray<T>& in, cuNDArray<T>& out, const std::vector<size_t>& dim_order );
 
 /**
@@ -38,7 +37,7 @@ permute( const cuNDArray<T>& in, cuNDArray<T>& out, const std::vector<size_t>& d
  * @param[in] crop_size Size of the output array
  * @param[in] in Array to crop
  */
-template<class T, unsigned int D> EXPORTGPUCORE cuNDArray<T>
+template<class T, unsigned int D> cuNDArray<T>
 crop( const vector_td<size_t,D>& crop_offset, const vector_td<size_t,D>& crop_size, const cuNDArray<T>& in );
 
 /**
@@ -47,7 +46,7 @@ crop( const vector_td<size_t,D>& crop_offset, const vector_td<size_t,D>& crop_si
  * @param[in] in Array to crop
  * @param[out] out Array into which the cropped array is placed
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
 void crop( const vector_td<size_t,D>& crop_offset, const vector_td<size_t,D>& crop_size, const cuNDArray<T>& in, cuNDArray<T>& out );
 
 /**
@@ -56,7 +55,7 @@ void crop( const vector_td<size_t,D>& crop_offset, const vector_td<size_t,D>& cr
  * @param[in] in Array to pad
  * @param[in] val Numerical value of the padding
  */
-template<class T, unsigned int D> EXPORTGPUCORE cuNDArray<T>
+template<class T, unsigned int D> cuNDArray<T>
 pad(const vector_td<size_t,D>& size, const cuNDArray<T>& in, T val = T(0) );
 
 
@@ -66,7 +65,7 @@ pad(const vector_td<size_t,D>& size, const cuNDArray<T>& in, T val = T(0) );
  * @param[in] out Output array
  * @param[in] val Numerical value of the padding
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
 void pad( const cuNDArray<T>& in, cuNDArray<T>& out, T val = T(0) );
 
 /**
@@ -75,7 +74,7 @@ void pad( const cuNDArray<T>& in, cuNDArray<T>& out, T val = T(0) );
  * @param[in,out] image Array to fill
  * @param[in] val Fill value
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
 void fill_border( const vector_td<size_t,D>, cuNDArray<T>& image, T val = T(0) );
 
 /**
@@ -93,14 +92,14 @@ void fill_border( typename realType<T>::Type radius, cuNDArray<T>& in_out, T val
  * @param[in] data Input data
  * @param[in] added_dim_size Size of the new dimension
  */
-template<class T> EXPORTGPUCORE cuNDArray<T>
+template<class T> cuNDArray<T>
 expand(const cuNDArray<T>& data, size_t added_dim_size );
 
 /**
  * @brief Creates an array of 2 times the size, created via linear interpolation
  * @param[in] in Array to upsample
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
  cuNDArray<T> upsample( const cuNDArray<T>& in );
 
 /**
@@ -108,14 +107,14 @@ template<class T, unsigned int D> EXPORTGPUCORE
  * @param[in] in Array to upsample
  * @param[out] out Output array
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
 void upsample(const cuNDArray<T>& in, cuNDArray<T>& out );
 
 /**
  * @brief Creates an array of half the size, created via linear interpolation
  * @param[in] in Array to downsample
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
  cuNDArray<T> downsample( const cuNDArray<T>& in );
 
 /**
@@ -123,6 +122,6 @@ template<class T, unsigned int D> EXPORTGPUCORE
  * @param[in] in Array to downsample
  * @param[out] out Output Array
  */
-template<class T, unsigned int D> EXPORTGPUCORE
+template<class T, unsigned int D> 
 void downsample(const cuNDArray<T>& in, cuNDArray<T>& out );
 }

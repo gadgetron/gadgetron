@@ -21,7 +21,9 @@ set_target_properties(gadgetron_core PROPERTIES
 target_link_libraries(gadgetron_core
         ISMRMRD::ISMRMRD
         gadgetron_toolbox_cpucore
-        Boost::boost)
+        Boost::boost
+        Boost::filesystem
+        )
 
 target_include_directories(gadgetron_core PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
