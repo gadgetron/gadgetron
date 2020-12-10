@@ -11,6 +11,50 @@ import argparse
 import functools
 
 import urllib.request
+import requests
+from multiprocessing import Pool
+
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+retry_strategy = Retry(total=3)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
+http.mount("http://", adapter)
+
+def is_valid(file, digest):
+    if not os.path.isfile(file):
+        return False
+
+    md5 = hashlib.new('md5')
+
+    with open(file, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            md5.update(chunk)
+
+    return digest == md5.hexdigest()
+
+def download_file(entry):
+    url = entry['url']
+    destination = entry['destination']
+    os.makedirs(os.path.dirname(destination), exist_ok=True)
+
+    if is_valid(destination, entry['md5']):
+        print("Verified: {}".format(destination))
+        return
+
+    print("Downloading file: {}".format(destination))
+ 
+    r = http.get(url, stream=True, timeout=10)
+    if r.status_code == 200:
+        with open(destination, 'wb') as f:
+            for chunk in r:
+                f.write(chunk)
+
+    if not is_valid(destination, entry['md5']):
+        print("Downloaded file {} failed validation.".format(destination))
+        sys.exit(1)
 
 
 def __update_handler(current_size, total_size):
@@ -31,19 +75,6 @@ def __progress_notification_handler(on_update, on_finish, start, blocks, block_s
     else:
         on_update(current_size, total_size)
 
-
-def is_valid(file, digest):
-
-    if not os.path.isfile(file):
-        return False
-
-    md5 = hashlib.new('md5')
-
-    with open(file, 'rb') as f:
-        for chunk in iter(lambda: f.read(65536), b''):
-            md5.update(chunk)
-
-    return digest == md5.hexdigest()
 
 
 def main():
@@ -70,23 +101,17 @@ def main():
     with open(args.list, 'r') as list:
         entries = json.load(list)
 
+    resolved_entries = []
     for entry in entries:
-
         url = "{}{}".format(args.host, entry['file'])
         destination = os.path.join(args.destination, entry['file'])
+        resolved_entries.append({ 'url': url, 'destination': destination, 'md5': entry['md5'] })
 
-        if is_valid(destination, entry['md5']):
-            print("Verified: {}".format(destination))
-            continue
+    print('Starting threadpool')
+    with Pool(30) as p:
+        p.map(download_file, resolved_entries)
 
-        print("Downloading file: {}".format(destination))
-
-        os.makedirs(os.path.dirname(destination), exist_ok=True)
-        urllib.request.urlretrieve(url, destination, reporthook=functools.partial(args.progress, time.time()))
-
-        if not is_valid(destination, entry['md5']):
-            print("Downloaded file {} failed validation.".format(destination))
-            sys.exit(1)
+    #ThreadPool(3).imap_unordered(download_file, entries)
 
     sys.exit(0)
 
