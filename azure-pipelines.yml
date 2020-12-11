@@ -56,7 +56,7 @@ jobs:
   - script: |
         set -e
         fullImageName="$(ContainerRegistry)/$(imageName):$(build.BuildNumber)"
-        docker run -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py cases/*"
+        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py cases/*"
     displayName: "Run integration tests"
 
 - job:
