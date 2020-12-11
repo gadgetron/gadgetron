@@ -60,7 +60,6 @@ pip3 install --no-binary=h5py h5py
 
 # Rest of the Python "stuff"
 pip3 install \
-    backoff \
     Cython \
     matplotlib \
     numpy \
