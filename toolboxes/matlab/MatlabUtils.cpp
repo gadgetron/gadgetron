@@ -374,7 +374,7 @@ public:
 protected:
 
     // the header field names
-    std::vector<char*> header_fields_;
+    std::vector<std::string> header_fields_;
 
     void set_header_fields()
     {
@@ -438,7 +438,13 @@ void matlab_hoImage_header<T, D>::toMatlab(mxArray*& header)
         unsigned int ii, jj;
 
         mwSize num[2] = {1, 1};
-        header = mxCreateStructArray(2, num, (int)header_fields_.size(), const_cast<const char**>(&header_fields_[0]));
+
+        std::vector<const char*> ptr(header_fields_.size());
+        for( ii=0; ii< header_fields_.size(); ii++)
+        {
+            ptr[ii] = header_fields_[ii].c_str();
+        }
+        header = mxCreateStructArray(2, num, (int)header_fields_.size(), const_cast<const char**>(&ptr[0]));
 
         mwSize dims[1];
         dims[0] = D;
@@ -450,7 +456,7 @@ void matlab_hoImage_header<T, D>::toMatlab(mxArray*& header)
             pr[ii] = origin_[ii];
         }
 
-        mxSetField(header, 0, header_fields_[0], aMx);
+        mxSetField(header, 0, header_fields_[0].c_str(), aMx);
 
         aMx = mxCreateNumericArray(1, dims, mxSINGLE_CLASS, mxREAL);
         pr = static_cast<float*>(mxGetData(aMx));
@@ -459,7 +465,7 @@ void matlab_hoImage_header<T, D>::toMatlab(mxArray*& header)
             pr[ii] = pixelSize_[ii];
         }
 
-        mxSetField(header, 0, header_fields_[1], aMx);
+        mxSetField(header, 0, header_fields_[1].c_str(), aMx);
 
         mwSize dimsAxis[2];
         dimsAxis[0] = D;
@@ -475,7 +481,7 @@ void matlab_hoImage_header<T, D>::toMatlab(mxArray*& header)
             }
         }
 
-        mxSetField(header, 0, header_fields_[2], aMx);
+        mxSetField(header, 0, header_fields_[2].c_str(), aMx);
     }
     catch(...)
     {
@@ -492,7 +498,7 @@ void matlab_hoImage_header<T, D>::fromMatlab(const mxArray* header)
 
         size_t ii, jj;
 
-        mxArray* aMx = mxGetField(header, 0, header_fields_[0]);
+        mxArray* aMx = mxGetField(header, 0, header_fields_[0].c_str());
         size_t N = mxGetNumberOfElements(aMx);
 
         size_t minDN = ( (D<N) ? D : N );
@@ -516,7 +522,7 @@ void matlab_hoImage_header<T, D>::fromMatlab(const mxArray* header)
             }
         }
 
-        aMx = mxGetField(header, 0, header_fields_[1]);
+        aMx = mxGetField(header, 0, header_fields_[1].c_str());
         N = mxGetNumberOfElements(aMx);
 
         if ( mxIsSingle(aMx) )
@@ -538,7 +544,7 @@ void matlab_hoImage_header<T, D>::fromMatlab(const mxArray* header)
             }
         }
 
-        aMx = mxGetField(header, 0, header_fields_[2]);
+        aMx = mxGetField(header, 0, header_fields_[2].c_str());
 
         if ( mxIsSingle(aMx) )
         {

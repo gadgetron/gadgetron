@@ -212,15 +212,15 @@ namespace Gadgetron
 #endif // GADGET_DEBUG_MODE
 
 
-namespace boost
-{
-#ifdef BOOST_NO_EXCEPTIONS
-    inline void throw_exception(std::exception const & e)
-    {
-        throw e; // or whatever
-    };
-#endif
-
-}// namespace boost
+//namespace boost
+//{
+//#ifdef BOOST_NO_EXCEPTIONS
+//    inline void throw_exception(std::exception const & e)
+//    {
+//        throw e; // or whatever
+//    };
+//#endif
+//
+//}// namespace boost
 
 #endif //GADGETRON_LOG_H

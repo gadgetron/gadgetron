@@ -24,6 +24,10 @@ target_link_libraries(gadgetron_toolbox_cloudbus
                       gadgetron_toolbox_node_discovery  
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
+if(WIN32)
+    target_link_libraries(gadgetron_toolbox_cloudbus bcrypt)
+endif()
+
 set_target_properties(gadgetron_toolbox_cloudbus PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_CLOUDBUS__")
 set_target_properties(gadgetron_toolbox_cloudbus  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -40,7 +44,6 @@ target_link_libraries(gadgetron_cloudbus_relay
 		     gadgetron_toolbox_log
 		     gadgetron_toolbox_rest
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
-
 
 install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT main)
 install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT main)

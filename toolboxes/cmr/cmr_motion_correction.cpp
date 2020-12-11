@@ -693,7 +693,7 @@ void concatenate_deform_fields_2DT(const hoNDArray<T>& dx, const hoNDArray<T>& d
 
         long long i;
 
-        #pragma parallel for default(none) private(i) shared(key_frame, N, dx_out, dy_out, RO, E1, interp_ro, interp_e1)
+        #pragma omp parallel for default(none) private(i, p_ro, p_e1) shared(key_frame, N, dx_out, dy_out, RO, E1, interp_ro, interp_e1)
         for (i = key_frame + 2; i < N; i++)
         {
             long ro, e1, j;
@@ -715,7 +715,7 @@ void concatenate_deform_fields_2DT(const hoNDArray<T>& dx, const hoNDArray<T>& d
             }
         }
 
-        #pragma parallel for default(none) private(i) shared(key_frame, N, dx_out, dy_out, RO, E1, interp_ro, interp_e1)
+        #pragma omp parallel for default(none) private(i, p_ro, p_e1) shared(key_frame, N, dx_out, dy_out, RO, E1, interp_ro, interp_e1)
         for (i = key_frame - 2; i >= 0; i--)
         {
             long ro, e1, j;

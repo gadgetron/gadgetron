@@ -9,7 +9,10 @@ if(WIN32)
 endif()
 
 if (WIN32)
-    set(GT_DICOM_LIBRARIES ${DCMTK_dcmdata_LIBRARY} ${DCMTK_oflog_LIBRARY} ${DCMTK_ofstd_LIBRARY})
+    set(GT_DICOM_LIBRARIES ${DCMTK_dcmdata_LIBRARY}
+        ${DCMTK_oflog_LIBRARY}
+        ${DCMTK_ofstd_LIBRARY}
+        iphlpapi )
 else ()
     set(GT_DICOM_LIBRARIES
         ${DCMTK_dcmdata_LIBRARY}
@@ -87,6 +90,10 @@ target_link_libraries(
 
 if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
+endif()
+
+if(WIN32)
+    target_link_libraries(gadgetron_dicom netapi32.lib wsock32.lib WS2_32.Lib)
 endif()
 
 install(
