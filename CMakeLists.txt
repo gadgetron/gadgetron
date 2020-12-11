@@ -269,6 +269,8 @@ endif()
 
 set(BOOST_LIB_LIST system thread date_time chrono program_options filesystem timer iostreams)
 
+find_package(Boost COMPONENTS ${BOOST_LIB_LIST} REQUIRED)
+
 if (NOT DEFINED Boost_VERSION_STRING)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
