@@ -25,7 +25,7 @@ namespace Gadgetron
 
             for (slc = 0; slc < SLC; slc++)
             {
-#pragma omp parallel for default(none) shared(PHS, input, dim_out, output) private(phs)
+#pragma omp parallel for default(none) shared(PHS, input, dim_out, output, slc) private(phs)
                 for (phs = 0; phs < PHS; phs++)
                 {
                     ImageType& a_image = const_cast<ImageType&>(input(slc, phs));
@@ -101,7 +101,7 @@ namespace Gadgetron
 
             for (slc = 0; slc < SLC; slc++)
             {
-#pragma omp parallel for default(none) shared(PHS, input, output) private(phs)
+#pragma omp parallel for default(none) shared(PHS, input, output, slc, scale_ratio) private(phs)
                 for (phs = 0; phs < PHS; phs++)
                 {
                     ImageType& a_image = const_cast<ImageType&>(input(slc, phs));
