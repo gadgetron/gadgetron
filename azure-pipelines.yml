@@ -35,11 +35,34 @@ jobs:
         imagetag: $(build.BuildNumber)
         containerregistry: $(ContainerRegistry)
 
-- job:
-  displayName: "Tag latest images"
+- job: integrationTests
+  displayName: "Run integration tests"
   dependsOn:
   - buildUbuntu2004
   - buildUbuntu2004Cuda
+  strategy:
+    matrix:
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+  steps:
+  - script: |
+        set -e
+        mkdir -p testdata
+        fullImageName="$(ContainerRegistry)/$(imageName):$(build.BuildNumber)"
+        docker run -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./get_data.py"
+    displayName: "Get test data"
+  - script: |
+        set -e
+        fullImageName="$(ContainerRegistry)/$(imageName):$(build.BuildNumber)"
+        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py cases/*"
+    displayName: "Run integration tests"
+
+- job:
+  displayName: "Tag latest images"
+  dependsOn:
+  - integrationTests
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   steps:
   - template: ./build-jobs/tag-docker-image.yaml
