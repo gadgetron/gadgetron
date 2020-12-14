@@ -112,6 +112,10 @@ if (MATLAB_FOUND)
     SET_TARGET_PROPERTIES(Matlab_gt_concatenate_deform_fields PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
     install(TARGETS Matlab_gt_concatenate_deform_fields DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
 
+    add_library(Matlab_gt_deformation_field_reg_3D SHARED Matlab_gt_deformation_field_reg_3D.cpp)
+    SET_TARGET_PROPERTIES(Matlab_gt_deformation_field_reg_3D PROPERTIES SUFFIX ${MATLAB_SUFFIX} PREFIX "")
+    install(TARGETS Matlab_gt_deformation_field_reg_3D DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} )
+
 else()
     message("MATLAB NOT FOUND: matlab wrapper for toolbox will not be compiled.")
 endif()
