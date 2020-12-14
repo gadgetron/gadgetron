@@ -1,5 +1,6 @@
 variables:
   AzureConnection: 'BiomedicalImaging-NonProd(87d8acb3-5176-4651-b457-6ab9cefd8e3d)'
+  AcrConnection: 'gadgetron-acr'
   ContainerRegistry: 'ghcr.io/gadgetron/gadgetron'
 
 pool: gadgetron-gpu-nodes
@@ -13,6 +14,24 @@ pr:
 - master
 
 jobs:
+- job: buildAndPush
+  displayName: "Build and Push"
+  strategy:
+    matrix:
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004
+        dockerFile: docker/ubuntu_2004.Dockerfile
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+        dockerFile: docker/ubuntu_2004_cuda11_cudnn.Dockerfile
+  steps:
+  - template: ./build-jobs/docker-build-push-acr.yaml
+    parameters:
+      acrconnection: $(AcrConnection)
+      dockerfile: $(dockerFile)
+      imageName: $(imageName)
+      containerregistry: 'gadgetron.azurecr.io/gadgetronbuild'
+
 - job: buildUbuntu2004
   displayName: "Build Ubuntu 20.04 (no CUDA)"
   steps:
