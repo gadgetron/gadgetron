@@ -18,7 +18,8 @@ steps:
   displayName: Build and Push
   inputs:
     command: buildAndPush
-    dockerfile: ${{ parameters.dockerfile }}
+    Dockerfile: ${{ parameters.dockerfile }}
     repository: ${{ parameters.containerregistry }}/${{ parameters.imagename }}
+    buildContext: ../
     tags: |
       $(build.BuildNumber)
