@@ -86,5 +86,5 @@ jobs:
         imagename: $(imageName)
         imagetag: $(build.BuildNumber)
         newimagetag: 'latest'
-        acrregistry: $(AcrRegistryName)/$(AcrRegistryAddress)
+        acrregistry: $(AcrRegistryAddress)/$(AcrRegistryName)
         containerregistry: $(ContainerRegistry)
