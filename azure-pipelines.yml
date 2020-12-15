@@ -16,16 +16,18 @@ pr:
 - master
 
 jobs:
-- job: buildAndPush
-  displayName: "Build and Push"
+- job: buildAndPushBaseImages
+  displayName: "Build base images"
   strategy:
     matrix:
       ubuntu2004:
-        imageName: gadgetron_ubuntu_2004
-        dockerFile: docker/ubuntu_2004.Dockerfile
+        imageName: gadgetron_ubuntu_2004_base
+        dockerFile: docker/ubuntu_2004_base.Dockerfile
+        baseImage: ubuntu:20.04
       ubuntu2004CUDA:
-        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
-        dockerFile: docker/ubuntu_2004_cuda11_cudnn.Dockerfile
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8_base
+        dockerFile: docker/ubuntu_2004_base.Dockerfile
+        baseImage: nvidia/cuda:11.0-devel-ubuntu20.04
   steps:
   - template: ./build-jobs/docker-build-push-acr.yaml
     parameters:
@@ -33,6 +35,30 @@ jobs:
       dockerfile: $(dockerFile)
       imageName: $(imageName)
       containerregistry: $(AcrRegistryName)
+      baseimage: $(baseImage)
+
+- job: buildAndPush
+  displayName: "Build and Push"
+  dependsOn:
+  - buildAndPushBaseImages
+  strategy:
+    matrix:
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_2004_base:$(build.BuildNumber)
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_2004_cuda11_cudnn8_base:$(build.BuildNumber)
+  steps:
+  - template: ./build-jobs/docker-build-push-acr.yaml
+    parameters:
+      acrconnection: $(AcrConnection)
+      dockerfile: $(dockerFile)
+      imageName: $(imageName)
+      containerregistry: $(AcrRegistryName)
+      baseimage: $(baseImage)
 
 - job: Tests
   displayName: "Unit and Integration tests"

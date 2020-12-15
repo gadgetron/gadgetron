@@ -3,6 +3,8 @@ parameters:
   type: string
 - name: dockerfile
   type: string
+- name: baseimage
+  type: string
 - name: imagename
   type: string
 - name: containerregistry
@@ -21,6 +23,6 @@ steps:
     Dockerfile: ${{ parameters.dockerfile }}
     containerRegistry: ${{ parameters.acrconnection }}
     repository: ${{ parameters.containerregistry }}/${{ parameters.imagename }}
-    buildContext: ./
+    arguments: --build-arg BASE_IMAGE=${{ parameters.baseimage }}
     tags: |
       $(build.BuildNumber)
