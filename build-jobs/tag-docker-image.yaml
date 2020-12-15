@@ -1,4 +1,6 @@
 parameters:
+- name: acrconnection
+  type: string
 - name: azureconnection
   type: string
 - name: imagename
@@ -6,6 +8,8 @@ parameters:
 - name: imagetag
   type: string
 - name: newimagetag
+  type: string
+- name: acrregistry
   type: string
 - name: containerregistry
   type: string
@@ -15,11 +19,15 @@ steps:
   inputs:
     azureSubscription: ${{ parameters.azureconnection }}
     keyVaultName: gadgetron-build-secrets
-
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: ${{ parameters.acrconnection }}
 - script: |
       # Exit if anything fails
       set -e
-      fullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
+      fullImageName="${{ parameters.acrregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
       newFullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.newimagetag }}"
       echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
       docker pull $fullImageName
