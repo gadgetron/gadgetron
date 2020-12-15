@@ -28,9 +28,12 @@ steps:
       # Exit if anything fails
       set -e
       fullImageName="${{ parameters.acrregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
-      newFullImageName="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.newimagetag }}"
+      newFullImageName1="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.imagetag }}"
+      newFullImageName2="${{ parameters.containerregistry }}/${{ parameters.imagename }}:${{ parameters.newimagetag }}"
       echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
       docker pull $fullImageName
-      docker tag $fullImageName $newFullImageName
-      docker push $newFullImageName
+      docker tag $fullImageName $newFullImageName1
+      docker tag $fullImageName $newFullImageName2
+      docker push $newFullImageName1
+      docker push $newFullImageName2
   displayName: 'Tag docker image'
