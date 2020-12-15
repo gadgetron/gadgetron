@@ -83,8 +83,8 @@ jobs:
     parameters:
         acrconnection: $(AcrConnection)
         azureconnection: $(AzureConnection)
-        imagename: $(AcrRegistryName)/$(imageName)
+        imagename: $(imageName)
         imagetag: $(build.BuildNumber)
         newimagetag: 'latest'
-        acrregistry: $(AcrRegistryAddress)
+        acrregistry: $(AcrRegistryName)/$(AcrRegistryAddress)
         containerregistry: $(ContainerRegistry)
