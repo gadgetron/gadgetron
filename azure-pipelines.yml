@@ -97,9 +97,13 @@ jobs:
   displayName: "Tag latest images"
   dependsOn:
   - Tests
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
   strategy:
     matrix:
+      ubuntu2004_base:
+        imageName: gadgetron_ubuntu_2004_base
+      ubuntu2004CUDA_base:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8_base
       ubuntu2004:
         imageName: gadgetron_ubuntu_2004
       ubuntu2004CUDA:
