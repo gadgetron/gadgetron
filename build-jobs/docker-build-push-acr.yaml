@@ -20,6 +20,6 @@ steps:
     command: buildAndPush
     Dockerfile: ${{ parameters.dockerfile }}
     repository: ${{ parameters.containerregistry }}/${{ parameters.imagename }}
-    buildContext: ../
+    buildContext: ./
     tags: |
       $(build.BuildNumber)
