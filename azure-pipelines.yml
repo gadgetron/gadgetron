@@ -97,7 +97,7 @@ jobs:
   displayName: "Tag latest images"
   dependsOn:
   - Tests
-  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   strategy:
     matrix:
       ubuntu2004_base:
