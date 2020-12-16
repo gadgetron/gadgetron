@@ -3,6 +3,8 @@ parameters:
   type: string
 - name: dockerfile
   type: string
+- name: baseimage
+  type: string
 - name: imagename
   type: string
 - name: containerregistry
@@ -15,12 +17,20 @@ steps:
     command: login
     containerRegistry: ${{ parameters.acrconnection }}
 - task: Docker@2
-  displayName: Build and Push
+  displayName: Build
   inputs:
-    command: buildAndPush
+    command: build
     Dockerfile: ${{ parameters.dockerfile }}
     containerRegistry: ${{ parameters.acrconnection }}
     repository: ${{ parameters.containerregistry }}/${{ parameters.imagename }}
-    buildContext: ./
+    arguments: --build-arg BASE_IMAGE=${{ parameters.baseimage }}
+    tags: |
+      $(build.BuildNumber)
+- task: Docker@2
+  displayName: Push
+  inputs:
+    command: push
+    containerRegistry: ${{ parameters.acrconnection }}
+    repository: ${{ parameters.containerregistry }}/${{ parameters.imagename }}
     tags: |
       $(build.BuildNumber)
