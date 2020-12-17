@@ -56,15 +56,6 @@ if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
         googletest-tools \
         librange-v3-dev
 else
-    # Let's get GCC/G++10
-    add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
-    DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
-        g++-10 \
-        gcc-10 \
-        git
-
-    # Set v10 with higher priority
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1000 --slave /usr/bin/g++ g++ /usr/bin/g++-10
 
     # Install Google Test
     mkdir -p /opt/code
@@ -75,6 +66,18 @@ else
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja && \
     ninja && ninja install && cd /opt/code && rm -rf /opt/code/range-v3
+    
+    # Let's get GCC/G++10
+    add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+    DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
+        g++-10 \
+        gcc-10 \
+        git
+
+    # Set v10 with higher priority
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1000 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+
+
      
     cd /opt/code && \
         git clone https://github.com/google/googletest.git && \
