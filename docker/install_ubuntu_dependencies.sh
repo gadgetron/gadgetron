@@ -64,7 +64,7 @@ else
         git
 
     # Set v9 with higher priority
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 1000 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900 --slave /usr/bin/g++ g++ /usr/bin/g++-9
 
     # install range v3
     mkdir -p /opt/code
