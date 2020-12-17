@@ -22,12 +22,20 @@ jobs:
     matrix:
       ubuntu2004:
         imageName: gadgetron_ubuntu_2004_base
-        dockerFile: docker/ubuntu_2004_base.Dockerfile
+        dockerFile: docker/ubuntu_base.Dockerfile
         baseImage: ubuntu:20.04
       ubuntu2004CUDA:
         imageName: gadgetron_ubuntu_2004_cuda11_cudnn8_base
-        dockerFile: docker/ubuntu_2004_base.Dockerfile
+        dockerFile: docker/ubuntu_base.Dockerfile
         baseImage: nvidia/cuda:11.0-devel-ubuntu20.04
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804_base
+        dockerFile: docker/ubuntu_base.Dockerfile
+        baseImage: ubuntu:18.04
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8_base
+        dockerFile: docker/ubuntu_base.Dockerfile
+        baseImage: nvidia/cuda:11.0-devel-ubuntu18.04
   steps:
   - template: ./build-jobs/docker-build-push-acr.yaml
     parameters:
@@ -51,6 +59,14 @@ jobs:
         imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
         dockerFile: Dockerfile
         baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_2004_cuda11_cudnn8_base:$(build.BuildNumber)
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_2004
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_1804_base:$(build.BuildNumber)
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_1804_cuda11_cudnn8_base:$(build.BuildNumber)
   steps:
   - template: ./build-jobs/docker-build-push-acr.yaml
     parameters:
@@ -70,6 +86,10 @@ jobs:
         imageName: gadgetron_ubuntu_2004
       ubuntu2004CUDA:
         imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_2804_cuda11_cudnn8
   steps:
   - task: Docker@2
     displayName: Login to ACR
@@ -108,6 +128,14 @@ jobs:
         imageName: gadgetron_ubuntu_2004
       ubuntu2004CUDA:
         imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+      ubuntu1804_base:
+        imageName: gadgetron_ubuntu_1804_base
+      ubuntu1804CUDA_base:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8_base
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8
   steps:
   - template: ./build-jobs/tag-docker-image.yaml
     parameters:

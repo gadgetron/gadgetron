@@ -5,8 +5,8 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ]; then
-    echo "Error: This install script is intended for Ubuntu 20.04 only"
+if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ] && [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
+    echo "Error: This install script is intended for Ubuntu 18.04 and 20.04 only"
     exit 1
 fi
 
@@ -19,8 +19,6 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
     cython3 \
     gcc-multilib \
     git-core \
-    googletest \
-    googletest-tools \
     h5utils \
     hdf5-tools \
     jove \
@@ -51,6 +49,34 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
     software-properties-common \
     supervisor \
     wget
+
+if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
+    # This is NOT ubuntu 18.04, i.e. it is 20.04
+    DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
+        googletest \
+        googletest-tools
+else
+    # Let's get GCC/G++10
+    add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+    DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
+        g++-10 \
+        gcc-10 \
+        git
+
+    # Set v10 with higher priority
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1000 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+
+    # Install Google Test
+    mkdir -p /opt/code
+    cd /opt/code && \
+        git clone https://github.com/google/googletest.git && \
+        cd googletest && \
+        mkdir build && \
+        cd build && \
+        cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../ && \
+        make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest && \
+        cd /opt
+fi
 
 pip3 install -U pip setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
