@@ -69,6 +69,14 @@ else
     # Install Google Test
     mkdir -p /opt/code
     cd /opt/code && \
+    git clone https://github.com/ericniebler/range-v3.git --depth 1 --branch 0.11.0 && \
+    cd range-v3 && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja && \
+    ninja && ninja install && cd /opt/code && rm -rf /opt/code/range-v3
+     
+    cd /opt/code && \
         git clone https://github.com/google/googletest.git && \
         cd googletest && \
         mkdir build && \
@@ -76,13 +84,7 @@ else
         cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../ && \
         make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest
         
-     cd /opt/code && \
-     git clone https://github.com/ericniebler/range-v3.git --depth 1 --branch 0.11.0 && \
-     cd range-v3 && \
-     mkdir build && \
-     cd build && \
-     cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja && \
-     ninja && ninja install && cd /opt/code && rm -rf /opt/code/range-v3
+
      
      
      
