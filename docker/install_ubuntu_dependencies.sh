@@ -56,8 +56,17 @@ if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
         googletest-tools \
         librange-v3-dev
 else
+    # Let's get GCC/G++9
+    add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+    DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
+        g++-9 \
+        gcc-9 \
+        git
 
-    # Install Google Test
+    # Set v9 with higher priority
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 1000 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+
+    # install range v3
     mkdir -p /opt/code
     cd /opt/code && \
     git clone https://github.com/ericniebler/range-v3.git --depth 1 --branch 0.11.0 && \
@@ -67,18 +76,7 @@ else
     cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja && \
     ninja && ninja install && cd /opt/code && rm -rf /opt/code/range-v3
     
-    # Let's get GCC/G++10
-    add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
-    DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
-        g++-10 \
-        gcc-10 \
-        git
-
-    # Set v10 with higher priority
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 1000 --slave /usr/bin/g++ g++ /usr/bin/g++-10
-
-
-     
+    # Install Google Test     
     cd /opt/code && \
         git clone https://github.com/google/googletest.git && \
         cd googletest && \
@@ -86,11 +84,6 @@ else
         cd build && \
         cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../ && \
         make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest
-        
-
-     
-     
-     
 fi
 
 pip3 install -U pip setuptools testresources
