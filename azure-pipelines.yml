@@ -60,11 +60,11 @@ jobs:
         dockerFile: Dockerfile
         baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_2004_cuda11_cudnn8_base:$(build.BuildNumber)
       ubuntu1804:
-        imageName: gadgetron_ubuntu_2004
+        imageName: gadgetron_ubuntu_1804
         dockerFile: Dockerfile
         baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_1804_base:$(build.BuildNumber)
       ubuntu1804CUDA:
-        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8
         dockerFile: Dockerfile
         baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_1804_cuda11_cudnn8_base:$(build.BuildNumber)
   steps:
