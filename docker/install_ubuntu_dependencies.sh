@@ -38,7 +38,6 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
     libopenblas-dev \
     libplplot-dev \
     libpugixml-dev \
-    librange-v3-dev \
     libxml2-dev \
     libxslt-dev \
     net-tools \
@@ -54,7 +53,8 @@ if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
     # This is NOT ubuntu 18.04, i.e. it is 20.04
     DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
         googletest \
-        googletest-tools
+        googletest-tools \
+        librange-v3-dev
 else
     # Let's get GCC/G++10
     add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
@@ -74,8 +74,18 @@ else
         mkdir build && \
         cd build && \
         cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../ && \
-        make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest && \
-        cd /opt
+        make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest
+        
+     cd /opt/code && \
+     git clone https://github.com/ericniebler/range-v3.git --depth 1 --branch 0.11.0 && \
+     cd range-v3 && \
+     mkdir build && \
+     cd build && \
+     cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja && \
+     ninja && ninja install && cd /opt/code && rm -rf /opt/code/range-v3
+     
+     
+     
 fi
 
 pip3 install -U pip setuptools testresources
