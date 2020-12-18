@@ -22,7 +22,6 @@
 #include "complext.h"
 #include "cuSparseMatrix.h"
 
-#include "gpunfft_export.h"
 #include "NFFT.h"
 #include "cuGriddingConvolution.h"
 
@@ -51,7 +50,7 @@ namespace Gadgetron
         Notice: currently no devices support atomics operations in double precision.
     */
     template<class REAL, unsigned int D, ConvolutionType CONV = ConvolutionType::STANDARD>
-    class EXPORTGPUNFFT cuNFFT_impl : public cuNFFT_plan<REAL, D> {
+    class cuNFFT_impl : public cuNFFT_plan<REAL, D> {
 
     public: // Main interface
 
@@ -107,12 +106,12 @@ namespace Gadgetron
     // Pure virtual class to cause compile errors if you try to use NFFT with double and atomics
     // - since this is not supported on the device
     template<unsigned int D>
-    class EXPORTGPUNFFT cuNFFT_impl<double, D, ConvolutionType::ATOMIC> {
+    class cuNFFT_impl<double, D, ConvolutionType::ATOMIC> {
         virtual void atomics_not_supported_for_type_double() = 0;
     };
 
     template<class REAL, unsigned int D>
-    EXPORTGPUNFFT struct NFFT<cuNDArray,REAL,D> 
+    struct NFFT<cuNDArray,REAL,D> 
     {
         static boost::shared_ptr<cuNFFT_plan<REAL,D>> make_plan(
             const vector_td<size_t,D>& matrix_size,
@@ -122,7 +121,7 @@ namespace Gadgetron
     };
 
     template<unsigned int D>
-    EXPORTGPUNFFT struct NFFT<cuNDArray,double,D>
+    struct NFFT<cuNDArray,double,D>
     {
         static boost::shared_ptr<cuNFFT_plan<double,D>> make_plan(
             const vector_td<size_t,D>& matrix_size,
