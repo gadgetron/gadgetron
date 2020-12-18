@@ -1,4 +1,9 @@
-# For base image without CUDA use BASE_IMAGE ubuntu:20.04
+# Using a common configuration Ubuntu Dockerfile for base images
+# Use one of the following Ubuntu images as base:
+#      1. ubuntu:20.04 (no CUDA)
+#      2. ubuntu:18.04 (no CUDA)
+#      3. nvidia/cuda:11.0-devel-ubuntu20.04 (with CUDA, default)
+#      4. nvidia/cuda:11.0-devel-ubuntu18.04 (with CUDA)
 ARG BASE_IMAGE=nvidia/cuda:11.0-devel-ubuntu20.04
 FROM $BASE_IMAGE
 
