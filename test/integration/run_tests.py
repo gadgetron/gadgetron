@@ -67,6 +67,7 @@ def main():
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
+    parser.add_argument('--force', action='store_const',const=['--force'],  default=[], help='Force Gadgetron to run all tests, without querying for memory/GPU/etc')
     parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
 
     args = parser.parse_args()
@@ -81,7 +82,7 @@ def main():
                                '-a', str(args.host),
                                '-d', str(args.data_folder),
                                '-t', str(args.test_folder),
-                               '-p', str(args.port)] + args.external + [test])
+                               '-p', str(args.port)] + args.external + args.force + [test])
 
         handlers.get(proc.returncode)(test)
 
