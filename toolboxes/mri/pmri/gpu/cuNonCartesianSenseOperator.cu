@@ -52,6 +52,8 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
   std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
   std::vector<size_t> tmp_dimensions_data = *this->get_codomain_dimensions();
   tmp_dimensions_data.pop_back(); // Remove channel dimension 
+   if(tmp_dimensions_data[tmp_dimensions_data.size()-1]==this->ncoils_ && tmp_dimensions_data.size()>2)
+     tmp_dimensions_data.pop_back(); // High risk
 
   cuNDArray<complext<REAL>> temp_ch_recon(&tmp_dimensions);
   cuNDArray<complext<REAL>> temp_ch_data(&tmp_dimensions_data);
