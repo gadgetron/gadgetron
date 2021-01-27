@@ -37,12 +37,35 @@ namespace {
             std::string serialized_meta;
             uint64_t meta_size = 0;
 
-            if(meta) {
-                std::stringstream meta_stream;
-                ISMRMRD::serialize(*meta, meta_stream);
-                serialized_meta = meta_stream.str();
-                meta_size = serialized_meta.size() + 1;
+            ISMRMRD::MetaContainer corrected_meta;
+
+            if (meta) {
+                corrected_meta = *meta;
             }
+
+            // Adding ImageRowDir and ImageColumnDir to metadata if not present
+            // This is a workaround to ensure compatibility with Siemens IceFIRE
+            // TODO: Remove when more permanent fix is available in ISMRMRD/MRD
+            if (corrected_meta.length("ImageRowDir") != 3) {
+                // In case it is there but incorrect length
+                corrected_meta.remove("ImageRowDir");
+                corrected_meta.append("ImageRowDir", header.phase_dir[0]);
+                corrected_meta.append("ImageRowDir", header.phase_dir[1]);
+                corrected_meta.append("ImageRowDir", header.phase_dir[2]);
+            }
+
+            if (corrected_meta.length("ImageColumnDir") != 3) {
+                // In case it is there but incorrect length
+                corrected_meta.remove("ImageColumnDir");
+                corrected_meta.append("ImageColumnDir", header.read_dir[0]);
+                corrected_meta.append("ImageColumnDir", header.read_dir[1]);
+                corrected_meta.append("ImageColumnDir", header.read_dir[2]);
+            }
+
+            std::stringstream meta_stream;
+            ISMRMRD::serialize(corrected_meta, meta_stream);
+            serialized_meta = meta_stream.str();
+            meta_size = serialized_meta.size() + 1;
 
             auto corrected_header = header;
             corrected_header.data_type = ismrmrd_data_type<T>();
