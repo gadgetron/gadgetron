@@ -5,9 +5,14 @@ trap '(($gadgetron_job == 0)) || ((`kill -0 $gadgetron_job`))|| kill $gadgetron_
 
 if [ $# -eq 1 ]; then
     LOG_FILE=${1}
+    PORT=9002
+
+    if [ $# -eq 2 ]; then
+        PORT=${2}
+    fi
 
     OMP_THREAD_LIMIT=$(nproc)    
-    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 GTBABYLON_PUBLIC_KEY=/opt/key/gtbabylon-key.public @CMAKE_INSTALL_PREFIX@/bin/gadgetron -l 0 -R 0 > ${LOG_FILE} &
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 GTBABYLON_PUBLIC_KEY=/opt/key/gtbabylon-key.public @CMAKE_INSTALL_PREFIX@/bin/gadgetron -l 0 -R 0 -p ${PORT} > ${LOG_FILE} &
 
     gadgetron_job=($!)
     wait $!
