@@ -95,17 +95,12 @@ if (MKL_FOUND)
             endif ()
         endif ()
 
-#    if (WIN32)
+    if (WIN32)
 
         set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_thread_dll mkl_core_dll libiomp5md)
- #   else ()
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_gnu_thread)
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} gomp)
-        # call sequential MKL to improve robustness in multi-threading runtime
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_sequential)
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} libiomp5)
-        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_core)
- #   endif ()
+   else ()
+        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_core iomp5)
+   endif ()
 endif ()
 
 if (MKL_FOUND)
