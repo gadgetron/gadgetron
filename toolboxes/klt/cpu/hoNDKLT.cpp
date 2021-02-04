@@ -208,6 +208,8 @@ void hoNDKLT<T>::compute_num_kept(value_type thres)
 
         output_length_ = n;
     }
+
+    GDEBUG("NUMBER OF MODES KEPT %d \n", output_length_);
 }
 
 template<typename T>
