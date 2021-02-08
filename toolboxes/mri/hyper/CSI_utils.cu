@@ -41,7 +41,7 @@ template<class T> static __global__ void dftH_kernel(const complext<T>* __restri
 
 template<class T>
 void Gadgetron::CSI_dft(cuNDArray<complext<T> >* kspace,
-		cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dtt, T dte) {
+		cuNDArray<complext<T> >* tspace, cuNDArray<T>* frequencies, T dtt, T dte) {
 
 	size_t elements = kspace->get_size(0)*kspace->get_size(1);
 	size_t batches = kspace->get_number_of_elements()/elements;
@@ -61,7 +61,7 @@ void Gadgetron::CSI_dft(cuNDArray<complext<T> >* kspace,
 		//size_t batchSize = dimGrid.x*dimBlock.x;
 
 		// Invoke kernel
-		dft_kernel<T><<<dimGrid, dimBlock>>>(kspace->get_data_ptr()+i*elements,tspace->get_data_ptr()+i*t_elements,thrust::raw_pointer_cast(frequencies->data()),dims[0],dims[1], frequencies->size(),dte,dtt);
+		dft_kernel<T><<<dimGrid, dimBlock>>>(kspace->get_data_ptr()+i*elements,tspace->get_data_ptr()+i*t_elements,frequencies->data(),dims[0],dims[1], frequencies->size(),dte,dtt);
 		CHECK_FOR_CUDA_ERROR();
 		cudaThreadSynchronize();
 
@@ -73,7 +73,7 @@ void Gadgetron::CSI_dft(cuNDArray<complext<T> >* kspace,
 
 template<class T>
 void Gadgetron::CSI_dftH(cuNDArray<complext<T> >* kspace,
-		cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dtt, T dte) {
+		cuNDArray<complext<T> >* tspace, cuNDArray<T>* frequencies, T dtt, T dte) {
 	size_t k_elements = kspace->get_size(0)*kspace->get_size(1);
 	size_t elements = tspace->get_size(0)*tspace->get_size(1);
 
@@ -93,14 +93,14 @@ void Gadgetron::CSI_dftH(cuNDArray<complext<T> >* kspace,
 
 	for (int i =0; i< batches; i++){
 		// Invoke kernel
-		dftH_kernel<T><<<dimGrid, dimBlock>>>(kspace->get_data_ptr()+i*k_elements,tspace->get_data_ptr()+i*elements,thrust::raw_pointer_cast(frequencies->data()),dims[0],dims[1], frequencies->size(),dte,dtt);
+		dftH_kernel<T><<<dimGrid, dimBlock>>>(kspace->get_data_ptr()+i*k_elements,tspace->get_data_ptr()+i*elements,frequencies->data(),dims[0],dims[1], frequencies->size(),dte,dtt);
 		CHECK_FOR_CUDA_ERROR();
 	}
 	*tspace /= T(dims[1]);
 }
 
 template<class T>
-boost::shared_ptr<cuNDArray<complext<T> > > Gadgetron::calculate_frequency_calibration(cuNDArray<complext<T> >* time_track, thrust::device_vector<T>* frequencies,cuNDArray<complext<T> > * csm,T dtt,T dte){
+boost::shared_ptr<cuNDArray<complext<T> > > Gadgetron::calculate_frequency_calibration(cuNDArray<complext<T> >* time_track, cuNDArray<T>* frequencies,cuNDArray<complext<T> > * csm,T dtt,T dte){
 	std::vector<size_t> out_dims;
 	out_dims.push_back(frequencies->size());
 	out_dims.push_back(1);
@@ -169,9 +169,9 @@ void Gadgetron::mult_freq(cuNDArray<complext<T> >* in_out, cuNDArray<complext<T>
 
 
 
-template EXPORTHYPER void Gadgetron::CSI_dft<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, thrust::device_vector<float>* frequencies, float dtt, float dte);
-template EXPORTHYPER void Gadgetron::CSI_dftH<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, thrust::device_vector<float>* frequencies, float dtt, float dte);
+template EXPORTHYPER void Gadgetron::CSI_dft<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, cuNDArray<float>* frequencies, float dtt, float dte);
+template EXPORTHYPER void Gadgetron::CSI_dftH<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, cuNDArray<float>* frequencies, float dtt, float dte);
 
 
-template EXPORTHYPER boost::shared_ptr<cuNDArray<float_complext> > Gadgetron::calculate_frequency_calibration<float>(cuNDArray<float_complext>* time_track, thrust::device_vector<float>* frequencies,cuNDArray<float_complext> * csm,float dtt,float dte);
+template EXPORTHYPER boost::shared_ptr<cuNDArray<float_complext> > Gadgetron::calculate_frequency_calibration<float>(cuNDArray<float_complext>* time_track, cuNDArray<float>* frequencies,cuNDArray<float_complext> * csm,float dtt,float dte);
 template EXPORTHYPER void Gadgetron::mult_freq<float>(cuNDArray<complext<float> >* in_out, cuNDArray<complext<float> >* freqs, bool conjugate);

@@ -75,6 +75,8 @@ target_link_libraries(
   gadgetron_toolbox_log
   ISMRMRD::ISMRMRD
 	Boost::boost
+    Boost::system
+    Boost::filesystem
   )
 
 install(TARGETS gadgetron_toolbox_cpucore

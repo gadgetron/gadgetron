@@ -129,12 +129,13 @@ if (WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS -DWIN -D_AMD64_)
     add_definitions(-Zc:__cplusplus)
+    add_definitions(-DNOMINMAX)
     #add_definitions(-DUNICODE -D_UNICODE)
     add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients/
     if (HAS_64_BIT)
         add_definitions(-DWIN64 -D_WIN64)
     endif ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17 /openmp:experimental /DNOGDI")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17 /openmp:experimental /permissive- /FS /DNOGDI /we4667")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w1")
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
@@ -186,13 +187,13 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
 
 if(WIN32)
-add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
+    add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
+    find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
-find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
+    find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
 endif()
 
 if (NOT DEFINED Boost_VERSION_STRING)
@@ -203,45 +204,49 @@ endif()
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
-find_package(CUDA_advanced)
+    find_package(CUDA_advanced)
 endif()
+
 if (CUDA_FOUND AND USE_CUDA)
 
-if (NOT CUDA_cublas_device_LIBRARY)
-list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES CUDA_cublas_device_LIBRARY-NOTFOUND)
-endif()
+    if (NOT CUDA_cublas_device_LIBRARY)
+        list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES CUDA_cublas_device_LIBRARY-NOTFOUND)
+    endif()
 
-add_definitions(-DUSE_CUDA)
-set( GADGETRON_CUDA_FOUND_BOOL 1 )
-include_directories( ${CUDA_INCLUDE_DIRS} )
-set(CUDA_PROPAGATE_HOST_FLAGS ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "--std=c++17" )
-set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-set(CMAKE_CUDA_STANDARD 17)
-#  endif ()
-#set(CUDA_VERBOSE_BUILD ON)
+    add_definitions(-DUSE_CUDA)
+    set( GADGETRON_CUDA_FOUND_BOOL 1 )
+    include_directories( ${CUDA_INCLUDE_DIRS} )
+    set(CUDA_PROPAGATE_HOST_FLAGS ON)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "--std=c++17" )
+    set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+    set(CMAKE_CUDA_STANDARD 17)
+    #  endif ()
+    #set(CUDA_VERBOSE_BUILD ON)
 
 
-# Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
-# Support compute model 3.0 from Cuda 4.2 and up
-# Support compute model 3.5 from Cuda 5 and up
+    # Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
+    # Support compute model 3.0 from Cuda 4.2 and up
+    # Support compute model 3.5 from Cuda 5 and up
 
-option(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" OFF)
-if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
-message("Compiling CUDA components to support all compute model 3.5, 5.0, 5.2, 6.0, 6.1, 7.0")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_50,code=sm_50")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_52,code=sm_52")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_60,code=sm_60")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_61,code=sm_61")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_70,code=sm_70")
-endif ()
+    option(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" OFF)
+    if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
+        message("Compiling CUDA components to support all compute model 3.5, 5.0, 5.2, 6.0, 6.1, 7.0")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_50,code=sm_50")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_52,code=sm_52")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_60,code=sm_60")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_61,code=sm_61")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_70,code=sm_70")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_75,code=sm_75")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_80,code=sm_80")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_86,code=sm_86")
+    endif ()
 
-message("Compiling with ${CUDA_NVCC_FLAGS}")
+    message("Compiling with ${CUDA_NVCC_FLAGS}")
 else ()
-message("CUDA not found. CUDA components will not be compiled.")
-set( GADGETRON_CUDA_FOUND_BOOL 0 )
-set( CUDA_NVCC_FLAGS "NA")
+    message("CUDA not found. CUDA components will not be compiled.")
+    set( GADGETRON_CUDA_FOUND_BOOL 0 )
+    set( CUDA_NVCC_FLAGS "NA")
 endif ()
 
 
@@ -257,7 +262,7 @@ find_package(ISMRMRD CONFIG REQUIRED)
 
 
 if (CUDA_FOUND AND USE_CUDA)
-# bart needs cuda
+    # bart needs cuda
     find_package(BART CONFIG QUIET)
 endif()
 
@@ -303,7 +308,6 @@ endif ()
 
 install(TARGETS BLAS EXPORT gadgetron-export)
 
-
 if(EXISTS $ENV{TORCH_HOME})
     find_package(Torch)
     if (TORCH_FOUND)
@@ -319,36 +323,34 @@ endif()
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
+    find_package(PythonLibs 3  REQUIRED)
 
-find_package(PythonLibs 3  REQUIRED)
-
-find_package(NumPy REQUIRED)
-message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
+    find_package(NumPy REQUIRED)
+    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
 
 
-add_library(python INTERFACE)
-set_property(TARGET python PROPERTY
-INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-message("Boost_VERSION ${Boost_VERSION_STRING}")
-if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
-    find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
-    set(Boost_PYTHON3_TARGET Boost::python3)
-    else()
-    string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
-    set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
-    find_package(Boost 1.65.0 COMPONENTS "python3${PYTHON_MINOR_VERSION}" REQUIRED)
-    set(Boost_PYTHON3_FOUND TRUE)
-    set(Boost_PYTHON3_TARGET Boost::python3${PYTHON_MINOR_VERSION})
-endif()
-set_property(TARGET python PROPERTY
-INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_PYTHON3_TARGET})
-install(TARGETS python EXPORT gadgetron-export)
+    add_library(python INTERFACE)
+    set_property(TARGET python PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+    message("Boost_VERSION ${Boost_VERSION_STRING}")
+    if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
+        find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
+        set(Boost_PYTHON3_TARGET Boost::python3)
+        else()
+        string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
+        set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
+        find_package(Boost 1.65.0 COMPONENTS "python3${PYTHON_MINOR_VERSION}" REQUIRED)
+        set(Boost_PYTHON3_FOUND TRUE)
+        set(Boost_PYTHON3_TARGET Boost::python3${PYTHON_MINOR_VERSION})
+    endif()
+    set_property(TARGET python PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+    target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_PYTHON3_TARGET})
+    install(TARGETS python EXPORT gadgetron-export)
 endif()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
-message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
+    message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
 endif()
 
 find_package(OpenGL)
@@ -364,30 +366,34 @@ add_subdirectory(apps)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)
-message("Adding gpertools to build.")
-find_package(Gperftools REQUIRED)
+    message("Adding gpertools to build.")
+    find_package(Gperftools REQUIRED)
 endif()
-option(BUILD_TESTING ON)
-if (BUILD_TESTING)
-enable_testing()
-find_package(GTest)
-if (NOT GTEST_FOUND)
-    find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
-    find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
-    if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
-        message("GTest src package found. Compiling as part of Gadgetron.")
-        add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
-        include_directories(${GTEST_INCLUDE_DIRS})
-        set(GTEST_FOUND 1)
-        set(GTEST_LIBRARIES gtest gtest_main)
-    else()
-        message(FATAL_ERROR "GTest required for building tests")
-    endif ()
 
-endif ()
-MESSAGE("GTEST FOUND: ${GTEST_FOUND}")
-add_subdirectory(test)
+option(BUILD_TESTING "Enable test building" On)
+if (BUILD_TESTING)
+    enable_testing()
+    find_package(GTest)
+    if (NOT GTEST_FOUND)
+        find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
+        find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
+        if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
+            message("GTest src package found. Compiling as part of Gadgetron.")
+            add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
+            include_directories(${GTEST_INCLUDE_DIRS})
+            set(GTEST_FOUND 1)
+            set(GTEST_LIBRARIES gtest gtest_main)
+        else()
+            message(FATAL_ERROR "GTest required for building tests")
+        endif ()
+
+    endif ()
+    MESSAGE("GTEST FOUND: ${GTEST_FOUND}")
+    add_subdirectory(test)
+else()
+    MESSAGE("Testing not being built")
 endif()
+
 add_subdirectory(cmake)
 add_subdirectory(chroot)
 
@@ -398,17 +404,17 @@ endif()
 
 # install dependencies for WIN32
 if (WIN32)
-if (GADGETRON_INSTALL_DEPENDENCIES)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
-endif ()
+    if (GADGETRON_INSTALL_DEPENDENCIES)
+        include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
+    endif ()
 endif ()
 
 if (UNIX)
-if (NOT APPLE)
-if (GADGETRON_INSTALL_DEPENDENCIES)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
-endif ()
-endif ()
+    if (NOT APPLE)
+        if (GADGETRON_INSTALL_DEPENDENCIES)
+            include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
+        endif ()
+    endif ()
 endif ()
 
 #  ---   Main Library  (end) ----
@@ -418,36 +424,33 @@ install(EXPORT gadgetron-export
         NAMESPACE
         Gadgetron::
         DESTINATION
-            ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
+        ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
 
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-        ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
-        PATH_VARS GADGETRON_INSTALL_PYTHON_MODULE_PATH GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH
-)
+    ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
+    PATH_VARS GADGETRON_INSTALL_PYTHON_MODULE_PATH GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH)
 
 write_basic_package_version_file(
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
-        VERSION ${GADGETRON_VERSION_STRING}
-        COMPATIBILITY AnyNewerVersion
-)
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
+    VERSION ${GADGETRON_VERSION_STRING}
+    COMPATIBILITY AnyNewerVersion)
 
 install(
-        FILES
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
-)
+    FILES
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
 
 # Create package
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
 if(CPACK_GENERATOR)
-message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
-include(CPack)
+    message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+    configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+    set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+    include(CPack)
 endif()

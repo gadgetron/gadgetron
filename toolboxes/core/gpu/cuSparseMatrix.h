@@ -7,7 +7,6 @@
 
 #pragma once
 #include "cusparse.h"
-#include "gpucore_export.h"
 #include <thrust/device_vector.h>
 #include "cuNDArray.h"
 #include "cudaDeviceManager.h"
@@ -64,9 +63,9 @@ namespace Gadgetron
  * @param adjoint
  */
 	template <class T>
-	EXPORTGPUCORE void sparseMV(T alpha, T beta, const cuCsrMatrix<T> &mat, const cuNDArray<T> &vec_in, cuNDArray<T> &vec_out, bool adjoint = false);
+	void sparseMV(T alpha, T beta, const cuCsrMatrix<T> &mat, const cuNDArray<T> &vec_in, cuNDArray<T> &vec_out, bool adjoint = false);
 
 	template <class T>
-	EXPORTGPUCORE void sparseMM(T alpha, T beta, const cuCsrMatrix<T> &mat, const cuNDArray<T> &mat_in, cuNDArray<T> &mat_out, bool adjoint = false);
+	void sparseMM(T alpha, T beta, const cuCsrMatrix<T> &mat, const cuNDArray<T> &mat_in, cuNDArray<T> &mat_out, bool adjoint = false);
 
 } // namespace Gadgetron

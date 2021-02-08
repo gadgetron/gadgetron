@@ -18,7 +18,7 @@ namespace Gadgetron {
  * \return std::shared_ptr<ARRAY<REAL>> Density compensation weights, same size as trajectory.
  */
 template <class REAL, unsigned int D>
-EXPORTSDC std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>>& traj,
+std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>>& traj,
                                                         const vector_td<size_t, D>& matrix_size, REAL os_factor = 1.5,
                                                         unsigned int num_iterations = 10, REAL kernelWidth = 5.5,
                                                         ConvolutionType convtype = ConvolutionType::STANDARD);
@@ -38,7 +38,7 @@ EXPORTSDC std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_t
  * \return std::shared_ptr<ARRAY<REAL>> Density compensation weights, same size as trajectory.
  */
 template <class REAL, unsigned int D>
-EXPORTSDC std::shared_ptr<cuNDArray<REAL>>
+std::shared_ptr<cuNDArray<REAL>>
 estimate_dcw(const cuNDArray<vector_td<REAL, D>>& traj, const cuNDArray<REAL>& initial_dcw,
              const vector_td<size_t, D>& matrix_size, REAL os_factor = 1.5, unsigned int num_iterations = 10,
              REAL kernelWidth = 5.5, ConvolutionType convtype = ConvolutionType::STANDARD);

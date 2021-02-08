@@ -4,8 +4,6 @@
 #include "hoGriddingConvolution.h"
 #include "hoNDArray_elemwise.h"
 
-#include "mri_sdc_export.h"
-
 #include "SDC.hpp"
 
 namespace Gadgetron
@@ -34,7 +32,7 @@ namespace Gadgetron
 }
 
 
-template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
+template std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 2>>& traj,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
@@ -42,7 +40,7 @@ Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
     unsigned int num_iterations,
     float kernelWidth);
 
-template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
+template std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 3>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 3>>& traj,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
@@ -50,7 +48,7 @@ Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 3>(
     unsigned int num_iterations,
     float kernelWidth);
 
-template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
+template std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 2>>& traj,
     const Gadgetron::hoNDArray<float>& initial_dcw,
@@ -59,7 +57,7 @@ Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
     unsigned int num_iterations,
     float kernelWidth);
 
-template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
+template std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 3>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 3>>& traj,
     const Gadgetron::hoNDArray<float>& initial_dcw,

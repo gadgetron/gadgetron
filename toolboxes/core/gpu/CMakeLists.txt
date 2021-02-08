@@ -1,7 +1,3 @@
-if (WIN32)
-  add_definitions(-D__BUILD_GADGETRON_GPUCORE__)
-endif ()
-
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif()
@@ -19,7 +15,6 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     cuNDArray_fileio.h
     cuNDArray_reductions.h
     GadgetronCuException.h
-    gpucore_export.h
     GPUTimer.h
     hoCuNDArray.h
     hoCuNDArray_blas.h
@@ -69,7 +64,6 @@ install(TARGETS gadgetron_toolbox_gpucore
 )
 
 install(FILES
-  gpucore_export.h
   cuNDArray.h
   cuNDArray_operators.h
   cuNDArray_elemwise.h

@@ -224,14 +224,14 @@ namespace Gadgetron {
                 if (encodingFOV_E1 > reconFOV_E1)
                 {
                     double spacingE1 = reconFOV_E1 / reconSizeE1;
-                    encodingE1 = (size_t)std::floor(encodingFOV_E1 / spacingE1 + 0.5);
+                    encodingE1 = (size_t)2*std::lround(encodingFOV_E1 / (2*spacingE1));
                 }
 
                 size_t encodingE2 = reconSizeE2;
                 if (encodingFOV_E2 > reconFOV_E2)
                 {
                     double spacingE2 = reconFOV_E2 / reconSizeE2;
-                    encodingE2 = (size_t)std::floor(encodingFOV_E2 / spacingE2 + 0.5);
+                    encodingE2 = (size_t)2*std::lround(encodingFOV_E2 / (2*spacingE2));
                 }
 
                 hoNDArray< std::complex<float> >* pSrc = &recon_res.data_;

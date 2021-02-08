@@ -232,64 +232,64 @@ namespace Gadgetron {
 //
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 1, ConvolutionType::ATOMIC>;
+class Gadgetron::cuNFFT_impl<float, 1, ConvolutionType::ATOMIC>;
 
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 1, ConvolutionType::SPARSE_MATRIX>;
+class Gadgetron::cuNFFT_impl<float, 1, ConvolutionType::SPARSE_MATRIX>;
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 1>;
+class Gadgetron::cuNFFT_impl<float, 1>;
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<double, 1>;
+class Gadgetron::cuNFFT_impl<double, 1>;
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 2, ConvolutionType::ATOMIC>;
-
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 2, ConvolutionType::SPARSE_MATRIX>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 2>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<double, 2>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 3, ConvolutionType::ATOMIC>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 3, ConvolutionType::SPARSE_MATRIX>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 3>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<double, 3>;
-
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 4, ConvolutionType::ATOMIC>;
+class Gadgetron::cuNFFT_impl<float, 2, ConvolutionType::ATOMIC>;
 
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 4, ConvolutionType::SPARSE_MATRIX>;
-template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<float, 4>;
+class Gadgetron::cuNFFT_impl<float, 2, ConvolutionType::SPARSE_MATRIX>;
 
 template
-class EXPORTGPUNFFT Gadgetron::cuNFFT_impl<double, 4>;
+class Gadgetron::cuNFFT_impl<float, 2>;
+
+template
+class Gadgetron::cuNFFT_impl<double, 2>;
+
+template
+class Gadgetron::cuNFFT_impl<float, 3, ConvolutionType::ATOMIC>;
+
+template
+class Gadgetron::cuNFFT_impl<float, 3, ConvolutionType::SPARSE_MATRIX>;
+
+template
+class Gadgetron::cuNFFT_impl<float, 3>;
+
+template
+class Gadgetron::cuNFFT_impl<double, 3>;
+
+template
+class Gadgetron::cuNFFT_impl<float, 4, ConvolutionType::ATOMIC>;
 
 
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,float,1>;
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,float,2>;
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,float,3>;
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,float,4>;
+template
+class Gadgetron::cuNFFT_impl<float, 4, ConvolutionType::SPARSE_MATRIX>;
+template
+class Gadgetron::cuNFFT_impl<float, 4>;
+
+template
+class Gadgetron::cuNFFT_impl<double, 4>;
+
+
+template class Gadgetron::NFFT<cuNDArray,float,1>;
+template class Gadgetron::NFFT<cuNDArray,float,2>;
+template class Gadgetron::NFFT<cuNDArray,float,3>;
+template class Gadgetron::NFFT<cuNDArray,float,4>;
 
 
 
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,double,1>;
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,double,2>;
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,double,3>;
-template class EXPORTGPUNFFT Gadgetron::NFFT<cuNDArray,double,4>;
+template class Gadgetron::NFFT<cuNDArray,double,1>;
+template class Gadgetron::NFFT<cuNDArray,double,2>;
+template class Gadgetron::NFFT<cuNDArray,double,3>;
+template class Gadgetron::NFFT<cuNDArray,double,4>;

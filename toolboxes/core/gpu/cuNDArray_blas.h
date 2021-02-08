@@ -14,19 +14,19 @@
 
 #include "cuNDArray.h"
 #include "complext.h"
-#include "gpucore_export.h"
+
 
 #include <cublas_v2.h>
 
 namespace Gadgetron{
 
-  template<class T> EXPORTGPUCORE T dot( cuNDArray<T> *x, cuNDArray<T> *y, bool cc = true );
+  template<class T> T dot( cuNDArray<T> *x, cuNDArray<T> *y, bool cc = true );
 
-  template<class T> EXPORTGPUCORE typename realType<T>::Type nrm2( cuNDArray<T> *x );
+  template<class T> typename realType<T>::Type nrm2( cuNDArray<T> *x );
 
-  template<class T> EXPORTGPUCORE void axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y );
+  template<class T> void axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y );
 
-  template<class T> EXPORTGPUCORE void axpy( T a, cuNDArray<complext<T> > *x, cuNDArray<complext<T> > *y );
+  template<class T> void axpy( T a, cuNDArray<complext<T> > *x, cuNDArray<complext<T> > *y );
   
   /**
    * @brief Gets the index of the index of the element with minimum absolute
@@ -34,7 +34,7 @@ namespace Gadgetron{
    * @return index of absolute minimum values
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
-  template<class T> EXPORTGPUCORE size_t amin( cuNDArray<T> *x );
+  template<class T> size_t amin( cuNDArray<T> *x );
   
   /**
    * @brief Gets the index of the index of the element with maximum absolute
@@ -42,10 +42,10 @@ namespace Gadgetron{
    * @return index of absolute maximum values
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
-  template<class T> EXPORTGPUCORE size_t amax( cuNDArray<T> *x);
+  template<class T> size_t amax( cuNDArray<T> *x);
   
-  template<class T> EXPORTGPUCORE typename realType<T>::Type asum( cuNDArray<T> *x );
+  template<class T> typename realType<T>::Type asum( cuNDArray<T> *x );
   
-  EXPORTGPUCORE std::string gadgetron_getCublasErrorString(cublasStatus_t err);
+  std::string gadgetron_getCublasErrorString(cublasStatus_t err);
 
 }

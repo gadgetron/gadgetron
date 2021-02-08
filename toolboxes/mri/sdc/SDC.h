@@ -4,7 +4,7 @@
 
 #include "vector_td.h"
 
-#include "mri_sdc_export.h"
+//#include "mri_sdc_export.h"
 
 namespace Gadgetron {
 /**
@@ -20,7 +20,7 @@ namespace Gadgetron {
  * \return std::shared_ptr<ARRAY<REAL>> Density compensation weights, same size as trajectory.
  */
 template <template <class> class ARRAY, class REAL, unsigned int D>
-EXPORTSDC std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
+std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
                                                     const vector_td<size_t, D>& matrix_size, REAL os_factor = 1.5,
                                                     unsigned int num_iterations = 10, REAL kernelWidth = 5.5);
 

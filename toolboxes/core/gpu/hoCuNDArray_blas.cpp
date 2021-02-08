@@ -10,14 +10,14 @@ namespace Gadgetron{
   // These are defined in cuNDArray_blas.cu
   //
 
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
+  template<class T> cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
+  template<class T> cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
+  template<class T> cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
+  template<class T> cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
 
-  template<class T> EXPORTGPUCORE void axpy( T a, hoCuNDArray<T>* x, hoCuNDArray<T>* y )
+  template<class T> void axpy( T a, hoCuNDArray<T>* x, hoCuNDArray<T>* y )
   {
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
@@ -48,12 +48,12 @@ namespace Gadgetron{
     }
   }
 
-  template<class T> EXPORTGPUCORE void axpy( T a, hoCuNDArray< complext<T> >*x, hoCuNDArray< complext<T> > *y )
+  template<class T> void axpy( T a, hoCuNDArray< complext<T> >*x, hoCuNDArray< complext<T> > *y )
   {
     axpy( complext<T>(a), x, y );
   }
 
-  template<class T> EXPORTGPUCORE T dot( hoCuNDArray<T> *x, hoCuNDArray<T> *y, bool cc )
+  template<class T> T dot( hoCuNDArray<T> *x, hoCuNDArray<T> *y, bool cc )
   {
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
@@ -89,7 +89,7 @@ namespace Gadgetron{
     return ret;
   }
 
-  template<class T> EXPORTGPUCORE typename realType<T>::Type nrm2( hoCuNDArray<T>* x )
+  template<class T> typename realType<T>::Type nrm2( hoCuNDArray<T>* x )
   {
     typedef typename realType<T>::Type REAL;
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
@@ -120,7 +120,7 @@ namespace Gadgetron{
     return std::sqrt(ret);
   }
 
-  template<class T> EXPORTGPUCORE typename realType<T>::Type asum( hoCuNDArray<T>* x )
+  template<class T> typename realType<T>::Type asum( hoCuNDArray<T>* x )
   {
     typedef typename realType<T>::Type REAL;
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
@@ -152,7 +152,7 @@ namespace Gadgetron{
     return ret;
   }
 
-  template<class T> EXPORTGPUCORE size_t amin( hoCuNDArray<T>* x )
+  template<class T> size_t amin( hoCuNDArray<T>* x )
   {
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
@@ -188,7 +188,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class T> EXPORTGPUCORE size_t amax( hoCuNDArray<T>* x )
+  template<class T> size_t amax( hoCuNDArray<T>* x )
   {
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
@@ -228,33 +228,33 @@ namespace Gadgetron{
   // Instantiation
   //
 
-  template EXPORTGPUCORE float dot(hoCuNDArray<float>*,hoCuNDArray<float>*,bool);
-  template EXPORTGPUCORE float nrm2(hoCuNDArray<float>*);
-  template EXPORTGPUCORE void axpy(float,hoCuNDArray<float>*,hoCuNDArray<float>*);
-  template EXPORTGPUCORE size_t amin(hoCuNDArray<float>*);
-  template EXPORTGPUCORE size_t amax(hoCuNDArray<float>*);
-  template EXPORTGPUCORE float asum(hoCuNDArray<float>*);
+  template float dot(hoCuNDArray<float>*,hoCuNDArray<float>*,bool);
+  template float nrm2(hoCuNDArray<float>*);
+  template void axpy(float,hoCuNDArray<float>*,hoCuNDArray<float>*);
+  template size_t amin(hoCuNDArray<float>*);
+  template size_t amax(hoCuNDArray<float>*);
+  template float asum(hoCuNDArray<float>*);
 
-  template EXPORTGPUCORE double dot(hoCuNDArray<double>*,hoCuNDArray<double>*,bool);
-  template EXPORTGPUCORE double nrm2(hoCuNDArray<double>*);
-  template EXPORTGPUCORE void axpy(double,hoCuNDArray<double>*,hoCuNDArray<double>*);
-  template EXPORTGPUCORE size_t amin(hoCuNDArray<double>*);
-  template EXPORTGPUCORE size_t amax(hoCuNDArray<double>*);
-  template EXPORTGPUCORE double asum(hoCuNDArray<double>*);
+  template double dot(hoCuNDArray<double>*,hoCuNDArray<double>*,bool);
+  template double nrm2(hoCuNDArray<double>*);
+  template void axpy(double,hoCuNDArray<double>*,hoCuNDArray<double>*);
+  template size_t amin(hoCuNDArray<double>*);
+  template size_t amax(hoCuNDArray<double>*);
+  template double asum(hoCuNDArray<double>*);
 
-  template EXPORTGPUCORE float_complext dot(hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*,bool);
-  template EXPORTGPUCORE float nrm2(hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE void axpy(float_complext,hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE void axpy(float,hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE size_t amin(hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE size_t amax(hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE float asum(hoCuNDArray<float_complext>*);
+  template float_complext dot(hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*,bool);
+  template float nrm2(hoCuNDArray<float_complext>*);
+  template void axpy(float_complext,hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*);
+  template void axpy(float,hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*);
+  template size_t amin(hoCuNDArray<float_complext>*);
+  template size_t amax(hoCuNDArray<float_complext>*);
+  template float asum(hoCuNDArray<float_complext>*);
 
-  template EXPORTGPUCORE double_complext dot(hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*,bool);
-  template EXPORTGPUCORE double nrm2(hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE void axpy(double_complext,hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE void axpy(double,hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE size_t amin(hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE size_t amax(hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE double asum(hoCuNDArray<double_complext>*);
+  template double_complext dot(hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*,bool);
+  template double nrm2(hoCuNDArray<double_complext>*);
+  template void axpy(double_complext,hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*);
+  template void axpy(double,hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*);
+  template size_t amin(hoCuNDArray<double_complext>*);
+  template size_t amax(hoCuNDArray<double_complext>*);
+  template double asum(hoCuNDArray<double_complext>*);
 }

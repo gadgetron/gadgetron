@@ -49,6 +49,12 @@ __device__ double atomicAdd(double* address, double val)
 }
 #endif
 
+//This function does not return a value. Why? Because why we can atomically add things, we cannot atomically get the result back.
+template<class T>
+__device__ void atomicAdd(complext<T>* __restrict__ address, complext<T> val){
+    atomicAdd(reinterpret_cast<T*>(address),real(val));
+    atomicAdd(reinterpret_cast<T*>(address)+1,imag(val));
+}
 
 template<class T, unsigned int D, template<class, unsigned int> class K>
 __inline__ __device__
