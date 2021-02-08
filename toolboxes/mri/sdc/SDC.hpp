@@ -20,19 +20,19 @@ template <template <class> class ARRAY, class REAL, unsigned int D> struct valid
 template <template <class> class ARRAY, class REAL, unsigned int D>
 std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
                                           const vector_td<size_t, D>& matrix_size, REAL os_factor,
-                                          unsigned int num_iterations) {
+                                          unsigned int num_iterations, REAL kernelWidth) {
     // Initialize weights to 1.
     ARRAY<REAL> dcw(*traj.get_dimensions());
     fill(&dcw, (REAL)1);
 
     // Compute density compensation weights.
-    return estimate_dcw(traj, dcw, matrix_size, os_factor, num_iterations);
+    return estimate_dcw(traj, dcw, matrix_size, os_factor, num_iterations, kernelWidth);
 }
 
 template <template <class> class ARRAY, class REAL, unsigned int D>
 std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj, const ARRAY<REAL>& initial_dcw,
                                           const vector_td<size_t, D>& matrix_size, REAL os_factor,
-                                          unsigned int num_iterations) {
+                                          unsigned int num_iterations, REAL kernelWidth) {
     // Specialized functors.
     auto update_weights = updates<ARRAY, REAL>();
     auto validate_size = validates<ARRAY, REAL, D>();
@@ -45,8 +45,7 @@ std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
     auto valid_matrix_size_os = validate_size(matrix_size_os);
 
     // Convolution kernel.
-    auto kernel = JincKernel<REAL, D>(vector_td<unsigned int, D>(valid_matrix_size),
-                                      vector_td<unsigned int, D>(valid_matrix_size_os));
+    auto kernel = JincKernel<REAL, D>(kernelWidth);
 
     // Prepare gridding convolution.
     auto conv = GriddingConvolution<ARRAY, REAL, D, JincKernel>::make(valid_matrix_size, valid_matrix_size_os, kernel);

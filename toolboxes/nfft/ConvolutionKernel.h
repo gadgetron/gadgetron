@@ -275,22 +275,10 @@ namespace Gadgetron
         /**
          * \brief Constructor.
          * 
-         * \param matrix_size Matrix size.
-         * \param matrix_size_os Matrix size with oversampling.
+         * \param kernelWidth Matrix size.
          */
         __host__ __device__
-        JincKernel(const vector_td<unsigned int, D>& matrix_size,
-                   const vector_td<unsigned int, D>& matrix_size_os);
-
-        /**
-         * \brief Constructor.
-         * 
-         * \param matrix_size Matrix size.
-         * \param os_factor Matrix size with oversampling.
-         */
-        __host__ __device__
-        JincKernel(const vector_td<unsigned int, D>& matrix_size,
-                   REAL os_factor);
+        JincKernel(float kernelWidth);
 
     private:
 

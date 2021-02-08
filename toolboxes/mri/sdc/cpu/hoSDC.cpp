@@ -39,14 +39,16 @@ Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 2>>& traj,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 3>(
     const Gadgetron::hoNDArray<Gadgetron::vector_td<float, 3>>& traj,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
@@ -54,7 +56,8 @@ Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 2>(
     const Gadgetron::hoNDArray<float>& initial_dcw,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::hoNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 3>(
@@ -62,4 +65,5 @@ Gadgetron::estimate_dcw<Gadgetron::hoNDArray, float, 3>(
     const Gadgetron::hoNDArray<float>& initial_dcw,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);

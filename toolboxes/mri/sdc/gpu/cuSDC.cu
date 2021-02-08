@@ -42,20 +42,20 @@ namespace Gadgetron
     template <class REAL, unsigned int D>
 std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>>& traj,
                                               const vector_td<size_t, D>& matrix_size, REAL os_factor,
-                                              unsigned int num_iterations, ConvolutionType convtype) {
+                                              unsigned int num_iterations, REAL kernelWidth, ConvolutionType convtype) {
     // Initialize weights to 1.
     cuNDArray<REAL> dcw(*traj.get_dimensions());
     fill(&dcw, (REAL)1);
 
     // Compute density compensation weights.
-    return estimate_dcw(traj, dcw, matrix_size, os_factor, num_iterations, convtype);
+    return estimate_dcw(traj, dcw, matrix_size, os_factor, num_iterations, kernelWidth, convtype);
 }
 
 template <class REAL, unsigned int D>
 std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>>& traj,
                                               const cuNDArray<REAL>& initial_dcw,
                                               const vector_td<size_t, D>& matrix_size, REAL os_factor,
-                                              unsigned int num_iterations, ConvolutionType convtype) {
+                                              unsigned int num_iterations, REAL kernelWidth, ConvolutionType convtype) {
     // Specialized functors.
     auto update_weights = updates<cuNDArray, REAL>();
     auto validate_size = validates<cuNDArray, REAL, D>();
@@ -68,8 +68,7 @@ std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>
     auto valid_matrix_size_os = validate_size(matrix_size_os);
 
     // Convolution kernel.
-    auto kernel = JincKernel<REAL, D>(vector_td<unsigned int, D>(valid_matrix_size),
-                                      vector_td<unsigned int, D>(valid_matrix_size_os));
+    auto kernel = JincKernel<REAL, D>(kernelWidth);
 
     // Prepare gridding convolution.
     auto conv = GriddingConvolution<cuNDArray, REAL, D, JincKernel>::make(valid_matrix_size, valid_matrix_size_os, kernel,convtype);
@@ -111,14 +110,18 @@ Gadgetron::estimate_dcw<Gadgetron::cuNDArray, float, 2>(
     const Gadgetron::cuNDArray<Gadgetron::vector_td<float, 2>>& traj,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
+
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::cuNDArray, float, 3>(
     const Gadgetron::cuNDArray<Gadgetron::vector_td<float, 3>>& traj,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
+
 
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
@@ -127,7 +130,9 @@ Gadgetron::estimate_dcw<Gadgetron::cuNDArray, float, 2>(
     const Gadgetron::cuNDArray<float>& initial_dcw,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
+
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
 Gadgetron::estimate_dcw<Gadgetron::cuNDArray, float, 3>(
@@ -135,14 +140,16 @@ Gadgetron::estimate_dcw<Gadgetron::cuNDArray, float, 3>(
     const Gadgetron::cuNDArray<float>& initial_dcw,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
     float os_factor,
-    unsigned int num_iterations);
+    unsigned int num_iterations,
+    float kernelWidth);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
 Gadgetron::estimate_dcw<float, 3>(
     const Gadgetron::cuNDArray<Gadgetron::vector_td<float, 3>>& traj,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
     float os_factor,
-    unsigned int num_iterations, 
+    unsigned int num_iterations,
+    float kernelWidth, 
     ConvolutionType convtype);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
@@ -150,7 +157,8 @@ Gadgetron::estimate_dcw<float, 2>(
     const Gadgetron::cuNDArray<Gadgetron::vector_td<float, 2>>& traj,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
     float os_factor,
-    unsigned int num_iterations, 
+    unsigned int num_iterations,
+    float kernelWidth, 
     ConvolutionType convtype);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
@@ -159,7 +167,8 @@ Gadgetron::estimate_dcw<float, 3>(
     const Gadgetron::cuNDArray<float>& initial_dcw,
     const Gadgetron::vector_td<size_t, 3>& matrix_size,
     float os_factor,
-    unsigned int num_iterations, 
+    unsigned int num_iterations,
+    float kernelWidth, 
     ConvolutionType convtype);
 
 template EXPORTSDC std::shared_ptr<Gadgetron::cuNDArray<float>>
@@ -168,6 +177,7 @@ Gadgetron::estimate_dcw<float, 2>(
     const Gadgetron::cuNDArray<float>& initial_dcw,
     const Gadgetron::vector_td<size_t, 2>& matrix_size,
     float os_factor,
-    unsigned int num_iterations, 
+    unsigned int num_iterations,
+    float kernelWidth, 
     ConvolutionType convtype);
     
