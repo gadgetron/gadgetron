@@ -28,3 +28,5 @@ tags
 test/integration/*.xprot
 test/integration/*.xml
 .atom-build.json
+build/*
+.vscode/*

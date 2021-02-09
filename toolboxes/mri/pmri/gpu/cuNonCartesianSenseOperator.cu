@@ -51,9 +51,13 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
   }
   std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
   std::vector<size_t> tmp_dimensions_data = *this->get_codomain_dimensions();
-  tmp_dimensions_data.pop_back(); // Remove channel dimension 
+
+  // Remove channel dimension if the last dimension is the same as the number of coils
    if(tmp_dimensions_data[tmp_dimensions_data.size()-1]==this->ncoils_ && tmp_dimensions_data.size()>2)
-     tmp_dimensions_data.pop_back(); // High risk
+     tmp_dimensions_data.pop_back(); 
+    else
+     throw std::runtime_error("cuNonCartesianSenseOperator::Last dimension is not the coil dimension");
+
 
   cuNDArray<complext<REAL>> temp_ch_recon(&tmp_dimensions);
   cuNDArray<complext<REAL>> temp_ch_data(&tmp_dimensions_data);
@@ -71,15 +75,12 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
       in->get_data_ptr() + RO * E1E2 * iCHA,
       RO * E1E2 * sizeof(complext<REAL>), cudaMemcpyDefault);
                
-          plan_->compute(temp_ch_data, temp_ch_recon, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C);
-        //nfft_plan_->compute(data, *result, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
-        cudaMemcpy(tmp.get_data_ptr() + tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * iCHA,
+      plan_->compute(temp_ch_data, temp_ch_recon, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C);
+      
+      cudaMemcpy(tmp.get_data_ptr() + tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * iCHA,
                    temp_ch_recon.get_data_ptr(),
                    tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * sizeof(complext<REAL>), cudaMemcpyDefault);
     }
-
- // Do the NFFT
-  //plan_->compute( *in, tmp, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C );
 
   if( !accumulate ){
     clear(out);    

@@ -4,7 +4,6 @@
 
 #include "vector_td.h"
 
-//#include "mri_sdc_export.h"
 
 namespace Gadgetron {
 /**
