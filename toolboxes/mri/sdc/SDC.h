@@ -20,8 +20,8 @@ namespace Gadgetron {
  */
 template <template <class> class ARRAY, class REAL, unsigned int D>
 std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
-                                                    const vector_td<size_t, D>& matrix_size, REAL os_factor = 1.5,
-                                                    unsigned int num_iterations = 10, REAL kernelWidth = 5.5);
+                                                    const vector_td<size_t, D>& matrix_size, REAL os_factor = REAL(1.5),
+                                                    unsigned int num_iterations = 10, REAL kernelWidth = REAL(5.5));
 
 /**
  * \brief Estimate density compensation weights for an arbitrary trajectory.
@@ -38,7 +38,7 @@ std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
  */
 template <template <class> class ARRAY, class REAL, unsigned int D>
 std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj, const ARRAY<REAL>& initial_dcw,
-                                          const vector_td<size_t, D>& matrix_size, REAL os_factor = 1.5,
-                                          unsigned int num_iterations = 10, REAL kernelWidth = 5.5);
+                                          const vector_td<size_t, D>& matrix_size, REAL os_factor = REAL(1.5),
+                                          unsigned int num_iterations = 10, REAL kernelWidth = REAL(5.5));
 
 } // namespace Gadgetron
