@@ -30,7 +30,7 @@ def is_valid(file, digest):
 
     return digest == calc_mdf5(file) 
 
-def urlretrieve(url, filename, retries=3):
+def urlretrieve(url, filename, retries=5):
     if retries <= 0:
         raise RuntimeError("Download from {} failed".format(url))
     try:
@@ -38,12 +38,9 @@ def urlretrieve(url, filename, retries=3):
             with open(filename,'wb') as f:
                 for chunk in iter(lambda : connection.read(1024*1024), b''):
                     f.write(chunk)
-    except urllib.error.URLError:
+    except (urllib.error.URLError, ConnectionResetError):
+        print("Retrying connection for file {}".format(filename))
         urlretrieve(url, filename, retries=retries-1)
-
-
-
-
 
 def main():
 
