@@ -57,6 +57,7 @@ namespace Gadgetron::Server::Connection::Stream {
         catch (...){
             return false;
         }
+       return false;
 
 
     };
