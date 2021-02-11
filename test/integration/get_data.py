@@ -81,7 +81,7 @@ def main():
         print("File saved as: {}".format(destination))
             
     with ThreadPoolExecutor() as executor:
-        executor.map(download_entry,entries)    
+        list(executor.map(download_entry,entries))
 
 if __name__ == '__main__':
     main()
