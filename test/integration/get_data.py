@@ -34,7 +34,7 @@ def urlretrieve(url, filename, retries=3):
     if retries <= 0:
         raise RuntimeError("Download from {} failed".format(url))
     try:
-        with urllib.request.urlopen(url, timeout=5) as connection:
+        with urllib.request.urlopen(url, timeout=60) as connection:
             with open(filename,'wb') as f:
                 for chunk in iter(lambda : connection.read(1024*1024), b''):
                     f.write(chunk)
