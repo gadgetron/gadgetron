@@ -1,5 +1,8 @@
 variables:
   AzureConnection: 'BiomedicalImaging-NonProd(87d8acb3-5176-4651-b457-6ab9cefd8e3d)'
+  AcrConnection: 'gadgetron-acr'
+  AcrRegistryAddress: 'gadgetron.azurecr.io'
+  AcrRegistryName: 'gadgetronbuild'
   ContainerRegistry: 'ghcr.io/gadgetron/gadgetron'
 
 pool: gadgetron-gpu-nodes
@@ -13,46 +16,133 @@ pr:
 - master
 
 jobs:
-- job: buildUbuntu2004
-  displayName: "Build Ubuntu 20.04 (no CUDA)"
+- job: buildAndPushBaseImages
+  displayName: "Build base images"
+  strategy:
+    matrix:
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004_base
+        dockerFile: docker/ubuntu_base.Dockerfile
+        baseImage: ubuntu:20.04
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8_base
+        dockerFile: docker/ubuntu_base.Dockerfile
+        baseImage: nvidia/cuda:11.0-devel-ubuntu20.04
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804_base
+        dockerFile: docker/ubuntu_base.Dockerfile
+        baseImage: ubuntu:18.04
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8_base
+        dockerFile: docker/ubuntu_base.Dockerfile
+        baseImage: nvidia/cuda:11.0-devel-ubuntu18.04
   steps:
-  - template: ./build-jobs/docker-build-push.yaml
+  - template: ./build-jobs/docker-build-push-acr.yaml
     parameters:
-        azureconnection: $(AzureConnection)
-        dockerfile: docker/ubuntu_2004.Dockerfile
-        imagename: gadgetron_ubuntu_2004
-        imagetag: $(build.BuildNumber)
-        containerregistry: $(ContainerRegistry)
+      acrconnection: $(AcrConnection)
+      dockerfile: $(dockerFile)
+      imageName: $(imageName)
+      containerregistry: $(AcrRegistryName)
+      baseimage: $(baseImage)
 
-- job: buildUbuntu2004Cuda
-  displayName: "Build Ubuntu 20.04 (CUDA)"
+- job: buildAndPush
+  displayName: "Build and Push"
+  dependsOn:
+  - buildAndPushBaseImages
+  strategy:
+    matrix:
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_2004_base:$(build.BuildNumber)
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_2004_cuda11_cudnn8_base:$(build.BuildNumber)
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_1804_base:$(build.BuildNumber)
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8
+        dockerFile: Dockerfile
+        baseimage: $(AcrRegistryAddress)/$(AcrRegistryName)/gadgetron_ubuntu_1804_cuda11_cudnn8_base:$(build.BuildNumber)
   steps:
-  - template: ./build-jobs/docker-build-push.yaml
+  - template: ./build-jobs/docker-build-push-acr.yaml
     parameters:
-        azureconnection: $(AzureConnection)
-        dockerfile: docker/ubuntu_2004_cuda11_cudnn.Dockerfile
-        imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
-        imagetag: $(build.BuildNumber)
-        containerregistry: $(ContainerRegistry)
+      acrconnection: $(AcrConnection)
+      dockerfile: $(dockerFile)
+      imageName: $(imageName)
+      containerregistry: $(AcrRegistryName)
+      baseimage: $(baseImage)
+
+- job: Tests
+  displayName: "Unit and Integration tests"
+  dependsOn:
+  - buildAndPush
+  strategy:
+    matrix:
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8
+  steps:
+  - task: Docker@2
+    displayName: Login to ACR
+    inputs:
+      command: login
+      containerRegistry: $(AcrConnection)
+  - script: |
+        set -e
+        fullImageName="$(AcrRegistryAddress)/$(AcrRegistryName)/$(imageName):$(build.BuildNumber)"
+        docker run --gpus all --rm $fullImageName /opt/code/gadgetron/build/test/test_all
+    displayName: "Run unit tests"
+  - script: |
+        set -e
+        mkdir -p testdata
+        fullImageName="$(AcrRegistryAddress)/$(AcrRegistryName)/$(imageName):$(build.BuildNumber)"
+        docker run -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./get_data.py"
+    displayName: "Get test data"
+  - script: |
+        set -e
+        fullImageName="$(AcrRegistryAddress)/$(AcrRegistryName)/$(imageName):$(build.BuildNumber)"
+        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py cases/*"
+    displayName: "Run integration tests"
 
 - job:
   displayName: "Tag latest images"
   dependsOn:
-  - buildUbuntu2004
-  - buildUbuntu2004Cuda
+  - Tests
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  strategy:
+    matrix:
+      ubuntu2004_base:
+        imageName: gadgetron_ubuntu_2004_base
+      ubuntu2004CUDA_base:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8_base
+      ubuntu2004:
+        imageName: gadgetron_ubuntu_2004
+      ubuntu2004CUDA:
+        imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+      ubuntu1804_base:
+        imageName: gadgetron_ubuntu_1804_base
+      ubuntu1804CUDA_base:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8_base
+      ubuntu1804:
+        imageName: gadgetron_ubuntu_1804
+      ubuntu1804CUDA:
+        imageName: gadgetron_ubuntu_1804_cuda11_cudnn8
   steps:
   - template: ./build-jobs/tag-docker-image.yaml
     parameters:
+        acrconnection: $(AcrConnection)
         azureconnection: $(AzureConnection)
-        imagename: gadgetron_ubuntu_2004
+        imagename: $(imageName)
         imagetag: $(build.BuildNumber)
         newimagetag: 'latest'
-        containerregistry: $(ContainerRegistry)
-  - template: ./build-jobs/tag-docker-image.yaml
-    parameters:
-        azureconnection: $(AzureConnection)
-        imagename: gadgetron_ubuntu_2004_cuda11_cudnn8
-        imagetag: $(build.BuildNumber)
-        newimagetag: 'latest'
+        acrregistry: $(AcrRegistryAddress)/$(AcrRegistryName)
         containerregistry: $(ContainerRegistry)

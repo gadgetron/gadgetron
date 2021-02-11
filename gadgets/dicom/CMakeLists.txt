@@ -12,9 +12,9 @@ if (WIN32)
     set(GT_DICOM_LIBRARIES cmr i2d ijg8 dcmfg)
 else ()
     set(GT_DICOM_LIBRARIES
-        ${DCMTK_dcmdata_LIBRARY}
-        ${DCMTK_oflog_LIBRARY}
-        ${DCMTK_ofstd_LIBRARY}
+            dcmdata
+            oflog
+            ofstd
         z m pthread)
     if (APPLE)
         list(APPEND GT_DICOM_LIBRARIES iconv)
