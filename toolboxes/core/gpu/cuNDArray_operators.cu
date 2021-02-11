@@ -185,7 +185,6 @@ using namespace Gadgetron;
   //
   // Instantiation
   //
-  template cuNDArray<float>& Gadgetron::operator+=<float,void>(cuNDArray<float>& x, const cuNDArray<float>& y);
   template cuNDArray<float>& Gadgetron::operator+=<float>(cuNDArray<float>& x, const cuNDArray<float>& y);
   template cuNDArray<float>& Gadgetron::operator+=<float>(cuNDArray<float>& x, float y);
   template cuNDArray<complext<float>>& Gadgetron::operator+=<float>(cuNDArray<complext<float>>& x, const cuNDArray<float>& y);
