@@ -316,6 +316,12 @@ namespace Gadgetron
         // depends on the oversampling ratio. To keep the kernel isotropic, we
         // take the maximum oversampling factor. This should be very similar in
         // all axes anyway.
+        // std::vector<REAL> temp;
+        
+        // for (auto d=0; d<D; d++)
+        //     temp.push_back(kernelWidth);
+            //this -> os_factor_.push_back(kernelWidth);
+        //this -> os_factor_ = from_std_vector<size_t, 2>(temp);
         this->radius_ = this->norm_radius * kernelWidth;
         this->width_ = this->radius_ * REAL(2);
     }
