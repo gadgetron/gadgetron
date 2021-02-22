@@ -210,3 +210,5 @@ template <class T, class F, class S> hoNDArray<S> Gadgetron::transform(const hoN
     }
     return output;
 }
+
+template<class T> void Gadgetron::abs_inplace(hoNDArray<T>& x) {abs_inplace(&x);}
