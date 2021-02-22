@@ -42,9 +42,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             auto data_dims = images.data_.dimensions();
             images.data_.reshape(data_dims[0], data_dims[1], -1);
 
-            sort_images(images,TI_values);
-
-
+            sort_images_and_values(images, TI_values);
 
             auto moco_images = multi_stage_T1_registration(images.data_,TI_values);
 
@@ -77,6 +75,8 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             images.data_.reshape(data_dims);
 
             auto mag_images = images;
+            mag_images.data_ = hoNDArray<std::complex<float>>(abs(moco_images));
+            mag_images.data_.reshape(data_dims);
             set_MOCO_MAG_headers_and_meta(mag_images, TI_values);
             out.push(std::move(mag_images));
 
@@ -163,7 +163,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         });
     }
 
-    void sort_images(IsmrmrdImageArray& images, std::vector<float>& TI_values) {
+    void sort_images_and_values(IsmrmrdImageArray& images, std::vector<float>& TI_values) {
         auto sorted_index = argsort(TI_values);
 
         auto dims = images.data_.dimensions();
@@ -184,7 +184,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
         TI_values = std::move(TI_sorted);
     }
-    void set_RAW_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values) {
+    static void set_RAW_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values) {
         for (auto& header : images.headers_) {
             header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
             header.image_series_index = 1;
@@ -196,7 +196,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         }
     }
 
-    void set_MOCO_MAG_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values) {
+    static void set_MOCO_MAG_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values) {
         for (auto& header : images.headers_) {
             header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
             header.image_series_index = 2;
@@ -209,7 +209,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         }
     }
 
-    void set_PSIR_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values) {
+    static void set_PSIR_headers_and_meta(IsmrmrdImageArray& images, const std::vector<float>& TI_values) {
         for (auto& header : images.headers_) {
             header.image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
             header.image_series_index = 3;
