@@ -443,5 +443,21 @@
   {
     "file":"simple_gre/pseudoreplica_out_20190731_192531.h5",
     "md5":"5ca16d49d3b3ffd63c2bf39abe3b3222"
+  },
+  {
+    "file":"grappa_3d/gre_3D_Grappa2x1.h5",
+    "md5":"b04554e30e3dc39b60d8f676f806ed7b"
+  },
+  {
+    "file":"grappa_3d/ref_grappa2x1.h5",
+    "md5": "1e7fa308d1747928007fc55b519344fc"
+  },
+  {
+    "file":"grappa_3d/gre_3D_Grappa2x2.h5",
+    "md5":"cf7ff3858fefebdd741036b5fb017407"
+  },
+  {
+    "file":"grappa_3d/ref_grappa2x2.h5",
+    "md5": "653172535076835310434e822b15b6ab"
   }
 ]

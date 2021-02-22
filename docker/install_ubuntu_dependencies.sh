@@ -106,6 +106,8 @@ pip3 install \
     scipy \
     sympy \
     tk-tools
+pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
+pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
