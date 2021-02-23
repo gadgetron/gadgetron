@@ -32,19 +32,20 @@ namespace Gadgetron::Server::Connection::Stream {
 
         bool is_valid_python3(const std::string& pythonname){
         try {
-                auto stream = boost::process::ipstream();
-            auto returncode = boost::process::system(
+            boost::asio::io_service ios;
+            std::future<std::string> output_stream;
+
+            boost::process::child(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
-                    boost::process::std_out > stream,
-                    boost::process::std_err > boost::process::null
+                    boost::process::std_in.close(),
+                    boost::process::std_out > output_stream,
+                    boost::process::std_err > boost::process::null,
+                    ios
             );
-            if (returncode != 0)
-                return false; 
+            ios.run();
 
-            std::stringstream strstream;
-            strstream << stream.rdbuf();
-            auto output = strstream.str();
+            auto output = output_stream.get();
 
             
             auto [major, minor, patch] = parse_version(output);
