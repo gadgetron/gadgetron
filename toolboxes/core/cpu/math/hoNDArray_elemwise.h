@@ -228,6 +228,7 @@ template <typename T, typename R>  void abs(const hoNDArray<T>& x, hoNDArray<R>&
  * @param[in,out] x Input and output array.
  */
 template<class T>  void abs_inplace( hoNDArray<T> *x );
+template<class T>  void abs_inplace( hoNDArray<T> &x );
 
 /**
  * @brief Calculates the element-wise squared absolute values of the array entries
