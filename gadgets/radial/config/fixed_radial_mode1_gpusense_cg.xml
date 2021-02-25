@@ -54,7 +54,7 @@
     
     <gadget>
       <name>gpuCgSenseGadget_slice0</name>
-      <dll>C:\Users\david\source\repos\gadgetron\out\install\x64-Release\bin\gadgetron_gpuparallelmri.dll</dll>
+      <dll>gadgetron_gpuparallelmri</dll>
       <classname>gpuCgSenseGadget</classname>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
