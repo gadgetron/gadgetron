@@ -156,12 +156,12 @@ def prepare_rules(args, requirements):
 def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
                     value_threshold, scale_threshold):
     try:
-        output = numpy.squeeze(h5py.File(output_file)[output_dataset])
+        output = numpy.squeeze(h5py.File(output_file, mode='r')[output_dataset])
     except KeyError:
         return Failure, "Missing output data: {}".format(output_dataset)
 
     try:
-        reference = numpy.squeeze(h5py.File(reference_file)[reference_dataset])
+        reference = numpy.squeeze(h5py.File(reference_file, mode='r')[reference_dataset])
     except KeyError:
         return Failure, "Missing reference data"
 
