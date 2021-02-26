@@ -28,12 +28,6 @@
 #include <complex>
 #include <cpu/math/hoNDImage_util.h>
 
-#ifdef max
-#undef max
-#endif // max
-#ifdef min
-#undef min
-#endif // min
 
 #include <algorithm>
 #include "bounded_field_map.h"

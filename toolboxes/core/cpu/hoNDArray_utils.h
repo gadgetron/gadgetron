@@ -7,6 +7,7 @@
 #include "hoNDArray_iterators.h"
 #include "vector_td_utilities.h"
 
+#include <boost/math/special_functions/trunc.hpp>
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <boost/range/adaptor/strided.hpp>
 #include <range/v3/numeric.hpp>
@@ -851,7 +852,6 @@ namespace Gadgetron {
               new_dims[dim] *= 2;
               hoNDArray<T> result(new_dims);
               size_t stride = std::accumulate(new_dims.begin(),new_dims.begin()+dim,size_t(1),std::multiplies<size_t>());
-
               size_t nbatches = result.get_number_of_elements()/stride/new_dims[dim];
               size_t batch_size = stride*new_dims[dim];
               size_t old_batch_size = batch_size/2;
