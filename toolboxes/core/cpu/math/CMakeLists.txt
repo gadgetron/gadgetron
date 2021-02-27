@@ -42,7 +42,7 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_log
         armadillo
-        BLAS
+        GTBLAS
 		${LAPACK_LIBRARIES}
             )
 
