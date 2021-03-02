@@ -2129,6 +2129,304 @@ namespace Gadgetron {
         return true;
     }
 
+    bool GenericImageReconGadget::sendOutRGBImages(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool resetImageCommentsParametricMaps, Gadget* anchor)
+    {
+        try
+        {
+            size_t CHA = images.get_size(0);
+            size_t SLC = images.get_size(1);
+            size_t CON = images.get_size(2);
+            size_t PHS = images.get_size(3);
+            size_t REP = images.get_size(4);
+            size_t SET = images.get_size(5);
+            size_t AVE = images.get_size(6);
+
+            std::string dataRoleString;
+            if (!dataRole.empty())
+            {
+                std::ostringstream ostr;
+                for (size_t n = 0; n < dataRole.size(); n++)
+                {
+                    ostr << dataRole[n] << " - ";
+                }
+
+                dataRoleString = ostr.str();
+            }
+
+            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out RBG " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+                << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
+
+            size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
+            std::vector<size_t> dim3D(3);
+
+            for (ave = 0; ave < AVE; ave++)
+            {
+                for (set = 0; set < SET; set++)
+                {
+                    for (rep = 0; rep < REP; rep++)
+                    {
+                        for (phs = 0; phs < PHS; phs++)
+                        {
+                            for (con = 0; con < CON; con++)
+                            {
+                                for (slc = 0; slc < SLC; slc++)
+                                {
+                                    for (cha = 0; cha < CHA; cha++)
+                                    {
+                                        hoMRImage<T, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
+                                        if (pImage != NULL && pImage->get_number_of_elements() > 0)
+                                        {
+                                            T v = Gadgetron::nrm2(*pImage);
+                                            if (v < FLT_EPSILON) continue; // do not send out empty image
+
+                                            Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
+                                            Gadgetron::GadgetContainerMessage<ImgRGBType>* cm2 = new Gadgetron::GadgetContainerMessage<ImgRGBType>();
+                                            Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
+
+                                            try
+                                            {
+                                                cm1->cont(cm2);
+                                                cm2->cont(cm3);
+
+                                                // set the ISMRMRD image header
+                                                memcpy(cm1->getObjectPtr(), &pImage->header_, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
+
+                                                long long imageNum(0);
+                                                if (pImage->attrib_.length(GADGETRON_IMAGENUMBER) == 0)
+                                                {
+                                                    imageNum = this->computeSeriesImageNumber(*cm1->getObjectPtr(), CHA, cha, 1, 0);
+                                                    cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
+                                                    pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
+                                                }
+                                                else
+                                                {
+                                                    imageNum = pImage->attrib_.as_long(GADGETRON_IMAGENUMBER);
+                                                    if (imageNum > 0)
+                                                    {
+                                                        cm1->getObjectPtr()->image_index = imageNum;
+                                                    }
+                                                    else
+                                                    {
+                                                        imageNum = this->computeSeriesImageNumber(*cm1->getObjectPtr(), CHA, cha, 1, 0);
+                                                        cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
+                                                        pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
+                                                    }
+                                                }
+
+                                                cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
+                                                if (add_original_series_num.value())
+                                                {
+                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index += seriesNum;
+                                                }
+                                                else
+                                                {
+                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
+                                                }
+
+                                                // set the image data
+                                                size_t RO = pImage->get_size(0);
+                                                size_t E1 = pImage->get_size(1);
+                                                size_t E2 = pImage->get_size(2);
+
+                                                dim3D[0] = RO;
+                                                dim3D[1] = E1;
+                                                dim3D[2] = E2;
+
+                                                cm1->getObjectPtr()->matrix_size[0] = RO;
+                                                cm1->getObjectPtr()->matrix_size[1] = E1;
+                                                cm1->getObjectPtr()->matrix_size[2] = E2;
+
+                                                cm2->getObjectPtr()->create(dim3D);
+                                                uint16_t* p_img = cm2->getObjectPtr()->get_data_ptr();
+
+                                                for (size_t k = 0; k < RO * E1 * E2; k++)
+                                                {
+                                                    p_img[k] = uint16_t((*pImage)(k));
+                                                }
+
+                                                // set the attributes
+                                                *cm3->getObjectPtr() = pImage->attrib_;
+
+                                                std::vector<float> windowCenter, windowWidth;
+                                                this->decorateImageHeader(*cm1->getObjectPtr(), *cm3->getObjectPtr(), seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
+
+                                                if (anchor != NULL)
+                                                {
+                                                    if (anchor->putq(cm1) < 0)
+                                                    {
+                                                        cm1->release();
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (this->next()->putq(cm1) < 0)
+                                                    {
+                                                        cm1->release();
+                                                        return false;
+                                                    }
+                                                }
+                                            }
+                                            catch (...)
+                                            {
+                                                cm1->release();
+                                                throw;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImages(images, seriesNum, processStr, dataRole) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+
+    bool GenericImageReconGadget::sendOutRGBImageBuffer(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool resetImageCommentsParametricMaps, Gadget* anchor)
+    {
+        try
+        {
+            size_t CHA = images.get_size(0);
+            size_t SLC = images.get_size(1);
+            size_t CON = images.get_size(2);
+            size_t PHS = images.get_size(3);
+            size_t REP = images.get_size(4);
+            size_t SET = images.get_size(5);
+            size_t AVE = images.get_size(6);
+
+            std::string dataRoleString;
+            if (!dataRole.empty())
+            {
+                std::ostringstream ostr;
+                for (size_t n = 0; n < dataRole.size(); n++)
+                {
+                    ostr << dataRole[n] << " - ";
+                }
+
+                dataRoleString = ostr.str();
+            }
+
+            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out RGB image array " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+                << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
+
+            size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
+            std::vector<size_t> dim3D(3);
+
+            for (ave = 0; ave < AVE; ave++)
+            {
+                for (set = 0; set < SET; set++)
+                {
+                    for (rep = 0; rep < REP; rep++)
+                    {
+                        for (phs = 0; phs < PHS; phs++)
+                        {
+                            for (con = 0; con < CON; con++)
+                            {
+                                for (slc = 0; slc < SLC; slc++)
+                                {
+                                    for (cha = 0; cha < CHA; cha++)
+                                    {
+                                        hoMRImage<T, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
+                                        if (pImage != NULL && pImage->get_number_of_elements() > 0)
+                                        {
+                                            T v = Gadgetron::nrm2(*pImage);
+                                            if (v < FLT_EPSILON) continue; // do not send out empty image
+
+                                            try
+                                            {
+                                                long long imageNum(0);
+                                                if (pImage->attrib_.length(GADGETRON_IMAGENUMBER) == 0)
+                                                {
+                                                    imageNum = this->computeSeriesImageNumber(pImage->header_, CHA, cha, 1, 0);
+                                                    pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
+                                                }
+                                                else
+                                                {
+                                                    imageNum = pImage->attrib_.as_long(GADGETRON_IMAGENUMBER);
+                                                    if (imageNum <= 0)
+                                                    {
+                                                        imageNum = this->computeSeriesImageNumber(pImage->header_, CHA, cha, 1, 0);
+                                                        pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
+                                                    }
+                                                }
+
+                                                pImage->header_.data_type = ISMRMRD::ISMRMRD_USHORT;
+                                                if (add_original_series_num.value())
+                                                {
+                                                    if (seriesNum >= 0) pImage->header_.image_series_index += seriesNum;
+                                                }
+                                                else
+                                                {
+                                                    if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
+                                                }
+
+                                                // set the image data
+                                                size_t RO = pImage->get_size(0);
+                                                size_t E1 = pImage->get_size(1);
+                                                size_t E2 = pImage->get_size(2);
+
+                                                dim3D[0] = RO;
+                                                dim3D[1] = E1;
+                                                dim3D[2] = E2;
+
+                                                pImage->header_.matrix_size[0] = RO;
+                                                pImage->header_.matrix_size[1] = E1;
+                                                pImage->header_.matrix_size[2] = E2;
+
+                                                std::vector<float> wc, ww;
+                                                this->decorateImageHeader(pImage->header_, pImage->attrib_, seriesNum, processStr, dataRole, wc, ww, resetImageCommentsParametricMaps, slc, SLC);
+                                            }
+                                            catch (...)
+                                            {
+                                                throw;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<T, 3> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<T, 3> > >();
+            cm1->getObjectPtr()->copyFrom(images);
+
+            if (anchor != NULL)
+            {
+                if (anchor->putq(cm1) < 0)
+                {
+                    cm1->release();
+                    return false;
+                }
+            }
+            else
+            {
+                if (this->next()->putq(cm1) < 0)
+                {
+                    cm1->release();
+                    return false;
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutRGBImageBuffer(images, seriesNum, processStr, dataRole) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
     bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
     {
         try
