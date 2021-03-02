@@ -135,7 +135,9 @@ namespace Gadgetron {
                 = std::accumulate(input.dimensions().begin(), input.dimensions().begin() + rank, 1, std::multiplies<>());
             size_t batches = input.size() / batch_size;
 
-#pragma omp parallel for default(none) shared(plan,  input, output, batches, batch_size)
+#ifdef USE_OMP
+    #pragma omp parallel for default(none) shared(plan,  input, output, batches, batch_size)
+#endif
             for (long long i = 0; i < batches; i++) {
 
                 plan.execute(input.data() + i * batch_size, output.data() + i * batch_size);
@@ -157,7 +159,9 @@ namespace Gadgetron {
                 = std::accumulate(dimensions.begin() + dimension + 1, dimensions.end(), 1, std::multiplies<>());
             size_t outer_batchsize = inner_batches * dimensions[dimension];
 
-#pragma omp parallel for default(none) shared(plan, a, r , outer_batches, inner_batches, outer_batchsize ) collapse(2)
+#ifdef USE_OMP
+    #pragma omp parallel for default(none) shared(plan, a, r , outer_batches, inner_batches, outer_batchsize ) collapse(2)
+#endif
             for (long long outer = 0; outer < outer_batches; outer++) {
                 for (long long inner = 0; inner < inner_batches; inner++) {
                     plan.execute(
@@ -228,7 +232,9 @@ namespace Gadgetron {
 
     template <typename T> static void fftshiftPivot1D(std::complex<T>* a, size_t x, size_t n, size_t pivot) {
 
-#pragma omp parallel for shared(n, x, pivot, a) if (n > 256) default(none)
+#ifdef USE_OMP
+    #pragma omp parallel for shared(n, x, pivot, a) if (n > 256) default(none)
+#endif
         for (long long counter = 0; counter < (long long)n; counter++) {
             std::rotate(a + counter * x, a + counter * x + pivot, a + x + counter * x);
         }
@@ -237,7 +243,9 @@ namespace Gadgetron {
     template <typename T>
     static void fftshiftPivot1D(const std::complex<T>* a, std::complex<T>* r, size_t x, size_t n, size_t pivot) {
 
-#pragma omp parallel for shared(n, x, pivot, a, r) if (n > 256) default(none)
+#ifdef USE_OMP
+    #pragma omp parallel for shared(n, x, pivot, a, r) if (n > 256) default(none)
+#endif
         for (long long counter = 0; counter < (long long)n; counter++) {
             std::rotate_copy(a + counter * x, a + counter * x + pivot, a + x + counter * x, r + counter * x);
         }
@@ -290,7 +298,9 @@ namespace Gadgetron {
             throw std::runtime_error("hoNDFFT::fftshiftPivot2D: void ptr provided");
         assert(a != r);
 
-#pragma omp parallel for shared(a, r, x, y, n, pivotx, pivoty) if (n > 16) default(none)
+#ifdef USE_OMP
+    #pragma omp parallel for shared(a, r, x, y, n, pivotx, pivoty) if (n > 16) default(none)
+#endif
         for (long long tt = 0; tt < (long long)n; tt++) {
             const std::complex<T>* ac = a + tt * x * y;
             std::complex<T>* rc       = r + tt * x * y;
@@ -304,11 +314,14 @@ namespace Gadgetron {
         if (a == NULL)
             throw std::runtime_error("hoNDFFT::fftshiftPivot2D: void ptr provided");
 
-#pragma omp parallel if (n > 16) default(shared)
+#ifdef USE_OMP
+    #pragma omp parallel if (n > 16) default(shared)
+#endif
         {
             std::vector<std::complex<T>> buffer(x);
-
-#pragma omp for
+#ifdef USE_OMP
+    #pragma omp for
+#endif
             for (long long tt = 0; tt < (long long)n; tt++) {
                 std::complex<T>* ac = a + tt * x * y;
                 fftshift(ac, ac, buffer, x, y, pivoty, x, pivotx);
@@ -370,7 +383,9 @@ namespace Gadgetron {
 
         long long tt;
 
-#pragma omp parallel for private(tt) shared(a, r, x, y, z, n, pivotx, pivoty, pivotz) if (n > 16) default(none)
+#ifdef USE_OMP
+    #pragma omp parallel for private(tt) shared(a, r, x, y, z, n, pivotx, pivoty, pivotz) if (n > 16) default(none)
+#endif
         for (tt = 0; tt < (long long)n; tt++) {
             const std::complex<T>* ac = a + tt * x * y * z;
             std::complex<T>* rc       = r + tt * x * y * z;
@@ -387,11 +402,15 @@ namespace Gadgetron {
 
         long long tt;
 
-#pragma omp parallel private(tt)  if (n > 16) default(shared)
+#ifdef USE_OMP
+    #pragma omp parallel private(tt)  if (n > 16) default(shared)
+#endif
         {
             std::vector<std::complex<T>> buffer(x);
 
-#pragma omp for
+#ifdef USE_OMP
+    #pragma omp for
+#endif
             for (tt = 0; tt < (long long)n; tt++) {
                 std::complex<T>* ac = a + tt * x * y * z;
                 fftshift(ac, ac, buffer, x * y, z, pivotz, y, pivoty, x, pivotx);
@@ -728,6 +747,7 @@ namespace Gadgetron {
 
     // TODO: implement more optimized threading strategy
     inline int get_num_threads_fft1(size_t n0, size_t num) {
+#ifdef USE_OMP
         if (omp_get_max_threads() == 1)
             return 1;
 
@@ -740,11 +760,12 @@ namespace Gadgetron {
         } else if (n0 * num > 128 * 128) {
             return 2;
         }
-
+#endif
         return 1;
     }
 
     inline int get_num_threads_fft2(size_t n0, size_t n1, size_t num) {
+#ifdef USE_OMP
         if (omp_get_max_threads() == 1)
             return 1;
 
@@ -757,23 +778,23 @@ namespace Gadgetron {
         } else if (n0 * n1 * num > 128 * 128 * 8) {
             return 2;
         }
-
+#endif
         return 1;
     }
 
     inline int get_num_threads_fft3(size_t n0, size_t n1, size_t n2, size_t num) {
+#ifdef USE_OMP
         if (omp_get_max_threads() == 1)
             return 1;
 
         if (num >= omp_get_max_threads()) {
             return omp_get_max_threads();
         }
-
+#endif
         return 1;
     }
 
     int get_num_threads_fftn(const std::vector<int>& dimensions, size_t num) {
-
         switch (dimensions.size()) {
         case 1:
             return get_num_threads_fft1(dimensions[0], num);
@@ -782,7 +803,11 @@ namespace Gadgetron {
         case 3:
             return get_num_threads_fft3(dimensions[0], dimensions[1], dimensions[2], num);
         default:
+#ifdef USE_OMP
             return std::min<long long>(omp_get_max_threads(), num);
+#else
+            return 1;
+#endif
         }
     }
 
