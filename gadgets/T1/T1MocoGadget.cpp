@@ -50,6 +50,14 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
             auto [A, B, T1star] = T1::fit_T1_3param(phase_corrected, TI_values);
 
+            clean_image(T1star);
+            perform_hole_filling(T1star);
+
+            auto error_map = T1::calculate_error_map({A,B,T1star},phase_corrected,TI_values);
+
+            clean_image(error_map, 500.0f);
+            perform_hole_filling(error_map);
+
             B /= A;
             B -= 1;
 
@@ -58,12 +66,13 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             T1 *= correction_factor;
 
             clean_image(T1);
-
             perform_hole_filling(T1);
+
             auto header = images.headers_[0];
             header.data_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
             header.image_series_index = 4;
             auto meta = create_T1_meta(images.meta_.front());
+
 
             // send original images
             images.data_.reshape(data_dims);
@@ -85,7 +94,44 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
             // send out T1 map
             out.push(Core::Image<float>{header, std::move(T1), meta});
+            auto sd_header = header;
+            header.image_series_index = 5;
+            auto sd_meta = create_T1SD_meta(meta);
+            out.push(Core::Image<float>{header, std::move(error_map),sd_meta});
+
         }
+    }
+
+    ISMRMRD::MetaContainer create_T1SD_meta(ISMRMRD::MetaContainer meta) const {
+
+        double scaling_factor = 1;
+        double window_center = 1300;
+        std::string lut =
+            std::abs(field_strength - float(1.5)) < 1e-1 ? "GadgetronT1_IR_1_5T.pal" : "GadgetronT1_IR_3T.pal";
+
+        std::ostringstream ostr;
+        ostr << "x" << scaling_factor;
+        std::string scalingStr = ostr.str();
+
+        std::ostringstream ostr_unit;
+        ostr_unit << std::setprecision(3) << 1.0f / scaling_factor << "ms";
+        std::string unitStr = ostr_unit.str();
+
+        meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_T1SDMAP);
+        meta.append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_T1SDMAP);
+        meta.append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_MOCO);
+        meta.append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_T1SDMAP);
+
+        meta.set(GADGETRON_IMAGE_SCALE_RATIO, scaling_factor);
+        meta.set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center * scaling_factor));
+        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_center * scaling_factor));
+        meta.set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
+
+        meta.set(GADGETRON_IMAGECOMMENT, meta.as_str(GADGETRON_DATA_ROLE));
+        meta.append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
+        meta.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+
+        return std::move(meta);
     }
 
     ISMRMRD::MetaContainer create_T1_meta(ISMRMRD::MetaContainer meta) const {
@@ -151,11 +197,11 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         return TI_values;
     }
 
-    static void clean_image(hoNDArray<float>& data) {
-        std::transform(data.begin(), data.end(), data.begin(), [](auto val) {
+    static void clean_image(hoNDArray<float>& data, float upper_limit = 5000.0f) {
+        std::transform(data.begin(), data.end(), data.begin(), [upper_limit](auto val) {
             if (val <= 0)
                 return 0.0f;
-            if (val >= 5000)
+            if (val >= upper_limit)
                 return 0.0f;
             if (std::isnan(val))
                 return 0.0f;

@@ -43,6 +43,9 @@ T1_2param fit_T1_2param(const hoNDArray<std::complex<float>>& data, const std::v
 T1_3param fit_T1_3param(const hoNDArray<float>& data, const std::vector<float>& TI);
 T1_3param fit_T1_3param(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TI);
 
+
+hoNDArray<float> calculate_error_map(const T1_3param& params, const hoNDArray<float>& data, const std::vector<float>& TI);
+
 struct registration_params {
     unsigned int iterations = 40;
     float regularization_sigma = 2.0f;
