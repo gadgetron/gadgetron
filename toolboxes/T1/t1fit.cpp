@@ -106,27 +106,42 @@ template <class T> T1_3param_value fit_T1_3param_single(const std::vector<T>& TI
     return {params[0], params[1], params[2]};
 }
 
+template<class CONTAINER> 
+static auto truncated_median( CONTAINER container,  size_t truncated_length){
+
+    auto trunc_median_position =  std::end(container) - truncated_length/2 -1 ;
+    std::nth_element(std::begin(container),trunc_median_position, std::end(container));
+    if (truncated_length % 2 == 1) return *trunc_median_position;
+    
+    auto trunc_median_position2 = trunc_median_position + 1;
+    std::nth_element(trunc_median_position,trunc_median_position2,std::end(container));
+    return (*trunc_median_position+*trunc_median_position2)/2;
+}
+
 double estimate_t1_standard_deviation(const std::vector<double>& TI, const std::vector<double>& data, double a, double b,
                                      double t1s) {
 
     if (a == 0 && b == 0) return 0;
 
     T1Residual_3param<double> f{TI, data};
+    const size_t nparams = 3;
 
-    auto jacobian = arma::Mat<double>(TI.size(), 3, arma::fill::zeros);
+    auto jacobian = arma::Mat<double>(TI.size(), nparams, arma::fill::zeros);
     auto residual = arma::Col<double>(TI.size(), arma::fill::zeros);
 
     arma::Col<double> params = {t1s, a, b};
 
     f(params, residual, jacobian);
 
-    double mad_sd = arma::median(abs(residual))/0.6745;
+    residual = abs(residual);
 
-    jacobian /= mad_sd;
+    double mad_sd = truncated_median(std::move(residual),data.size()-(nparams-1))/0.6745;
+
+    jacobian = jacobian/mad_sd;
 
     arma::Mat<double> hessian = jacobian.t() * jacobian;
     arma::Mat<double> covariance;
-    auto is_valid = arma::inv(covariance,jacobian.t() * jacobian);
+    auto is_valid = arma::inv(covariance,hessian);
     if (is_valid)  return std::sqrt(covariance(0, 0));
     return 0;
 
