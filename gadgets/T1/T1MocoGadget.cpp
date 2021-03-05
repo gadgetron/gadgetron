@@ -105,7 +105,8 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
     ISMRMRD::MetaContainer create_T1SD_meta(ISMRMRD::MetaContainer meta) const {
 
         double scaling_factor = 1;
-        double window_center = 1300;
+        double window_center = 200;
+        double window_width = 400;
         std::string lut =
             std::abs(field_strength - float(1.5)) < 1e-1 ? "GadgetronT1_IR_1_5T.pal" : "GadgetronT1_IR_3T.pal";
 
@@ -124,7 +125,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
         meta.set(GADGETRON_IMAGE_SCALE_RATIO, scaling_factor);
         meta.set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center * scaling_factor));
-        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_center * scaling_factor));
+        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_width * scaling_factor));
         meta.set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
 
         meta.set(GADGETRON_IMAGECOMMENT, meta.as_str(GADGETRON_DATA_ROLE));
