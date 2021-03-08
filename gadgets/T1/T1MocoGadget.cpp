@@ -53,10 +53,6 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             clean_image(T1star);
             perform_hole_filling(T1star);
 
-            auto error_map = T1::calculate_error_map({A,B,T1star},phase_corrected,TI_values);
-
-            clean_image(error_map, 500.0f);
-            perform_hole_filling(error_map);
 
             B /= A;
             B -= 1;
@@ -68,9 +64,11 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             clean_image(T1);
             perform_hole_filling(T1);
 
+            auto error_map = T1::calculate_error_map({A,B,T1},phase_corrected,TI_values);
+
             auto header = images.headers_[0];
             header.data_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-            header.image_series_index = 4;
+            header.image_series_index = 5;
             auto meta = create_T1_meta(images.meta_.front());
 
 
@@ -93,11 +91,11 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             out.push(std::move(images));
 
             // send out T1 map
-            out.push(Core::Image<float>{header, std::move(T1), meta});
             auto sd_header = header;
-            header.image_series_index = 5;
+            sd_header.image_series_index = 4;
             auto sd_meta = create_T1SD_meta(meta);
-            out.push(Core::Image<float>{header, std::move(error_map),sd_meta});
+            out.push(Core::Image<float>{sd_header, std::move(error_map),sd_meta});
+            out.push(Core::Image<float>{header, std::move(T1), meta});
 
         }
     }
