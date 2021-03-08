@@ -28,6 +28,11 @@ while [ "$1" != "" ]; do
     shift
 done
 
+# Should these go here?
+pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
+pip3 install git+https://github.com/gadgetron/gadgetron-python.git
+
+
 mkdir -p ${WORKDIR}
 
 #ISMRMRD
