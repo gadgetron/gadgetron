@@ -59,12 +59,14 @@ template <class T> struct T1Residual_3param {
         const auto& A = params[1];
         const auto& B = params[2];
 
+        const auto T1s = T1/(B/A-1);
+
         for (int i = 0; i < residual.n_elem; i++) {
-            T coeff = std::exp(-TI[i]*(B/A-1) / T1);
+            T coeff = std::exp(-TI[i]/T1s);
             residual(i) = measurement[i] - (A - B * coeff );
-            jacobian(i, 0) = B*coeff*TI[i]*(B/A-1)/(T1*T1);
+            jacobian(i, 0) = B*coeff*TI[i]/(T1s*T1);
             jacobian(i, 1) = B*coeff*TI[i]*B/(T1*A*A)-1;
-            jacobian(i, 2) =  -(B*TI[i]/(T1*A)-1)*coeff;
+            jacobian(i, 2) =  (1-B*TI[i]/(T1*A))*coeff;
         }
 
     }
@@ -139,9 +141,9 @@ static auto truncated_median( CONTAINER container,  size_t truncated_length){
 }
 
 double estimate_t1_standard_deviation(const std::vector<double>& TI, const std::vector<double>& data, double a, double b,
-                                     double t1s) {
+                                     double t1) {
 
-    if (a == 0 && b == 0) return 0;
+    if (a <= 0 && b <= 0 || b < a ) return 0;
 
     T1Residual_3param<double> f{TI, data};
     const size_t nparams = 3;
@@ -149,16 +151,15 @@ double estimate_t1_standard_deviation(const std::vector<double>& TI, const std::
     auto jacobian = arma::Mat<double>(TI.size(), nparams, arma::fill::zeros);
     auto residual = arma::Col<double>(TI.size(), arma::fill::zeros);
 
-    arma::Col<double> params = {t1s, a, b};
+    arma::Col<double> params = {t1, a, b};
 
     f(params, residual, jacobian);
 
     residual = abs(residual);
 
-    double mad_sd = truncated_median(std::move(residual),data.size()-(nparams-1))/0.6745;
+    double mad_sd = truncated_median(residual,data.size()-(nparams-1))/0.6745;
 
     jacobian = jacobian/mad_sd;
-
     arma::Mat<double> hessian = jacobian.t() * jacobian;
     arma::Mat<double> covariance;
     auto is_valid = arma::inv(covariance,hessian);
@@ -170,7 +171,7 @@ double estimate_t1_standard_deviation(const std::vector<double>& TI, const std::
 
 hoNDArray<float> Gadgetron::T1::calculate_error_map(const T1_3param& params, const hoNDArray<float>& data,
                                                     const std::vector<float>& TI) {
-    const auto& [A, B, T1s] = params;
+    const auto& [A, B, T1] = params;
 
     auto TId = std::vector<double>(TI.begin(),TI.end());
     auto result = hoNDArray<float>(A.dimensions());
@@ -184,7 +185,7 @@ hoNDArray<float> Gadgetron::T1::calculate_error_map(const T1_3param& params, con
                 for (int cha = 0; cha < TI.size(); cha++) {
                     timeseries[cha] = data(x, y, cha);
                 }
-                auto standard_deviation = estimate_t1_standard_deviation(TId, timeseries, A(x, y), B(x, y), T1s(x, y));
+                auto standard_deviation = estimate_t1_standard_deviation(TId, timeseries, A(x, y), B(x, y), T1(x, y));
                 result(x, y) = standard_deviation;
             }
         }
