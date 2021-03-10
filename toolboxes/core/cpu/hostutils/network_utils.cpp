@@ -56,4 +56,20 @@ namespace Gadgetron {
         }
     }
 
+
+    IP_list find_gadgetron_ip(){
+        auto ip_list = IP_list{};
+
+        try {
+            find_gadgetron_ip(ip_list.host_name,ip_list.ip_list);
+        } 
+        catch (...){
+            GERROR("Errors in find_gadgetron_ip() \n");
+        }
+
+        return ip_list;
+
+
+
+    }
 }

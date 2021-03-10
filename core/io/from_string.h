@@ -5,6 +5,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <set>
+
 namespace Gadgetron::Core::IO {
 
     void from_string(const std::string&, long long& val);
@@ -61,6 +63,9 @@ template <class T> auto from_string(const std::string& str, T& val) -> std::enab
     void from_string(const std::string&, boost::filesystem::path&);
     void from_string(const std::string&, bool&);
     void from_string(const std::string&, std::vector<bool>&);
+
+    void from_string(const std::string&, std::vector<std::string>&);
+    void from_string(const std::string&, std::set<std::string>&);
 
     template<class T> T from_string(const std::string& str);
 
