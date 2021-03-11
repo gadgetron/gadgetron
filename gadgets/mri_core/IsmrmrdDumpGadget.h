@@ -12,7 +12,7 @@
 
 #include <complex>
 
-void from_string(const std::string& str, std::set<std::string>& strset );
+
 
 namespace Gadgetron {
        class IsmrmrdDumpGadget : public Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>>
@@ -53,6 +53,7 @@ namespace Gadgetron {
         ISMRMRD::Dataset create_ismrmrd_dataset() const;
         bool  is_ip_on_blacklist() const ; 
     };
-    
+
+
 
 }

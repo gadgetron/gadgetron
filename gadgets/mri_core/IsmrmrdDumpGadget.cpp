@@ -6,10 +6,6 @@
 
 namespace bf = boost::filesystem;
 
-void from_string(std::string& str, std::set<std::string>& strset ){
-    auto vec = Gadgetron::Core::IO::from_string<std::vector<std::string>>(str);
-    strset = std::set<std::string>(vec.begin(),vec.end());
-}
 
 namespace Gadgetron
 {
