@@ -55,17 +55,19 @@ target_link_libraries(gadgetron_toolbox_gpuparallelmri
 
 target_include_directories(gadgetron_toolbox_gpuparallelmri
 		PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR})
+		$<INSTALL_INTERFACE:include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		)
 
 install(TARGETS gadgetron_toolbox_gpuparallelmri
+    EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	COMPONENT main
 )
 
-
-install(FILES 
+install(FILES
 	b1_map.h
 	sense_utilities.h
 	htgrappa.h
