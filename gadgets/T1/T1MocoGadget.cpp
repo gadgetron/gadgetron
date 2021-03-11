@@ -44,35 +44,25 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
             sort_images_and_values(images, TI_values);
 
-            auto moco_images = multi_stage_T1_registration(images.data_,TI_values);
+            auto moco_images = multi_stage_T1_registration(images.data_, TI_values);
 
             auto phase_corrected = T1::phase_correct(moco_images, TI_values);
 
-            auto [A, B, T1star] = T1::fit_T1_3param(phase_corrected, TI_values);
+            const auto [A, B, T1star] = T1::fit_T1_3param(phase_corrected, TI_values);
 
-            clean_image(T1star);
-            perform_hole_filling(T1star);
-
-            auto error_map = T1::calculate_error_map({A,B,T1star},phase_corrected,TI_values);
-
-            clean_image(error_map, 500.0f);
-            perform_hole_filling(error_map);
-
-            B /= A;
-            B -= 1;
-
-            auto T1 = T1star;
-            T1 *= B;
-            T1 *= correction_factor;
-
+            auto T1 = t1_from_t1star(A, B, T1star);
             clean_image(T1);
             perform_hole_filling(T1);
 
+            auto error_map = T1::calculate_error_map({A, B, T1}, phase_corrected, TI_values);
+            clean_image(error_map,1000);
+
+            T1 *= correction_factor;
+
             auto header = images.headers_[0];
             header.data_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-            header.image_series_index = 4;
+            header.image_series_index = 5;
             auto meta = create_T1_meta(images.meta_.front());
-
 
             // send original images
             images.data_.reshape(data_dims);
@@ -93,19 +83,19 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             out.push(std::move(images));
 
             // send out T1 map
-            out.push(Core::Image<float>{header, std::move(T1), meta});
             auto sd_header = header;
-            header.image_series_index = 5;
+            sd_header.image_series_index = 4;
             auto sd_meta = create_T1SD_meta(meta);
-            out.push(Core::Image<float>{header, std::move(error_map),sd_meta});
-
+            out.push(Core::Image<float>{sd_header, std::move(error_map), sd_meta});
+            out.push(Core::Image<float>{header, std::move(T1), meta});
         }
     }
 
     ISMRMRD::MetaContainer create_T1SD_meta(ISMRMRD::MetaContainer meta) const {
 
         double scaling_factor = 1;
-        double window_center = 1300;
+        double window_center = 200;
+        double window_width = 400;
         std::string lut =
             std::abs(field_strength - float(1.5)) < 1e-1 ? "GadgetronT1_IR_1_5T.pal" : "GadgetronT1_IR_3T.pal";
 
@@ -124,7 +114,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
         meta.set(GADGETRON_IMAGE_SCALE_RATIO, scaling_factor);
         meta.set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center * scaling_factor));
-        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_center * scaling_factor));
+        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_width * scaling_factor));
         meta.set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
 
         meta.set(GADGETRON_IMAGECOMMENT, meta.as_str(GADGETRON_DATA_ROLE));
@@ -288,7 +278,8 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         return index;
     }
 
-    hoNDArray<std::complex<float>> multi_stage_T1_registration(const hoNDArray<std::complex<float>>& data, const std::vector<float>& TIs) const {
+    hoNDArray<std::complex<float>> multi_stage_T1_registration(const hoNDArray<std::complex<float>>& data,
+                                                               const std::vector<float>& TIs) const {
 
         auto abs_data = abs(data);
         auto first_vfields = register_compatible_frames(abs_data, TIs);
@@ -300,7 +291,8 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         return T1::deform_groups(data, final_vfield);
     }
 
-    hoNDArray<vector_td<float, 2>> register_compatible_frames(const hoNDArray<float>& abs_data, const std::vector<float>& TIs) const {
+    hoNDArray<vector_td<float, 2>> register_compatible_frames(const hoNDArray<float>& abs_data,
+                                                              const std::vector<float>& TIs) const {
         using namespace Gadgetron::Indexing;
         using namespace ranges;
         auto arg_max_TI = max_element(TIs) - TIs.begin();
@@ -330,14 +322,25 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             if (closest_index != valid_transforms.end()) {
                 vfields[index] = vfields[*closest_index];
             } else {
-                vfields[index] = hoNDArray<vector_td<float, 2>>(abs_data.get_size(0), abs_data.get_size(1),1);
+                vfields[index] = hoNDArray<vector_td<float, 2>>(abs_data.get_size(0), abs_data.get_size(1), 1);
                 vfields[index].fill(vector_td<float, 2>(0, 0));
             }
         }
 
-        vfields[arg_max_TI] = hoNDArray<vector_td<float, 2>>(abs_data.get_size(0), abs_data.get_size(1),1);
+        vfields[arg_max_TI] = hoNDArray<vector_td<float, 2>>(abs_data.get_size(0), abs_data.get_size(1), 1);
         vfields[arg_max_TI].fill(vector_td<float, 2>(0, 0));
-        return concat_along_dimension(vfields,2);
+        return concat_along_dimension(vfields, 2);
+    }
+
+    hoNDArray<float> t1_from_t1star(const hoNDArray<float>& A, const hoNDArray<float>& B,
+                                    const hoNDArray<float>& T1star) {
+
+        auto T1 = hoNDArray<float>(T1star.dimensions());
+
+        for (size_t i = 0; i < T1.size(); i++)
+            T1[i] = T1star[i] * (B[i] / A[i] - 1.0f);
+
+        return T1;
     }
 
     float field_strength;
