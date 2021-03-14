@@ -62,8 +62,8 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             auto header = images.headers_[0];
             header.data_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
             header.image_series_index = 5;
-            auto meta = create_T1_meta(images.meta_.front());
-
+            auto meta = create_T1_meta(images.meta_.front(),T1);
+            auto sd_meta = create_T1SD_meta(images.meta_.front());
             // send original images
             images.data_.reshape(data_dims);
             set_RAW_headers_and_meta(images, TI_values);
@@ -85,7 +85,6 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             // send out T1 map
             auto sd_header = header;
             sd_header.image_series_index = 4;
-            auto sd_meta = create_T1SD_meta(meta);
             out.push(Core::Image<float>{sd_header, std::move(error_map), sd_meta});
             out.push(Core::Image<float>{header, std::move(T1), meta});
         }
@@ -124,10 +123,40 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         return std::move(meta);
     }
 
-    ISMRMRD::MetaContainer create_T1_meta(ISMRMRD::MetaContainer meta) const {
+    static std::pair<double,double> find_window_center_width_T1(const hoNDArray<float>& image, const ISMRMRD::IsmrmrdHeader& header ){
+
+        std::pair<double,double> pre_window = {1300,1300};
+        std::pair<double, double> post_window = {400,300};
+
+        try {
+            auto protocolname = header.measurementInformation.get().protocolName.get();
+
+            std::regex is_post(R"((?:^|[^A-Z])post(?:$|[^A-Z]))", std::regex_constants::icase | std::regex_constants::ECMAScript);
+            if (std::regex_search(protocolname,is_post)) return post_window;
+
+            std::regex is_pre(R"((?:^|[^A-Z])pre(?:$|[^A-Z]))", std::regex_constants::icase | std::regex_constants::ECMAScript);
+            if (std::regex_search(protocolname,is_post)) return pre_window;
+
+        } catch (...) {}
+
+
+        auto top = percentile(image, 0.9f);
+
+        auto window_distance = [top](const auto& window){ return (top - ( window.first+window.second/2));};
+
+        if (window_distance(pre_window) < window_distance(post_window))
+            return pre_window;
+        else
+            return post_window;
+    }
+
+    ISMRMRD::MetaContainer create_T1_meta(ISMRMRD::MetaContainer meta, const hoNDArray<float>& t1map) const {
 
         double scaling_factor = 1;
-        double window_center = 1300;
+
+        auto [window_center, window_width] = find_window_center_width_T1(t1map,header);
+        GDEBUG("Setting T1 window level to %f %f \n", window_center, window_width);
+
         std::string lut =
             std::abs(field_strength - float(1.5)) < 1e-1 ? "GadgetronT1_IR_1_5T.pal" : "GadgetronT1_IR_3T.pal";
 
@@ -146,7 +175,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
 
         meta.set(GADGETRON_IMAGE_SCALE_RATIO, scaling_factor);
         meta.set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center * scaling_factor));
-        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_center * scaling_factor));
+        meta.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_width * scaling_factor));
         meta.set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
 
         meta.set(GADGETRON_IMAGECOMMENT, meta.as_str(GADGETRON_DATA_ROLE));
@@ -242,6 +271,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             auto& meta = images.meta_[ind];
             meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_MOCO);
             meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_values[ind]));
+            meta.append(GADGETRON_SEQUENCEDESCRIPTION,GADGETRON_IMAGE_MOCO);
         }
     }
 
@@ -258,6 +288,8 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             meta.append(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_MOCO);
             meta.set(GADGETRON_IMAGE_SCALE_OFFSET, (double)(4096.0));
             meta.set(GADGETRON_IMAGE_INVERSIONTIME, (double)(TI_values[ind]));
+            meta.append(GADGETRON_SEQUENCEDESCRIPTION,GADGETRON_IMAGE_MOCO);
+            meta.append(GADGETRON_SEQUENCEDESCRIPTION,GADGETRON_IMAGE_PSIR);
         }
     }
 
