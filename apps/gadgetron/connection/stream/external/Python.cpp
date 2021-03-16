@@ -35,7 +35,7 @@ namespace Gadgetron::Server::Connection::Stream {
             boost::asio::io_service ios;
             std::future<std::string> output_stream;
 
-            boost::process::child(
+            auto c = boost::process::child(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
                     boost::process::std_in.close(),
