@@ -424,8 +424,7 @@ def output_stats(args, config):
 
         return cont(**state)
 
-    # yield output_stats_action
-    yield from []
+    yield output_stats_action
 
 
 def build_actions(args, config):
