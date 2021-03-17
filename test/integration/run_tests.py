@@ -33,8 +33,8 @@ def main():
 
     def pass_handler(test):
         passed.append(test)
-        with open('test/stats.json') as f:
-            stats.append(json.loads(f.read()))
+        # with open('test/stats.json') as f:
+        #     stats.append(json.loads(f.read()))
 
     def skip_handler(test):
         skipped.append(test)
