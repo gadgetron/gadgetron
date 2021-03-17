@@ -96,10 +96,9 @@ if (MKL_FOUND)
         endif ()
 
     if (WIN32)
-
-        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_thread_dll mkl_core_dll libiomp5md)
+        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_sequential_dll mkl_intel_thread_dll mkl_core_dll libiomp5md)
    else ()
-        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_core iomp5)
+        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_sequential mkl_core mkl_intel_thread iomp5)
    endif ()
 endif ()
 
