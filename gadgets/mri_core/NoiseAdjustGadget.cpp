@@ -407,7 +407,6 @@ namespace Gadgetron {
 
     template <class NH>
     NoiseAdjustGadget::NoiseHandler NoiseAdjustGadget::handle_acquisition(NH nh, Core::Acquisition& acq) const {
-        GDEBUG_STREAM("Noone with type " << typeid(nh).name() <<  " handles dem acquisitions");
         return std::move(nh);
     };
 
