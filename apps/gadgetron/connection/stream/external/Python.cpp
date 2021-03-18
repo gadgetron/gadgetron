@@ -70,7 +70,7 @@ namespace Gadgetron::Server::Connection::Stream {
                 return name;
             }
         }
-        return "";
+        throw std::runtime_error("Could not find valid python installation");
     }
 
     }
