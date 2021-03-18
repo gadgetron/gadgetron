@@ -63,22 +63,16 @@ namespace Gadgetron::Server::Connection::Stream {
 
     };
 
-    const std::string& get_python_executable() {
-        static std::string python_executable_name = "";
-        if (python_executable_name.empty()) {
-            auto possible_names = std::vector<std::string>{"python", "python3"};
-            
-            for (auto& name : possible_names) {
-                if (is_valid_python3(name)) {
-                    python_executable_name = name;
-                    return python_executable_name;
-                } 
+    std::string get_python_executable()  {
+        auto possible_names = std::vector<std::string>{"python", "python3"};
+        for (auto &name : possible_names) {
+            if (is_valid_python3(name)) {
+                return name;
             }
-            python_executable_name = " ";
         }
-
-        return python_executable_name;
+        return "";
     }
+
     }
 
     boost::process::child start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
