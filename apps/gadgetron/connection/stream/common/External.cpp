@@ -4,6 +4,8 @@
 
 #include <boost/asio.hpp>
 
+#include "system_info.h"
+
 #include "connection/SocketStreamBuf.h"
 #include "log.h"
 
@@ -53,7 +55,7 @@ namespace Gadgetron::Server::Connection::Stream {
 
         boost::asio::io_service service;
         boost::asio::ip::tcp::endpoint peer;
-        boost::asio::ip::tcp::endpoint local(boost::asio::ip::tcp::v6(), port);
+        boost::asio::ip::tcp::endpoint local(Gadgetron::Server::Info::tcp_protocol(), port);
         boost::asio::ip::tcp::acceptor acceptor(service, local);
 
         auto socket = std::make_unique<boost::asio::ip::tcp::socket>(service);

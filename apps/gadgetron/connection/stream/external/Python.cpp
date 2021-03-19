@@ -30,20 +30,19 @@ namespace Gadgetron::Server::Connection::Stream {
             return {major_version, minor_version, patch_version};
         }
 
+        static std::mutex python_mutex;
         bool is_valid_python3(const std::string& pythonname){
         try {
-            boost::asio::io_service ios;
+            auto lock = std::lock_guard(python_mutex);
             std::future<std::string> output_stream;
-
-            auto c = boost::process::child(
+            boost::process::system(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
-                    boost::process::std_in.close(),
                     boost::process::std_out > output_stream,
                     boost::process::std_err > boost::process::null,
-                    ios
+                    boost::asio::io_service{}
             );
-            ios.run();
+
 
             auto output = output_stream.get();
 
@@ -63,22 +62,16 @@ namespace Gadgetron::Server::Connection::Stream {
 
     };
 
-    const std::string& get_python_executable() {
-        static std::string python_executable_name = "";
-        if (python_executable_name.empty()) {
-            auto possible_names = std::vector<std::string>{"python", "python3"};
-            
-            for (auto& name : possible_names) {
-                if (is_valid_python3(name)) {
-                    python_executable_name = name;
-                    return python_executable_name;
-                } 
+    std::string get_python_executable()  {
+        auto possible_names = std::vector<std::string>{"python", "python3"};
+        for (auto &name : possible_names) {
+            if (is_valid_python3(name)) {
+                return name;
             }
-            python_executable_name = " ";
         }
-
-        return python_executable_name;
+        throw std::runtime_error("Could not find valid python installation");
     }
+
     }
 
     boost::process::child start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
