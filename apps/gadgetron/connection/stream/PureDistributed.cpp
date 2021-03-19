@@ -2,6 +2,7 @@
 #include "PureDistributed.h"
 
 #include "connection/stream/common/Discovery.h"
+#include "connection/stream/common/Closer.h"
 
 #include "distributed/Worker.h"
 #include "distributed/Pool.h"
@@ -40,9 +41,17 @@ namespace {
         for (auto &pending_worker : pending_workers) {
             auto status = pending_worker.wait_for(std::chrono::seconds(5));
             if (status == std::future_status::ready) {
-                workers.emplace_back(pending_worker.get());
+                try {
+                    workers.emplace_back(pending_worker.get());
+                }
+                catch (std::exception &e) {
+                    GWARN_STREAM("Failed connecting to worker with error: " << e.what());
+                }
             }
         }
+
+        if (workers.empty()) throw std::runtime_error("Could not connect to ANY workers; cannot distribute work.");
+
         return std::move(workers);
     }
 }
@@ -50,19 +59,20 @@ namespace {
 namespace Gadgetron::Server::Connection::Stream {
 
 
-    void PureDistributed::process_outbound(GenericInputChannel input, Queue &jobs) {
+    void PureDistributed::process_outbound(GenericInputChannel input, std::shared_ptr<Queue> jobs) {
+
+        auto closer = make_closer(jobs);
+
         auto workers = Pool(finish_connecting_to_peers(std::move(pending_workers)));
 
         for (auto message : input) {
-            jobs.push(workers.push(std::move(message)));
+            jobs->push(workers.push(std::move(message)));
         }
-
-        jobs.close();
     }
 
-    void PureDistributed::process_inbound(OutputChannel output, Queue &jobs) {
+    void PureDistributed::process_inbound(OutputChannel output, std::shared_ptr<Queue> jobs) {
         while (true) {
-            output.push_message(jobs.pop().get());
+            output.push_message(jobs->pop().get());
         }
     }
 
@@ -70,7 +80,7 @@ namespace Gadgetron::Server::Connection::Stream {
             OutputChannel output,
             ErrorHandler& error_handler
     ) {
-        auto queue = Queue();
+        auto queue = std::make_shared<Queue>();
 
         auto outbound = error_handler.run(
                 [&](auto input) { process_outbound(std::move(input), queue); },
