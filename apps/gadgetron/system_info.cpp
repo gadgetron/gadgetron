@@ -205,8 +205,27 @@ namespace Gadgetron::Server::Info {
     namespace {
         boost::asio::ip::tcp get_max_tcp_protocol(){
 #ifdef __linux__
-            bool has_ipv6 = exists(boost::filesystem::path("/proc/net/ip_v6"));
-            if (!has_ipv6) return boost::asio::ip::tcp::v4();
+            std::future<std::string> output_stream;
+
+            // cat /sys/module/ipv6/parameters/disable
+            auto error = boost::process::system(
+                boost::process::search_path("cat"),
+                boost::process::args={"/sys/module/ipv6/parameters/disable"},
+                boost::process::std_in.close(),
+                boost::process::std_out > output_stream,
+                boost::process::std_err > boost::process::null
+            );
+
+            if (!error) {
+                auto disabled = std::stoi(output_stream.get());
+
+                if (!disabled) {
+                    return boost::asio::ip::tcp::v6();
+                }
+            }
+
+            GWARN_STREAM("IPv6 not supported by operating system; falling back to IPv4.")
+            return boost::asio::ip::tcp::v4();
 #endif
             return boost::asio::ip::tcp::v6();
         }
