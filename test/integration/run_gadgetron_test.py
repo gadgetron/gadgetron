@@ -1,9 +1,5 @@
 #!/usr/bin/python3
 
-# Mute the h5py import warning. TODO: Remove these lines when possible.
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
-
 import os
 
 # Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
@@ -61,7 +57,7 @@ def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measu
                    check=True)
 
 
-def send_dependency_to_gadgetron(echo_handler, gadgetron, dependency):
+def send_dependency_to_gadgetron(echo_handler, gadgetron, dependency, log):
     print("Passing dependency to Gadgetron: {}".format(dependency))
 
     command = ["gadgetron_ismrmrd_client",
@@ -73,12 +69,12 @@ def send_dependency_to_gadgetron(echo_handler, gadgetron, dependency):
     echo_handler(command)
     subprocess.run(command,
                    env=environment,
-                   stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE,
+                   stdout=log,
+                   stderr=log,
                    check=True)
 
 
-def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration):
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log):
     print("Passing data to Gadgetron: {} -> {}".format(input, output))
 
     command = ["gadgetron_ismrmrd_client",
@@ -92,8 +88,8 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
     echo_handler(command)
     subprocess.run(command,
                    env=environment,
-                   stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE,
+                   stdout=log,
+                   stderr=log,
                    check=True)
 
 
@@ -115,7 +111,8 @@ def start_gadgetron_instance(*, log, port, env=environment):
     proc = subprocess.Popen(["gadgetron",
                              "-p", port],
                             stdout=log,
-                            stderr=log, env=env)
+                            stderr=log,
+                            env=env)
     time.sleep(2)
     return proc
 
@@ -157,6 +154,8 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
                     value_threshold, scale_threshold):
     try:
         output = numpy.squeeze(h5py.File(output_file, mode='r')[output_dataset])
+    except OSError as e:
+        return Failure, "Could not read output: {}".format(str(e))
     except KeyError:
         return Failure, "Missing output data: {}".format(output_dataset)
 
@@ -192,10 +191,6 @@ def error_handlers(args, config):
         except subprocess.CalledProcessError as e:
             print("An error occurred in a subprocess with the following command:")
             print(' '.join(e.cmd))
-            print("============= stdout ============")
-            print(e.stdout.decode('utf-8'))
-            print("============= stderr ============")
-            print(e.stderr.decode('utf-8'))
 
             return Failure
 
@@ -330,7 +325,7 @@ def start_additional_nodes(args, config):
         else:
             env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
 
-        print("Setting env to",env["GADGETRON_REMOTE_WORKER_COMMAND"])
+        print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
         return cont(env=env, **state)
 
     base_port = int(config['DISTRIBUTED']['node_port_base'])
@@ -360,29 +355,37 @@ def run_gadgetron_client(args, config):
     output_file = os.path.join(args.test_folder, config['CLIENT']['output'])
 
     def send_dependencies_action(cont, *, gadgetron, dependencies=[], **state):
-        for dependency in dependencies:
-            send_dependency_to_gadgetron(args.echo_handler, gadgetron, dependency)
+        for n, dependency in enumerate(dependencies):
+            with open(os.path.join(args.test_folder, 'dependency.{}.log'.format(n)), 'w') as log:
+                send_dependency_to_gadgetron(args.echo_handler,
+                                             gadgetron,
+                                             dependency=dependency,
+                                             log=log)
 
         return cont(gadgetron=gadgetron, dependencies=dependencies, **state)
 
     def send_data_action(cont, *, gadgetron, client_input, **state):
-        start_time = time.time()
-        send_data_to_gadgetron(args.echo_handler,
-                               gadgetron,
-                               input=client_input,
-                               output=output_file,
-                               configuration=config['CLIENT']['configuration'])
-        end_time = time.time()
 
-        processing_time = end_time - start_time
+        with open(os.path.join(args.test_folder, 'client.log'), 'w') as log:
 
-        print("Gadgetron processing time: {:.2f} s".format(processing_time))
+            start_time = time.time()
+            send_data_to_gadgetron(args.echo_handler,
+                                   gadgetron,
+                                   input=client_input,
+                                   output=output_file,
+                                   configuration=config['CLIENT']['configuration'],
+                                   log=log)
+            end_time = time.time()
 
-        return cont(gadgetron=gadgetron,
-                    processing_time=processing_time,
-                    client_input=client_input,
-                    client_output=output_file,
-                    **state)
+            processing_time = end_time - start_time
+
+            print("Gadgetron processing time: {:.2f} s".format(processing_time))
+
+            return cont(gadgetron=gadgetron,
+                        processing_time=processing_time,
+                        client_input=client_input,
+                        client_output=output_file,
+                        **state)
 
     yield send_dependencies_action
     yield send_data_action

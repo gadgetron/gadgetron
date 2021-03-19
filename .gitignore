@@ -21,7 +21,6 @@ build_debug/
 *.pyc
 toolboxes/core/core_defines.h
 prod/
-external/
 test/integration/test_cases.txt
 *.h5
 tags
