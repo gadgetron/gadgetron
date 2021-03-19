@@ -70,13 +70,22 @@ namespace Gadgetron::Server::Connection::Stream {
         auto worker_discovery_command = std::getenv("GADGETRON_REMOTE_WORKER_COMMAND");
         if (!worker_discovery_command) return std::vector<Address>{};
 
+        GDEBUG_STREAM("Worker discovery command: " << worker_discovery_command);
+
+        std::error_code error_code;
         std::future<std::string> output;
         boost::process::system(
                 worker_discovery_command,
                 boost::process::std_out > output,
                 boost::process::std_err > boost::process::null,
-                boost::asio::io_service{}
+                boost::asio::io_service{},
+                error_code
         );
+
+        if (error_code) {
+            GWARN_STREAM("Failed executing remote worker command: " << error_code.message());
+            return std::vector<Address>();
+        }
 
         return parse_remote_workers(output.get());
     }
