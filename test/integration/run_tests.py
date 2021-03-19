@@ -21,11 +21,18 @@ def output_csv(stats, filename):
         writer.writerows(stats)
 
 
-def main():
+def output_log_file(filename):
+    print("\nWriting logfile {} to stdout:".format(filename))
 
+    with open(filename, 'r') as f:
+        print(f.read())
+
+
+def main():
 
     script_dir = Path(sys.argv[0]).parent
     subscript = script_dir / "run_gadgetron_test.py"
+
     stats = []
     passed = []
     failed = []
@@ -40,10 +47,19 @@ def main():
         skipped.append(test)
 
     def ignore_failure(test):
+        args.echo_log()
         failed.append(test)
 
     def exit_on_failure(_):
+        args.echo_log()
         sys.exit(1)
+
+    def echo_log():
+        for log in glob.glob(os.path.join(args.test_folder, '*.log')):
+            output_log_file(log)
+
+    def do_not_echo_log():
+        pass
 
     parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -67,7 +83,16 @@ def main():
     parser.add_argument('-s', '--stats', type=str, default=None,
                         help="Output individual test stats to CSV file.")
 
-    parser.add_argument('--force', action='store_const',const=['--force'],  default=[], help='Force Gadgetron to run all tests, without querying for memory/GPU/etc')
+    parser.add_argument('--force', action='store_const', const=['--force'],
+                        default=[], help='Force Gadgetron to run all tests, without querying for memory/GPU/etc')
+
+    parser.add_argument('--timeout', type=int, default=None,
+                        help="Fail test if it's been running for more than timeout seconds.")
+
+    parser.add_argument('--echo-log-on-failure', dest='echo_log',
+                        action='store_const', const=echo_log, default=do_not_echo_log,
+                        help="Send test logs to stdout on a failed test.")
+
     parser.add_argument('tests', type=str, nargs='+', help="Glob patterns; tests to run.")
 
     args = parser.parse_args()
@@ -78,13 +103,21 @@ def main():
 
     for i, test in enumerate(tests, start=1):
         print("\nTest {} of {}: {}\n".format(i, len(tests), test))
-        proc = subprocess.run([sys.executable, str(subscript),
-                               '-a', str(args.host),
-                               '-d', str(args.data_folder),
-                               '-t', str(args.test_folder),
-                               '-p', str(args.port)] + args.external + args.force + [test])
 
-        handlers.get(proc.returncode)(test)
+        command = [sys.executable, str(subscript),
+                   '-a', str(args.host),
+                   '-d', str(args.data_folder),
+                   '-t', str(args.test_folder),
+                   '-p', str(args.port)] + args.external + args.force + [test]
+
+        with subprocess.Popen(command) as proc:
+            try:
+                proc.wait(timeout=args.timeout)
+                handlers.get(proc.returncode)(test)
+            except subprocess.TimeoutExpired:
+                print("Timeout happened during test: {}".format(test))
+                proc.kill()
+                args.failure_handler(test)
 
     if args.stats:
         output_csv(stats, args.stats)
