@@ -30,20 +30,19 @@ namespace Gadgetron::Server::Connection::Stream {
             return {major_version, minor_version, patch_version};
         }
 
+        static std::mutex python_mutex;
         bool is_valid_python3(const std::string& pythonname){
         try {
-            boost::asio::io_service ios;
+            auto lock = std::lock_guard(python_mutex);
             std::future<std::string> output_stream;
-
-            auto c = boost::process::child(
+            boost::process::system(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
-                    boost::process::std_in.close(),
                     boost::process::std_out > output_stream,
                     boost::process::std_err > boost::process::null,
-                    ios
+                    boost::asio::io_service{}
             );
-            ios.run();
+
 
             auto output = output_stream.get();
 
