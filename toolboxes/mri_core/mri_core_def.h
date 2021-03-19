@@ -128,7 +128,7 @@ namespace Gadgetron
     #define GADGETRON_KEEP_IMAGE_GEOMETRY                   "Keep_image_geometry"
 
     /// instruct the client to send images to database without further processing
-    #define GADGETRON_DIRECT_IMGAE_SEND                     "Gadgetron_ImageDirectSend"
+    #define GADGETRON_DIRECT_IMAGE_SEND                     "Gadgetron_ImageDirectSend"
 
     /// data flow tag
     /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
