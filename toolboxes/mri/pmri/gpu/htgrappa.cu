@@ -249,12 +249,14 @@ namespace Gadgetron {
       std::list<unsigned int>::iterator it;
       gridDim = dim3((unsigned int) std::ceil((1.0f*(elements_per_coil))/blockDim.x), 1, 1 );
       int uncombined_channel_no = 0;
-      for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
-        uncombined_channel_no++;
-        //TODO: Adjust pointers to reflect that number of target/source may not be qual
-        single_channel_coeffs<<< gridDim, blockDim >>>( out_mixing_coeff->get_data_ptr() + uncombined_channel_no*source_coils*elements_per_coil,
-                                                        *it,
-                                                        (elements_per_coil));
+      if (uncombined_channels) {
+        for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
+          uncombined_channel_no++;
+          //TODO: Adjust pointers to reflect that number of target/source may not be qual
+          single_channel_coeffs<<< gridDim, blockDim >>>( out_mixing_coeff->get_data_ptr() + uncombined_channel_no*source_coils*elements_per_coil,
+                                                          *it,
+                                                          (elements_per_coil));
+        }
       }
       return 0;
     }

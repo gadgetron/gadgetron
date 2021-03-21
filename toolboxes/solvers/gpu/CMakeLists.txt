@@ -2,10 +2,6 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_GPUSOLVERS__)
 endif ()
 
-if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
 
 cuda_add_library(gadgetron_toolbox_gpusolvers SHARED 
     gpusolvers_export.h
@@ -21,9 +17,19 @@ target_link_libraries(gadgetron_toolbox_gpusolvers
 
 target_include_directories(gadgetron_toolbox_gpusolvers
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR})
+		$<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
 
-install(TARGETS gadgetron_toolbox_gpusolvers DESTINATION lib COMPONENT main)
+
+install(TARGETS gadgetron_toolbox_gpusolvers
+  EXPORT gadgetron-export
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	COMPONENT main
+)
+
 
 install(FILES 	
   cuSbCgSolver.h

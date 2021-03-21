@@ -5,7 +5,11 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <set>
+
 namespace Gadgetron::Core::IO {
+
+   template <class T> T from_string(const std::string& str);    
 
     void from_string(const std::string&, long long& val);
 
@@ -61,17 +65,27 @@ template <class T> auto from_string(const std::string& str, T& val) -> std::enab
     void from_string(const std::string&, boost::filesystem::path&);
     void from_string(const std::string&, bool&);
     void from_string(const std::string&, std::vector<bool>&);
+    void from_string(const std::string&, std::vector<std::string>&);
 
     template<class T> T from_string(const std::string& str);
 
     template <size_t N> void from_string(const std::string& str, std::bitset<N>& bset) {
         bset = std::bitset<N>(from_string<unsigned int>(str));
     }
+    
+    template<class T> auto from_string(const std::string& str, std::set<T>& set) -> decltype(from_string<std::vector<T>>(str),void()) {
+        auto vec = from_string<std::vector<T>>(str);
+        set = std::set<T>(vec.begin(),vec.end());
+    } 
+
+
 
     template <class T> T from_string(const std::string& str) {
         T val;
         from_string(str, val);
         return val;
     }
+
+      
 
 }
