@@ -1,8 +1,5 @@
 include(GoogleTest)
 
-    if (WIN32)
-        link_directories(${Boost_LIBRARY_DIRS})
-    endif ()
     set(test_src_files
             tests.cpp
             hoNDArray_elemwise_test.cpp
@@ -64,8 +61,9 @@ include(GoogleTest)
     endif ()
     target_link_libraries(test_all
             gadgetron_core
-    gadgetron_core_readers
-		gadgetron_core_writers        gadgetron_mricore
+            gadgetron_core_readers
+            gadgetron_core_writers
+            gadgetron_mricore
             gadgetron_toolbox_cpucore
             gadgetron_toolbox_cpucore_math
             gadgetron_toolbox_cpufft
@@ -82,9 +80,10 @@ include(GoogleTest)
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
             gadgetron_toolbox_cpusdc
-
             ${GTEST_LIBRARIES}
-
+            Boost::system
+            Boost::filesystem
+            Boost::program_options
             )
 
     if (PYTHONLIBS_FOUND)
@@ -97,3 +96,27 @@ include(GoogleTest)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 
+    # -----------------------------------------------------
+
+    if (PYTHONLIBS_FOUND)
+        add_executable(cmr_landmark_detection_demo
+                        pytorch/cmr_landmark_detection_demo.cpp )
+
+        target_link_libraries(cmr_landmark_detection_demo 
+                        gadgetron_toolbox_python 
+                        gadgetron_toolbox_log 
+                        gadgetron_toolbox_cpucore 
+                        gadgetron_toolbox_cpucore_math 
+                        gadgetron_toolbox_cpu_image 
+                        gadgetron_toolbox_image_analyze_io 
+                        gadgetron_toolbox_cpufft
+                        python
+                        Boost::system
+                        Boost::filesystem
+                        Boost::program_options
+                        )
+
+        set_target_properties(cmr_landmark_detection_demo PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+        install(TARGETS cmr_landmark_detection_demo DESTINATION bin COMPONENT main)
+    endif (PYTHONLIBS_FOUND)
