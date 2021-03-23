@@ -80,7 +80,9 @@ target_link_libraries(gadgetron_dicom
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
     ISMRMRD::ISMRMRD
-    ${GT_DICOM_LIBRARIES} )
+    ${GT_DICOM_LIBRARIES} 
+    Boost::date_time
+    )
 
 if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
