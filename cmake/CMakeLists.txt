@@ -10,6 +10,10 @@ install(FILES
     FindPLplot.cmake
     FindZFP.cmake
     FindCBLAS.cmake
+    FindLAPACKE.cmake
+    FindPugiXML.cmake
+    FindPython3_compat.cmake
+    FindSphinx.cmake
     DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
 
