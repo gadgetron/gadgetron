@@ -4,7 +4,12 @@
         {
             "label": "buildandinstall",
             "type": "shell",
-            "command": "cmake --build ${workspaceRoot}/build --config Debug --target install -- -j 26"
+            "command": "cmake --build ${workspaceRoot}/build --config Debug --target install",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

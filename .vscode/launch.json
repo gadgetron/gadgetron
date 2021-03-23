@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${env:GADGETRON_HOME}/bin/gadgetron",
+            "program": "/usr/local/bin/gadgetron",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
