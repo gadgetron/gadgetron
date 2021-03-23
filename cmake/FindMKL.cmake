@@ -96,16 +96,15 @@ if (MKL_FOUND)
         endif ()
 
     if (WIN32)
-
         set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_thread_dll mkl_core_dll libiomp5md)
    else ()
-        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_core iomp5)
+	set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_thread mkl_core iomp5 pthread m dl)
    endif ()
 endif ()
 
 if (MKL_FOUND)
 #    if (NOT MKL_FIND_QUIETLY)
-        message(STATUS "Found MKL libraries: ${MKL_LIBRARIES}")
+        message("Found MKL libraries: ${MKL_LIBRARIES}")
         message(STATUS "MKL_INCLUDE_DIR: ${MKL_INCLUDE_DIR}")
         message(STATUS "MKL_LIB_DIR: ${MKL_LIB_DIR}")
         message(STATUS "MKL_COMPILER_LIB_DIR: ${MKL_COMPILER_LIB_DIR}")
