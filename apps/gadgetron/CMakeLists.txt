@@ -73,7 +73,9 @@ target_link_libraries(gadgetron
         Boost::filesystem
         Boost::program_options
         GTBLAS
-        ${CMAKE_DL_LIBS})
+        ${PUGIXML_LIBRARIES}
+        ${CMAKE_DL_LIBS}
+        )
 
 target_include_directories(gadgetron
         PRIVATE
