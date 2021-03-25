@@ -379,11 +379,6 @@
         </property>
 
         <property>
-            <name>cloudNodeFile</name>
-            <value>myCloud_2DT.txt</value>
-        </property>
-
-        <property>
             <name>performTiming</name>
             <value>true</value>
         </property>
@@ -398,29 +393,6 @@
             <name>timeStampResolution</name>
             <value>0.0025</value>
         </property>
-
-        <!-- parameters for recon job split -->
-        <property>
-            <name>job_split_by_S</name>
-            <value>false</value>
-        </property>
-        <property>
-            <name>job_num_of_N</name>
-            <value>32</value>
-        </property>
-        <property>
-            <name>job_max_Megabytes</name>
-            <value>10240</value>
-        </property>
-        <property>
-            <name>job_overlap</name>
-            <value>2</value>
-        </property>
-        <property>
-            <name>job_perform_on_control_node</name>
-            <value>true</value>
-        </property>
-
     </gadget>
 
     <!-- after recon processing -->
