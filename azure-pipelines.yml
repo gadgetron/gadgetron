@@ -84,12 +84,16 @@ jobs:
     matrix:
       ubuntu2004:
         imageName: gadgetron_ubuntu_2004
+        requirements: python
       ubuntu2004CUDA:
         imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
+        requirements: python,cuda
       ubuntu1804:
         imageName: gadgetron_ubuntu_1804
+        requirements: python
       ubuntu1804CUDA:
         imageName: gadgetron_ubuntu_1804_cuda11_cudnn8
+        requirements: python,cuda
   steps:
   - task: Docker@2
     displayName: Login to ACR
@@ -110,7 +114,7 @@ jobs:
   - script: |
         set -e
         fullImageName="$(AcrRegistryAddress)/$(AcrRegistryName)/$(imageName):$(build.BuildNumber)"
-        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py --echo-log-on-failure --timeout=600 --ignore-requirements=cuda,python cases/*"
+        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py --echo-log-on-failure --timeout=600 --ignore-requirements=$requirements cases/*"
     displayName: "Run integration tests"
 
 - job:
