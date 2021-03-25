@@ -37,6 +37,13 @@ void Gadgetron::Core::IO::from_string(const std::string& str, bool& val) { from_
 void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<long long>& val) { from_string_impl(str,val);}
 void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<double>& val) { from_string_impl(str,val);}
 void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<bool>& val) { from_string_impl(str,val);}
-
+void Gadgetron::Core::IO::from_string(const std::string& str, std::vector<std::string>& val) { 
+    std::stringstream stream(str);
+    while(stream.good()){
+        std::string phrase;
+        stream >> phrase;
+        val.emplace_back(std::move(phrase));
+    }
+}
 
 
