@@ -72,5 +72,8 @@
         "typeinfo": "cpp",
         "variant": "cpp"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": true,
+    "cmake.preferredGenerators": ["Ninja", "Unix Makefiles"],
+    "cmake.configureSettings": {
+    }
 }
