@@ -42,12 +42,15 @@ Failure = "Failure", 1
 
 def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measurement, flag=None):
 
-    command = ["siemens_to_ismrmrd", "-X",
-               "-f", input,
-               "-m", parameters,
-               "-x", schema,
-               "-o", output,
-               "-z", measurement] + ([flag] if flag else [])
+    command = (
+                ["siemens_to_ismrmrd", "-X",
+                 "-f", input,
+                 "-m", parameters ] +
+               (["-x", schema,] if not (flag and flag[:18] == '--user-stylesheet=') else []) +
+                ["-o", output,
+                 "-z", measurement] +
+                ([flag] if flag else [])
+              )
 
     echo_handler(command)
     subprocess.run(command,
