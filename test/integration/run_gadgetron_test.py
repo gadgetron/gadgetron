@@ -38,7 +38,6 @@ default_config_values = {
 
 Passed = "Passed", 0
 Failure = "Failure", 1
-Skipped = "Skipped", 2
 
 
 def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measurement, flag=None):
@@ -96,19 +95,6 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    check=True)
 
 
-def query_gadgetron_instance(echo_handler, gadgetron, query):
-
-    command = ["gadgetron_ismrmrd_client",
-               "-a", gadgetron.host,
-               "-p", gadgetron.port,
-               "-q", "-Q", query]
-
-    echo_handler(command)
-    return subprocess.check_output(command,
-                                   env=environment,
-                                   universal_newlines=True)
-
-
 def start_gadgetron_instance(*, log, port, env=environment):
     print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
@@ -118,39 +104,6 @@ def start_gadgetron_instance(*, log, port, env=environment):
                             env=env)
     time.sleep(2)
     return proc
-
-
-def prepare_rules(args, requirements):
-
-    class Rule:
-        def __init__(self, query, reason, validate):
-            self.query = query
-            self.reason = reason
-            self.validate = validate
-
-        def accepts(self, gadgetron):
-            try:
-                return self.validate(query_gadgetron_instance(args.echo_handler, gadgetron, self.query).strip())
-            except:
-                return False
-
-    def is_enabled(value):
-        return value in ['YES', 'yes', 'True', 'true', '1']
-
-    def as_list(value, func=float):
-        return [func(val) for val in value.split(';')]
-
-    rules = {
-        'system_memory': lambda req: Rule('gadgetron::info::memory', "Insufficient system memory.",
-                                          lambda val: float(req) * 1024 * 1024 <= float(val)),
-        'python_support': lambda req: Rule('gadgetron::info::python', "Python support required.", is_enabled),
-        'matlab_support': lambda req: Rule('gadgetron::info::matlab', "MATLAB support required.", is_enabled),
-        'gpu_support': lambda req: Rule('gadgetron::info::cuda', "CUDA support required.", is_enabled),
-        'gpu_memory': lambda req: Rule('gadgetron::cuda::memory', "Insufficient GPU memory.",
-                                       lambda val: float(req) <= min(as_list(val)))
-    }
-
-    return [rules.get(rule)(requirement) for rule, requirement in requirements if rule in rules]
 
 
 def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
@@ -233,25 +186,6 @@ def ensure_gadgetron_instance(args, config):
         yield use_external_gadgetron_action
     else:
         yield start_gadgetron_action
-
-
-def ensure_instance_satisfies_requirements(args, config):
-    if args.force:
-        return
-
-    def action(cont, *, gadgetron, **state):
-
-        failed_rules = [rule for rule in prepare_rules(args, config.items('REQUIREMENTS'))
-                        if not rule.accepts(gadgetron)]
-
-        if failed_rules:
-            for rule in failed_rules:
-                print("Skipping test case: {}".format(rule.reason))
-            return Skipped
-
-        return cont(gadgetron=gadgetron, **state)
-
-    yield action
 
 
 def prepare_copy_input_data(args, config):
@@ -438,7 +372,6 @@ def build_actions(args, config):
     yield from clear_test_folder(args, config)
     yield from start_additional_nodes(args, config)
     yield from ensure_gadgetron_instance(args, config)
-    yield from ensure_instance_satisfies_requirements(args, config)
     yield from prepare_copy_input_data(args, config)
     yield from prepare_siemens_input_data(args, config)
     yield from run_gadgetron_client(args, config)
