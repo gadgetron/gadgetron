@@ -108,6 +108,16 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
+        GadgetContainerMessage<std::vector<Core::Waveform>>* wav =
+            AsContainerMessage<std::vector<Core::Waveform>>(m1->cont());
+        if (wav)
+        {
+            if (verbose.value())
+            {
+                GDEBUG_STREAM("Incoming recon_bit with " << wav->getObjectPtr()->size() << " wave form samples ");
+            }
+        }
+
         // a data buffer for N and S selection
         hoNDArray< std::complex<float> > ref_selected_N_S;
 
