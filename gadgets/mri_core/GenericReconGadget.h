@@ -99,28 +99,8 @@ namespace Gadgetron {
         void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
 
         // utility functions
-        void set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in, IsmrmrdImageArray& res);
+        std::vector<ISMRMRD::Waveform> set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in);
 
-        // scan info
-
-        float system_field_strength_T_;
-
-        // protocol name
-        std::string protocol_name_;
-
-        // device name
-        std::string device_;
-        // patient ID
-        std::string patient_;
-        // study ID
-        std::string study_;
-        // measurement ID
-        std::string measurement_;
-        // patient position string
-        std::string patient_position_;
-        // acquired measurement ID
-        std::string measurement_id_;
-        // vendor name
-        std::string vendor_;
+        
     };
 }

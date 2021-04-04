@@ -170,7 +170,7 @@ namespace Gadgetron {
                 this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                if (wav) this->set_wave_form_to_image_array(*wav->getObjectPtr(), recon_obj_[e].recon_res_);
+                if (wav) recon_obj_[e].recon_res_.waveform_ = this->set_wave_form_to_image_array(*wav->getObjectPtr());
                 recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
                 // ---------------------------------------------------------------
