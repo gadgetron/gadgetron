@@ -102,7 +102,7 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
-        GadgetContainerMessage< std::vector<ISMRMRD::Waveform> > * wav = AsContainerMessage< std::vector<ISMRMRD::Waveform>  >(m1->cont());
+        GadgetContainerMessage<std::vector<Core::Waveform>>* wav = AsContainerMessage<std::vector<Core::Waveform>>(m1->cont());
         if (wav)
         {
             if (verbose.value())
@@ -170,7 +170,7 @@ namespace Gadgetron {
                 this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                if (wav) recon_obj_[e].recon_res_.waveform_ = *wav->getObjectPtr();
+                if (wav) recon_obj_[e].recon_res_.waveform_ = this->set_wave_form_to_image_array(*wav->getObjectPtr());
                 recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
                 // ---------------------------------------------------------------
