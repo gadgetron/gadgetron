@@ -98,5 +98,9 @@ namespace Gadgetron {
         // compute snr scaling factor from effective acceleration rate and sampling region
         void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
 
+        // utility functions
+        std::vector<ISMRMRD::Waveform> set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in);
+
+        
     };
 }

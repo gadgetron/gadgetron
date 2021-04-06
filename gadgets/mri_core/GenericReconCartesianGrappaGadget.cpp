@@ -58,7 +58,7 @@ namespace Gadgetron {
                                                                                             << num_encoding_spaces_);
         }
 
-        GadgetContainerMessage< std::vector<ISMRMRD::Waveform> > * wav = AsContainerMessage< std::vector<ISMRMRD::Waveform>  >(m1->cont());
+        GadgetContainerMessage<std::vector<Core::Waveform>>* wav = AsContainerMessage<std::vector<Core::Waveform>>(m1->cont());
         if (wav)
         {
             if (verbose.value())
@@ -201,7 +201,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
                 // pass down waveform
-                if(wav) recon_obj_[e].recon_res_.waveform_ = *wav->getObjectPtr();
+                if (wav) recon_obj_[e].recon_res_.waveform_ =  this->set_wave_form_to_image_array(*wav->getObjectPtr());
                 recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
                 // ---------------------------------------------------------------
