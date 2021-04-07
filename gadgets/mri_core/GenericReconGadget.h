@@ -99,7 +99,6 @@ namespace Gadgetron {
         void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
 
         // scan info
-
         float system_field_strength_T_;
 
         // protocol name
@@ -119,5 +118,8 @@ namespace Gadgetron {
         std::string measurement_id_;
         // vendor name
         std::string vendor_;
+
+        // utility functions
+        std::vector<ISMRMRD::Waveform> set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in);
     };
 }

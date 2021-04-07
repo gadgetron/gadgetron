@@ -716,10 +716,22 @@ namespace Gadgetron {
             GWARN_STREAM("Cannot find any sampled lines ... ");
         }
     }
+
     void GenericReconGadget::send_out_image_array(
         IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role) {
         this->prepare_image_array(res, encoding, series_num, data_role);
         this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(res));
+    }
+
+    std::vector<ISMRMRD::Waveform> GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in) {
+        
+        std::vector<ISMRMRD::Waveform> waveforms;
+        waveforms.reserve(w_in.size());
+        for (const auto& [header, data]: w_in) {
+            ISMRMRD::Waveform& a_w = waveforms.emplace_back(header.number_of_samples,header.channels);
+            std::copy_n(data.data(),data.size(), a_w.data);
+        }
+        return waveforms;
     }
 
     GADGET_FACTORY_DECLARE(GenericReconGadget)
