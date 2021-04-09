@@ -81,7 +81,8 @@ namespace Gadgetron::Server::Info {
     }
 
     bool matlab_support() {
-        return Gadgetron::Server::Connection::Stream::matlab_available();
+        return false;
+        //return Gadgetron::Server::Connection::Stream::matlab_available();
     }
 
 #if defined USE_CUDA
