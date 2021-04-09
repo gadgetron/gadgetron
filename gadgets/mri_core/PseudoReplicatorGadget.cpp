@@ -26,7 +26,7 @@ int PseudoReplicatorGadget::process_config(ACE_Message_Block*) {
 
 int PseudoReplicatorGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m) {
 
-	std::mt19937 engine;
+	std::mt19937 engine(5489UL);
 	std::normal_distribution<float> distribution;
 
 	auto m_copy = *m->getObjectPtr();

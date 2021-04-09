@@ -9,21 +9,21 @@
 
 namespace Gadgetron {
     template<typename T>
-    hoNDArray<T>::hoNDArray() : NDArray<T>::NDArray() {}
+    hoNDArray<T>::hoNDArray() : Gadgetron::NDArray<T>::NDArray() {}
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions) : Gadgetron::NDArray<T>::NDArray() {
         assert(dimensions != nullptr);
         this->create(*dimensions);
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(const std::vector<size_t> &dimensions) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(const std::vector<size_t> &dimensions) : Gadgetron::NDArray<T>::NDArray() {
         this->create(dimensions);
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions) : Gadgetron::NDArray<T>::NDArray() {
         assert(dimensions.get() != nullptr);
         this->create(*dimensions);
     }
@@ -39,14 +39,14 @@ namespace Gadgetron {
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t len) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t len) : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(1);
         dim[0] = len;
         this->create(dim);
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t sx, size_t sy) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t sx, size_t sy) : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(2);
         dim[0] = sx;
         dim[1] = sy;
@@ -54,7 +54,7 @@ namespace Gadgetron {
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz) : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(3);
         dim[0] = sx;
         dim[1] = sy;
@@ -63,7 +63,7 @@ namespace Gadgetron {
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st) : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(4);
         dim[0] = sx;
         dim[1] = sy;
@@ -73,7 +73,7 @@ namespace Gadgetron {
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp) : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(5);
         dim[0] = sx;
         dim[1] = sy;
@@ -84,7 +84,7 @@ namespace Gadgetron {
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq) : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(6);
         dim[0] = sx;
         dim[1] = sy;
@@ -97,7 +97,7 @@ namespace Gadgetron {
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(7);
         dim[0] = sx;
         dim[1] = sy;
@@ -111,7 +111,7 @@ namespace Gadgetron {
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(8);
         dim[0] = sx;
         dim[1] = sy;
@@ -126,70 +126,70 @@ namespace Gadgetron {
 
     template<typename T>
     hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(*dimensions, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(const std::vector<size_t> &dimensions, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(dimensions, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(*dimensions, data, delete_data_on_destruct);
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t len, T *data, bool delete_data_on_destruct) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t len, T *data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray() {
         this->create(len, data, delete_data_on_destruct);
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, T *data, bool delete_data_on_destruct) : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(size_t sx, size_t sy, T *data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray() {
         this->create(sx,sy, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
    ;
         this->create(sx,sy,sz, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(sx,sy,sz,st, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(
             size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(sx,sy,sz,st,sp, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(
             size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(sx,sy,sz,st,sp,sq, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T *data,
                             bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         this->create(sx,sy,sz,st,sp,sq,sr, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss,
                             T *data, bool delete_data_on_destruct)
-            : NDArray<T>::NDArray() {
+            : Gadgetron::NDArray<T>::NDArray() {
         std::vector<size_t> dim(8);
         dim[0] = sx;
         dim[1] = sy;
@@ -250,7 +250,7 @@ namespace Gadgetron {
 
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(hoNDArray<T> &&a) noexcept : NDArray<T>::NDArray() {
+    hoNDArray<T>::hoNDArray(hoNDArray<T> &&a) noexcept : Gadgetron::NDArray<T>::NDArray() {
         data_ = a.data_;
         this->dimensions_ = a.dimensions_;
         this->elements_ = a.elements_;
@@ -798,7 +798,7 @@ namespace Gadgetron {
     template<typename T>
     void hoNDArray<T>::deallocate_memory() {
         if (!(this->delete_data_on_destruct_)) {
-            throw std::runtime_error("You don't own this data.  You cannot deallocate its memory.");
+            return;
         }
 
         if (this->data_) {

@@ -7,6 +7,7 @@
 
 #include "FloatToFixPointGadget.h"
 #include "mri_core_def.h"
+#include "hoNDArray_math.h"
 
 
 #include <boost/math/constants/constants.hpp>
@@ -58,6 +59,9 @@ namespace Gadgetron
         long long numOfPixels = (long long)cm2->getObjectPtr()->get_number_of_elements();
 
         GadgetContainerMessage<ISMRMRD::MetaContainer>* m3 = AsContainerMessage<ISMRMRD::MetaContainer>(m2->cont());
+        
+
+        GDEBUG("Float to shorts norm: %f \n", nrm2(*m2->getObjectPtr()));
 
         switch (m1->getObjectPtr()->image_type)
         {

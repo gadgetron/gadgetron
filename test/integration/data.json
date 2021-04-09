@@ -56,10 +56,6 @@
     "md5":"13870af335ec1708a15fc139d0ffd4bb"
   },
   {
-    "file":"simple_gre/pseudoreplica_out.h5",
-    "md5":"f1b4e505d3172975570f002e35401d64"
-  },
-  {
     "file":"spiral/simple_spiral_out_v2.h5",
     "md5":"7ab538094cb4aefa329da75a3190a948"
   },
@@ -441,16 +437,12 @@
     "md5":"75cc7b2aec83ca854a5ad06e6afad76e"
   },
   {
-    "file":"simple_gre/pseudoreplica_out_20190731_192531.h5",
-    "md5":"5ca16d49d3b3ffd63c2bf39abe3b3222"
-  },
-  {
     "file":"grappa_3d/gre_3D_Grappa2x1.h5",
     "md5":"b04554e30e3dc39b60d8f676f806ed7b"
   },
   {
     "file":"grappa_3d/ref_grappa2x1.h5",
-    "md5":"309ba1d310dc0dbbe0a06cf4e0c8444c"
+    "md5": "1e7fa308d1747928007fc55b519344fc"
   },
   {
     "file":"grappa_3d/gre_3D_Grappa2x2.h5",
@@ -458,6 +450,6 @@
   },
   {
     "file":"grappa_3d/ref_grappa2x2.h5",
-    "md5":"b592b832ed77219a86414621c75dfb99"
+    "md5": "653172535076835310434e822b15b6ab"
   }
 ]

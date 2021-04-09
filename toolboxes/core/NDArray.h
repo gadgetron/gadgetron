@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <stdint.h>
 
-#include <boost/cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <numeric>
