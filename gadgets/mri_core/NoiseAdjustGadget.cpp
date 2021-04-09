@@ -416,9 +416,11 @@ namespace Gadgetron {
 
         auto& data = std::get<hoNDArray<std::complex<float>>>(acq);
         if (data.get_size(1) == pw.prewhitening_matrix.get_size(0)) {
-            auto dataM = as_arma_matrix(data);
+            /*auto dataM = as_arma_matrix(data);
             auto pwm = as_arma_matrix(pw.prewhitening_matrix);
-            dataM *= pwm;
+            dataM *= pwm;*/
+            hoNDArray<std::complex<float>> tmp(data);
+            gemm(data, tmp, pw.prewhitening_matrix);
         } else if (!this->pass_nonconformant_data) {
             throw std::runtime_error("Input data has different number of channels from noise data");
         }
