@@ -144,7 +144,8 @@ namespace Gadgetron::Server::Info {
         void print_cuda_information(std::ostream &os) {
             int device_count = CUDA::cuda_device_count();
 
-            os << "  -- CUDA Support       : YES (" << GADGETRON_CUDA_NVCC_FLAGS << ")" << std::endl;
+            os << "  -- CUDA Support       : YES" << std::endl;
+            os << "  -- NVCC Flags         : " << GADGETRON_CUDA_NVCC_FLAGS << std::endl;
             os << "    * Number of CUDA capable devices: " << device_count << std::endl;
 
             for (int dev = 0; dev < device_count; dev++) {

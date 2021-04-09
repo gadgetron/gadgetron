@@ -723,16 +723,15 @@ namespace Gadgetron {
         this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(res));
     }
 
-    void GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in,
-                                                          IsmrmrdImageArray& res) {
-        res.waveform_ = std::vector<ISMRMRD::Waveform>();
-        for (auto w : w_in) {
-            ISMRMRD::WaveformHeader& h = std::get<0>(w);
-            ISMRMRD::Waveform a_w(h.number_of_samples, h.channels);
-            a_w.head = std::get<0>(w);
-            memcpy(a_w.data, std::get<1>(w).begin(), std::get<1>(w).get_number_of_bytes());
-            res.waveform_->push_back(a_w);
+    std::vector<ISMRMRD::Waveform> GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in) {
+        
+        std::vector<ISMRMRD::Waveform> waveforms;
+        waveforms.reserve(w_in.size());
+        for (const auto& [header, data]: w_in) {
+            ISMRMRD::Waveform& a_w = waveforms.emplace_back(header.number_of_samples,header.channels);
+            std::copy_n(data.data(),data.size(), a_w.data);
         }
+        return waveforms;
     }
 
     GADGET_FACTORY_DECLARE(GenericReconGadget)
