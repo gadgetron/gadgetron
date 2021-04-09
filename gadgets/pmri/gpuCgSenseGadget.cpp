@@ -153,6 +153,9 @@ namespace Gadgetron{
     std::vector<size_t> image_dims = to_std_vector(matrix_size_);
     image_dims.push_back(frames);
     
+    GDEBUG("Matrix size codomain : [%d] \n", device_samples->get_dimensions().get()->size());
+    GDEBUG("Matrix last codomain : [%d] \n", device_samples->get_dimensions().get()->at(1));
+
     E_->set_domain_dimensions(&image_dims);
     E_->set_codomain_dimensions(device_samples->get_dimensions().get());
     E_->set_dcw(dcw);

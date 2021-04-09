@@ -85,7 +85,7 @@ TYPED_TEST(cuSDC_test, randomTestOne)
 
     cuNDArray<vector_td<T, 2>> d_traj(traj);
     this->timer_.start("Estimate DCW...");
-    cuNDArray<T> d_res = *estimate_dcw(d_traj, dims, T(3), 20, 5.5);
+    cuNDArray<T> d_res = *estimate_dcw(d_traj, dims, T(3), 20, float(5.5));
     this->timer_.stop();
     hoNDArray<T> res = *d_res.to_host();
     res.print(std::cout);
