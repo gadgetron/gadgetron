@@ -120,6 +120,6 @@ namespace Gadgetron {
         std::string vendor_;
 
         // utility functions
-        std::vector<ISMRMRD::Waveform> set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in);
+        void set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in, IsmrmrdImageArray& res);
     };
 }
