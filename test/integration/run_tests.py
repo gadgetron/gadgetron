@@ -288,7 +288,7 @@ def main():
     if failed:
         print("\nFailed tests:")
         for test in failed:
-            print("\t{}".format(test.get('file')))
+            print("\t{}".format(test))
 
     print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
