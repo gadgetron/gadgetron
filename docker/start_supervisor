@@ -4,7 +4,7 @@
 export GADGETRON_SUPERVISOR_NODAEMON=${GADGETRON_SUPERVISOR_NODAEMON:-"true"}
 export GADGETRON_RELAY_HOST=${GADGETRON_RELAY_HOST:-"127.0.0.1"}
 export GADGETRON_LOG_FILENAME=${GADGETRON_LOG_FILENAME:-"/tmp/gadgetron.log"}
-export OMP_THREAD_LIMIT=$(nproc)
+export OMP_THREAD_LIMIT=$(($(nproc)*2))
 #export OMP_NUM_THREADS=$(nproc)
 #export OMP_WAIT_POLICY=active
 #export OMP_DYNAMIC=false
@@ -12,6 +12,6 @@ export OMP_THREAD_LIMIT=$(nproc)
 export OPENBLAS_NUM_THREADS=1
 
 # if want to ensure high numerical reproducibility, turn on this option
-export MKL_CBWR=COMPATIBLE
+# export MKL_CBWR=COMPATIBLE
 
 /usr/bin/supervisord -c /opt/supervisord.conf 
