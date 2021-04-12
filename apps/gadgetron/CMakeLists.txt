@@ -1,5 +1,7 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
+
+
 add_executable(gadgetron
         main.cpp
         Server.cpp
@@ -81,6 +83,11 @@ target_include_directories(gadgetron
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR})
+
+
+if (REQUIRE_SIGNED_CONFIG)
+    target_link_libraries(gadgetron GTBabylon)
+endif()
 
 if (BUILD_PYTHON_SUPPORT)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")

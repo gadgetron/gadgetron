@@ -15,12 +15,30 @@
 #include "MessageID.h"
 #include "Types.h"
 
-namespace {
+using namespace Gadgetron::Core;
+using namespace Gadgetron::Core::IO;
+using namespace Gadgetron::Server::Connection;
+using namespace Gadgetron::Server::Connection::Handlers;
 
-    using namespace Gadgetron::Core;
-    using namespace Gadgetron::Core::IO;
-    using namespace Gadgetron::Server::Connection;
-    using namespace Gadgetron::Server::Connection::Handlers;
+#ifdef USE_GTBABYLON
+#include <GTBabylon.h>
+
+    static Config verify_and_parse_config(std::istream& stream)
+    {
+        auto config_string = std::string(std::istreambuf_iterator<char>(stream),{});
+
+        auto decoded =  GTBabylon::decode_message(config_string);
+        std::stringstream sstream(config_string);
+        return parse_config(stream);
+    }
+#else
+    static Config verify_and_parse_config(std::istream& stream)
+    {
+        return parse_config(stream);
+    }
+#endif
+
+namespace {
 
     using Header = Gadgetron::Core::StreamContext::Header;
 
@@ -35,7 +53,8 @@ namespace {
         : callback(std::move(callback)) {}
 
         void handle_callback(std::istream &config_stream) {
-            callback(parse_config(config_stream));
+
+            callback(verify_and_parse_config(config_stream));
         }
 
     private:
