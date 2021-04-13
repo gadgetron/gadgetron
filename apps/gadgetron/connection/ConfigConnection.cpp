@@ -26,10 +26,21 @@ using namespace Gadgetron::Server::Connection::Handlers;
     static Config verify_and_parse_config(std::istream& stream)
     {
         auto config_string = std::string(std::istreambuf_iterator<char>(stream),{});
-
+	std::cout << config_string << std::endl;
+	
         auto decoded =  GTBabylon::decode_message(config_string);
+	std::cout << decoded << std::endl;
+	
         std::stringstream sstream(decoded);
-        return parse_config(stream);
+	//        return parse_config(sstream);
+	try
+	{
+	  return parse_config(sstream);
+	}
+	catch(...)
+	{
+	  return parse_config(stream);
+	}
     }
 #else
     static Config verify_and_parse_config(std::istream& stream)
