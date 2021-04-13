@@ -28,7 +28,7 @@ using namespace Gadgetron::Server::Connection::Handlers;
         auto config_string = std::string(std::istreambuf_iterator<char>(stream),{});
 
         auto decoded =  GTBabylon::decode_message(config_string);
-        std::stringstream sstream(config_string);
+        std::stringstream sstream(decoded);
         return parse_config(stream);
     }
 #else
