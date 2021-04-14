@@ -28,16 +28,12 @@ using namespace Gadgetron::Server::Connection::Handlers;
         auto config_string = std::string(std::istreambuf_iterator<char>(stream),{});
         //std::cout << config_string << std::endl;
 
-        auto decoded =  GTBabylon::decode_message(config_string);
-        //std::cout << decoded << std::endl;
-
-        std::stringstream sstream(decoded);
-        //        return parse_config(sstream);
-        try
+        if (config_string.find("GTBabylon")!=std::string::npos)
         {
+            auto decoded = GTBabylon::decode_message(config_string);
+            std::stringstream sstream(decoded);
             return parse_config(sstream);
-        }
-        catch(...)
+        } else
         {
             return parse_config(stream);
         }
