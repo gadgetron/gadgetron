@@ -33,9 +33,11 @@ using namespace Gadgetron::Server::Connection::Handlers;
             auto decoded = GTBabylon::decode_message(config_string);
             std::stringstream sstream(decoded);
             return parse_config(sstream);
-        } else
+        }
+        else
         {
-            return parse_config(stream);
+            std::stringstream sstream(config_string);
+            return parse_config(sstream);
         }
     }
 #else
