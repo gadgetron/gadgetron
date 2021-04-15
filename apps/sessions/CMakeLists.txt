@@ -2,11 +2,15 @@
 add_library(gadgetron_session
         SessionServer.cpp
         Storage.cpp
-        DB.h
+        DB.cpp
         )
 
-link_libraries(gadgetron_session Boost::coroutine gadgetron_core)
+target_link_libraries(gadgetron_session Boost::coroutine gadgetron_core)
 
-add_executable(gadgetron_storage StorageServer.cpp SessionServer.cpp)
+target_include_directories(gadgetron_session PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include>
+        )
+add_executable(gadgetron_storage StorageServer.cpp )
 
-link_libraries(gadgetron_storage gadgetron_session)
+target_link_libraries(gadgetron_storage gadgetron_session)

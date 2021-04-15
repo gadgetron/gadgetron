@@ -29,11 +29,17 @@ namespace Gadgetron::Sessions::REST {
 
             auto req = req_parser.get();
 
+            auto reader = [&stream, &buffer, yield](auto&& request_parser){
+                beast::error_code  errorCode;
+                http::async_read(stream,buffer,request_parser,yield[errorCode]);
+                return errorCode;
+            };
+
             bool accepted = hana::fold_left(endpoints, false, [&](bool state, auto &&endpoint) {
                 if (state) return true;
                 bool accepts = endpoint.accept(req);
                 if (!accepts) return false;
-                endpoint.handle(stream, send,buffer,yield, std::move(req_parser));
+                endpoint.handle(reader,send, std::move(req_parser));
                 return true;
             });
 
