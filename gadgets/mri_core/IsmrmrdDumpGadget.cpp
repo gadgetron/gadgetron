@@ -220,24 +220,21 @@ namespace Gadgetron
             return;
         }
 
-        auto dataset = create_ismrmrd_dataset();
 
-        {
-           auto stream = std::stringstream();
-           ISMRMRD::serialize(header,stream);
-           dataset.writeHeader(stream.str());
-            GDEBUG_STREAM("IsmrmrdDumpGadget, save ismrmrd xml header ... ");
-        }
-
-        if (save_xml_header_only){
-            GDEBUG_STREAM("Only saving header");
-            move_if(input,output, is_valid_type);
-            return;
-        }
 
         Core::MPMCChannel<Core::variant<Core::Acquisition,Core::Waveform>> data_buffer;
 
-        auto save_thread = std::thread([&data_buffer,&dataset ](){
+        auto save_thread = std::thread([&data_buffer,this](){
+            auto dataset = create_ismrmrd_dataset();
+
+            {
+                auto stream = std::stringstream();
+                ISMRMRD::serialize(header,stream);
+                dataset.writeHeader(stream.str());
+                GDEBUG_STREAM("IsmrmrdDumpGadget, save ismrmrd xml header ... ");
+            }
+
+
             try {
                 for (;;) {
                     Core::visit([&dataset](const auto& item) { append_to_dataset(item, dataset); }, data_buffer.pop());
@@ -246,13 +243,20 @@ namespace Gadgetron
             }
         });
 
+        if (save_xml_header_only){
+            GDEBUG_STREAM("Only saving header");
+            data_buffer.close();
+            move_if(input,output, is_valid_type);
+            save_thread.join();
+            return;
+        }
+        
         for (auto item : input){
             data_buffer.push(item);
             if (is_valid_type(item))
                 output.push(std::move(item));
         }
         data_buffer.close();
-
         save_thread.join();
     }
     GADGETRON_GADGET_EXPORT(IsmrmrdDumpGadget);
