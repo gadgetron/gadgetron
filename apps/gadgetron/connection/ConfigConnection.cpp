@@ -23,18 +23,17 @@ using namespace Gadgetron::Server::Connection::Handlers;
 #ifdef USE_GTBABYLON
 #include <GTBabylon.h>
 
-    static Config verify_and_parse_config(std::istream& stream)
+    static std::unique_ptr<std::istream> open_and_verify_config(const std::string& filename)
     {
-        auto config_string = std::string(std::istreambuf_iterator<char>(stream),{});
-
+        auto filestream = std::ifstream(filename);
+        auto config_string = std::string(std::istreambuf_iterator<char>(filestream),{});
         auto decoded =  GTBabylon::decode_message(config_string);
-        std::stringstream sstream(config_string);
-        return parse_config(stream);
+        return std::make_unique<std::stringstream>(decoded);
     }
 #else
-    static Config verify_and_parse_config(std::istream& stream)
+    static std::unique_ptr<std::istream> open_and_verify_config(const std::string& filename)
     {
-        return parse_config(stream);
+        return std::make_unique<std::ifstream>(filename);
     }
 #endif
 
@@ -54,7 +53,7 @@ namespace {
 
         void handle_callback(std::istream &config_stream) {
 
-            callback(verify_and_parse_config(config_stream));
+            callback(parse_config(config_stream));
         }
 
     private:
@@ -73,8 +72,8 @@ namespace {
 
             GDEBUG_STREAM("Reading config file: " << filename);
 
-            std::ifstream config_stream(filename.string());
-            handle_callback(config_stream);
+            auto config_stream = open_and_verify_config(filename.string());
+            handle_callback(*config_stream);
         }
 
     private:
