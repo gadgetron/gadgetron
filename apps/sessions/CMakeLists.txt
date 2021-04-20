@@ -3,6 +3,7 @@ add_library(gadgetron_session
         SessionServer.cpp
         Storage.cpp
         DB.cpp
+        JSONStore.h
         )
 
 target_link_libraries(gadgetron_session Boost::coroutine gadgetron_core)
