@@ -1,5 +1,5 @@
 add_executable(ktsense_radial_2d  main.cpp)
 
-target_link_libraries(ktsense_radial_2d gadgetron_toolbox_gpucore gadgetron_toolbox_gpuparallelmri gadgetron_toolbox_gpuoperators gadgetron_toolbox_gpunfft gadgetron_toolbox_hostutils gadgetron_toolbox_gpusolvers ${CUDA_LIBRARIES})
+target_link_libraries(ktsense_radial_2d gadgetron_toolbox_gpucore gadgetron_toolbox_gpuparallelmri gadgetron_toolbox_gpuoperators gadgetron_toolbox_gpunfft gadgetron_toolbox_hostutils gadgetron_toolbox_gpusolvers ${CUDA_LIBRARIES} ${PYTHON_LIBRARIES})
 
 install(TARGETS ktsense_radial_2d DESTINATION bin COMPONENT main)

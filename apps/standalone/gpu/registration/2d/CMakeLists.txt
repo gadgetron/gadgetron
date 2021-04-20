@@ -13,7 +13,7 @@ target_link_libraries(register_HS_2d_gpu
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpuoperators
   gadgetron_toolbox_gpusolvers 
-  ${CUDA_LIBRARIES}
+  ${CUDA_LIBRARIES} ${PYTHON_LIBRARIES}
   )
 
 target_link_libraries(register_CK_2d_gpu
@@ -22,7 +22,7 @@ target_link_libraries(register_CK_2d_gpu
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpuoperators
   gadgetron_toolbox_gpusolvers 
-  ${CUDA_LIBRARIES}
+  ${CUDA_LIBRARIES} ${PYTHON_LIBRARIES}
   )
 
 #target_link_libraries(test_reg_sense_recon 
@@ -33,7 +33,7 @@ target_link_libraries(register_CK_2d_gpu
 #  gpusolvers 
 #  gpunfft 
 #  gpuparallelmri 
-#  ${CUDA_LIBRARIES}
+#  ${CUDA_LIBRARIES} ${PYTHON_LIBRARIES}
 #  )
   
   target_link_libraries(register_CGHS_2d_gpu 
@@ -42,7 +42,7 @@ target_link_libraries(register_CK_2d_gpu
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpuoperators
   gadgetron_toolbox_gpusolvers 
-  ${CUDA_LIBRARIES}
+  ${CUDA_LIBRARIES} ${PYTHON_LIBRARIES}
   )
 
 install(TARGETS 
