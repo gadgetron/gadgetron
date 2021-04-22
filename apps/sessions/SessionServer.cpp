@@ -12,6 +12,7 @@
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
+#include "DB.h"
 
 using namespace Gadgetron::Sessions;
 namespace beast = boost::beast;         // from <boost/beast.hpp>
@@ -49,13 +50,22 @@ namespace {
 
     struct BlobStorageEndPoint {
 
+        std::shared_ptr<Gadgetron::Sessions::DB::DB> database;
         bool accept( const http::request<http::empty_body>& req){
-            if (req.method() == http::verb::patch && req.target() == "/v1/blob") return true;
+            if (req.method() == http::verb::patch && req.target().starts_with(endpoint)) return true;
             return false;
         }
         template<class Read, class Send>
         void handle(Read &read, Send &&send, http::request_parser<http::empty_body>&& req) {
             beast::error_code ec;
+
+            auto get_key = [this](const auto& req) -> std::string { auto target = req.target; target.remove_prefix(endpoint.size()); return target;};
+
+            auto key = get_key(req.get());
+
+            auto meta_blob = database->pending_writes[key];
+
+            if (!meta_blob) {send(error_reponse(req.)); return;}
 
             http::request_parser<http::file_body> req2_parser(std::move(req));
             req2_parser.get().body().open("/tmp/testfile.bin",beast::file_mode::write,ec);
@@ -66,8 +76,9 @@ namespace {
             json response = {{"blob_id","testfile"}};
             send(json_response(response,req2_parser.get()));
 
-
         }
+
+        const std::string endpoint = "/v1/blob/";
 
     };
 

@@ -54,23 +54,27 @@ namespace Gadgetron::Sessions::DB {
 
     struct DataBaseFamilies {
         std::shared_ptr<rocksdb::DB> database;
-        std::map<std::string,rocksdb::ColumnFamilyHandle*> families;
+        std::map<std::string, rocksdb::ColumnFamilyHandle *> families;
     };
 
-    DataBaseFamilies create_database(const std::filesystem::path &path, const std::map<std::string,rocksdb::ColumnFamilyDescriptor>& column_families) {
+    DataBaseFamilies create_database(const std::filesystem::path &path,
+                                     const std::vector<rocksdb::ColumnFamilyDescriptor> &column_families) {
         rocksdb::DBOptions options;
         options.create_if_missing = true;
         options.create_missing_column_families = true;
+
+        options.db_log_dir = "/tmp/dblog";
+        options.OptimizeForSmallDb();
         rocksdb::DB *database;
-        auto column_descriptors = column_families | ranges::views::values | ranges::to<std::vector>();
-        std::vector<rocksdb::ColumnFamilyHandle*> handles;
+        std::vector<rocksdb::ColumnFamilyHandle *> handles;
 
 
-        rocksdb::Status status = rocksdb::DB::Open(options, path.string(), column_descriptors,&handles, &database);
+        rocksdb::Status status = rocksdb::DB::Open(options, path.string(), column_families, &handles, &database);
         if (!status.ok()) throw DBError(status);
 
-
-        return DataBaseFamilies{std::shared_ptr<rocksdb::DB>(database), ranges::zip_view(column_families | ranges::views::keys , handles) | ranges::to<std::map>()};
+        return DataBaseFamilies{std::shared_ptr<rocksdb::DB>(database), ranges::zip_view(
+                column_families | ranges::views::transform([](const auto &cf) { return cf.name; }), handles) |
+                                                                        ranges::to<std::map>()};
     };
 
 
@@ -81,23 +85,44 @@ namespace Gadgetron::Sessions::DB {
         std::string blob_id;
         boost::posix_time::ptime creation_time;
         boost::posix_time::ptime deletion_time;
+        bool operator==(const BlobMeta& other) const{
+            auto compare_timestamps = [](auto& time1, auto& time2) { return boost::posix_time::to_iso_extended_string(time1) == boost::posix_time::to_iso_extended_string(time2);};
+
+            return (blob_id == other.blob_id) && compare_timestamps(creation_time,other.creation_time) && compare_timestamps(deletion_time,other.deletion_time);
+        }
     };
 
     struct PendingWrite {
-        std::string blob_id;
         boost::posix_time::ptime transaction_expiration;
         BlobMeta meta;
     };
 
 
 }
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::BlobMeta, blob_id,creation_time, deletion_time);
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::PendingWrite, blob_id, transaction_expiration, meta);
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::BlobMeta, blob_id, creation_time, deletion_time);
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::PendingWrite, transaction_expiration, meta);
 
 
 namespace Gadgetron::Sessions::DB {
 
+    struct DB {
 
+        DB(const std::filesystem::path &path) {
+
+            auto cf_descriptors = std::vector<rocksdb::ColumnFamilyDescriptor>{{"Info",          rocksdb::ColumnFamilyOptions()},
+                                                                    {"PendingWrites", rocksdb::ColumnFamilyOptions()},
+                                                                    {"Blobs",         rocksdb::ColumnFamilyOptions()},
+                                                                               {"default",rocksdb::ColumnFamilyOptions()}};
+            auto families = create_database(path,cf_descriptors);
+            db_info = JSONStore(families.database,families.families.at("Info"));
+            pending_writes = ValueStore<PendingWrite>(families.database,families.families.at("PendingWrites"));
+            blobs = ListStore<BlobMeta>(families.database,families.families.at("Blobs"));
+        }
+
+        JSONStore db_info;
+        ValueStore<PendingWrite> pending_writes;
+        ListStore<BlobMeta> blobs;
+    };
 
 }
 

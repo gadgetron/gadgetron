@@ -8,12 +8,30 @@
 #include <boost/iterator.hpp>
 #include "DBError.h"
 #include <range/v3/view.hpp>
+#include <range/v3/range_concepts.hpp>
+
+
 
 namespace Gadgetron::Sessions::DB {
     using json = nlohmann::json;
 
+
+
     class JSONStore {
     public:
+        JSONStore() = default;
+        JSONStore(const JSONStore&) = delete;
+        JSONStore(JSONStore&& ) = default;
+        JSONStore(std::shared_ptr<rocksdb::DB> database, rocksdb::ColumnFamilyHandle* handle) : database(database), handle(handle ){}
+
+        JSONStore& operator=(JSONStore&& other){
+            handle = other.handle;
+            database = std::move(other.database);
+            other.handle = nullptr;
+            return *this;
+
+        }
+
         Core::optional<json> operator[](std::string_view key) const {
             auto result = std::string{};
             auto status = database->Get(rocksdb::ReadOptions(), handle, key, &result);
@@ -33,7 +51,8 @@ namespace Gadgetron::Sessions::DB {
         void set(std::string_view key, const json &value) {
             std::string str_val;
             json::to_msgpack(value, str_val);
-            auto status = database->Put(rocksdb::WriteOptions(), handle, key, str_val);
+            auto options = rocksdb::WriteOptions();
+            auto status = database->Put(options, handle, key, str_val);
             if (!status.ok()) throw DBError(status);
         }
 
@@ -63,6 +82,7 @@ namespace Gadgetron::Sessions::DB {
 
         class EndPoint {
         public:
+            EndPoint(const EndPoint&) = default;
             EndPoint() : sentinel(Core::none) {}
 
             EndPoint(std::string_view end_string) : sentinel(std::in_place, end_string) {}
@@ -78,10 +98,11 @@ namespace Gadgetron::Sessions::DB {
         public:
             using iterator_category = std::input_iterator_tag;
             using value_type = std::pair<std::string, json>;
-            using difference_type = void; //We really can't take the difference between these guys
+            using difference_type = int; //We really can't take the difference between these guys
             using pointer = const value_type *;
             using reference = value_type;
 
+            Iterator() = default;
             Iterator(const Iterator &) = default;
 
             bool operator==(const EndPoint &endpoint) const {
@@ -90,6 +111,9 @@ namespace Gadgetron::Sessions::DB {
                         return it->key().ToString() > endpoint.sentinel.value();
                     }
                     return false;
+                }
+                if (!it->status().ok()){
+                    throw DBError(it->status());
                 }
 
                 return true;
@@ -108,10 +132,14 @@ namespace Gadgetron::Sessions::DB {
                 return *this;
             }
 
+            Iterator operator++(int) { it->Next(); return *this;};
+
             Iterator &operator--() {
                 it->Prev();
                 return *this;
             }
+
+            void operator--(int) { it->Prev();}
 
         private:
             explicit Iterator(rocksdb::Iterator *itr_ptr) : it(itr_ptr) { it->SeekToFirst(); };
@@ -120,6 +148,7 @@ namespace Gadgetron::Sessions::DB {
             std::shared_ptr<rocksdb::Iterator> it;
             friend JSONStore;
         };
+
 
         class ReverseIterator {
 
@@ -130,6 +159,7 @@ namespace Gadgetron::Sessions::DB {
             using pointer = const value_type *;
             using reference = value_type;
 
+            ReverseIterator() = default;
             ReverseIterator(const ReverseIterator &) = default;
 
             bool operator==(const EndPoint &endpoint) const {
@@ -154,6 +184,14 @@ namespace Gadgetron::Sessions::DB {
             ReverseIterator &operator++() {
                 it->Prev();
                 return *this;
+            }
+
+            void operator++(int) {
+                it->Prev();
+            }
+
+            void operator--(int){
+                it->Next();
             }
 
             ReverseIterator &operator--() {
@@ -206,20 +244,29 @@ namespace Gadgetron::Sessions::DB {
         EndPoint rend(std::string_view to) {
             return EndPoint(to);
         }
+        friend class Range;
 
         struct Range {
-            Iterator &begin() { return front; }
+            std::string lower_key, upper_key; JSONStore& store;
+            Iterator begin() {
+                auto options = rocksdb::ReadOptions();
+                auto it = store.database->NewIterator(options,store.handle);
+                return Iterator(it, lower_key);
+            }
 
-            EndPoint &end() { return back; };
-            Iterator front;
-            EndPoint back;
+            EndPoint end() { return EndPoint(upper_key); };
         };
-        struct RevRange {
-            ReverseIterator &begin() { return front; }
 
-            EndPoint &end() { return back; };
-            ReverseIterator front;
-            EndPoint back;
+        friend class RevRange;
+        struct RevRange {
+
+            std::string lower_key, upper_key; JSONStore& store;
+            ReverseIterator begin() {
+                auto options = rocksdb::ReadOptions();
+                auto it = store.database->NewIterator(options,store.handle);
+                return ReverseIterator(it,upper_key);
+            }
+            EndPoint end() { return EndPoint(lower_key); };
         };
 
        /**
@@ -230,14 +277,7 @@ namespace Gadgetron::Sessions::DB {
          */
         auto range(std::string_view from, std::string_view to) {
             assert(from<to);
-            auto options = rocksdb::ReadOptions();
-            auto to_slice = rocksdb::Slice(to);
-           auto from_slice = rocksdb::Slice(from);
-           options.iterate_upper_bound = &to_slice;
-            options.iterate_lower_bound = &from_slice;
-            auto it = database->NewIterator(options, handle);
-
-            return Range{Iterator(it,from),EndPoint()};
+            return Range{std::string(from), std::string(to),*this};
         }
 
         /**
@@ -248,19 +288,14 @@ namespace Gadgetron::Sessions::DB {
         */
         auto reverse_range(std::string_view from, std::string_view to) {
             assert(from < to);
-            auto options = rocksdb::ReadOptions();
-            auto to_slice = rocksdb::Slice(to);
-            options.iterate_upper_bound = &to_slice;
-            auto from_slice = rocksdb::Slice(from);
-            options.iterate_lower_bound = &from_slice;
-            auto it = database->NewIterator(options, handle);
-            return RevRange{ReverseIterator(it,to),EndPoint()};
+            return RevRange{std::string(from),std::string(to),*this};
+
         }
 
-    private:
+    public:
 
-        mutable rocksdb::ColumnFamilyHandle *handle;
-        mutable std::shared_ptr<rocksdb::DB> database;
+        mutable rocksdb::ColumnFamilyHandle *handle = nullptr;
+        mutable std::shared_ptr<rocksdb::DB> database = nullptr;
 
     };
 
@@ -268,17 +303,27 @@ namespace Gadgetron::Sessions::DB {
     template<class T>
     class ListStore {
     public:
-        void push_back(std::string_view key, const T &val) {
+        ListStore() = default;
+        ListStore(const ListStore&) = delete;
+        ListStore(std::shared_ptr<rocksdb::DB> ptr,rocksdb::ColumnFamilyHandle* handle) : store(std::move(ptr),handle) {}
 
-            auto [front, back] = key_range(key);
-            auto range = store.reverse_range(front,back);
+        ListStore& operator=(ListStore&& other){
+            store = std::move(other.store);
+            return *this;
+        }
+        void push_back(std::string_view key, const T &val) {
+            auto encoded = encode_key(key);
+
+            auto [front, back] = key_range(encoded);
+
+            auto front_it = store.rbegin(back);
+            auto end_it = store.rend(front);
 
             size_t front_size = front.size();
-
             auto get_new_index = [&]() -> uint64_t  {
-                if (range.begin() == range.empty())
+                if (front_it == end_it)
                     return 0;
-                auto largest_key = (*range.begin()).first;
+                auto largest_key = (*front_it).first;
                 size_t largest_index = *reinterpret_cast<size_t*>(largest_key.data()+front_size);
                 return largest_index+1;
 
@@ -291,8 +336,15 @@ namespace Gadgetron::Sessions::DB {
         }
 
        std::vector<T> operator[](std::string_view key) {
-            auto [front, back] = key_range(key);
-            auto result = store.range(front, back) | ranges::view::transform([](auto&& kv){ auto& [key,value] = kv; return value.template get<T>();}) | ranges::to<std::vector>();
+            auto encoded = encode_key(key);
+            auto [front, back] = key_range(encoded);
+            auto range = store.range(front,back);
+            std::vector<T> result ;
+
+            for (auto kv : range){
+                auto& [key,value] = kv;
+                result.push_back(value.template get<T>());
+            }
 
             return result;
         }
@@ -313,7 +365,16 @@ namespace Gadgetron::Sessions::DB {
             result.append(prefix);
             result.push_back('/');
             result.append(reinterpret_cast<const char *>(&max_key_value), sizeof(max_key_value));
-            return max_key;
+            return result;
+        }
+
+
+        static std::string encode_key(std::string_view key){
+            auto result = std::string();
+            uint32_t length = key.size();
+            result.append(reinterpret_cast<char*>(&length),sizeof(length));
+            result.append(key);
+            return result;
         }
 
         JSONStore store;
@@ -325,6 +386,15 @@ namespace Gadgetron::Sessions::DB {
     class ValueStore {
 
     public:
+        ValueStore(std::shared_ptr<rocksdb::DB> ptr,rocksdb::ColumnFamilyHandle* handle) : store(std::move(ptr),handle) {}
+        ValueStore() = default;
+        ValueStore(const ValueStore&) = delete;
+
+        ValueStore& operator=(ValueStore&& other){
+            store = std::move(other.store);
+            return *this;
+        }
+
         Core::optional<T> operator[](std::string_view key){
             if (auto j = store[key]){
                 return j->get<T>();

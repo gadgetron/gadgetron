@@ -2,5 +2,5 @@
 #include <rocksdb/status.h>
 class DBError : public std::runtime_error {
 public:
-    DBError(rocksdb::Status &status) : std::runtime_error(status.ToString()) {}
+    DBError(const rocksdb::Status &status) : std::runtime_error(status.ToString()) {}
 };
