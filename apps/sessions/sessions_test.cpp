@@ -3,7 +3,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "DB.h"
+#include "Database.h"
 
 #include <filesystem>
 
@@ -14,7 +14,7 @@ protected:
     void SetUp() override {
         temp_dir = std::filesystem::temp_directory_path() / "gadgetron_session_test";
         std::filesystem::create_directory(temp_dir);
-        db = std::make_unique<DB>(temp_dir);
+        db = std::make_unique<Database>(temp_dir);
 
     }
 
@@ -24,7 +24,7 @@ protected:
 
     }
 
-    std::unique_ptr<DB> db;
+    std::unique_ptr<Database> db;
     std::filesystem::path temp_dir;
 
 };
@@ -59,7 +59,7 @@ TEST_F(SessionsTest,pendingwrites){
     using clock = boost::posix_time::second_clock;
     auto meta = BlobMeta{"penguin",clock::universal_time(),clock::universal_time()};
 
-    db->pending_writes.set("monkey",{clock::universal_time(),meta});
+    db->pending_writes.set("monkey",{"abe",clock::universal_time(),meta});
 
     auto retrieved = db->pending_writes["monkey"];
 
@@ -78,7 +78,7 @@ TEST_F(SessionsTest,pendingwrites_delete){
     auto retrieved0 = db->pending_writes["monkey"];
     EXPECT_FALSE(retrieved0);
 
-    db->pending_writes.set("monkey",{clock::universal_time(),meta});
+    db->pending_writes.set("monkey",{"abe",clock::universal_time(),meta});
 
     auto retrieved = db->pending_writes["monkey"];
 

@@ -22,9 +22,9 @@ namespace Gadgetron::Sessions::DB {
         JSONStore() = default;
         JSONStore(const JSONStore&) = delete;
         JSONStore(JSONStore&& ) = default;
-        JSONStore(std::shared_ptr<rocksdb::DB> database, rocksdb::ColumnFamilyHandle* handle) : database(database), handle(handle ){}
+        JSONStore(std::shared_ptr<rocksdb::DB> database, rocksdb::ColumnFamilyHandle* handle) : database(std::move(database)), handle(handle ){}
 
-        JSONStore& operator=(JSONStore&& other){
+        JSONStore& operator=(JSONStore&& other) noexcept{
             handle = other.handle;
             database = std::move(other.database);
             other.handle = nullptr;
@@ -301,88 +301,6 @@ namespace Gadgetron::Sessions::DB {
 
 
     template<class T>
-    class ListStore {
-    public:
-        ListStore() = default;
-        ListStore(const ListStore&) = delete;
-        ListStore(std::shared_ptr<rocksdb::DB> ptr,rocksdb::ColumnFamilyHandle* handle) : store(std::move(ptr),handle) {}
-
-        ListStore& operator=(ListStore&& other){
-            store = std::move(other.store);
-            return *this;
-        }
-        void push_back(std::string_view key, const T &val) {
-            auto encoded = encode_key(key);
-
-            auto [front, back] = key_range(encoded);
-
-            auto front_it = store.rbegin(back);
-            auto end_it = store.rend(front);
-
-            size_t front_size = front.size();
-            auto get_new_index = [&]() -> uint64_t  {
-                if (front_it == end_it)
-                    return 0;
-                auto largest_key = (*front_it).first;
-                size_t largest_index = *reinterpret_cast<size_t*>(largest_key.data()+front_size);
-                return largest_index+1;
-
-            };
-
-            size_t index = get_new_index();
-            std::string new_key(front);
-            new_key.append(reinterpret_cast<const char*>(&index),sizeof(index));
-            store.set(new_key,json(val));
-        }
-
-       std::vector<T> operator[](std::string_view key) {
-            auto encoded = encode_key(key);
-            auto [front, back] = key_range(encoded);
-            auto range = store.range(front,back);
-            std::vector<T> result ;
-
-            for (auto kv : range){
-                auto& [key,value] = kv;
-                result.push_back(value.template get<T>());
-            }
-
-            return result;
-        }
-
-    private:
-
-        std::pair<std::string, std::string> key_range(std::string_view key) const {
-            std::string prefix_key(key);
-            prefix_key.push_back('/');
-
-            return {prefix_key, max_key(key)};
-        }
-
-        std::string max_key(std::string_view prefix) const {
-            std::string result;
-            std::uint64_t max_key_value = std::numeric_limits<std::uint64_t>::max();
-            result.reserve(prefix.size() + 2 + sizeof(max_key_value));
-            result.append(prefix);
-            result.push_back('/');
-            result.append(reinterpret_cast<const char *>(&max_key_value), sizeof(max_key_value));
-            return result;
-        }
-
-
-        static std::string encode_key(std::string_view key){
-            auto result = std::string();
-            uint32_t length = key.size();
-            result.append(reinterpret_cast<char*>(&length),sizeof(length));
-            result.append(key);
-            return result;
-        }
-
-        JSONStore store;
-
-
-    };
-
-    template<class T>
     class ValueStore {
 
     public:
@@ -390,7 +308,7 @@ namespace Gadgetron::Sessions::DB {
         ValueStore() = default;
         ValueStore(const ValueStore&) = delete;
 
-        ValueStore& operator=(ValueStore&& other){
+        ValueStore& operator=(ValueStore&& other) noexcept {
             store = std::move(other.store);
             return *this;
         }
@@ -418,4 +336,38 @@ namespace Gadgetron::Sessions::DB {
     private:
         JSONStore store;
     };
-};
+
+
+    template<class T>
+    class ListStore {
+    public:
+        ListStore() = default;
+        ListStore(const ListStore&) = delete;
+        ListStore(std::shared_ptr<rocksdb::DB> ptr,rocksdb::ColumnFamilyHandle* handle) : store(std::move(ptr),handle) {}
+
+        ListStore& operator=(ListStore&& other) noexcept {
+            store = std::move(other.store);
+            return *this;
+        }
+        void push_back(std::string_view key, const T &val) {
+            auto list = store[key];
+            if (list){
+                list->push_back(val);
+                store.set(key,*list);
+                return;
+            }
+            store.set(key,std::vector<T>{val});
+        }
+
+        std::vector<T> operator[](std::string_view key) {
+            auto list = store[key];
+            if (list) return std::move(*list);
+            return {};
+        }
+
+    private:
+        ValueStore<std::vector<T>> store;
+
+
+    };
+}

@@ -11,23 +11,44 @@
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/keys.hpp>
 #include <boost/hana/at_key.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 
 namespace boost::posix_time {
 
     using json = nlohmann::json;
 
-    void to_json(json &j, const ptime &time) {
+    static void to_json(json &j, const ptime &time) {
         j = to_iso_extended_string(time);
     }
 
-    void from_json(const json &j, ptime &time) {
+    static void from_json(const json &j, ptime &time) {
         time = from_iso_extended_string(j.get<std::string>());
     }
 
+    static void to_json(json& j, const time_duration& duration){
+        j = to_iso_string(duration);
+    }
+    void from_json(const json& j, time_duration& duration){
+        duration = duration_from_string(j.get<std::string>());
+    }
+
+}
+namespace boost::uuids {
+
+    using json = nlohmann::json;
+    static void to_json(json &j, const uuid &id) {
+        j = json{to_string(id)};
+    }
+
+    static void from_json(const json &j, uuid &id) {
+        boost::uuids::string_generator gen;
+        id = gen(j.get<std::string>());
+    }
 }
 
-
-namespace Gadgetron::Sessions::DB {
+namespace nlohmann {
     template<class T>
     std::enable_if_t<boost::hana::Struct<T>::value>
     to_json(nlohmann::json &j, const T &x) {
@@ -47,6 +68,11 @@ namespace Gadgetron::Sessions::DB {
                     x, name))>>();
         });
     }
+}
+
+
+namespace Gadgetron::Sessions::DB {
+
 
     using json = nlohmann::json;
 
@@ -82,7 +108,7 @@ namespace Gadgetron::Sessions::DB {
 
 
     struct BlobMeta {
-        std::string blob_id;
+        boost::uuids::uuid blob_id;
         boost::posix_time::ptime creation_time;
         boost::posix_time::ptime deletion_time;
         bool operator==(const BlobMeta& other) const{
@@ -93,6 +119,7 @@ namespace Gadgetron::Sessions::DB {
     };
 
     struct PendingWrite {
+        std::string key;
         boost::posix_time::ptime transaction_expiration;
         BlobMeta meta;
     };
@@ -100,14 +127,14 @@ namespace Gadgetron::Sessions::DB {
 
 }
 BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::BlobMeta, blob_id, creation_time, deletion_time);
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::PendingWrite, transaction_expiration, meta);
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::PendingWrite, key, transaction_expiration, meta);
 
 
 namespace Gadgetron::Sessions::DB {
 
-    struct DB {
+    struct Database {
 
-        DB(const std::filesystem::path &path) {
+        Database(const std::filesystem::path &path) {
 
             auto cf_descriptors = std::vector<rocksdb::ColumnFamilyDescriptor>{{"Info",          rocksdb::ColumnFamilyOptions()},
                                                                     {"PendingWrites", rocksdb::ColumnFamilyOptions()},

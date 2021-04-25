@@ -10,9 +10,11 @@
 #include <nlohmann/json.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#include <boost/asio/placeholders.hpp>
-#include "DB.h"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include "Database.h"
 
 using namespace Gadgetron::Sessions;
 namespace beast = boost::beast;         // from <boost/beast.hpp>
@@ -23,9 +25,53 @@ namespace asio = boost::asio;
 
 using json = nlohmann::json;
 
+using namespace Gadgetron::Sessions::DB;
+
+
 namespace {
+    enum class StorageSpace {
+        session,
+        scanner,
+        debug
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(StorageSpace, {
+        { StorageSpace::session, "session" },
+        { StorageSpace::scanner, "scanner" },
+        { StorageSpace::debug, "debug" }
+    }
+    );
+
+    std::string name(StorageSpace space) {
+        return json(space).get<std::string>();
+    }
+
+
+    std::string full_key(StorageSpace space, std::string_view subject, std::string_view key) {
+
+        auto escape_string = [](const auto &str) {
+            std::string result;
+            if (str.size() > std::numeric_limits<uint32_t>::max()) throw std::runtime_error("Key length out of bounds");
+
+            uint32_t length = str.size();
+
+            result.reserve(sizeof(uint32_t) + str.size());
+            result.append(reinterpret_cast<const char *>(&length), sizeof(length));
+            result.append(str);
+            return result;
+        };
+
+
+        std::string result = name(space) + '/';
+        result.append(escape_string(subject));
+        result.push_back('/');
+        result.append(key);
+        return result;
+    }
+
+
     template<class REQ>
-    auto json_response(const json& object, const REQ& req){
+    auto json_response(const json &object, const REQ &req) {
         http::response<http::string_body> response(http::status::ok, req.version());
         response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
         response.set(http::field::content_type, "application/json");
@@ -34,6 +80,27 @@ namespace {
         response.prepare_payload();
         return response;
     }
+
+    template<class REQ>
+    auto string_response(std::string_view message, http::status status, const REQ &req) {
+        http::response<http::string_body> response(status, req.version());
+        response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        response.set(http::field::content_type, "text/plain");
+        response.keep_alive(req.keep_alive());
+        response.body() = message;
+        response.prepare_payload();
+        return response;
+    }
+
+    template<class REQ>
+    auto empty_response(http::status status, const REQ &req) {
+        http::response<http::string_body> response(status, req.version());
+        response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        response.keep_alive(req.keep_alive());
+        response.prepare_payload();
+        return response;
+    }
+
     struct InfoEndPoint {
 
         bool accept(const http::request<http::empty_body> &req) {
@@ -41,69 +108,218 @@ namespace {
             return false;
         }
 
-        template<class Read, class Send >
-        void handle(Read &read, Send &&send, http::request_parser<http::empty_body>&& req) {
-            json version = { {"version","0.01alpha"}};
-            send(json_response(version,req.get()));
+        template<class Read, class Send>
+        beast::error_code handle(Read &read, Send &&send, http::request_parser<http::empty_body> &&req) {
+            json version = {{"version", "0.01alpha"}};
+            return send(json_response(version, req.get()));
         }
     };
+
+    template<class REQ>
+    std::string get_blob_key(const REQ &req, std::string_view endpoint) {
+        auto target = req.target();
+        target.remove_prefix(endpoint.size());
+        return std::string(target);
+    }
 
     struct BlobStorageEndPoint {
 
-        std::shared_ptr<Gadgetron::Sessions::DB::DB> database;
-        bool accept( const http::request<http::empty_body>& req){
+        std::shared_ptr<Database> database;
+        std::filesystem::path blob_folder;
+
+        bool accept(const http::request<http::empty_body> &req) {
             if (req.method() == http::verb::patch && req.target().starts_with(endpoint)) return true;
             return false;
         }
+
         template<class Read, class Send>
-        void handle(Read &read, Send &&send, http::request_parser<http::empty_body>&& req) {
+        beast::error_code handle(Read &read, Send &&send, http::request_parser<http::empty_body> &&req) {
             beast::error_code ec;
 
-            auto get_key = [this](const auto& req) -> std::string { auto target = req.target; target.remove_prefix(endpoint.size()); return target;};
+            auto key = get_blob_key(req.get(), endpoint);
 
-            auto key = get_key(req.get());
+            auto potential_meta = database->pending_writes[key];
 
-            auto meta_blob = database->pending_writes[key];
+            if (!potential_meta) {
+                return send(string_response("Unknown ID", http::status::bad_request, req.get()));
+            }
 
-            if (!meta_blob) {send(error_reponse(req.)); return;}
+            auto &meta = *potential_meta;
 
+            auto path = blob_folder / to_string(meta.meta.blob_id);
             http::request_parser<http::file_body> req2_parser(std::move(req));
-            req2_parser.get().body().open("/tmp/testfile.bin",beast::file_mode::write,ec);
-            std::cout << "Error " << ec.message() << std::endl;
+            req2_parser.get().body().open(path.c_str(), beast::file_mode::write, ec);
+            if (ec) {
+                return send(string_response(ec.message(), http::status::insufficient_storage, req2_parser.get()));
+            }
 
             auto ec2 = read(req2_parser);
-            if (ec2) std::cout <<"Error " << ec2.message() << std::endl;
-            json response = {{"blob_id","testfile"}};
-            send(json_response(response,req2_parser.get()));
+            if (ec2) return ec2;
 
+
+            database->pending_writes.delete_key(key);
+            database->blobs.push_back(key, meta.meta);
+
+            return send(empty_response(http::status::ok, req2_parser.get()));
         }
 
-        const std::string endpoint = "/v1/blob/";
+        static constexpr const char *endpoint = "/v1/blobs/";
 
     };
 
+    struct BlobRetrievalEndPoint {
 
+        std::shared_ptr<Database> database;
+        std::filesystem::path blob_folder;
+
+
+        bool accept(const http::request<http::empty_body> &req) {
+            if (req.method() == http::verb::get && req.target().starts_with(endpoint)) return true;
+            return false;
+        }
+
+        template<class Read, class Send>
+        beast::error_code handle(Read &read, Send &&send, http::request_parser<http::empty_body> &&req) {
+
+            boost::uuids::string_generator gen;
+            boost::uuids::uuid blob_id = gen(get_blob_key(req.get(), endpoint));
+
+            auto path = blob_folder / to_string(blob_id);
+
+            http::response<http::file_body> response(http::status::ok, req.get().version());
+            response.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+            response.set(http::field::content_type, "application/json");
+            beast::error_code ec;
+            response.body().open(path.c_str(), beast::file_mode::read, ec);
+            if (ec) {
+                return send(string_response(ec.message(), http::status::not_found, req.get()));
+            }
+
+            response.prepare_payload();
+            return send(response);
+        }
+
+        static constexpr const char *endpoint = BlobStorageEndPoint::endpoint;
+
+    };
+
+    struct DataInfoEndPoint {
+
+        struct RetrievalRequest {
+            BOOST_HANA_DEFINE_STRUCT(RetrievalRequest, (StorageSpace, storagespace), (std::string, subject),
+                                     (std::string, key));
+        };
+
+        struct RetrievalResponse {
+            BOOST_HANA_DEFINE_STRUCT(RetrievalResponse, (std::string, storagepath),
+                                     (boost::posix_time::ptime, creation_time),
+                                     (boost::posix_time::ptime, deletion_time));
+        };
+
+        bool accept(const http::request<http::empty_body> &req) {
+            if (req.method() == http::verb::get && req.target().starts_with(endpoint)) return true;
+            return false;
+        }
+
+        template<class Read, class Send>
+        beast::error_code handle(Read &read, Send &&send, http::request_parser<http::empty_body> &&req) {
+            http::request_parser<http::string_body> req2(std::move(req));
+            if (auto ec = read(req2)) return ec;
+            auto retrieval_request = json::parse(req2.get().body()).get<RetrievalRequest>();
+            auto blobs = database->blobs[full_key(retrieval_request.storagespace, retrieval_request.subject,
+                                                  retrieval_request.key)];
+
+            auto response_blobs = ranges::reverse_view(blobs) | ranges::views::transform(
+                    [](auto &&meta) -> RetrievalResponse {
+                        return {std::string(BlobRetrievalEndPoint::endpoint) + to_string(meta.blob_id),
+                                meta.creation_time, meta.deletion_time};
+                    }) | ranges::to<std::vector>();
+
+            return send(json_response(response_blobs, req2.get()));
+        }
+
+
+        static constexpr const char *endpoint = "/v1/data";
+        std::shared_ptr<Database> database;
+    };
+
+    struct WriteRequestEndPoint {
+
+        struct WriteRequest {
+            BOOST_HANA_DEFINE_STRUCT(WriteRequest, (StorageSpace, storagespace), (std::string, subject),
+                                     (std::string, key),
+                                     (boost::posix_time::time_duration, storage_duration));
+        };
+
+        struct WriteResponse {
+            BOOST_HANA_DEFINE_STRUCT(WriteResponse, (std::string, blob_path));
+        };
+
+        bool accept(const http::request<http::empty_body> &req) {
+            if (req.method() == http::verb::post && req.target() == endpoint) return true;
+            return false;
+        }
+
+        template<class Read, class Send>
+        beast::error_code handle(Read &read, Send &&send, http::request_parser<http::empty_body> &&req) {
+
+            http::request_parser<http::string_body> req2(std::move(req));
+            auto ec = read(req2);
+
+            if (ec) return ec;
+
+            auto write_request = json::parse(req2.get().body()).get<WriteRequest>();
+
+            const std::string write_uuid = to_string(uuid_generator());
+            const auto blob_id = uuid_generator();
+
+            auto now = boost::posix_time::second_clock::universal_time();
+            auto deadline = now + boost::posix_time::minutes(30);
+
+            auto key = full_key(write_request.storagespace, write_request.subject, write_request.key);
+
+            auto pending_write = PendingWrite{key, deadline, {blob_id, now, now + write_request.storage_duration}};
+
+            db->pending_writes.set(to_string(blob_id), pending_write);
+            return send(json_response(make_response(blob_id), req2.get()));
+        }
+
+        std::shared_ptr<Database> db;
+
+        boost::uuids::random_generator uuid_generator = {};
+        static constexpr const char *endpoint = DataInfoEndPoint::endpoint;
+    private:
+        WriteResponse make_response(const boost::uuids::uuid &write_uuid) {
+
+            return {std::string(BlobStorageEndPoint::endpoint) + to_string(write_uuid)};
+        }
+
+    };
 }
 
-void cleanup(const boost::system::error_code& ec, asio::deadline_timer& timer){
+void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer) {
     std::cout << "Cleaning up all da thing" << std::endl;
 
-    timer.expires_at(timer.expires_at()+boost::posix_time::minutes(5));
-    timer.async_wait([&](const auto& ec){ cleanup(ec,timer);});
+    timer.expires_at(timer.expires_at() + boost::posix_time::minutes(5));
+    timer.async_wait([&](const auto &ec) { cleanup(ec, timer); });
 }
 
-std::thread Gadgetron::Sessions::start_session_server( unsigned int port) {
+std::thread Gadgetron::Sessions::start_session_server(unsigned int port, const std::filesystem::path &database_folder,
+                                                      const std::filesystem::path &blob_folder) {
 
     std::thread server_thread([=] {
 
+        auto database = std::make_shared<DB::Database>(database_folder);
         asio::io_context ioc{};
-        REST::RESTEndpoints endpoints(InfoEndPoint{}, BlobStorageEndPoint{});
+        REST::RESTEndpoints endpoints(InfoEndPoint{}, BlobStorageEndPoint{database, blob_folder},
+                                      BlobRetrievalEndPoint{database, blob_folder}, WriteRequestEndPoint{database},
+                                      DataInfoEndPoint{database});
 
-        asio::spawn(ioc, [&ioc,&endpoints,  port](auto yield) {
-            REST::navi(ioc, tcp::endpoint(asio::ip::tcp::v4(),port), endpoints, yield);
+        asio::spawn(ioc, [&ioc, &endpoints, port](auto yield) {
+            REST::navi(ioc, tcp::endpoint(asio::ip::tcp::v4(), port), endpoints, yield);
         });
 
-        asio::deadline_timer timer(ioc,boost::posix_time::seconds(1));
+        asio::deadline_timer timer(ioc, boost::posix_time::seconds(1));
         //timer.async_wait([&](const auto& ec){ cleanup(ec,timer);});
         ioc.run();
     });

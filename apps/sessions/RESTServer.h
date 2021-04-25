@@ -35,24 +35,30 @@ namespace Gadgetron::Sessions::REST {
                 return errorCode;
             };
 
-            bool accepted = hana::fold_left(endpoints, false, [&](bool state, auto &&endpoint) {
-                if (state) return true;
-                bool accepts = endpoint.accept(req);
-                if (!accepts) return false;
-                endpoint.handle(reader,send, std::move(req_parser));
-                return true;
-            });
+            std::string fail_message = "The resource '" + std::string(req.target()) + "' was not found.";
 
-            if (accepted) return ec;
+            try {
+                bool accepted = hana::fold_left(endpoints, false, [&](bool state, auto &&endpoint) {
+                    if (state) return true;
+                    bool accepts = endpoint.accept(req);
+                    if (!accepts) return false;
+                    ec = endpoint.handle(reader, send, std::move(req_parser));
+                    return true;
+                });
+
+                if (accepted) return ec;
+            } catch (const std::runtime_error& error){
+                fail_message = error.what();
+            }
 
 
             http::response<http::string_body> res{http::status::bad_request, req.version()};
             res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
             res.set(http::field::content_type, "text/plain");
             res.keep_alive(req.keep_alive());
-            res.body() = "The resource '" + std::string(req.target()) + "' was not found.";
+            res.body() = fail_message;
             res.prepare_payload();
-            send(std::move(res));
+            ec = send(std::move(res));
             return ec;
 
         }
@@ -73,22 +79,27 @@ namespace internal{
 
 template<class RequestHandler>
 void handle_session( beast::tcp_stream stream, asio::yield_context yield, RequestHandler& handler ) {
-    bool close = false;
-    beast::flat_buffer buffer;
-    auto sender = [&stream,&close,yield](auto&& message){
-        beast::error_code ec;
-        close = message.need_eof();
-        auto sr = internal::create_serializer(message);
-        http::async_write(stream,sr,yield[ec]);
-        return ec;
-    };
+    try {
+        bool close = false;
+        beast::flat_buffer buffer;
+        auto sender = [&stream, &close, yield](auto &&message) {
+            beast::error_code ec;
+            close = message.need_eof();
+            auto sr = internal::create_serializer(message);
+            http::async_write(stream, sr, yield[ec]);
+            return ec;
+        };
 
-    for (;;){
-        beast::error_code ec = handler.handle_request(stream,sender, buffer,yield);
-        if (ec == http::error::end_of_stream) break;
-        if (close) break;
+        for (;;) {
+            beast::error_code ec = handler.handle_request(stream, sender, buffer, yield);
+            if (ec == http::error::end_of_stream) break;
+            if (close) break;
+        }
+        stream.socket().shutdown(tcp::socket::shutdown_send);
+    } catch(const std::runtime_error& error){
+        std::cerr <<"HTTP session faild with error " <<  error.what() << std::endl;
     }
-    stream.socket().shutdown(tcp::socket::shutdown_send);
+
 }
 
 

@@ -13,6 +13,7 @@ add_library(gadgetron_core SHARED
         LegacyACE.cpp
         Message.cpp
         Response.cpp
+        Storage.cpp
         io/from_string.cpp)
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
