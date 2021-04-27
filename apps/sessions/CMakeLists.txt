@@ -2,8 +2,8 @@ include(GoogleTest)
 find_package(RocksDB REQUIRED)
 add_library(gadgetron_session
         SessionServer.cpp
-        Storage.cpp
         JSONStore.h
+        RESTStorageClient.cpp
         )
 
 target_link_libraries(gadgetron_session Boost::coroutine gadgetron_core RocksDB::RocksDB Boost::date_time )

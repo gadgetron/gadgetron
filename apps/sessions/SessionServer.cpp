@@ -148,6 +148,7 @@ namespace {
 
             auto path = blob_folder / to_string(meta.meta.blob_id);
             http::request_parser<http::file_body> req2_parser(std::move(req));
+            req2_parser.body_limit(128ull*1024ull*1024ull*1024ull); //We support files up to 128GB. For now.
             req2_parser.get().body().open(path.c_str(), beast::file_mode::write, ec);
             if (ec) {
                 return send(string_response(ec.message(), http::status::insufficient_storage, req2_parser.get()));
