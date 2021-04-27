@@ -4,6 +4,7 @@
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS
 #include <cblas.h>
 #endif
+#include <iostream>
 #include <locale>
 namespace Gadgetron::Server {
 
@@ -21,6 +22,10 @@ namespace Gadgetron::Server {
     }
 
     void set_locale() { 
-        std::locale::global(std::locale::classic()); 
+        try {
+            std::locale::global(std::locale::empty()); 
+        } catch (...) {
+            std::cout << "Exceptions in std::locale::global(std::locale::empty());" << std::endl;
+        }
     }
 }
