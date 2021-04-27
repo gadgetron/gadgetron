@@ -19,4 +19,8 @@ namespace Gadgetron::Server {
 #endif
 
     }
+
+    void set_locale() {
+
+    }
 }
