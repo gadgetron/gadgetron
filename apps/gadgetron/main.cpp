@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
 
     try {
         configure_blas_libraries();
+        set_locale();
 
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
