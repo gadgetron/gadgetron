@@ -24,8 +24,10 @@ namespace Gadgetron::Server {
 
     void set_locale() { 
         try {
-            std::setlocale(LC_ALL, "en_US.UTF");
-            std::locale::global(std::locale("en_US.UTF"));
+	    std::wcout << "User-preferred locale setting is " << std::locale("").name().c_str() << '\n';
+	    std::setlocale(LC_ALL, "en_US.UTF-8");
+            std::locale id("en_US.UTF-8");
+            std::locale::global(id);
             std::cout.imbue(std::locale());
             std::cerr.imbue(std::locale());
             std::clog.imbue(std::locale());
