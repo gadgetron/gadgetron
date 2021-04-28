@@ -53,6 +53,15 @@ template<class Derived> void Gadgetron::ImageArraySendMixin<Derived>::prep_image
             res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "_GT");
             res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_REGULAR);
         }
+        else if (data_role == GADGETRON_IMAGE_BINNED)
+        {
+            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "Binned_Image");
+
+            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "Binned_Image");
+            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_BINNED);
+        }
         else if (data_role == GADGETRON_IMAGE_GFACTOR)
         {
             res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
