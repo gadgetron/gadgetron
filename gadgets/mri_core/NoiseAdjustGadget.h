@@ -84,5 +84,7 @@ namespace Gadgetron {
         void save_noisedata(NOISEHANDLER& nh) const;
 
         NoiseHandler load_or_gather() const;
+            
+        bool first_run_;
     };
 }
