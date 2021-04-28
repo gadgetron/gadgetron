@@ -278,8 +278,8 @@ namespace Gadgetron {
 
         // find the measurementID of this scan
 
-        noisehandler = load_or_gather();            
-        this->first_run_ = false;
+        noisehandler = load_or_gather();
+        this->first_run_ = true;
     }
 
     NoiseAdjustGadget::NoiseHandler NoiseAdjustGadget::load_or_gather() const {
@@ -468,12 +468,12 @@ namespace Gadgetron {
 
     void NoiseAdjustGadget::process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) {
 
-        if(!this->first_run_)
+        if(this->first_run_)
         {
         #ifdef USE_OMP
             omp_set_num_threads(1);
         #endif // USE_OMP
-            this->first_run_ = true;
+            this->first_run_ = false;
         }
         
         scale_only_channels = current_ismrmrd_header.acquisitionSystemInformation
