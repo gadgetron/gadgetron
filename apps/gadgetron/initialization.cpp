@@ -6,6 +6,7 @@
 #endif
 #include <iostream>
 #include <locale>
+#include <clocale>
 namespace Gadgetron::Server {
 
     void configure_blas_libraries() {
@@ -23,9 +24,16 @@ namespace Gadgetron::Server {
 
     void set_locale() { 
         try {
-            std::locale::global(std::locale::empty()); 
+            std::setlocale(LC_ALL, "en_US.UTF");
+            std::locale::global(std::locale("en_US.UTF"));
+            std::cout.imbue(std::locale());
+            std::cerr.imbue(std::locale());
+            std::clog.imbue(std::locale());
+            std::wcout.imbue(std::locale());
+            std::wcerr.imbue(std::locale());
+            std::wclog.imbue(std::locale());
         } catch (...) {
-            std::cout << "Exceptions in std::locale::global(std::locale::empty());" << std::endl;
+            std::cout << "Exceptions in set_locale() ..." << std::endl;
         }
     }
 }
