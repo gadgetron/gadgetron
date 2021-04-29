@@ -21,7 +21,11 @@ namespace Gadgetron::Server {
     }
 
     void set_locale() {
-        std::locale::global(std::locale::classic());
+        try {
+           std::locale::global(std::locale(""));
+        } catch (...) {
+            std::locale::global(std::locale::classic());
+        }
 
     }
 }
