@@ -93,7 +93,7 @@ fi
 # Install ZFP
 mkdir -p /opt/code
     cd /opt/code && \
-    git clone https://github.com/LLNL/zfp.git && \
+    git -c advice.detachedHead=false clone --branch 0.5.5 --single-branch https://github.com/LLNL/zfp.git \
     cd zfp && \
     mkdir build && \
     cd build && \
