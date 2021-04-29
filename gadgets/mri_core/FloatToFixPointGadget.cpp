@@ -19,7 +19,7 @@ namespace Gadgetron
         if constexpr (std::is_same_v<T,unsigned short>) return ISMRMRD::ISMRMRD_USHORT;
         if constexpr (std::is_same_v<T,short>) return ISMRMRD::ISMRMRD_SHORT;
         if constexpr (std::is_same_v<T,int >) return ISMRMRD::ISMRMRD_INT;
-        if constexpr (std::is_same_v<T,unsigned int>) return ISMRMRD::ISMRMRD_INT;
+        if constexpr (std::is_same_v<T,unsigned int>) return ISMRMRD::ISMRMRD_UINT;
 
         throw std::runtime_error("Unsupported type");
 
