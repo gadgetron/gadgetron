@@ -90,6 +90,16 @@ else
         make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest
 fi
 
+# Install ZFP
+mkdir -p /opt/code
+    cd /opt/code && \
+    git -c advice.detachedHead=false clone --branch 0.5.5 --single-branch https://github.com/LLNL/zfp.git \
+    cd zfp && \
+    mkdir build && \
+    cd build && \
+    cmake ../ && \
+    cmake --build . --config Release --parallel $(nproc) && cmake --install .  && cd /opt/code && rm -rf /opt/code/zfp
+
 pip3 install -U pip setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
 
