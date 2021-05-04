@@ -2,8 +2,8 @@
 #include "system_info.h"
 
 #include "gadgetron_config.h"
-#include "connection/stream/external/Python.h"
-#include "connection/stream/external/Matlab.h"
+#include "connection/nodes/external/Python.h"
+#include "connection/nodes/external/Matlab.h"
 #include "log.h"
 
 
@@ -77,11 +77,11 @@ namespace Gadgetron::Server::Info {
     }
 
     bool python_support() {
-        return Gadgetron::Server::Connection::Stream::python_available();
+        return Gadgetron::Server::Connection::Nodes::python_available();
     }
 
     bool matlab_support() {
-        return Gadgetron::Server::Connection::Stream::matlab_available();
+        return Gadgetron::Server::Connection::Nodes::matlab_available();
     }
 
 #if defined USE_CUDA

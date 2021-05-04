@@ -3,14 +3,14 @@
 #include <map>
 #include <memory>
 
-#include "stream/Stream.h"
-#include "Config.h"
+#include "config/Config.h"
+#include "nodes/Stream.h"
 
 #include "Context.h"
 #include "Reader.h"
 #include "Writer.h"
 
-namespace Gadgetron::Server::Connection::Stream {
+namespace Gadgetron::Server::Connection::Nodes {
     class Stream;
 }
 
@@ -20,6 +20,7 @@ namespace Gadgetron::Server::Connection {
         using Context = Core::Context;
         using Reader  = Gadgetron::Core::Reader;
         using Writer  = Gadgetron::Core::Writer;
+        using Stream  = Gadgetron::Server::Connection::Nodes::Stream;
 
         using GadgetProperties = Core::GadgetProperties;
     public:
@@ -27,7 +28,7 @@ namespace Gadgetron::Server::Connection {
 
         std::unique_ptr<Reader> load(const Config::Reader &);
         std::unique_ptr<Writer> load(const Config::Writer &);
-        std::unique_ptr<Stream::Stream> load(const Config::Stream &);
+        std::unique_ptr<Stream> load(const Config::Stream &);
 
         template<class RESULT>
         using generic_factory = std::unique_ptr<RESULT>(
@@ -75,8 +76,8 @@ namespace Gadgetron::Server::Connection {
         std::vector<std::unique_ptr<Writer>> load_default_and_additional_writers(CONFIG config) {
 
             static const std::vector<Config::Writer> default_writers{
-                    Config::Writer { "gadgetron_mricore", "GadgetIsmrmrdAcquisitionMessageWriter" },
-                    Config::Writer { "gadgetron_mricore", "GadgetIsmrmrdWaveformMessageWriter" },
+                    Config::Writer { "gadgetron_core_writers", "AcquisitionWriter" },
+                    Config::Writer { "gadgetron_core_writers", "WaveformWriter" },
                     Config::Writer { "gadgetron_core_writers", "ImageWriter" },
                     Config::Writer { "gadgetron_core_writers", "BufferWriter" },
                     Config::Writer { "gadgetron_core_writers", "IsmrmrdImageArrayWriter" },
