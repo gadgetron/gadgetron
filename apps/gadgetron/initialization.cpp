@@ -4,7 +4,7 @@
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS
 #include <cblas.h>
 #endif
-
+#include <locale>
 namespace Gadgetron::Server {
 
     void configure_blas_libraries() {
@@ -17,6 +17,11 @@ namespace Gadgetron::Server {
          */
         openblas_set_num_threads(1);
 #endif
+
+    }
+
+    void set_locale() {
+        std::locale::global(std::locale::classic());
 
     }
 }

@@ -11,6 +11,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <nlohmann/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <range/v3/view/transform.hpp>
+#include <regex>
 
 namespace beast = boost::beast;     // from <boost/beast.hpp>
 namespace http = beast::http;       // from <boost/beast/http.hpp>
@@ -22,119 +24,198 @@ namespace {
     using namespace Gadgetron::Core;
 
     constexpr int http_version = 11;
-    auto make_json_request(http::verb method, const std::string& host, const std::string& target, const json& j){
 
-        http::request<http::string_body> req{method,target,http_version};
-        req.set(http::field::host,host);
+    auto make_json_request(http::verb method, const std::string &host, const std::string &target, const json &j) {
+
+        http::request<http::string_body> req{method, target, http_version};
+        req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-        req.set(http::field::content_type,"application/json");
+        req.set(http::field::content_type, "application/json");
         req.body() = j.dump();
         req.prepare_payload();
         return req;
     }
-    auto make_empty_request(http::verb method, const std::string& host, const std::string& target ){
 
-        http::request<http::empty_body> req{method,target,http_version};
-        req.set(http::field::host,host);
+    auto make_empty_request(http::verb method, const std::string &host, const std::string &target) {
+
+        http::request<http::empty_body> req{method, target, http_version};
+        req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         return req;
     }
-    auto  connect_stream(net::io_context& ioc, const std::string& host, const std::string& port){
+
+    auto connect_stream(net::io_context &ioc, const std::string &host, const std::string &port) {
         tcp::resolver resolver(ioc);
-        beast::tcp_stream  stream(ioc);
-        auto const results = resolver.resolve(host,port);
+        beast::tcp_stream stream(ioc);
+        auto const results = resolver.resolve(host, port);
         stream.connect(results);
         return stream;
     }
 
-    json get_content(const std::string& server_address, const std::string& port, const std::string& group, const std::string& subject, const std::string& key){
+    json get_content(const std::string &server_address, const std::string &port, const std::string &group,
+                     const std::string &subject, const std::string &key) {
 
         net::io_context ioc;
-        auto stream = connect_stream(ioc,server_address,port);
-        auto json_body = json{{"storagespace", group},{"subject",subject},{"key",key}};
-        auto req = make_json_request(http::verb::get,server_address,"/v1/data",json_body );
-        http::write(stream,req);
+        auto stream = connect_stream(ioc, server_address, port);
+        auto json_body = json{{"storagespace", group},
+                              {"subject",      subject},
+                              {"key",          key}};
+        auto req = make_json_request(http::verb::get, server_address, "/v1/data", json_body);
+        http::write(stream, req);
 
         beast::flat_buffer buffer;
         http::response<http::string_body> response;
-        http::read(stream,buffer, response);
+        http::read(stream, buffer, response);
         stream.socket().shutdown(tcp::socket::shutdown_both);
         return json::parse(response.body());
     }
-    std::vector<char> fetch_data(const std::string& server_address, const std::string port, const std::string& path){
+
+    std::vector<char> fetch_data(const std::string &server_address, const std::string port, const std::string &path) {
         net::io_context ioc;
-        auto stream = connect_stream(ioc,server_address,port);
+        auto stream = connect_stream(ioc, server_address, port);
         auto req = make_empty_request(http::verb::get, server_address, path);
-        http::write(stream,req);
+        http::write(stream, req);
         beast::flat_buffer buf;
 
         http::response_parser<http::vector_body<char>> response_parser;
-        response_parser.body_limit(128ull*1024ull*1024ull*1024ull); //We support files up to 128GB. For now.
-        http::read(stream,buf,response_parser);
+        response_parser.body_limit(128ull * 1024ull * 1024ull * 1024ull); //We support files up to 128GB. For now.
+        http::read(stream, buf, response_parser);
         stream.socket().shutdown(tcp::socket::shutdown_both);
         return std::move(response_parser.get().body());
     }
 
-    json store_request(const std::string& server_address, const std::string& port, const std::string& group, const std::string& subject, const std::string& key, const boost::posix_time::time_duration& duration){
+    json store_request(const std::string &server_address, const std::string &port, const std::string &group,
+                       const std::string &subject, const std::string &key,
+                       const boost::posix_time::time_duration &duration) {
 
         net::io_context ioc;
-        auto stream = connect_stream(ioc,server_address,port);
-        auto json_body = json{{"storagespace", group},{"subject",subject},{"key",key},{"duration", boost::posix_time::to_iso_string(duration)}};
-        auto req = make_json_request(http::verb::post,server_address,"/v1/data",json_body );
-        http::write(stream,req);
+        auto stream = connect_stream(ioc, server_address, port);
+        auto json_body = json{{"storagespace", group},
+                              {"subject",      subject},
+                              {"key",          key},
+                              {"storage_duration",     boost::posix_time::to_iso_string(duration)}};
+        auto req = make_json_request(http::verb::post, server_address, "/v1/data", json_body);
+        http::write(stream, req);
 
         beast::flat_buffer buffer;
         http::response<http::string_body> response;
-        http::read(stream,buffer, response);
+        http::read(stream, buffer, response);
         stream.socket().shutdown(tcp::socket::shutdown_both);
+        if (to_status_class(response.result()) != http::status_class::successful) throw std::runtime_error("Storage server reported error " + response.body());
         return json::parse(response.body());
     }
 
-    void store_content(const std::string& server_address, const std::string& port,const std::string& path, std::vector<char> data){
+    void store_content(const std::string &server_address, const std::string &port, const std::string &path,
+                       std::vector<char> data) {
         net::io_context ioc;
-        auto stream = connect_stream(ioc,server_address,port);
+        auto stream = connect_stream(ioc, server_address, port);
 
-        http::request<http::vector_body<char>> req{http::verb::post,server_address,http_version};
-        req.set(http::field::host,server_address);
+        http::request<http::vector_body<char>> req{http::verb::patch, path, http_version};
+        req.set(http::field::host, server_address);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.body() = std::move(data);
         req.prepare_payload();
-        http::write(stream,std::move(req));
+        http::write(stream, std::move(req));
+        http::response<http::string_body> response;
+        beast::flat_buffer buffer;
+        http::read(stream, buffer, response);
+        stream.socket().shutdown(tcp::socket::shutdown_both);
+        if (to_status_class(response.result()) != http::status_class::successful) throw std::runtime_error("Storage server reported error " + response.body());
+
+    }
+
+}
+
+Gadgetron::Storage::RESTStorageClient::RESTStorageClient(const std::string &server_address, const std::string &port,
+                                                         const std::string &group, const std::string &subject)
+        : server_address(server_address), port(port), group(group), subject(subject) {}
 
 
+std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const std::string &key) const {
+    auto response = get_content(server_address, port, group, subject, key);
 
+    return response | ranges::views::transform(
+            [](const auto &json_value) { return json_value["storagepath"].template get<std::string>(); }) |
+           ranges::to<std::vector>();
+}
 
+std::vector<char> Gadgetron::Storage::RESTStorageClient::fetch(const std::string &key) const {
 
+    return fetch_data(server_address, port, key);
+}
 
+void Gadgetron::Storage::RESTStorageClient::store(const std::string &key, const std::vector<char> &value,
+                                                  boost::posix_time::time_duration duration) const {
+    auto response = store_request(server_address, port, group, subject, key, duration);
+    auto blob_path = response["blob_path"];
+    store_content(server_address, port, blob_path, value);
 
+}
+namespace {
+
+    struct IDs {
+        std::string patientID;
+        std::string scannerID;
+    };
+
+    Gadgetron::Core::optional<IDs> extract_IDS_from_measurement(const std::string& measurementID){
+        std::regex reg("(.*?)_(.*?)_(.*?)_(.*)");
+        std::smatch match;
+
+        if (std::regex_match(measurementID,match,reg)){
+            return IDs{ match[1],match[2] };
+        }
+        return {};
     }
 
 
 
+    std::string scannerID(const ISMRMRD::IsmrmrdHeader& header){
 
-class RESTStorageClient : public StorageSpace::StreamProvider {
-public:
-    RESTStorageClient(const std::string& server_address, const std::string& group, const ISMRMRD::IsmrmrdHeader& header) : server_address(server_address), group(group),header(header) {
+        if (auto system_info = header.acquisitionSystemInformation)
+            if (auto s = system_info->stationName)
+                return s.value();
+
+        if (auto measInfo = header.measurementInformation){
+            if (auto id = measInfo->measurementID){
+                if (auto extracted = extract_IDS_from_measurement(id.value())){
+                    return extracted->scannerID;
+                }
+            }
+        }
+        return "default";
     }
 
-    ~RESTStorageClient() override = default;
-
-    std::vector<std::string> content(const std::string &key) const override {
 
 
+    std::string patientID(const ISMRMRD::IsmrmrdHeader& header){
+        if (auto subject = header.subjectInformation){
+            if (subject->patientID){
+                return subject->patientID.value();
+            }
+        }
+
+        if (auto measInfo = header.measurementInformation){
+            if (auto id = measInfo->measurementID){
+                if (auto extracted = extract_IDS_from_measurement(id.value())){
+                    return extracted->patientID;
+                }
+            }
+        }
+
+        return "default";
 
     }
-
-    std::vector<char> fetch(const std::string &key) const override {
-        return std::unique_ptr<std::istream>();
+    std::string debugID(const ISMRMRD::IsmrmrdHeader& header){
+        return "";
     }
-    void store(const std::string &key, const std::vector<char>& values) const override {
-        return std::unique_ptr<std::ostream>();
-    }
+}
 
-private:
-    const std::string server_address;
-    const std::string group;
-    const ISMRMRD::IsmrmrdHeader& header
-};
+Storage Gadgetron::Storage::setup_storage(const std::string &server_address, const std::string &port,
+                                          const ISMRMRD::IsmrmrdHeader &header) {
+        return {
+                Core::StorageSpace(std::make_shared<RESTStorageClient>(server_address,port, "session", patientID(header)),boost::posix_time::time_duration(48,0,0)),
+                Core::StorageSpace(std::make_shared<RESTStorageClient>(server_address,port, "scanner", scannerID(header)), boost::posix_time::time_duration(48,0,0)),
+                Core::StorageSpace(std::make_shared<RESTStorageClient>(server_address,port, "debug", debugID(header) ), boost::posix_time::time_duration(48,0,0))
+        };
 }

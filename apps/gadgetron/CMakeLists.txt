@@ -68,6 +68,7 @@ add_executable(gadgetron
 
 target_link_libraries(gadgetron
         gadgetron_core
+        gadgetron_session
         gadgetron_toolbox_log
         Boost::system
         Boost::filesystem

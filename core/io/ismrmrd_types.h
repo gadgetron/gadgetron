@@ -9,11 +9,11 @@
 
 namespace Gadgetron::Core::IO {
 
-    void write(std::ostream& stream, const ISMRMRD::MetaContainer& meta);
-    void read(std::istream& stream, ISMRMRD::MetaContainer& meta);
+    inline void write(std::ostream& stream, const ISMRMRD::MetaContainer& meta);
+    inline void read(std::istream& stream, ISMRMRD::MetaContainer& meta);
 
-    void write(std::ostream& stream, const ISMRMRD::Waveform& wave);
-    void read(std::istream& stream, ISMRMRD::Waveform& wave);
+    inline void write(std::ostream& stream, const ISMRMRD::Waveform& wave);
+    inline void read(std::istream& stream, ISMRMRD::Waveform& wave);
 
 }
 

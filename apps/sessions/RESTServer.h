@@ -4,6 +4,7 @@
 #include <boost/asio/spawn.hpp>
 #include <boost/hana.hpp>
 #include <iostream>
+#include <future>
 
 namespace Gadgetron::Sessions::REST {
     namespace beast = boost::beast;         // from <boost/beast.hpp>
@@ -47,7 +48,7 @@ namespace Gadgetron::Sessions::REST {
                 });
 
                 if (accepted) return ec;
-            } catch (const std::runtime_error& error){
+            } catch (const std::exception& error){
                 fail_message = error.what();
             }
 
@@ -104,13 +105,14 @@ void handle_session( beast::tcp_stream stream, asio::yield_context yield, Reques
 
 
 template<class RequestHandler>
-[[noreturn]] void navi( asio::io_context& ioc, tcp::endpoint endpoint,  RequestHandler& handler, asio::yield_context yield){
+void navi( asio::io_context& ioc, tcp::endpoint endpoint,  RequestHandler& handler,std::promise<unsigned short>& port, asio::yield_context yield){
     tcp::acceptor acceptor(ioc);
     acceptor.open(endpoint.protocol());
     acceptor.set_option(asio::socket_base::reuse_address(true));
     acceptor.bind(endpoint);
     acceptor.listen(asio::socket_base::max_listen_connections);
-    for (;;){
+    port.set_value(acceptor.local_endpoint().port());
+    while (!ioc.stopped()){
         tcp::socket socket(ioc);
         acceptor.async_accept(socket,yield);
         asio::spawn(acceptor.get_executor(),[&socket,&handler](auto yield){ handle_session(beast::tcp_stream(std::move(socket)),yield,handler);});

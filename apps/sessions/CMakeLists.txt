@@ -15,7 +15,7 @@ target_include_directories(gadgetron_session PUBLIC
 
 
 
-add_executable(session_tests sessions_test.cpp)
-target_link_libraries(session_tests GTest::Main gadgetron_session)
+add_executable(session_tests sessions_test.cpp server_test.cpp)
+target_link_libraries(session_tests GTest::Main gadgetron_session gadgetron_core)
 
 gtest_discover_tests(session_tests)

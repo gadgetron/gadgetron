@@ -159,7 +159,7 @@ namespace {
 
 
             database->pending_writes.delete_key(key);
-            database->blobs.push_back(key, meta.meta);
+            database->blobs.push_back(meta.key, meta.meta);
 
             return send(empty_response(http::status::ok, req2_parser.get()));
         }
@@ -227,8 +227,9 @@ namespace {
             http::request_parser<http::string_body> req2(std::move(req));
             if (auto ec = read(req2)) return ec;
             auto retrieval_request = json::parse(req2.get().body()).get<RetrievalRequest>();
-            auto blobs = database->blobs[full_key(retrieval_request.storagespace, retrieval_request.subject,
-                                                  retrieval_request.key)];
+            auto key = full_key(retrieval_request.storagespace,retrieval_request.subject, retrieval_request.key);
+            std::cout << "Retrieving from key " << key << std::endl;
+            auto blobs = database->blobs[key];
 
             auto response_blobs = ranges::reverse_view(blobs) | ranges::views::transform(
                     [](auto &&meta) -> RetrievalResponse {
@@ -268,21 +269,28 @@ namespace {
             auto ec = read(req2);
 
             if (ec) return ec;
+            auto body = req2.get().body();
+            try {
+                auto j = json::parse(body);
+                auto write_request = j.get<WriteRequest>();
 
-            auto write_request = json::parse(req2.get().body()).get<WriteRequest>();
+                const std::string write_uuid = to_string(uuid_generator());
+                const auto blob_id = uuid_generator();
 
-            const std::string write_uuid = to_string(uuid_generator());
-            const auto blob_id = uuid_generator();
+                auto now = boost::posix_time::second_clock::universal_time();
+                auto deadline = now + boost::posix_time::minutes(30);
 
-            auto now = boost::posix_time::second_clock::universal_time();
-            auto deadline = now + boost::posix_time::minutes(30);
+                auto key = full_key(write_request.storagespace, write_request.subject, write_request.key);
+                std::cout << "Storing key under: " << key << std::endl;
 
-            auto key = full_key(write_request.storagespace, write_request.subject, write_request.key);
+                auto pending_write = PendingWrite{key, deadline, {blob_id, now, now + write_request.storage_duration}};
 
-            auto pending_write = PendingWrite{key, deadline, {blob_id, now, now + write_request.storage_duration}};
-
-            db->pending_writes.set(to_string(blob_id), pending_write);
-            return send(json_response(make_response(blob_id), req2.get()));
+                db->pending_writes.set(to_string(blob_id), pending_write);
+                return send(json_response(make_response(blob_id), req2.get()));
+            } catch (const std::exception& error){
+                std::string error_message = error.what();
+                return send(string_response(error_message,http::status::bad_request,req2.get()));
+            }
         }
 
         std::shared_ptr<Database> db;
@@ -305,24 +313,47 @@ void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer) {
     timer.async_wait([&](const auto &ec) { cleanup(ec, timer); });
 }
 
-std::thread Gadgetron::Sessions::start_session_server(unsigned int port, const std::filesystem::path &database_folder,
-                                                      const std::filesystem::path &blob_folder) {
+static void ensure_exists(const std::filesystem::path& folder){
+    if (exists(folder)){
+        if (!is_directory(folder)) throw std::runtime_error("Specified path " + folder.string() + " must be a folder");
+        return;
+    }
 
-    std::thread server_thread([=] {
+    create_directories(folder);
+}
+
+Gadgetron::Sessions::SessionServer::SessionServer(unsigned short port, const std::filesystem::path &database_folder,
+                                                  const std::filesystem::path &blob_folder): ioContext{} {
+
+    ensure_exists(database_folder);
+    ensure_exists(blob_folder);
+    std::promise<unsigned short> bound_port_promise;
+
+    this->server_thread = std::thread([this,database_folder, blob_folder, port,&bound_port_promise ] {
 
         auto database = std::make_shared<DB::Database>(database_folder);
-        asio::io_context ioc{};
         REST::RESTEndpoints endpoints(InfoEndPoint{}, BlobStorageEndPoint{database, blob_folder},
                                       BlobRetrievalEndPoint{database, blob_folder}, WriteRequestEndPoint{database},
                                       DataInfoEndPoint{database});
 
-        asio::spawn(ioc, [&ioc, &endpoints, port](auto yield) {
-            REST::navi(ioc, tcp::endpoint(asio::ip::tcp::v4(), port), endpoints, yield);
+        asio::spawn(ioContext, [this, &endpoints, port, &bound_port_promise](auto yield) {
+            REST::navi(ioContext, tcp::endpoint(asio::ip::tcp::v4(), port), endpoints,bound_port_promise, yield);
         });
 
-        asio::deadline_timer timer(ioc, boost::posix_time::seconds(1));
+        asio::deadline_timer timer(ioContext, boost::posix_time::seconds(1));
         //timer.async_wait([&](const auto& ec){ cleanup(ec,timer);});
-        ioc.run();
+        ioContext.run();
     });
-    return server_thread;
+
+    this->bound_port = bound_port_promise.get_future().get();
+}
+
+SessionServer::~SessionServer() {
+    ioContext.stop();
+    this->server_thread.join();
+
+}
+
+unsigned short SessionServer::port() {
+    return this->bound_port;
 }

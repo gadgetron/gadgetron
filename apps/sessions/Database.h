@@ -19,18 +19,18 @@ namespace boost::posix_time {
 
     using json = nlohmann::json;
 
-    static void to_json(json &j, const ptime &time) {
+    inline static void to_json(json &j, const ptime &time) {
         j = to_iso_extended_string(time);
     }
 
-    static void from_json(const json &j, ptime &time) {
+    inline static void from_json(const json &j, ptime &time) {
         time = from_iso_extended_string(j.get<std::string>());
     }
 
-    static void to_json(json& j, const time_duration& duration){
+    inline static void to_json(json& j, const time_duration& duration){
         j = to_iso_string(duration);
     }
-    void from_json(const json& j, time_duration& duration){
+    inline void from_json(const json& j, time_duration& duration){
         duration = duration_from_string(j.get<std::string>());
     }
 
@@ -38,11 +38,11 @@ namespace boost::posix_time {
 namespace boost::uuids {
 
     using json = nlohmann::json;
-    static void to_json(json &j, const uuid &id) {
-        j = json{to_string(id)};
+    inline static void to_json(json &j, const uuid &id) {
+        j = to_string(id);
     }
 
-    static void from_json(const json &j, uuid &id) {
+    inline static void from_json(const json &j, uuid &id) {
         boost::uuids::string_generator gen;
         id = gen(j.get<std::string>());
     }
@@ -83,7 +83,7 @@ namespace Gadgetron::Sessions::DB {
         std::map<std::string, rocksdb::ColumnFamilyHandle *> families;
     };
 
-    DataBaseFamilies create_database(const std::filesystem::path &path,
+    inline DataBaseFamilies create_database(const std::filesystem::path &path,
                                      const std::vector<rocksdb::ColumnFamilyDescriptor> &column_families) {
         rocksdb::DBOptions options;
         options.create_if_missing = true;
