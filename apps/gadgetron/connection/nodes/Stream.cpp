@@ -31,13 +31,14 @@ namespace {
 
     class NodeProcessable : public Processable {
     public:
-        NodeProcessable(std::unique_ptr<Node> node, std::string name) : node(std::move(node)), name_(std::move(name)) {}
+        NodeProcessable(std::function<std::unique_ptr<Node>()> factory, std::string name) : factory(std::move(factory)), name_(std::move(name)) {}
 
         void process(GenericInputChannel input,
                 OutputChannel output,
                 ErrorHandler &
         ) override {
-             node->process(input, output);
+            auto node = factory();
+            node->process(input, output);
         }
 
         const std::string& name() override {
@@ -45,15 +46,20 @@ namespace {
         }
 
     private:
-        std::unique_ptr<Node> node;
+        std::function<std::unique_ptr<Node>()> factory;
         const std::string name_;
     };
 
     std::shared_ptr<Processable> load_node(const Config::Gadget &conf, const StreamContext &context, Loader &loader) {
-        GDEBUG("Loading Gadget %s of class %s from %s\n", conf.name.c_str(), conf.classname.c_str(), conf.dll.c_str());
         auto factory = loader.load_factory<Loader::generic_factory<Node>>("gadget_factory_export_", conf.classname,
                                                                           conf.dll);
-        return std::make_shared<NodeProcessable>(factory(context, conf.properties), Config::name(conf));
+        return std::make_shared<NodeProcessable>(
+            [=]() {
+                GDEBUG("Loading Gadget %s of class %s from %s\n", conf.name.c_str(), conf.classname.c_str(), conf.dll.c_str());
+                return factory(context, conf.properties);
+            },
+            Config::name(conf)
+        );
     }
 
     std::shared_ptr<Processable> load_node(const Config::Parallel &conf, const StreamContext &context, Loader &loader) {
@@ -110,11 +116,16 @@ namespace Gadgetron::Server::Connection::Nodes {
 
         output_channels.emplace_back(std::move(output));
 
-        ErrorHandler nested_handler{error_handler, key};
+        ErrorHandler nested_handler{error_handler, name()};
 
         std::vector<std::thread> threads(nodes.size());
         for (auto i = 0; i < nodes.size(); i++) {
-            threads[i] = Processable::process_async(nodes[i],std::move(input_channels[i]),std::move(output_channels[i]),nested_handler);
+            threads[i] = Processable::process_async(
+                nodes[i],
+                std::move(input_channels[i]),
+                std::move(output_channels[i]),
+                nested_handler
+            );
         }
 
         for (auto &thread : threads) {
@@ -126,5 +137,6 @@ namespace Gadgetron::Server::Connection::Nodes {
 }
 
 const std::string &Gadgetron::Server::Connection::Nodes::Stream::name() {
-    return key;
+    static const std::string name = "Stream";
+    return key.empty() ? name : key;
 }

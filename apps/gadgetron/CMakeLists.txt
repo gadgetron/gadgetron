@@ -65,7 +65,7 @@ add_executable(gadgetron
         connection/nodes/distributed/Worker.cpp
         connection/nodes/distributed/Worker.h
         connection/nodes/common/Closer.h
-        connection/nodes/distributed/Pool.cpp connection/core/Processor.cpp connection/core/Processor.h connection/core/Processable.cpp)
+        connection/nodes/distributed/Pool.cpp connection/core/Processable.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core
