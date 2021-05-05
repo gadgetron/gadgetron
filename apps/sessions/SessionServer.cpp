@@ -228,7 +228,6 @@ namespace {
             if (auto ec = read(req2)) return ec;
             auto retrieval_request = json::parse(req2.get().body()).get<RetrievalRequest>();
             auto key = full_key(retrieval_request.storagespace,retrieval_request.subject, retrieval_request.key);
-            std::cout << "Retrieving from key " << key << std::endl;
             auto blobs = database->blobs[key];
 
             auto response_blobs = ranges::reverse_view(blobs) | ranges::views::transform(
@@ -281,7 +280,6 @@ namespace {
                 auto deadline = now + boost::posix_time::minutes(30);
 
                 auto key = full_key(write_request.storagespace, write_request.subject, write_request.key);
-                std::cout << "Storing key under: " << key << std::endl;
 
                 auto pending_write = PendingWrite{key, deadline, {blob_id, now, now + write_request.storage_duration}};
 

@@ -18,10 +18,11 @@ namespace Gadgetron::Core {
         class StorageList {
         public:
             T operator[](size_t index) {
-                auto data = storageSpace.provider->fetch(keys.at(index));
+                auto data = storageSpace->provider->fetch(keys.at(index));
                 return IO::read<T>(*istream_from_data(data));
             }
 
+            StorageList& operator=(StorageList&&)  noexcept = default;
 
             size_t size() { return keys.size(); }
 
@@ -29,10 +30,11 @@ namespace Gadgetron::Core {
             friend StorageSpace;
 
             StorageList( StorageSpace& storageSpace, std::vector<std::string> keys) : keys(std::move(keys)),
-                                                                                    storageSpace(storageSpace) {}
+                                                                                    storageSpace(&storageSpace) {}
+
 
             std::vector<std::string> keys;
-            StorageSpace &storageSpace;
+            StorageSpace *storageSpace;
 
         };
 

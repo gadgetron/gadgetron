@@ -44,6 +44,17 @@ TEST_F(ServerTest,basic_storage){
 
     auto fetched = storage_list[0];
     ASSERT_EQ(x,fetched);
+    hoNDArray<float> y(2,2);
+    std::fill(x.begin(),x.end(),23);
+    this->storage.session.store("stuff",y);
+
+    storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
+
+    ASSERT_EQ(storage_list.size(),2);
+    fetched = storage_list[0];
+    ASSERT_EQ(fetched,y);
+    fetched = storage_list[1];
+    ASSERT_EQ(fetched,x);
 
 
 }
