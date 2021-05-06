@@ -9,6 +9,7 @@
 #include "Writer.h"
 #include "Channel.h"
 #include "Context.h"
+#include "Address.h"
 
 namespace Gadgetron::Server::Connection {
 
@@ -145,5 +146,5 @@ namespace Gadgetron::Server::Connection {
         );
     }
 
-    void handle_connection(std::unique_ptr<std::iostream> stream, Core::StreamContext::Paths paths, Core::StreamContext::Args args);
+    void handle_connection(std::unique_ptr<std::iostream> stream, Core::StreamContext::Paths paths, Core::StreamContext::Args args, Storage::Address sessions_address);
 }

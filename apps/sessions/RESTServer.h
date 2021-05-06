@@ -6,7 +6,7 @@
 #include <iostream>
 #include <future>
 
-namespace Gadgetron::Sessions::REST {
+namespace Gadgetron::Storage::REST {
     namespace beast = boost::beast;         // from <boost/beast.hpp>
     namespace http = beast::http;           // from <boost/beast/http.hpp>
     namespace net = boost::asio;            // from <boost/asio.hpp>

@@ -1,4 +1,4 @@
-
+#include "Connection.h"
 #include <iostream>
 #include <memory>
 
@@ -20,9 +20,10 @@ namespace Gadgetron::Server::Connection {
     void handle(
             const Gadgetron::Core::StreamContext::Paths& paths,
             const Gadgetron::Core::StreamContext::Args& args,
+            const Gadgetron::Storage::Address& storage_address,
             std::unique_ptr<std::iostream> stream
     ) {
-        auto thread = std::thread(handle_connection, std::move(stream), paths, args);
+        auto thread = std::thread(handle_connection, std::move(stream), paths, args, storage_address);
         thread.detach();
     }
 
@@ -31,6 +32,7 @@ namespace Gadgetron::Server::Connection {
     void handle(
             const Gadgetron::Core::StreamContext::Paths& paths,
             const Gadgetron::Core::StreamContext::Args& args,
+            const Gadgetron::Storage::Address& storage_address,
             std::unique_ptr<std::iostream> stream
     ) {
         auto pid = fork();

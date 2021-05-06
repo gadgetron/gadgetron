@@ -126,9 +126,9 @@ namespace {
 
 }
 
-Gadgetron::Storage::RESTStorageClient::RESTStorageClient(const std::string &server_address, const std::string &port,
+Gadgetron::Storage::RESTStorageClient::RESTStorageClient(const Address& address,
                                                          const std::string &group, const std::string &subject)
-        : server_address(server_address), port(port), group(group), subject(subject) {}
+        : server_address(address.host), port(address.port), group(group), subject(subject) {}
 
 
 std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const std::string &key) const {
@@ -211,11 +211,11 @@ namespace {
     }
 }
 
-Storage Gadgetron::Storage::setup_storage(const std::string &server_address, const std::string &port,
+Storage Gadgetron::Storage::setup_storage(const Address& address,
                                           const ISMRMRD::IsmrmrdHeader &header) {
         return {
-                Core::StorageSpace(std::make_shared<RESTStorageClient>(server_address,port, "session", patientID(header)),boost::posix_time::time_duration(48,0,0)),
-                Core::StorageSpace(std::make_shared<RESTStorageClient>(server_address,port, "scanner", scannerID(header)), boost::posix_time::time_duration(48,0,0)),
-                Core::StorageSpace(std::make_shared<RESTStorageClient>(server_address,port, "debug", debugID(header) ), boost::posix_time::time_duration(48,0,0))
+                Core::StorageSpace(std::make_shared<RESTStorageClient>(address, "session", patientID(header)),boost::posix_time::time_duration(48,0,0)),
+                Core::StorageSpace(std::make_shared<RESTStorageClient>(address, "scanner", scannerID(header)), boost::posix_time::time_duration(48,0,0)),
+                Core::StorageSpace(std::make_shared<RESTStorageClient>(address, "debug", debugID(header) ), boost::posix_time::time_duration(48,0,0))
         };
 }

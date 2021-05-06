@@ -16,7 +16,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "Database.h"
 
-using namespace Gadgetron::Sessions;
+using namespace Gadgetron::Storage;
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
@@ -25,7 +25,7 @@ namespace asio = boost::asio;
 
 using json = nlohmann::json;
 
-using namespace Gadgetron::Sessions::DB;
+using namespace Gadgetron::Storage::DB;
 
 
 namespace {
@@ -125,7 +125,7 @@ namespace {
     struct BlobStorageEndPoint {
 
         std::shared_ptr<Database> database;
-        std::filesystem::path blob_folder;
+        boost::filesystem::path blob_folder;
 
         bool accept(const http::request<http::empty_body> &req) {
             if (req.method() == http::verb::patch && req.target().starts_with(endpoint)) return true;
@@ -171,7 +171,7 @@ namespace {
     struct BlobRetrievalEndPoint {
 
         std::shared_ptr<Database> database;
-        std::filesystem::path blob_folder;
+        boost::filesystem::path blob_folder;
 
 
         bool accept(const http::request<http::empty_body> &req) {
@@ -311,7 +311,7 @@ void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer) {
     timer.async_wait([&](const auto &ec) { cleanup(ec, timer); });
 }
 
-static void ensure_exists(const std::filesystem::path& folder){
+static void ensure_exists(const boost::filesystem::path& folder){
     if (exists(folder)){
         if (!is_directory(folder)) throw std::runtime_error("Specified path " + folder.string() + " must be a folder");
         return;
@@ -320,8 +320,8 @@ static void ensure_exists(const std::filesystem::path& folder){
     create_directories(folder);
 }
 
-Gadgetron::Sessions::SessionServer::SessionServer(unsigned short port, const std::filesystem::path &database_folder,
-                                                  const std::filesystem::path &blob_folder): ioContext{} {
+Gadgetron::Storage::SessionServer::SessionServer(unsigned short port, const boost::filesystem::path &database_folder,
+                                                 const boost::filesystem::path &blob_folder): ioContext{} {
 
     ensure_exists(database_folder);
     ensure_exists(blob_folder);

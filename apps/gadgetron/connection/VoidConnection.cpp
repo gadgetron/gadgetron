@@ -8,6 +8,7 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
+#include "RESTStorageClient.h"
 
 
 namespace {
@@ -37,8 +38,8 @@ namespace Gadgetron::Server::Connection::VoidConnection {
     ) {
         GINFO_STREAM("Connection state: [VOID]");
 
-        // Please note the empty header initialization crime. TODO: Fight crime.
-        Core::StreamContext context{Context::Header{}, paths,StreamContext::Args{}};
+        // Please note the empty header initialization crime and empty storage. TODO: Fight crime.
+        Core::StreamContext context{Context::Header{}, paths,Core::Storage(),StreamContext::Args{}};
         Loader loader{context};
 
 

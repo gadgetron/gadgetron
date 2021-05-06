@@ -16,10 +16,11 @@ using namespace Gadgetron::Server;
 
 
 Server::Server(
-        const boost::program_options::variables_map &args
-) : args(args) {}
+        const boost::program_options::variables_map &args,
+        Gadgetron::Storage::Address address
+) : args(args), storage_address(std::move(address)) {}
 
-void Server::serve() {
+[[noreturn]] void Server::serve() {
 
     Gadgetron::Core::Context::Paths paths{args["home"].as<path>(), args["dir"].as<path>()};
     GINFO_STREAM("Gadgetron home directory: " << paths.gadgetron_home);
@@ -41,6 +42,6 @@ void Server::serve() {
 
         GINFO_STREAM("Accepted connection from: " << socket->remote_endpoint().address());
 
-        Connection::handle(paths, args, Gadgetron::Connection::stream_from_socket(std::move(socket)));
+        Connection::handle(paths, args, storage_address, Gadgetron::Connection::stream_from_socket(std::move(socket)));
     }
 }

@@ -12,7 +12,7 @@
 
 
 
-namespace Gadgetron::Sessions::DB {
+namespace Gadgetron::Storage::DB {
     using json = nlohmann::json;
 
 

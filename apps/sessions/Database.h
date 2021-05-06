@@ -4,7 +4,7 @@
 #include "DBError.h"
 #include <rocksdb/db.h>
 #include <rocksdb/merge_operator.h>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
 #include <nlohmann/json.hpp>
 #include <boost/hana/adapt_struct.hpp>
@@ -71,7 +71,7 @@ namespace nlohmann {
 }
 
 
-namespace Gadgetron::Sessions::DB {
+namespace Gadgetron::Storage::DB {
 
 
     using json = nlohmann::json;
@@ -83,7 +83,7 @@ namespace Gadgetron::Sessions::DB {
         std::map<std::string, rocksdb::ColumnFamilyHandle *> families;
     };
 
-    inline DataBaseFamilies create_database(const std::filesystem::path &path,
+    inline DataBaseFamilies create_database(const boost::filesystem::path &path,
                                      const std::vector<rocksdb::ColumnFamilyDescriptor> &column_families) {
         rocksdb::DBOptions options;
         options.create_if_missing = true;
@@ -126,15 +126,15 @@ namespace Gadgetron::Sessions::DB {
 
 
 }
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::BlobMeta, blob_id, creation_time, deletion_time);
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::Sessions::DB::PendingWrite, key, transaction_expiration, meta);
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::Storage::DB::BlobMeta, blob_id, creation_time, deletion_time);
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::Storage::DB::PendingWrite, key, transaction_expiration, meta);
 
 
-namespace Gadgetron::Sessions::DB {
+namespace Gadgetron::Storage::DB {
 
     struct Database {
 
-        Database(const std::filesystem::path &path) {
+        Database(const boost::filesystem::path &path) {
 
             auto cf_descriptors = std::vector<rocksdb::ColumnFamilyDescriptor>{{"Info",          rocksdb::ColumnFamilyOptions()},
                                                                     {"PendingWrites", rocksdb::ColumnFamilyOptions()},

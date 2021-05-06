@@ -6,30 +6,30 @@
 #include "SessionServer.h"
 #include "RESTStorageClient.h"
 
-using namespace Gadgetron::Sessions;
+using namespace Gadgetron::Storage;
 using namespace Gadgetron;
 
 class ServerTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        temp_dir = std::filesystem::temp_directory_path() / "gadgetron_session_test";
-        std::filesystem::remove_all(temp_dir);
-        std::filesystem::create_directory(temp_dir);
+        temp_dir = boost::filesystem::temp_directory_path() / "gadgetron_session_test";
+        boost::filesystem::remove_all(temp_dir);
+        boost::filesystem::create_directory(temp_dir);
         server = std::make_unique<SessionServer>(0,temp_dir/"database", temp_dir);
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
-        storage = Storage::setup_storage("localhost",std::to_string(server->port()),header);
+        storage = Storage::setup_storage({"localhost",std::to_string(server->port())},header);
 
     }
 
     void TearDown() override {
         server = nullptr;
-        std::filesystem::remove_all(temp_dir);
+        boost::filesystem::remove_all(temp_dir);
     }
 
     Gadgetron::Core::Storage storage;
     std::unique_ptr<SessionServer> server;
-    std::filesystem::path temp_dir;
+    boost::filesystem::path temp_dir;
 
 };
 

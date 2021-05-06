@@ -1,14 +1,14 @@
 #pragma once
 #include <string>
 #include <thread>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <boost/asio/io_context.hpp>
 
-namespace Gadgetron::Sessions {
+namespace Gadgetron::Storage {
 
     class SessionServer {
     public:
-        SessionServer(unsigned short port, const std::filesystem::path& database_folder, const std::filesystem::path& blob_folder);
+        SessionServer(unsigned short port, const boost::filesystem::path& database_folder, const boost::filesystem::path& blob_folder);
         ~SessionServer();
         unsigned short port();
 

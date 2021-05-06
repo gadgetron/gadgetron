@@ -107,6 +107,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
             std::iostream &stream,
             const Core::StreamContext::Paths &paths,
             const Core::StreamContext::Args &args,
+            const Storage::Address& sessions_address,
             ErrorHandler &error_handler
     ) {
 
@@ -137,7 +138,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         output_thread.join();
 
         if (context.config) {
-            HeaderConnection::process(stream, paths, args, context.config.value(), error_handler);
+            HeaderConnection::process(stream, paths, args,sessions_address, context.config.value(), error_handler);
         }
     }
 }

@@ -2,12 +2,14 @@
 
 #include <ismrmrd/xml.h>
 #include "Storage.h"
+#include "Address.h"
 
-namespace Gadgetron::Storage {
+namespace Gadgetron::Storage{
+
 
 class RESTStorageClient : public Core::StorageSpace::StreamProvider {
     public:
-        RESTStorageClient(const std::string &server_address, const std::string &port, const std::string &group,
+        RESTStorageClient(const Address& address, const std::string &group,
                           const std::string &subject);
 
         ~RESTStorageClient() override = default;
@@ -26,7 +28,7 @@ class RESTStorageClient : public Core::StorageSpace::StreamProvider {
     };
 
 
-    Core::Storage setup_storage(const std::string& server_address, const std::string& port, const ISMRMRD::IsmrmrdHeader& header );
+    Core::Storage setup_storage(const Address& address, const ISMRMRD::IsmrmrdHeader& header );
 
 }
 

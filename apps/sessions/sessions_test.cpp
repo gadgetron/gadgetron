@@ -5,27 +5,28 @@
 #include "gtest/gtest.h"
 #include "Database.h"
 
-#include <filesystem>
+#include <boost/filesystem.hpp>
+#include <memory>
 
 using namespace Gadgetron;
-using namespace Gadgetron::Sessions::DB;
+using namespace Gadgetron::Storage::DB;
 class SessionsTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        temp_dir = std::filesystem::temp_directory_path() / "gadgetron_session_test";
-        std::filesystem::create_directory(temp_dir);
+        temp_dir = boost::filesystem::temp_directory_path() / "gadgetron_session_test";
+        boost::filesystem::create_directory(temp_dir);
         db = std::make_unique<Database>(temp_dir);
 
     }
 
     void TearDown() override {
         db = nullptr;
-        std::filesystem::remove_all(temp_dir);
+        boost::filesystem::remove_all(temp_dir);
 
     }
 
     std::unique_ptr<Database> db;
-    std::filesystem::path temp_dir;
+    boost::filesystem::path temp_dir;
 
 };
 
