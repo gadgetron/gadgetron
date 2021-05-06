@@ -6,9 +6,9 @@
 
 #include "gadgetron_config.h"
 
-#include "HeaderConnection.h"
 #include "Handlers.h"
-#include "Config.h"
+#include "HeaderConnection.h"
+#include "config/Config.h"
 
 #include "io/primitives.h"
 #include "Context.h"
