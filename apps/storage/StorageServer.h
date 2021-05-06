@@ -6,10 +6,10 @@
 
 namespace Gadgetron::Storage {
 
-    class SessionServer {
+    class StorageServer {
     public:
-        SessionServer(unsigned short port, const boost::filesystem::path& database_folder, const boost::filesystem::path& blob_folder);
-        ~SessionServer();
+        StorageServer(unsigned short port, const boost::filesystem::path& database_folder, const boost::filesystem::path& blob_folder);
+        ~StorageServer();
         unsigned short port();
 
     private:

@@ -96,9 +96,9 @@ TEST_F(SessionsTest,range_test){
 
     auto& info = db->db_info;
 
-    info.set("/sessions/penguin/0",{1});
-    info.set("/sessions/penguin/00",{2});
-    info.set("/sessions/apenguin/0",{0});
+    info.set("/storage/penguin/0",{1});
+    info.set("/storage/penguin/00",{2});
+    info.set("/storage/apenguin/0",{0});
 
     std::vector<json> values;
     for (auto [key,value] : info){

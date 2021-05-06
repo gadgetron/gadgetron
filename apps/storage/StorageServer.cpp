@@ -2,7 +2,7 @@
 // Created by dch on 4/9/21.
 //
 
-#include "SessionServer.h"
+#include "StorageServer.h"
 #include <boost/beast.hpp>
 #include <thread>
 #include "RESTServer.h"
@@ -320,7 +320,7 @@ static void ensure_exists(const boost::filesystem::path& folder){
     create_directories(folder);
 }
 
-Gadgetron::Storage::SessionServer::SessionServer(unsigned short port, const boost::filesystem::path &database_folder,
+Gadgetron::Storage::StorageServer::StorageServer(unsigned short port, const boost::filesystem::path &database_folder,
                                                  const boost::filesystem::path &blob_folder): ioContext{} {
 
     ensure_exists(database_folder);
@@ -346,12 +346,12 @@ Gadgetron::Storage::SessionServer::SessionServer(unsigned short port, const boos
     this->bound_port = bound_port_promise.get_future().get();
 }
 
-SessionServer::~SessionServer() {
+StorageServer::~StorageServer() {
     ioContext.stop();
     this->server_thread.join();
 
 }
 
-unsigned short SessionServer::port() {
+unsigned short StorageServer::port() {
     return this->bound_port;
 }

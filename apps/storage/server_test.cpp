@@ -3,7 +3,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "SessionServer.h"
+#include "StorageServer.h"
 #include "RESTStorageClient.h"
 
 using namespace Gadgetron::Storage;
@@ -15,7 +15,7 @@ protected:
         temp_dir = boost::filesystem::temp_directory_path() / "gadgetron_session_test";
         boost::filesystem::remove_all(temp_dir);
         boost::filesystem::create_directory(temp_dir);
-        server = std::make_unique<SessionServer>(0,temp_dir/"database", temp_dir);
+        server = std::make_unique<StorageServer>(0,temp_dir/"database", temp_dir);
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
         storage = Storage::setup_storage({"localhost",std::to_string(server->port())},header);
@@ -28,7 +28,7 @@ protected:
     }
 
     Gadgetron::Core::Storage storage;
-    std::unique_ptr<SessionServer> server;
+    std::unique_ptr<StorageServer> server;
     boost::filesystem::path temp_dir;
 
 };

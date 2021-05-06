@@ -12,7 +12,7 @@
 #include "gadgetron_config.h"
 
 #include "Server.h"
-#include "SessionServer.h"
+#include "StorageServer.h"
 
 using namespace boost::filesystem;
 using namespace boost::program_options;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
-        auto sessionsServer = Gadgetron::Storage::SessionServer(args["storage_port"].as<unsigned short>(), args["database_dir"].as<path>(), args["storage_dir"].as<path>());
+        auto sessionsServer = Gadgetron::Storage::StorageServer(args["storage_port"].as<unsigned short>(), args["database_dir"].as<path>(), args["storage_dir"].as<path>());
 
         Server server(args, {"localhost", std::to_string(sessionsServer.port())});
         server.serve();
