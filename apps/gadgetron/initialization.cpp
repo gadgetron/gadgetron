@@ -39,6 +39,7 @@ namespace Gadgetron::Server {
             GWARN_STREAM("Gadgetron may experience serious performance issues under heavy load " <<
                          "(multiple simultaneous reconstructions, etc.)")
         }
+    }
 
     void set_locale() {
         try {
