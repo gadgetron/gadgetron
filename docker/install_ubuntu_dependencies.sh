@@ -47,11 +47,8 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
     python3-pip \
     software-properties-common \
     supervisor \
-    wget \
-    locales
+    wget
 
-locale-gen en_US.UTF-8
-update-locale LANG=en_US.UTF-8
 
 if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
     # This is NOT ubuntu 18.04, i.e. it is 20.04
