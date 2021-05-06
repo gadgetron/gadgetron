@@ -38,7 +38,7 @@
 #include "GadgetronTimer.h"
 
 #if defined GADGETRON_COMPRESSION_ZFP
-#include "zfp/zfp.h"
+#include <zfp.h>
 #endif
 
 std::string get_date_time_string()
@@ -87,7 +87,7 @@ size_t compress_zfp_tolerance(float* in, size_t samples, size_t coils, double to
 
     zfp_field_set_type(field, type);
     zfp_field_set_size_2d(field, samples, coils);
-    zfp_stream_set_accuracy(zfp, tolerance, type);
+    zfp_stream_set_accuracy(zfp, tolerance);
 
     if (zfp_stream_maximum_size(zfp, field) > buf_size) {
         zfp_field_free(field);
@@ -142,7 +142,7 @@ size_t compress_zfp_precision(float* in, size_t samples, size_t coils, unsigned 
 
   zfp_field_set_type(field, type);
   zfp_field_set_size_2d(field, samples, coils);
-  zfp_stream_set_precision(zfp, precision, type);
+  zfp_stream_set_precision(zfp, precision);
 
   if (zfp_stream_maximum_size(zfp, field) > buf_size) {
       zfp_field_free(field);

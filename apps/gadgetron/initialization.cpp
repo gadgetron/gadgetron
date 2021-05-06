@@ -10,7 +10,7 @@
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS
 #include <cblas.h>
 #endif
-
+#include <locale>
 namespace Gadgetron::Server {
 
     void configure_blas_libraries() {
@@ -26,6 +26,7 @@ namespace Gadgetron::Server {
 
     }
 
+
     void check_environment_variables() {
 
         auto get_policy = []() -> std::string {
@@ -38,5 +39,13 @@ namespace Gadgetron::Server {
             GWARN_STREAM("Gadgetron may experience serious performance issues under heavy load " <<
                          "(multiple simultaneous reconstructions, etc.)")
         }
+
+    void set_locale() {
+        try {
+           std::locale::global(std::locale(""));
+        } catch (...) {
+            std::locale::global(std::locale::classic());
+        }
+
     }
 }
