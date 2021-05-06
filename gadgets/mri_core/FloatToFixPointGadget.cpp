@@ -19,7 +19,7 @@ namespace Gadgetron
         if constexpr (std::is_same_v<T,unsigned short>) return ISMRMRD::ISMRMRD_USHORT;
         if constexpr (std::is_same_v<T,short>) return ISMRMRD::ISMRMRD_SHORT;
         if constexpr (std::is_same_v<T,int >) return ISMRMRD::ISMRMRD_INT;
-        if constexpr (std::is_same_v<T,unsigned int>) return ISMRMRD::ISMRMRD_INT;
+        if constexpr (std::is_same_v<T,unsigned int>) return ISMRMRD::ISMRMRD_UINT;
 
         throw std::runtime_error("Unsupported type");
 
@@ -34,26 +34,27 @@ namespace Gadgetron
             return std::min<float>(std::max<float>(val,self.min_intensity),self.max_intensity);
         };
         auto magnitude = [&](auto val){
-            return clamp(std::abs(val));
+            return T(clamp(std::abs(val)));
         };
 
         auto phase = [&](float val){
-            return clamp((val*self.intensity_offset/boost::math::float_constants::pi)+self.intensity_offset);
+            return T(clamp((val*self.intensity_offset/boost::math::float_constants::pi)+self.intensity_offset));
         };
 
 
         for (auto [img_header,data,meta] : input) {
             GDEBUG("Float to shorts norm: %f \n", nrm2(&data));
+            auto output_data = hoNDArray<T>(data.dimensions());
 
             switch (img_header.image_type) {
                 case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE: {
-                    std::transform(data.begin(),data.end(),data.begin(),magnitude);
+                    std::transform(data.begin(),data.end(),output_data.begin(),magnitude);
                 }
                     break;
 
                 case ISMRMRD::ISMRMRD_IMTYPE_REAL:
                 case ISMRMRD::ISMRMRD_IMTYPE_IMAG: {
-                    std::transform(data.begin(),data.end(),data.begin(),clamp);
+                    std::transform(data.begin(),data.end(),output_data.begin(),clamp);
 
                     if (meta) {
                         if (meta->length(GADGETRON_IMAGE_WINDOWCENTER) > 0) {
@@ -67,7 +68,7 @@ namespace Gadgetron
                     break;
 
                 case ISMRMRD::ISMRMRD_IMTYPE_PHASE: {
-                    std::transform(data.begin(),data.end(),data.begin(),phase );
+                    std::transform(data.begin(),data.end(),output_data.begin(),phase );
 
                 }
                     break;
@@ -78,7 +79,7 @@ namespace Gadgetron
             }
 
             img_header.data_type = ismrmrd_image_type<T>();
-            output.push(img_header,std::move(data),std::move(meta));
+            output.push(img_header,std::move(output_data),std::move(meta));
         }
 
     }

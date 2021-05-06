@@ -1,5 +1,11 @@
 
+#include "log.h"
 #include "initialization.h"
+
+#include <cstdlib>
+#include <string>
+
+#include <boost/algorithm/string.hpp>
 
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS
 #include <cblas.h>
@@ -20,8 +26,27 @@ namespace Gadgetron::Server {
 
     }
 
+
+    void check_environment_variables() {
+
+        auto get_policy = []() -> std::string {
+            auto raw = std::getenv("OMP_WAIT_POLICY");
+            return boost::algorithm::to_lower_copy(raw ? std::string(raw) : std::string());
+        };
+
+        if ("passive" != get_policy()) {
+            GWARN_STREAM("Environment variable 'OMP_WAIT_POLICY' not set to 'PASSIVE'.");
+            GWARN_STREAM("Gadgetron may experience serious performance issues under heavy load " <<
+                         "(multiple simultaneous reconstructions, etc.)")
+        }
+    }
+
     void set_locale() {
-        std::locale::global(std::locale::classic());
+        try {
+           std::locale::global(std::locale(""));
+        } catch (...) {
+            std::locale::global(std::locale::classic());
+        }
 
     }
 }

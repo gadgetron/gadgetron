@@ -59,6 +59,7 @@ int main(int argc, char *argv[]) {
     GINFO("Running on port %d\n", args["port"].as<unsigned short>());
 
     try {
+        check_environment_variables();
         configure_blas_libraries();
         set_locale();
 

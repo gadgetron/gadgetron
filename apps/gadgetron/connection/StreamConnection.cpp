@@ -79,7 +79,6 @@ namespace Gadgetron::Server::Connection::StreamConnection {
         auto ichannel = make_channel<MessageChannel>();
         auto ochannel = make_channel<MessageChannel>();
 
-        auto node = loader.load(config.stream);
         auto readers = loader.load_readers(config);
         auto writers = loader.load_writers(config);
 
@@ -97,7 +96,12 @@ namespace Gadgetron::Server::Connection::StreamConnection {
                 error_handler
         );
 
-        node->process(std::move(ichannel.input), std::move(ochannel.output), error_handler);
+        auto processable = loader.load(config.stream);
+        processable->process(
+            std::move(ichannel.input),
+            std::move(ochannel.output),
+            error_handler
+        );
 
         input_thread.join();
         output_thread.join();

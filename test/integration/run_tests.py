@@ -257,7 +257,7 @@ def main():
     tests = [read_test_details(file) for file in files]
     tests = [test for test in tests if not should_skip_test(test, capabilities, args, skip_handler)]
 
-    handlers = {0: pass_handler, 1: args.failure_handler}
+    handlers = {0: pass_handler}
 
     if skipped:
         print("\nSkipped tests:")
@@ -276,11 +276,11 @@ def main():
         with subprocess.Popen(command) as proc:
             try:
                 proc.wait(timeout=args.timeout)
-                handlers.get(proc.returncode)(test.get('file'))
+                handlers.get(proc.returncode, args.failure_handler)(test)
             except subprocess.TimeoutExpired:
                 print("Timeout happened during test: {}".format(test.get('file')))
                 proc.kill()
-                args.failure_handler(test.get('file'))
+                args.failure_handler(test)
 
     if args.stats:
         output_csv(stats, args.stats)
