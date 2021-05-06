@@ -37,7 +37,7 @@ namespace Gadgetron::Server::Connection {
     ) {
         auto pid = fork();
         if (pid == 0) {
-            handle_connection(std::move(stream), paths, args);
+            handle_connection(std::move(stream), paths, args, storage_address);
             std::exit(0);
         }
         auto listen_for_close = [](auto pid) {int status; waitpid(pid,&status,0);};
