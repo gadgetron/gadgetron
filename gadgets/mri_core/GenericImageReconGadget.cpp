@@ -2213,6 +2213,7 @@ namespace Gadgetron {
                                                     }
                                                 }
 
+                                                cm1->getObjectPtr()->image_type = 6; // ISMRMRD_IMTYPE_RGB;
                                                 cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
                                                 if (add_original_series_num.value())
                                                 {
@@ -2359,6 +2360,7 @@ namespace Gadgetron {
                                                     }
                                                 }
 
+                                                pImage->header_.image_type = 6; // ISMRMRD_IMTYPE_RGB;
                                                 pImage->header_.data_type = ISMRMRD::ISMRMRD_USHORT;
                                                 if (add_original_series_num.value())
                                                 {
