@@ -21,12 +21,12 @@ namespace Gadgetron::Core {
 
         Header header;
         Paths  paths;
-        Storage storage;
+        StorageSpaces storage;
     };
 
     struct StreamContext : Context {
         using Args = boost::program_options::variables_map;
-        StreamContext(ISMRMRD::IsmrmrdHeader header, const Paths paths, Storage storage, const Args args) : Context{std::move(header),paths, std::move(storage)},args{args} {}
+        StreamContext(ISMRMRD::IsmrmrdHeader header, const Paths paths, StorageSpaces storage, const Args args) : Context{std::move(header),paths, std::move(storage)},args{args} {}
         Args   args;
     };
 

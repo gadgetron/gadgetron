@@ -33,13 +33,14 @@ namespace Gadgetron::Server::Connection::VoidConnection {
     void process(
             std::iostream &stream,
             const Core::Context::Paths &paths,
+            StorageSpaces storageSpaces,
             const Config &config,
             ErrorHandler &error_handler
     ) {
         GINFO_STREAM("Connection state: [VOID]");
 
         // Please note the empty header initialization crime and empty storage. TODO: Fight crime.
-        Core::StreamContext context{Context::Header{}, paths,Core::Storage(),StreamContext::Args{}};
+        Core::StreamContext context{Context::Header{}, paths,storageSpaces,StreamContext::Args{}};
         Loader loader{context};
 
 

@@ -113,7 +113,8 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
         }
         else {
 
-            VoidConnection::process(stream, paths, config, error_handler);
+            auto storage = Storage::setup_storage(sessions_address, StreamContext::Header{});
+            VoidConnection::process(stream, paths, std::move(storage), config, error_handler);
         }
     }
 }

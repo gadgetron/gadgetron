@@ -27,7 +27,7 @@ protected:
         boost::filesystem::remove_all(temp_dir);
     }
 
-    Gadgetron::Core::Storage storage;
+    StorageSpaces storage;
     std::unique_ptr<StorageServer> server;
     boost::filesystem::path temp_dir;
 

@@ -5,18 +5,18 @@
 #include <boost/iostreams/stream.hpp>
 
 namespace bio = boost::iostreams;
-namespace Gadgetron::Core {
-    StorageSpace::StorageSpace(std::shared_ptr<StreamProvider> provider, boost::posix_time::time_duration) : provider(std::move(provider)) {}
+namespace Gadgetron::Storage {
+    GenericStorageSpace::GenericStorageSpace(std::shared_ptr<StreamProvider> provider,const Core::optional<std::string>& subject, boost::posix_time::time_duration) : provider(std::move(provider)), subject(subject) {}
 
 
 
-    std::unique_ptr<std::istream> StorageSpace::istream_from_data(const std::vector<char> &data) {
+    std::unique_ptr<std::istream> istream_from_data(const std::vector<char> &data) {
 
             return std::make_unique<bio::stream<bio::array_source>>(data.data(),data.size());
 
     }
 
-    std::unique_ptr<std::ostream> StorageSpace::ostream_view(std::vector<char> &data) {
+    std::unique_ptr<std::ostream> ostream_view(std::vector<char> &data) {
         return std::make_unique<bio::stream<bio::back_insert_device<std::vector<char>>>>(data);
     }
 }

@@ -127,11 +127,11 @@ namespace {
 }
 
 Gadgetron::Storage::RESTStorageClient::RESTStorageClient(const Address& address,
-                                                         const std::string &group, const std::string &subject)
-        : server_address(address.host), port(address.port), group(group), subject(subject) {}
+                                                         const std::string &group)
+        : server_address(address.host), port(address.port), group(group)  {}
 
 
-std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const std::string &key) const {
+std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const std::string& subject, const std::string &key) const {
     auto response = get_content(server_address, port, group, subject, key);
 
     return response | ranges::views::transform(
@@ -139,83 +139,98 @@ std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const st
            ranges::to<std::vector>();
 }
 
-std::vector<char> Gadgetron::Storage::RESTStorageClient::fetch(const std::string &key) const {
+std::vector<char> Gadgetron::Storage::RESTStorageClient::fetch(const std::string &uuid) const {
 
-    return fetch_data(server_address, port, key);
+    return fetch_data(server_address, port, uuid);
 }
 
-void Gadgetron::Storage::RESTStorageClient::store(const std::string &key, const std::vector<char> &value,
-                                                  boost::posix_time::time_duration duration) const {
+void Gadgetron::Storage::RESTStorageClient::store(const std::string& subject, const std::string &key, const std::vector<char> &value,
+                                                  boost::posix_time::time_duration duration) {
     auto response = store_request(server_address, port, group, subject, key, duration);
     auto blob_path = response["blob_path"];
     store_content(server_address, port, blob_path, value);
 
 }
 namespace {
+    using namespace Gadgetron::Core;
 
     struct IDs {
         std::string patientID;
         std::string scannerID;
     };
 
-    Gadgetron::Core::optional<IDs> extract_IDS_from_measurement(const std::string& measurementID){
+    optional<IDs> extract_IDS_from_measurement(const std::string &measurementID) {
         std::regex reg("(.*?)_(.*?)_(.*?)_(.*)");
         std::smatch match;
 
-        if (std::regex_match(measurementID,match,reg)){
-            return IDs{ match[1],match[2] };
+        if (std::regex_match(measurementID, match, reg)) {
+            return IDs{match[1], match[2]};
         }
         return {};
     }
 
 
-
-    std::string scannerID(const ISMRMRD::IsmrmrdHeader& header){
+    optional<std::string> scannerID(const ISMRMRD::IsmrmrdHeader &header) {
 
         if (auto system_info = header.acquisitionSystemInformation)
             if (auto s = system_info->stationName)
                 return s.value();
 
-        if (auto measInfo = header.measurementInformation){
-            if (auto id = measInfo->measurementID){
-                if (auto extracted = extract_IDS_from_measurement(id.value())){
+        if (auto measInfo = header.measurementInformation) {
+            if (auto id = measInfo->measurementID) {
+                if (auto extracted = extract_IDS_from_measurement(id.value())) {
                     return extracted->scannerID;
                 }
             }
         }
-        return "default";
+        return {};
     }
 
 
-
-    std::string patientID(const ISMRMRD::IsmrmrdHeader& header){
-        if (auto subject = header.subjectInformation){
-            if (subject->patientID){
+    optional<std::string> patientID(const ISMRMRD::IsmrmrdHeader &header) {
+        if (auto subject = header.subjectInformation) {
+            if (subject->patientID) {
                 return subject->patientID.value();
             }
         }
 
-        if (auto measInfo = header.measurementInformation){
-            if (auto id = measInfo->measurementID){
-                if (auto extracted = extract_IDS_from_measurement(id.value())){
+        if (auto measInfo = header.measurementInformation) {
+            if (auto id = measInfo->measurementID) {
+                if (auto extracted = extract_IDS_from_measurement(id.value())) {
                     return extracted->patientID;
                 }
             }
         }
 
-        return "default";
+        return {};
 
     }
-    std::string debugID(const ISMRMRD::IsmrmrdHeader& header){
+
+    optional<std::string> debugID(const ISMRMRD::IsmrmrdHeader &header) {
         return "";
     }
-}
 
-Storage Gadgetron::Storage::setup_storage(const Address& address,
+
+    optional<std::string> measurementID(const ISMRMRD::IsmrmrdHeader& header){
+        if (header.measurementInformation)
+            if (header.measurementInformation->measurementID)
+                return *header.measurementInformation->measurementID;
+        return {};
+    }
+
+
+}
+Gadgetron::StorageSpaces Gadgetron::Storage::setup_storage(const Address& address,
                                           const ISMRMRD::IsmrmrdHeader &header) {
+
+    auto create_storage = [&](const auto& group, const auto& id, const auto& duration){
+        return StorageSpace(std::make_shared<RESTStorageClient>(address, group), id,duration);
+    };
+
         return {
-                Core::StorageSpace(std::make_shared<RESTStorageClient>(address, "session", patientID(header)),boost::posix_time::time_duration(48,0,0)),
-                Core::StorageSpace(std::make_shared<RESTStorageClient>(address, "scanner", scannerID(header)), boost::posix_time::time_duration(48,0,0)),
-                Core::StorageSpace(std::make_shared<RESTStorageClient>(address, "debug", debugID(header) ), boost::posix_time::time_duration(48,0,0))
+                create_storage("session", patientID(header),boost::posix_time::time_duration(48,0,0)),
+                create_storage("scanner", scannerID(header),boost::posix_time::time_duration(48,0,0)),
+                create_storage("debug", debugID(header),boost::posix_time::time_duration(48,0,0)),
+                MeasurementSpace(std::make_shared<RESTStorageClient>(address, "measurement" ), measurementID(header), boost::posix_time::time_duration(48,0,0))
         };
 }
