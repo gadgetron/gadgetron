@@ -46,7 +46,7 @@ namespace Gadgetron
                 legacy_id = legacy_id.substr(legacy_prefix.size());
             }
 
-           auto  noise_covariance_list = this->context.storage.measurment.fetch<NoiseCovariance>(legacy_id,"noise_covariance");
+           auto  noise_covariance_list = this->context.storage.measurement.fetch<NoiseCovariance>(legacy_id, "noise_covariance");
 
 
             if ( noise_covariance_list.empty()) {

@@ -110,8 +110,8 @@ class StorageSpace : public Storage::GenericStorageSpace {
 
 
     struct StorageSpaces {
-        StorageSpace session, scanner, debug;
-        MeasurementSpace measurment;
+        StorageSpace session, scanner;
+        MeasurementSpace measurement;
     };
 
 }

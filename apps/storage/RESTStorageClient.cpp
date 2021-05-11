@@ -135,7 +135,7 @@ std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const st
     auto response = get_content(server_address, port, group, subject, key);
 
     return response | ranges::views::transform(
-            [](const auto &json_value) { return json_value["storagepath"].template get<std::string>(); }) |
+            [](const auto &json_value) { return json_value["storage_path"].template get<std::string>(); }) |
            ranges::to<std::vector>();
 }
 
@@ -147,7 +147,7 @@ std::vector<char> Gadgetron::Storage::RESTStorageClient::fetch(const std::string
 void Gadgetron::Storage::RESTStorageClient::store(const std::string& subject, const std::string &key, const std::vector<char> &value,
                                                   boost::posix_time::time_duration duration) {
     auto response = store_request(server_address, port, group, subject, key, duration);
-    auto blob_path = response["blob_path"];
+    auto blob_path = response["storage_path"];
     store_content(server_address, port, blob_path, value);
 
 }
@@ -230,7 +230,6 @@ Gadgetron::StorageSpaces Gadgetron::Storage::setup_storage(const Address& addres
         return {
                 create_storage("session", patientID(header),boost::posix_time::time_duration(48,0,0)),
                 create_storage("scanner", scannerID(header),boost::posix_time::time_duration(48,0,0)),
-                create_storage("debug", debugID(header),boost::posix_time::time_duration(48,0,0)),
                 MeasurementSpace(std::make_shared<RESTStorageClient>(address, "measurement" ), measurementID(header), boost::posix_time::time_duration(48,0,0))
         };
 }

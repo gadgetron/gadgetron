@@ -56,6 +56,5 @@ TEST_F(ServerTest,basic_storage){
     fetched = storage_list[1];
     ASSERT_EQ(fetched,x);
 
-
 }
 

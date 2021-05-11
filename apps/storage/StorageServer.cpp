@@ -32,15 +32,23 @@ namespace {
     enum class StorageSpace {
         session,
         scanner,
-        debug
+        measurement
     };
 
-    NLOHMANN_JSON_SERIALIZE_ENUM(StorageSpace, {
-        { StorageSpace::session, "session" },
-        { StorageSpace::scanner, "scanner" },
-        { StorageSpace::debug, "debug" }
+    static std::vector<std::pair<std::string,StorageSpace>> storage_space_names = {{"session",StorageSpace::session},{"scanner",StorageSpace::scanner},{"measurement",StorageSpace::measurement}};
+
+    void from_json(const json& j, StorageSpace& storagespace){
+        auto string_val = j.get<std::string>();
+        auto it = std::find_if(storage_space_names.begin(),storage_space_names.end(),[&](auto& val){ return val.first == string_val;});
+        if (it == storage_space_names.end()) throw std::runtime_error("Invalid storage space provided");
+        storagespace = it->second;
     }
-    );
+    void to_json(json& j, const StorageSpace& storagespace){
+        auto it = std::find_if(storage_space_names.begin(),storage_space_names.end(),[&](auto& val){ return val.second == storagespace;});
+        if (it == storage_space_names.end()) throw std::runtime_error("Infernal server error");
+        j = it->first;
+    }
+
 
     std::string name(StorageSpace space) {
         return json(space).get<std::string>();
@@ -212,7 +220,7 @@ namespace {
         };
 
         struct RetrievalResponse {
-            BOOST_HANA_DEFINE_STRUCT(RetrievalResponse, (std::string, storagepath),
+            BOOST_HANA_DEFINE_STRUCT(RetrievalResponse, (std::string, storage_path),
                                      (boost::posix_time::ptime, creation_time),
                                      (boost::posix_time::ptime, deletion_time));
         };
@@ -253,7 +261,7 @@ namespace {
         };
 
         struct WriteResponse {
-            BOOST_HANA_DEFINE_STRUCT(WriteResponse, (std::string, blob_path));
+            BOOST_HANA_DEFINE_STRUCT(WriteResponse, (std::string, storage_path));
         };
 
         bool accept(const http::request<http::empty_body> &req) {
