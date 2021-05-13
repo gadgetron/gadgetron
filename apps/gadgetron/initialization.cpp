@@ -22,20 +22,28 @@ namespace Gadgetron::Server {
 
     }
 
-    void set_locale() { 
+    void set_locale() {
         try {
-	    std::wcout << "User-preferred locale setting is " << std::locale("").name().c_str() << '\n';
-	    std::setlocale(LC_ALL, "en_US.UTF-8");
-            std::locale id("en_US.UTF-8");
-            std::locale::global(id);
-            std::cout.imbue(std::locale());
-            std::cerr.imbue(std::locale());
-            std::clog.imbue(std::locale());
-            std::wcout.imbue(std::locale());
-            std::wcerr.imbue(std::locale());
-            std::wclog.imbue(std::locale());
+            std::locale::global(std::locale(""));
         } catch (...) {
-            std::cout << "Exceptions in set_locale() ..." << std::endl;
+            std::locale::global(std::locale::classic());
         }
     }
+
+    //void set_locale() { 
+    //    try {
+	   // std::wcout << "User-preferred locale setting is " << std::locale("").name().c_str() << '\n';
+	   // std::setlocale(LC_ALL, "en_US.UTF-8");
+    //        std::locale id("en_US.UTF-8");
+    //        std::locale::global(id);
+    //        std::cout.imbue(std::locale());
+    //        std::cerr.imbue(std::locale());
+    //        std::clog.imbue(std::locale());
+    //        std::wcout.imbue(std::locale());
+    //        std::wcerr.imbue(std::locale());
+    //        std::wclog.imbue(std::locale());
+    //    } catch (...) {
+    //        std::cout << "Exceptions in set_locale() ..." << std::endl;
+    //    }
+    //}
 }
