@@ -8,7 +8,7 @@ if [ $# -eq 1 ]; then
 
     OMP_THREAD_LIMIT=$(nproc)
     OMP_WAIT_POLICY=PASSIVE
-    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 @CMAKE_INSTALL_PREFIX@/bin/gadgetron > ${LOG_FILE} &
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 LC_ALL=C @CMAKE_INSTALL_PREFIX@/bin/gadgetron > ${LOG_FILE} &
 
     gadgetron_job=($!)
     wait $!
