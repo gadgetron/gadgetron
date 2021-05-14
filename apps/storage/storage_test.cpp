@@ -15,7 +15,7 @@ protected:
     void SetUp() override {
         temp_dir = boost::filesystem::temp_directory_path() / "gadgetron_session_test";
         boost::filesystem::create_directory(temp_dir);
-        db = std::make_unique<Database>(temp_dir);
+        db = Database::make_db(temp_dir);
 
     }
 
@@ -25,7 +25,7 @@ protected:
 
     }
 
-    std::unique_ptr<Database> db;
+    std::shared_ptr<Database> db;
     boost::filesystem::path temp_dir;
 
 };

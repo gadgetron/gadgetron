@@ -12,6 +12,7 @@
 #include <nlohmann/json.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/range/conversion.hpp>
 #include <regex>
 
 namespace beast = boost::beast;     // from <boost/beast.hpp>
@@ -93,7 +94,7 @@ namespace {
         auto json_body = json{{"storagespace", group},
                               {"subject",      subject},
                               {"key",          key},
-                              {"storage_duration",     boost::posix_time::to_iso_string(duration)}};
+                              {"storage_duration",     boost::posix_time::to_simple_string(duration)}};
         auto req = make_json_request(http::verb::post, server_address, "/v1/data", json_body);
         http::write(stream, req);
 

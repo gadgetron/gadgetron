@@ -15,6 +15,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "Database.h"
+#include <range/v3/algorithm.hpp>
+
 
 using namespace Gadgetron::Storage;
 namespace beast = boost::beast;         // from <boost/beast.hpp>
@@ -35,16 +37,21 @@ namespace {
         measurement
     };
 
-    static std::vector<std::pair<std::string,StorageSpace>> storage_space_names = {{"session",StorageSpace::session},{"scanner",StorageSpace::scanner},{"measurement",StorageSpace::measurement}};
+    static std::vector<std::pair<std::string, StorageSpace>> storage_space_names = {{"session", StorageSpace::session},
+                                                                                    {"scanner", StorageSpace::scanner},
+                                                                                    {"measurement", StorageSpace::measurement}};
 
-    void from_json(const json& j, StorageSpace& storagespace){
+    void from_json(const json &j, StorageSpace &storagespace) {
         auto string_val = j.get<std::string>();
-        auto it = std::find_if(storage_space_names.begin(),storage_space_names.end(),[&](auto& val){ return val.first == string_val;});
+        auto it = std::find_if(storage_space_names.begin(), storage_space_names.end(),
+                               [&](auto &val) { return val.first == string_val; });
         if (it == storage_space_names.end()) throw std::runtime_error("Invalid storage space provided");
         storagespace = it->second;
     }
-    void to_json(json& j, const StorageSpace& storagespace){
-        auto it = std::find_if(storage_space_names.begin(),storage_space_names.end(),[&](auto& val){ return val.second == storagespace;});
+
+    void to_json(json &j, const StorageSpace &storagespace) {
+        auto it = std::find_if(storage_space_names.begin(), storage_space_names.end(),
+                               [&](auto &val) { return val.second == storagespace; });
         if (it == storage_space_names.end()) throw std::runtime_error("Infernal server error");
         j = it->first;
     }
@@ -156,7 +163,7 @@ namespace {
 
             auto path = blob_folder / to_string(meta.meta.blob_id);
             http::request_parser<http::file_body> req2_parser(std::move(req));
-            req2_parser.body_limit(128ull*1024ull*1024ull*1024ull); //We support files up to 128GB. For now.
+            req2_parser.body_limit(128ull * 1024ull * 1024ull * 1024ull); //We support files up to 128GB. For now.
             req2_parser.get().body().open(path.c_str(), beast::file_mode::write, ec);
             if (ec) {
                 return send(string_response(ec.message(), http::status::insufficient_storage, req2_parser.get()));
@@ -235,7 +242,7 @@ namespace {
             http::request_parser<http::string_body> req2(std::move(req));
             if (auto ec = read(req2)) return ec;
             auto retrieval_request = json::parse(req2.get().body()).get<RetrievalRequest>();
-            auto key = full_key(retrieval_request.storagespace,retrieval_request.subject, retrieval_request.key);
+            auto key = full_key(retrieval_request.storagespace, retrieval_request.subject, retrieval_request.key);
             auto blobs = database->blobs[key];
 
             auto response_blobs = ranges::reverse_view(blobs) | ranges::views::transform(
@@ -293,9 +300,9 @@ namespace {
 
                 db->pending_writes.set(to_string(blob_id), pending_write);
                 return send(json_response(make_response(blob_id), req2.get()));
-            } catch (const std::exception& error){
+            } catch (const std::exception &error) {
                 std::string error_message = error.what();
-                return send(string_response(error_message,http::status::bad_request,req2.get()));
+                return send(string_response(error_message, http::status::bad_request, req2.get()));
             }
         }
 
@@ -312,15 +319,50 @@ namespace {
     };
 }
 
-void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer) {
-    std::cout << "Cleaning up all da thing" << std::endl;
+void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer, std::shared_ptr<DB::Database> db, boost::filesystem::path blob_folder) {
+
+    auto now = boost::posix_time::second_clock::universal_time();
+
+    using namespace ranges;
+    auto stale_writes = db->pending_writes | views::filter([&](const auto& key_value) {
+        const auto&[key, pending] = key_value;
+        return pending.transaction_expiration < now;
+    }) | views::keys;
+
+    db->pending_writes.delete_keys(stale_writes);
+
+    auto is_blob_stale = [&](const auto& meta ){
+        return meta.deletion_time < now;
+    };
+
+    std::vector<std::pair<std::string, std::vector<BlobMeta>>> updated_lists;
+    std::vector<boost::uuids::uuid> blobs_to_delete;
+    for (auto [key,meta_list] : db->blobs ){
+        if (!any_of(meta_list,is_blob_stale)) continue;
+        auto new_list = meta_list | views::filter([&](const auto& meta ){return !is_blob_stale(meta);}) | to<std::vector>();
+        updated_lists.emplace_back(key,std::move(new_list));
+
+        auto marked_for_deletion = meta_list | views::filter(is_blob_stale) | views::transform([](const BlobMeta& meta){
+            return meta.blob_id;
+        });
+        blobs_to_delete.insert(blobs_to_delete.end(),begin(marked_for_deletion),end(marked_for_deletion));
+    }
+
+
+    db->blobs.update(updated_lists);
+
+    for (const auto& blob_id : blobs_to_delete){
+        auto path = blob_folder / to_string(blob_id);
+        boost::system::error_code ec;
+        boost::filesystem::remove(path,ec);
+    }
 
     timer.expires_at(timer.expires_at() + boost::posix_time::minutes(5));
-    timer.async_wait([&](const auto &ec) { cleanup(ec, timer); });
+    timer.async_wait([&timer, db,blob_folder](const auto &ec) { cleanup(ec, timer, db,std::move(blob_folder)); });
 }
 
-static void ensure_exists(const boost::filesystem::path& folder){
-    if (exists(folder)){
+static void ensure_exists(const boost::filesystem::path &folder) {
+    if (exists(folder)) {
         if (!is_directory(folder)) throw std::runtime_error("Specified path " + folder.string() + " must be a folder");
         return;
     }
@@ -329,25 +371,25 @@ static void ensure_exists(const boost::filesystem::path& folder){
 }
 
 Gadgetron::Storage::StorageServer::StorageServer(unsigned short port, const boost::filesystem::path &database_folder,
-                                                 const boost::filesystem::path &blob_folder): ioContext{} {
+                                                 const boost::filesystem::path &blob_folder) : ioContext{} {
 
     ensure_exists(database_folder);
     ensure_exists(blob_folder);
     std::promise<unsigned short> bound_port_promise;
 
-    this->server_thread = std::thread([this,database_folder, blob_folder, port,&bound_port_promise ] {
+    this->server_thread = std::thread([this, database_folder, blob_folder, port, &bound_port_promise] {
 
-        auto database = std::make_shared<DB::Database>(database_folder);
+        auto database = DB::Database::make_db(database_folder);
         REST::RESTEndpoints endpoints(InfoEndPoint{}, BlobStorageEndPoint{database, blob_folder},
                                       BlobRetrievalEndPoint{database, blob_folder}, WriteRequestEndPoint{database},
                                       DataInfoEndPoint{database});
 
         asio::spawn(ioContext, [this, &endpoints, port, &bound_port_promise](auto yield) {
-            REST::navi(ioContext, tcp::endpoint(asio::ip::tcp::v4(), port), endpoints,bound_port_promise, yield);
+            REST::navi(ioContext, tcp::endpoint(asio::ip::tcp::v4(), port), endpoints, bound_port_promise, yield);
         });
 
         asio::deadline_timer timer(ioContext, boost::posix_time::seconds(1));
-        //timer.async_wait([&](const auto& ec){ cleanup(ec,timer);});
+        timer.async_wait([&](const auto& ec){ cleanup(ec,timer,database,blob_folder);});
         ioContext.run();
     });
 

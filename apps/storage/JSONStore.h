@@ -9,22 +9,88 @@
 #include "DBError.h"
 #include <range/v3/view.hpp>
 #include <range/v3/range_concepts.hpp>
-
+#include <range/v3/algorithm/any_of.hpp>
 
 
 namespace Gadgetron::Storage::DB {
     using json = nlohmann::json;
 
 
+    template<class T>
+    class ValueStore;
+
+    template<class T>
+    class Iterator {
+
+    public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = std::pair<std::string, T>;
+        using difference_type = int; //We really can't take the difference between these guys
+        using pointer = const value_type *;
+        using reference = value_type;
+
+        Iterator() = default;
+
+        Iterator(const Iterator &) = default;
+
+        bool operator==(const Iterator &other) const {
+            if (other.it == this->it) return true;
+            if (other.it) return false;
+            //Empty iterator is used as sentinel
+            if (it->Valid()) {
+                return false;
+            }
+            if (!it->status().ok()) {
+                throw DBError(it->status());
+            }
+            return true;
+        }
+
+        bool operator!=(const Iterator &e) const {
+            return !(*this == e);
+        }
+
+        reference operator*() const {
+            return {it->key().ToString(), json::from_msgpack(it->value().ToStringView()).get<T>()};
+        }
+
+        void operator++(int) {
+            it->Next();
+        }
+
+        Iterator &operator++() {
+            it->Next();
+            return *this;
+        }
+
+        Iterator &operator--() {
+            it->Prev();
+            return *this;
+        }
+
+    private:
+        explicit Iterator(rocksdb::Iterator *itr_ptr) : it(itr_ptr) { it->SeekToFirst(); };
+
+        Iterator(rocksdb::Iterator *itr_ptr, std::string_view from) : it(itr_ptr) { it->Seek(from); };
+        std::shared_ptr<rocksdb::Iterator> it;
+
+        friend class JSONStore;
+
+        friend class ValueStore<T>;
+    };
+
 
     class JSONStore {
     public:
-        JSONStore() = default;
-        JSONStore(const JSONStore&) = delete;
-        JSONStore(JSONStore&& ) = default;
-        JSONStore(std::shared_ptr<rocksdb::DB> database, rocksdb::ColumnFamilyHandle* handle) : database(std::move(database)), handle(handle ){}
 
-        JSONStore& operator=(JSONStore&& other) noexcept{
+        JSONStore(const JSONStore &) = delete;
+
+        JSONStore(JSONStore &&) = default;
+
+        JSONStore(std::shared_ptr<rocksdb::DB> database, rocksdb::ColumnFamilyHandle *handle) : database(
+                std::move(database)), handle(handle) {}
+
+        JSONStore &operator=(JSONStore &&other) noexcept {
             handle = other.handle;
             database = std::move(other.database);
             other.handle = nullptr;
@@ -71,228 +137,44 @@ namespace Gadgetron::Storage::DB {
             if (!status.ok() && !status.IsNotFound()) throw DBError(status);
         }
 
+        template<class RANGE>
+        void update(RANGE &&key_values) {
+            rocksdb::WriteBatch batch;
+            std::string buffer;
+            for (const auto&[key, value] : key_values) {
+                json::to_msgpack(value, buffer);
+                batch.Put(handle, key, buffer);
+            }
+            database->Write(rocksdb::WriteOptions(), &batch);
+        }
+
         ~JSONStore() {
             if (database && handle)
                 database->DestroyColumnFamilyHandle(handle);
         }
 
-        class Iterator;
 
-        class ReverseIterator;
-
-        class EndPoint {
-        public:
-            EndPoint(const EndPoint&) = default;
-            EndPoint() : sentinel(Core::none) {}
-
-            EndPoint(std::string_view end_string) : sentinel(std::in_place, end_string) {}
-
-        private:
-            Core::optional<std::string> sentinel;
-            friend Iterator;
-            friend ReverseIterator;
-        };
-
-        class Iterator {
-
-        public:
-            using iterator_category = std::input_iterator_tag;
-            using value_type = std::pair<std::string, json>;
-            using difference_type = int; //We really can't take the difference between these guys
-            using pointer = const value_type *;
-            using reference = value_type;
-
-            Iterator() = default;
-            Iterator(const Iterator &) = default;
-
-            bool operator==(const EndPoint &endpoint) const {
-                if (it->Valid()) {
-                    if (endpoint.sentinel) {
-                        return it->key().ToString() > endpoint.sentinel.value();
-                    }
-                    return false;
-                }
-                if (!it->status().ok()){
-                    throw DBError(it->status());
-                }
-
-                return true;
-            }
-
-            bool operator!=(const EndPoint &e) const {
-                return !(*this == e);
-            }
-
-            reference operator*() {
-                return {it->key().ToString(), json::from_msgpack(it->value().ToStringView())};
-            }
-
-            Iterator &operator++() {
-                it->Next();
-                return *this;
-            }
-
-            Iterator operator++(int) { it->Next(); return *this;};
-
-            Iterator &operator--() {
-                it->Prev();
-                return *this;
-            }
-
-            void operator--(int) { it->Prev();}
-
-        private:
-            explicit Iterator(rocksdb::Iterator *itr_ptr) : it(itr_ptr) { it->SeekToFirst(); };
-
-            Iterator(rocksdb::Iterator *itr_ptr, std::string_view from) : it(itr_ptr) { it->Seek(from); };
-            std::shared_ptr<rocksdb::Iterator> it;
-            friend JSONStore;
-        };
-
-
-        class ReverseIterator {
-
-        public:
-            using iterator_category = std::input_iterator_tag;
-            using value_type = std::pair<std::string, json>;
-            using difference_type = void; //We really can't take the difference between these guys
-            using pointer = const value_type *;
-            using reference = value_type;
-
-            ReverseIterator() = default;
-            ReverseIterator(const ReverseIterator &) = default;
-
-            bool operator==(const EndPoint &endpoint) const {
-                if (it->Valid()) {
-                    if (endpoint.sentinel) {
-                        return it->key().ToString() < endpoint.sentinel.value();
-                    }
-                    return false;
-                }
-
-                return true;
-            }
-
-            bool operator!=(const EndPoint &e) const {
-                return !(*this == e);
-            }
-
-            reference operator*() {
-                return {it->key().ToString(), json::from_msgpack(it->value().ToStringView())};
-            }
-
-            ReverseIterator &operator++() {
-                it->Prev();
-                return *this;
-            }
-
-            void operator++(int) {
-                it->Prev();
-            }
-
-            void operator--(int){
-                it->Next();
-            }
-
-            ReverseIterator &operator--() {
-                it->Next();
-                return *this;
-            }
-
-        private:
-            explicit ReverseIterator(rocksdb::Iterator *itr_ptr) : it(itr_ptr) { it->SeekToLast(); };
-
-            ReverseIterator(rocksdb::Iterator *itr_ptr, std::string_view from) : it(itr_ptr) { it->SeekForPrev(from); };
-            std::shared_ptr<rocksdb::Iterator> it;
-            friend JSONStore;
-        };
-
-
-        Iterator begin() {
+        Iterator<json> begin() {
             auto it = database->NewIterator(rocksdb::ReadOptions(), handle);
-            return Iterator(it);
+            return Iterator<json>(it);
         }
 
-        Iterator begin(std::string_view from) {
+        Iterator<json> begin(std::string_view from) {
             auto it = database->NewIterator(rocksdb::ReadOptions(), handle);
-            return Iterator(it, from);
+            return Iterator<json>(it, from);
         }
 
-        EndPoint end() {
-            return EndPoint{};
-        }
-
-        EndPoint end(std::string_view to) {
-            return EndPoint(to);
+        Iterator<json> end() {
+            return {};
         }
 
 
-        ReverseIterator rbegin() {
-            auto it = database->NewIterator(rocksdb::ReadOptions(), handle);
-            return ReverseIterator(it);
+        auto create_db_iterator() {
+            return database->NewIterator(rocksdb::ReadOptions(), handle);
         }
 
-        ReverseIterator rbegin(std::string_view from) {
-            auto it = database->NewIterator(rocksdb::ReadOptions(), handle);
-            return ReverseIterator(it, from);
-        }
 
-        EndPoint rend() {
-            return EndPoint{};
-        }
-
-        EndPoint rend(std::string_view to) {
-            return EndPoint(to);
-        }
-        friend class Range;
-
-        struct Range {
-            std::string lower_key, upper_key; JSONStore& store;
-            Iterator begin() {
-                auto options = rocksdb::ReadOptions();
-                auto it = store.database->NewIterator(options,store.handle);
-                return Iterator(it, lower_key);
-            }
-
-            EndPoint end() { return EndPoint(upper_key); };
-        };
-
-        friend class RevRange;
-        struct RevRange {
-
-            std::string lower_key, upper_key; JSONStore& store;
-            ReverseIterator begin() {
-                auto options = rocksdb::ReadOptions();
-                auto it = store.database->NewIterator(options,store.handle);
-                return ReverseIterator(it,upper_key);
-            }
-            EndPoint end() { return EndPoint(lower_key); };
-        };
-
-       /**
-         *
-         * @param from Inclusive
-         * @param to Inclusive
-         * @return
-         */
-        auto range(std::string_view from, std::string_view to) {
-            assert(from<to);
-            return Range{std::string(from), std::string(to),*this};
-        }
-
-        /**
-        *
-        * @param from Inclusive
-        * @param to Inclusive
-        * @return
-        */
-        auto reverse_range(std::string_view from, std::string_view to) {
-            assert(from < to);
-            return RevRange{std::string(from),std::string(to),*this};
-
-        }
-
-    public:
+    private:
 
         mutable rocksdb::ColumnFamilyHandle *handle = nullptr;
         mutable std::shared_ptr<rocksdb::DB> database = nullptr;
@@ -304,34 +186,55 @@ namespace Gadgetron::Storage::DB {
     class ValueStore {
 
     public:
-        ValueStore(std::shared_ptr<rocksdb::DB> ptr,rocksdb::ColumnFamilyHandle* handle) : store(std::move(ptr),handle) {}
-        ValueStore() = default;
-        ValueStore(const ValueStore&) = delete;
+        ValueStore(std::shared_ptr<rocksdb::DB> ptr, rocksdb::ColumnFamilyHandle *handle) : store(std::move(ptr),
+                                                                                                  handle) {}
 
-        ValueStore& operator=(ValueStore&& other) noexcept {
+        ValueStore() = default;
+
+        ValueStore(const ValueStore &) = delete;
+
+        ValueStore &operator=(ValueStore &&other) noexcept {
             store = std::move(other.store);
             return *this;
         }
 
-        Core::optional<T> operator[](std::string_view key){
-            if (auto j = store[key]){
+        Core::optional<T> operator[](std::string_view key) {
+            if (auto j = store[key]) {
                 return j->get<T>();
             }
             return {};
         }
 
-        void set(std::string_view key, const T& val){
-            store.set(key,json(val));
+        auto begin() {
+            return Iterator<T>(store.create_db_iterator());
+        }
+
+        auto end() {
+            return Iterator<T>();
+        }
+
+        void set(std::string_view key, const T &val) {
+            store.set(key, json(val));
         }
 
         template<class COLLECTION>
-        void delete_keys(COLLECTION&& collection){
+        void delete_keys(COLLECTION &&collection) {
             store.template delete_keys(std::forward<COLLECTION>(collection));
         }
 
-        void delete_key(std::string_view str){
+        void delete_key(std::string_view str) {
             store.delete_key(str);
         }
+
+        template<class RANGE>
+        void update(RANGE &&key_values) {
+
+            store.template update(key_values | ranges::views::transform([](const auto &key_value) {
+                const auto&[key, value] = key_value;
+                return std::make_pair(key, json(value));
+            }));
+        }
+
 
     private:
         JSONStore store;
@@ -342,22 +245,41 @@ namespace Gadgetron::Storage::DB {
     class ListStore {
     public:
         ListStore() = default;
-        ListStore(const ListStore&) = delete;
-        ListStore(std::shared_ptr<rocksdb::DB> ptr,rocksdb::ColumnFamilyHandle* handle) : store(std::move(ptr),handle) {}
 
-        ListStore& operator=(ListStore&& other) noexcept {
+        ListStore(const ListStore &) = delete;
+
+        ListStore(std::shared_ptr<rocksdb::DB> ptr, rocksdb::ColumnFamilyHandle *handle) : store(std::move(ptr),
+                                                                                                 handle) {}
+
+        ListStore &operator=(ListStore &&other) noexcept {
             store = std::move(other.store);
             return *this;
         }
+
         void push_back(std::string_view key, const T &val) {
             auto list = store[key];
-            if (list){
+            if (list) {
                 list->push_back(val);
-                store.set(key,*list);
+                store.set(key, *list);
                 return;
             }
-            store.set(key,std::vector<T>{val});
+            store.set(key, std::vector<T>{val});
         }
+
+        auto begin() {
+            return store.begin();
+        }
+
+        auto end() {
+            return store.end();
+        }
+
+
+        template<class RANGE>
+        void update(RANGE &&key_value_range) {
+            store.template update(std::forward<RANGE>(key_value_range));
+        }
+
 
         std::vector<T> operator[](std::string_view key) {
             auto list = store[key];

@@ -170,6 +170,11 @@ else ()
     if (COMPILER_SUPPORT_WNON_VIRTUAL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
+
+    check_cxx_compiler_flag(-Werror=format-overflow COMPILER_SUPPORT_WOVERFLOW)
+    if (COMPILER_SUPPORT_WOVERFLOW)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-overflow")
+    endif()
 endif ()
 
 # whether to suppress compilation warnings

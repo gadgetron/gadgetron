@@ -27,10 +27,11 @@ namespace boost::posix_time {
         time = from_iso_extended_string(j.get<std::string>());
     }
 
-    inline static void to_json(json& j, const time_duration& duration){
-        j = to_iso_string(duration);
+    inline static void to_json(json &j, const time_duration &duration) {
+        j = to_simple_string(duration);
     }
-    inline void from_json(const json& j, time_duration& duration){
+
+    inline void from_json(const json &j, time_duration &duration) {
         duration = duration_from_string(j.get<std::string>());
     }
 
@@ -38,6 +39,7 @@ namespace boost::posix_time {
 namespace boost::uuids {
 
     using json = nlohmann::json;
+
     inline static void to_json(json &j, const uuid &id) {
         j = to_string(id);
     }
@@ -84,7 +86,7 @@ namespace Gadgetron::Storage::DB {
     };
 
     inline DataBaseFamilies create_database(const boost::filesystem::path &path,
-                                     const std::vector<rocksdb::ColumnFamilyDescriptor> &column_families) {
+                                            const std::vector<rocksdb::ColumnFamilyDescriptor> &column_families) {
         rocksdb::DBOptions options;
         options.create_if_missing = true;
         options.create_missing_column_families = true;
@@ -104,17 +106,19 @@ namespace Gadgetron::Storage::DB {
     };
 
 
-
-
-
     struct BlobMeta {
         boost::uuids::uuid blob_id;
         boost::posix_time::ptime creation_time;
         boost::posix_time::ptime deletion_time;
-        bool operator==(const BlobMeta& other) const{
-            auto compare_timestamps = [](auto& time1, auto& time2) { return boost::posix_time::to_iso_extended_string(time1) == boost::posix_time::to_iso_extended_string(time2);};
 
-            return (blob_id == other.blob_id) && compare_timestamps(creation_time,other.creation_time) && compare_timestamps(deletion_time,other.deletion_time);
+        bool operator==(const BlobMeta &other) const {
+            auto compare_timestamps = [](auto &time1, auto &time2) {
+                return boost::posix_time::to_iso_extended_string(time1) ==
+                       boost::posix_time::to_iso_extended_string(time2);
+            };
+
+            return (blob_id == other.blob_id) && compare_timestamps(creation_time, other.creation_time) &&
+                   compare_timestamps(deletion_time, other.deletion_time);
         }
     };
 
@@ -133,22 +137,24 @@ BOOST_HANA_ADAPT_STRUCT(Gadgetron::Storage::DB::PendingWrite, key, transaction_e
 namespace Gadgetron::Storage::DB {
 
     struct Database {
+        static std::shared_ptr<Database> make_db(const boost::filesystem::path &database_path) {
+            auto cf_descriptors = std::vector<rocksdb::ColumnFamilyDescriptor>{{"Info", rocksdb::ColumnFamilyOptions()},
+                                                                               {"PendingWrites", rocksdb::ColumnFamilyOptions()},
+                                                                               {"Blobs", rocksdb::ColumnFamilyOptions()},
+                                                                               {"default", rocksdb::ColumnFamilyOptions()}};
+            auto families = create_database(database_path, cf_descriptors);
+            return std::make_shared<Database>(families);
+        }
+        Database(DataBaseFamilies &families) : db_info(families.database, families.families.at("Info")),
+                                               pending_writes(families.database, families.families.at("PendingWrites")),
+                                               blobs(families.database, families.families.at("Blobs")) {
 
-        Database(const boost::filesystem::path &path) {
-
-            auto cf_descriptors = std::vector<rocksdb::ColumnFamilyDescriptor>{{"Info",          rocksdb::ColumnFamilyOptions()},
-                                                                    {"PendingWrites", rocksdb::ColumnFamilyOptions()},
-                                                                    {"Blobs",         rocksdb::ColumnFamilyOptions()},
-                                                                               {"default",rocksdb::ColumnFamilyOptions()}};
-            auto families = create_database(path,cf_descriptors);
-            db_info = JSONStore(families.database,families.families.at("Info"));
-            pending_writes = ValueStore<PendingWrite>(families.database,families.families.at("PendingWrites"));
-            blobs = ListStore<BlobMeta>(families.database,families.families.at("Blobs"));
         }
 
         JSONStore db_info;
         ValueStore<PendingWrite> pending_writes;
         ListStore<BlobMeta> blobs;
+
     };
 
 }
