@@ -73,7 +73,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
         monitors.child = std::async(
                 std::launch::async,
-                [=](auto child, auto acceptor) { monitor_child(std::move(child), std::move(acceptor)); },
+                [=,this](auto child, auto acceptor) { monitor_child(std::move(child), std::move(acceptor)); },
                 child,
                 acceptor
         );
@@ -120,7 +120,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         )) {
         channel = std::async(
                 std::launch::async,
-                [=](auto config, auto context) { return open_external_channel(config, context); },
+                [=,this](auto config, auto context) { return open_external_channel(config, context); },
                 config,
                 context
         );

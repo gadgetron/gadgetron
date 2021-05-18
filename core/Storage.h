@@ -9,6 +9,7 @@
 #include "io/primitives.h"
 #include <boost/date_time/posix_time/posix_time_config.hpp>
 #include <boost/iostreams/device/array.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 namespace Gadgetron::Storage {
     class StreamProvider {
@@ -40,13 +41,29 @@ namespace Gadgetron::Storage {
 
         size_t size() { return keys.size(); }
 
-        bool empty(){return keys.empty();}
+        bool empty() { return keys.empty(); }
 
         StorageList(std::shared_ptr<StreamProvider> provider, std::vector<std::string> keys) : keys(std::move(keys)),
                                                                                                provider(std::move(
                                                                                                        provider)) {}
 
+        auto begin() {
+            return boost::make_transform_iterator(keys.begin(), iterator_transform());
+        }
+
+        auto end() {
+            return boost::make_transform_iterator(keys.end(), iterator_transform());
+        }
+
     private:
+
+        std::function<T(const std::string&)> iterator_transform() {
+            return [this](const std::string &key) -> T {
+                auto data = provider->fetch(key);
+                return Core::IO::read<T>(*istream_from_data(data));
+            };
+        }
+
         std::vector<std::string> keys;
         std::shared_ptr<StreamProvider> provider;
 
@@ -86,15 +103,15 @@ namespace Gadgetron::Storage {
 
 namespace Gadgetron {
 
-class StorageSpace : public Storage::GenericStorageSpace {
+    class StorageSpace : public Storage::GenericStorageSpace {
     public:
         using GenericStorageSpace::GenericStorageSpace;
 
         template<class T>
         Storage::StorageList<T> fetch(const std::string &key) const {
             if (this->subject)
-                return Storage::StorageList<T>(this->provider,this->provider->content(*subject, key));
-            return Storage::StorageList<T>(this->provider,{});
+                return Storage::StorageList<T>(this->provider, this->provider->content(*subject, key));
+            return Storage::StorageList<T>(this->provider, {});
         }
     };
 
@@ -104,7 +121,7 @@ class StorageSpace : public Storage::GenericStorageSpace {
 
         template<class T>
         Storage::StorageList<T> fetch(const std::string &measurementID, const std::string &key) const {
-            return Storage::StorageList<T>(this->provider,this->provider->content(measurementID, key));
+            return Storage::StorageList<T>(this->provider, this->provider->content(measurementID, key));
         }
     };
 
