@@ -166,7 +166,7 @@ namespace {
         std::smatch match;
 
         if (std::regex_match(measurementID, match, reg)) {
-            return IDs{match[1], match[3],match[2]};
+            return IDs{match[2], match[1],match[3]};
         }
         return {};
     }
