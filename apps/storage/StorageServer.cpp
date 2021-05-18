@@ -351,8 +351,14 @@ void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer, s
 
     db->blobs.update(updated_lists);
 
+    //Give people 30 minutes grace period to actually retrieve the data.
     for (const auto& blob_id : blobs_to_delete){
-        auto path = blob_folder / to_string(blob_id);
+        db->scheduled_deletions.set(to_string(blob_id),{blob_id,now+boost::posix_time::time_duration(0,30,0)});
+    }
+
+    for (const auto& [id,deletion_record] : db->scheduled_deletions ){
+        if (deletion_record.deletion_time > now) continue;
+        auto path = blob_folder / to_string(deletion_record.blob_id);
         boost::system::error_code ec;
         boost::filesystem::remove(path,ec);
     }

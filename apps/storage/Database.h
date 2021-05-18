@@ -128,11 +128,16 @@ namespace Gadgetron::Storage::DB {
         BlobMeta meta;
     };
 
+    struct ScheduledDeletion {
+        boost::uuids::uuid blob_id;
+        boost::posix_time::ptime deletion_time;
+    };
+
 
 }
 BOOST_HANA_ADAPT_STRUCT(Gadgetron::Storage::DB::BlobMeta, blob_id, creation_time, deletion_time);
 BOOST_HANA_ADAPT_STRUCT(Gadgetron::Storage::DB::PendingWrite, key, transaction_expiration, meta);
-
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::Storage::DB::ScheduledDeletion,blob_id, deletion_time);
 
 namespace Gadgetron::Storage::DB {
 
@@ -141,18 +146,21 @@ namespace Gadgetron::Storage::DB {
             auto cf_descriptors = std::vector<rocksdb::ColumnFamilyDescriptor>{{"Info", rocksdb::ColumnFamilyOptions()},
                                                                                {"PendingWrites", rocksdb::ColumnFamilyOptions()},
                                                                                {"Blobs", rocksdb::ColumnFamilyOptions()},
+                                                                               {"ScheduledDeletions", rocksdb::ColumnFamilyOptions()},
                                                                                {"default", rocksdb::ColumnFamilyOptions()}};
             auto families = create_database(database_path, cf_descriptors);
             return std::make_shared<Database>(families);
         }
         Database(DataBaseFamilies &families) : db_info(families.database, families.families.at("Info")),
                                                pending_writes(families.database, families.families.at("PendingWrites")),
+                                               scheduled_deletions(families.database, families.families.at("ScheduledDeletions")),
                                                blobs(families.database, families.families.at("Blobs")) {
 
         }
 
         JSONStore db_info;
         ValueStore<PendingWrite> pending_writes;
+        ValueStore<ScheduledDeletion> scheduled_deletions;
         ListStore<BlobMeta> blobs;
 
     };

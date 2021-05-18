@@ -158,6 +158,7 @@ namespace {
     struct IDs {
         std::string patientID;
         std::string scannerID;
+        std::string studyID;
     };
 
     optional<IDs> extract_IDS_from_measurement(const std::string &measurementID) {
@@ -165,7 +166,7 @@ namespace {
         std::smatch match;
 
         if (std::regex_match(measurementID, match, reg)) {
-            return IDs{match[1], match[2]};
+            return IDs{match[1], match[3],match[2]};
         }
         return {};
     }
@@ -206,7 +207,34 @@ namespace {
         return {};
 
     }
+    optional<std::string> studyID(const ISMRMRD::IsmrmrdHeader &header) {
+        if (auto subject = header.studyInformation) {
+            if (subject->studyID) {
+                return subject->studyID.value();
+            }
+        }
 
+        if (auto measInfo = header.measurementInformation) {
+            if (auto id = measInfo->measurementID) {
+                if (auto extracted = extract_IDS_from_measurement(id.value())) {
+                    return extracted->studyID;
+                }
+            }
+        }
+
+        return {};
+
+    }
+    optional<std::string> patientStudyID(const ISMRMRD::IsmrmrdHeader& header){
+        auto patient = patientID(header);
+        auto study = studyID(header);
+
+        if (patient && study)
+            return *patient + "/"  + *study;
+        if (study)
+            return *study;
+        return {};
+    }
     optional<std::string> debugID(const ISMRMRD::IsmrmrdHeader &header) {
         return "";
     }
@@ -229,7 +257,7 @@ Gadgetron::StorageSpaces Gadgetron::Storage::setup_storage(const Address& addres
     };
 
         return {
-                create_storage("session", patientID(header),boost::posix_time::time_duration(48,0,0)),
+                create_storage("session", patientStudyID(header),boost::posix_time::time_duration(48,0,0)),
                 create_storage("scanner", scannerID(header),boost::posix_time::time_duration(48,0,0)),
                 MeasurementSpace(std::make_shared<RESTStorageClient>(address, "measurement" ), measurementID(header), boost::posix_time::time_duration(48,0,0))
         };

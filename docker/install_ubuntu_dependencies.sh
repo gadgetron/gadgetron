@@ -41,6 +41,7 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
     libxml2-dev \
     libxslt-dev \
     librocksdb-dev \
+    nlohmann-json-dev \
     net-tools \
     ninja-build \
     pkg-config \
