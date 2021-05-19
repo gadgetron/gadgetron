@@ -100,7 +100,7 @@ else
     tar -xf boost_1_76_0.tar.gz && \
     cd boost_1_76_0 && \
     ./bootstrap.sh && \
-    ./b2
+    ./b2 install
 
 
 fi
@@ -135,7 +135,7 @@ pip3 install \
   scipy \
   sympy \
   tk-tools
-pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
+env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
 pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
 # If this is an image with CUDA...
