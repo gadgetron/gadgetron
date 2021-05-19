@@ -99,7 +99,7 @@ mkdir -p /opt/code
     cmake ../ && \
     cmake --build . --config Release --parallel $(nproc) && cmake --install .  && cd /opt/code && rm -rf /opt/code/zfp
 
-pip3 install -U pip setuptools testresources
+pip3 install -U setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
 
 # h5py needs to be recompiled to compile agains HDF5 1.10, which is what we install on Ubuntu 20.04
