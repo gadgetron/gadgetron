@@ -197,9 +197,9 @@ if(WIN32)
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-    find_package(Boost 1.65.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
-    find_package(Boost 1.65.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
 endif()
 
 if (NOT DEFINED Boost_VERSION_STRING)
