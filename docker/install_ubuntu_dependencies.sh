@@ -41,7 +41,6 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
     libxml2-dev \
     libxslt-dev \
     librocksdb-dev \
-    nlohmann-json-dev \
     net-tools \
     ninja-build \
     pkg-config \
@@ -57,7 +56,7 @@ if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
     DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
         googletest \
         googletest-tools \
-        librange-v3-dev
+        librange-v3-dev nlohmann-json3-dev
 else
     # Let's get GCC/G++9
     add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
@@ -87,6 +86,14 @@ else
         cd build && \
         cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../ && \
         make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest
+
+    cd /opt/code && \
+      git clone https://github.com/nlohmann/json.git --depth 1 --branch v3.9.1 && \
+      cd json && \
+      mkdir build && \
+      cd build && \
+      cmake  -DCMAKE_BUILD_TYPE=Release ../ -GNinja && \
+      ninja && ninja install && cd /opt/code && rm -rf /opt/code/json
 fi
 
 # Install ZFP
@@ -103,10 +110,10 @@ pip3 install -U pip setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
 
 # h5py needs to be recompiled to compile agains HDF5 1.10, which is what we install on Ubuntu 20.04
-python3 -m pip  install --no-binary=h5py h5py
+pip3 install --no-binary=h5py h5py
 
 # Rest of the Python "stuff"
-python3 -m pip install \
+pip3 install \
     Cython \
     matplotlib \
     numpy \
@@ -119,13 +126,13 @@ python3 -m pip install \
     scipy \
     sympy \
     tk-tools
-python3 -m pip install git+https://github.com/ismrmrd/ismrmrd-python.git
-python3 -m pip install git+https://github.com/gadgetron/gadgetron-python.git
+pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
+pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
     DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes libcudnn8-dev
-    python3 -m pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 -f https://download.pytorch.org/whl/torch_stable.html
+    pip3 install torch==1.7.0+cu110 torchvision==0.8.1+cu110 -f https://download.pytorch.org/whl/torch_stable.html
 else
-    python3 -m pip install torch==1.7.0+cpu torchvision==0.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+    pip3 install torch==1.7.0+cpu torchvision==0.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
 fi
