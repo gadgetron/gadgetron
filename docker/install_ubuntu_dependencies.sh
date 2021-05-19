@@ -99,14 +99,14 @@ mkdir -p /opt/code
     cmake ../ && \
     cmake --build . --config Release --parallel $(nproc) && cmake --install .  && cd /opt/code && rm -rf /opt/code/zfp
 
-pip3 install -U setuptools testresources
+pip3 install -U pip setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
 
 # h5py needs to be recompiled to compile agains HDF5 1.10, which is what we install on Ubuntu 20.04
-pip3 install --no-binary=h5py h5py
+python3 -m pip  install --no-binary=h5py h5py
 
 # Rest of the Python "stuff"
-pip3 install \
+python3 -m pip install \
     Cython \
     matplotlib \
     numpy \
@@ -119,13 +119,13 @@ pip3 install \
     scipy \
     sympy \
     tk-tools
-pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
-pip3 install git+https://github.com/gadgetron/gadgetron-python.git
+python3 -m pip install git+https://github.com/ismrmrd/ismrmrd-python.git
+python3 -m pip install git+https://github.com/gadgetron/gadgetron-python.git
 
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
     DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes libcudnn8-dev
-    pip3 install torch==1.7.0+cu110 torchvision==0.8.1+cu110 -f https://download.pytorch.org/whl/torch_stable.html
+    python3 -m pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 -f https://download.pytorch.org/whl/torch_stable.html
 else
-    pip3 install torch==1.7.0+cpu torchvision==0.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+    python3 -m pip install torch==1.7.0+cpu torchvision==0.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
 fi
