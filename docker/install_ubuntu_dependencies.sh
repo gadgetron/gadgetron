@@ -11,8 +11,8 @@ if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ] && [ -z "$(cat /etc/ls
 fi
 
 if grep -q  "Ubuntu 18.04" /etc/lsb-release ; then
-  apt-get update
-  apt-get install apt-transport-https ca-certificates gnupg software-properties-common wget
+  apt  update
+  DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes apt-transport-https ca-certificates gnupg software-properties-common wget
   apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 fi
 
