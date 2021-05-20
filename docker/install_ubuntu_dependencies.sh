@@ -10,6 +10,12 @@ if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ] && [ -z "$(cat /etc/ls
   exit 1
 fi
 
+if grep -q  "Ubuntu 18.04" /etc/lsb-release ; then
+  apt-get update
+  apt-get install apt-transport-https ca-certificates gnupg software-properties-common wget
+  apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+fi
+
 apt update --quiet
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
   apt-utils \
@@ -135,6 +141,7 @@ pip3 install \
   scipy \
   sympy \
   tk-tools
+
 env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
 pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
