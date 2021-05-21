@@ -140,8 +140,8 @@ namespace Gadgetron::Storage::DB {
         template<class RANGE>
         void update(RANGE &&key_values) {
             rocksdb::WriteBatch batch;
-            std::string buffer;
             for (const auto&[key, value] : key_values) {
+                std::string buffer;
                 json::to_msgpack(value, buffer);
                 batch.Put(handle, key, buffer);
             }

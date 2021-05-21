@@ -361,6 +361,7 @@ void cleanup(const boost::system::error_code &ec, asio::deadline_timer &timer, s
         auto path = blob_folder / to_string(deletion_record.blob_id);
         boost::system::error_code ec;
         boost::filesystem::remove(path,ec);
+        db->scheduled_deletions.delete_key(id);
     }
 
     timer.expires_at(timer.expires_at() + boost::posix_time::minutes(5));
@@ -404,10 +405,15 @@ Gadgetron::Storage::StorageServer::StorageServer(unsigned short port, const boos
 
 StorageServer::~StorageServer() {
     ioContext.stop();
-    this->server_thread.join();
+    if (server_thread.joinable())
+        server_thread.join();
 
 }
 
 unsigned short StorageServer::port() {
     return this->bound_port;
+}
+
+void StorageServer::run_forever() {
+    this->server_thread.join();
 }

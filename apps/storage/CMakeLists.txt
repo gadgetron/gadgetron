@@ -13,6 +13,17 @@ target_include_directories(gadgetron_storage PUBLIC
         )
 
 
+add_executable(gadgetron_storage_server gadgetron_storage_server.cpp)
+
+target_link_libraries(gadgetron_storage_server
+        gadgetron_storage
+        Boost::system
+        Boost::filesystem
+        Boost::program_options)
+
+
+install(TARGETS gadgetron_storage_server DESTINATION bin COMPONENT main)
+
 if (BUILD_TESTING)
     include(GoogleTest)
     add_executable(session_tests storage_test.cpp server_test.cpp)

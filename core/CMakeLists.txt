@@ -14,6 +14,7 @@ add_library(gadgetron_core SHARED
         Message.cpp
         Response.cpp
         Storage.cpp
+        gadgetron_paths.cpp
         io/from_string.cpp)
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}

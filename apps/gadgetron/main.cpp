@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "log.h"
-#include "paths.h"
+#include "gadgetron_paths.h"
 #include "initialization.h"
 
 #include "system_info.h"
@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
     options_description storage_options("Storage options");
     storage_options.add_options()
             ("storage_port,s", value<unsigned short>()->default_value(0), "Port on which to run the Storage server")
+            ("external_storage_address,E", value<std::string>(), "External address of a Storage server. Otherwise, Storage server will be started")
             ("database_dir,D",value<path>()->default_value(default_database_folder()),"Directory in which to store the database")
             ("storage_dir,S", value<path>()->default_value(default_storage_folder()),"Directory in which to store data blob");
     options_description desc;
@@ -66,9 +67,17 @@ int main(int argc, char *argv[]) {
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
-        auto sessionsServer = Gadgetron::Storage::StorageServer(args["storage_port"].as<unsigned short>(), args["database_dir"].as<path>(), args["storage_dir"].as<path>());
+        Gadgetron::Storage::Address storage_address;
+        if (args.count("external_storage_address")){
+            storage_address = {args["external_storage_address"].as<std::string>(), std::to_string(args["storage_port"].as<unsigned short>())};
 
-        Server server(args, {"localhost", std::to_string(sessionsServer.port())});
+        } else {
+            auto sessionsServer = Gadgetron::Storage::StorageServer(args["storage_port"].as<unsigned short>(),
+                                                                    args["database_dir"].as<path>(),
+                                                                    args["storage_dir"].as<path>());
+            storage_address = {"localhost",std::to_string(sessionsServer.port())};
+        }
+        Server server(args, storage_address);
         server.serve();
     }
     catch (std::exception &e) {

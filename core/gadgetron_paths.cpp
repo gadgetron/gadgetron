@@ -1,5 +1,5 @@
 #include "log.h"
-#include "paths.h"
+#include "gadgetron_paths.h"
 
 #if defined _WIN32 || _WIN64
 #include <libloaderapi.h>

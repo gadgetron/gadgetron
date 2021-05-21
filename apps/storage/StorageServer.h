@@ -9,6 +9,7 @@ namespace Gadgetron::Storage {
     class StorageServer {
     public:
         StorageServer(unsigned short port, const boost::filesystem::path& database_folder, const boost::filesystem::path& blob_folder);
+        void run_forever();
         ~StorageServer();
         unsigned short port();
 

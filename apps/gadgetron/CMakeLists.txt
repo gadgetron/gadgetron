@@ -8,8 +8,6 @@ add_executable(gadgetron
         Server.h
         Connection.cpp
         Connection.h
-        paths.cpp
-        paths.h
         initialization.cpp
         initialization.h
         system_info.cpp
