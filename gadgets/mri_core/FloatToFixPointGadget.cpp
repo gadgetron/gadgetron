@@ -43,7 +43,7 @@ namespace Gadgetron
 
 
         for (auto [img_header,data,meta] : input) {
-            GDEBUG("Float to shorts norm: %f \n", nrm2(&data));
+            //GDEBUG("Float to shorts norm: %f \n", nrm2(&data));
 
             switch (img_header.image_type) {
                 case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE: {
