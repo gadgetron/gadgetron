@@ -5,16 +5,11 @@ if [ "$EUID" -ne 0 ]; then
   exit
 fi
 
-if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ] && [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
-  echo "Error: This install script is intended for Ubuntu 18.04 and 20.04 only"
+if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 20.04")" ] ; then
+  echo "Error: This install script is intended for Ubuntu  20.04 only"
   exit 1
 fi
 
-if grep -q  "Ubuntu 18.04" /etc/lsb-release ; then
-  apt  update
-  DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes apt-transport-https ca-certificates gnupg software-properties-common wget
-  apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-fi
 
 apt update --quiet
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
@@ -53,63 +48,12 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
   python3-pip \
   software-properties-common \
   supervisor \
-  wget
-
-if [ -z "$(cat /etc/lsb-release | grep "Ubuntu 18.04")" ]; then
-  # This is NOT ubuntu 18.04, i.e. it is 20.04
-  DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
-    googletest \
-    googletest-tools \
-    librange-v3-dev \
-    nlohmann-json3-dev \
-    libboost-all-dev
-else
-  # Let's get GCC/G++9
-  add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
-  DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes \
-    g++-9 \
-    gcc-9 \
-    git
-
-  # Set v9 with higher priority
-  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900 --slave /usr/bin/g++ g++ /usr/bin/g++-9
-
-  # install range v3
-  mkdir -p /opt/code
-  cd /opt/code &&
-    git clone https://github.com/ericniebler/range-v3.git --depth 1 --branch 0.11.0 &&
-    cd range-v3 &&
-    mkdir build &&
-    cd build &&
-    cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja &&
-    ninja && ninja install && cd /opt/code && rm -rf /opt/code/range-v3
-
-  # Install Google Test
-  cd /opt/code &&
-    git clone https://github.com/google/googletest.git &&
-    cd googletest &&
-    mkdir build &&
-    cd build &&
-    cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release ../ &&
-    make -j $(nproc) && make install && cd /opt/code && rm -rf /opt/code/googletest
-
-  cd /opt/code &&
-    git clone https://github.com/nlohmann/json.git --depth 1 --branch v3.9.1 &&
-    cd json &&
-    mkdir build &&
-    cd build &&
-    cmake -DCMAKE_BUILD_TYPE=Release ../ -GNinja &&
-    ninja && ninja install && cd /opt/code && rm -rf /opt/code/json
-
-  cd /opt/code && \
-    wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz && \
-    tar -xf boost_1_76_0.tar.gz && \
-    cd boost_1_76_0 && \
-    ./bootstrap.sh && \
-    ./b2 install
-
-
-fi
+  wget \
+  googletest \
+  googletest-tools \
+  librange-v3-dev \
+  nlohmann-json3-dev \
+  libboost-all-dev
 
 # Install ZFP
 mkdir -p /opt/code

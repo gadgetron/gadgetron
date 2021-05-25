@@ -37,9 +37,12 @@ int main(int argc, char *argv[]) {
     options_description storage_options("Storage options");
     storage_options.add_options()
             ("storage_port,s", value<unsigned short>()->default_value(0), "Port on which to run the Storage server")
-            ("external_storage_address,E", value<std::string>(), "External address of a Storage server. Otherwise, Storage server will be started")
-            ("database_dir,D",value<path>()->default_value(default_database_folder()),"Directory in which to store the database")
-            ("storage_dir,S", value<path>()->default_value(default_storage_folder()),"Directory in which to store data blob");
+            ("external_storage_address,E", value<std::string>(),
+             "External address of a Storage server. Otherwise, Storage server will be started")
+            ("database_dir,D", value<path>()->default_value(default_database_folder()),
+             "Directory in which to store the database")
+            ("storage_dir,S", value<path>()->default_value(default_storage_folder()),
+             "Directory in which to store data blob");
     options_description desc;
     desc.add(gadgetron_options).add(storage_options);
     variables_map args;
@@ -67,18 +70,18 @@ int main(int argc, char *argv[]) {
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
-        Gadgetron::Storage::Address storage_address;
-        if (args.count("external_storage_address")){
-            storage_address = {args["external_storage_address"].as<std::string>(), std::to_string(args["storage_port"].as<unsigned short>())};
-
+        if (args.count("external_storage_address")) {
+            Server server(args, {args["external_storage_address"].as<std::string>(),
+                                 std::to_string(args["storage_port"].as<unsigned short>())});
+            server.serve();
         } else {
             auto sessionsServer = Gadgetron::Storage::StorageServer(args["storage_port"].as<unsigned short>(),
                                                                     args["database_dir"].as<path>(),
                                                                     args["storage_dir"].as<path>());
-            storage_address = {"localhost",std::to_string(sessionsServer.port())};
+            GINFO("Started storage server on port %d\n",sessionsServer.port());
+            Server server(args, {"localhost", std::to_string(sessionsServer.port())});
+            server.serve();
         }
-        Server server(args, storage_address);
-        server.serve();
     }
     catch (std::exception &e) {
         GERROR_STREAM(e.what() << std::endl);

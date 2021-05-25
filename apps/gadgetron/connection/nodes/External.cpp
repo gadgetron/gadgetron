@@ -73,7 +73,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
         monitors.child = std::async(
                 std::launch::async,
-                [=,this](auto child, auto acceptor) { monitor_child(std::move(child), std::move(acceptor)); },
+                [=](auto child, auto acceptor) { monitor_child(std::move(child), std::move(acceptor)); },
                 child,
                 acceptor
         );
@@ -111,8 +111,8 @@ namespace Gadgetron::Server::Connection::Nodes {
             const Core::StreamContext &context,
             Loader &loader
     ) : serialization(std::make_shared<Serialization>(
-                loader.load_default_and_additional_readers(config),
-                loader.load_default_and_additional_writers(config)
+                loader.load_default_or_custom_readers(config),
+                loader.load_default_or_custom_writers(config)
         )),
         configuration(std::make_shared<Configuration>(
                 context,
@@ -120,7 +120,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         )) {
         channel = std::async(
                 std::launch::async,
-                [=,this](auto config, auto context) { return open_external_channel(config, context); },
+                [=](auto config, auto context) { return open_external_channel(config, context); },
                 config,
                 context
         );

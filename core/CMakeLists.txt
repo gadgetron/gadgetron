@@ -56,6 +56,7 @@ install(FILES
         Types.hpp
         TypeTraits.h
         Writer.h
+        Writer.hpp
         Node.h
         PureGadget.h
         LegacyACE.h
