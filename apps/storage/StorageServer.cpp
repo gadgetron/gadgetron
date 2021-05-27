@@ -392,7 +392,7 @@ Gadgetron::Storage::StorageServer::StorageServer(unsigned short port, const boos
                                       DataInfoEndPoint{database});
 
         asio::spawn(ioContext, [this, &endpoints, port, &bound_port_promise](auto yield) {
-            REST::navi(ioContext, tcp::endpoint(asio::ip::tcp::v4(), port), endpoints, bound_port_promise, yield);
+            REST::navi(ioContext, tcp::endpoint(asio::ip::tcp::v6(), port), endpoints, bound_port_promise, yield);
         });
 
         asio::deadline_timer timer(ioContext, boost::posix_time::seconds(1));

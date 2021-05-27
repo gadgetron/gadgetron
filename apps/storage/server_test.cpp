@@ -5,9 +5,10 @@
 #include "gtest/gtest.h"
 #include "StorageServer.h"
 #include "RESTStorageClient.h"
-
+#include <range/v3/range.hpp>
 using namespace Gadgetron::Storage;
 using namespace Gadgetron;
+
 
 class ServerTest : public ::testing::Test {
 protected:
@@ -18,6 +19,7 @@ protected:
         server = std::make_unique<StorageServer>(0,temp_dir/"database", temp_dir);
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
+        header.studyInformation = ISMRMRD::StudyInformation{{},{},std::string("YAAARH")};
         storage = Storage::setup_storage({"localhost",std::to_string(server->port())},header);
 
     }
@@ -58,3 +60,38 @@ TEST_F(ServerTest,basic_storage){
 
 }
 
+TEST_F(ServerTest,larger_storage){
+    hoNDArray<float> x(1024*255);
+    std::fill(x.begin(),x.end(),23);
+    this->storage.session.store("stuff",x);
+
+    auto storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
+
+    ASSERT_EQ(storage_list.size(),1);
+
+    auto fetched = storage_list[0];
+    ASSERT_EQ(x,fetched);
+
+
+}
+TEST_F(ServerTest,range_test){
+
+
+    hoNDArray<float> y(2,2);
+    std::fill(y.begin(),y.end(),23);
+    this->storage.session.store("stuff",y);
+    this->storage.session.store("stuff",y);
+
+    auto storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
+
+    auto storage_vector = storage_list | ranges::to<std::vector>();
+
+
+    auto storage_vector2 = this->storage.session.fetch<hoNDArray<float>>("stuff") | ranges::to<std::vector>();
+    ASSERT_EQ(storage_list.size(),2);
+    ASSERT_EQ(storage_list.size(), std::distance(storage_list.begin(),storage_list.end()));
+    ASSERT_EQ(storage_list.size(),storage_vector.size());
+    ASSERT_EQ(storage_list.size(),storage_vector2.size());
+
+
+}

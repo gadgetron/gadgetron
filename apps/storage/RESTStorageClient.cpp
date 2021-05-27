@@ -116,7 +116,7 @@ namespace {
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.body() = std::move(data);
         req.prepare_payload();
-        http::write(stream, std::move(req));
+        http::write(stream, req);
         http::response<http::string_body> response;
         beast::flat_buffer buffer;
         http::read(stream, buffer, response);
@@ -229,8 +229,11 @@ namespace {
         auto patient = patientID(header);
         auto study = studyID(header);
 
-        if (patient && study)
-            return *patient + "/"  + *study;
+        if (patient && study) {
+            std::string result =  *patient + "/" + *study;
+            return result;
+
+        }
         if (study)
             return *study;
         return {};

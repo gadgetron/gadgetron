@@ -15,6 +15,16 @@ namespace Gadgetron::Storage::REST {
     namespace hana = boost::hana;
 
 
+    auto make_failure_response(std::string_view message, http::status status){
+        http::response<http::string_body> res{status, 10 };
+        res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        res.set(http::field::content_type, "text/plain");
+        res.keep_alive(false);
+        res.body() = message;
+        res.prepare_payload();
+        return res;
+    }
+
     template<class... Endpoints>
 
     class RESTEndpoints {
@@ -25,8 +35,10 @@ namespace Gadgetron::Storage::REST {
         beast::error_code handle_request(SyncReadStream &stream,Send &&send, Buffer& buffer, asio::yield_context yield ) {
             beast::error_code ec;
             http::request_parser<http::empty_body> req_parser;
+            req_parser.body_limit(128ull * 1024ull * 1024ull * 1024ull); //We support files up to 128GB. For now.
             http::async_read_header(stream, buffer, req_parser,yield[ec]);
-            if (ec) return ec;
+            if (ec == http::error::end_of_stream) return ec;
+            if (ec) return send(make_failure_response(ec.message(),http::status::bad_request));
 
             auto req = req_parser.get();
 
@@ -52,14 +64,7 @@ namespace Gadgetron::Storage::REST {
                 fail_message = error.what();
             }
 
-
-            http::response<http::string_body> res{http::status::bad_request, req.version()};
-            res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-            res.set(http::field::content_type, "text/plain");
-            res.keep_alive(req.keep_alive());
-            res.body() = fail_message;
-            res.prepare_payload();
-            ec = send(std::move(res));
+            ec = send(make_failure_response(fail_message,http::status::bad_request));
             return ec;
 
         }
