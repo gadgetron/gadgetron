@@ -26,10 +26,14 @@ namespace {
             {"matlab", start_matlab_module}
     };
 
-    void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external) {
+    void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external, OutputChannel bypass ) {
         auto closer = make_closer(external);
         for (auto message : input) {
-            external->push_message(std::move(message));
+            if (external->accepts(message)) {
+                external->push_message(std::move(message));
+            } else {
+                bypass.push_message(std::move(message));
+            }
         }
     }
 
@@ -134,8 +138,8 @@ namespace Gadgetron::Server::Connection::Nodes {
         std::shared_ptr<ExternalChannel> external = channel.get();
 
         auto input_thread = error_handler.run(
-                [=](auto input) { ::process_input(std::move(input), external); },
-                std::move(input)
+                [=](auto input, auto output) { ::process_input(std::move(input), external, std::move(output)); },
+                std::move(input), split(output)
         );
 
         auto output_thread = error_handler.run(
