@@ -73,7 +73,7 @@ def send_dependency_to_gadgetron(echo_handler, gadgetron, dependency, log):
                    check=True)
 
 
-def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log):
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log, additional_arguments):
     print("Passing data to Gadgetron: {} -> {}".format(input, output))
 
     command = ["gadgetron_ismrmrd_client",
@@ -83,6 +83,9 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                "-o", output,
                "-c", configuration,
                "-G", configuration]
+
+    if additional_arguments:
+        command = command + additional_arguments.split()
 
     echo_handler(command)
     subprocess.run(command,
@@ -303,12 +306,20 @@ def run_gadgetron_client(args, config):
         with open(os.path.join(args.test_folder, 'client.log'), 'w') as log:
 
             start_time = time.time()
+
+            try:
+                additional_args = config['CLIENT']['additional_arguments']
+            except KeyError:
+                additional_args = None
+
             send_data_to_gadgetron(args.echo_handler,
                                    gadgetron,
                                    input=client_input,
                                    output=output_file,
                                    configuration=config['CLIENT']['configuration'],
-                                   log=log)
+                                   log=log,
+                                   additional_arguments=additional_args)
+
             end_time = time.time()
 
             processing_time = end_time - start_time
