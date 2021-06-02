@@ -1,7 +1,3 @@
-//
-// Created by dch on 4/26/21.
-//
-
 #include "RESTStorageClient.h"
 #include <ismrmrd/xml.h>
 #include <boost/beast/core.hpp>
@@ -26,8 +22,37 @@ namespace {
 
     constexpr int http_version = 11;
 
-    auto make_json_request(http::verb method, const std::string &host, const std::string &target, const json &j) {
+    auto parse_url(const std::string& address) {
+        // There's a number of regular expressions here, for parsing components from a URI.
+        // When possible, they are taken directly from the appropriate RFCs. Read more:
+        // https://datatracker.ietf.org/doc/html/rfc3986
 
+        std::regex uri_pattern(R"(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)");
+        std::regex authority_pattern(R"(^(([^/?#@\[\]]*)@)?(([^:/?#@\[\]]*)|(\[([0-9a-fA-F:]*)\]))(:([0-9]*))?)");
+        std::smatch res;
+
+        if (std::regex_match(address, res, uri_pattern)) {
+
+            std::string scheme     = res[2];
+            std::string authority  = res[4];
+            std::string path       = res[5];
+            std::string query      = res[7];
+            std::string fragment   = res[9];
+
+            if (std::regex_match(authority, res, authority_pattern)) {
+
+                std::string user = res[2];
+                std::string host = std::string(res[4]) + std::string(res[6]);
+                std::string port = res[8];
+
+                return std::tuple(scheme, user, host, port, path, query, fragment);
+            }
+        }
+
+        throw std::runtime_error("Failed to parse URL: " + address);
+    }
+
+    auto make_json_request(http::verb method, const std::string &host, const std::string &target, const json &j) {
         http::request<http::string_body> req{method, target, http_version};
         req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
@@ -38,30 +63,36 @@ namespace {
     }
 
     auto make_empty_request(http::verb method, const std::string &host, const std::string &target) {
-
         http::request<http::empty_body> req{method, target, http_version};
         req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         return req;
     }
 
-    auto connect_stream(net::io_context &ioc, const std::string &host, const std::string &port) {
+    auto connect_stream(net::io_context &ioc, const std::string &host, const std::string &service) {
         tcp::resolver resolver(ioc);
         beast::tcp_stream stream(ioc);
-        auto const results = resolver.resolve(host, port);
+
+        GDEBUG_STREAM("Resolving: " << host << " " << service);
+
+        auto const results = resolver.resolve(host, service);
         stream.connect(results);
         return stream;
     }
 
-    json get_content(const std::string &server_address, const std::string &port, const std::string &group,
-                     const std::string &subject, const std::string &key) {
-
+    json get_content(
+        const std::string &host,
+        const std::string &service,
+        const std::string &group,
+        const std::string &subject,
+        const std::string &key
+    ) {
         net::io_context ioc;
-        auto stream = connect_stream(ioc, server_address, port);
+        auto stream = connect_stream(ioc, host, service);
         auto json_body = json{{"storagespace", group},
                               {"subject",      subject},
                               {"key",          key}};
-        auto req = make_json_request(http::verb::get, server_address, "/v1/data", json_body);
+        auto req = make_json_request(http::verb::get, host, "/v1/data", json_body);
         http::write(stream, req);
 
         beast::flat_buffer buffer;
@@ -71,10 +102,10 @@ namespace {
         return json::parse(response.body());
     }
 
-    std::vector<char> fetch_data(const std::string &server_address, const std::string port, const std::string &path) {
+    std::vector<char> fetch_data(const std::string &host, const std::string &service, const std::string &path) {
         net::io_context ioc;
-        auto stream = connect_stream(ioc, server_address, port);
-        auto req = make_empty_request(http::verb::get, server_address, path);
+        auto stream = connect_stream(ioc, host, service);
+        auto req = make_empty_request(http::verb::get, host, path);
         http::write(stream, req);
         beast::flat_buffer buf;
 
@@ -85,17 +116,21 @@ namespace {
         return std::move(response_parser.get().body());
     }
 
-    json store_request(const std::string &server_address, const std::string &port, const std::string &group,
-                       const std::string &subject, const std::string &key,
-                       const boost::posix_time::time_duration &duration) {
-
+    json store_request(
+        const std::string &host,
+        const std::string &service,
+        const std::string &group,
+        const std::string &subject,
+        const std::string &key,
+        const boost::posix_time::time_duration &duration
+    ) {
         net::io_context ioc;
-        auto stream = connect_stream(ioc, server_address, port);
+        auto stream = connect_stream(ioc, host, service);
         auto json_body = json{{"storagespace", group},
                               {"subject",      subject},
                               {"key",          key},
                               {"storage_duration",     boost::posix_time::to_simple_string(duration)}};
-        auto req = make_json_request(http::verb::post, server_address, "/v1/data", json_body);
+        auto req = make_json_request(http::verb::post, host, "/v1/data", json_body);
         http::write(stream, req);
 
         beast::flat_buffer buffer;
@@ -106,13 +141,17 @@ namespace {
         return json::parse(response.body());
     }
 
-    void store_content(const std::string &server_address, const std::string &port, const std::string &path,
-                       std::vector<char> data) {
+    void store_content(
+        const std::string &host,
+        const std::string &service,
+        const std::string &path,
+        std::vector<char> data
+    ) {
         net::io_context ioc;
-        auto stream = connect_stream(ioc, server_address, port);
+        auto stream = connect_stream(ioc, host, service);
 
         http::request<http::vector_body<char>> req{http::verb::patch, path, http_version};
-        req.set(http::field::host, server_address);
+        req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.body() = std::move(data);
         req.prepare_payload();
@@ -127,31 +166,6 @@ namespace {
 
 }
 
-Gadgetron::Storage::RESTStorageClient::RESTStorageClient(const Address& address,
-                                                         const std::string &group)
-        : server_address(address.host), port(address.port), group(group)  {}
-
-
-std::vector<std::string> Gadgetron::Storage::RESTStorageClient::content(const std::string& subject, const std::string &key) const {
-    auto response = get_content(server_address, port, group, subject, key);
-
-    return response | ranges::views::transform(
-            [](const auto &json_value) { return json_value["storage_path"].template get<std::string>(); }) |
-           ranges::to<std::vector>();
-}
-
-std::vector<char> Gadgetron::Storage::RESTStorageClient::fetch(const std::string &uuid) const {
-
-    return fetch_data(server_address, port, uuid);
-}
-
-void Gadgetron::Storage::RESTStorageClient::store(const std::string& subject, const std::string &key, const std::vector<char> &value,
-                                                  boost::posix_time::time_duration duration) {
-    auto response = store_request(server_address, port, group, subject, key, duration);
-    auto blob_path = response["storage_path"];
-    store_content(server_address, port, blob_path, value);
-
-}
 namespace {
     using namespace Gadgetron::Core;
 
@@ -238,10 +252,6 @@ namespace {
             return *study;
         return {};
     }
-    optional<std::string> debugID(const ISMRMRD::IsmrmrdHeader &header) {
-        return "";
-    }
-
 
     optional<std::string> measurementID(const ISMRMRD::IsmrmrdHeader& header){
         if (header.measurementInformation)
@@ -252,16 +262,51 @@ namespace {
 
 
 }
-Gadgetron::StorageSpaces Gadgetron::Storage::setup_storage(const Address& address,
-                                          const ISMRMRD::IsmrmrdHeader &header) {
 
-    auto create_storage = [&](const auto& group, const auto& id, const auto& duration){
-        return StorageSpace(std::make_shared<RESTStorageClient>(address, group), id,duration);
+namespace Gadgetron::Storage {
+
+    RESTStorageClient::RESTStorageClient(
+        std::string host,
+        std::string service,
+        std::string group
+    ) : host(std::move(host)), service(std::move(service)), group(std::move(group)) {}
+
+    std::vector<std::string> RESTStorageClient::content(const std::string& subject, const std::string &key) const {
+        auto response = get_content(host, service, group, subject, key);
+
+        return response
+               | ranges::views::transform([](const auto &json_value) {
+                     return json_value["storage_path"].template get<std::string>();
+                 })
+               | ranges::to<std::vector>();
+    }
+
+    std::vector<char> RESTStorageClient::fetch(const std::string &uuid) const {
+        return fetch_data(host, service, uuid);
+    }
+
+    void RESTStorageClient::store(
+        const std::string& subject,
+        const std::string &key,
+        const std::vector<char> &value,
+        boost::posix_time::time_duration duration
+    ) {
+        auto response = store_request(host, service, group, subject, key, duration);
+        auto blob_path = response["storage_path"];
+        store_content(host, service, blob_path, value);
+    }
+}
+
+Gadgetron::StorageSpaces Gadgetron::Storage::setup_storage(
+    const std::string& address,
+    const ISMRMRD::IsmrmrdHeader &header
+) {
+    GDEBUG_STREAM("Using storage address: " << address);
+    auto [scheme, user, host, port, path, query, fragment] = parse_url(address);
+    auto service = port.empty() ? scheme : port;
+    return {
+        StorageSpace(std::make_shared<RESTStorageClient>(host, service, "session"), patientStudyID(header), boost::posix_time::time_duration(48,0,0)),
+        StorageSpace(std::make_shared<RESTStorageClient>(host, service, "scanner"), scannerID(header), boost::posix_time::time_duration(48,0,0)),
+        MeasurementSpace(std::make_shared<RESTStorageClient>(host, service, "measurement" ), measurementID(header), boost::posix_time::time_duration(48,0,0))
     };
-
-        return {
-                create_storage("session", patientStudyID(header),boost::posix_time::time_duration(48,0,0)),
-                create_storage("scanner", scannerID(header),boost::posix_time::time_duration(48,0,0)),
-                MeasurementSpace(std::make_shared<RESTStorageClient>(address, "measurement" ), measurementID(header), boost::posix_time::time_duration(48,0,0))
-        };
 }

@@ -53,7 +53,7 @@ namespace Gadgetron::Server::Connection {
             std::unique_ptr<std::iostream> stream,
             Gadgetron::Core::StreamContext::Paths paths,
             Gadgetron::Core::StreamContext::Args args,
-            Gadgetron::Storage::Address sessions_address
+            Gadgetron::Core::StreamContext::StorageAddress storage_address
     ) {
 
         stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
@@ -62,7 +62,7 @@ namespace Gadgetron::Server::Connection {
         ErrorHandler error_handler(sender, "Connection Main Thread");
 
         error_handler.handle([&]() {
-            ConfigConnection::process(*stream, paths, args,sessions_address, error_handler);
+            ConfigConnection::process(*stream, paths, args, storage_address, error_handler);
         });
 
         try {

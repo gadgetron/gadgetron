@@ -10,7 +10,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
             std::iostream &stream,
             const Core::StreamContext::Paths &paths,
             const Core::StreamContext::Args &args,
-            const Storage::Address& address,
+            const Core::StreamContext::StorageAddress& address,
             const Config &config,
             ErrorHandler &error_handler
     );

@@ -77,7 +77,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
             std::iostream &stream,
             const Core::StreamContext::Paths &paths,
             const Core::StreamContext::Args &args,
-            const Storage::Address& sessions_address,
+            const Core::StreamContext::StorageAddress& storage_address,
             const Config &config,
             ErrorHandler &error_handler
     ) {
@@ -107,14 +107,20 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
         input_thread.join();
         output_thread.join();
 
+        auto header = context.header.value_or(Header());
+        StreamContext stream_context{
+            header,
+            paths,
+            args,
+            storage_address,
+            Storage::setup_storage(storage_address, header)
+        };
+
         if (context.header) {
-            auto storage = Storage::setup_storage(sessions_address, context.header.value());
-            StreamConnection::process(stream, StreamContext{context.header.value(), paths, std::move(storage),args}, config, error_handler);
+            StreamConnection::process(stream, stream_context, config, error_handler);
         }
         else {
-
-            auto storage = Storage::setup_storage(sessions_address, StreamContext::Header{});
-            VoidConnection::process(stream, paths, std::move(storage), config, error_handler);
+            VoidConnection::process(stream, stream_context, config, error_handler);
         }
     }
 }

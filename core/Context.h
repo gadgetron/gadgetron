@@ -9,10 +9,7 @@
 namespace Gadgetron::Core {
 
     struct Context {
-
-
-        using Header =
-                ISMRMRD::IsmrmrdHeader;
+        using Header = ISMRMRD::IsmrmrdHeader;
 
         struct Paths {
             boost::filesystem::path gadgetron_home;
@@ -26,11 +23,23 @@ namespace Gadgetron::Core {
 
     struct StreamContext : Context {
         using Args = boost::program_options::variables_map;
-        StreamContext(ISMRMRD::IsmrmrdHeader header, const Paths paths, StorageSpaces storage, const Args args) : Context{std::move(header),paths, std::move(storage)},args{args} {}
-        Args   args;
+        using StorageAddress = std::string;
+
+        StreamContext(
+            ISMRMRD::IsmrmrdHeader header,
+            const Paths paths,
+            const Args args,
+            const StorageAddress storage_address,
+            StorageSpaces storage
+        ) : Context{
+                std::move(header),
+                paths,
+                std::move(storage)
+            },
+            args{args},
+            storage_address{storage_address} {}
+
+        Args args;
+        StorageAddress storage_address;
     };
-
-
 }
-
-
