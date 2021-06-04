@@ -95,3 +95,18 @@ TEST_F(ServerTest,range_test){
 
 
 }
+
+TEST_F(ServerTest,image_test){
+    Core::Image<float> image;
+
+    auto& [header,data,meta] = image;
+
+    data = hoNDArray<float>(2,2,1,4);
+    std::fill(data.begin(),data.end(),3);
+    this->storage.session.store("image",image);
+
+    auto storage_list = this->storage.session.fetch<Core::Image<float>>("image");
+
+    auto [stored_header,stored_data,stored_meta] = storage_list[0];
+    ASSERT_EQ(data,stored_data);
+}
