@@ -58,7 +58,7 @@ namespace Gadgetron::Server::Connection {
         stream->exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
         ErrorSender sender;
 
-        ErrorHandler error_handler(sender,"Connection Main Thread");
+        ErrorHandler error_handler(sender, "Connection Main Thread");
 
         error_handler.handle([&]() {
             ConfigConnection::process(*stream, paths, args, error_handler);

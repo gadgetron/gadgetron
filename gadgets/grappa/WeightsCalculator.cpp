@@ -49,12 +49,9 @@ namespace {
 
     class AccelerationMonitor {
     public:
-        AccelerationMonitor(const Context &context) {
-            auto e_limits = context.header.encoding[0].encodingLimits;
-            auto slices = e_limits.slice ? e_limits.slice->maximum + 1u : 1u;
-
-            previous_line = std::vector<optional<size_t>>(slices, none);
-            acceleration = std::vector<optional<size_t>>(slices, none);
+        AccelerationMonitor(size_t max_slices) {
+            previous_line = std::vector<optional<size_t>>(max_slices, none);
+            acceleration = std::vector<optional<size_t>>(max_slices, none);
         }
 
         void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
@@ -85,14 +82,16 @@ namespace {
 
     class DirectionMonitor {
     public:
-        explicit DirectionMonitor(Grappa::AcquisitionBuffer &buffer,  AccelerationMonitor &acceleration)
-        : buffer(buffer),  acceleration(acceleration) {
-            position = read_dir = phase_dir = slice_dir = {0.0, 0.0, 0.0};
+        explicit DirectionMonitor(Grappa::AcquisitionBuffer &buffer,  AccelerationMonitor &acceleration, size_t max_slices)
+        : buffer(buffer),  acceleration(acceleration), orientations(max_slices) {
+
         }
 
         void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
 
             auto header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
+
+            auto& [position, read_dir, slice_dir,phase_dir] = orientations.at(slice_of(acquisition));
 
             if (position == to_array(header.position) &&
                 read_dir == to_array(header.read_dir) &&
@@ -118,8 +117,14 @@ namespace {
     private:
         Grappa::AcquisitionBuffer &buffer;
         AccelerationMonitor &acceleration;
+        struct SliceOrientation {
+            std::array<float, 3> position = {0,0,0};
+            std::array<float, 3> read_dir = {0,0,0};
+            std::array<float, 3> slice_dir = {0,0,0};
+            std::array<float, 3> phase_dir = {0,0,0};
+        };
 
-        std::array<float, 3> position, read_dir, phase_dir, slice_dir;
+        std::vector<SliceOrientation> orientations;
     };
 }
 
@@ -162,10 +167,13 @@ namespace Gadgetron::Grappa {
         std::set<uint16_t> updated_slices{};
         uint16_t n_combined_channels = 0, n_uncombined_channels = 0;
 
-        AcquisitionBuffer buffer{context};
-        AccelerationMonitor acceleration_monitor{context};
+        const auto slice_limits = context.header.encoding[0].encodingLimits.slice;
+        const size_t max_slices = slice_limits ? context.header.encoding[0].encodingLimits.slice->maximum+1 : 1;
 
-        buffer.add_pre_update_callback(DirectionMonitor{buffer, acceleration_monitor});
+        AcquisitionBuffer buffer{context};
+        AccelerationMonitor acceleration_monitor{max_slices};
+
+        buffer.add_pre_update_callback(DirectionMonitor{buffer, acceleration_monitor,max_slices});
         buffer.add_post_update_callback([&](auto &acq) { updated_slices.insert(slice_of(acq)); });
         buffer.add_post_update_callback([&](auto &acq) { acceleration_monitor(acq); });
         buffer.add_post_update_callback([&](auto &acq) {

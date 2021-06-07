@@ -11,5 +11,4 @@ if delete_data_on_destruct == true, the object will be released; otherwise, only
 namespace Gadgetron
 {
     template<class T> using hoNDObjectArray = hoNDArray<T>;
-
 }

@@ -4,10 +4,10 @@
 #include <map>
 #include <iostream>
 
+#include "Handlers.h"
 #include "StreamConnection.h"
 #include "VoidConnection.h"
-#include "Handlers.h"
-#include "Config.h"
+#include "config/Config.h"
 
 #include "io/primitives.h"
 #include "Context.h"

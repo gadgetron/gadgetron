@@ -86,6 +86,7 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/gadgetron_sha1.h.in" ${PROJECT_BINARY_
 include_directories(${PROJECT_BINARY_DIR}/include)
 install(FILES ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
+
 #Set the build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -108,6 +109,11 @@ set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
 
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
+option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
+
+if (DISABLE_FORK)
+    add_definitions(-DGADGETRON_DISABLE_FORK)
+endif()
 
 # build options for OpenMP support
 find_package(OpenMP)
@@ -249,6 +255,12 @@ else ()
     set( CUDA_NVCC_FLAGS "NA")
 endif ()
 
+option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
+if (REQUIRE_SIGNED_CONFIG)
+    message("Compile with signed config; GTBabylon is needed")
+    add_definitions(-DUSE_GTBABYLON)
+    find_package(GTBabylon REQUIRED)
+endif()
 
 find_package(Armadillo REQUIRED )
 add_library(armadillo INTERFACE)
