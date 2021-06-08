@@ -38,10 +38,10 @@ int main(int argc, char *argv[]) {
     storage_options.add_options()
             ("storage_address,E",
                 value<std::string>(),
-                "External address of a Storage server. If not provided, a storage server will be started.")
+                "External address of a storage server. If not provided, a storage server will be started.")
             ("storage_port,s",
-                value<unsigned short>()->default_value(0),
-                "Port on which to run the Storage Server.")
+                value<unsigned short>()->default_value(9112),
+                "Port on which to run the storage server.")
             ("database_dir,D",
                 value<path>()->default_value(default_database_folder()),
                 "Directory in which to store the storage server database.")

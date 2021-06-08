@@ -9,8 +9,11 @@
 #include <boost/asio.hpp>
 
 #include "log.h"
-#include <regex> 
+#include <regex>
+
 namespace Gadgetron::Server::Connection::Nodes {
+
+    using namespace Gadgetron::Core;
 
     namespace {
 
@@ -74,22 +77,26 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     }
 
-    boost::process::child start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
-
+    boost::process::child start_python_module(
+        const Config::Execute &execute,
+        unsigned short port,
+        const StreamContext &context
+    ) {
         auto python_path = (context.paths.gadgetron_home / "share" / "gadgetron" / "python").string();
 
         std::list<std::string> args{
-                "-m", "gadgetron",
-                std::to_string(port),
-                execute.name
+            "-m", "gadgetron",
+            std::to_string(port),
+            execute.name
         };
 
         if(execute.target) args.push_back(execute.target.value());
 
         boost::process::child module(
                 boost::process::search_path(get_python_executable()),
-                boost::process::args=args,
-                boost::process::env["PYTHONPATH"]+={python_path}
+                boost::process::args = args,
+                boost::process::env["PYTHONPATH"] += {python_path},
+                boost::process::env["GADGETRON_STORAGE_ADDRESS"] = context.storage_address
         );
 
         GINFO_STREAM("Started external Python module (pid: " << module.id() << ").");

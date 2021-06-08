@@ -72,9 +72,6 @@ namespace {
     auto connect_stream(net::io_context &ioc, const std::string &host, const std::string &service) {
         tcp::resolver resolver(ioc);
         beast::tcp_stream stream(ioc);
-
-        GDEBUG_STREAM("Resolving: " << host << " " << service);
-
         auto const results = resolver.resolve(host, service);
         stream.connect(results);
         return stream;

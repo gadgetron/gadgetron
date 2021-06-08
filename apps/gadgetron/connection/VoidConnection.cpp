@@ -57,7 +57,7 @@ namespace Gadgetron::Server::Connection::VoidConnection {
             OutputChannel removed = std::move(ichannel.output);
         }
 
-        node->process(std::move(ichannel.input) , std::move(ochannel.output) ,error_handler);
+        node->process(std::move(ichannel.input), std::move(ochannel.output), error_handler);
         output_thread.join();
     }
 }

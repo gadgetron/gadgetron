@@ -3,8 +3,8 @@
 
 #include <map>
 #include <iostream>
-#include <RESTStorageClient.h>
 
+#include "RESTStorageClient.h"
 #include "Handlers.h"
 #include "StreamConnection.h"
 #include "VoidConnection.h"
@@ -116,11 +116,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
             Storage::setup_storage(storage_address, header)
         };
 
-        if (context.header) {
-            StreamConnection::process(stream, stream_context, config, error_handler);
-        }
-        else {
-            VoidConnection::process(stream, stream_context, config, error_handler);
-        }
+        auto process = context.header ? StreamConnection::process : VoidConnection::process;
+        process(stream, stream_context, config, error_handler);
     }
 }
