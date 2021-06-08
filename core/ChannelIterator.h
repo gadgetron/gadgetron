@@ -50,7 +50,8 @@ namespace Gadgetron { namespace Core {
         reference operator*() {
             return std::move(*element);
         }
-        const_reference operator*() const {
+
+        const reference operator*() const {
             return *element;
         }
 

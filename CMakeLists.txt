@@ -109,6 +109,11 @@ set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
 
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
+option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
+
+if (DISABLE_FORK)
+    add_definitions(-DGADGETRON_DISABLE_FORK)
+endif()
 
 # build options for OpenMP support
 find_package(OpenMP)
