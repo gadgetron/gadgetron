@@ -5,11 +5,12 @@
 
 #include "Context.h"
 
+using namespace Gadgetron::Core;
+
 namespace Gadgetron::Server::Connection::VoidConnection {
     void process(
             std::iostream &stream,
-            const Core::Context::Paths &paths,
-            StorageSpaces storage,
+            const StreamContext &context,
             const Config &config,
             ErrorHandler &error_handler
     );

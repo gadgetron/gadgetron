@@ -1,7 +1,6 @@
 
 #include <boost/asio.hpp>
 
-
 #include <Context.h>
 
 #include "log.h"
@@ -17,7 +16,7 @@ using namespace Gadgetron::Server;
 
 Server::Server(
         const boost::program_options::variables_map &args,
-        Gadgetron::Storage::Address address
+        std::string address
 ) : args(args), storage_address(std::move(address)) {}
 
 [[noreturn]] void Server::serve() {
@@ -26,11 +25,7 @@ Server::Server(
     GINFO_STREAM("Gadgetron home directory: " << paths.gadgetron_home);
     GINFO_STREAM("Gadgetron working directory: " << paths.working_folder);
 
-#if(BOOST_VERSION >= 107000)
     boost::asio::io_context executor;
-#else
-    boost::asio::io_service executor;
-#endif
     boost::asio::ip::tcp::endpoint local(Info::tcp_protocol(), args["port"].as<unsigned short>());
     boost::asio::ip::tcp::acceptor acceptor(executor, local);
 

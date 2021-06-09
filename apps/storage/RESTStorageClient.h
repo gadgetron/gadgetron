@@ -9,7 +9,7 @@ namespace Gadgetron::Storage{
 
 class RESTStorageClient : public StreamProvider {
     public:
-        RESTStorageClient(const Address& address, const std::string &group);
+        RESTStorageClient(std::string host, std::string service, std::string group);
 
         ~RESTStorageClient() override = default;
 
@@ -20,13 +20,10 @@ class RESTStorageClient : public StreamProvider {
                    boost::posix_time::time_duration duration) override;
 
     private:
-        std::string port;
-        std::string server_address;
+        std::string host, service;
         std::string group;
     };
 
-
-    StorageSpaces setup_storage(const Address& address, const ISMRMRD::IsmrmrdHeader& header );
-
+    StorageSpaces setup_storage(const std::string& address, const ISMRMRD::IsmrmrdHeader& header );
 }
 

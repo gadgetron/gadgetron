@@ -146,5 +146,10 @@ namespace Gadgetron::Server::Connection {
         );
     }
 
-    void handle_connection(std::unique_ptr<std::iostream> stream, Core::StreamContext::Paths paths, Core::StreamContext::Args args, Storage::Address sessions_address);
+    void handle_connection(
+        std::unique_ptr<std::iostream> stream,
+        Core::StreamContext::Paths paths,
+        Core::StreamContext::Args args,
+        Core::StreamContext::StorageAddress storage_address
+    );
 }

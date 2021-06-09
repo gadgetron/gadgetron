@@ -20,7 +20,7 @@ namespace Gadgetron::Server::Connection {
     void handle(
             const Gadgetron::Core::StreamContext::Paths& paths,
             const Gadgetron::Core::StreamContext::Args& args,
-            const Gadgetron::Storage::Address& storage_address,
+            const std::string& storage_address,
             std::unique_ptr<std::iostream> stream
     ) {
         auto thread = std::thread(handle_connection, std::move(stream), paths, args, storage_address);
@@ -32,7 +32,7 @@ namespace Gadgetron::Server::Connection {
     void handle(
             const Gadgetron::Core::StreamContext::Paths& paths,
             const Gadgetron::Core::StreamContext::Args& args,
-            const Gadgetron::Storage::Address& storage_address,
+            const Gadgetron::Core::StreamContext::StorageAddress& storage_address,
             std::unique_ptr<std::iostream> stream
     ) {
         auto pid = fork();
