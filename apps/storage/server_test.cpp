@@ -20,8 +20,7 @@ protected:
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
         header.studyInformation = ISMRMRD::StudyInformation{{},{},std::string("YAAARH")};
-        storage = Storage::setup_storage({"localhost",std::to_string(server->port())},header);
-
+        storage = Storage::setup_storage("https://localhost:" + std::to_string(server->port()), header);
     }
 
     void TearDown() override {
@@ -57,7 +56,6 @@ TEST_F(ServerTest,basic_storage){
     ASSERT_EQ(fetched,y);
     fetched = storage_list[1];
     ASSERT_EQ(fetched,x);
-
 }
 
 TEST_F(ServerTest,larger_storage){

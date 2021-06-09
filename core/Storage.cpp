@@ -6,9 +6,11 @@
 
 namespace bio = boost::iostreams;
 namespace Gadgetron::Storage {
-    GenericStorageSpace::GenericStorageSpace(std::shared_ptr<StreamProvider> provider,const Core::optional<std::string>& subject, boost::posix_time::time_duration default_duration) : provider(std::move(provider)), subject(subject), default_duration{default_duration} {}
-
-
+    GenericStorageSpace::GenericStorageSpace(
+        std::shared_ptr<StreamProvider> provider,
+        const Core::optional<std::string>& subject,
+        boost::posix_time::time_duration default_duration
+    ) : provider(std::move(provider)), subject(subject), default_duration{default_duration} {}
 
     std::unique_ptr<std::istream> istream_from_data(const std::vector<char> &data) {
 

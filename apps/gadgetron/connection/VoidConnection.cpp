@@ -32,17 +32,13 @@ namespace Gadgetron::Server::Connection::VoidConnection {
 
     void process(
             std::iostream &stream,
-            const Core::Context::Paths &paths,
-            StorageSpaces storageSpaces,
+            const Core::StreamContext &context,
             const Config &config,
             ErrorHandler &error_handler
     ) {
         GINFO_STREAM("Connection state: [VOID]");
 
-        // Please note the empty header initialization crime and empty storage. TODO: Fight crime.
-        Core::StreamContext context{Context::Header{}, paths,storageSpaces,StreamContext::Args{}};
         Loader loader{context};
-
 
         auto ochannel = make_channel<MessageChannel>();
         auto ichannel = make_channel<MessageChannel>();
@@ -61,7 +57,7 @@ namespace Gadgetron::Server::Connection::VoidConnection {
             OutputChannel removed = std::move(ichannel.output);
         }
 
-        node->process(std::move(ichannel.input) , std::move(ochannel.output) ,error_handler);
+        node->process(std::move(ichannel.input), std::move(ochannel.output), error_handler);
         output_thread.join();
     }
 }

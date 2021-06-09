@@ -8,7 +8,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         std::iostream &stream,
         const Core::StreamContext::Paths &paths,
         const Core::StreamContext::Args &args,
-        const Storage::Address& session_address,
+        const Core::StreamContext::StorageAddress& session_address,
         ErrorHandler &error_handler
     );
 }

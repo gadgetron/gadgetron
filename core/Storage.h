@@ -94,7 +94,7 @@ namespace Gadgetron::Storage {
             provider->store(*subject, key, data, duration);
         }
 
-    protected:
+      protected:
         Core::optional<std::string> subject;
         std::shared_ptr<StreamProvider> provider;
         boost::posix_time::time_duration default_duration;

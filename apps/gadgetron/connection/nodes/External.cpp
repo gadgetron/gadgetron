@@ -21,7 +21,7 @@ using tcp = boost::asio::ip::tcp;
 
 namespace {
 
-    const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const Context &)>> modules{
+    const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const StreamContext &)>> modules{
             {"python", start_python_module},
             {"matlab", start_matlab_module}
     };
@@ -54,7 +54,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         io_service.dispatch([=]() { acceptor->close(); });
     }
 
-    std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const Context &context) {
+    std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const StreamContext &context) {
         GINFO_STREAM("Connecting to external module on address: " << connect.address << ":" << connect.port);
         return std::make_shared<ExternalChannel>(
                 Gadgetron::Connection::remote_stream(connect.address, connect.port),
@@ -63,7 +63,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         );
     }
 
-    std::shared_ptr<ExternalChannel> External::open_connection(Config::Execute execute, const Context &context) {
+    std::shared_ptr<ExternalChannel> External::open_connection(Config::Execute execute, const StreamContext &context) {
 
         tcp::endpoint endpoint(Info::tcp_protocol(), 0);
         auto acceptor = std::make_shared<tcp::acceptor>(io_service, endpoint);
@@ -102,7 +102,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     std::shared_ptr<ExternalChannel> External::open_external_channel(
             const Config::External &config,
-            const Context &context
+            const StreamContext &context
     ) {
         return Core::visit(
                 [&, this](auto action) { return this->open_connection(action, context); },

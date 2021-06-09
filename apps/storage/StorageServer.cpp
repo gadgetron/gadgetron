@@ -377,8 +377,11 @@ static void ensure_exists(const boost::filesystem::path &folder) {
     create_directories(folder);
 }
 
-Gadgetron::Storage::StorageServer::StorageServer(unsigned short port, const boost::filesystem::path &database_folder,
-                                                 const boost::filesystem::path &blob_folder) : ioContext{} {
+Gadgetron::Storage::StorageServer::StorageServer(
+    unsigned short port,
+    const boost::filesystem::path &database_folder,
+    const boost::filesystem::path &blob_folder
+) : ioContext{std::make_unique<boost::asio::io_context>()} {
 
     ensure_exists(database_folder);
     ensure_exists(blob_folder);
@@ -391,23 +394,22 @@ Gadgetron::Storage::StorageServer::StorageServer(unsigned short port, const boos
                                       BlobRetrievalEndPoint{database, blob_folder}, WriteRequestEndPoint{database},
                                       DataInfoEndPoint{database});
 
-        asio::spawn(ioContext, [this, &endpoints, port, &bound_port_promise](auto yield) {
-            REST::navi(ioContext, tcp::endpoint(asio::ip::tcp::v6(), port), endpoints, bound_port_promise, yield);
+        asio::spawn(*ioContext, [this, &endpoints, port, &bound_port_promise](auto yield) {
+            REST::navi(*ioContext, tcp::endpoint(asio::ip::tcp::v6(), port), endpoints, bound_port_promise, yield);
         });
 
-        asio::deadline_timer timer(ioContext, boost::posix_time::seconds(1));
+        asio::deadline_timer timer(*ioContext, boost::posix_time::seconds(1));
         timer.async_wait([&](const auto& ec){ cleanup(ec,timer,database,blob_folder);});
-        ioContext.run();
+        ioContext->run();
     });
 
     this->bound_port = bound_port_promise.get_future().get();
 }
 
 StorageServer::~StorageServer() {
-    ioContext.stop();
+    if (ioContext) ioContext->stop();
     if (server_thread.joinable())
         server_thread.join();
-
 }
 
 unsigned short StorageServer::port() {
