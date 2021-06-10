@@ -100,7 +100,7 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
 def start_gadgetron_instance(*, log, port, storage_folder, env=environment):
     print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
-                             "-p", port, "-S",storage_folder, "-D",storage_folder + "/database"],
+                             "-p", port, "-S",storage_folder, "-D",storage_folder + "/database", "--storage_port","0"],
                             stdout=log,
                             stderr=log,
                             env=env)
