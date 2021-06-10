@@ -175,4 +175,5 @@ namespace Gadgetron { namespace Core {
         OutputChannel& bypass;
     };
 
+
 }}

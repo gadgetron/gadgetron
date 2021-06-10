@@ -160,10 +160,11 @@ def should_skip_test(test, capabilities, args, skip_handler):
     def key_is_ignored(key):
         return reqs.get(key, None) in args.ignore_requirements
 
-    for rule in [rule for key, rule in test.get('reqs') if not key_is_ignored(key)]:
-        if not rule.is_satisfied(capabilities):
-            skip_handler(test, rule.message)
-            return True
+    if 'all' not in args.ignore_requirements:
+        for rule in [rule for key, rule in test.get('reqs') if not key_is_ignored(key)]:
+            if not rule.is_satisfied(capabilities):
+                skip_handler(test, rule.message)
+                return True
 
     if not any([tag in test.get('tags') for tag in args.only]):
         skip_handler(test, "Test missing required tag.")
