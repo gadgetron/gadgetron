@@ -176,11 +176,19 @@ endif ()
 option(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
     if (WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W0")
+        add_compile_options("/W0")
     elseif (WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+        add_compile_options("-w")
     endif ()
 endif ()
+
+# support native ISA
+if(WIN32)
+  add_compile_options("/arch:AVX2")
+else()
+  add_compile_options("-march=native")
+endif()
+
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
