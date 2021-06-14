@@ -2,8 +2,8 @@
 #include "system_info.h"
 
 #include "gadgetron_config.h"
-#include "connection/stream/external/Python.h"
-#include "connection/stream/external/Matlab.h"
+#include "connection/nodes/external/Python.h"
+#include "connection/nodes/external/Matlab.h"
 #include "log.h"
 
 
@@ -77,11 +77,11 @@ namespace Gadgetron::Server::Info {
     }
 
     bool python_support() {
-        return Gadgetron::Server::Connection::Stream::python_available();
+        return Gadgetron::Server::Connection::Nodes::python_available();
     }
 
     bool matlab_support() {
-        return Gadgetron::Server::Connection::Stream::matlab_available();
+        return Gadgetron::Server::Connection::Nodes::matlab_available();
     }
 
 #if defined USE_CUDA
@@ -144,7 +144,8 @@ namespace Gadgetron::Server::Info {
         void print_cuda_information(std::ostream &os) {
             int device_count = CUDA::cuda_device_count();
 
-            os << "  -- CUDA Support       : YES (" << GADGETRON_CUDA_NVCC_FLAGS << ")" << std::endl;
+            os << "  -- CUDA Support       : YES" << std::endl;
+            os << "  -- NVCC Flags         : " << GADGETRON_CUDA_NVCC_FLAGS << std::endl;
             os << "    * Number of CUDA capable devices: " << device_count << std::endl;
 
             for (int dev = 0; dev < device_count; dev++) {

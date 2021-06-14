@@ -40,8 +40,7 @@ set_target_properties(gadgetron_toolbox_gpucore PROPERTIES VERSION ${GADGETRON_V
 target_link_libraries(gadgetron_toolbox_gpucore 
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
-  ${Boost_LIBRARIES}
-  ${CUDA_LIBRARIES} 
+  ${CUDA_LIBRARIES}
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 
   ${CUDA_CUSPARSE_LIBRARIES}
