@@ -1205,13 +1205,20 @@ namespace Gadgetron {
         GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
         GadgetContainerMessage< ISMRMRD::ImageHeader >* m3 = nullptr;
 
+        ACE_Message_Block* p_wav = mb->cont();
+        GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>* m_wav = nullptr;
+        if (p_wav != NULL)
+        {
+            m_wav = AsContainerMessage<std::vector<ISMRMRD::Waveform>>(p_wav);
+        }
+
         if (m1 = AsContainerMessage<Image2DBufferType>(mb))
         {
-            return this->process2D(m1);
+            return this->process2D(m1, m_wav);
         }
         else if (m2 = AsContainerMessage<Image3DBufferType>(mb))
         {
-            return this->process3D(m2);
+            return this->process3D(m2, m_wav);
         }
         else if (m3 = AsContainerMessage<ISMRMRD::ImageHeader>(mb))
         {
@@ -1233,7 +1240,8 @@ namespace Gadgetron {
         return this->next()->putq(m1);
     }
 
-    int GenericImageReconGadget::process2D(GadgetContainerMessage<Image2DBufferType>* m1)
+    int GenericImageReconGadget::process2D(GadgetContainerMessage<Image2DBufferType>* m1,
+                                           GadgetContainerMessage<WaveFormType>* m_wav)
     {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
@@ -1351,14 +1359,21 @@ namespace Gadgetron {
             }
         }
 
-        this->processImageBuffer(ori);
+        WaveFormType wav;
+        if (m_wav != NULL)
+        {
+            wav = *m_wav->getObjectPtr();
+        }
+
+        this->processImageBuffer(ori, wav);
 
         this->releaseImageBuffer(ori);
 
         return GADGET_OK;
     }
 
-    int GenericImageReconGadget::process3D(GadgetContainerMessage<Image3DBufferType>* m1)
+    int GenericImageReconGadget::process3D(GadgetContainerMessage<Image3DBufferType>* m1,
+                                           GadgetContainerMessage<WaveFormType>* m_wav)
     {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
@@ -1476,14 +1491,20 @@ namespace Gadgetron {
             }
         }
 
-        this->processImageBuffer(ori);
+        WaveFormType wav;
+        if (m_wav != NULL)
+        {
+            wav = *m_wav->getObjectPtr();
+        }
+
+        this->processImageBuffer(ori, wav);
 
         this->releaseImageBuffer(ori);
 
         return GADGET_OK;
     }
 
-    int GenericImageReconGadget::processImageBuffer(Image2DBufferType& ori)
+    int GenericImageReconGadget::processImageBuffer(Image2DBufferType& ori, WaveFormType& wav)
     {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
@@ -1497,14 +1518,14 @@ namespace Gadgetron {
             << RO << " " << E1 << " " << E2 << " "
             << dims[0] << " " << dims[1] << " " << dims[2] << " "
             << dims[3] << " " << dims[4] << " " << dims[5] << " "
-            << dims[6] << " " << dims[7] << "]");
+            << dims[6] << " " << dims[7] << "]" << " with " << wav.size() << " wave forms");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
 
         return GADGET_OK;
     }
 
-    int GenericImageReconGadget::processImageBuffer(Image3DBufferType& ori)
+    int GenericImageReconGadget::processImageBuffer(Image3DBufferType& ori, WaveFormType& wav)
     {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
@@ -1517,8 +1538,8 @@ namespace Gadgetron {
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
             << dims[0] << " " << dims[1] << " " << dims[2] << " "
-            << dims[3] << " " << dims[4] << " " << dims[5] << " "
-            << dims[6] << " " << dims[7] << "]");
+            << dims[3] << " " << dims[4] << " " << dims[5] << " " << dims[6] << " " << dims[7] << "]"
+                                                     << " with " << wav.size() << " wave forms");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
 

@@ -210,6 +210,7 @@ namespace Gadgetron {
         GADGET_DECLARE(GenericImageReconGadget);
 
         typedef BasicPropertyGadget BaseClass;
+        typedef std::vector<ISMRMRD::Waveform> WaveFormType;
 
         GenericImageReconGadget();
         ~GenericImageReconGadget();
@@ -242,11 +243,12 @@ namespace Gadgetron {
         int process(ACE_Message_Block* mb) override;
 
         virtual int process_image(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1);
-        int process2D(GadgetContainerMessage<Image2DBufferType>* m1);
-        int process3D(GadgetContainerMessage<Image3DBufferType>* m1);
 
-        virtual int processImageBuffer(Image2DBufferType& ori);
-        virtual int processImageBuffer(Image3DBufferType& ori);
+        virtual int process2D(GadgetContainerMessage<Image2DBufferType>* m1, GadgetContainerMessage<WaveFormType>* m_wav);
+        virtual int process3D(GadgetContainerMessage<Image3DBufferType>* m1, GadgetContainerMessage<WaveFormType>* m_wav);
+
+        virtual int processImageBuffer(Image2DBufferType& ori, WaveFormType& wav);
+        virtual int processImageBuffer(Image3DBufferType& ori, WaveFormType& wav);
 
         ///// send out the images as a Gadget3 message
         ///// windowCenter and windowWidth is for every SLC
