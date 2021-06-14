@@ -31,10 +31,14 @@ namespace Gadgetron
         auto self = static_cast<Base&>(*this);
 
         auto clamp = [&](float val){
-            return std::min<float>(std::max<float>(val,self.min_intensity),self.max_intensity);
+            return lround(std::min<float>(std::max<float>(val,self.min_intensity),self.max_intensity));
         };
         auto magnitude = [&](auto val){
             return T(clamp(std::abs(val)));
+        };
+
+        auto real_value = [&](auto val){
+            return T(clamp(float(val)+self.intensity_offset));
         };
 
         auto phase = [&](float val){
@@ -54,7 +58,7 @@ namespace Gadgetron
 
                 case ISMRMRD::ISMRMRD_IMTYPE_REAL:
                 case ISMRMRD::ISMRMRD_IMTYPE_IMAG: {
-                    std::transform(data.begin(),data.end(),output_data.begin(),clamp);
+                    std::transform(data.begin(),data.end(),output_data.begin(),real_value);
 
                     if (meta) {
                         if (meta->length(GADGETRON_IMAGE_WINDOWCENTER) > 0) {
