@@ -1,14 +1,14 @@
 #pragma once
 
-#include <gadgetron/vector_td.h>
+#include "vector_td.h"
 #include <vector>
 #include <complex>
-#include <gadgetron/hoNDArray.h>
-#include <gadgetron/hoNDFFT.h>
-#include <gadgetron/hoNDArray_utils.h>
-#include <gadgetron/hoNDArray_math.h>
+#include "hoNDArray.h"
+#include "hoNDFFT.h"
+#include "hoNDArray_utils.h"
+#include "hoNDArray_math.h"
 #include <boost/optional.hpp>
-#include <gadgetron/hoNDArray_fileio.h>
+#include "hoNDArray_fileio.h"
 #include <boost/math/constants/constants.hpp>
 #include <math.h>
 #include <stdio.h>

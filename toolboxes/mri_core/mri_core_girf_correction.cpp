@@ -11,8 +11,8 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/fusion/include/adapt_adt.hpp>
-#include <gadgetron/mri_core_partial_fourier.h>
-#include <gadgetron/mri_core_kspace_filter.h>
+#include "mri_core_partial_fourier.h"
+#include "mri_core_kspace_filter.h"
 using namespace std::complex_literals;
 using namespace Gadgetron;
 
