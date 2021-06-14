@@ -66,9 +66,10 @@ TEST_P(NHLBICompression, Tolerance)
 
     fill_random(signal, signal_mean, signal_sigma, seed);
 
-    CompressedBufferFloat signal_compressed(signal, tolerance);
+    std::unique_ptr<CompressedFloatBuffer> signal_compressed(CompressedFloatBuffer::createCompressedBuffer());
+    signal_compressed->compress(signal, tolerance);
 
-    float actual_tolerance = signal_compressed.getTolerance();
+    float actual_tolerance = signal_compressed->getTolerance();
 
     EXPECT_LE(actual_tolerance, tolerance);
 
@@ -77,7 +78,7 @@ TEST_P(NHLBICompression, Tolerance)
     // https://en.wikipedia.org/wiki/Continuous_uniform_distribution
     const float expected_error_variance = ((actual_tolerance*2)*(actual_tolerance*2))/12;
 
-    signal_compressed.decompress(signal_decompressed.data());
+    signal_compressed->decompress(signal_decompressed.data());
 
     for (size_t i = 0; i < signal.size(); i++)
     {
@@ -106,9 +107,10 @@ TEST_P(NHLBICompression, Tolerance)
 
     // Now see how many bits were used for compression and verify that
     // if we use one less bit that the error will exceed our tolerance
-    size_t reduced_precision = signal_compressed.getPrecision() - 1;
-    CompressedBufferFloat signal_over_compressed(signal, -1, reduced_precision);
-    signal_over_compressed.decompress(signal_decompressed.data());
+    size_t reduced_precision = signal_compressed->getPrecision() - 1;
+    std::unique_ptr<CompressedFloatBuffer> signal_over_compressed(CompressedFloatBuffer::createCompressedBuffer());
+    signal_over_compressed->compress(signal, -1, reduced_precision);
+    signal_over_compressed->decompress(signal_decompressed.data());
 
     for (size_t i = 0; i < signal.size(); i++)
     {
@@ -118,9 +120,47 @@ TEST_P(NHLBICompression, Tolerance)
     EXPECT_TRUE(std::any_of(compression_error.begin(), compression_error.end(), [tolerance](float err) { return err > tolerance; }));
 }
 
-extern float nhlbi_compression_roundtrip_scalar(std::vector<float>&input, float* output, uint8_t precision_bits);
-extern float nhlbi_compression_roundtrip_sse(std::vector<float>&input, float* output, uint8_t precision_bits);
-extern float nhlbi_compression_roundtrip_avx2(std::vector<float>&input, float* output, uint8_t precision_bits);
+float nhlbi_compression_roundtrip_scalar(std::vector<float>& input, float* output, uint8_t precision_bits)
+{
+    std::unique_ptr<CompressedFloatBuffer> compressor(CompressedFloatBuffer::createCompressedBuffer(InstructionSet::Scalar));
+
+    compressor->compress(input, -1.0f, precision_bits);
+
+    // this will fail if the AVX2 instruction set if not available on this CPU.
+    EXPECT_EQ(compressor->getInstructionSet(), InstructionSet::Scalar);
+
+    compressor->decompress(output);
+
+    return compressor->getTolerance();
+}
+
+float nhlbi_compression_roundtrip_sse(std::vector<float>&input, float* output, uint8_t precision_bits)
+{
+    std::unique_ptr<CompressedFloatBuffer> compressor(CompressedFloatBuffer::createCompressedBuffer(InstructionSet::Sse41));
+
+    compressor->compress(input, -1.0f, precision_bits);
+
+    // this will fail if the AVX2 instruction set if not available on this CPU.
+    EXPECT_EQ(compressor->getInstructionSet(), InstructionSet::Sse41);
+
+    compressor->decompress(output);
+
+    return compressor->getTolerance();
+}
+
+float nhlbi_compression_roundtrip_avx2(std::vector<float>&input, float* output, uint8_t precision_bits)
+{
+    std::unique_ptr<CompressedFloatBuffer> compressor(CompressedFloatBuffer::createCompressedBuffer(InstructionSet::Avx2));
+
+    compressor->compress(input, -1.0f, precision_bits);
+
+    // this will fail if the AVX2 instruction set if not available on this CPU.
+    EXPECT_EQ(compressor->getInstructionSet(), InstructionSet::Avx2);
+
+    compressor->decompress(output);
+
+    return compressor->getTolerance();
+}
 
 TEST_P(NHLBICompression, Roundtrip)
 {
@@ -222,14 +262,15 @@ TEST(NHLBICompression, ToleranceNotExceeded)
 
     const float tolerance = input[0] * 1e-6;
 
-    CompressedBufferFloat compressed(input, tolerance);
+    std::unique_ptr<CompressedFloatBuffer> compressor(CompressedFloatBuffer::createCompressedBuffer(InstructionSet::Avx2));
+    compressor->compress(input, tolerance);
 
-    EXPECT_LE(compressed.getTolerance(), tolerance);
+    EXPECT_LE(compressor->getTolerance(), tolerance);
 
     // compute error for each value
     for (size_t i = 0; i < input.size(); i++)
     {
-        compression_error[i] = compressed[i] - input[i];
+        compression_error[i] = compressor->getValue(i) - input[i];
     }
 
     // count how many times the error exceeds tolerance
@@ -240,10 +281,29 @@ TEST(NHLBICompression, ToleranceNotExceeded)
 // Verifies constructor argument validation.
 TEST(NHLBICompression, ArgumentValidation)
 {
+    std::unique_ptr<CompressedFloatBuffer> compressor(CompressedFloatBuffer::createCompressedBuffer());
+
     std::vector<float> v;
-    ASSERT_THROW(CompressedBufferFloat f(v, -1, 32), std::runtime_error);
-    ASSERT_THROW(CompressedBufferFloat f(v, -1, 0), std::runtime_error);
+    ASSERT_THROW(compressor->compress(v, -1, 32), std::runtime_error);
+    ASSERT_THROW(compressor->compress(v, -1, 0), std::runtime_error);
     
     v = { 1e10 };
-    ASSERT_THROW(CompressedBufferFloat f(v, 1e-5), std::runtime_error);
+    ASSERT_THROW(compressor->compress(v, 1e-5), std::runtime_error);
+}
+
+TEST(NHLBICompression, Deserialize)
+{
+    std::vector<float> signal(TESTSAMPLES);
+    fill_random(signal);
+    std::unique_ptr<CompressedFloatBuffer> compressor(CompressedFloatBuffer::createCompressedBuffer());
+    compressor->compress(signal, -1, 12);
+    auto serialized = compressor->serialize();
+
+    std::unique_ptr<CompressedFloatBuffer> decompressor(CompressedFloatBuffer::createCompressedBuffer());
+    decompressor->deserialize(serialized);
+    EXPECT_EQ(compressor->size(), decompressor->size());
+    for(size_t i = 0; i < compressor->size(); i++)
+    {
+        ASSERT_FLOAT_EQ(compressor->getValue(i), decompressor->getValue(i));
+    }
 }
