@@ -93,8 +93,14 @@ jobs:
   - script: |
         set -e
         fullImageName="$(AcrRegistryAddress)/$(AcrRegistryName)/$(imageName):$(build.BuildNumber)"
-        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py --echo-log-on-failure --timeout=600 --ignore-requirements=$requirements cases/*"
+        docker run --gpus all -v $(pwd)/testdata:/opt/code/gadgetron/test/integration/data --rm $fullImageName /bin/bash -c "cd /opt/code/gadgetron/test/integration/ && ./run_tests.py --echo-log-on-failure --timeout=600 --ignore-requirements=$requirements -F --stats stats.csv cases/* && python3 stats_to_junit.py -i stats.csv -o data/junit.xml"
     displayName: "Run integration tests"
+  - task: PublishTestResults@2
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: 'testdata/junit.xml'
+      failTaskOnFailedTests: true
+      buildPlatform: $(imageName)
 
 - job:
   displayName: "Tag latest images"
