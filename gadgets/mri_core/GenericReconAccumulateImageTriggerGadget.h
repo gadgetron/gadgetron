@@ -130,6 +130,9 @@ protected:
     // buffer sent to next gadget
     ImageBufferType imageSentBuffer_;
 
+    // image waveform
+    std::vector<ISMRMRD::Waveform> wave_form_buffer_;
+
     // number of total dimensions
     size_t num_of_dimensions_;
 

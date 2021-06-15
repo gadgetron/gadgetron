@@ -1207,7 +1207,7 @@ namespace Gadgetron {
 
         ACE_Message_Block* p_wav = mb->cont();
         GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>* m_wav = nullptr;
-        if (p_wav != NULL)
+        if (p_wav != nullptr)
         {
             m_wav = AsContainerMessage<std::vector<ISMRMRD::Waveform>>(p_wav);
         }
