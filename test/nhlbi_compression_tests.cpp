@@ -195,9 +195,9 @@ INSTANTIATE_TEST_SUITE_P(
     TestMatrixForCompression, 
     NHLBICompression, 
     ::testing::Combine(
-        ::testing::Values(10, 30, 42, 287), // Seeds
-        ::testing::Values(0.0f, 100.0f, 1000.0f), // Means
-        ::testing::Range(1.0f, 2.0f, 10.0f))); // Sigmas
+        ::testing::Values(42, 287), // Seeds
+        ::testing::Values(0.0f, 1000.0f), // Means
+        ::testing::Range(2.0f, 10.0f))); // Sigmas
 
 class NHLBICompressionBits : public testing::TestWithParam< std::tuple<int, float, float, int, std::string> > 
 {    
@@ -238,9 +238,9 @@ INSTANTIATE_TEST_SUITE_P(
     NHLBICompressionBits, 
     ::testing::Combine(
         ::testing::Values(10), // Seeds
-        ::testing::Values(0.0f, 100.0f, 1000.0f), // Means
+        ::testing::Values(0.0f, 1000.0f), // Means
         ::testing::Values(1.0f), // Sigmas
-        ::testing::Range(4, 32), // bits of precision
+        ::testing::Values(4, 5, 7, 8, 9, 15, 16, 17, 21, 25, 31), // bits of precision
         ::testing::Values(
             "scalar"
             ,"sse" 
