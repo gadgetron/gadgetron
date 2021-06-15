@@ -15,143 +15,145 @@
 
 #include "cpuisa.h"
 
-class BitSet
-{
-	int bits;
-
-public:
-	BitSet()
-		: bits(0) {}
-
-	void operator = (const int v)
+namespace {
+	class BitSet
 	{
-		bits = v;
-	}
+		int bits;
 
-	bool operator[] (int i) const
+	public:
+		BitSet()
+			: bits(0) {}
+
+		void operator = (const int v)
+		{
+			bits = v;
+		}
+
+		bool operator[] (int i) const
+		{
+			return (bits >> i) & 0x00000001;
+		}
+	};
+
+	class DataSet
 	{
-		return (bits >> i) & 0x00000001;
-	}
-};
+		int* data;
 
-class DataSet
-{
-	int *data;
+	public:
+		DataSet(const int highestId)
+		{
+			data = (int*)calloc((highestId + 1) << 2, sizeof(int));
+		}
 
-public:
-	DataSet(const int highestId)
+		~DataSet()
+		{
+			free(data);
+		}
+
+		int* operator[] (unsigned int i) const
+		{
+			return (data + (i << 2));
+		}
+	};
+
+	class InstructionSet
 	{
-		data = (int *)calloc((highestId + 1) << 2, sizeof(int));
-	}
+	public:
+		InstructionSet();
 
-	~DataSet()
+		char vendor_[0x20];
+		char brand_[0x40];
+		bool isIntel_;
+		bool isAMD_;
+		BitSet f_1_ECX_;
+		BitSet f_1_EDX_;
+		BitSet f_7_EBX_;
+		BitSet f_7_ECX_;
+		BitSet f_81_ECX_;
+		BitSet f_81_EDX_;
+	};
+
+	InstructionSet::InstructionSet()
+		: isIntel_{ false },
+		isAMD_{ false },
+		f_1_ECX_{},
+		f_1_EDX_{},
+		f_7_EBX_{},
+		f_7_ECX_{},
+		f_81_ECX_{},
+		f_81_EDX_{}
 	{
-		free(data);
-	}
+		int cpui[4] = { -1 };
 
-	int * operator[] (unsigned int i) const
-	{
-		return (data + (i << 2));
-	}
-};
+		// Calling __cpuid with 0x0 as the function_id argument  
+		// gets the number of the highest valid function ID.  
+		cpuid(cpui, 0);
+		unsigned int nIds_ = cpui[0];
 
-class InstructionSet
-{
-public:
-	InstructionSet();
+		DataSet data_(nIds_);
+		for (unsigned int i = 0; i <= nIds_; ++i)
+		{
+			cpuidex(data_[i], i, 0);
+		}
 
-	char vendor_[0x20];
-	char brand_[0x40];
-	bool isIntel_;
-	bool isAMD_;
-	BitSet f_1_ECX_;
-	BitSet f_1_EDX_;
-	BitSet f_7_EBX_;
-	BitSet f_7_ECX_;
-	BitSet f_81_ECX_;
-	BitSet f_81_EDX_;
-};
+		// Capture vendor string  
+		memset(vendor_, 0, sizeof(vendor_));
+		*reinterpret_cast<int*>(vendor_) = data_[0][1];
+		*reinterpret_cast<int*>(vendor_ + 4) = data_[0][3];
+		*reinterpret_cast<int*>(vendor_ + 8) = data_[0][2];
 
-InstructionSet::InstructionSet()
-	: isIntel_{ false },
-	isAMD_{ false },
-	f_1_ECX_{},
-	f_1_EDX_{},
-	f_7_EBX_{},
-	f_7_ECX_{},
-	f_81_ECX_{},
-	f_81_EDX_{}
-{
-	int cpui[4] = { -1 };
+		if (strncmp(vendor_, "GenuineIntel", 0x20) == 0)
+		{
+			isIntel_ = true;
+		}
+		else if (strncmp(vendor_, "AuthenticAMD", 0x20) == 0)
+		{
+			isAMD_ = true;
+		}
 
-	// Calling __cpuid with 0x0 as the function_id argument  
-	// gets the number of the highest valid function ID.  
-	cpuid(cpui, 0);
-	unsigned int nIds_ = cpui[0];
+		// load bitset with flags for function 0x00000001  
+		if (nIds_ >= 1)
+		{
+			f_1_ECX_ = data_[1][2];
+			f_1_EDX_ = data_[1][3];
+		}
 
-	DataSet data_(nIds_);
-	for (unsigned int i = 0; i <= nIds_; ++i)
-	{
-		cpuidex(data_[i], i, 0);
-	}
+		// load bitset with flags for function 0x00000007  
+		if (nIds_ >= 7)
+		{
+			f_7_EBX_ = data_[7][1];
+			f_7_ECX_ = data_[7][2];
+		}
 
-	// Capture vendor string  
-	memset(vendor_, 0, sizeof(vendor_));
-	*reinterpret_cast<int*>(vendor_) = data_[0][1];
-	*reinterpret_cast<int*>(vendor_ + 4) = data_[0][3];
-	*reinterpret_cast<int*>(vendor_ + 8) = data_[0][2];
+		// Calling __cpuid with 0x80000000 as the function_id argument  
+		// gets the number of the highest valid extended ID.  
+		cpuid(cpui, 0x80000000);
+		unsigned int nExIds_ = cpui[0];
 
-	if (strncmp(vendor_, "GenuineIntel", 0x20) == 0)
-	{
-		isIntel_ = true;
-	}
-	else if (strncmp(vendor_, "AuthenticAMD", 0x20) == 0)
-	{
-		isAMD_ = true;
-	}
+		DataSet extdata_(nExIds_ - 0x80000000);
+		for (unsigned int i = 0x80000000; i <= nExIds_; ++i)
+		{
+			cpuidex(extdata_[i - 0x80000000], i, 0);
+		}
 
-	// load bitset with flags for function 0x00000001  
-	if (nIds_ >= 1)
-	{
-		f_1_ECX_ = data_[1][2];
-		f_1_EDX_ = data_[1][3];
-	}
+		// load bitset with flags for function 0x80000001  
+		if (nExIds_ >= 0x80000001)
+		{
+			f_81_ECX_ = extdata_[1][2];
+			f_81_EDX_ = extdata_[1][3];
+		}
 
-	// load bitset with flags for function 0x00000007  
-	if (nIds_ >= 7)
-	{
-		f_7_EBX_ = data_[7][1];
-		f_7_ECX_ = data_[7][2];
-	}
+		memset(brand_, 0, sizeof(brand_));
 
-	// Calling __cpuid with 0x80000000 as the function_id argument  
-	// gets the number of the highest valid extended ID.  
-	cpuid(cpui, 0x80000000);
-	unsigned int nExIds_ = cpui[0];
+		// Interpret CPU brand string if reported  
+		if (nExIds_ >= 0x80000004)
+		{
+			memcpy(brand_, extdata_[2], sizeof(int) * 12);
+		}
+	};
 
-	DataSet extdata_(nExIds_ - 0x80000000);
-	for (unsigned int i = 0x80000000; i <= nExIds_; ++i)
-	{
-		cpuidex(extdata_[i - 0x80000000], i, 0);
-	}
-
-	// load bitset with flags for function 0x80000001  
-	if (nExIds_ >= 0x80000001)
-	{
-		f_81_ECX_ = extdata_[1][2];
-		f_81_EDX_ = extdata_[1][3];
-	}
-
-	memset(brand_, 0, sizeof(brand_));
-
-	// Interpret CPU brand string if reported  
-	if (nExIds_ >= 0x80000004)
-	{
-		memcpy(brand_, extdata_[2], sizeof(int) * 12);
-	}
-};
-
-static const InstructionSet CPU_Rep;
+	static const InstructionSet CPU_Rep;
+}
 
 const char* CPU_Vendor() { return reinterpret_cast<const char*>(CPU_Rep.vendor_); }
 const char* CPU_Brand() { return reinterpret_cast<const char*>(CPU_Rep.brand_); }
