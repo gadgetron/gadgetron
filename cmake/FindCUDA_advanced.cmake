@@ -12,9 +12,8 @@ if(CUDA_FOUND)
     if (${CUDA_VERSION_MAJOR} VERSION_GREATER "8")
         set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_70,code=sm_70")
     endif()
-        if (${CUDA_VERSION_MAJOR} VERSION_GREATER "9")
-                set(CUDA_NVCC_FLAGS8 "-gencode arch=compute_80,code=sm_80")
-
+    if (${CUDA_VERSION_MAJOR} VERSION_GREATER "9")
+           set(CUDA_NVCC_FLAGS8 "-gencode arch=compute_80,code=sm_80")
     endif()
 
   cuda_find_helper_file(cuda_compute_capability c)
