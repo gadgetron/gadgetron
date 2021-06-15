@@ -84,9 +84,11 @@ pip3 install \
   scikit-learn \
   scipy \
   sympy \
-  tk-tools
+  tk-tools \
+  junitparser
 
 env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install git+https://github.com/ismrmrd/ismrmrd-python.git
+
 pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
 # If this is an image with CUDA...

@@ -33,7 +33,7 @@ def output_csv(stats, filename):
     print("Writing stats to: {}".format(filename))
 
     with open(filename, 'w') as f:
-        writer = csv.DictWriter(f, ['test', 'processing_time'])
+        writer = csv.DictWriter(f, ['test', 'processing_time', 'status'])
         writer.writeheader()
         writer.writerows(stats)
 
@@ -198,6 +198,8 @@ def main():
     def ignore_failure(test):
         args.echo_log()
         failed.append(test)
+        with open('test/stats.json') as f:
+            stats.append(json.loads(f.read()))
 
     def exit_on_failure(_):
         args.echo_log()

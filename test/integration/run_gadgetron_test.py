@@ -5,7 +5,10 @@ import os
 # Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
 # child processes, they won't load properly. We're saving our environment here to spare our children from the
 # crimes of h5py.
+
 import tempfile
+import pathlib
+
 
 environment = dict(os.environ)
 
@@ -355,10 +358,10 @@ def validate_client_output(args, config):
 
         if result is not None:
             print("{:<26} [FAILED] ({})".format(section, reason))
-            return result
+            return cont(client_output=client_output, status=Failure, **state)
         else:
             print("{:<26} [OK] ({})".format(section, reason))
-            return cont(client_output=client_output, **state)
+            return cont(client_output=client_output, status=Passed , **state)
 
     yield from (functools.partial(validate_output_action, test)
                 for test in filter(lambda s: re.match(pattern, s), config.sections()))
@@ -367,8 +370,9 @@ def validate_client_output(args, config):
 def output_stats(args, config):
     def output_stats_action(cont, **state):
         stats = {
-            'test': state.get('test'),
-            'processing_time': state.get('processing_time')
+            'test': state.get('name'),
+            'processing_time': state.get('processing_time'),
+            'status': state.get('status')[0]
         }
 
         with open(os.path.join(args.test_folder, 'stats.json'), 'w') as f:
@@ -396,7 +400,7 @@ def chain_actions(actions):
         action = next(actions)
         return lambda **state: action(chain_actions(actions), **state)
     except StopIteration:
-        return lambda **state: Passed
+        return lambda **state: state.get('status')
 
 
 def main():
@@ -430,7 +434,7 @@ def main():
                         const=lambda cmd: print(' '.join(cmd)), default=lambda *_: None,
                         help="Echo the commands issued while running the test.")
 
-    parser.add_argument('test', help="Test case file")
+    parser.add_argument('test', help="Test case file",type=pathlib.Path)
 
     args = parser.parse_args()
 
@@ -444,7 +448,7 @@ def main():
     config_parser.read(args.test)
 
     action_chain = chain_actions(build_actions(args, config_parser))
-    result, return_code = action_chain(test=args.test)
+    result, return_code = action_chain(test=args.test,name=args.test.stem)
 
     print("Test status: {}".format(result))
     return return_code
