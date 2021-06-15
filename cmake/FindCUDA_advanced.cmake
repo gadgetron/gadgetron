@@ -11,10 +11,12 @@ if(CUDA_FOUND)
     endif()
     if (${CUDA_VERSION_MAJOR} VERSION_GREATER "8")
         set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_70,code=sm_70")
-        set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_80,code=sm_80")
-        set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_86,code=sm_86")
+    endif()
+        if (${CUDA_VERSION_MAJOR} VERSION_GREATER "9")
+                set(CUDA_NVCC_FLAGS8 "-gencode arch=compute_80,code=sm_80")
 
     endif()
+
   cuda_find_helper_file(cuda_compute_capability c)
   try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
     ${CMAKE_BINARY_DIR} 
@@ -38,7 +40,7 @@ find_cuda_helper_libs(cusparse)
 set(CUDA_CUSPARSE_LIBRARIES ${CUDA_cusparse_LIBRARY})
 if( "${CUDA_COMPUTE_CAPABILITY}" MATCHES ALL)
   if (${CUDA_VERSION_MAJOR} VERSION_GREATER "6")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS4} ${CUDA_NVCC_FLAGS5} ${CUDA_NVCC_FLAGS52} ${CUDA_NVCC_FLAGS6} ${CUDA_NVCC_FLAGS61} ${CUDA_NVCC_FLAGS7})
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS4} ${CUDA_NVCC_FLAGS5} ${CUDA_NVCC_FLAGS52} ${CUDA_NVCC_FLAGS6} ${CUDA_NVCC_FLAGS61} ${CUDA_NVCC_FLAGS7} ${CUDA_NVCC_FLAGS8})
   else()
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS4})
   endif()
