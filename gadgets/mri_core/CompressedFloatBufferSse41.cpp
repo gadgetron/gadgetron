@@ -9,7 +9,7 @@ InstructionSet CompressedFloatBufferSse41::getInstructionSet()
     return InstructionSet::Sse41;
 }
 
-inline __m128i scale_and_cast_ps(const __m128 _float_val, const __m128 _scale, const __m128 _sign_mask, __m128i& _sign)
+static inline __m128i scale_and_cast_ps(const __m128 _float_val, const __m128 _scale, const __m128 _sign_mask, __m128i& _sign)
 {
     const __m128 _half = _mm_set1_ps(0.5f);
 
@@ -34,7 +34,7 @@ inline __m128i scale_and_cast_ps(const __m128 _float_val, const __m128 _scale, c
     return _int_val;
 }
 
-inline __m128i compact_epi32(const __m128i _int_val, const __m128i _sign, const __m128i _bitmask)
+static inline __m128i compact_epi32(const __m128i _int_val, const __m128i _sign, const __m128i _bitmask)
 {
     const __m128i _one = _mm_set1_epi32(1);
 

@@ -10,7 +10,7 @@ InstructionSet CompressedFloatBufferAvx2::getInstructionSet()
 }
 
 // Vector scale, round, and convert to integer
-inline __m256i scale_and_cast_ps(const __m256 _float_val, const __m256 _scale, const __m256 _sign_mask, __m256i& _sign)
+static inline __m256i scale_and_cast_ps(const __m256 _float_val, const __m256 _scale, const __m256 _sign_mask, __m256i& _sign)
 {
     const __m256 _half = _mm256_set1_ps(0.5f);
 
@@ -37,7 +37,7 @@ inline __m256i scale_and_cast_ps(const __m256 _float_val, const __m256 _scale, c
 // Convert number to compact integer representation
 // Literal translation on compacting code
 // Into vector instructions
-inline __m256i compact_epi32(const __m256i _int_val, const __m256i _sign, const __m256i _bitmask)
+static inline __m256i compact_epi32(const __m256i _int_val, const __m256i _sign, const __m256i _bitmask)
 {
     const __m256i _one = _mm256_set1_epi32(1);
 
