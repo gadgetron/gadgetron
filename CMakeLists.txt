@@ -86,6 +86,7 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/gadgetron_sha1.h.in" ${PROJECT_BINARY_
 include_directories(${PROJECT_BINARY_DIR}/include)
 install(FILES ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
+
 #Set the build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -108,6 +109,11 @@ set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
 
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
+option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
+
+if (DISABLE_FORK)
+    add_definitions(-DGADGETRON_DISABLE_FORK)
+endif()
 
 # build options for OpenMP support
 find_package(OpenMP)
@@ -169,6 +175,11 @@ else ()
     if (COMPILER_SUPPORT_WNON_VIRTUAL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
+
+    check_cxx_compiler_flag(-Werror=format-overflow COMPILER_SUPPORT_WOVERFLOW)
+    if (COMPILER_SUPPORT_WOVERFLOW)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-overflow")
+    endif()
 endif ()
 
 # whether to suppress compilation warnings
@@ -181,6 +192,7 @@ if (BUILD_SUPPRESS_WARNINGS)
     endif ()
 endif ()
 
+
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
@@ -191,9 +203,9 @@ if(WIN32)
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-    find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
-    find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
 endif()
 
 if (NOT DEFINED Boost_VERSION_STRING)
@@ -249,6 +261,12 @@ else ()
     set( CUDA_NVCC_FLAGS "NA")
 endif ()
 
+option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
+if (REQUIRE_SIGNED_CONFIG)
+    message("Compile with signed config; GTBabylon is needed")
+    add_definitions(-DUSE_GTBABYLON)
+    find_package(GTBabylon REQUIRED)
+endif()
 
 find_package(Armadillo REQUIRED )
 add_library(armadillo INTERFACE)
@@ -358,17 +376,6 @@ find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
 
-add_subdirectory(core)
-add_subdirectory(toolboxes)
-add_subdirectory(gadgets)
-add_subdirectory(apps)
-
-option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
-if (BUILD_WITH_GPERFTOOLS_PROFILER)
-    message("Adding gpertools to build.")
-    find_package(Gperftools REQUIRED)
-endif()
-
 option(BUILD_TESTING "Enable test building" On)
 if (BUILD_TESTING)
     enable_testing()
@@ -392,6 +399,19 @@ if (BUILD_TESTING)
 else()
     MESSAGE("Testing not being built")
 endif()
+
+
+add_subdirectory(core)
+add_subdirectory(toolboxes)
+add_subdirectory(gadgets)
+add_subdirectory(apps)
+
+option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
+if (BUILD_WITH_GPERFTOOLS_PROFILER)
+    message("Adding gpertools to build.")
+    find_package(Gperftools REQUIRED)
+endif()
+
 
 add_subdirectory(cmake)
 add_subdirectory(chroot)

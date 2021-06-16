@@ -55,6 +55,11 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const hoNDArray <T> &array
     write(stream, array.get_data_ptr(), array.get_number_of_elements());
 }
 
+template<class... ARGS>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Core::tuple<ARGS...>& tup) {
+    Core::apply([&](const auto&... elements){(write(stream,elements),...);},tup);
+}
+
 template<class T>
 void Gadgetron::Core::IO::write_string_to_stream(std::ostream &stream, const std::string &str) {
     auto string_length = static_cast<T>(str.size());
@@ -121,7 +126,10 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray<T> &ar
     IO::read(stream,array.data(),array.size());
 
 }
-
+template<class... ARGS>
+void Gadgetron::Core::IO::read(std::istream &stream,  Core::tuple<ARGS...>& tup) {
+    Core::apply([&](auto&&... elements){(read(stream,elements),...);},tup);
+}
 template<class T>
 std::enable_if_t<boost::hana::Struct<T>::value> Gadgetron::Core::IO::read(std::istream &istream, T &x) {
   namespace hana = boost::hana;

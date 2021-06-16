@@ -33,7 +33,7 @@ def output_csv(stats, filename):
     print("Writing stats to: {}".format(filename))
 
     with open(filename, 'w') as f:
-        writer = csv.DictWriter(f, ['test', 'processing_time'])
+        writer = csv.DictWriter(f, ['test', 'processing_time', 'status'])
         writer.writeheader()
         writer.writerows(stats)
 
@@ -160,10 +160,11 @@ def should_skip_test(test, capabilities, args, skip_handler):
     def key_is_ignored(key):
         return reqs.get(key, None) in args.ignore_requirements
 
-    for rule in [rule for key, rule in test.get('reqs') if not key_is_ignored(key)]:
-        if not rule.is_satisfied(capabilities):
-            skip_handler(test, rule.message)
-            return True
+    if 'all' not in args.ignore_requirements:
+        for rule in [rule for key, rule in test.get('reqs') if not key_is_ignored(key)]:
+            if not rule.is_satisfied(capabilities):
+                skip_handler(test, rule.message)
+                return True
 
     if not any([tag in test.get('tags') for tag in args.only]):
         skip_handler(test, "Test missing required tag.")
@@ -197,6 +198,8 @@ def main():
     def ignore_failure(test):
         args.echo_log()
         failed.append(test)
+        with open('test/stats.json') as f:
+            stats.append(json.loads(f.read()))
 
     def exit_on_failure(_):
         args.echo_log()
@@ -257,7 +260,7 @@ def main():
     tests = [read_test_details(file) for file in files]
     tests = [test for test in tests if not should_skip_test(test, capabilities, args, skip_handler)]
 
-    handlers = {0: pass_handler, 1: args.failure_handler}
+    handlers = {0: pass_handler}
 
     if skipped:
         print("\nSkipped tests:")
@@ -276,11 +279,11 @@ def main():
         with subprocess.Popen(command) as proc:
             try:
                 proc.wait(timeout=args.timeout)
-                handlers.get(proc.returncode)(test.get('file'))
+                handlers.get(proc.returncode, args.failure_handler)(test)
             except subprocess.TimeoutExpired:
                 print("Timeout happened during test: {}".format(test.get('file')))
                 proc.kill()
-                args.failure_handler(test.get('file'))
+                args.failure_handler(test)
 
     if args.stats:
         output_csv(stats, args.stats)

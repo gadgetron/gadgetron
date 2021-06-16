@@ -5,6 +5,11 @@ import os
 # Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
 # child processes, they won't load properly. We're saving our environment here to spare our children from the
 # crimes of h5py.
+
+import tempfile
+import pathlib
+
+
 environment = dict(os.environ)
 
 import sys
@@ -73,7 +78,7 @@ def send_dependency_to_gadgetron(echo_handler, gadgetron, dependency, log):
                    check=True)
 
 
-def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log):
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log, additional_arguments):
     print("Passing data to Gadgetron: {} -> {}".format(input, output))
 
     command = ["gadgetron_ismrmrd_client",
@@ -84,6 +89,9 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                "-c", configuration,
                "-G", configuration]
 
+    if additional_arguments:
+        command = command + additional_arguments.split()
+
     echo_handler(command)
     subprocess.run(command,
                    env=environment,
@@ -92,10 +100,10 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    check=True)
 
 
-def start_gadgetron_instance(*, log, port, env=environment):
+def start_gadgetron_instance(*, log, port, storage_folder, env=environment):
     print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
-                             "-p", port],
+                             "-p", port, "-S",storage_folder, "-D",storage_folder + "/database", "--storage_port","0"],
                             stdout=log,
                             stderr=log,
                             env=env)
@@ -170,11 +178,12 @@ def ensure_gadgetron_instance(args, config):
 
     def start_gadgetron_action(cont, *, env=environment, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=gadgetron.port, env=env) as instance:
-                try:
-                    return cont(gadgetron=gadgetron, **state)
-                finally:
-                    instance.kill()
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                with start_gadgetron_instance(log=log, port=gadgetron.port,storage_folder=tmp_dir, env=env) as instance:
+                    try:
+                        return cont(gadgetron=gadgetron, **state)
+                    finally:
+                        instance.kill()
 
     def use_external_gadgetron_action(cont, **state):
         return cont(gadgetron=gadgetron, **state)
@@ -271,11 +280,12 @@ def start_additional_nodes(args, config):
 
     def start_additional_worker_action(port, cont, *, worker_list=[], **state):
         with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=port) as instance:
-                try:
-                    return cont(worker_list=worker_list + ['localhost:' + port], **state)
-                finally:
-                    instance.kill()
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                with start_gadgetron_instance(log=log, port=port, storage_folder=tmp_dir) as instance:
+                    try:
+                        return cont(worker_list=worker_list + ['localhost:' + port], **state)
+                    finally:
+                        instance.kill()
 
     yield functools.partial(create_worker_ports_action, range(number_of_nodes))
 
@@ -303,12 +313,20 @@ def run_gadgetron_client(args, config):
         with open(os.path.join(args.test_folder, 'client.log'), 'w') as log:
 
             start_time = time.time()
+
+            try:
+                additional_args = config['CLIENT']['additional_arguments']
+            except KeyError:
+                additional_args = None
+
             send_data_to_gadgetron(args.echo_handler,
                                    gadgetron,
                                    input=client_input,
                                    output=output_file,
                                    configuration=config['CLIENT']['configuration'],
-                                   log=log)
+                                   log=log,
+                                   additional_arguments=additional_args)
+
             end_time = time.time()
 
             processing_time = end_time - start_time
@@ -328,7 +346,7 @@ def run_gadgetron_client(args, config):
 def validate_client_output(args, config):
     pattern = re.compile(r"TEST(.*)")
 
-    def validate_output_action(section, cont, *, client_output, **state):
+    def validate_output_action(section, cont, *, client_output, status=Passed, **state):
 
         reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
         result, reason = validate_output(output_file=client_output,
@@ -340,10 +358,11 @@ def validate_client_output(args, config):
 
         if result is not None:
             print("{:<26} [FAILED] ({})".format(section, reason))
-            return result
+            return cont(client_output=client_output, status=Failure, **state)
         else:
             print("{:<26} [OK] ({})".format(section, reason))
-            return cont(client_output=client_output, **state)
+            new_status = Failure if status is Failure else Passed
+            return cont(client_output=client_output, status=new_status , **state)
 
     yield from (functools.partial(validate_output_action, test)
                 for test in filter(lambda s: re.match(pattern, s), config.sections()))
@@ -352,8 +371,9 @@ def validate_client_output(args, config):
 def output_stats(args, config):
     def output_stats_action(cont, **state):
         stats = {
-            'test': state.get('test'),
-            'processing_time': state.get('processing_time')
+            'test': state.get('name'),
+            'processing_time': state.get('processing_time'),
+            'status': state.get('status')[0]
         }
 
         with open(os.path.join(args.test_folder, 'stats.json'), 'w') as f:
@@ -381,7 +401,7 @@ def chain_actions(actions):
         action = next(actions)
         return lambda **state: action(chain_actions(actions), **state)
     except StopIteration:
-        return lambda **state: Passed
+        return lambda **state: state.get('status')
 
 
 def main():
@@ -415,7 +435,7 @@ def main():
                         const=lambda cmd: print(' '.join(cmd)), default=lambda *_: None,
                         help="Echo the commands issued while running the test.")
 
-    parser.add_argument('test', help="Test case file")
+    parser.add_argument('test', help="Test case file",type=pathlib.Path)
 
     args = parser.parse_args()
 
@@ -429,7 +449,7 @@ def main():
     config_parser.read(args.test)
 
     action_chain = chain_actions(build_actions(args, config_parser))
-    result, return_code = action_chain(test=args.test)
+    result, return_code = action_chain(test=args.test,name=args.test.stem)
 
     print("Test status: {}".format(result))
     return return_code

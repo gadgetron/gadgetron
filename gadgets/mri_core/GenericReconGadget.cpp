@@ -95,6 +95,80 @@ namespace Gadgetron {
             }
         }
 
+        if (!h.acquisitionSystemInformation->systemFieldStrength_T)
+        {
+            system_field_strength_T_ = 1.5;
+        }
+        else
+        {
+            system_field_strength_T_ = h.acquisitionSystemInformation.get().systemFieldStrength_T.get();
+        }
+
+        protocol_name_ = "Unknown";
+
+        if (!h.measurementInformation)
+        {
+            GDEBUG("measurementInformation not found in header");
+        }
+        else
+        {
+            if (!h.measurementInformation->protocolName)
+            {
+                GDEBUG("measurementInformation->protocolName not found in header");
+            }
+            else
+            {
+                protocol_name_ = h.measurementInformation.get().protocolName.get();
+            }
+        }
+
+        std::string measurement_id = "";
+        if (h.measurementInformation)
+        {
+            if (h.measurementInformation->measurementID)
+            {
+                measurement_id = *h.measurementInformation->measurementID;
+            }
+
+            patient_position_ = h.measurementInformation->patientPosition;
+        }
+
+        this->measurement_id_ = measurement_id;
+
+        // analyze measurement id
+        if (measurement_id.size() > 0)
+        {
+            std::string mid = measurement_id;
+            size_t ind = mid.find("_");
+            if (ind != std::string::npos)
+            {
+                device_ = mid.substr(0, ind);
+                mid = mid.substr(ind + 1, std::string::npos);
+
+                ind = mid.find("_");
+                if (ind != std::string::npos)
+                {
+                    patient_ = mid.substr(0, ind);
+                    mid = mid.substr(ind + 1, std::string::npos);
+
+                    ind = mid.find("_");
+                    if (ind != std::string::npos)
+                    {
+                        study_ = mid.substr(0, ind);
+                        measurement_ = mid.substr(ind + 1, std::string::npos);
+                    }
+                }
+            }
+        }
+
+        if (h.acquisitionSystemInformation)
+        {
+            if (h.acquisitionSystemInformation->systemVendor)
+            {
+                vendor_ = *h.acquisitionSystemInformation->systemVendor;
+            }
+        }
+
         return GADGET_OK;
     }
 
@@ -559,7 +633,30 @@ namespace Gadgetron {
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
 
+                    size_t ui;
+                    for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_INTS; ui++)
+                    {
+                        std::ostringstream str;
+                        str << "user_int_" << ui;
+                        meta.append(str.str().c_str(), (long)res.headers_(n, s, slc).user_int[ui]);
+                    }
+
+                    for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_FLOATS; ui++)
+                    {
+                        std::ostringstream str;
+                        str << "user_float_" << ui;
+                        meta.append(str.str().c_str(), (long)res.headers_(n, s, slc).user_float[ui]);
+                    }
+
                     meta.set("gadgetron_sha1", GADGETRON_SHA1);
+
+                    meta.set("measurementID", this->measurement_id_.c_str());
+                    meta.set("protocolName", this->protocol_name_.c_str());
+                    meta.set("patientID", this->patient_.c_str());
+                    meta.set("studyID", this->study_.c_str());
+                    meta.set("measurementNumber", this->measurement_.c_str());
+                    meta.set("deviceID", this->device_.c_str());
+                    meta.set("patient_position", this->patient_position_.c_str());
                 }
             }
         }
@@ -619,10 +716,22 @@ namespace Gadgetron {
             GWARN_STREAM("Cannot find any sampled lines ... ");
         }
     }
+
     void GenericReconGadget::send_out_image_array(
         IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role) {
         this->prepare_image_array(res, encoding, series_num, data_role);
         this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(res));
+    }
+
+    std::vector<ISMRMRD::Waveform> GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in) {
+        
+        std::vector<ISMRMRD::Waveform> waveforms;
+        waveforms.reserve(w_in.size());
+        for (const auto& [header, data]: w_in) {
+            ISMRMRD::Waveform& a_w = waveforms.emplace_back(header.number_of_samples,header.channels);
+            std::copy_n(data.data(),data.size(), a_w.data);
+        }
+        return waveforms;
     }
 
     GADGET_FACTORY_DECLARE(GenericReconGadget)
