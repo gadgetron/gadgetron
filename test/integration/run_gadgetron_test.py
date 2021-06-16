@@ -346,7 +346,7 @@ def run_gadgetron_client(args, config):
 def validate_client_output(args, config):
     pattern = re.compile(r"TEST(.*)")
 
-    def validate_output_action(section, cont, *, client_output, **state):
+    def validate_output_action(section, cont, *, client_output, status=Passed, **state):
 
         reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
         result, reason = validate_output(output_file=client_output,
@@ -361,7 +361,8 @@ def validate_client_output(args, config):
             return cont(client_output=client_output, status=Failure, **state)
         else:
             print("{:<26} [OK] ({})".format(section, reason))
-            return cont(client_output=client_output, status=Passed , **state)
+            new_status = Failure if status is Failure else Passed
+            return cont(client_output=client_output, status=new_status , **state)
 
     yield from (functools.partial(validate_output_action, test)
                 for test in filter(lambda s: re.match(pattern, s), config.sections()))
