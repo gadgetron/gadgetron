@@ -51,7 +51,7 @@ namespace Gadgetron::Server::Connection {
         }
 
         template<class CONFIG>
-        std::map<uint16_t, std::unique_ptr<Reader>> load_default_and_additional_readers(CONFIG config) {
+        std::map<uint16_t, std::unique_ptr<Reader>> load_default_or_custom_readers(CONFIG config) {
 
             static const std::vector<Config::Reader> default_readers{
                     Config::Reader { "gadgetron_core_readers", "AcquisitionReader", Core::none },
@@ -62,9 +62,9 @@ namespace Gadgetron::Server::Connection {
                     Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", Core::none }
             };
 
-            auto configs = default_readers;
-            configs.insert(configs.end(), config.readers.begin(), config.readers.end());
-            return load_readers(configs);
+            if (config.readers.empty())
+                return load_readers(default_readers);
+            return load_readers(config.readers);
         }
 
         template<class CONFIG>
@@ -73,7 +73,7 @@ namespace Gadgetron::Server::Connection {
         }
 
         template<class CONFIG>
-        std::vector<std::unique_ptr<Writer>> load_default_and_additional_writers(CONFIG config) {
+        std::vector<std::unique_ptr<Writer>> load_default_or_custom_writers(CONFIG config) {
 
             static const std::vector<Config::Writer> default_writers{
                     Config::Writer { "gadgetron_core_writers", "AcquisitionWriter" },
@@ -84,9 +84,9 @@ namespace Gadgetron::Server::Connection {
                     Config::Writer { "gadgetron_core_writers", "AcquisitionBucketWriter" }
             };
 
-            auto configs = default_writers;
-            configs.insert(configs.begin(), config.writers.begin(), config.writers.end());
-            return load_writers(configs);
+            if (config.writers.empty())
+                return load_writers(default_writers);
+            return load_writers(config.writers);
         }
 
     private:

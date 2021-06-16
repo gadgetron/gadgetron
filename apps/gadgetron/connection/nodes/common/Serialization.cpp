@@ -59,4 +59,14 @@ namespace Gadgetron::Server::Connection::Nodes {
     void Serialization::close(std::iostream &stream) const {
         IO::write(stream, CLOSE);
     }
+
+    bool Serialization::accepts(const Message &message) {
+        auto writer = std::find_if(
+                writers.begin(),
+                writers.end(),
+                [&](auto& writer) { return writer->accepts(message); }
+        );
+        if (writer == writers.end()) return false;
+        return true;
+    }
 }

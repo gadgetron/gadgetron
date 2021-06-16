@@ -94,7 +94,7 @@ include(GoogleTest)
                 python)
     endif ()
 
-    gtest_add_tests(TARGET test_all SOURCES ${test_src_files})
+    gtest_discover_tests(test_all)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 

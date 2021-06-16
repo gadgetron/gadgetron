@@ -175,6 +175,11 @@ else ()
     if (COMPILER_SUPPORT_WNON_VIRTUAL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
+
+    check_cxx_compiler_flag(-Werror=format-overflow COMPILER_SUPPORT_WOVERFLOW)
+    if (COMPILER_SUPPORT_WOVERFLOW)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-overflow")
+    endif()
 endif ()
 
 # whether to suppress compilation warnings
@@ -198,9 +203,9 @@ if(WIN32)
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-    find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
-    find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
 endif()
 
 if (NOT DEFINED Boost_VERSION_STRING)
@@ -371,17 +376,6 @@ find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
 
-add_subdirectory(core)
-add_subdirectory(toolboxes)
-add_subdirectory(gadgets)
-add_subdirectory(apps)
-
-option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
-if (BUILD_WITH_GPERFTOOLS_PROFILER)
-    message("Adding gpertools to build.")
-    find_package(Gperftools REQUIRED)
-endif()
-
 option(BUILD_TESTING "Enable test building" On)
 if (BUILD_TESTING)
     enable_testing()
@@ -405,6 +399,19 @@ if (BUILD_TESTING)
 else()
     MESSAGE("Testing not being built")
 endif()
+
+
+add_subdirectory(core)
+add_subdirectory(toolboxes)
+add_subdirectory(gadgets)
+add_subdirectory(apps)
+
+option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
+if (BUILD_WITH_GPERFTOOLS_PROFILER)
+    message("Adding gpertools to build.")
+    find_package(Gperftools REQUIRED)
+endif()
+
 
 add_subdirectory(cmake)
 add_subdirectory(chroot)

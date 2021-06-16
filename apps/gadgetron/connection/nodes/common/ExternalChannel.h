@@ -31,6 +31,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         Core::Message pop();
         void push_message(Core::Message message);
         void close();
+        bool accepts(const Core::Message& message);
 
     private:
         std::unique_ptr<std::iostream> stream;

@@ -437,7 +437,7 @@ hoNDArray<vector_td<float, 2>> register_groups(const hoNDArray<float>& phase_cor
 template <class T>
 auto deform_groups_internal(const hoNDArray<T>& data, const hoNDArray<vector_td<float, 2>>& vector_field) {
     using namespace Indexing;
-    assert(data.dimensions() == vector_field.dimensions());
+    assert(data.dimensions_equal(vector_field.dimensions()));
     assert(data.dimensions().size() == 3);
 
     auto output = hoNDArray<T>(data.dimensions());

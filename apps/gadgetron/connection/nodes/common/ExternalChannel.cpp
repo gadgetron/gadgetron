@@ -98,4 +98,8 @@ namespace Gadgetron::Server::Connection::Nodes {
     void ExternalChannel::close() {
         outbound->close();
     }
+
+    bool ExternalChannel::accepts(const Message& message){
+        return serialization->accepts(message);
+    }
 }

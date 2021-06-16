@@ -47,6 +47,5 @@ namespace Gadgetron::Server {
         } catch (...) {
             std::locale::global(std::locale::classic());
         }
-
     }
 }

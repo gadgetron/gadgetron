@@ -5,7 +5,10 @@ import os
 # Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
 # child processes, they won't load properly. We're saving our environment here to spare our children from the
 # crimes of h5py.
+
+import tempfile
 import pathlib
+
 
 environment = dict(os.environ)
 
@@ -97,10 +100,10 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    check=True)
 
 
-def start_gadgetron_instance(*, log, port, env=environment):
+def start_gadgetron_instance(*, log, port, storage_folder, env=environment):
     print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron",
-                             "-p", port],
+                             "-p", port, "-S",storage_folder, "-D",storage_folder + "/database", "--storage_port","0"],
                             stdout=log,
                             stderr=log,
                             env=env)
@@ -175,11 +178,12 @@ def ensure_gadgetron_instance(args, config):
 
     def start_gadgetron_action(cont, *, env=environment, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=gadgetron.port, env=env) as instance:
-                try:
-                    return cont(gadgetron=gadgetron, **state)
-                finally:
-                    instance.kill()
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                with start_gadgetron_instance(log=log, port=gadgetron.port,storage_folder=tmp_dir, env=env) as instance:
+                    try:
+                        return cont(gadgetron=gadgetron, **state)
+                    finally:
+                        instance.kill()
 
     def use_external_gadgetron_action(cont, **state):
         return cont(gadgetron=gadgetron, **state)
@@ -276,11 +280,12 @@ def start_additional_nodes(args, config):
 
     def start_additional_worker_action(port, cont, *, worker_list=[], **state):
         with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=port) as instance:
-                try:
-                    return cont(worker_list=worker_list + ['localhost:' + port], **state)
-                finally:
-                    instance.kill()
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                with start_gadgetron_instance(log=log, port=port, storage_folder=tmp_dir) as instance:
+                    try:
+                        return cont(worker_list=worker_list + ['localhost:' + port], **state)
+                    finally:
+                        instance.kill()
 
     yield functools.partial(create_worker_ports_action, range(number_of_nodes))
 
@@ -341,7 +346,7 @@ def run_gadgetron_client(args, config):
 def validate_client_output(args, config):
     pattern = re.compile(r"TEST(.*)")
 
-    def validate_output_action(section, cont, *, client_output, **state):
+    def validate_output_action(section, cont, *, client_output, status=Passed, **state):
 
         reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
         result, reason = validate_output(output_file=client_output,
@@ -356,7 +361,8 @@ def validate_client_output(args, config):
             return cont(client_output=client_output, status=Failure, **state)
         else:
             print("{:<26} [OK] ({})".format(section, reason))
-            return cont(client_output=client_output, status=Passed , **state)
+            new_status = Failure if status is Failure else Passed
+            return cont(client_output=client_output, status=new_status , **state)
 
     yield from (functools.partial(validate_output_action, test)
                 for test in filter(lambda s: re.match(pattern, s), config.sections()))

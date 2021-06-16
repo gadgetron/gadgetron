@@ -51,7 +51,7 @@ namespace Gadgetron::Server::Connection {
             readers[slot] = std::move(reader);
         }
 
-        return std::move(readers);
+        return readers;
     }
 
     std::vector<std::unique_ptr<Writer>> Loader::load_writers(const std::vector<Config::Writer> &configs) {

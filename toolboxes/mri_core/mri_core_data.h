@@ -7,8 +7,9 @@
 #include <vector>
 #include <set>
 #include "hoNDArray.h"
-#include <boost/optional.hpp>
 #include "Types.h"
+#include <io/adapt_struct.h>
+
 
 namespace Gadgetron 
 {
@@ -184,4 +185,6 @@ namespace Gadgetron
 
 
 }
+
+GADGETRON_ADAPT_STRUCT(Gadgetron::ImageArray, GADGETRON_ACCESS_ELEMENT(data_), GADGETRON_ACCESS_ELEMENT(headers_), GADGETRON_ACCESS_ELEMENT(meta_), GADGETRON_ACCESS_ELEMENT(waveform_), GADGETRON_ACCESS_ELEMENT(acq_headers_))
 #endif //MRI_CORE_DATA_H
