@@ -28,6 +28,7 @@ include(GoogleTest)
             cmr_analytical_strain_test.cpp
             #lapack_test.cpp
             hoSDC_test.cpp
+            nhlbi_compression_tests.cpp
             gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp gadgets/FlagTriggerParsing_test.cpp  )
 
     if (PYTHONLIBS_FOUND)

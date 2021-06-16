@@ -41,6 +41,8 @@
 #include <zfp.h>
 #endif
 
+using namespace NHLBI;
+
 std::string get_date_time_string()
 {
     time_t rawtime;
@@ -1329,8 +1331,9 @@ public:
         if (data_elements) {
             std::vector<float> input_data((float*)&acq.getDataPtr()[0], (float*)&acq.getDataPtr()[0] + acq.getHead().active_channels*acq.getHead().number_of_samples*2);
 
-            CompressedBuffer<float> comp_buffer(input_data, -1.0, compression_precision);
-            std::vector<uint8_t> serialized_buffer = comp_buffer.serialize();
+            std::unique_ptr<CompressedFloatBuffer> comp_buffer(CompressedFloatBuffer::createCompressedBuffer());
+            comp_buffer->compress(input_data, -1.0, compression_precision);
+            std::vector<uint8_t> serialized_buffer = comp_buffer->serialize();
  
             compressed_bytes_sent_ += serialized_buffer.size();
             uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
@@ -1375,8 +1378,9 @@ public:
                 local_tolerance = local_tolerance*stat.sigma_min*acq.getHead().sample_time_us*std::sqrt(stat.noise_dwell_time_us/acq.getHead().sample_time_us);
             }
 
-            CompressedBuffer<float> comp_buffer(input_data, local_tolerance);
-            std::vector<uint8_t> serialized_buffer = comp_buffer.serialize();
+            std::unique_ptr<CompressedFloatBuffer> comp_buffer(CompressedFloatBuffer::createCompressedBuffer());
+            comp_buffer->compress(input_data, local_tolerance);
+            std::vector<uint8_t> serialized_buffer = comp_buffer->serialize();
 
             compressed_bytes_sent_ += serialized_buffer.size();
             uncompressed_bytes_sent_ += data_elements*2*sizeof(float);

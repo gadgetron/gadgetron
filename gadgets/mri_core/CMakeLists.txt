@@ -6,6 +6,14 @@ find_package(ZFP)
 
 include_directories(${HDF5_INCLUDE_DIR})
 
+if(MSVC)
+  set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+else()
+  set_source_files_properties(CompressedFloatBufferSse41.cpp PROPERTIES COMPILE_FLAGS "-msse4.1")
+  set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -mfma")
+endif()
+
+
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         NoiseAdjustGadget.h
         PCACoilGadget.h
@@ -64,6 +72,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
+	cpuisa.h
         ImageAccumulatorGadget.h
         writers/GadgetIsmrmrdWriter.h
         ImageResizingGadget.h
@@ -128,6 +137,10 @@ set(gadgetron_mricore_src_files
         GenericReconAccumulateImageTriggerGadget.cpp
         GenericImageReconArrayToImageGadget.cpp
         GenericReconImageToImageArrayGadget.cpp 
+	CompressedFloatBuffer.cpp
+	CompressedFloatBufferSse41.cpp
+	CompressedFloatBufferAvx2.cpp
+	cpuisa.cpp
         WhiteNoiseInjectorGadget.cpp
         RateLimitGadget.cpp
         dependencyquery/NoiseSummaryGadget.cpp
