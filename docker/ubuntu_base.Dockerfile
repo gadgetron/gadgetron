@@ -4,7 +4,7 @@
 #      2. ubuntu:18.04 (no CUDA)
 #      3. nvidia/cuda:11.0-devel-ubuntu20.04 (with CUDA, default)
 #      4. nvidia/cuda:11.0-devel-ubuntu18.04 (with CUDA)
-ARG BASE_IMAGE=nvidia/cuda:11.0-devel-ubuntu20.04
+ARG BASE_IMAGE=nvidia/cuda:11.3.1-devel-ubuntu20.04
 FROM $BASE_IMAGE
 
 WORKDIR /opt

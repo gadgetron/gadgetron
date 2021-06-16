@@ -65,6 +65,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
    {
      tmp_dimensions_data.pop_back(); 
      cuNDArray<complext<REAL>> temp_ch_data(&tmp_dimensions_data);
+     tmp_dimensions.pop_back();
      cuNDArray<complext<REAL>> temp_ch_recon(&tmp_dimensions);
 
 
