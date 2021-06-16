@@ -486,6 +486,16 @@ namespace Gadgetron {
                     // for every kspace, find the recorded header which is closest to the kspace center [E1/2 E2/2]
                     ISMRMRD::AcquisitionHeader acq_header;
 
+                    // for every kspace, find the min and max of acquisition time, find the min and max of physio time
+                    uint32_t min_acq_time(std::numeric_limits<uint32_t>::max()),
+                        max_acq_time(0);
+
+                    uint32_t min_physio_time[ISMRMRD::ISMRMRD_PHYS_STAMPS], max_physio_time[ISMRMRD::ISMRMRD_PHYS_STAMPS];
+                    for (size_t ii = 0; ii < ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++) {
+                        min_physio_time[ii] = std::numeric_limits<uint32_t>::max();
+                        max_physio_time[ii] = 0;
+                    }
+
                     long long bestE1 = E1 + 1;
                     long long bestE2 = E2 + 1;
 
@@ -493,6 +503,22 @@ namespace Gadgetron {
                     for (e2 = 0; e2 < header_E2; e2++) {
                         for (e1 = 0; e1 < header_E1; e1++) {
                             ISMRMRD::AcquisitionHeader& curr_header = recon_bit.data_.headers_(e1, e2, n, s, slc);
+
+                            if (curr_header.acquisition_time_stamp>0) {
+                                if (min_acq_time > curr_header.acquisition_time_stamp)
+                                    min_acq_time = curr_header.acquisition_time_stamp;
+
+                                if (max_acq_time < curr_header.acquisition_time_stamp)
+                                    max_acq_time = curr_header.acquisition_time_stamp;
+
+                                for (size_t ii = 0; ii < ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++) {
+                                    if (min_physio_time[ii] > curr_header.physiology_time_stamp[ii])
+                                        min_physio_time[ii] = curr_header.physiology_time_stamp[ii];
+
+                                    if (max_physio_time[ii] < curr_header.physiology_time_stamp[ii])
+                                        max_physio_time[ii] = curr_header.physiology_time_stamp[ii];
+                                }
+                            }
 
                             long long e1_in_bucket = curr_header.idx.kspace_encode_step_1 + space_matrix_offset_E1_[e];
 
@@ -632,6 +658,16 @@ namespace Gadgetron {
                     meta.set("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[0]);
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
                     meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
+
+                    meta.set("acquisition_time_range", (long)min_acq_time);
+                    meta.append("acquisition_time_range", (long)max_acq_time);
+
+                    meta.set("physiology_time_range", (long)min_physio_time[0]);
+                    meta.append("physiology_time_range", (long)max_physio_time[0]);
+                    meta.append("physiology_time_range", (long)min_physio_time[1]);
+                    meta.append("physiology_time_range", (long)max_physio_time[1]);
+                    meta.append("physiology_time_range", (long)min_physio_time[2]);
+                    meta.append("physiology_time_range", (long)max_physio_time[2]);
 
                     size_t ui;
                     for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_INTS; ui++)
