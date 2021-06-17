@@ -28,16 +28,17 @@ namespace Gadgetron::Server::Connection::Nodes {
     }
 
     bool matlab_available() noexcept {
-        try {
-            return !boost::process::system(
-                    boost::process::search_path("matlab"),
-                    boost::process::args={"-batch", "gadgetron.external.test_available"},
-                    boost::process::std_out > boost::process::null,
-                    boost::process::std_err > boost::process::null
-            );
-        }
-        catch (...) {
-            return false;
-        }
+        return false;
+        // try {
+        //     return !boost::process::system(
+        //             boost::process::search_path("matlab"),
+        //             boost::process::args={"-batch", "gadgetron.external.test_available"},
+        //             boost::process::std_out > boost::process::null,
+        //             boost::process::std_err > boost::process::null
+        //     );
+        // }
+        // catch (...) {
+        //     return false;
+        // }
     }
 }
