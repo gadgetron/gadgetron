@@ -420,10 +420,10 @@ else()
 endif()
 
 
-add_subdirectory(core)
-add_subdirectory(toolboxes)
-add_subdirectory(gadgets)
-add_subdirectory(apps)
+#add_subdirectory(core)
+#add_subdirectory(toolboxes)
+#add_subdirectory(gadgets)
+#add_subdirectory(apps)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)
