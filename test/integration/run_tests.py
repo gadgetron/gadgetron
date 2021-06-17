@@ -148,10 +148,10 @@ def read_test_details(filename):
 
     return {
         'file': filename,
-        'tags': set(tags_from_tags(config['TAGS']) +
-                    tags_from_reqs(config['REQUIREMENTS']) +
+        'tags': set(tags_from_tags(config['tags']) +
+                    tags_from_reqs(config['requirements']) +
                     ['all']),
-        'reqs': rules_from_reqs(config['REQUIREMENTS'])
+        'reqs': rules_from_reqs(config['requirements'])
     }
 
 

@@ -153,7 +153,7 @@ namespace Gadgetron::Server::Info {
               os << "      - Device " << dev << ": " << CUDA::cuda_device_name(dev) << std::endl;
               os << "         + CUDA Driver Version / Runtime Version: " << CUDA::cuda_driver_version() << "/" << CUDA::cuda_runtime_version() << std::endl;
               os << "         + CUDA Capability Major / Minor version number: " <<  CUDA::cuda_device_capabilities(dev) << std::endl;
-              os << "         + Total amount of global GPU memory: " << CUDA::cuda_device_memory(dev) / (1024 * 1024) << " MB" << std::endl;
+              os << "         + Total amount of global GPU memory: " << std::to_string(CUDA::cuda_device_memory(dev) / (1024 * 1024)) << " MB" << std::endl;
             }
         }
     }
