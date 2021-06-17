@@ -6,6 +6,9 @@ WORKDIR /opt
 RUN mkdir -p /opt/code/gadgetron
 COPY . /opt/code/gadgetron/
 
+# Setting the wait policy prevents performance degradation under load.
+ENV OMP_WAIT_POLICY=PASSIVE
+
 #GADGETRON
 RUN cd /opt/code/gadgetron && \
     mkdir build && \

@@ -102,7 +102,6 @@ namespace Gadgetron {
         void set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in, IsmrmrdImageArray& res);
 
         // scan info
-
         float system_field_strength_T_;
 
         // protocol name

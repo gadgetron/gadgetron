@@ -6,9 +6,9 @@
 
 #include "gadgetron_config.h"
 
-#include "HeaderConnection.h"
 #include "Handlers.h"
-#include "Config.h"
+#include "HeaderConnection.h"
+#include "config/Config.h"
 
 #include "io/primitives.h"
 #include "Context.h"
@@ -82,8 +82,8 @@ namespace {
 
             GDEBUG_STREAM("Reading config file: " << filename);
 
-            std::ifstream config_stream(filename.string());
-            handle_callback(config_stream);
+            auto config_stream = open_and_verify_config(filename.string());
+            handle_callback(*config_stream);
         }
 
     private:
@@ -135,9 +135,9 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
             std::iostream &stream,
             const Core::StreamContext::Paths &paths,
             const Core::StreamContext::Args &args,
+            const Core::StreamContext::StorageAddress& sessions_address,
             ErrorHandler &error_handler
     ) {
-
         GINFO_STREAM("Connection state: [CONFIG]");
 
         ConfigStreamContext context{
@@ -165,7 +165,7 @@ namespace Gadgetron::Server::Connection::ConfigConnection {
         output_thread.join();
 
         if (context.config) {
-            HeaderConnection::process(stream, paths, args, context.config.value(), error_handler);
+            HeaderConnection::process(stream, paths, args, sessions_address, context.config.value(), error_handler);
         }
     }
 }

@@ -8,13 +8,11 @@ add_executable(gadgetron
         Server.h
         Connection.cpp
         Connection.h
-        paths.cpp
-        paths.h
         initialization.cpp
         initialization.h
         system_info.cpp
-        connection/Config.cpp
-        connection/Config.h
+        connection/config/Config.cpp
+        connection/config/Config.h
         connection/ConfigConnection.cpp
         connection/ConfigConnection.h
         connection/StreamConnection.cpp
@@ -33,43 +31,43 @@ add_executable(gadgetron
         connection/Core.h
         connection/SocketStreamBuf.cpp
         connection/SocketStreamBuf.h
-        connection/stream/Stream.cpp
-        connection/stream/Stream.h
-        connection/stream/Parallel.cpp
-        connection/stream/Parallel.h
-        connection/stream/Distributed.cpp
-        connection/stream/Distributed.h
-        connection/stream/External.cpp
-        connection/stream/External.h
-        connection/stream/Processable.h
-        connection/stream/common/ExternalChannel.cpp
-        connection/stream/common/ExternalChannel.h
-        connection/stream/external/Matlab.cpp
-        connection/stream/external/Matlab.h
-        connection/stream/external/Python.cpp
-        connection/stream/external/Python.h
-        connection/stream/common/Discovery.cpp
-        connection/stream/Processable.cpp
-        connection/stream/ParallelProcess.cpp
-        connection/stream/ParallelProcess.h
-        connection/stream/PureStream.cpp
-        connection/stream/PureStream.h
-        connection/stream/PureDistributed.cpp
-        connection/stream/PureDistributed.h
-        connection/stream/common/External.h
-        connection/stream/common/External.cpp
-        connection/stream/common/Serialization.cpp
-        connection/stream/common/Serialization.h
-        connection/stream/common/Configuration.cpp
-        connection/stream/common/Configuration.h
-        connection/stream/distributed/Pool.h
-        connection/stream/distributed/Worker.cpp
-        connection/stream/distributed/Worker.h
-        connection/stream/common/Closer.h
-        connection/stream/distributed/Pool.cpp )
+        connection/nodes/Stream.cpp
+        connection/nodes/Stream.h
+        connection/nodes/Parallel.cpp
+        connection/nodes/Parallel.h
+        connection/nodes/Distributed.cpp
+        connection/nodes/Distributed.h
+        connection/nodes/External.cpp
+        connection/nodes/External.h
+        connection/core/Processable.h
+        connection/nodes/common/ExternalChannel.cpp
+        connection/nodes/common/ExternalChannel.h
+        connection/nodes/external/Matlab.cpp
+        connection/nodes/external/Matlab.h
+        connection/nodes/external/Python.cpp
+        connection/nodes/external/Python.h
+        connection/nodes/common/Discovery.cpp
+        connection/nodes/ParallelProcess.cpp
+        connection/nodes/ParallelProcess.h
+        connection/nodes/PureStream.cpp
+        connection/nodes/PureStream.h
+        connection/nodes/PureDistributed.cpp
+        connection/nodes/PureDistributed.h
+        connection/nodes/common/External.h
+        connection/nodes/common/External.cpp
+        connection/nodes/common/Serialization.cpp
+        connection/nodes/common/Serialization.h
+        connection/nodes/common/Configuration.cpp
+        connection/nodes/common/Configuration.h
+        connection/nodes/distributed/Pool.h
+        connection/nodes/distributed/Worker.cpp
+        connection/nodes/distributed/Worker.h
+        connection/nodes/common/Closer.h
+        connection/nodes/distributed/Pool.cpp connection/core/Processable.cpp storage.h storage.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core
+        gadgetron_storage
         gadgetron_toolbox_log
         Boost::system
         Boost::filesystem

@@ -48,6 +48,11 @@ namespace Gadgetron {
             std::copy(other.begin(), other.end(), this->begin());
         }
 
+        template <class TI, typename std::enable_if<(D > 1) && std::is_convertible<TI,T>::value >::type* = nullptr>
+        explicit vector_td(TI input[D]) {
+            std::copy(input,input+D,vec);
+
+        }
         __inline__ __host__ __device__ T& operator[](size_t i) {
             return vec[i];
         }

@@ -13,6 +13,8 @@ add_library(gadgetron_core SHARED
         LegacyACE.cpp
         Message.cpp
         Response.cpp
+        Storage.cpp
+        gadgetron_paths.cpp
         io/from_string.cpp)
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
@@ -54,6 +56,7 @@ install(FILES
         Types.hpp
         TypeTraits.h
         Writer.h
+        Writer.hpp
         Node.h
         PureGadget.h
         LegacyACE.h
@@ -62,6 +65,7 @@ install(FILES
         ChannelAlgorithms.h
         variant.hpp
         MessageID.h
+        Storage.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES

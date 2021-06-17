@@ -1,12 +1,16 @@
 
+#include "log.h"
 #include "initialization.h"
+
+#include <cstdlib>
+#include <string>
+
+#include <boost/algorithm/string.hpp>
 
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS
 #include <cblas.h>
 #endif
-#include <iostream>
 #include <locale>
-#include <clocale>
 namespace Gadgetron::Server {
 
     void configure_blas_libraries() {
@@ -22,28 +26,26 @@ namespace Gadgetron::Server {
 
     }
 
+
+    void check_environment_variables() {
+
+        auto get_policy = []() -> std::string {
+            auto raw = std::getenv("OMP_WAIT_POLICY");
+            return boost::algorithm::to_lower_copy(raw ? std::string(raw) : std::string());
+        };
+
+        if ("passive" != get_policy()) {
+            GWARN_STREAM("Environment variable 'OMP_WAIT_POLICY' not set to 'PASSIVE'.");
+            GWARN_STREAM("Gadgetron may experience serious performance issues under heavy load " <<
+                         "(multiple simultaneous reconstructions, etc.)")
+        }
+    }
+
     void set_locale() {
         try {
-            std::locale::global(std::locale(""));
+           std::locale::global(std::locale(""));
         } catch (...) {
             std::locale::global(std::locale::classic());
         }
     }
-
-    //void set_locale() { 
-    //    try {
-	   // std::wcout << "User-preferred locale setting is " << std::locale("").name().c_str() << '\n';
-	   // std::setlocale(LC_ALL, "en_US.UTF-8");
-    //        std::locale id("en_US.UTF-8");
-    //        std::locale::global(id);
-    //        std::cout.imbue(std::locale());
-    //        std::cerr.imbue(std::locale());
-    //        std::clog.imbue(std::locale());
-    //        std::wcout.imbue(std::locale());
-    //        std::wcerr.imbue(std::locale());
-    //        std::wclog.imbue(std::locale());
-    //    } catch (...) {
-    //        std::cout << "Exceptions in set_locale() ..." << std::endl;
-    //    }
-    //}
 }

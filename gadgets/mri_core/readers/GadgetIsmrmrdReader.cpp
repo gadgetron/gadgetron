@@ -1,9 +1,11 @@
 #include "GadgetIsmrmrdReader.h"
 #include "NHLBICompression.h"
 
+using namespace NHLBI;
+
 #if defined GADGETRON_COMPRESSION_ZFP
 
-#include <zfp/zfp.h>
+#include <zfp.h>
 
 #endif //GADGETRON_COMPRESSION_ZFP
 
@@ -97,19 +99,19 @@ namespace Gadgetron {
             std::vector<uint8_t> comp_buffer(comp_size);
             stream.read((char *) comp_buffer.data(), comp_size);
 
-            CompressedBuffer<float> comp;
-            comp.deserialize(comp_buffer);
+            std::unique_ptr<CompressedFloatBuffer> comp(CompressedFloatBuffer::createCompressedBuffer());
 
-            if (comp.size() != data.get_number_of_elements() * 2) { //*2 for complex
+            comp->deserialize(comp_buffer);
+
+            if (comp->size() != data.get_number_of_elements() * 2) { //*2 for complex
                 std::stringstream error;
-                error << "Mismatch between uncompressed data samples " << comp.size();
+                error << "Mismatch between uncompressed data samples " << comp->size();
                 error << " and expected number of samples" << data.get_number_of_elements() * 2;
             }
 
+            //This uncompresses sample by sample into the uncompressed array
             float *d_ptr = (float *) data.get_data_ptr();
-            for (size_t i = 0; i < comp.size(); i++) {
-                d_ptr[i] = comp[i]; //This uncompresses sample by sample into the uncompressed array
-            }
+            comp->decompress(d_ptr);
 
             //At this point the data is no longer compressed and we should clear the flag
             header.clearFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION2);

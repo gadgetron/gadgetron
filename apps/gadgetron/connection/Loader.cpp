@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "stream/Stream.h"
+#include "nodes/Stream.h"
 
 namespace {
     using namespace Gadgetron::Core;
@@ -37,8 +37,8 @@ namespace Gadgetron::Server::Connection {
         return factory();
     }
 
-    std::unique_ptr<Stream::Stream> Loader::load(const Config::Stream &conf) {
-        return std::make_unique<Stream::Stream>(conf, context, *this);
+    std::unique_ptr<Nodes::Stream> Loader::load(const Config::Stream &conf) {
+        return std::make_unique<Nodes::Stream>(conf, context, *this);
     }
 
     std::map<uint16_t, std::unique_ptr<Reader>> Loader::load_readers(const std::vector<Config::Reader> &configs) {
@@ -51,7 +51,7 @@ namespace Gadgetron::Server::Connection {
             readers[slot] = std::move(reader);
         }
 
-        return std::move(readers);
+        return readers;
     }
 
     std::vector<std::unique_ptr<Writer>> Loader::load_writers(const std::vector<Config::Writer> &configs) {
