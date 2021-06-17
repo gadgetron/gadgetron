@@ -47,7 +47,7 @@ namespace Gadgetron
 
 
         for (auto [img_header,data,meta] : input) {
-            GDEBUG("Float to shorts norm: %f \n", nrm2(&data));
+            //GDEBUG("Float to shorts norm: %f \n", nrm2(&data));
             auto output_data = hoNDArray<T>(data.dimensions());
 
             switch (img_header.image_type) {
