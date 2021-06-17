@@ -330,6 +330,7 @@ namespace Gadgetron {
 
       if (!out.dimensions_equal(&dims)){
           out.create(dims);
+          memset(out.get_data_ptr(), 0, out.get_number_of_elements() * sizeof(T));
       }
 
       typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in.get_dimensions());
@@ -586,6 +587,7 @@ namespace Gadgetron {
 
       if (!out.dimensions_equal(&dims)){
           out.create(dims);
+          memset(out.get_data_ptr(), 0, out.get_number_of_elements() * sizeof(T));
       }
 
       if (in.dimensions_equal(&dims)){

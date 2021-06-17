@@ -53,7 +53,13 @@ namespace Gadgetron {
         typedef hoNDObjectArray<Image3DType> Image3DBufferType;
         typedef hoNDObjectArray<Image2DType> Image2DBufferType;
 
+        typedef hoNDObjectArray<Image3DMagType> Image3DMagBufferType;
+        typedef hoNDObjectArray<Image2DMagType> Image2DMagBufferType;
+
         typedef hoNDArray<ValueType> ImgArrayType;
+        typedef hoNDArray<T> ImgArrayMagType;
+
+        typedef hoNDArray<uint16_t> ImgRGBType;
 
         typedef hoNDImageContainer2D<Image2DType> ImageContainer2DType;
         typedef hoNDImageContainer2D<Image3DType> ImageContainer3DType;
@@ -204,6 +210,7 @@ namespace Gadgetron {
         GADGET_DECLARE(GenericImageReconGadget);
 
         typedef BasicPropertyGadget BaseClass;
+        typedef std::vector<ISMRMRD::Waveform> WaveFormType;
 
         GenericImageReconGadget();
         ~GenericImageReconGadget();
@@ -236,11 +243,12 @@ namespace Gadgetron {
         int process(ACE_Message_Block* mb) override;
 
         virtual int process_image(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1);
-        int process2D(GadgetContainerMessage<Image2DBufferType>* m1);
-        int process3D(GadgetContainerMessage<Image3DBufferType>* m1);
 
-        virtual int processImageBuffer(Image2DBufferType& ori);
-        virtual int processImageBuffer(Image3DBufferType& ori);
+        virtual int process2D(GadgetContainerMessage<Image2DBufferType>* m1, GadgetContainerMessage<WaveFormType>* m_wav);
+        virtual int process3D(GadgetContainerMessage<Image3DBufferType>* m1, GadgetContainerMessage<WaveFormType>* m_wav);
+
+        virtual int processImageBuffer(Image2DBufferType& ori, WaveFormType& wav);
+        virtual int processImageBuffer(Image3DBufferType& ori, WaveFormType& wav);
 
         ///// send out the images as a Gadget3 message
         ///// windowCenter and windowWidth is for every SLC
@@ -251,6 +259,9 @@ namespace Gadgetron {
         bool sendOutImages(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
         bool sendOutImageBuffer(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
+
+        bool sendOutRGBImages(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
+        bool sendOutRGBImageBuffer(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
         bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf);
         bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf);

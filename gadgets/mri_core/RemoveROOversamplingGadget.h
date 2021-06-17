@@ -36,8 +36,10 @@ namespace Gadgetron{
         int   reconNx_;
         float reconFOV_;
 
-	// if true the gadget performs the operation
-	// otherwise, it just passes the data on
-	bool dowork_;
+        // if true the gadget performs the operation
+        // otherwise, it just passes the data on
+        bool dowork_;
+
+        bool first_run_;
     };
 }

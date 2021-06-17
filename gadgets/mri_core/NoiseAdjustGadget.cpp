@@ -204,6 +204,7 @@ namespace Gadgetron {
         // find the measurementID of this scan
 
         noisehandler = load_or_gather();
+        this->first_run_ = true;
     }
 
     NoiseAdjustGadget::NoiseHandler NoiseAdjustGadget::load_or_gather() const {
@@ -335,9 +336,11 @@ namespace Gadgetron {
 
         auto& data = std::get<hoNDArray<std::complex<float>>>(acq);
         if (data.get_size(1) == pw.prewhitening_matrix.get_size(0)) {
-            auto dataM = as_arma_matrix(data);
+            /*auto dataM = as_arma_matrix(data);
             auto pwm = as_arma_matrix(pw.prewhitening_matrix);
-            dataM *= pwm;
+            dataM *= pwm;*/
+            hoNDArray<std::complex<float>> tmp(data);
+            gemm(data, tmp, pw.prewhitening_matrix);
         } else if (!this->pass_nonconformant_data) {
             throw std::runtime_error("Input data has different number of channels from noise data");
         }
@@ -384,6 +387,14 @@ namespace Gadgetron {
 
     void NoiseAdjustGadget::process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) {
 
+        if(this->first_run_)
+        {
+        #ifdef USE_OMP
+            omp_set_num_threads(1);
+        #endif // USE_OMP
+            this->first_run_ = false;
+        }
+        
         scale_only_channels = current_ismrmrd_header.acquisitionSystemInformation
                                   ? find_scale_only_channels(scale_only_channels_by_name,
                                       current_ismrmrd_header.acquisitionSystemInformation->coilLabel)

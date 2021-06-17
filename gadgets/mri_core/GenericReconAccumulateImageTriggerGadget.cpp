@@ -395,6 +395,7 @@ namespace Gadgetron {
             || (dataRole==GADGETRON_IMAGE_SNR_MAP) 
             || (dataRole==GADGETRON_IMAGE_STD_MAP) 
             || (dataRole==GADGETRON_IMAGE_WRAPAROUNDMAP)
+            || (dataRole == GADGETRON_IMAGE_RECON_FIGURE)
             || pass_image_immediate_ )
         {
             std::vector<size_t> dimIm(D,0);
@@ -438,12 +439,6 @@ namespace Gadgetron {
                             imgBuf(0).set_pixel_size(0, imgBuf(0).header_.field_of_view[0] / RO);
                             if (D>1) imgBuf(0).set_pixel_size(1, imgBuf(0).header_.field_of_view[1] / E1);
                             if (D>2) imgBuf(0).set_pixel_size(2, imgBuf(0).header_.field_of_view[2] / E2);
-
-                            /*imgBuf(0).set_image_position((float*)(imgBuf(0).header_.position));
-
-                            imgBuf(0).set_image_orientation(0, (float*)(imgBuf(0).header_.read_dir));
-                            imgBuf(0).set_image_orientation(1, (float*)(imgBuf(0).header_.phase_dir));
-                            imgBuf(0).set_image_orientation(2, (float*)(imgBuf(0).header_.slice_dir));*/
 
                             imgBuf(0).set_image_position(0, imgBuf(0).header_.position[0]);
                             imgBuf(0).set_image_position(1, imgBuf(0).header_.position[1]);
@@ -677,6 +672,16 @@ namespace Gadgetron {
                                                 ImageBufferType& imgBuf = *(cm1->getObjectPtr());
                                                 imgBuf = imageSentBuffer_;
 
+                                                if (!this->wave_form_buffer_.empty())
+                                                {
+                                                    Gadgetron::GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>* cm2 = new Gadgetron::GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>();
+
+                                                    *(cm2->getObjectPtr()) = this->wave_form_buffer_;
+                                                    this->wave_form_buffer_.clear();
+
+                                                    cm1->cont(cm2);
+                                                }
+
                                                 if (this->next()->putq(cm1) < 0) 
                                                 {
                                                     cm1->release();
@@ -798,6 +803,15 @@ namespace Gadgetron {
                             buf(cha, slice, con, phs, rep, set, ave) = storedImage;
                         }
                     }
+                }
+            }
+
+            // store the waveform
+            if (img.waveform_.has_value())
+            {
+                for (size_t ii = 0; ii < img.waveform_.value().size(); ii++)
+                {
+                    wave_form_buffer_.push_back((*img.waveform_)[ii]);
                 }
             }
         }

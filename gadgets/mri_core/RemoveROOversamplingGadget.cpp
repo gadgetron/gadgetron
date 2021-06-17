@@ -8,8 +8,8 @@
 
 namespace Gadgetron{
 
-    RemoveROOversamplingGadget::RemoveROOversamplingGadget()
-    {
+    RemoveROOversamplingGadget::RemoveROOversamplingGadget() { 
+        this->first_run_ = true;
     }
 
     RemoveROOversamplingGadget::~RemoveROOversamplingGadget()
@@ -61,6 +61,15 @@ namespace Gadgetron{
         ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
     {
+
+       if (this->first_run_)
+       {
+#ifdef USE_OMP
+            omp_set_num_threads(1);
+            GDEBUG_STREAM("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
+#endif // USE_OMP
+            this->first_run_ = false;
+       }
 
       // If we have work to do, do it, otherwise do nothing
       if (dowork_) {

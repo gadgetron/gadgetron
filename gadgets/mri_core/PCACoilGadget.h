@@ -44,6 +44,8 @@ namespace Gadgetron {
 
     int max_buffered_profiles_;
     int samples_to_use_;
+
+    bool first_run_;
   };
 }
 

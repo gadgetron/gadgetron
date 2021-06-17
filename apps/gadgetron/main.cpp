@@ -73,8 +73,14 @@ int main(int argc, char *argv[]) {
             return 0;
         }
 
+<<<<<<< HEAD
         GINFO("Gadgetron %s [%s]\n", GADGETRON_VERSION_STRING, GADGETRON_GIT_SHA1_HASH);
         GINFO("Running on port %d\n", args["port"].as<unsigned short>());
+=======
+    try {
+        configure_blas_libraries();
+        set_locale();
+>>>>>>> origin/for_production_deployment_2021_4
 
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());

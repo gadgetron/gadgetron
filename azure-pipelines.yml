@@ -72,7 +72,6 @@ jobs:
       ubuntu2004CUDA:
         imageName: gadgetron_ubuntu_2004_cuda11_cudnn8
         requirements: python,cuda
-
   steps:
   - task: Docker@2
     displayName: Login to ACR

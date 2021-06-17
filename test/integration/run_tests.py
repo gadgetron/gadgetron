@@ -283,7 +283,7 @@ def main():
             except subprocess.TimeoutExpired:
                 print("Timeout happened during test: {}".format(test.get('file')))
                 proc.kill()
-                args.failure_handler(test)
+                args.failure_handler(test.get('file'))
 
     if args.stats:
         output_csv(stats, args.stats)

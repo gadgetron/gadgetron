@@ -81,7 +81,8 @@ namespace Gadgetron {
 
 
         NoiseHandler load_or_gather() const;
-        MeasurementSpace measurement_storage;
+            
+        bool first_run_;
     };
 }
 BOOST_HANA_ADAPT_STRUCT(Gadgetron::NoiseCovariance,header,noise_dwell_time_us,noise_covariance_matrix);

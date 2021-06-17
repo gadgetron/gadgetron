@@ -376,6 +376,25 @@ find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
 
+# gt babylon
+option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
+if (REQUIRE_SIGNED_CONFIG)
+    message("Compile with signed config; GTBabylon is needed")
+    add_definitions(-DUSE_GTBABYLON)
+    find_package(GTBabylon REQUIRED)
+endif()
+
+add_subdirectory(core)
+add_subdirectory(toolboxes)
+add_subdirectory(gadgets)
+add_subdirectory(apps)
+
+option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
+if (BUILD_WITH_GPERFTOOLS_PROFILER)
+    message("Adding gpertools to build.")
+    find_package(Gperftools REQUIRED)
+endif()
+
 option(BUILD_TESTING "Enable test building" On)
 if (BUILD_TESTING)
     enable_testing()
