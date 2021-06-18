@@ -39,6 +39,8 @@ cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED
     htgrappa.cu
     trajectory_utils.h
     trajectory_utils.cu
+    cuNonCartesianTSenseOperator.h
+    cuNonCartesianTSenseOperator.cu
   )
 
 set_target_properties(gadgetron_toolbox_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -76,6 +78,7 @@ install(FILES
 	cuCartesianSenseOperator.h
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
+  cuNonCartesianTSenseOperator.h
         cuSpiritOperator.h
         cuBuffer.h
 	cuSenseBuffer.h
