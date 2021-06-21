@@ -38,11 +38,6 @@ namespace Gadgetron {
         // if true, only save the xml header
         NODE_PROPERTY(save_xml_header_only, bool, "If true, only save the xml header", false);
 
-        // since the support to waveform is not fully implemented, this option is added for not passing waveform downstream
-        // TODO: remove this option
-        NODE_PROPERTY(pass_waveform_downstream, bool, "If true, waveform data is passed downstream", false);
-
-
         void process(Core::InputChannel<Core::variant<Core::Acquisition,Core::Waveform>>& input, Core::OutputChannel& output) override;
 
 

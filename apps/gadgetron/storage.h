@@ -1,4 +1,7 @@
+#pragma once
+
 #include <boost/program_options.hpp>
+#include <optional>
 
 #include "StorageServer.h"
 
