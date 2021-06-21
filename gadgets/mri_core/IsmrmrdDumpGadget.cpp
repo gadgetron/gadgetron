@@ -204,7 +204,7 @@ namespace Gadgetron
     void IsmrmrdDumpGadget::process(Core::InputChannel<Core::variant<Core::Acquisition,Core::Waveform>>& input, Core::OutputChannel& output)
     {
 
-        auto is_valid_type =[this](const auto& item){ return std::holds_alternative<Core::Acquisition>(item);};
+        auto is_valid_type =[this](const auto& item){ return true || std::holds_alternative<Core::Acquisition>(item);};
 
         auto move_if = [](auto& input, auto& output, const auto& pred ){
             for (auto item : input ){
