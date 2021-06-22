@@ -5,12 +5,12 @@
 
 using namespace Gadgetron;
 
-template<class REAL,unsigned int D>
-cuNonCartesianTSenseOperator<REAL,D>::cuNonCartesianTSenseOperator(ConvolutionType conv) : cuSenseOperator<REAL,D>() {
+template <class REAL, unsigned int D>
+cuNonCartesianTSenseOperator<REAL, D>::cuNonCartesianTSenseOperator(ConvolutionType conv) : cuSenseOperator<REAL, D>() {
 
     convolutionType = conv;
     is_preprocessed_ = false;
- }
+}
 
 template <class REAL, unsigned int D>
 void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, cuNDArray<complext<REAL>>* out,
@@ -27,9 +27,12 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
     std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
     std::vector<size_t> data_dimensions = *this->get_codomain_dimensions();
 
+    auto timeD = full_dimensions[full_dimensions.size() - 1];
+    full_dimensions.pop_back();
     full_dimensions.push_back(this->ncoils_);
+    full_dimensions.push_back(timeD);
 
-    std::iter_swap(full_dimensions.end(), full_dimensions.end() - 1); // swap the coil dimension and time
+    // std::iter_swap(full_dimensions.end(), full_dimensions.end() - 1); // swap the coil dimension and time
 
     full_dimensions.pop_back(); // remove time dimension
     cuNDArray<complext<REAL>> tmp(&full_dimensions);
@@ -53,19 +56,25 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
 
         if (accumulate) {
             cuNDArray<complext<REAL>> tmp_out(tmp_data.get_dimensions());
-            plan_[it]->compute(&tmp, tmp_out, dcw_[it].get(), NFFT_comp_mode::FORWARDS_C2NC);
+            plan_[it]->compute(&tmp, tmp_out, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
             tmp_data += tmp_out;
         }
 
         else
-            plan_[it]->compute(tmp, tmp_data, dcw_[it].get(), NFFT_comp_mode::FORWARDS_C2NC);
-        size_t inter_acc = 0;
-        if (it > 0)
-            inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + (it - 1), 1,
-                                        std::multiplies<size_t>()); // product of X,Y,and Z
+            plan_[it]->compute(tmp, tmp_data, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
+        // size_t inter_acc = 0;
+        // if (it > 0)
+        std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
+        auto stride_data =
+            std::accumulate(tmp_dims.begin(), tmp_dims.end() - 1, 1, std::multiplies<size_t>()); // product of X,Y,and Z
 
-        cudaMemcpy(out->get_data_ptr() + inter_acc, tmp_data.get_data_ptr(),
-                   tmp_data.get_number_of_elements() * sizeof(complext<REAL>), cudaMemcpyDefault);
+        auto inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, size_t(0)) *
+                         tmp_dims[0]; // sum of cum sum shots per time
+                                      // This is not correct yet ! -- AJ
+        for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++)
+            cudaMemcpy(out->get_data_ptr() + inter_acc + stride_data * iCHA,
+                       tmp_data.get_data_ptr() + tmp_data.get_size(0) * tmp_data.get_size(1) * iCHA,
+                       tmp_data.get_size(0) * tmp_data.get_size(1) * sizeof(complext<REAL>), cudaMemcpyDefault);
     }
 }
 
@@ -81,51 +90,44 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* i
         throw std::runtime_error(
             "cuNonCartesianSenseOperator::mult_MH: input/output arrays do not match specified domain/codomains");
     }
-    std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
-    std::vector<size_t> tmp_dimensions_data = *this->get_codomain_dimensions();
+    std::vector<size_t> out_dimensions = *this->get_domain_dimensions();
+    std::vector<size_t> in_dimensions = *this->get_codomain_dimensions();
 
     auto RO = in->get_size(0);
     auto E1E2 = in->get_size(1);
     auto CHA = in->get_size(2);
 
-    tmp_dimensions_data.pop_back(); // Remove CH dimension
-    tmp_dimensions.pop_back();      // Remove the timeDimension
+    in_dimensions.pop_back(); // Remove CH dimension
 
-    tmp_dimensions.push_back(this->ncoils_); // add coil dimension
-    cuNDArray<complext<REAL>> tmp(&tmp_dimensions);
-    tmp_dimensions.pop_back(); // rm coil dimension
+    out_dimensions.pop_back();               // Remove the timeDimension
+    out_dimensions.push_back(this->ncoils_); // add coil dimension
+    cuNDArray<complext<REAL>> tmp(&out_dimensions);
+    out_dimensions.pop_back(); // rm coil dimension
+    // cuNDArray<complext<REAL>> tmp_coilCmb(&out_dimensions);
 
-    auto stride_ch = std::accumulate(tmp_dimensions_data.begin(), tmp_dimensions_data.end(), 1,
+    auto stride_ch = std::accumulate(in_dimensions.begin(), in_dimensions.end(), 1,
                                      std::multiplies<size_t>()); // product of X,Y,and Z
 
-    auto stride_out = std::accumulate(tmp_dimensions.begin(), tmp_dimensions.end(), 1,
+    auto stride_out = std::accumulate(out_dimensions.begin(), out_dimensions.end(), 1,
                                       std::multiplies<size_t>()); // product of X,Y,and Z
+    if (!accumulate) {
+        clear(out);
+    }
     for (size_t it = 0; it < shots_per_time_.size(); it++) {
-        size_t inter_acc = 0;
-        if (it > 0)
-            inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + (it - 1), 1,
-                                        std::multiplies<size_t>()); // product of X,Y,and Z
+
+        size_t inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, 0) * in_dimensions[0];
+        in_dimensions.pop_back(); // Remove INT dimension
+        in_dimensions.push_back(shots_per_time_[it]);
+
         for (size_t ich = 0; ich < CHA; ich++) {
 
-            tmp_dimensions_data.pop_back(); // Remove INT dimension
-            tmp_dimensions_data.push_back(shots_per_time_[it]);
+            auto slice_view = cuNDArray<complext<REAL>>(in_dimensions, in->data() + stride_ch * ich + inter_acc);
+            auto out_view_ch = cuNDArray<complext<REAL>>(out_dimensions, tmp.data() + stride_out * ich);
 
-            auto slice_view = cuNDArray<complext<REAL>>(tmp_dimensions_data, in->data() + stride_ch * ich + inter_acc);
-
-            cuNDArray<complext<REAL>> temp_ch_recon(&tmp_dimensions);
-
-            plan_[it]->compute(&slice_view, temp_ch_recon, dcw_[it].get(), NFFT_comp_mode::BACKWARDS_NC2C);
-
-            cudaMemcpy(tmp.get_data_ptr() + tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * ich,
-                       temp_ch_recon.get_data_ptr(),
-                       tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * sizeof(complext<REAL>),
-                       cudaMemcpyDefault);
+            plan_[it]->compute(slice_view, out_view_ch, &dcw_[it], NFFT_comp_mode::BACKWARDS_NC2C);
         }
 
-        if (!accumulate) {
-            clear(out);
-        }
-        auto slice_view_output = cuNDArray<complext<REAL>>(tmp_dimensions, out->data() + stride_out * it);
+        auto slice_view_output = cuNDArray<complext<REAL>>(out_dimensions, out->data() + stride_out * it);
 
         this->mult_csm_conj_sum(&tmp, &slice_view_output);
     }
@@ -153,7 +155,7 @@ void cuNonCartesianTSenseOperator<REAL, D>::preprocess(std::vector<cuNDArray<_re
 }
 
 template <class REAL, unsigned int D>
-void cuNonCartesianTSenseOperator<REAL, D>::set_dcw(std::vector<boost::shared_ptr<cuNDArray<REAL>>> dcw) {
+void cuNonCartesianTSenseOperator<REAL, D>::set_dcw(std::vector<cuNDArray<REAL>> dcw) {
     dcw_ = dcw;
 }
 
