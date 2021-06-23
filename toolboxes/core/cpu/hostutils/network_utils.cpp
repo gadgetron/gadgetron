@@ -9,6 +9,7 @@
 #include "log.h"
 #include "Process.h"
 #include <regex>
+#include <range/v3/view.hpp>
 
 namespace Gadgetron {
 
@@ -37,19 +38,21 @@ namespace Gadgetron {
 
             namespace bp = boost::process;
 
-            bp::ipstream stream;
+            std::future<std::string> stream;
             auto c = Process::child(
                     bp::search_path("ifconfig"),
-                    bp::std_out > stream
+                    bp::std_out > stream,
+                    boost::asio::io_service{}
             );
 
+            std::string output = stream.get();
+
             auto reg = std::regex(R"(inet\s+(\S+))");
-            std::string line;
-            const std::string inet = "inet ";
-            while(std::getline(stream, line)){
+
+            for (auto  view: (output | ranges::views::split('\n'))){
+                auto line = std::string(&*view.begin(),ranges::distance(view));
                 std::smatch s;
                 if (!std::regex_search(line,s,reg)) continue;
-
                 ip_list.emplace_back(s[1]);
 
             }
