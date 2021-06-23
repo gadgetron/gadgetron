@@ -7,7 +7,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "log.h"
-#include <boost/process.hpp>
+#include "Process.h"
 #include <regex>
 
 namespace Gadgetron {
@@ -38,7 +38,7 @@ namespace Gadgetron {
             namespace bp = boost::process;
 
             bp::ipstream stream;
-            auto c = bp::child(
+            auto c = Process::child(
                     bp::search_path("ifconfig"),
                     bp::std_out > stream
             );

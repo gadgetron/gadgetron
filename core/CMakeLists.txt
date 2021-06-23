@@ -14,6 +14,7 @@ add_library(gadgetron_core SHARED
         Message.cpp
         Response.cpp
         Storage.cpp
+        Process.cpp
         gadgetron_paths.cpp
         io/from_string.cpp)
 set_target_properties(gadgetron_core PROPERTIES
@@ -66,6 +67,7 @@ install(FILES
         variant.hpp
         MessageID.h
         Storage.h
+        Process.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES

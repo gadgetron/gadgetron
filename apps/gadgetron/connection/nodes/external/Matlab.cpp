@@ -1,8 +1,7 @@
 #include "Matlab.h"
 
 #include <list>
-#include <boost/process.hpp>
-
+#include "Process.h"
 #include "connection/config/Config.h"
 
 #include "log.h"
@@ -14,7 +13,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         unsigned short port,
         const Gadgetron::Core::StreamContext &context
     ) {
-        boost::process::child module(
+        auto module = Process::child(
                 boost::process::search_path("matlab"),
                 boost::process::args={"-batch", "gadgetron.external.main"},
                 boost::process::env["GADGETRON_EXTERNAL_PORT"] = std::to_string(port),
@@ -29,7 +28,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     bool matlab_available() noexcept {
         try {
-            return !boost::process::system(
+            return !Process::system(
                     boost::process::search_path("matlab"),
                     boost::process::args={"-batch", "gadgetron.external.test_available"},
                     boost::process::std_out > boost::process::null,
