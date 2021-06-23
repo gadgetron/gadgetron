@@ -765,6 +765,7 @@ namespace Gadgetron {
         waveforms.reserve(w_in.size());
         for (const auto& [header, data]: w_in) {
             ISMRMRD::Waveform& a_w = waveforms.emplace_back(header.number_of_samples,header.channels);
+            a_w.head = header;
             std::copy_n(data.data(),data.size(), a_w.data);
         }
         return waveforms;
