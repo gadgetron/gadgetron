@@ -1,8 +1,7 @@
 #include "Python.h"
 
 #include <list>
-#include <boost/process.hpp>
-#include <boost/optional.hpp>
+#include "Process.h"
 
 #include "connection/config/Config.h"
 
@@ -33,12 +32,10 @@ namespace Gadgetron::Server::Connection::Nodes {
             return {major_version, minor_version, patch_version};
         }
 
-        static std::mutex python_mutex;
         bool is_valid_python3(const std::string& pythonname){
         try {
-            auto lock = std::lock_guard(python_mutex);
             std::future<std::string> output_stream;
-            boost::process::system(
+            Process::system(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
                     boost::process::std_out > output_stream,
@@ -92,7 +89,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
         if(execute.target) args.push_back(execute.target.value());
 
-        boost::process::child module(
+        auto module = Process::child(
                 boost::process::search_path(get_python_executable()),
                 boost::process::args = args,
                 boost::process::env["PYTHONPATH"] += {python_path},
@@ -105,7 +102,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     bool python_available() noexcept {
         try {
-            return !boost::process::system(
+            return !Process::system(
                     boost::process::search_path(get_python_executable()),
                     boost::process::args={"-m", "gadgetron"},
                     boost::process::std_out > boost::process::null,

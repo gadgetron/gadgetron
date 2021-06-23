@@ -5,6 +5,7 @@
 #include "connection/nodes/external/Python.h"
 #include "connection/nodes/external/Matlab.h"
 #include "log.h"
+#include "Process.h"
 
 
 #if defined(_WIN32)
@@ -209,7 +210,7 @@ namespace Gadgetron::Server::Info {
             std::future<std::string> output_stream;
 
             // cat /sys/module/ipv6/parameters/disable
-            auto error = boost::process::system(
+            auto error = Gadgetron::Process::system(
                 boost::process::search_path("cat"),
                 boost::process::args={"/sys/module/ipv6/parameters/disable"},
                 boost::process::std_in.close(),
