@@ -676,14 +676,14 @@ namespace Gadgetron
             // Image Position (Patient)
             float corner[3];
 
-            corner[0] = m1.position[0] -
-                (m1.field_of_view[0] / 2.0f) * m1.read_dir[0] -
+            corner[0] = m1.position[0] +
+                (m1.field_of_view[0] / 2.0f) * m1.read_dir[0] +
                 (m1.field_of_view[1] / 2.0f) * m1.phase_dir[0];
-            corner[1] = m1.position[1] -
-                (m1.field_of_view[0] / 2.0f) * m1.read_dir[1] -
+            corner[1] = m1.position[1] +
+                (m1.field_of_view[0] / 2.0f) * m1.read_dir[1] +
                 (m1.field_of_view[1] / 2.0f) * m1.phase_dir[1];
-            corner[2] = m1.position[2] -
-                (m1.field_of_view[0] / 2.0f) * m1.read_dir[2] -
+            corner[2] = m1.position[2] +
+                (m1.field_of_view[0] / 2.0f) * m1.read_dir[2] +
                 (m1.field_of_view[1] / 2.0f) * m1.phase_dir[2];
 
             key.set(0x0020, 0x0032);
@@ -691,12 +691,13 @@ namespace Gadgetron
             write_dcm_string(dataset, key, buf);
 
             // Image Orientation
-            // read_dir, phase_dir, and slice_dir were calculated in
-            // a DICOM/patient coordinate system, so just plug them in
+            // read_dir, phase_dir, and slice_dir were calculated in a DICOM/patient coordinate system
+            // The negative signs are because DICOM's x-, y- and z-axes are reversed relative to read_dir and phase_dir which are supposed to be
+            // respectively the first, second and third columns of the orientation matrix given by the quaternion
             key.set(0x0020, 0x0037);
             snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f\\%.4f\\%.4f\\%.4f",
-                m1.read_dir[0], m1.read_dir[1], m1.read_dir[2],
-                m1.phase_dir[0], m1.phase_dir[1], m1.phase_dir[2]);
+                -m1.read_dir[0], -m1.read_dir[1], -m1.read_dir[2],
+                -m1.phase_dir[0], -m1.phase_dir[1], -m1.phase_dir[2]);
             write_dcm_string(dataset, key, buf);
 
             // Slice Location
