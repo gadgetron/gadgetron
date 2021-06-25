@@ -23,9 +23,9 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
         throw std::runtime_error(
             "cuNonCartesianSenseOperator::mult_H: input/output arrays do not match specified domain/codomains");
     }
-
-    std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
-    std::vector<size_t> data_dimensions = *this->get_codomain_dimensions();
+    // Cart -> noncart
+    std::vector<size_t> full_dimensions = *this->get_domain_dimensions();   // cart
+    std::vector<size_t> data_dimensions = *this->get_codomain_dimensions(); // Non-cart
     data_dimensions.pop_back(); // remove coil dimension from tmp_data;
 
     auto timeD = full_dimensions[full_dimensions.size() - 1];
