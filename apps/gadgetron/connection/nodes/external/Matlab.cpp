@@ -13,12 +13,19 @@ namespace Gadgetron::Server::Connection::Nodes {
         unsigned short port,
         const Gadgetron::Core::StreamContext &context
     ) {
+
+        auto env = boost::this_process::environment();
+        env.set("GADGETRON_EXTERNAL_PORT",std::to_string(port));
+        env.set("GADGETRON_EXTERNAL_MODULE",execute.name);
+        env.set("GADGETRON_STORAGE_ADDRESS", context.storage_address);
+
         auto module = Process::child(
                 boost::process::search_path("matlab"),
                 boost::process::args={"-batch", "gadgetron.external.main"},
-                boost::process::env["GADGETRON_EXTERNAL_PORT"] = std::to_string(port),
-                boost::process::env["GADGETRON_EXTERNAL_MODULE"] = execute.name,
-                boost::process::env["GADGETRON_STORAGE_ADDRESS"] = context.storage_address
+                env,
+                boost::process::limit_handles,
+                boost::process::std_out > stdout,
+                boost::process::std_err > stderr
         );
 
         GINFO_STREAM("Started external MATLAB module (pid: " << module.id() << ").");
