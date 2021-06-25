@@ -39,8 +39,7 @@ namespace Gadgetron::Server::Connection::Nodes {
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
                     boost::process::std_out > output_stream,
-                    boost::process::std_err > boost::process::null,
-                    boost::asio::io_service{}
+                    boost::process::std_err > boost::process::null
             );
 
 
@@ -88,12 +87,25 @@ namespace Gadgetron::Server::Connection::Nodes {
         };
 
         if(execute.target) args.push_back(execute.target.value());
+        
+        namespace bp = boost::process;
+        //Workaround for bug in Boost process
+        auto env = boost::this_process::environment();
+        auto orig_python_path = std::getenv("PYTHONPATH");
+        if (orig_python_path)
+            env.set("PYTHONPATH",std::string(orig_python_path) + ":" + python_path);
+        else
+            env.set("PYTHONPATH",python_path);
+        
+        env.set("GADGETRON_STORAGE_ADDRESS",context.storage_address);
 
         auto module = Process::child(
                 boost::process::search_path(get_python_executable()),
                 boost::process::args = args,
-                boost::process::env["PYTHONPATH"] += {python_path},
-                boost::process::env["GADGETRON_STORAGE_ADDRESS"] = context.storage_address
+                env,
+                boost::process::limit_handles,
+                boost::process::std_out > stdout,
+                boost::process::std_err > stderr
         );
 
         GINFO_STREAM("Started external Python module (pid: " << module.id() << ").");
