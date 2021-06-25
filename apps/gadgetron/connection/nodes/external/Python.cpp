@@ -35,7 +35,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         bool is_valid_python3(const std::string& pythonname){
         try {
             std::future<std::string> output_stream;
-            boost::process::system(
+            Process::system(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
                     boost::process::std_out > output_stream,

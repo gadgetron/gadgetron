@@ -46,7 +46,7 @@ namespace Gadgetron {
             auto reg = std::regex(R"(inet\s+(\S+))");
             std::string line;
             const std::string inet = "inet ";
-            while(c.running() && std::getline(stream, line) && !line.empty()){
+            while(std::getline(stream, line)){
                 std::smatch s;
                 if (!std::regex_search(line,s,reg)) continue;
 
