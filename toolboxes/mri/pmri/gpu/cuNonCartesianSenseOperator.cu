@@ -21,20 +21,44 @@ void cuNonCartesianSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in,
         throw std::runtime_error(
             "cuNonCartesianSenseOperator::mult_H: input/output arrays do not match specified domain/codomains");
     }
-
-    std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
+    // Cart -> noncart
+    std::vector<size_t> full_dimensions = *this->get_domain_dimensions(); // cart
     full_dimensions.push_back(this->ncoils_);
+
     cuNDArray<complext<REAL>> tmp(&full_dimensions);
+
     this->mult_csm(in, &tmp);
 
     // Forwards NFFT
+    full_dimensions.pop_back(); // remove ch
 
-    if (accumulate) {
-        cuNDArray<complext<REAL>> tmp_out(out->get_dimensions());
-        plan_->compute(tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
-        *out += tmp_out;
-    } else
-        plan_->compute(tmp, *out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+    auto stride = std::accumulate(full_dimensions.begin(), full_dimensions.end(), 1,
+                                  std::multiplies<size_t>()); // product of X,Y,and Z
+
+    std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
+    tmp_dims.pop_back(); // Remove channel dims 
+    auto stride_data = std::accumulate(tmp_dims.begin(), tmp_dims.end(), 1, std::multiplies<size_t>()); // Prod of RO * INT
+    
+    for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++) {
+        auto tmp_view = cuNDArray<complext<REAL>>(full_dimensions, tmp.data() + stride * iCHA);
+        auto slice_view_out = cuNDArray<complext<REAL>>(tmp_dims, out->data() + stride_data * iCHA);
+
+        if (accumulate) {
+            cuNDArray<complext<REAL>> tmp_out(&full_dimensions);
+            plan_->compute(tmp_view, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+            slice_view_out += tmp_out;
+        } else
+            plan_->compute(tmp_view, slice_view_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+    }
+    full_dimensions.push_back(this->ncoils_);
+
+
+    // if (accumulate) {
+    //     cuNDArray<complext<REAL>> tmp_out(out->get_dimensions());
+    //     plan_->compute(tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+    //     *out += tmp_out;
+    // } else
+    //     plan_->compute(tmp, out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
 }
 
 template <class REAL, unsigned int D>
@@ -49,35 +73,34 @@ void cuNonCartesianSenseOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in
         throw std::runtime_error(
             "cuNonCartesianSenseOperator::mult_MH: input/output arrays do not match specified domain/codomains");
     }
-    std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
-    std::vector<size_t> tmp_dimensions_data = *this->get_codomain_dimensions();
+    std::vector<size_t> out_dimensions = *this->get_domain_dimensions();
+    std::vector<size_t> in_dimensions = *this->get_codomain_dimensions();
 
     auto RO = in->get_size(0);
     auto E1E2 = in->get_size(1);
     auto CHA = in->get_size(2);
 
-    tmp_dimensions.push_back(this->ncoils_);
-    cuNDArray<complext<REAL>> tmp(&tmp_dimensions);
+    in_dimensions.pop_back(); // Remove CH dimension
+
+    out_dimensions.push_back(this->ncoils_); // add coil dimension
+    cuNDArray<complext<REAL>> tmp(&out_dimensions);
+    out_dimensions.pop_back(); // rm coil dimension
+
+    auto stride_ch = std::accumulate(in_dimensions.begin(), in_dimensions.end(), 1, std::multiplies<size_t>());
+
+    auto stride_out = std::accumulate(out_dimensions.begin(), out_dimensions.end(), 1, std::multiplies<size_t>());
 
     // Remove channel dimension if the last dimension is the same as the number of coils
-    if (tmp_dimensions_data[tmp_dimensions_data.size() - 1] == this->ncoils_ && tmp_dimensions_data.size() > 2) {
+    if (in_dimensions[in_dimensions.size() - 1] == this->ncoils_ && in_dimensions.size() > 2) {
 
-        tmp_dimensions_data.pop_back();
-        cuNDArray<complext<REAL>> temp_ch_data(&tmp_dimensions_data);
-        tmp_dimensions.pop_back();
-        cuNDArray<complext<REAL>> temp_ch_recon(&tmp_dimensions);
+        for (size_t ich = 0; ich < CHA; ich++) {
 
-        for (int iCHA = 0; iCHA < this->ncoils_; iCHA++) {
-            cudaMemcpy(temp_ch_data.get_data_ptr(), in->get_data_ptr() + RO * E1E2 * iCHA,
-                       RO * E1E2 * sizeof(complext<REAL>), cudaMemcpyDefault);
+            auto slice_view = cuNDArray<complext<REAL>>(in_dimensions, in->data() + stride_ch * ich);
+            auto out_view_ch = cuNDArray<complext<REAL>>(out_dimensions, tmp.data() + stride_out * ich);
 
-            plan_->compute(temp_ch_data, temp_ch_recon, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C);
-
-            cudaMemcpy(tmp.get_data_ptr() + tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * iCHA,
-                       temp_ch_recon.get_data_ptr(),
-                       tmp_dimensions[0] * tmp_dimensions[1] * tmp_dimensions[2] * sizeof(complext<REAL>),
-                       cudaMemcpyDefault);
+            plan_->compute(slice_view, out_view_ch, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C);
         }
+
     } else {
         // throw std::runtime_error("cuNonCartesianSenseOperator::Last dimension is not the coil dimension");
         plan_->compute(in, tmp, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C);
