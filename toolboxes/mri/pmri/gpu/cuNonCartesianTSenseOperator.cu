@@ -26,6 +26,7 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
 
     std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
     std::vector<size_t> data_dimensions = *this->get_codomain_dimensions();
+    data_dimensions.pop_back(); // remove coil dimension from tmp_data;
 
     auto timeD = full_dimensions[full_dimensions.size() - 1];
     full_dimensions.pop_back();
@@ -35,46 +36,54 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
     // std::iter_swap(full_dimensions.end(), full_dimensions.end() - 1); // swap the coil dimension and time
 
     full_dimensions.pop_back(); // remove time dimension
-    cuNDArray<complext<REAL>> tmp(&full_dimensions);
 
     std::vector<size_t> slice_dimensions = *this->get_domain_dimensions();
     slice_dimensions.pop_back(); // remove time
     auto stride = std::accumulate(slice_dimensions.begin(), slice_dimensions.end(), 1,
                                   std::multiplies<size_t>()); // product of X,Y,and Z
 
+    std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
+    auto stride_data = std::accumulate(tmp_dims.begin(), tmp_dims.end() - 1, 1, std::multiplies<size_t>());
+
+
     for (size_t it = 0; it < shots_per_time_.size(); it++) {
-        auto slice_view = cuNDArray<complext<REAL>>(slice_dimensions, in->data() + stride * it);
-        this->mult_csm(&slice_view, &tmp);
-
-        data_dimensions.pop_back();                     // remove coil dimension from tmp_data;
-        data_dimensions.pop_back();                     // remove interleave
-        data_dimensions.push_back(shots_per_time_[it]); // insert correct interleave
-        data_dimensions.push_back(this->ncoils_);       // insert coils again
-
-        cuNDArray<complext<REAL>> tmp_data(&data_dimensions);
-        //   // Forwards NFFT
-
-        if (accumulate) {
-            cuNDArray<complext<REAL>> tmp_out(tmp_data.get_dimensions());
-            plan_[it]->compute(&tmp, tmp_out, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
-            tmp_data += tmp_out;
-        }
-
-        else
-            plan_[it]->compute(tmp, tmp_data, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
-        // size_t inter_acc = 0;
-        // if (it > 0)
-        std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
-        auto stride_data =
-            std::accumulate(tmp_dims.begin(), tmp_dims.end() - 1, 1, std::multiplies<size_t>()); // product of X,Y,and Z
 
         auto inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, size_t(0)) *
                          tmp_dims[0]; // sum of cum sum shots per time
-                                      // This is not correct yet ! -- AJ
-        for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++)
-            cudaMemcpy(out->get_data_ptr() + inter_acc + stride_data * iCHA,
-                       tmp_data.get_data_ptr() + tmp_data.get_size(0) * tmp_data.get_size(1) * iCHA,
-                       tmp_data.get_size(0) * tmp_data.get_size(1) * sizeof(complext<REAL>), cudaMemcpyDefault);
+
+        auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, in->data() + stride * it);
+
+        cuNDArray<complext<REAL>> tmp(&full_dimensions);
+        this->mult_csm(&slice_view_in, &tmp);
+
+        data_dimensions.pop_back();                     // remove interleave
+        data_dimensions.push_back(shots_per_time_[it]); // insert correct interleave
+        // data_dimensions.push_back(this->ncoils_);       // insert coils again
+
+        // cuNDArray<complext<REAL>> tmp_data(&data_dimensions);
+
+        full_dimensions.pop_back(); // remove ch
+        for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++) {
+            auto tmp_view = cuNDArray<complext<REAL>>(full_dimensions, tmp.data() + stride * iCHA);
+            auto slice_view_out =
+                cuNDArray<complext<REAL>>(data_dimensions, out->data() + inter_acc + stride_data * iCHA);
+
+            if (accumulate) {
+                cuNDArray<complext<REAL>> tmp_out(&full_dimensions);
+                plan_[it]->compute(tmp_view, tmp_out, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
+                slice_view_out += tmp_out;
+            } else
+                plan_[it]->compute(tmp_view, slice_view_out, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
+        }
+        full_dimensions.push_back(this->ncoils_);
+        // size_t inter_acc = 0;
+        // if (it > 0)
+
+        // This is not correct yet ! -- AJ
+        // for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++)
+        //     cudaMemcpy(out->get_data_ptr() + inter_acc + stride_data * iCHA,
+        //                tmp_data.get_data_ptr() + tmp_data.get_size(0) * tmp_data.get_size(1) * iCHA,
+        //                tmp_data.get_size(0) * tmp_data.get_size(1) * sizeof(complext<REAL>), cudaMemcpyDefault);
     }
 }
 
