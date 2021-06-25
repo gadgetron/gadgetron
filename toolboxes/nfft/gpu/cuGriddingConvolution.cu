@@ -12,7 +12,7 @@
 #include "ConvolverNC2C_sparse.cuh"
 #include "ConvolverNC2C_standard.cuh"
 
-#define CUDA_CONV_MAX_COILS             (16)
+#define CUDA_CONV_MAX_COILS             (32)
 #define CUDA_CONV_THREADS_PER_KERNEL    (192)
 
 namespace Gadgetron
