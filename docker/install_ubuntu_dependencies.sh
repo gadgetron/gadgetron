@@ -58,7 +58,7 @@ DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-
 # Install ZFP
 mkdir -p /opt/code
 cd /opt/code &&
-  git -c advice.detachedHead=false clone --branch 0.5.5 --single-branch https://github.com/LLNL/zfp.git \
+    git -c advice.detachedHead=false clone --branch 0.5.5 --single-branch https://github.com/LLNL/zfp.git &&
     cd zfp &&
   mkdir build &&
   cd build &&

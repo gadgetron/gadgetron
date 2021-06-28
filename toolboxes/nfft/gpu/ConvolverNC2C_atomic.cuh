@@ -89,7 +89,9 @@ static void NFFT_iterate_body(vector_td<unsigned int, D> matrix_size_os,
             (batch*num_frames+frame)*prod(matrix_size_os) + co_to_idx( vector_td<unsigned int, D>(grid_position), matrix_size_os );
 
         // Atomic update.
-        atomicAdd(&(image[grid_idx]), weight*sample_value);
+        
+            atomicAdd(&(image[grid_idx]), weight*sample_value);
+        
     }
 }
 

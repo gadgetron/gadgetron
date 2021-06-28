@@ -29,6 +29,7 @@ namespace Gadgetron
     /// role of image data
     #define GADGETRON_DATA_ROLE                            "GADGETRON_DataRole"
     #define GADGETRON_IMAGE_REGULAR                        "Image"
+    #define GADGETRON_IMAGE_BINNED                         "Binned_Image"
     #define GADGETRON_IMAGE_RETRO                          "ImageRetro"
     #define GADGETRON_IMAGE_MOCORECON                      "ImageMoCo"
     #define GADGETRON_IMAGE_GFACTOR                        "Gfactor"
