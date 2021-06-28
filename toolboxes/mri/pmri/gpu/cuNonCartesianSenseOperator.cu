@@ -30,35 +30,12 @@ void cuNonCartesianSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in,
     this->mult_csm(in, &tmp);
 
     // Forwards NFFT
-    full_dimensions.pop_back(); // remove ch
-
-    auto stride = std::accumulate(full_dimensions.begin(), full_dimensions.end(), 1,
-                                  std::multiplies<size_t>()); // product of X,Y,and Z
-
-    std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
-    tmp_dims.pop_back(); // Remove channel dims 
-    auto stride_data = std::accumulate(tmp_dims.begin(), tmp_dims.end(), 1, std::multiplies<size_t>()); // Prod of RO * INT
-    
-    for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++) {
-        auto tmp_view = cuNDArray<complext<REAL>>(full_dimensions, tmp.data() + stride * iCHA);
-        auto slice_view_out = cuNDArray<complext<REAL>>(tmp_dims, out->data() + stride_data * iCHA);
-
-        if (accumulate) {
-            cuNDArray<complext<REAL>> tmp_out(&full_dimensions);
-            plan_->compute(tmp_view, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
-            slice_view_out += tmp_out;
-        } else
-            plan_->compute(tmp_view, slice_view_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
-    }
-    full_dimensions.push_back(this->ncoils_);
-
-
-    // if (accumulate) {
-    //     cuNDArray<complext<REAL>> tmp_out(out->get_dimensions());
-    //     plan_->compute(tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
-    //     *out += tmp_out;
-    // } else
-    //     plan_->compute(tmp, out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+    if (accumulate) {
+        cuNDArray<complext<REAL>> tmp_out(out->get_dimensions());
+        plan_->compute(tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+        *out += tmp_out;
+    } else
+        plan_->compute(tmp, out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
 }
 
 template <class REAL, unsigned int D>
