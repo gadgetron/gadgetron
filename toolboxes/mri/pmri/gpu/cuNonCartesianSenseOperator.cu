@@ -35,7 +35,7 @@ void cuNonCartesianSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in,
         plan_->compute(tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
         *out += tmp_out;
     } else
-        plan_->compute(tmp, out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
+        plan_->compute(tmp, *out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC);
 }
 
 template <class REAL, unsigned int D>
