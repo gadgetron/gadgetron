@@ -135,7 +135,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             if (std::regex_search(protocolname,is_post)) return post_window;
 
             std::regex is_pre(R"((?:^|[^A-Z])pre(?:$|[^A-Z]))", std::regex_constants::icase | std::regex_constants::ECMAScript);
-            if (std::regex_search(protocolname,is_post)) return pre_window;
+            if (std::regex_search(protocolname,is_pre)) return pre_window;
 
         } catch (...) {}
 

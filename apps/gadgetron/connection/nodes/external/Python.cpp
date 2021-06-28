@@ -1,16 +1,18 @@
 #include "Python.h"
 
 #include <list>
-#include <boost/process.hpp>
-#include <boost/optional.hpp>
+#include "Process.h"
 
 #include "connection/config/Config.h"
 
 #include <boost/asio.hpp>
 
 #include "log.h"
-#include <regex> 
+#include <regex>
+
 namespace Gadgetron::Server::Connection::Nodes {
+
+    using namespace Gadgetron::Core;
 
     namespace {
 
@@ -30,17 +32,14 @@ namespace Gadgetron::Server::Connection::Nodes {
             return {major_version, minor_version, patch_version};
         }
 
-        static std::mutex python_mutex;
         bool is_valid_python3(const std::string& pythonname){
         try {
-            auto lock = std::lock_guard(python_mutex);
             std::future<std::string> output_stream;
-            boost::process::system(
+            Process::system(
                     boost::process::search_path(pythonname),
                     boost::process::args={"--version"},
                     boost::process::std_out > output_stream,
-                    boost::process::std_err > boost::process::null,
-                    boost::asio::io_service{}
+                    boost::process::std_err > boost::process::null
             );
 
 
@@ -74,22 +73,39 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     }
 
-    boost::process::child start_python_module(const Config::Execute &execute, unsigned short port, const Gadgetron::Core::Context &context) {
-
+    boost::process::child start_python_module(
+        const Config::Execute &execute,
+        unsigned short port,
+        const StreamContext &context
+    ) {
         auto python_path = (context.paths.gadgetron_home / "share" / "gadgetron" / "python").string();
 
         std::list<std::string> args{
-                "-m", "gadgetron",
-                std::to_string(port),
-                execute.name
+            "-m", "gadgetron",
+            std::to_string(port),
+            execute.name
         };
 
         if(execute.target) args.push_back(execute.target.value());
+        
+        namespace bp = boost::process;
+        //Workaround for bug in Boost process
+        auto env = boost::this_process::environment();
+        auto orig_python_path = std::getenv("PYTHONPATH");
+        if (orig_python_path)
+            env.set("PYTHONPATH",std::string(orig_python_path) + ":" + python_path);
+        else
+            env.set("PYTHONPATH",python_path);
+        
+        env.set("GADGETRON_STORAGE_ADDRESS",context.storage_address);
 
-        boost::process::child module(
+        auto module = Process::child(
                 boost::process::search_path(get_python_executable()),
-                boost::process::args=args,
-                boost::process::env["PYTHONPATH"]+={python_path}
+                boost::process::args = args,
+                env,
+                boost::process::limit_handles,
+                boost::process::std_out > stdout,
+                boost::process::std_err > stderr
         );
 
         GINFO_STREAM("Started external Python module (pid: " << module.id() << ").");
@@ -98,7 +114,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     bool python_available() noexcept {
         try {
-            return !boost::process::system(
+            return !Process::system(
                     boost::process::search_path(get_python_executable()),
                     boost::process::args={"-m", "gadgetron"},
                     boost::process::std_out > boost::process::null,
