@@ -43,12 +43,32 @@ default_config_values = {
 Passed = "Passed", 0
 Failure = "Failure", 1
 
+_codes = {
+    'red': '\033[91m',
+    'green': '\033[92m',
+    'cyan': '\033[96m',
+    'end': '\033[0m',
+}
 
-def report_test(section, result, reason):
-    if result is not None:
-        print("{:<26} [FAILED] ({})".format(section, reason))
-    else:
-        print("{:<26} [OK] ({})".format(section, reason))
+
+def _colors_disabled(text, color):
+    return text
+
+
+def _colors_enabled(text, color):
+    return "{begin}{text}{end}".format(
+        begin=_codes.get(color),
+        text=text,
+        end=_codes.get('end'),
+    )
+
+
+def report_test(*, color_handler, section, result, reason):
+    print("{section:<26} [{status}] ({reason})".format(
+        section=section,
+        status=color_handler("FAILURE", 'red') if result else color_handler("OK", 'green'),
+        reason=reason,
+    ))
 
 
 def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measurement, flag=None):
@@ -397,7 +417,7 @@ def validate_client_output(args, config, section):
                                          value_threshold=float(config[section]['value_comparison_threshold']),
                                          scale_threshold=float(config[section]['scale_comparison_threshold']))
 
-        report_test(section, result, reason)
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
 
         return cont(
             client_output=client_output,
@@ -426,7 +446,7 @@ def validate_dataset_output(args, config, section):
 
         result, reason, dataset_file = check_rules()
 
-        report_test(section, result, reason)
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
 
         return cont(
             dataset_file=dataset_file if dataset_files else None,
@@ -445,7 +465,7 @@ def validate_dataset_output(args, config, section):
                                           reference_file=reference_file,
                                           reference_group=config[section]['reference_group'])
 
-        report_test(section, result, reason)
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
 
         return cont(
             status=status if result is None else Failure,
@@ -541,6 +561,10 @@ def main():
     parser.add_argument('--force', action='store_true', default=False,
                         help="Do not query Gadgetron capabilities; just run the test.")
 
+    parser.add_argument('--disable-color', dest='color_handler', action='store_const',
+                        const=_colors_disabled, default=_colors_enabled,
+                        help="Disable colors in the test script output.")
+
     parser.add_argument('--echo-commands', dest='echo_handler', action='store_const',
                         const=lambda cmd: print(' '.join(cmd)), default=lambda *_: None,
                         help="Echo the commands issued while running the test.")
@@ -561,7 +585,7 @@ def main():
     action_chain = chain_actions(build_actions(args, config_parser))
     result, return_code = action_chain(test=args.test, name=args.test.stem)
 
-    print("Test status: {}".format(result))
+    print("Test status: {}".format(args.color_handler(result, 'red' if return_code else 'green')))
     return return_code
 
 
