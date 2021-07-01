@@ -86,10 +86,8 @@ def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measu
                    check=True)
 
 
-def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log, additional_arguments):
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, group, log, additional_arguments):
     print("Passing data to Gadgetron: {} -> {}".format(input, output))
-
-    _, group = configuration
 
     command = ["gadgetron_ismrmrd_client",
                "-a", gadgetron.host,
@@ -346,7 +344,10 @@ def run_gadgetron_client(args, config, section):
     output_file = os.path.join(args.test_folder, section + '.output.h5')
 
     def prepare_config_action(cont, **state):
-        state.update(configuration=['-c', config[section]['configuration']])
+        state.update(
+            group=config[section]['configuration'],
+            configuration=['-c', config[section]['configuration']],
+        )
         return cont(**state)
 
     def prepare_template_action(cont, **state):
@@ -363,10 +364,13 @@ def run_gadgetron_client(args, config, section):
                     )
                 )
 
-        state.update(configuration=['-C', configuration_file])
+        state.update(
+            group=section,
+            configuration=['-C', configuration_file],
+        )
         return cont(**state)
 
-    def send_data_action(cont, *, gadgetron, client_input, configuration, processing_time=0, **state):
+    def send_data_action(cont, *, gadgetron, client_input, configuration, group, processing_time=0, **state):
 
         with open(os.path.join(args.test_folder, section + '.client.log'), 'w') as log:
 
@@ -382,6 +386,7 @@ def run_gadgetron_client(args, config, section):
                                    input=client_input,
                                    output=output_file,
                                    configuration=configuration,
+                                   group=group,
                                    log=log,
                                    additional_arguments=additional_args)
 
@@ -396,6 +401,7 @@ def run_gadgetron_client(args, config, section):
                 client_input=client_input,
                 client_output=output_file,
                 configuration=configuration,
+                group=group,
                 processing_time=processing_time + duration
             )
             return cont(**state)
