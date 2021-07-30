@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     try {
         check_environment_variables();
         configure_blas_libraries();
-        set_locale();
+        //set_locale();
 
         if (args.count("help")) {
             std::cout << desc << std::endl;
