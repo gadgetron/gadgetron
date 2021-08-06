@@ -28,6 +28,8 @@ import tempfile
 import itertools
 import subprocess
 
+import pprint
+
 default_config_values = {
     "DEFAULT": {
         'parameter_xml': 'IsmrmrdParameterMap_Siemens.xml',
@@ -155,25 +157,27 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
     return None, "Dataset matched reference"
 
 
-def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
-                    value_threshold, scale_threshold):
+def validate_output(*, output_file, reference_file, output_group, reference_group, value_threshold, scale_threshold):
+
     try:
-        output = numpy.squeeze(h5py.File(output_file, mode='r')[output_dataset])
+        # The errors produced by h5py are not entirely excellent. We spend some code here to clear them up a bit.
+        def get_group_data(file, group):
+            with h5py.File(file, mode='r') as f:
+                try:
+                    group = group + '/data'
+                    return numpy.squeeze(f[group])
+                except KeyError:
+                    raise RuntimeError("Did not find group '{}' in file {}".format(group, file))
+
+        output_data = get_group_data(output_file, output_group)
+        reference_data = get_group_data(reference_file, reference_group)
     except OSError as e:
-        return Failure, "Could not read output: {}".format(str(e))
-    except KeyError:
-        return Failure, "Missing output data: {}".format(output_dataset)
+        return Failure, str(e)
+    except RuntimeError as e:
+        return Failure, str(e)
 
-    try:
-        reference = numpy.squeeze(h5py.File(reference_file, mode='r')[reference_dataset])
-    except KeyError:
-        return Failure, "Missing reference data"
-
-    if not output.shape == reference.shape:
-        return Failure, "Data dimensions do not match: {} != {}".format(output.shape, reference.shape)
-
-    output = output[...].flatten().astype('float32')
-    reference = reference[...].flatten().astype('float32')
+    output = output_data[...].flatten().astype('float32')
+    reference = reference_data[...].flatten().astype('float32')
 
     norm_diff = numpy.linalg.norm(output - reference) / numpy.linalg.norm(reference)
     scale = numpy.dot(output, output) / numpy.dot(output, reference)
@@ -187,6 +191,110 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
 
     return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
                                                                scale_threshold)
+
+
+def validate_metadata(*, output_file, reference_file, output_group, reference_group):
+
+    def equals():
+        return lambda out, ref: out == ref
+
+    def approx(threshold=1e-6):
+        return lambda out, ref: abs(out - ref) <= threshold
+
+    def ignore():
+        return lambda out, ref: True
+
+    def each(rule):
+        return lambda out, ref: all(rule(out, ref) for out, ref in itertools.zip_longest(out, ref))
+
+    header_rules = {
+        'version': equals(),
+        'data_type': equals(),
+        'flags': equals(),
+        'measurement_uid': equals(),
+        'matrix_size': each(equals()),
+        'field_of_view': each(approx()),
+        'channels': equals(),
+        'position': each(approx()),
+        'read_dir': each(approx()),
+        'phase_dir': each(approx()),
+        'slice_dir': each(approx()),
+        'patient_table_position': each(approx()),
+        'average': equals(),
+        'slice': equals(),
+        'contrast': equals(),
+        'phase': equals(),
+        'repetition': equals(),
+        'set': equals(),
+        'acquisition_time_stamp': equals(),
+        'physiology_time_stamp': each(equals()),
+        'image_type': equals(),
+        'image_index': equals(),
+        'image_series_index': equals(),
+        'user_int': each(equals()),
+        'user_float': each(approx()),
+        'attribute_string_len': ignore()
+    }
+
+    def check_image_header(output, reference):
+
+        if not output:
+            raise RuntimeError("Missing output")
+
+        if not reference:
+            raise RuntimeError("Missing reference")
+
+        output = output.getHead()
+        reference = reference.getHead()
+
+        for attribute, rule in header_rules.items():
+            if not rule(getattr(output, attribute), getattr(reference, attribute)):
+
+                print(output)
+                print(reference)
+                print("Mismatch: " + attribute)
+
+                raise RuntimeError(
+                    "Image headers in output do not match for image {}, series {}".format(
+                        output.image_index,
+                        output.image_series_index
+                    )
+                )
+
+    def check_image_metadata(output, reference):
+
+        output_meta = ismrmrd.Meta.deserialize(output.attribute_string)
+        reference_meta = ismrmrd.Meta.deserialize(reference.attribute_string)
+
+        if not output_meta == reference_meta:
+
+            # pprint.pprint(output_meta)
+            # pprint.pprint(reference_meta)
+
+            raise RuntimeError(
+                "Image metadata does not match for image {} (series {})".format(
+                    output.image_index,
+                    output.image_series_index
+                )
+            )
+
+    try:
+        with ismrmrd.File(output_file, 'r') as output_file:
+            with ismrmrd.File(reference_file, 'r') as reference_file:
+
+                output_images = output_file[output_group].images or []
+                reference_images = reference_file[reference_group].images or []
+
+                for output_image, reference_image in itertools.zip_longest(output_images, reference_images):
+                    check_image_header(output_image, reference_image)
+                    check_image_metadata(output_image, reference_image)
+
+    except OSError as e:
+        return Failure, str(e)
+    except RuntimeError as e:
+        return Failure, str(e)
+
+    return None, "Output headers and metadata matched reference"
 
 
 def error_handlers(args, config):
@@ -414,12 +522,14 @@ def run_gadgetron_client(args, config, section):
 
 
 def validate_client_output(args, config, section):
+
+    reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
+
     def validate_output_action(cont, *, client_output, status=Passed, **state):
-        reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
         result, reason = validate_output(output_file=client_output,
                                          reference_file=reference_file,
-                                         output_dataset=config[section]['output_dataset'],
-                                         reference_dataset=config[section]['reference_dataset'],
+                                         output_group=config[section]['output_images'],
+                                         reference_group=config[section]['reference_images'],
                                          value_threshold=float(config[section]['value_comparison_threshold']),
                                          scale_threshold=float(config[section]['scale_comparison_threshold']))
 
@@ -431,7 +541,22 @@ def validate_client_output(args, config, section):
             **state
         )
 
+    def validate_output_metadata(cont, *, client_output, status=Passed, **state):
+        result, reason = validate_metadata(output_file=client_output,
+                                           reference_file=reference_file,
+                                           output_group=config[section]['output_images'],
+                                           reference_group=config[section]['reference_images'])
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            client_output=client_output,
+            status=status if result is None else Failure,
+            **state
+        )
+
     yield validate_output_action
+    yield validate_output_metadata
 
 
 def validate_dataset_output(args, config, section):
