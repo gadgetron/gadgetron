@@ -32,6 +32,9 @@ namespace Gadgetron::Core::IO {
     template<class T>
     void read(std::istream &stream, hoNDArray<T> &array);
 
+    template<class... ARGS>
+    void read(std::istream& stream, Core::tuple<ARGS...>& tup);
+
     template<class T>
     std::enable_if_t<boost::hana::Struct<T>::value> read(std::istream &istream, T &x);
 
@@ -56,6 +59,9 @@ namespace Gadgetron::Core::IO {
 
     template<class T>
     void write(std::ostream &ostream, const std::set<T> &val);
+
+    template<class... ARGS>
+    void write(std::ostream& ostream, const std::tuple<ARGS...>& tup);
 
     template<class T>
     std::enable_if_t<boost::hana::Struct<T>::value, void> write(std::ostream &ostream, const T &x);

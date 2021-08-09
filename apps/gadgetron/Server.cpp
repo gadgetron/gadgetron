@@ -1,7 +1,6 @@
 
 #include <boost/asio.hpp>
 
-
 #include <Context.h>
 
 #include "log.h"
@@ -16,20 +15,17 @@ using namespace Gadgetron::Server;
 
 
 Server::Server(
-        const boost::program_options::variables_map &args
-) : args(args) {}
+        const boost::program_options::variables_map &args,
+        std::string address
+) : args(args), storage_address(std::move(address)) {}
 
-void Server::serve() {
+[[noreturn]] void Server::serve() {
 
     Gadgetron::Core::Context::Paths paths{args["home"].as<path>(), args["dir"].as<path>()};
     GINFO_STREAM("Gadgetron home directory: " << paths.gadgetron_home);
     GINFO_STREAM("Gadgetron working directory: " << paths.working_folder);
 
-#if(BOOST_VERSION >= 107000)
     boost::asio::io_context executor;
-#else
-    boost::asio::io_service executor;
-#endif
     boost::asio::ip::tcp::endpoint local(Info::tcp_protocol(), args["port"].as<unsigned short>());
     boost::asio::ip::tcp::acceptor acceptor(executor, local);
 
@@ -41,6 +37,6 @@ void Server::serve() {
 
         GINFO_STREAM("Accepted connection from: " << socket->remote_endpoint().address());
 
-        Connection::handle(paths, args, Gadgetron::Connection::stream_from_socket(std::move(socket)));
+        Connection::handle(paths, args, storage_address, Gadgetron::Connection::stream_from_socket(std::move(socket)));
     }
 }

@@ -5,7 +5,6 @@ endif ()
 
 
 add_library(gadgetron_toolbox_cpudwt SHARED 
-    cpudwt_export.h 
     hoNDWavelet.h
     hoNDWavelet.cpp
     hoNDHarrWavelet.h
@@ -36,7 +35,6 @@ install(TARGETS gadgetron_toolbox_cpudwt
 )
 
 install(FILES
-    cpudwt_export.h 
     hoNDWavelet.h
     hoNDHarrWavelet.h
     hoNDRedundantWavelet.h

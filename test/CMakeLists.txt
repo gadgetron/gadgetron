@@ -28,6 +28,7 @@ include(GoogleTest)
             cmr_analytical_strain_test.cpp
             #lapack_test.cpp
             hoSDC_test.cpp
+            nhlbi_compression_tests.cpp
             gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp gadgets/FlagTriggerParsing_test.cpp  )
 
     if (PYTHONLIBS_FOUND)
@@ -93,7 +94,7 @@ include(GoogleTest)
                 python)
     endif ()
 
-    gtest_add_tests(TARGET test_all SOURCES ${test_src_files})
+    gtest_discover_tests(test_all)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 

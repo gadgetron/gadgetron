@@ -1,6 +1,5 @@
 #include "Channel.h"
 
-
 namespace Gadgetron::Core {
 
     class Channel::Closer {

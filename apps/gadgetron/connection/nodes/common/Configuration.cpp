@@ -21,11 +21,13 @@ namespace Gadgetron::Server::Connection::Nodes {
     }
 
     static void send_config(std::iostream &stream, const Serializable &config) {
-        Core::visit([&stream](auto &config) {
-                                IO::write(stream, CONFIG);
-                                IO::write_string_to_stream<uint32_t>(stream, serialize_config(config));
-                            },
-                            config);
+        Core::visit(
+            [&stream](auto &config) {
+              IO::write(stream, CONFIG);
+              IO::write_string_to_stream<uint32_t>(stream, serialize_config(config));
+            },
+            config
+        );
     }
 
     void Configuration::send(std::iostream &stream) const {

@@ -550,11 +550,11 @@ void hoNDHarrWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_t E1,
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUDWT hoNDHarrWavelet<float>;
-template class EXPORTCPUDWT hoNDHarrWavelet<double>;
-template class EXPORTCPUDWT hoNDHarrWavelet< std::complex<float> >;
-template class EXPORTCPUDWT hoNDHarrWavelet< std::complex<double> >;
-template class EXPORTCPUDWT hoNDHarrWavelet< complext<float> >;
-template class EXPORTCPUDWT hoNDHarrWavelet< complext<double> >;
+template class hoNDHarrWavelet<float>;
+template class hoNDHarrWavelet<double>;
+template class hoNDHarrWavelet< std::complex<float> >;
+template class hoNDHarrWavelet< std::complex<double> >;
+template class hoNDHarrWavelet< complext<float> >;
+template class hoNDHarrWavelet< complext<double> >;
 
 }
