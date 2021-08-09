@@ -37,10 +37,7 @@ namespace Gadgetron
             size_t nlines_new = girf_kernel.get_size(0) * std::round(girf_sampling_time / gradient_sampling_time); //std::max(girf_kernel.get_size(0) * girf_sampling_time / gradient_sampling_time,nlines * std::round(girf_sampling_time / gradient_sampling_time)); // This logic here may need to be checked
             size_t nbatches = gradients.get_size(1);
 
-            //auto padded_kernel=GIRF::zeropadding(girf_kernel,int(girf_sampling_time/gradient_sampling_time));
-
             auto padded_kernel = pad<std::complex<float>, 1>(uint64d1(nlines_new), girf_kernel, 0);
-            //auto padded_kernel = GIRF::zeropadding(girf_kernel, 5);
             hoNDArray<vector_td<float, D>> result(gradients.get_dimensions());
 
             hoNDArray<float> filter;
@@ -66,36 +63,17 @@ namespace Gadgetron
                     for (size_t k = 0; k < 3; k++)
                         rotated(i, k) = gradient_vector[k];
                 }
-                float maxTx;
-                float minTx;
-                auto temp = real(permute(rotated, {0, 1}));
-                Gadgetron::maxValue(hoNDArray<float>(temp(slice, 0)), maxTx);
-                Gadgetron::minValue(hoNDArray<float>(temp(slice, 0)), minTx);
-
-                if (maxTx > 100 || minTx < -100)
-                    GERROR("What the heck");
-                // Add filter to smooth out the transition for the gradients after zero-padding
-                // This reduces ringing !
+                
+                // smooth out the transition for the gradients to zero -> reduce riggning with zero-padding
                 for (size_t k = 0; k < 3; k++)
                 {
                     for (size_t i = nlines; i < nlines + filter.size() / 2; i++)
                     {
-                        rotated(i, k) = filter[filter.size() / 2 + i - nlines] * (rotated(nlines - 1, k)); // last term for fft scaling
-                        if (real(rotated(i, k)) > 100 || real(rotated(i, k)) < -100)
-                        {
-                            GERROR("What the heck");
-                        }
+                        rotated(i, k) = filter[filter.size() / 2 + i - nlines] * (rotated(nlines - 1, k)); // last term for fft scaling 
                     }
                     std::rotate(rotated.begin() + k * rotated.get_size(0), rotated.begin() + k * rotated.get_size(0) + (nlines / 2 + nlines_new / 2),
                                 rotated.begin() + (k + 1) * rotated.get_size(0));
                 }
-
-                temp = real(permute(rotated, {0, 1}));
-                Gadgetron::maxValue(hoNDArray<float>(temp(slice, 0)), maxTx);
-                Gadgetron::minValue(hoNDArray<float>(temp(slice, 0)), minTx);
-
-                if (maxTx > 100 || minTx < -100)
-                    GERROR("What the heck");
 
                 hoNDFFT<float>::instance()->fftshift1D(rotated);
                 hoNDFFT<float>::instance()->fft1(rotated);
@@ -116,18 +94,11 @@ namespace Gadgetron
 
                 size_t full_domain = size_t(std::round(1.0 / (2 * frequency_resolution * gradient_sampling_time))) * 2;
 
-                // rotated = *pad<std::complex<float>, 1>(uint64d1(full_domain), &rotated);
 
                 hoNDFFT<float>::instance()->ifftshift1D(rotated);
                 hoNDFFT<float>::instance()->ifft1(rotated);
                 hoNDFFT<float>::instance()->ifftshift1D(rotated);
 
-                temp = real(permute(rotated, {0, 1}));
-                Gadgetron::maxValue(hoNDArray<float>(temp(slice, 0)), maxTx);
-                Gadgetron::minValue(hoNDArray<float>(temp(slice, 0)), minTx);
-
-                if (maxTx > 100 || minTx < -100)
-                    GERROR("What the heck");
 
                 for (size_t k = 0; k < 3; k++)
                 {
@@ -208,21 +179,6 @@ namespace Gadgetron
             return girf_correct_D(gradients, girf_kernel, rotation_matrix, gradient_sampling_time, girf_sampling_time, TE);
         }
 
-        hoNDArray<std::complex<float>> zeropadding(hoNDArray<std::complex<float>> input, int zpadFactor)
-        {
-            using namespace Gadgetron::Indexing;
-            hoNDArray<std::complex<float>> output(input.get_size(0) * zpadFactor, input.get_size(1));
-            std::fill(output.begin(), output.end(), 0);
-            for (int ii = 0; ii < output.get_size(0); ii++)
-            {
-                if (ii + 1 > output.get_size(0) / 2 - input.get_size(0) / 2 && ii < output.get_size(0) / 2 + (input.get_size(0) / 2))
-                {
-                    output(ii, slice) = input(ii - (output.get_size(0) / 2 - input.get_size(0) / 2), slice);
-                    //   GDEBUG("output [%d]: value: %0.2f + i %0.2f\n", ii, real(output[ii]), imag(output[ii]));
-                }
-            }
-            return output;
-        }
         hoNDArray<std::complex<float>> readGIRFKernel(std::string folder)
         {
             using namespace std;

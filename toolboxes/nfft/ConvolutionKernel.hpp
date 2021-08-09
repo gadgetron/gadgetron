@@ -308,41 +308,10 @@ namespace Gadgetron
         float kernelWidth)
       : ConvolutionKernel<REAL, D, JincKernel>(0.0)
     {
-        // this->matrix_size_ = matrix_size;
-        // this->matrix_size_os_ = matrix_size_os;
-        // this->os_factor_ = vector_td<REAL, D>(matrix_size_os) /
-        //                    vector_td<REAL, D>(matrix_size);
-        // The width is not chosen by the user in this kernel; instead it
-        // depends on the oversampling ratio. To keep the kernel isotropic, we
-        // take the maximum oversampling factor. This should be very similar in
-        // all axes anyway.
-        // std::vector<REAL> temp;
-        
-        // for (auto d=0; d<D; d++)
-        //     temp.push_back(kernelWidth);
-            //this -> os_factor_.push_back(kernelWidth);
-        //this -> os_factor_ = from_std_vector<size_t, 2>(temp);
+
         this->radius_ = this->norm_radius * kernelWidth;
         this->width_ = this->radius_ * REAL(2);
     }
-
-
-    // template<class REAL, unsigned int D>
-    // JincKernel<REAL, D>::JincKernel(
-    //     float kernelWidth)
-    //   : ConvolutionKernel<REAL, D, JincKernel>(0.0)
-    // {
-    //     // this->matrix_size_ = matrix_size;
-    //     // this->matrix_size_os_ = vector_td<unsigned int, D>(
-    //     //     vector_td<REAL, D>(matrix_size) * os_factor);
-    //     // this->os_factor_ = vector_td<REAL, D>(os_factor);
-    //     // The width is not chosen by the user in this kernel; instead it
-    //     // depends on the oversampling ratio. To keep the kernel isotropic, we
-    //     // take the maximum oversampling factor. This should be very similar in
-    //     // all axes anyway.
-    //     this->radius_ = this->norm_radius * kernelWidth;
-    //     this->width_ = this->radius_ * REAL(2);
-    // }
 
 
     template<class REAL, unsigned int D>
