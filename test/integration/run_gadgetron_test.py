@@ -8,6 +8,7 @@ import os
 environment = dict(os.environ)
 
 import sys
+import glob
 import shutil
 
 import argparse
@@ -20,8 +21,11 @@ import functools
 import json
 import h5py
 import numpy
+import string
+import ismrmrd
 import pathlib
 import tempfile
+import itertools
 import subprocess
 
 default_config_values = {
@@ -31,15 +35,43 @@ default_config_values = {
         'value_comparison_threshold': '0.01',
         'scale_comparison_threshold': '0.01',
         'node_port_base': '9050',
+        'dataset_group': 'dataset',
+        'reference_group': 'dataset',
     }
 }
 
 Passed = "Passed", 0
 Failure = "Failure", 1
 
+_codes = {
+    'red': '\033[91m',
+    'green': '\033[92m',
+    'cyan': '\033[96m',
+    'end': '\033[0m',
+}
+
+
+def _colors_disabled(text, color):
+    return text
+
+
+def _colors_enabled(text, color):
+    return "{begin}{text}{end}".format(
+        begin=_codes.get(color),
+        text=text,
+        end=_codes.get('end'),
+    )
+
+
+def report_test(*, color_handler, section, result, reason):
+    print("{section:<26} [{status}] ({reason})".format(
+        section=section,
+        status=color_handler("FAILURE", 'red') if result else color_handler("OK", 'green'),
+        reason=reason,
+    ))
+
 
 def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measurement, flag=None):
-
     command = ["siemens_to_ismrmrd", "-X",
                "-f", input,
                "-m", parameters,
@@ -54,7 +86,7 @@ def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measu
                    check=True)
 
 
-def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, log, additional_arguments):
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, group, log, additional_arguments):
     print("Passing data to Gadgetron: {} -> {}".format(input, output))
 
     command = ["gadgetron_ismrmrd_client",
@@ -62,8 +94,7 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                "-p", gadgetron.port,
                "-f", input,
                "-o", output,
-               "-c", configuration,
-               "-G", configuration]
+               "-G", group] + configuration
 
     if additional_arguments:
         command = command + additional_arguments.split()
@@ -96,6 +127,32 @@ def start_gadgetron_instance(*, log, port, storage_address, env=environment):
                             env=env)
     time.sleep(2)
     return proc
+
+
+def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_group):
+
+    try:
+        dataset_file = ismrmrd.File(dataset_file, 'r')
+    except OSError as e:
+        return Failure, "Failed to read dataset file '{}'".format(dataset_file)
+
+    try:
+        reference_file = ismrmrd.File(reference_file, 'r')
+    except OSError as e:
+        return Failure, "Failed to read reference file '{}'".format(reference_file)
+
+    if not dataset_file[dataset_group].header == reference_file[reference_group].header:
+        return Failure, "Dataset header did not match reference header"
+
+    for attribute in ['acquisitions', 'waveforms', 'images']:
+
+        dataset = getattr(dataset_file[dataset_group], attribute) or []
+        reference = getattr(reference_file[reference_group], attribute) or []
+
+        if not list(dataset) == list(reference):
+            return Failure, "Dataset {attr} did not match reference {attr}".format(attr=attribute)
+
+    return None, "Dataset matched reference"
 
 
 def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
@@ -133,7 +190,6 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
 
 
 def error_handlers(args, config):
-
     def handle_subprocess_errors(cont, **state):
         try:
             return cont(**state)
@@ -147,7 +203,6 @@ def error_handlers(args, config):
 
 
 def clear_test_folder(args, config):
-
     def clear_test_folder_action(cont, **state):
         if os.path.exists(args.test_folder):
             shutil.rmtree(args.test_folder)
@@ -159,7 +214,6 @@ def clear_test_folder(args, config):
 
 
 def ensure_storage_server(args, config):
-
     class Storage:
         def __init__(self, address):
             self.address = address
@@ -184,7 +238,6 @@ def ensure_storage_server(args, config):
 
 
 def start_additional_nodes(args, config):
-
     if args.external:
         return
 
@@ -224,7 +277,6 @@ def start_additional_nodes(args, config):
 
 
 def ensure_gadgetron_instance(args, config):
-
     class Gadgetron:
         def __init__(self, *, host, port):
             self.host = host
@@ -234,7 +286,8 @@ def ensure_gadgetron_instance(args, config):
 
     def start_gadgetron_action(cont, *, storage, env=environment, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=gadgetron.port, storage_address=storage.address, env=env) as instance:
+            with start_gadgetron_instance(log=log, port=gadgetron.port, storage_address=storage.address,
+                                          env=env) as instance:
                 try:
                     return cont(gadgetron=gadgetron, storage=storage, **state)
                 finally:
@@ -250,7 +303,6 @@ def ensure_gadgetron_instance(args, config):
 
 
 def copy_input_data(args, config, section):
-
     destination_file = os.path.join(args.test_folder, section + '.copied.h5')
 
     def copy_input_action(cont, **state):
@@ -266,13 +318,13 @@ def copy_input_data(args, config, section):
 
 
 def convert_siemens_data(args, config, section):
-
     destination_file = os.path.join(args.test_folder, section + '.converted.h5')
 
     def convert_siemens_data_action(cont, **state):
         source_file = os.path.join(args.data_folder, config[section]['data_file'])
 
-        print("Converting Siemens data: {} (measurement {}) -> {}".format(source_file, config[section]['measurement'], destination_file))
+        print("Converting Siemens data: {} (measurement {}) -> {}".format(source_file, config[section]['measurement'],
+                                                                          destination_file))
 
         siemens_to_ismrmrd(args.echo_handler,
                            input=source_file,
@@ -291,7 +343,34 @@ def convert_siemens_data(args, config, section):
 def run_gadgetron_client(args, config, section):
     output_file = os.path.join(args.test_folder, section + '.output.h5')
 
-    def send_data_action(cont, *, gadgetron, client_input, processing_time=0, **state):
+    def prepare_config_action(cont, **state):
+        state.update(
+            group=config[section]['configuration'],
+            configuration=['-c', config[section]['configuration']],
+        )
+        return cont(**state)
+
+    def prepare_template_action(cont, **state):
+
+        template_file = os.path.join(args.template_folder, config[section]['template'])
+        configuration_file = os.path.join(args.test_folder, section + '.config.xml')
+
+        with open(template_file, 'r') as input:
+            with open(configuration_file, 'w') as output:
+                output.write(
+                    string.Template(input.read()).substitute(
+                        test_folder=os.path.abspath(args.test_folder),
+                        # Expand substitution list as needed.
+                    )
+                )
+
+        state.update(
+            group=section,
+            configuration=['-C', configuration_file],
+        )
+        return cont(**state)
+
+    def send_data_action(cont, *, gadgetron, client_input, configuration, group, processing_time=0, **state):
 
         with open(os.path.join(args.test_folder, section + '.client.log'), 'w') as log:
 
@@ -306,7 +385,8 @@ def run_gadgetron_client(args, config, section):
                                    gadgetron,
                                    input=client_input,
                                    output=output_file,
-                                   configuration=config[section]['configuration'],
+                                   configuration=configuration,
+                                   group=group,
                                    log=log,
                                    additional_arguments=additional_args)
 
@@ -320,17 +400,21 @@ def run_gadgetron_client(args, config, section):
                 gadgetron=gadgetron,
                 client_input=client_input,
                 client_output=output_file,
+                configuration=configuration,
+                group=group,
                 processing_time=processing_time + duration
             )
             return cont(**state)
+
+    yield from (action for key, action in [('configuration', prepare_config_action),
+                                           ('template', prepare_template_action)]
+                if key in config[section])
 
     yield send_data_action
 
 
 def validate_client_output(args, config, section):
-
     def validate_output_action(cont, *, client_output, status=Passed, **state):
-
         reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
         result, reason = validate_output(output_file=client_output,
                                          reference_file=reference_file,
@@ -339,10 +423,7 @@ def validate_client_output(args, config, section):
                                          value_threshold=float(config[section]['value_comparison_threshold']),
                                          scale_threshold=float(config[section]['scale_comparison_threshold']))
 
-        if result is not None:
-            print("{:<26} [FAILED] ({})".format(section, reason))
-        else:
-            print("{:<26} [OK] ({})".format(section, reason))
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
 
         return cont(
             client_output=client_output,
@@ -353,16 +434,64 @@ def validate_client_output(args, config, section):
     yield validate_output_action
 
 
-def prepare_sequence_actions(args, config):
+def validate_dataset_output(args, config, section):
 
+    def find_dataset_action(cont, status=Passed, **state):
+
+        dataset_prefix = os.path.join(args.test_folder, config[section]['dataset_prefix'])
+        dataset_files = glob.glob(dataset_prefix + "*")
+
+        rules = [(lambda files: len(files) == 0, "Found no dataset with prefix: {}".format(dataset_prefix)),
+                 (lambda files: len(files) > 1, "Too many datasets with prefix: {}".format(dataset_prefix))]
+
+        def check_rules():
+            for test, reason in rules:
+                if test(dataset_files):
+                    return Failure, reason, None
+            return None, "Found appropriate dataset", dataset_files[0]
+
+        result, reason, dataset_file = check_rules()
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            dataset_file=dataset_file if dataset_files else None,
+            status=status if result is None else Failure,
+            **state
+        )
+
+    def validate_dataset_action(cont, *, dataset_file, status=Passed, **state):
+
+        if not dataset_file:
+            return cont(status=status, **state)
+
+        reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
+        result, reason = validate_dataset(dataset_file=dataset_file,
+                                          dataset_group=config[section]['dataset_group'],
+                                          reference_file=reference_file,
+                                          reference_group=config[section]['reference_group'])
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            status=status if result is None else Failure,
+            **state
+        )
+
+    yield find_dataset_action
+    yield validate_dataset_action
+
+
+def prepare_sequence_actions(args, config):
     action_factories = {
         'copy': lambda section: copy_input_data(args, config, section),
         'siemens': lambda section: convert_siemens_data(args, config, section),
         'client': lambda section: run_gadgetron_client(args, config, section),
-        'test': lambda section: validate_client_output(args, config, section)
+        'equals': lambda section: validate_dataset_output(args, config, section),
+        'test': lambda section: validate_client_output(args, config, section),
     }
 
-    pattern = re.compile(r"(?P<sequence_key>\w+)\.(?P<action_key>(copy)|(siemens)|(client)|(test))(\.\w+)*")
+    pattern = re.compile(r"(?P<sequence_key>\w+)\.(?P<action_key>(copy)|(siemens)|(client)|(equals)|(test))(\.\w+)*")
 
     def prepare_sequence_action(section):
         m = re.match(pattern, section)
@@ -425,15 +554,22 @@ def main():
     parser.add_argument('-e', '--external', action='store_true', default=False,
                         help="External, do not start Gadgetron")
 
+    parser.add_argument('-c', '--template-folder',
+                        type=str, default='config',
+                        help="Look for test configuration templates in the specified folder")
     parser.add_argument('-d', '--data-folder',
                         type=str, default='data',
                         help="Look for test data in the specified folder")
     parser.add_argument('-t', '--test-folder',
                         type=str, default='test',
-                        help="Save Gadgetron and Client output and logs to specified folder")
+                        help="Save Gadgetron output and client logs to specified folder")
 
     parser.add_argument('--force', action='store_true', default=False,
                         help="Do not query Gadgetron capabilities; just run the test.")
+
+    parser.add_argument('--disable-color', dest='color_handler', action='store_const',
+                        const=_colors_disabled, default=_colors_enabled,
+                        help="Disable colors in the test script output.")
 
     parser.add_argument('--echo-commands', dest='echo_handler', action='store_const',
                         const=lambda cmd: print(' '.join(cmd)), default=lambda *_: None,
@@ -455,7 +591,7 @@ def main():
     action_chain = chain_actions(build_actions(args, config_parser))
     result, return_code = action_chain(test=args.test, name=args.test.stem)
 
-    print("Test status: {}".format(result))
+    print("Test status: {}".format(args.color_handler(result, 'red' if return_code else 'green')))
     return return_code
 
 
