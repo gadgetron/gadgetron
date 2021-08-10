@@ -22,6 +22,9 @@ namespace Gadgetron::Server::Connection::Nodes {
                 std::function<void()> on_close,
                 std::function<void(std::string message)> on_error
         ) const;
+
+        bool accepts(const Core::Message& message);
+
     private:
         const Readers readers;
         const Writers writers;

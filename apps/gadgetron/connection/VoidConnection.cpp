@@ -8,6 +8,7 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
+#include "RESTStorageClient.h"
 
 
 namespace {
@@ -31,16 +32,13 @@ namespace Gadgetron::Server::Connection::VoidConnection {
 
     void process(
             std::iostream &stream,
-            const Core::Context::Paths &paths,
+            const Core::StreamContext &context,
             const Config &config,
             ErrorHandler &error_handler
     ) {
         GINFO_STREAM("Connection state: [VOID]");
 
-        // Please note the empty header initialization crime. TODO: Fight crime.
-        Core::StreamContext context{Context::Header{}, paths,StreamContext::Args{}};
         Loader loader{context};
-
 
         auto ochannel = make_channel<MessageChannel>();
         auto ichannel = make_channel<MessageChannel>();
@@ -59,7 +57,7 @@ namespace Gadgetron::Server::Connection::VoidConnection {
             OutputChannel removed = std::move(ichannel.output);
         }
 
-        node->process(std::move(ichannel.input) , std::move(ochannel.output) ,error_handler);
+        node->process(std::move(ichannel.input), std::move(ochannel.output), error_handler);
         output_thread.join();
     }
 }

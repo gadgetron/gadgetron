@@ -24,6 +24,26 @@ reqs = {
     'gpu_memory': 'cuda'
 }
 
+_codes = {
+    'red': '\033[91m',
+    'green': '\033[92m',
+    'cyan': '\033[96m',
+    'bold': '\033[1m',
+    'end': '\033[0m',
+}
+
+
+def _colors_disabled(text, color):
+    return text
+
+
+def _colors_enabled(text, color):
+    return "{begin}{text}{end}".format(
+        begin=_codes.get(color),
+        text=text,
+        end=_codes.get('end'),
+    )
+
 
 def split_tag_list(arg):
     return re.split(r"[,;]", arg) if arg else []
@@ -33,7 +53,7 @@ def output_csv(stats, filename):
     print("Writing stats to: {}".format(filename))
 
     with open(filename, 'w') as f:
-        writer = csv.DictWriter(f, ['test', 'processing_time'])
+        writer = csv.DictWriter(f, ['test', 'processing_time', 'status'])
         writer.writeheader()
         writer.writerows(stats)
 
@@ -148,10 +168,10 @@ def read_test_details(filename):
 
     return {
         'file': filename,
-        'tags': set(tags_from_tags(config['TAGS']) +
-                    tags_from_reqs(config['REQUIREMENTS']) +
+        'tags': set(tags_from_tags(config['tags']) +
+                    tags_from_reqs(config['requirements']) +
                     ['all']),
-        'reqs': rules_from_reqs(config['REQUIREMENTS'])
+        'reqs': rules_from_reqs(config['requirements'])
     }
 
 
@@ -198,6 +218,8 @@ def main():
     def ignore_failure(test):
         args.echo_log()
         failed.append(test)
+        with open('test/stats.json') as f:
+            stats.append(json.loads(f.read()))
 
     def exit_on_failure(_):
         args.echo_log()
@@ -239,6 +261,10 @@ def main():
                         action='store_const', const=echo_log, default=do_not_echo_log,
                         help="Send test logs to stdout on a failed test.")
 
+    parser.add_argument('--disable-color', dest='color_handler', action='store_const',
+                        const=_colors_disabled, default=_colors_enabled,
+                        help="Disable colors in the test script output.")
+
     parser.add_argument('--ignore-requirements', type=split_tag_list, default='none', metavar='tags',
                         help="Run tests with the specified tags regardless of Gadgetron capabilities.")
 
@@ -266,13 +292,14 @@ def main():
             print("\t{} ({})".format(test.get('file'), message))
 
     for i, test in enumerate(tests, start=1):
-        print("\nTest {} of {}: {}\n".format(i, len(tests), test.get('file')))
+        print(args.color_handler("\nTest {} of {}: {}\n".format(i, len(tests), test.get('file')), 'bold'))
 
+        disable_color = ['--disable-colors'] if args.color_handler == _colors_disabled else []
         command = [sys.executable, str(subscript),
                    '-a', str(args.host),
                    '-d', str(args.data_folder),
                    '-t', str(args.test_folder),
-                   '-p', str(args.port)] + args.external + [test.get('file')]
+                   '-p', str(args.port)] + args.external + disable_color + [test.get('file')]
 
         with subprocess.Popen(command) as proc:
             try:

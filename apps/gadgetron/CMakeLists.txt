@@ -8,8 +8,6 @@ add_executable(gadgetron
         Server.h
         Connection.cpp
         Connection.h
-        paths.cpp
-        paths.h
         initialization.cpp
         initialization.h
         system_info.cpp
@@ -65,10 +63,11 @@ add_executable(gadgetron
         connection/nodes/distributed/Worker.cpp
         connection/nodes/distributed/Worker.h
         connection/nodes/common/Closer.h
-        connection/nodes/distributed/Pool.cpp connection/core/Processable.cpp)
+        connection/nodes/distributed/Pool.cpp connection/core/Processable.cpp storage.h storage.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core
+        gadgetron_storage
         gadgetron_toolbox_log
         Boost::system
         Boost::filesystem

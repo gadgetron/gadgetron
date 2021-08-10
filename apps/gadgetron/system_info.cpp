@@ -5,6 +5,7 @@
 #include "connection/nodes/external/Python.h"
 #include "connection/nodes/external/Matlab.h"
 #include "log.h"
+#include "Process.h"
 
 
 #if defined(_WIN32)
@@ -152,7 +153,7 @@ namespace Gadgetron::Server::Info {
               os << "      - Device " << dev << ": " << CUDA::cuda_device_name(dev) << std::endl;
               os << "         + CUDA Driver Version / Runtime Version: " << CUDA::cuda_driver_version() << "/" << CUDA::cuda_runtime_version() << std::endl;
               os << "         + CUDA Capability Major / Minor version number: " <<  CUDA::cuda_device_capabilities(dev) << std::endl;
-              os << "         + Total amount of global GPU memory: " << CUDA::cuda_device_memory(dev) / (1024 * 1024) << " MB" << std::endl;
+              os << "         + Total amount of global GPU memory: " << std::to_string(CUDA::cuda_device_memory(dev) / (1024 * 1024)) << " MB" << std::endl;
             }
         }
     }
@@ -197,7 +198,7 @@ namespace Gadgetron::Server::Info {
         os << "Gadgetron Version Info" << std::endl;
         os << "  -- Version            : " << gadgetron_version().c_str() << std::endl;
         os << "  -- Git SHA1           : " << gadgetron_build().c_str() << std::endl;
-        os << "  -- System Memory size : " << system_memory() / (1024 * 1024) << " MB" << std::endl;
+        os << "  -- System Memory size : " << std::to_string(system_memory() / (1024 * 1024)) << " MB" << std::endl;
         os << "  -- Python Support     : " << (python_support() ? "YES" : "NO") << std::endl;
         os << "  -- Matlab Support     : " << (matlab_support() ? "YES" : "NO") << std::endl;
         CUDA::print_cuda_information(os);
@@ -209,7 +210,7 @@ namespace Gadgetron::Server::Info {
             std::future<std::string> output_stream;
 
             // cat /sys/module/ipv6/parameters/disable
-            auto error = boost::process::system(
+            auto error = Gadgetron::Process::system(
                 boost::process::search_path("cat"),
                 boost::process::args={"/sys/module/ipv6/parameters/disable"},
                 boost::process::std_in.close(),

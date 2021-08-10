@@ -14,6 +14,7 @@
 #include <boost/spirit/include/qi.hpp>
 
 #include <string>
+#include <Process.h>
 
 BOOST_FUSION_ADAPT_STRUCT(
     Gadgetron::Server::Connection::Nodes::Remote,
@@ -74,7 +75,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
         std::error_code error_code;
         std::future<std::string> output;
-        boost::process::system(
+        Process::system(
                 worker_discovery_command,
                 boost::process::std_out > output,
                 boost::process::std_err > boost::process::null,

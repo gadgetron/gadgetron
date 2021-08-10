@@ -21,15 +21,19 @@ using tcp = boost::asio::ip::tcp;
 
 namespace {
 
-    const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const Context &)>> modules{
+    const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const StreamContext &)>> modules{
             {"python", start_python_module},
             {"matlab", start_matlab_module}
     };
 
-    void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external) {
+    void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external, OutputChannel bypass ) {
         auto closer = make_closer(external);
         for (auto message : input) {
-            external->push_message(std::move(message));
+            if (external->accepts(message)) {
+                external->push_message(std::move(message));
+            } else {
+                bypass.push_message(std::move(message));
+            }
         }
     }
 
@@ -50,7 +54,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         io_service.dispatch([=]() { acceptor->close(); });
     }
 
-    std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const Context &context) {
+    std::shared_ptr<ExternalChannel> External::open_connection(Config::Connect connect, const StreamContext &context) {
         GINFO_STREAM("Connecting to external module on address: " << connect.address << ":" << connect.port);
         return std::make_shared<ExternalChannel>(
                 Gadgetron::Connection::remote_stream(connect.address, connect.port),
@@ -59,7 +63,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         );
     }
 
-    std::shared_ptr<ExternalChannel> External::open_connection(Config::Execute execute, const Context &context) {
+    std::shared_ptr<ExternalChannel> External::open_connection(Config::Execute execute, const StreamContext &context) {
 
         tcp::endpoint endpoint(Info::tcp_protocol(), 0);
         auto acceptor = std::make_shared<tcp::acceptor>(io_service, endpoint);
@@ -98,7 +102,7 @@ namespace Gadgetron::Server::Connection::Nodes {
 
     std::shared_ptr<ExternalChannel> External::open_external_channel(
             const Config::External &config,
-            const Context &context
+            const StreamContext &context
     ) {
         return Core::visit(
                 [&, this](auto action) { return this->open_connection(action, context); },
@@ -111,8 +115,8 @@ namespace Gadgetron::Server::Connection::Nodes {
             const Core::StreamContext &context,
             Loader &loader
     ) : serialization(std::make_shared<Serialization>(
-                loader.load_default_and_additional_readers(config),
-                loader.load_default_and_additional_writers(config)
+                loader.load_default_or_custom_readers(config),
+                loader.load_default_or_custom_writers(config)
         )),
         configuration(std::make_shared<Configuration>(
                 context,
@@ -134,8 +138,8 @@ namespace Gadgetron::Server::Connection::Nodes {
         std::shared_ptr<ExternalChannel> external = channel.get();
 
         auto input_thread = error_handler.run(
-                [=](auto input) { ::process_input(std::move(input), external); },
-                std::move(input)
+                [=](auto input, auto output) { ::process_input(std::move(input), external, std::move(output)); },
+                std::move(input), split(output)
         );
 
         auto output_thread = error_handler.run(

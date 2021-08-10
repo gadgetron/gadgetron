@@ -43,7 +43,7 @@ Gadgetron::Core::Message Gadgetron::Server::Connection::Nodes::PureStream::proce
             pure_gadgets.begin(),
             pure_gadgets.end(),
             std::move(message),
-            [](auto& message, auto& gadget) {
+            [](auto&& message, auto&& gadget) {
                 return gadget->process_function(std::move(message));
             }
     );

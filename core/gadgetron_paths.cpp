@@ -1,8 +1,14 @@
 #include "log.h"
-#include "paths.h"
+#include "gadgetron_paths.h"
 
 #if defined _WIN32 || _WIN64
 #include <libloaderapi.h>
+#else
+extern "C" {
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+}
 #endif
 
 namespace {
@@ -39,6 +45,13 @@ namespace {
 
         return std::string(buffer);
     }
+
+    boost::filesystem::path get_data_directory(){
+         auto appdata = std::getenv("APPDATA");
+
+            return boost::filesystem::path(appdata) / "gadgetron";
+
+    }
 #else
     std::string get_executable_path(size_t buffer_size = 1024) {
 
@@ -56,6 +69,14 @@ namespace {
         }
 
         return std::string(buffer.get(), size_t(len));
+    }
+
+    boost::filesystem::path get_data_directory(){
+        auto home_dir = std::getenv("HOME");
+        if (!home_dir){
+            home_dir = getpwuid(getuid())->pw_dir;
+        }
+        return boost::filesystem::path(home_dir) / ".gadgetron";
     }
 #endif
 }
@@ -92,6 +113,14 @@ namespace Gadgetron::Server {
         GDEBUG_STREAM("Default Gadgetron home: " << gadgetron_home);
 
         return gadgetron_home;
+    }
+
+    const boost::filesystem::path default_database_folder() {
+        return default_storage_folder() / "database";
+    }
+
+    const boost::filesystem::path default_storage_folder() {
+        return get_data_directory() / "storage";
     }
 }
 

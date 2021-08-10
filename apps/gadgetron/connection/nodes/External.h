@@ -37,9 +37,9 @@ namespace Gadgetron::Server::Connection::Nodes {
         const std::string& name() override;
 
     private:
-        std::shared_ptr<ExternalChannel> open_connection(Config::Execute, const Core::Context &);
-        std::shared_ptr<ExternalChannel> open_connection(Config::Connect, const Core::Context &);
-        std::shared_ptr<ExternalChannel> open_external_channel(const Config::External &, const Core::Context &);
+        std::shared_ptr<ExternalChannel> open_connection(Config::Execute, const Core::StreamContext &);
+        std::shared_ptr<ExternalChannel> open_connection(Config::Connect, const Core::StreamContext &);
+        std::shared_ptr<ExternalChannel> open_external_channel(const Config::External &, const Core::StreamContext &);
 
         void monitor_child(std::shared_ptr<boost::process::child>, std::shared_ptr<boost::asio::ip::tcp::acceptor>);
 
