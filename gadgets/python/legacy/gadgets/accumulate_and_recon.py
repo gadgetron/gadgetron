@@ -40,6 +40,7 @@ class AccumulateAndRecon(Gadget):
             image = image * np.product(image.shape)*100 #Scaling for the scanner
             #Create a new image header and transfer value
             img_head = ismrmrd.ImageHeader()
+            img_head.version = 1
             img_head.channels = acq.active_channels
             img_head.slice = acq.idx.slice
             img_head.matrix_size[0] = self.myBuffer.shape[0]

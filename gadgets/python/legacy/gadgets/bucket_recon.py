@@ -29,7 +29,7 @@ class BucketRecon(Gadget):
         acq = np.ravel(recondata[0].data.headers)[0]
 
         img_head = ismrmrd.ImageHeader()
-
+        img_head.version = 1
         img_head.channels = acq.active_channels
         img_head.slice = acq.idx.slice
         img_head.matrix_size = (image.shape[0],image.shape[1],image.shape[2])
