@@ -6,6 +6,7 @@ from gadgetron.util.cfft import cifftn
 import ismrmrd
 import ismrmrd.xsd
 
+
 class BucketRecon(Gadget):
     def __init__(self, next_gadget=None):
         Gadget.__init__(self,next_gadget)
@@ -33,6 +34,11 @@ class BucketRecon(Gadget):
         img_head.channels = acq.active_channels
         img_head.slice = acq.idx.slice
         img_head.matrix_size = (image.shape[0],image.shape[1],image.shape[2])
+        img_head.field_of_view = (
+            self.enc.reconSpace.fieldOfView_mm.x,
+            self.enc.reconSpace.fieldOfView_mm.y,
+            self.enc.reconSpace.fieldOfView_mm.z
+        )
         img_head.position = acq.position
         img_head.read_dir = acq.read_dir
         img_head.phase_dir = acq.phase_dir
