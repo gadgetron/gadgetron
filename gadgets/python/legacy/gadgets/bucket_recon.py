@@ -6,14 +6,16 @@ from gadgetron.util.cfft import cifftn
 import ismrmrd
 import ismrmrd.xsd
 
+import itertools
+
 
 class BucketRecon(Gadget):
     def __init__(self, next_gadget=None):
         Gadget.__init__(self,next_gadget)
         self.header = None
         self.enc = None
-        self.mySeries = 0
-        self.myCounter = 0
+
+        self.image_indices = itertools.count(1)
 
     def process_config(self, conf):
         self.header = ismrmrd.xsd.CreateFromDocument(conf)
@@ -45,7 +47,7 @@ class BucketRecon(Gadget):
         img_head.slice_dir = acq.slice_dir
         img_head.patient_table_position = acq.patient_table_position
         img_head.acquisition_time_stamp = acq.acquisition_time_stamp
-        img_head.image_index = 0 
+        img_head.image_index = next(self.image_indices)
         img_head.image_series_index = 0
         img_head.data_type = ismrmrd.DATATYPE_CXFLOAT
 
