@@ -342,11 +342,14 @@ namespace Gadgetron
             // Patient Sex
             key.set(0x0010, 0x0040);
             if (patient_info.patientGender) {
-                if (*patient_info.patientGender == "O") {
-                    status = dataset->insertEmptyElement(key);
+                std::string patientGenderUppercase = patient_info.patientGender.get();
+                std::transform(patientGenderUppercase.begin(), patientGenderUppercase.end(), patientGenderUppercase.begin(), ::toupper);
+
+                if (patientGenderUppercase == "M" || patientGenderUppercase == "F" || patientGenderUppercase == "O") {
+                    write_dcm_string(dataset, key, patientGenderUppercase.c_str());
                 }
                 else {
-                    write_dcm_string(dataset, key, patient_info.patientGender->c_str());
+                    write_dcm_string(dataset, key, "");
                 }
             }
             else {
