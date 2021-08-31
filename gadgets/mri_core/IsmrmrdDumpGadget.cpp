@@ -1,11 +1,11 @@
 #include "IsmrmrdDumpGadget.h"
 #include <iomanip>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 #include "network_utils.h"
 #include <thread>
 
 namespace bf = boost::filesystem;
-
 
 namespace Gadgetron
 {
@@ -29,6 +29,7 @@ namespace Gadgetron
 
         return ret;
     }
+
     bool IsmrmrdDumpGadget::is_ip_on_blacklist() const {
         if (ip_no_data_saving.empty()){
             return false; 
@@ -47,7 +48,6 @@ namespace Gadgetron
                 GDEBUG_STREAM(ip);
             GDEBUG_STREAM(" ] ");
 
-
             for (const auto & ip : gt_ip_list ){
                 if (ip_no_data_saving.count(ip)){
 
@@ -56,12 +56,10 @@ namespace Gadgetron
                 }
             }
             return false;
-       }
+    }
 
-
-    
-
-    IsmrmrdDumpGadget::IsmrmrdDumpGadget(const Core::Context& context, const Core::GadgetProperties& props ) : Core::ChannelGadget<Core::variant<Core::Acquisition,Core::Waveform>>(context, props), save_ismrmrd_data_(!is_ip_on_blacklist()) {
+    IsmrmrdDumpGadget::IsmrmrdDumpGadget(const Core::Context& context, const Core::GadgetProperties& props ) : Core::ChannelGadget<Core::variant<Core::Acquisition,Core::Waveform>>(context, props), save_ismrmrd_data_(!is_ip_on_blacklist())
+    {
         if (save_ismrmrd_data_)
         {
             if (!exists(folder ))
@@ -83,6 +81,28 @@ namespace Gadgetron
                 {
                     GADGET_THROW("Specified path is not a directory\n");
                 }
+            }
+        }
+
+        // furthe check the environmental variable
+        if (this->save_ismrmrd_data_) {
+            if (!this->env_var_to_control_dump.empty()) {
+                std::string env_var_dump;
+                char* v = std::getenv(this->env_var_to_control_dump.c_str());
+                if (v != NULL) {
+                    env_var_dump = std::string(v);
+                    GDEBUG_STREAM("IsmrmrdDumpGadget, read in the environmental variable " << this->env_var_to_control_dump << " to be " << env_var_dump);
+                    boost::algorithm::to_lower(env_var_dump);
+                    if (env_var_dump == "off") {
+                        this->save_ismrmrd_data_ = false;
+                        GDEBUG_STREAM("IsmrmrdDumpGadget, turn off the the dump based on the environmental variable : "<< env_var_dump);
+                    }
+                } else {
+                    GDEBUG_STREAM("IsmrmrdDumpGadget, the environmental variable " << this->env_var_to_control_dump << " is not found ... ");
+                }
+            } else {
+                GDEBUG_STREAM("GtPrepKSpaceDataDumpGadget, env_var_to_control_dump is empty, ignore the environmental "
+                              "variable control ... ");
             }
         }
     }

@@ -32,23 +32,23 @@ namespace Gadgetron {
 
         NODE_PROPERTY(file_prefix, std::string, "Prefix for dump file", "ISMRMRD_DUMP");
 
+        NODE_PROPERTY(env_var_to_control_dump, std::string,
+                        "Environmental variable to control the dump, if empty, dump the data",
+                        "GADGETRON_ISMRMRD_DUMP");
+
         // In some cases, data cannot be saved to a gadgetron server
         // if gadgetron ip equals to these preset ips, do not save data
         NODE_PROPERTY(ip_no_data_saving, std::set<std::string>, "If gadgetrion IP equals to this ip, do not save data",std::set<std::string>({ "192.168.2.2", "192.168.56.2" }));
+
         // if true, only save the xml header
         NODE_PROPERTY(save_xml_header_only, bool, "If true, only save the xml header", false);
 
         void process(Core::InputChannel<Core::variant<Core::Acquisition,Core::Waveform>>& input, Core::OutputChannel& output) override;
 
-
     private:
 
-        const bool save_ismrmrd_data_;
-
+        bool save_ismrmrd_data_;
         ISMRMRD::Dataset create_ismrmrd_dataset() const;
         bool  is_ip_on_blacklist() const ; 
     };
-
-
-
 }
