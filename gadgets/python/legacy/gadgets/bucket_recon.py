@@ -33,6 +33,7 @@ class BucketRecon(Gadget):
 
         img_head = ismrmrd.ImageHeader()
         img_head.version = 1
+        img_head.measurement_uid = acq.measurement_uid
         img_head.channels = acq.active_channels
         img_head.slice = acq.idx.slice
         img_head.matrix_size = (image.shape[0],image.shape[1],image.shape[2])
@@ -47,6 +48,12 @@ class BucketRecon(Gadget):
         img_head.slice_dir = acq.slice_dir
         img_head.patient_table_position = acq.patient_table_position
         img_head.acquisition_time_stamp = acq.acquisition_time_stamp
+        img_head.average = acq.idx.average
+        img_head.slice = acq.idx.slice
+        img_head.contrast = acq.idx.contrast
+        img_head.phase = acq.idx.phase
+        img_head.repetition = acq.idx.repetition
+        img_head.set = acq.idx.set
         img_head.image_index = next(self.image_indices)
         img_head.image_series_index = 0
         img_head.data_type = ismrmrd.DATATYPE_CXFLOAT
