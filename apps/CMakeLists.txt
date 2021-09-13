@@ -5,4 +5,5 @@ add_subdirectory(storage)
 
 add_subdirectory(clients)
 add_subdirectory(standalone)
+add_subdirectory(matlab)
 
