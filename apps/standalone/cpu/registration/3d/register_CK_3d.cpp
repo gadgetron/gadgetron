@@ -28,6 +28,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'f', COMMAND_LINE_STRING, 1, "Fixed image file name (.real)", true );
   parms.add_parameter( 'm', COMMAND_LINE_STRING, 1, "Moving image file name (.real)", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "displacement_field.real" );
+  parms.add_parameter( 'i', COMMAND_LINE_STRING, 1, "Result image name", true, "displacement_image.real" );
   parms.add_parameter( 'a', COMMAND_LINE_FLOAT,  1, "Regularization weight (alpha)", true, "0.05" );
   parms.add_parameter( 'b', COMMAND_LINE_FLOAT,  1, "Regularization weight (beta)", true, "1.0" );
   parms.add_parameter( 'l', COMMAND_LINE_INT,    1, "Number of multiresolution levels", true, "3" );
@@ -109,7 +110,7 @@ int main(int argc, char** argv)
   //
 
   write_nd_array<_real>(result.get(), (char*)parms.get_parameter('r')->get_string_value());
-  write_nd_array<_real>(deformed_moving.get(), "def_moving.real" );
+  write_nd_array<_real>(deformed_moving.get(), (char*)parms.get_parameter('i')->get_string_value() );
   
   return 0;
 }
