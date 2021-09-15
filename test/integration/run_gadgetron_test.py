@@ -90,8 +90,7 @@ def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measu
     echo_handler(command)
     subprocess.run(command,
                    stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE,
-                   check=True)
+                   stderr=subprocess.PIPE)
 
 
 def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, group, log, additional_arguments):
@@ -111,8 +110,7 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
     subprocess.run(command,
                    env=environment,
                    stdout=log,
-                   stderr=log,
-                   check=True)
+                   stderr=log)
 
 
 def start_storage_server(*, log, port, storage_folder):
