@@ -119,6 +119,7 @@
     endif ()
 
     install(FILES
+            cpureg_export.h
             ${transformation_files}
             ${solver_files}
             ${warper_files}

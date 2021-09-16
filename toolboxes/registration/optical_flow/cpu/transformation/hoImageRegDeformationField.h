@@ -732,7 +732,7 @@ namespace Gadgetron {
             Gadgetron::maxAbsolute(deformNorm, maxDeform, ind);
             Gadgetron::maxAbsolute(logJac, maxLogJac, ind);
 
-            double totalDeform = 0;
+            T totalDeform = 0;
             for ( n=0; n<(long long)N; n++ )
             {
                 totalDeform += deformNorm(n);
@@ -741,7 +741,7 @@ namespace Gadgetron {
             // Gadgetron::norm1(deformNorm, meanDeform);
             meanDeform = (T)(totalDeform/N);
 
-            double totalLogJac = 0;
+            T totalLogJac = 0;
             for ( n=0; n<(long long)N; n++ )
             {
                 totalLogJac += std::abs(logJac(n));

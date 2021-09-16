@@ -139,6 +139,13 @@ namespace Gadgetron{
   template<class T> boost::shared_ptr< cuNDArray<T> > conj( const cuNDArray<T> *x );
 
   /**
+   * @brief Construct a complex array from a real array and imag array.
+   * @param[in] x real array, y imag array.
+   * @return A new complex array containing the input array in the real component and imag elements in the imaginary component.
+   */
+  template<class T> boost::shared_ptr< cuNDArray<T> > cureal_imag_to_complex( const cuNDArray<typename realType<T>::Type> *x, const cuNDArray<typename realType<T>::Type> *y );
+
+  /**
    * @brief Construct a complex array from a real array.
    * @param[in] x Input array.
    * @return A new complex array containing the input array in the real component and zeros in the imaginary component.

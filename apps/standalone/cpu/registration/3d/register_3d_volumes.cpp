@@ -202,7 +202,6 @@ int main(int argc, char** argv) {
         GDEBUG_STREAM(msg.c_str());
     }
     omp_set_num_threads(omp_get_max_threads());
-
     reg.initialize();
 
     reg.performRegistration();
