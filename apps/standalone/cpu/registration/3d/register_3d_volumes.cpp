@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 
     // max_iter_num_pyramid_level
     std::vector<T> iters;
-    iters = {32, 64, 128};
+    iters = {16, 16, 16};
 
     if (iters.size() != level) {
         T iter1 = iters[0];
@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 
     // regularization_hilbert_strength
     std::vector<T> regularization_hilbert_strength;
-    regularization_hilbert_strength = {6.0, 12.0, 24.0};
+    regularization_hilbert_strength = {3.0, 3.0, 3.0};
 
     if (regularization_hilbert_strength.size() != level) {
         T v1 = regularization_hilbert_strength[0];
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
     }
 
     // LocalCCR_sigmaArg
-    std::vector<T> LocalCCR_sigmaArg = {1.0, 2.0, 4.0};
+    std::vector<T> LocalCCR_sigmaArg = {1.0, 1.0, 1.0};
 
     if (LocalCCR_sigmaArg.size() != level) {
         T v1 = LocalCCR_sigmaArg[0];
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     bool BidirectionalReg = true;
 
     // DivergenceFreeReg
-    bool DivergenceFreeReg = true;
+    bool DivergenceFreeReg = false;
 
     // verbose
     bool verbose = false;
@@ -201,6 +201,7 @@ int main(int argc, char** argv) {
         std::string msg(outs.str());
         GDEBUG_STREAM(msg.c_str());
     }
+    omp_set_num_threads(omp_get_max_threads());
 
     reg.initialize();
 
