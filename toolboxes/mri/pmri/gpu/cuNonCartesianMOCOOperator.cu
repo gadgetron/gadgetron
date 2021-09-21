@@ -117,7 +117,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
 
     in_dimensions.pop_back(); // Remove CH dimension
 
-    out_dimensions.pop_back();               // Remove the timeDimension
+    //out_dimensions.pop_back();               // Remove the timeDimension
     out_dimensions.push_back(this->ncoils_); // add coil dimension
     cuNDArray<complext<REAL>> tmp(&out_dimensions);
     out_dimensions.pop_back(); // rm coil dimension
