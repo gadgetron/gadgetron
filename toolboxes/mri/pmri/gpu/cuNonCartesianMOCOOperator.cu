@@ -28,17 +28,17 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
     std::vector<size_t> data_dimensions = *this->get_codomain_dimensions(); // Non-cart
     data_dimensions.pop_back();                                             // remove coil dimension from tmp_data;
 
-    auto timeD = full_dimensions[full_dimensions.size() - 1];
-    full_dimensions.pop_back();
+    //auto timeD = full_dimensions[full_dimensions.size() - 1];
+    //full_dimensions.pop_back();
     full_dimensions.push_back(this->ncoils_);
-    full_dimensions.push_back(timeD);
+    //full_dimensions.push_back(timeD);
 
     // std::iter_swap(full_dimensions.end(), full_dimensions.end() - 1); // swap the coil dimension and time
 
-    full_dimensions.pop_back(); // remove time dimension
+   // full_dimensions.pop_back(); // remove time dimension
 
     std::vector<size_t> slice_dimensions = *this->get_domain_dimensions();
-    slice_dimensions.pop_back(); // remove time
+    //slice_dimensions.pop_back(); // remove time
     auto stride = std::accumulate(slice_dimensions.begin(), slice_dimensions.end(), 1,
                                   std::multiplies<size_t>()); // product of X,Y,and Z
 
