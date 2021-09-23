@@ -157,7 +157,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
         applyDeformation(&slice_view_output, forward_deformation_[it]);
         output += slice_view_output;
     }
-    output /= complext<REAL>((REAL)shots_per_time_.size(),(REAL)shots_per_time_.size());
+    output /= complext<REAL>((REAL)shots_per_time_.size(),(REAL)0);
 }
 
 template <class REAL, unsigned int D>
