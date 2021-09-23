@@ -332,7 +332,7 @@ template <class T> struct NGFDemonsStep<T, 2> {
     // Uses the estimated channel certainty of
     // "Improving Registration Using Multi-Channel Diffeomorphic Demons Combined
     // withCertainty Maps", Fosberg et. al 2011
-    hoNDArray<vector_td<T, 2>> operator()(const hoNDArray<T>& fixed) {
+    hoNDArray<vector_td<T, D>> operator()(const hoNDArray<T>& fixed) {
         auto fixed_grad = create_gradient_array(fixed);
 
 //        write_nd_array(&fixed_grad[0],"fixed_grad1.real");
