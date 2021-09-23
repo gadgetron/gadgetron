@@ -35,7 +35,7 @@ void interpolation_loop(hoNDArray<T>& output, const hoNDArray<vector_td<R, 3>>& 
                                     output.dimensions()[2]};
     for (size_t z = 0; z < dims[2]; z++) {
         for (size_t y = 0; y < dims[1]; y++) {
-            size_t offset = y * dims[0];
+            size_t offset = y * dims[0] + z * dims[1] * dims[0];
             for (size_t x = 0; x < dims[0]; x++) {
                 const auto& deformation = deformation_field[x + offset];
                 output[x + offset] =
@@ -332,7 +332,7 @@ template <class T> struct NGFDemonsStep<T, 2> {
     // Uses the estimated channel certainty of
     // "Improving Registration Using Multi-Channel Diffeomorphic Demons Combined
     // withCertainty Maps", Fosberg et. al 2011
-    hoNDArray<vector_td<T, D>> operator()(const hoNDArray<T>& fixed) {
+    hoNDArray<vector_td<T, 2>> operator()(const hoNDArray<T>& fixed) {
         auto fixed_grad = create_gradient_array(fixed);
 
 //        write_nd_array(&fixed_grad[0],"fixed_grad1.real");
