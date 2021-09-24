@@ -1,5 +1,3 @@
-#pragma once
-
 #include "cuNonCartesianMOCOOperator.h"
 #include "vector_td_utilities.h"
 
@@ -60,7 +58,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
         
         // Move the image to moving image
         slice_view_in = input;
-        applyDeformation(&slice_view_in,backward_deformation_[it]);
+        applyDeformationbSpline(&slice_view_in,backward_deformation_[it]);
 
         cuNDArray<complext<REAL>> tmp(&full_dimensions);
         this->mult_csm(&slice_view_in, &tmp);
@@ -154,7 +152,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
         auto slice_view_output = cuNDArray<complext<REAL>>(out_dimensions, moving_images.data() + stride_out * it);
 
         this->mult_csm_conj_sum(&tmp, &slice_view_output);
-        applyDeformation(&slice_view_output, forward_deformation_[it]);
+        applyDeformationbSpline(&slice_view_output, forward_deformation_[it]);
         output += slice_view_output;
     }
     output /= complext<REAL>((REAL)shots_per_time_.size(),(REAL)0);
@@ -206,6 +204,70 @@ void cuNonCartesianMOCOOperator<REAL, D>::applyDeformation(cuNDArray<complext<RE
     moving_image = cureal_imag_to_complex<complext<REAL>>(&deformed_movingr, &deformed_movingi).get();
     //return deformed_image;
 }
+    template <class REAL, unsigned int D>
+    void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation)
+    {
+        auto mir = *real(moving_image);
+        auto mii = *imag(moving_image);
+
+        auto ho_mir = hoNDArray<float>(*mir.to_host());
+        auto ho_mii = hoNDArray<float>(*mii.to_host());
+
+        auto ho_transformation = *transformation.to_host();
+        auto dims = *ho_transformation.get_dimensions();
+        dims.pop_back();
+        auto transform = Gadgetron::hoNDArray<Gadgetron::vector_td<float,3>>(dims);
+        GDEBUG("ho_transformation.size(): %d \n",ho_transformation.size());
+        std::copy_n(ho_transformation.data(),ho_transformation.size(),(float*)transform.data());
+
+        auto defr = cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float,3>(ho_mir,transform)));
+        auto defi = cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float,3>(ho_mii,transform)));
+        moving_image    = cureal_imag_to_complex<complext<REAL>>(&defr, &defi).get();
+
+    }
+    // template <class REAL, unsigned int D>
+    // hoNDArray<double> __host__ cuNonCartesianMOCOOperator<REAL, D>::hoapplyDeformation(hoNDArray< double > &fixed_image, hoNDArray< double > &moving_image, hoNDArray< double > & transformation)
+    // {
+    //     typedef hoMRImage<double, 3> ImageType;
+    //     ImageType target, source;
+
+    //     target.from_NDArray(fixed_image);
+    //     source.from_NDArray(moving_image);
+
+    //     hoNDBoundaryHandlerFixedValue<ImageType> bhFixedValue;
+    //     bhFixedValue.setArray(source);
+
+    //     hoNDInterpolatorBSpline<ImageType, 3> interpBSpline(5);
+    //     interpBSpline.setArray(source);
+    //     interpBSpline.setBoundaryHandler(bhFixedValue);
+
+    //     hoImageRegWarper<ImageType, ImageType, double> warper;
+    //     warper.setBackgroundValue(-1);
+    //     using namespace Gadgetron::Indexing;
+
+    //     hoImageRegDeformationField<double, 3> transform;
+
+    //     ImageType deformation;
+    //     deformation.from_NDArray(hoNDArray<double>(transformation(slice, slice, slice, 0)));
+    //     transform.setDeformationField(deformation, 0);
+
+    //     deformation.from_NDArray(hoNDArray<double>(transformation(slice, slice, slice, 1)));
+    //     transform.setDeformationField(deformation, 1);
+
+    //     deformation.from_NDArray(hoNDArray<double>(transformation(slice, slice, slice, 2)));
+    //     transform.setDeformationField(deformation, 2);
+
+    //     warper.setTransformation(transform);
+    //     warper.setInterpolator(interpBSpline);
+
+    //     ImageType warped;
+    //     warper.warp(target, source, false, warped);
+
+    //     hoNDArray<double> output_forward;
+    //     warped.to_NDArray(output_forward);
+    //     return output_forward;
+    // }
+
 
 template <class REAL, unsigned int D>
 void cuNonCartesianMOCOOperator<REAL, D>::set_shots_per_time(std::vector<size_t> shots_per_time) {

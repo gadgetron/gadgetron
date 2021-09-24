@@ -8,8 +8,15 @@
 #include "cuNFFT.h"
 #include "cuCKOpticalFlowSolver.h"
 #include "cuLinearResampleOperator.h"
+#include "cuNDArray_math.h"
+#include "cuNDArray_elemwise.h"
 #include "hoNDArray.h"
-
+#include "hoNDInterpolator.h"
+#include "hoMRImage.h"
+#include "hoImageRegWarper.h"
+#include "hoImageRegDeformationField.h"
+#include "demons_registration.h"
+#include "hoNDArray_elemwise.h"
 namespace Gadgetron{
 
   template<class REAL, unsigned int D> class EXPORTGPUPMRI cuNonCartesianMOCOOperator : public cuSenseOperator<REAL,D>
@@ -40,7 +47,7 @@ namespace Gadgetron{
     
     private:
     void applyDeformation(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation);
-
+    void applyDeformationbSpline(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation);
   
   protected:
     std::vector<boost::shared_ptr< cuNFFT_plan<REAL, D> > >plan_;

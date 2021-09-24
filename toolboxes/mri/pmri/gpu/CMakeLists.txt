@@ -42,7 +42,7 @@ cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED
     cuNonCartesianTSenseOperator.h
     cuNonCartesianTSenseOperator.cu
     cuNonCartesianMOCOOperator.h
-    cuNonCartesianMOCOOperator.cu
+    cuNonCartesianMOCOOperator.cpp
   )
 
 set_target_properties(gadgetron_toolbox_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -55,6 +55,11 @@ target_link_libraries(gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
   gadgetron_toolbox_gpureg
+  gadgetron_toolbox_cpureg
+  gadgetron_toolbox_cpufft
+  gadgetron_mricore
+  gadgetron_toolbox_mri_core
+  gadgetron_toolbox_demons
   )
 
 
