@@ -13,8 +13,6 @@
 #include "hoNDArray.h"
 #include "hoNDInterpolator.h"
 #include "hoMRImage.h"
-#include "hoImageRegWarper.h"
-#include "hoImageRegDeformationField.h"
 #include "demons_registration.h"
 #include "hoNDArray_elemwise.h"
 namespace Gadgetron{
