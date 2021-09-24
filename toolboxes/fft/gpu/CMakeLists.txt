@@ -7,7 +7,7 @@ cuda_add_library(gadgetron_toolbox_gpufft SHARED
     cuNDFFT.h
     cuNDFFT.cpp
     cuNDFFT.cu
-  )
+        cuFFTPlan.h cuFFTPlan.hpp)
 
 set_target_properties(gadgetron_toolbox_gpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

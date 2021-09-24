@@ -1,5 +1,5 @@
 #include <boost/program_options.hpp>
-
+#include <optional>
 #include "StorageServer.h"
 
 namespace Gadgetron::Server {
