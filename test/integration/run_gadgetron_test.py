@@ -28,8 +28,6 @@ import tempfile
 import itertools
 import subprocess
 
-import pprint
-
 default_config_values = {
     "DEFAULT": {
         'parameter_xml': 'IsmrmrdParameterMap_Siemens.xml',
@@ -230,8 +228,8 @@ def validate_image_header(*, output_file, reference_file, output_group, referenc
         'phase': equals(),
         'repetition': equals(),
         'set': equals(),
-        'acquisition_time_stamp': ignore(),  # TODO
-        'physiology_time_stamp': each(ignore()),  # TODO
+        'acquisition_time_stamp': ignore(),
+        'physiology_time_stamp': each(ignore()),
         'image_type': equals(),
         'image_index': equals(),
         'image_series_index': ignore(),
@@ -281,29 +279,6 @@ def validate_image_header(*, output_file, reference_file, output_group, referenc
         return Failure, str(e)
 
     return None, "Output headers matched reference"
-
-
-def validate_image_meta_string(*, output_file, reference_file, output_group, reference_group):
-
-    def check_image_metadata(output, reference):
-
-        output_meta = ismrmrd.Meta.deserialize(output.attribute_string)
-        reference_meta = ismrmrd.Meta.deserialize(reference.attribute_string)
-
-        if not output_meta == reference_meta:
-
-            pprint.pprint(output_meta)
-            pprint.pprint(reference_meta)
-
-            raise RuntimeError(
-                "Image metadata does not match for image {} (series {})".format(
-                    output.image_index,
-                    output.image_series_index
-                )
-            )
-
-    # TODO: Enable metadata check.
-    return None, "Output meta strings matched reference"
 
 
 def error_handlers(args, config):
@@ -420,7 +395,7 @@ def ensure_gadgetron_instance(args, config):
 
 
 def copy_input_data(args, config, section):
-    destination_file = os.path.join(args.test_folder, section + '.copied.h5')
+    destination_file = os.path.join(args.test_folder, section + '.copied.mrd')
 
     def copy_input_action(cont, **state):
         source_file = os.path.join(args.data_folder, config[section]['source'])
@@ -435,7 +410,7 @@ def copy_input_data(args, config, section):
 
 
 def convert_siemens_data(args, config, section):
-    destination_file = os.path.join(args.test_folder, section + '.converted.h5')
+    destination_file = os.path.join(args.test_folder, section + '.converted.mrd')
 
     def convert_siemens_data_action(cont, **state):
         source_file = os.path.join(args.data_folder, config[section]['data_file'])
@@ -458,7 +433,7 @@ def convert_siemens_data(args, config, section):
 
 
 def run_gadgetron_client(args, config, section):
-    output_file = os.path.join(args.test_folder, section + '.output.h5')
+    output_file = os.path.join(args.test_folder, section + '.output.mrd')
 
     def prepare_config_action(cont, **state):
         state.update(
@@ -568,8 +543,6 @@ def validate_client_output(args, config, section):
 
     if not enabled(config[section]['disable_image_header_test']):
         yield functools.partial(validate_meta, validate_image_header)
-    if not enabled(config[section]['disable_image_meta_test']):
-        yield functools.partial(validate_meta, validate_image_meta_string)
 
 
 def validate_dataset_output(args, config, section):
