@@ -29,9 +29,10 @@ int main(int argc, char** argv) {
     parms.add_parameter('m', COMMAND_LINE_STRING, 1, "Moving image file name (.real)", true);
     parms.add_parameter('r', COMMAND_LINE_STRING, 1, "Result file name", true, "displacement_field.real");
     parms.add_parameter('i', COMMAND_LINE_STRING, 1, "Result image name", true, "displacement_image.real");
-    parms.add_parameter('a', COMMAND_LINE_FLOAT, 1, "Regularization weight (alpha)", true, "0.05");
-    parms.add_parameter('b', COMMAND_LINE_FLOAT, 1, "Regularization weight (beta)", true, "1.0");
+    parms.add_parameter('a', COMMAND_LINE_STRING, 1, "Sigma file name", true);
+    parms.add_parameter('b', COMMAND_LINE_STRING, 1, "Regularization weight (beta) file", true);
     parms.add_parameter('l', COMMAND_LINE_INT, 1, "Number of multiresolution levels", true, "3");
+    parms.add_parameter('t', COMMAND_LINE_STRING, 1, "Number of iterations file", true);
     parms.add_parameter('d', COMMAND_LINE_STRING, 1, "Dissimilarity: 'SSD' or 'LocalCCR' or 'MutualInformation'", true,
                         "LocalCCR");
 
@@ -48,6 +49,15 @@ int main(int argc, char** argv) {
 
     // Load sample data from disk
     //
+
+    boost::shared_ptr<hoNDArray<double>> sigmas =
+        read_nd_array<double>((char*)parms.get_parameter('a')->get_string_value());
+
+    boost::shared_ptr<hoNDArray<double>> regularizers =
+        read_nd_array<double>((char*)parms.get_parameter('b')->get_string_value());
+
+    boost::shared_ptr<hoNDArray<double>> iterations =
+        read_nd_array<double>((char*)parms.get_parameter('t')->get_string_value());
 
     typedef double T;
 
@@ -85,15 +95,20 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    _real alpha = (_real)parms.get_parameter('a')->get_float_value();
-    _real beta = (_real)parms.get_parameter('b')->get_float_value();
-
     unsigned int multires_levels = parms.get_parameter('l')->get_int_value();
     // level
     unsigned int level = multires_levels;
 
-    // max_iter_num_pyramid_level
     std::vector<T> iters;
+    std::vector<T> regularization_hilbert_strength;
+    std::vector<T> LocalCCR_sigmaArg;
+
+    // max_iter_num_pyramid_level
+    for (auto ii = 0; ii < level; ii++) {
+        iters.push_back(iterations.get()[ii]);
+        regularization_hilbert_strength.get()[ii]);
+        LocalCCR_sigmaArg.push_back(sigmasget()[ii]);
+    }
     iters = {16, 16, 16};
 
     if (iters.size() != level) {
@@ -106,7 +121,6 @@ int main(int argc, char** argv) {
     }
 
     // regularization_hilbert_strength
-    std::vector<T> regularization_hilbert_strength;
     regularization_hilbert_strength = {3.0, 3.0, 3.0};
 
     if (regularization_hilbert_strength.size() != level) {
@@ -201,7 +215,6 @@ int main(int argc, char** argv) {
         std::string msg(outs.str());
         GDEBUG_STREAM(msg.c_str());
     }
-    omp_set_num_threads(omp_get_max_threads());
     reg.initialize();
 
     reg.performRegistration();
@@ -229,18 +242,35 @@ int main(int argc, char** argv) {
     // ---------------------------------------------------------------
     // output parameter
     // ---------------------------------------------------------------
-
+    auto size_deformation = *fixed_image->get_dimensions();
+    size_deformation.push_back(target.get_number_of_dimensions());
+    hoNDArray<T> deformation;
+    hoNDArray<T> inv_deformation;
+    deformation.create(size_deformation);
+    inv_deformation.create(size_deformation);
+    
+    using namespace Gadgetron::Indexing;
+    
     hoNDArray<T> deformField;
     auto result_str = std::string(parms.get_parameter('r')->get_string_value());
 
-    dx.to_NDArray(deformField);
-    write_nd_array<double>(&deformField, (result_str + std::string("_dx.double")).c_str());
+    dx_reg.to_NDArray(deformField);
+    deformation(slice, slice, slice, 0) = deformField;
+    dy_reg.to_NDArray(deformField);
+    deformation(slice, slice, slice, 1) = deformField;
+    dz_reg.to_NDArray(deformField);
+    deformation(slice, slice, slice, 2) = deformField;
 
-    dy.to_NDArray(deformField);
-    write_nd_array<double>(&deformField, (result_str + std::string("_dy.double")).c_str());
+    dxInv_reg.to_NDArray(deformField);
+    inv_deformation(slice, slice, slice, 0) = deformField;
+    dyInv_reg.to_NDArray(deformField);
+    inv_deformation(slice, slice, slice, 1) = deformField;
+    dzInv_reg.to_NDArray(deformField);
+    inv_deformation(slice, slice, slice, 2) = deformField;
 
-    dz.to_NDArray(deformField);
-    write_nd_array<double>(&deformField, (result_str + std::string("_dz.double")).c_str());
+    write_nd_array<double>(&deformation, (result_str + std::string("_deformation.double")).c_str());
+
+    write_nd_array<double>(&inv_deformation, (result_str + std::string("_Invdeformation.double")).c_str());
 
     // ---------------------------------------------------------------
 
@@ -250,15 +280,6 @@ int main(int argc, char** argv) {
     write_nd_array<double>(&out, (result_str + std::string("_warped_image.double")).c_str());
 
     // ---------------------------------------------------------------
-
-    dxInv.to_NDArray(deformField);
-    write_nd_array<double>(&deformField, (result_str + std::string("_dxInv.double")).c_str());
-
-    dyInv.to_NDArray(deformField);
-    write_nd_array<double>(&deformField, (result_str + std::string("_dyInv.double")).c_str());
-
-    dzInv.to_NDArray(deformField);
-    write_nd_array<double>(&deformField, (result_str + std::string("_dzInv.double")).c_str());
 
 
     return 0;

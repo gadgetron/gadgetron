@@ -215,7 +215,9 @@ void cuNonCartesianMOCOOperator<REAL, D>::applyDeformation(cuNDArray<complext<RE
 
         auto ho_transformation = *transformation.to_host();
         auto dims = *ho_transformation.get_dimensions();
-        dims.pop_back();
+//        dims.pop_back();
+        dims.erase(dims.begin());
+
         auto transform = Gadgetron::hoNDArray<Gadgetron::vector_td<float,3>>(dims);
         GDEBUG("ho_transformation.size(): %d \n",ho_transformation.size());
         std::copy_n(ho_transformation.data(),ho_transformation.size(),(float*)transform.data());
