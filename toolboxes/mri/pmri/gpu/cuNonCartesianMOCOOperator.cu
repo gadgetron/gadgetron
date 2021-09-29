@@ -378,7 +378,6 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     cpy_params_r.dstArray = image_array_r;
     cpy_params_r.srcPtr =
         make_cudaPitchedPtr((void*)mir.data(), extent.width * sizeof(float), extent.width, extent.height);
-    cudaMemcpy3D(&cpy_params_r);
 
     cudaMemcpy3DParms cpy_params_i = {0};
     channelDesc = cudaCreateChannelDesc<REAL>();
@@ -392,10 +391,13 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
         make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
     cudaMemcpy3D(&cpy_params_i);
 
-    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.dstPtr.ptr, (uint)cpy_params_r.dstPtr.pitch, extent.width,
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.srcPtr.ptr, (uint)cpy_params_r.srcPtr.pitch, extent.width,
                                  extent.height, extent.depth);
-    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.dstPtr.ptr, (uint)cpy_params_i.dstPtr.pitch, extent.width,
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.srcPtr.ptr, (uint)cpy_params_i.srcPtr.pitch, extent.width,
                                  extent.height, extent.depth);
+    cudaMemcpy3D(&cpy_params_r);
+    cudaMemcpy3D(&cpy_params_i);
+
     // create the b-spline coefficients texture
     // CreateTextureFromVolume(&coeffs, &coeffArray, cpy_params.srcPtr, volumeExtent, true);
     // cudaDestroyTextureObject(texObj);
