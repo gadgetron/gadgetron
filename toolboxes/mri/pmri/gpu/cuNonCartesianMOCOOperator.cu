@@ -1,6 +1,8 @@
 #include "cuNonCartesianMOCOOperator.h"
+#include "cubicPrefilter3D.cu"
+#include "cubicTex3D.cu"
 #include "vector_td_utilities.h"
-
+#include <thrust/extrema.h>
 using namespace Gadgetron;
 
 template <class REAL, unsigned int D>
@@ -26,23 +28,23 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
     std::vector<size_t> data_dimensions = *this->get_codomain_dimensions(); // Non-cart
     data_dimensions.pop_back();                                             // remove coil dimension from tmp_data;
 
-    //auto timeD = full_dimensions[full_dimensions.size() - 1];
-    //full_dimensions.pop_back();
+    // auto timeD = full_dimensions[full_dimensions.size() - 1];
+    // full_dimensions.pop_back();
     full_dimensions.push_back(this->ncoils_);
-    //full_dimensions.push_back(timeD);
+    // full_dimensions.push_back(timeD);
 
     // std::iter_swap(full_dimensions.end(), full_dimensions.end() - 1); // swap the coil dimension and time
 
-   // full_dimensions.pop_back(); // remove time dimension
+    // full_dimensions.pop_back(); // remove time dimension
 
     std::vector<size_t> slice_dimensions = *this->get_domain_dimensions();
-    //slice_dimensions.pop_back(); // remove time
+    // slice_dimensions.pop_back(); // remove time
     auto stride = std::accumulate(slice_dimensions.begin(), slice_dimensions.end(), 1,
                                   std::multiplies<size_t>()); // product of X,Y,and Z
 
     std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
     auto stride_data = std::accumulate(tmp_dims.begin(), tmp_dims.end() - 1, 1, std::multiplies<size_t>());
-    
+
     auto input = cuNDArray<complext<REAL>>(slice_dimensions, in->data());
 
     slice_dimensions.push_back(shots_per_time_.size()); // add time dimenstion
@@ -53,13 +55,14 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
         auto inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, size_t(0)) *
                          tmp_dims[0]; // sum of cum sum shots per time
 
-
         auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
-        
+
         // Move the image to moving image
         slice_view_in = input;
-        applyDeformationbSpline(&slice_view_in,backward_deformation_[it]);
-
+        // auto adj_deformation = forward_deformation_[it];
+        // adj_deformation *= (REAL)-1.0;
+        // applyDeformationbSpline(&slice_view_in, backward_deformation_[it]);
+        deform_image(&slice_view_in, backward_deformation_[it]);
         cuNDArray<complext<REAL>> tmp(&full_dimensions);
         this->mult_csm(&slice_view_in, &tmp);
 
@@ -115,7 +118,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
 
     in_dimensions.pop_back(); // Remove CH dimension
 
-    //out_dimensions.pop_back();               // Remove the timeDimension
+    // out_dimensions.pop_back();               // Remove the timeDimension
     out_dimensions.push_back(this->ncoils_); // add coil dimension
     cuNDArray<complext<REAL>> tmp(&out_dimensions);
     out_dimensions.pop_back(); // rm coil dimension
@@ -133,8 +136,8 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
     cuNDArray<complext<REAL>> moving_images(out_dimensions);
     out_dimensions.pop_back(); // rm time
 
-    auto output = cuNDArray<complext<REAL>>(out_dimensions, out->data() );
-    fill<complext<REAL>>(&output,complext<REAL>((REAL)0,(REAL)0));
+    auto output = cuNDArray<complext<REAL>>(out_dimensions, out->data());
+    fill<complext<REAL>>(&output, complext<REAL>((REAL)0, (REAL)0));
     for (size_t it = 0; it < shots_per_time_.size(); it++) {
 
         size_t inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, 0) * in_dimensions[0];
@@ -152,10 +155,11 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
         auto slice_view_output = cuNDArray<complext<REAL>>(out_dimensions, moving_images.data() + stride_out * it);
 
         this->mult_csm_conj_sum(&tmp, &slice_view_output);
-        applyDeformationbSpline(&slice_view_output, forward_deformation_[it]);
+        //applyDeformationbSpline(&slice_view_output, forward_deformation_[it]);
+        deform_image(&slice_view_output, forward_deformation_[it]);
         output += slice_view_output;
     }
-    output /= complext<REAL>((REAL)shots_per_time_.size(),(REAL)0);
+    output /= complext<REAL>((REAL)shots_per_time_.size(), (REAL)0);
 }
 
 template <class REAL, unsigned int D>
@@ -184,7 +188,8 @@ void cuNonCartesianMOCOOperator<REAL, D>::set_dcw(std::vector<cuNDArray<REAL>> d
     dcw_ = dcw;
 }
 template <class REAL, unsigned int D>
-void cuNonCartesianMOCOOperator<REAL, D>::applyDeformation(cuNDArray<complext<REAL>> *moving_image, cuNDArray<REAL>  transformation) {
+void cuNonCartesianMOCOOperator<REAL, D>::applyDeformation(cuNDArray<complext<REAL>>* moving_image,
+                                                           cuNDArray<REAL> transformation) {
 
     // Setup solver
     boost::shared_ptr<cuLinearResampleOperator<REAL, D>> R(new cuLinearResampleOperator<REAL, D>());
@@ -202,74 +207,262 @@ void cuNonCartesianMOCOOperator<REAL, D>::applyDeformation(cuNDArray<complext<RE
     // Gadgetron::cuNDArray<complext<REAL>> deformed_image =
     //     *cureal_imag_to_complex<complext<REAL>>(&deformed_movingr, &deformed_movingi);
     moving_image = cureal_imag_to_complex<complext<REAL>>(&deformed_movingr, &deformed_movingi).get();
-    //return deformed_image;
+    // return deformed_image;
 }
-    template <class REAL, unsigned int D>
-    void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation)
-    {
-        auto mir = *real(moving_image);
-        auto mii = *imag(moving_image);
+template <class REAL, unsigned int D>
+void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray<complext<REAL>>* moving_image,
+                                                                  cuNDArray<REAL> transformation) {
+    auto mir = *real(moving_image);
+    auto mii = *imag(moving_image);
 
-        auto ho_mir = hoNDArray<float>(*mir.to_host());
-        auto ho_mii = hoNDArray<float>(*mii.to_host());
+    auto ho_mir = hoNDArray<float>(*mir.to_host());
+    auto ho_mii = hoNDArray<float>(*mii.to_host());
 
-        auto ho_transformation = *transformation.to_host();
-        auto dims = *ho_transformation.get_dimensions();
-//        dims.pop_back();
-        dims.erase(dims.begin());
+    auto ho_transformation = *transformation.to_host();
+    auto dims = *ho_transformation.get_dimensions();
+    //        dims.pop_back();
+    dims.erase(dims.begin());
 
-        auto transform = Gadgetron::hoNDArray<Gadgetron::vector_td<float,3>>(dims);
-        GDEBUG("ho_transformation.size(): %d \n",ho_transformation.size());
-        std::copy_n(ho_transformation.data(),ho_transformation.size(),(float*)transform.data());
+    auto transform = Gadgetron::hoNDArray<Gadgetron::vector_td<float, 3>>(dims);
+    GDEBUG("ho_transformation.size(): %d \n", ho_transformation.size());
+    std::copy_n(ho_transformation.data(), ho_transformation.size(), (float*)transform.data());
 
-        auto defr = cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float,3>(ho_mir,transform)));
-        auto defi = cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float,3>(ho_mii,transform)));
-        moving_image    = cureal_imag_to_complex<complext<REAL>>(&defr, &defi).get();
+    auto defr =
+        cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mir, transform)));
+    auto defi =
+        cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mii, transform)));
+    moving_image = cureal_imag_to_complex<complext<REAL>>(&defr, &defi).get();
+}
+// Simple transformation kernel
+template <typename REAL>
+__global__ static void deform_imageKernel(REAL* output, const REAL* vector_field, cudaTextureObject_t texObj,
+                                          int width, int height, int depth) {
 
+    const int ixo = blockDim.x * blockIdx.x + threadIdx.x;
+    const int iyo = blockDim.y * blockIdx.y + threadIdx.y;
+    const int izo = blockDim.z * blockIdx.z + threadIdx.z;
+
+    if (ixo < width && iyo < height && izo < depth) {
+
+        const int idx = ixo + iyo * width + izo * width * height;
+        const int elements = width * height * depth;
+        REAL ux = vector_field[idx] + REAL(0.5 + ixo);
+        REAL uy = vector_field[idx + elements] + REAL(0.5 + iyo);
+        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5 + izo);
+
+        output[idx] = tex3D<REAL>(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
     }
-    // template <class REAL, unsigned int D>
-    // hoNDArray<double> __host__ cuNonCartesianMOCOOperator<REAL, D>::hoapplyDeformation(hoNDArray< double > &fixed_image, hoNDArray< double > &moving_image, hoNDArray< double > & transformation)
-    // {
-    //     typedef hoMRImage<double, 3> ImageType;
-    //     ImageType target, source;
+}
+// Simple transformation kernel
+template <typename REAL>
+__global__ static void deform_imageKernel(REAL* output, const REAL* vector_field,
+                                          texture<REAL, 3, cudaReadModeElementType>& texObj, int width, int height,
+                                          int depth) {
 
-    //     target.from_NDArray(fixed_image);
-    //     source.from_NDArray(moving_image);
+    const int ixo = blockDim.x * blockIdx.x + threadIdx.x;
+    const int iyo = blockDim.y * blockIdx.y + threadIdx.y;
+    const int izo = blockDim.z * blockIdx.z + threadIdx.z;
 
-    //     hoNDBoundaryHandlerFixedValue<ImageType> bhFixedValue;
-    //     bhFixedValue.setArray(source);
+    if (ixo < width && iyo < height && izo < depth) {
 
-    //     hoNDInterpolatorBSpline<ImageType, 3> interpBSpline(5);
-    //     interpBSpline.setArray(source);
-    //     interpBSpline.setBoundaryHandler(bhFixedValue);
+        const int idx = ixo + iyo * width + izo * width * height;
+        const int elements = width * height * depth;
+        REAL ux = vector_field[idx] + REAL(0.5 + ixo);
+        REAL uy = vector_field[idx + elements] + REAL(0.5 + iyo);
+        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5 + izo);
 
-    //     hoImageRegWarper<ImageType, ImageType, double> warper;
-    //     warper.setBackgroundValue(-1);
-    //     using namespace Gadgetron::Indexing;
+        output[idx] = cubicTex3D(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
+    }
+}
+//--------------------------------------------------------------------------
+// Declare the typecast CUDA kernels
+//--------------------------------------------------------------------------
+template <class T> __device__ float Multiplier() { return 1.0f; }
+template <> __device__ float Multiplier<uchar>() { return 255.0f; }
+template <> __device__ float Multiplier<schar>() { return 127.0f; }
+template <> __device__ float Multiplier<ushort>() { return 65535.0f; }
+template <> __device__ float Multiplier<short>() { return 32767.0f; }
+template <class T> __global__ void CopyCast(uchar* destination, const T* source, uint pitch, uint width) {
+    uint2 index =
+        make_uint2(__umul24(blockIdx.x, blockDim.x) + threadIdx.x, __umul24(blockIdx.y, blockDim.y) + threadIdx.y);
 
-    //     hoImageRegDeformationField<double, 3> transform;
+    float* dest = (float*)(destination + index.y * pitch) + index.x;
+    *dest = (1.0f / Multiplier<T>()) * (float)(source[index.y * width + index.x]);
+}
+//--------------------------------------------------------------------------
+// Declare the typecast templated function
+// This function can be called directly in C++ programs
+//--------------------------------------------------------------------------
 
-    //     ImageType deformation;
-    //     deformation.from_NDArray(hoNDArray<double>(transformation(slice, slice, slice, 0)));
-    //     transform.setDeformationField(deformation, 0);
+//! Allocate GPU memory and copy a voxel volume from CPU to GPU memory
+//! and cast it to the normalized floating point format
+//! @return the pointer to the GPU copy of the voxel volume
+//! @param host  pointer to the voxel volume in CPU (host) memory
+//! @param width   volume width in number of voxels
+//! @param height  volume height in number of voxels
+//! @param depth   volume depth in number of voxels
+template <class T> extern cudaPitchedPtr CastVolumeHostToDevice(const T* host, uint width, uint height, uint depth) {
+    cudaPitchedPtr device = {0};
+    const cudaExtent extent = make_cudaExtent(width * sizeof(float), height, depth);
+    cudaMalloc3D(&device, extent);
+    const size_t pitchedBytesPerSlice = device.pitch * device.ysize;
 
-    //     deformation.from_NDArray(hoNDArray<double>(transformation(slice, slice, slice, 1)));
-    //     transform.setDeformationField(deformation, 1);
+    T* temp = 0;
+    const uint voxelsPerSlice = width * height;
+    const size_t nrOfBytesTemp = voxelsPerSlice * sizeof(T);
+    cudaMalloc((void**)&temp, nrOfBytesTemp);
 
-    //     deformation.from_NDArray(hoNDArray<double>(transformation(slice, slice, slice, 2)));
-    //     transform.setDeformationField(deformation, 2);
+    uint dimX = min(PowTwoDivider(width), 64);
+    dim3 dimBlock(dimX, min(PowTwoDivider(height), 512 / dimX));
+    dim3 dimGrid(width / dimBlock.x, height / dimBlock.y);
+    size_t offsetHost = 0;
+    size_t offsetDevice = 0;
 
-    //     warper.setTransformation(transform);
-    //     warper.setInterpolator(interpBSpline);
+    for (uint slice = 0; slice < depth; slice++) {
+        cudaMemcpy(temp, host + offsetHost, nrOfBytesTemp, cudaMemcpyHostToDevice);
+        CopyCast<T><<<dimGrid, dimBlock>>>((uchar*)device.ptr + offsetDevice, temp, (uint)device.pitch, width);
+        offsetHost += voxelsPerSlice;
+        offsetDevice += pitchedBytesPerSlice;
+    }
 
-    //     ImageType warped;
-    //     warper.warp(target, source, false, warped);
+    cudaFree(temp); // free the temp GPU volume
+    return device;
+}
+//! Copy a voxel volume from a pitched pointer to a texture
+//! @param tex      [output]  pointer to the texture
+//! @param texArray [output]  pointer to the texArray
+//! @param volume   [input]   pointer to the the pitched voxel volume
+//! @param extent   [input]   size (width, height, depth) of the voxel volume
+//! @param onDevice [input]   boolean to indicate whether the voxel volume resides in GPU (true) or CPU (false) memory
+//! @note When the texArray is not yet allocated, this function will allocate it
+template <class T, enum cudaTextureReadMode mode>
+void CreateTextureFromVolume(texture<T, 3, mode>* tex, cudaArray** texArray, const cudaPitchedPtr volume,
+                             cudaExtent extent, bool onDevice) {
+    
+    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<T>();
+    if (*texArray == 0)
+        cudaMalloc3DArray(texArray, &channelDesc, extent);
+    // copy data to 3D array
+    cudaMemcpy3DParms p = {0};
+    p.extent = extent;
+    p.srcPtr = volume;
+    p.dstArray = *texArray;
+    p.kind = onDevice ? cudaMemcpyDeviceToDevice : cudaMemcpyHostToDevice;
+    cudaMemcpy3D(&p);
+    // bind array to 3D texture
+    cudaBindTextureToArray(*tex, *texArray, channelDesc);
+    tex->normalized = false; // access with absolute texture coordinates
+    tex->filterMode = cudaFilterModeLinear;
+}
+template <class REAL, unsigned int D>
+void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>* image,
+                                                                            cuNDArray<REAL>& vector_field) {
 
-    //     hoNDArray<double> output_forward;
-    //     warped.to_NDArray(output_forward);
-    //     return output_forward;
-    // }
+    cuNDArray<REAL> outputr(image->get_dimensions());
+    cuNDArray<REAL> outputi(image->get_dimensions());
 
+    cuNDArray<REAL>  mir = *real(image);
+    cuNDArray<REAL>  mii = *imag(image);
+
+    // clear(&output);
+
+    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<REAL>();
+    cudaExtent extent;
+    extent.width = image->get_size(0);
+    extent.height = image->get_size(1);
+    extent.depth = image->get_size(2);
+
+    cudaMemcpy3DParms cpy_params_r = {0};
+    cpy_params_r.kind = cudaMemcpyDeviceToDevice;
+    cpy_params_r.extent = extent;
+
+    cudaArray* image_array_r;
+    cudaMalloc3DArray(&image_array_r, &channelDesc, extent);
+    cpy_params_r.dstArray = image_array_r;
+    cpy_params_r.srcPtr =
+        make_cudaPitchedPtr((void*)mir.data(), extent.width * sizeof(float), extent.width, extent.height);
+    cudaMemcpy3D(&cpy_params_r);
+    printf("\n RealCopy Done:\n");
+
+    cudaMemcpy3DParms cpy_params_i = {0};
+    channelDesc = cudaCreateChannelDesc<REAL>();
+
+    cudaArray* image_array_i;
+    cudaMalloc3DArray(&image_array_i, &channelDesc, extent);
+    cpy_params_i.kind = cudaMemcpyDeviceToDevice;
+    cpy_params_i.extent = extent;
+    cpy_params_i.dstArray = image_array_i;
+    cpy_params_i.srcPtr =
+        make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
+    cudaMemcpy3D(&cpy_params_i);
+    printf("\n Imag Done:\n");
+
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.dstPtr.ptr, (uint)cpy_params_r.dstPtr.pitch, extent.width,
+                                 extent.height, extent.depth);
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.dstPtr.ptr, (uint)cpy_params_i.dstPtr.pitch, extent.width,
+                                 extent.height, extent.depth);
+    // create the b-spline coefficients texture
+    // CreateTextureFromVolume(&coeffs, &coeffArray, cpy_params.srcPtr, volumeExtent, true);
+    // cudaDestroyTextureObject(texObj);
+
+    struct cudaResourceDesc resDesc;
+    memset(&resDesc, 0, sizeof(resDesc));
+    resDesc.resType = cudaResourceTypeArray;
+    resDesc.res.array.array = image_array_r;
+
+    struct cudaTextureDesc texDesc;
+    memset(&texDesc, 0, sizeof(texDesc));
+    texDesc.addressMode[0] = cudaAddressModeClamp;
+    texDesc.addressMode[1] = cudaAddressModeClamp;
+    texDesc.addressMode[2] = cudaAddressModeClamp;
+    texDesc.filterMode = cudaFilterModeLinear;
+    texDesc.readMode = cudaReadModeElementType;
+    texDesc.normalizedCoords = 0;
+    cudaTextureObject_t texObj_r = 0;
+    cudaTextureObject_t texObj_i = 0;
+    cudaCreateTextureObject(&texObj_r, &resDesc, &texDesc, NULL);
+    resDesc.res.array.array = image_array_i;
+    cudaCreateTextureObject(&texObj_i, &resDesc, &texDesc, NULL);
+
+    // cudaPitchedPtr bsplineCoeffs = make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width,
+    // extent.height);
+    
+
+    // create the b-spline coefficients texture
+    // cudaArray* coeffArray = 0;
+    // texture<float, 3, cudaReadModeElementType> coeffs; // 3D texture
+    // cudaExtent volumeExtent = make_cudaExtent(extent.width, extent.height, extent.depth);
+    // CreateTextureFromVolume(&coeffs, &coeffArray, cpy_params.srcPtr, volumeExtent, true);
+    // cudaFree(bsplineCoeffs.ptr);  //they are now in the coeffs texture, we do not need this anymore
+
+    
+
+    dim3 threads(8, 8, 8);
+
+    dim3 grid((extent.width + threads.x - 1) / threads.x, (extent.height + threads.y - 1) / threads.y,
+              (extent.depth + threads.z - 1) / threads.z);
+     printf("\nBefore Kernel1:\n");
+
+     deform_imageKernel<REAL>
+         <<<grid, threads>>>(outputr.data(), vector_field.data(), texObj_r, extent.width, extent.height, extent.depth);
+
+         printf("\n After Kernel1:\n");
+
+    // deform_imageKernel<REAL>
+    //     <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffs, extent.width, extent.height, extent.depth);
+
+    // cudaFreeArray(image_array_r);
+    
+    printf("\nBefore Kernel2:\n");
+    deform_imageKernel<REAL>
+        <<<grid, threads>>>(outputi.data(), vector_field.data(), texObj_i, extent.width, extent.height, extent.depth);
+    printf("\After Kernel2:\n");
+
+    //cudaFree(&coeffs);
+    // Free device memory
+
+    image = cureal_imag_to_complex<float_complext>(&outputr, &outputi).get();
+}
 
 template <class REAL, unsigned int D>
 void cuNonCartesianMOCOOperator<REAL, D>::set_shots_per_time(std::vector<size_t> shots_per_time) {
@@ -289,7 +482,7 @@ template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<float, 2>;
 template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<float, 3>;
 template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<float, 4>;
 
-template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 1>;
-template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 2>;
-template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 3>;
-template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 4>;
+// template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 1>;
+// template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 2>;
+// template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 3>;
+// template class EXPORTGPUPMRI cuNonCartesianMOCOOperator<double, 4>;

@@ -46,7 +46,8 @@ namespace Gadgetron{
     private:
     void applyDeformation(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation);
     void applyDeformationbSpline(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation);
-  
+    void deform_image( cuNDArray< complext<REAL> >* image,  cuNDArray<REAL>& vector_field);
+
   protected:
     std::vector<boost::shared_ptr< cuNFFT_plan<REAL, D> > >plan_;
     std::vector<cuNDArray<REAL> > dcw_;

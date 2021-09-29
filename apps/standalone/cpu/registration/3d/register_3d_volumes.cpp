@@ -99,17 +99,10 @@ int main(int argc, char** argv) {
     // level
     unsigned int level = multires_levels;
 
-    std::vector<T> iters;
-    std::vector<T> regularization_hilbert_strength;
-    std::vector<T> LocalCCR_sigmaArg;
+    std::vector<T> iters(iterations.get()->get_data_ptr(),iterations.get()->get_data_ptr()+level);
+    std::vector<T> regularization_hilbert_strength(regularizers.get()->get_data_ptr(),regularizers.get()->get_data_ptr()+level);
+    std::vector<T> LocalCCR_sigmaArg(sigmas.get()->get_data_ptr(),sigmas.get()->get_data_ptr()+level);
 
-    // max_iter_num_pyramid_level
-    for (auto ii = 0; ii < level; ii++) {
-        iters.push_back(iterations.get()[ii]);
-        regularization_hilbert_strength.get()[ii]);
-        LocalCCR_sigmaArg.push_back(sigmasget()[ii]);
-    }
-    iters = {16, 16, 16};
 
     if (iters.size() != level) {
         T iter1 = iters[0];
@@ -121,7 +114,6 @@ int main(int argc, char** argv) {
     }
 
     // regularization_hilbert_strength
-    regularization_hilbert_strength = {3.0, 3.0, 3.0};
 
     if (regularization_hilbert_strength.size() != level) {
         T v1 = regularization_hilbert_strength[0];
@@ -129,7 +121,6 @@ int main(int argc, char** argv) {
     }
 
     // LocalCCR_sigmaArg
-    std::vector<T> LocalCCR_sigmaArg = {1.0, 1.0, 1.0};
 
     if (LocalCCR_sigmaArg.size() != level) {
         T v1 = LocalCCR_sigmaArg[0];
