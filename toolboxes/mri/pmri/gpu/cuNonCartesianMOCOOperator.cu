@@ -358,9 +358,6 @@ template <class REAL, unsigned int D>
 void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>* image,
                                                                             cuNDArray<REAL>& vector_field) {
 
-    cuNDArray<REAL> outputr(image->get_dimensions());
-    cuNDArray<REAL> outputi(image->get_dimensions());
-
     cuNDArray<REAL>  mir = *real(image);
     cuNDArray<REAL>  mii = *imag(image);
 
@@ -382,7 +379,6 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     cpy_params_r.srcPtr =
         make_cudaPitchedPtr((void*)mir.data(), extent.width * sizeof(float), extent.width, extent.height);
     cudaMemcpy3D(&cpy_params_r);
-    printf("\n RealCopy Done:\n");
 
     cudaMemcpy3DParms cpy_params_i = {0};
     channelDesc = cudaCreateChannelDesc<REAL>();
@@ -395,7 +391,6 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     cpy_params_i.srcPtr =
         make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
     cudaMemcpy3D(&cpy_params_i);
-    printf("\n Imag Done:\n");
 
     CubicBSplinePrefilter3DTimer((float*)cpy_params_r.dstPtr.ptr, (uint)cpy_params_r.dstPtr.pitch, extent.width,
                                  extent.height, extent.depth);
@@ -412,9 +407,9 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
 
     struct cudaTextureDesc texDesc;
     memset(&texDesc, 0, sizeof(texDesc));
-    texDesc.addressMode[0] = cudaAddressModeClamp;
-    texDesc.addressMode[1] = cudaAddressModeClamp;
-    texDesc.addressMode[2] = cudaAddressModeClamp;
+    texDesc.addressMode[0] = cudaAddressModeWrap;
+    texDesc.addressMode[1] = cudaAddressModeWrap;
+    texDesc.addressMode[2] = cudaAddressModeWrap;
     texDesc.filterMode = cudaFilterModeLinear;
     texDesc.readMode = cudaReadModeElementType;
     texDesc.normalizedCoords = 0;
@@ -441,27 +436,38 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
 
     dim3 grid((extent.width + threads.x - 1) / threads.x, (extent.height + threads.y - 1) / threads.y,
               (extent.depth + threads.z - 1) / threads.z);
-     printf("\nBefore Kernel1:\n");
 
+    cuNDArray<REAL> outputr(image->get_dimensions());
+    cuNDArray<REAL> outputi(image->get_dimensions());
+    clear(&outputr);
+    clear(&outputi);
      deform_imageKernel<REAL>
          <<<grid, threads>>>(outputr.data(), vector_field.data(), texObj_r, extent.width, extent.height, extent.depth);
 
-         printf("\n After Kernel1:\n");
 
     // deform_imageKernel<REAL>
     //     <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffs, extent.width, extent.height, extent.depth);
 
     // cudaFreeArray(image_array_r);
     
-    printf("\nBefore Kernel2:\n");
+    cudaDeviceSynchronize();
+
     deform_imageKernel<REAL>
         <<<grid, threads>>>(outputi.data(), vector_field.data(), texObj_i, extent.width, extent.height, extent.depth);
-    printf("\After Kernel2:\n");
-
+    
+    cudaDeviceSynchronize();
     //cudaFree(&coeffs);
     // Free device memory
-
+    cudaFree(&image_array_i);
+    cudaFree(&image_array_r);
     image = cureal_imag_to_complex<float_complext>(&outputr, &outputi).get();
+    cudaFree(&outputr);
+    cudaFree(&outputi);
+    cudaFree(&texObj_r);
+    cudaFree(&texObj_i);
+    cudaFree(&mir);
+    cudaFree(&mii);
+    
 }
 
 template <class REAL, unsigned int D>
