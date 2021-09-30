@@ -55,10 +55,10 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
         auto inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, size_t(0)) *
                          tmp_dims[0]; // sum of cum sum shots per time
 
-        auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
+        //auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
 
         // Move the image to moving image
-        slice_view_in = input;
+        auto slice_view_in = input;
         // auto adj_deformation = forward_deformation_[it];
         // adj_deformation *= (REAL)-1.0;
         // applyDeformationbSpline(&slice_view_in, backward_deformation_[it]);
@@ -389,7 +389,6 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     cpy_params_i.dstArray = image_array_i;
     cpy_params_i.srcPtr =
         make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
-    cudaMemcpy3D(&cpy_params_i);
 
     CubicBSplinePrefilter3DTimer((float*)cpy_params_r.srcPtr.ptr, (uint)cpy_params_r.srcPtr.pitch, extent.width,
                                  extent.height, extent.depth);
@@ -460,15 +459,9 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     cudaDeviceSynchronize();
     //cudaFree(&coeffs);
     // Free device memory
-    cudaFree(&image_array_i);
-    cudaFree(&image_array_r);
+    
     image = cureal_imag_to_complex<float_complext>(&outputr, &outputi).get();
-    cudaFree(&outputr);
-    cudaFree(&outputi);
-    cudaFree(&texObj_r);
-    cudaFree(&texObj_i);
-    cudaFree(&mir);
-    cudaFree(&mii);
+    
     
 }
 
