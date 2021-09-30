@@ -99,10 +99,10 @@ int main(int argc, char** argv) {
     // level
     unsigned int level = multires_levels;
 
-    std::vector<T> iters(iterations.get()->get_data_ptr(),iterations.get()->get_data_ptr()+level);
-    std::vector<T> regularization_hilbert_strength(regularizers.get()->get_data_ptr(),regularizers.get()->get_data_ptr()+level);
-    std::vector<T> LocalCCR_sigmaArg(sigmas.get()->get_data_ptr(),sigmas.get()->get_data_ptr()+level);
-
+    std::vector<T> iters(iterations.get()->get_data_ptr(), iterations.get()->get_data_ptr() + level);
+    std::vector<T> regularization_hilbert_strength(regularizers.get()->get_data_ptr(),
+                                                   regularizers.get()->get_data_ptr() + level);
+    std::vector<T> LocalCCR_sigmaArg(sigmas.get()->get_data_ptr(), sigmas.get()->get_data_ptr() + level);
 
     if (iters.size() != level) {
         T iter1 = iters[0];
@@ -239,25 +239,39 @@ int main(int argc, char** argv) {
     hoNDArray<T> inv_deformation;
     deformation.create(size_deformation);
     inv_deformation.create(size_deformation);
-    
+    deformation.fill(0);
+    inv_deformation.fill(0);
     using namespace Gadgetron::Indexing;
-    
+
     hoNDArray<T> deformField;
     auto result_str = std::string(parms.get_parameter('r')->get_string_value());
+    auto stride_data =
+        std::accumulate(size_deformation.begin(), size_deformation.end() - 1, 1, std::multiplies<size_t>());
 
-    dx_reg.to_NDArray(deformField);
-    deformation(slice, slice, slice, 0) = deformField;
-    dy_reg.to_NDArray(deformField);
-    deformation(slice, slice, slice, 1) = deformField;
-    dz_reg.to_NDArray(deformField);
-    deformation(slice, slice, slice, 2) = deformField;
+    using namespace Gadgetron::Indexing;
+    for (auto ii = 0; ii < deformation.get_size(3); ii++) {
+        // Forward transform
 
-    dxInv_reg.to_NDArray(deformField);
-    inv_deformation(slice, slice, slice, 0) = deformField;
-    dyInv_reg.to_NDArray(deformField);
-    inv_deformation(slice, slice, slice, 1) = deformField;
-    dzInv_reg.to_NDArray(deformField);
-    inv_deformation(slice, slice, slice, 2) = deformField;
+        auto slice_view_in = hoNDArray<double>(fixed_image->get_dimensions(), deformation.data() + stride_data * ii);
+        reg.transform_->getDeformationField(ii).to_NDArray(slice_view_in);
+
+        // Inverse transform
+        slice_view_in = hoNDArray<double>(fixed_image->get_dimensions(), inv_deformation.data() + stride_data * ii);
+        reg.transform_inverse_->getDeformationField(ii).to_NDArray(slice_view_in);
+    }
+    // dx_reg.to_NDArray(deformField);
+    // deformation(slice, slice, slice, 0) = deformField;
+    // dy_reg.to_NDArray(deformField);
+    // deformation(slice, slice, slice, 1) = deformField;
+    // dz_reg.to_NDArray(deformField);
+    // deformation(slice, slice, slice, 2) = deformField;
+
+    // dxInv_reg.to_NDArray(deformField);
+    // inv_deformation(slice, slice, slice, 0) = deformField;
+    // dyInv_reg.to_NDArray(deformField);
+    // inv_deformation(slice, slice, slice, 1) = deformField;
+    // dzInv_reg.to_NDArray(deformField);
+    // inv_deformation(slice, slice, slice, 2) = deformField;
 
     write_nd_array<double>(&deformation, (result_str + std::string("_deformation.double")).c_str());
 
@@ -271,7 +285,6 @@ int main(int argc, char** argv) {
     write_nd_array<double>(&out, (result_str + std::string("_warped_image.double")).c_str());
 
     // ---------------------------------------------------------------
-
 
     return 0;
 }

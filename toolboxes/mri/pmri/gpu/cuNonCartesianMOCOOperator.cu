@@ -246,9 +246,9 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
 
         const int idx = ixo + iyo * width + izo * width * height;
         const int elements = width * height * depth;
-        REAL ux = vector_field[idx] + REAL(0.5f + ixo);
-        REAL uy = vector_field[idx + elements] + REAL(0.5f + iyo);
-        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5f + izo);
+        REAL ux = vector_field[idx] + (0.5f + ixo);
+        REAL uy = vector_field[idx + elements] + (0.5f + iyo);
+        REAL uz = vector_field[idx + 2 * elements] + (0.5f + izo);
 
         output[idx] = tex3D<REAL>(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
     }
@@ -267,9 +267,9 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
 
         const int idx = ixo + iyo * width + izo * width * height;
         const int elements = width * height * depth;
-        REAL ux = vector_field[idx] + REAL(0.5 + ixo);
-        REAL uy = vector_field[idx + elements] + REAL(0.5f + iyo);
-        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5f + izo);
+        REAL ux = vector_field[idx] + (0.5f + ixo);
+        REAL uy = vector_field[idx + elements] + (0.5f + iyo);
+        REAL uz = vector_field[idx + 2 * elements] + (0.5f + izo);
 
         output[idx] = cubicTex3D(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
     }
@@ -390,10 +390,10 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     cpy_params_i.srcPtr =
         make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
 
-    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.srcPtr.ptr, (uint)cpy_params_r.srcPtr.pitch, extent.width,
-                                 extent.height, extent.depth);
-    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.srcPtr.ptr, (uint)cpy_params_i.srcPtr.pitch, extent.width,
-                                 extent.height, extent.depth);
+    // CubicBSplinePrefilter3DTimer((float*)cpy_params_r.srcPtr.ptr, (uint)cpy_params_r.srcPtr.pitch, extent.width,
+    //                              extent.height, extent.depth);
+    // CubicBSplinePrefilter3DTimer((float*)cpy_params_i.srcPtr.ptr, (uint)cpy_params_i.srcPtr.pitch, extent.width,
+    //                              extent.height, extent.depth);
     cudaMemcpy3D(&cpy_params_r);
     cudaMemcpy3D(&cpy_params_i);
 
@@ -408,12 +408,12 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
 
     struct cudaTextureDesc texDesc;
     memset(&texDesc, 0, sizeof(texDesc));
-    texDesc.addressMode[0] = cudaAddressModeWrap;
-    texDesc.addressMode[1] = cudaAddressModeWrap;
-    texDesc.addressMode[2] = cudaAddressModeWrap;
+    texDesc.addressMode[0] = cudaAddressModeClamp;
+    texDesc.addressMode[1] = cudaAddressModeClamp;
+    texDesc.addressMode[2] = cudaAddressModeClamp;
     texDesc.filterMode = cudaFilterModeLinear;
     texDesc.readMode = cudaReadModeElementType;
-    texDesc.normalizedCoords = 0;
+    texDesc.normalizedCoords = 1;
     cudaTextureObject_t texObj_r = 0;
     cudaTextureObject_t texObj_i = 0;
     cudaCreateTextureObject(&texObj_r, &resDesc, &texDesc, NULL);

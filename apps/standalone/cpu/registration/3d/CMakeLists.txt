@@ -59,4 +59,5 @@ target_link_libraries(applyDeformation
 
 install(TARGETS register_CK_3d_cpu DESTINATION bin COMPONENT main)
 install(TARGETS register_3d_volumes DESTINATION bin COMPONENT main)
+install(TARGETS applyDeformation DESTINATION bin COMPONENT main)
 
