@@ -3,6 +3,7 @@
 #include "cubicTex3D.cu"
 #include "vector_td_utilities.h"
 #include <thrust/extrema.h>
+#include "stdio.h"
 using namespace Gadgetron;
 
 template <class REAL, unsigned int D>
@@ -55,7 +56,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
         auto inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, size_t(0)) *
                          tmp_dims[0]; // sum of cum sum shots per time
 
-        //auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
+        // auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
 
         // Move the image to moving image
         auto slice_view_in = input;
@@ -155,7 +156,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
         auto slice_view_output = cuNDArray<complext<REAL>>(out_dimensions, moving_images.data() + stride_out * it);
 
         this->mult_csm_conj_sum(&tmp, &slice_view_output);
-        //applyDeformationbSpline(&slice_view_output, forward_deformation_[it]);
+        // applyDeformationbSpline(&slice_view_output, forward_deformation_[it]);
         deform_image(&slice_view_output, forward_deformation_[it]);
         output += slice_view_output;
     }
@@ -235,8 +236,8 @@ void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray<comp
 }
 // Simple transformation kernel
 template <typename REAL>
-__global__ static void deform_imageKernel(REAL* output, const REAL* vector_field, cudaTextureObject_t texObj,
-                                          int width, int height, int depth) {
+__global__ static void deform_imageKernel(REAL* output, const REAL* vector_field, cudaTextureObject_t texObj, int width,
+                                          int height, int depth) {
 
     const int ixo = blockDim.x * blockIdx.x + threadIdx.x;
     const int iyo = blockDim.y * blockIdx.y + threadIdx.y;
@@ -249,8 +250,10 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
         REAL ux = vector_field[idx] + (0.5f + ixo);
         REAL uy = vector_field[idx + elements] + (0.5f + iyo);
         REAL uz = vector_field[idx + 2 * elements] + (0.5f + izo);
-
-        output[idx] = tex3D<REAL>(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
+       // printf("ux: %0.2f, vector_field[%d]: %0.2f, ixo: %d \n",ux,idx,vector_field[idx],ixo);
+       // printf("output: %d, input: %d",tex3D<REAL>(texObj, ux, uy, uz),
+       // tex3D<REAL>(texObj, (0.5f + ixo), (REAL)(0.5f + iyo), (REAL)(0.5f + izo)));
+        output[idx] = tex3D<REAL>(texObj, ux,uy,uz);
     }
 }
 // Simple transformation kernel
@@ -338,7 +341,7 @@ template <class T> extern cudaPitchedPtr CastVolumeHostToDevice(const T* host, u
 template <class T, enum cudaTextureReadMode mode>
 void CreateTextureFromVolume(texture<T, 3, mode>* tex, cudaArray** texArray, const cudaPitchedPtr volume,
                              cudaExtent extent, bool onDevice) {
-    
+
     cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<T>();
     if (*texArray == 0)
         cudaMalloc3DArray(texArray, &channelDesc, extent);
@@ -355,11 +358,10 @@ void CreateTextureFromVolume(texture<T, 3, mode>* tex, cudaArray** texArray, con
     tex->filterMode = cudaFilterModeLinear;
 }
 template <class REAL, unsigned int D>
-void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>* image,
-                                                                            cuNDArray<REAL>& vector_field) {
+cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>* image, cuNDArray<REAL> vector_field) {
 
-    cuNDArray<REAL>  mir = *real(image);
-    cuNDArray<REAL>  mii = *imag(image);
+    cuNDArray<REAL> mir = *real(image);
+    cuNDArray<REAL> mii = *imag(image);
 
     // clear(&output);
 
@@ -413,7 +415,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     texDesc.addressMode[2] = cudaAddressModeClamp;
     texDesc.filterMode = cudaFilterModeLinear;
     texDesc.readMode = cudaReadModeElementType;
-    texDesc.normalizedCoords = 1;
+    texDesc.normalizedCoords = 0;
     cudaTextureObject_t texObj_r = 0;
     cudaTextureObject_t texObj_i = 0;
     cudaCreateTextureObject(&texObj_r, &resDesc, &texDesc, NULL);
@@ -422,7 +424,6 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
 
     // cudaPitchedPtr bsplineCoeffs = make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width,
     // extent.height);
-    
 
     // create the b-spline coefficients texture
     // cudaArray* coeffArray = 0;
@@ -431,8 +432,6 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
     // CreateTextureFromVolume(&coeffs, &coeffArray, cpy_params.srcPtr, volumeExtent, true);
     // cudaFree(bsplineCoeffs.ptr);  //they are now in the coeffs texture, we do not need this anymore
 
-    
-
     dim3 threads(8, 8, 8);
 
     dim3 grid((extent.width + threads.x - 1) / threads.x, (extent.height + threads.y - 1) / threads.y,
@@ -440,29 +439,26 @@ void cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>
 
     cuNDArray<REAL> outputr(image->get_dimensions());
     cuNDArray<REAL> outputi(image->get_dimensions());
-    clear(&outputr);
-    clear(&outputi);
-     deform_imageKernel<REAL>
-         <<<grid, threads>>>(outputr.data(), vector_field.data(), texObj_r, extent.width, extent.height, extent.depth);
 
+    deform_imageKernel<REAL>
+        <<<grid, threads>>>(outputr.data(), vector_field.data(), texObj_r, extent.width, extent.height, extent.depth);
 
     // deform_imageKernel<REAL>
     //     <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffs, extent.width, extent.height, extent.depth);
 
     // cudaFreeArray(image_array_r);
-    
+
     cudaDeviceSynchronize();
 
     deform_imageKernel<REAL>
         <<<grid, threads>>>(outputi.data(), vector_field.data(), texObj_i, extent.width, extent.height, extent.depth);
-    
+
     cudaDeviceSynchronize();
-    //cudaFree(&coeffs);
+    // cudaFree(&coeffs);
     // Free device memory
-    
-    image = cureal_imag_to_complex<float_complext>(&outputr, &outputi).get();
-    
-    
+
+    auto output = *cureal_imag_to_complex<float_complext>(&outputr, &outputi);
+    return output;
 }
 
 template <class REAL, unsigned int D>

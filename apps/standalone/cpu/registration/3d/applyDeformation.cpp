@@ -53,13 +53,17 @@ int main(int argc, char** argv) {
 
         auto mimage = cuNDArray<float_complext>(hoNDArray<float_complext>(*moving_image));
         auto cuvfield = cuNDArray<float>(*vfield);
+        auto tf = 
+        std::move(*cuvfield.to_host());
+            write_nd_array<float>(&tf, ("/opt/data/gt_data/" + std::string("outfield.real")).c_str());
+
         boost::shared_ptr<cuNonCartesianMOCOOperator<float, 3>> E3_;
         E3_ = boost::shared_ptr<cuNonCartesianMOCOOperator<float, 3>>(
             new cuNonCartesianMOCOOperator<float, 3>(ConvolutionType::ATOMIC));
 
-        E3_->deform_image(&mimage, cuvfield);
+        auto out = E3_->deform_image(&mimage, cuvfield);
         output = hoNDArray<float_complext>(
-        std::move(*boost::reinterpret_pointer_cast<hoNDArray<std::complex<float>>>(mimage.to_host())));
+        std::move(*boost::reinterpret_pointer_cast<hoNDArray<std::complex<float>>>(out.to_host())));
     } else {
         typedef hoMRImage<double, 3> ImageType;
         ImageType target, source, deftemp;

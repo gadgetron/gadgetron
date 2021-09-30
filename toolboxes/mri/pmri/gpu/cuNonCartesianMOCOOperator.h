@@ -42,7 +42,7 @@ namespace Gadgetron{
     
     void set_forward_deformation (std::vector<cuNDArray<REAL>> forward_deformation);
     void set_backward_deformation(std::vector<cuNDArray<REAL>> backward_deformation);
-    void deform_image( cuNDArray< complext<REAL> >* image,  cuNDArray<REAL>& vector_field);
+    cuNDArray<complext<REAL>> deform_image( cuNDArray< complext<REAL> >* image,  cuNDArray<REAL> vector_field);
 
     private:
     void applyDeformation(cuNDArray< complext<REAL> > *moving_image, cuNDArray<REAL>  transformation);
