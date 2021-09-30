@@ -246,9 +246,9 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
 
         const int idx = ixo + iyo * width + izo * width * height;
         const int elements = width * height * depth;
-        REAL ux = vector_field[idx] + REAL(0.5 + ixo);
-        REAL uy = vector_field[idx + elements] + REAL(0.5 + iyo);
-        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5 + izo);
+        REAL ux = vector_field[idx] + REAL(0.5f + ixo);
+        REAL uy = vector_field[idx + elements] + REAL(0.5f + iyo);
+        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5f + izo);
 
         output[idx] = tex3D<REAL>(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
     }
@@ -268,8 +268,8 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
         const int idx = ixo + iyo * width + izo * width * height;
         const int elements = width * height * depth;
         REAL ux = vector_field[idx] + REAL(0.5 + ixo);
-        REAL uy = vector_field[idx + elements] + REAL(0.5 + iyo);
-        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5 + izo);
+        REAL uy = vector_field[idx + elements] + REAL(0.5f + iyo);
+        REAL uz = vector_field[idx + 2 * elements] + REAL(0.5f + izo);
 
         output[idx] = cubicTex3D(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
     }

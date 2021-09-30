@@ -144,7 +144,7 @@ extern void CubicBSplinePrefilter3D(floatN* volume, uint pitch, uint width, uint
 template<class floatN>
 extern void CubicBSplinePrefilter3DTimer(floatN* volume, uint pitch, uint width, uint height, uint depth)
 {
-	printf("\nCubic B-Spline Prefilter timer:\n");
+	//printf("\nCubic B-Spline Prefilter timer:\n");
 
 	// Try to determine the optimal block dimensions
 	uint dimX = min(min(PowTwoDivider(width), PowTwoDivider(height)), 64);
