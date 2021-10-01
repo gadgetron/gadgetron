@@ -62,11 +62,11 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
         // auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
 
         // Move the image to moving image
-        auto slice_view_in = input;
+        auto slice_view_in = deform_image(&input, backward_deformation_[it]);
         // auto adj_deformation = forward_deformation_[it];
         // adj_deformation *= (REAL)-1.0;
         // applyDeformationbSpline(&slice_view_in, backward_deformation_[it]);
-        deform_image(&slice_view_in, backward_deformation_[it]);
+        
         cuNDArray<complext<REAL>> tmp(&full_dimensions);
         this->mult_csm(&slice_view_in, &tmp);
 
@@ -160,8 +160,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* in,
 
         this->mult_csm_conj_sum(&tmp, &slice_view_output);
         // applyDeformationbSpline(&slice_view_output, forward_deformation_[it]);
-        deform_image(&slice_view_output, forward_deformation_[it]);
-        output += slice_view_output;
+        output += deform_image(&slice_view_output, forward_deformation_[it]);
     }
     output /= complext<REAL>((REAL)shots_per_time_.size(), (REAL)0);
 }
