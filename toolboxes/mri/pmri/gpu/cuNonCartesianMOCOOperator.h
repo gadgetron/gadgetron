@@ -15,6 +15,8 @@
 #include "hoMRImage.h"
 #include "demons_registration.h"
 #include "hoNDArray_elemwise.h"
+#include <thrust/extrema.h>
+
 namespace Gadgetron{
 
   template<class REAL, unsigned int D> class EXPORTGPUPMRI cuNonCartesianMOCOOperator : public cuSenseOperator<REAL,D>
@@ -57,6 +59,8 @@ namespace Gadgetron{
     std::vector<size_t> shots_per_time_;
     ConvolutionType convolutionType;
     bool is_preprocessed_;
+
+
   };
   
 }

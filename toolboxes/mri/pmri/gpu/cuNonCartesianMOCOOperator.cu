@@ -1,11 +1,11 @@
+#include "../registration/optical_flow/gpu/cubicTex3D.cu"
+#include "../registration/optical_flow/gpu/internal/bspline_kernel.cu"
 #include "cuNonCartesianMOCOOperator.h"
 #include "cubicPrefilter3D.cu"
-#include "cubicTex3D.cu"
+//#include "cubicTex3D.cu"
+#include "stdio.h"
 #include "vector_td_utilities.h"
 #include <thrust/extrema.h>
-#include "stdio.h"
-#include "../registration/optical_flow/gpu/internal/bspline_kernel.cu"
-#include "../registration/optical_flow/gpu/cubicTex3D.cu"
 
 using namespace Gadgetron;
 
@@ -237,9 +237,44 @@ void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray<comp
         cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mii, transform)));
     moving_image = cureal_imag_to_complex<complext<REAL>>(&defr, &defi).get();
 }
+
+__device__ float cubictex(cudaTextureObject_t tex, float3 coord)
+{
+	// shift the coordinate from [0,extent] to [-0.5, extent-0.5]
+	const float3 coord_grid = coord - 0.5f;
+	const float3 index = floor(coord_grid);
+	const float3 fraction = coord_grid - index;
+	float3 w0, w1, w2, w3;
+	bspline_weights<float3>(fraction, w0, w1, w2, w3);
+
+	const float3 g0 = w0 + w1;
+	const float3 g1 = w2 + w3;
+	const float3 h0 = (w1 / g0) - 0.5f + index;  //h0 = w1/g0 - 1, move from [-0.5, extent-0.5] to [0, extent]
+	const float3 h1 = (w3 / g1) + 1.5f + index;  //h1 = w3/g1 + 1, move from [-0.5, extent-0.5] to [0, extent]
+
+	// fetch the eight linear interpolations
+	// weighting and fetching is interleaved for performance and stability reasons
+	float tex000 = tex3D<float>(tex, h0.x, h0.y, h0.z);
+	float tex100 = tex3D<float>(tex, h1.x, h0.y, h0.z);
+	tex000 = g0.x * tex000 + g1.x * tex100;  //weigh along the x-direction
+	float tex010 = tex3D<float>(tex, h0.x, h1.y, h0.z);
+	float tex110 = tex3D<float>(tex, h1.x, h1.y, h0.z);
+	tex010 = g0.x * tex010 + g1.x * tex110;  //weigh along the x-direction
+	tex000 = g0.y * tex000 + g1.y * tex010;  //weigh along the y-direction
+	float tex001 = tex3D<float>(tex, h0.x, h0.y, h1.z);
+	float tex101 = tex3D<float>(tex, h1.x, h0.y, h1.z);
+	tex001 = g0.x * tex001 + g1.x * tex101;  //weigh along the x-direction
+	float tex011 = tex3D<float>(tex, h0.x, h1.y, h1.z);
+	float tex111 = tex3D<float>(tex, h1.x, h1.y, h1.z);
+	tex011 = g0.x * tex011 + g1.x * tex111;  //weigh along the x-direction
+	tex001 = g0.y * tex001 + g1.y * tex011;  //weigh along the y-direction
+
+	return (g0.z * tex000 + g1.z * tex001);  //weigh along the z-direction
+}
 // Simple transformation kernel
 template <typename REAL>
-__global__ static void deform_imageKernel(REAL* output, const REAL* vector_field, cudaTextureObject_t texObj, int width,
+__global__ static void deform_imageKernel(REAL* output, const REAL* vector_field, cudaTextureObject_t texObj, int
+width,
                                           int height, int depth) {
 
     const int ixo = blockDim.x * blockIdx.x + threadIdx.x;
@@ -256,18 +291,21 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
        // printf("ux: %0.2f, vector_field[%d]: %0.2f, ixo: %d \n",ux,idx,vector_field[idx],ixo);
        // printf("output: %d, input: %d",tex3D<REAL>(texObj, ux, uy, uz),
        // tex3D<REAL>(texObj, (0.5f + ixo), (REAL)(0.5f + iyo), (REAL)(0.5f + izo)));
-        output[idx] = tex3D<REAL>(texObj, ux,uy,uz);
+        float3 cord;
+        cord.x=ux, cord.y= uy, cord.z= uz;//(ux,uy,uz);
+        output[idx] = cubictex(texObj, cord);
     }
 }
 // Simple transformation kernel
 template <typename REAL>
 __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field,
-                                          texture<REAL, 3, cudaReadModeElementType>& texObj, int width, int height,
+                                         int width, int height,
                                           int depth) {
 
     const int ixo = blockDim.x * blockIdx.x + threadIdx.x;
     const int iyo = blockDim.y * blockIdx.y + threadIdx.y;
     const int izo = blockDim.z * blockIdx.z + threadIdx.z;
+        printf("ixo: %d \n", ixo);
 
     if (ixo < width && iyo < height && izo < depth) {
 
@@ -277,7 +315,11 @@ __global__ static void deform_imageKernel(REAL* output, const REAL* vector_field
         REAL uy = vector_field[idx + elements] + (0.5f + iyo);
         REAL uz = vector_field[idx + 2 * elements] + (0.5f + izo);
 
-        output[idx] = cubicTex3D(texObj, (REAL)ux, (REAL)uy, (REAL)uz);
+        printf("vector_field[%d]: %0.2f, ixo: %d \n", idx, vector_field[idx], ixo);
+
+     //   printf("output: %d, input: %d", cubicTex3D(texObj, ux, uy, uz),
+       //        cubicTex3D(texObj, (0.5f + ixo), (REAL)(0.5f + iyo), (REAL)(0.5f + izo)));
+    //    output[idx] = cubicTex3D(texObj, ux, uy, uz);
     }
 }
 //--------------------------------------------------------------------------
@@ -361,7 +403,8 @@ void CreateTextureFromVolume(texture<T, 3, mode>* tex, cudaArray** texArray, con
     tex->filterMode = cudaFilterModeLinear;
 }
 template <class REAL, unsigned int D>
-cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>* image, cuNDArray<REAL> vector_field) {
+cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuNDArray<complext<REAL>>* image,
+                                                                            cuNDArray<REAL> vector_field) {
 
     cuNDArray<REAL> mir = *real(image);
     cuNDArray<REAL> mii = *imag(image);
@@ -395,25 +438,26 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cpy_params_i.srcPtr =
         make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
 
-   
+
+    // texture<float, 3, cudaReadModeElementType> coeffsr; // 3D texture
+    // texture<float, 3, cudaReadModeElementType> coeffsi; // 3D texture
+
+    cudaExtent volumeExtent = make_cudaExtent(extent.width, extent.height, extent.depth);
+
+    // cudaBindTextureToArray(coeffsr, image_array_r, channelDesc);
+    // cudaBindTextureToArray(coeffsi, image_array_i, channelDesc);
+
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.srcPtr.ptr, (uint)cpy_params_r.srcPtr.pitch, extent.width,
+                                 extent.height, extent.depth);
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.srcPtr.ptr, (uint)cpy_params_i.srcPtr.pitch, extent.width,
+                                 extent.height, extent.depth);
+
 
     cudaMemcpy3D(&cpy_params_r);
     cudaMemcpy3D(&cpy_params_i);
-
-    texture<float, 3, cudaReadModeElementType> coeffsr;  //3D texture
-    texture<float, 3, cudaReadModeElementType> coeffsi;  //3D texture
-    cudaArray *coeffArrayr = 0;
-    cudaArray *coeffArrayi = 0;
-	cudaExtent volumeExtent = make_cudaExtent(extent.width,extent.height, extent.depth);
-	
-
-    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.dstPtr.ptr, (uint)cpy_params_r.dstPtr.pitch, extent.width,
-                                  extent.height, extent.depth);
-    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.dstPtr.ptr, (uint)cpy_params_i.dstPtr.pitch, extent.width,
-                                  extent.height, extent.depth);
-   
-    CreateTextureFromVolume<float,cudaReadModeElementType>(&coeffsr, &coeffArrayr, cpy_params_r.dstPtr, volumeExtent, true);
-	CreateTextureFromVolume<float,cudaReadModeElementType>(&coeffsi, &coeffArrayi, cpy_params_i.dstPtr, volumeExtent, true);
+    // CreateTextureFromVolume<float,cudaReadModeElementType>(&coeffsr, &coeffArrayr, cpy_params_r.srcPtr, volumeExtent,
+    // true); CreateTextureFromVolume<float,cudaReadModeElementType>(&coeffsi, &coeffArrayi, cpy_params_i.srcPtr,
+    // volumeExtent, true);
     // create the b-spline coefficients texture
     // CreateTextureFromVolume(&coeffs, &coeffArray, cpy_params.srcPtr, volumeExtent, true);
     // cudaDestroyTextureObject(texObj);
@@ -436,7 +480,11 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cudaCreateTextureObject(&texObj_r, &resDesc, &texDesc, NULL);
     resDesc.res.array.array = image_array_i;
     cudaCreateTextureObject(&texObj_i, &resDesc, &texDesc, NULL);
-    
+
+    // coeffsr.normalized = false; // access with absolute texture coordinates
+    // coeffsr.filterMode = cudaFilterModeLinear;
+    // coeffsi.normalized = false; // access with absolute texture coordinates
+    // coeffsi.filterMode = cudaFilterModeLinear;
     // cudaPitchedPtr bsplineCoeffs = make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width,
     // extent.height);
 
@@ -456,7 +504,7 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cuNDArray<REAL> outputi(image->get_dimensions());
 
     deform_imageKernel<REAL>
-        <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffsr, extent.width, extent.height, extent.depth);
+        <<<grid, threads>>>(outputr.data(), vector_field.data(), texObj_r, extent.width, extent.height, extent.depth);
 
     // deform_imageKernel<REAL>
     //     <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffs, extent.width, extent.height, extent.depth);
@@ -466,7 +514,7 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cudaDeviceSynchronize();
 
     deform_imageKernel<REAL>
-        <<<grid, threads>>>(outputi.data(), vector_field.data(), coeffsi, extent.width, extent.height, extent.depth);
+        <<<grid, threads>>>(outputi.data(), vector_field.data(), texObj_i, extent.width, extent.height, extent.depth);
 
     cudaDeviceSynchronize();
     // cudaFree(&coeffs);
