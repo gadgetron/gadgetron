@@ -37,6 +37,8 @@ default_config_values = {
         'node_port_base': '9050',
         'dataset_group': 'dataset',
         'reference_group': 'dataset',
+        'disable_image_header_test': 'false',
+        'disable_image_meta_test': 'false',
     }
 }
 
@@ -63,6 +65,10 @@ def _colors_enabled(text, color):
     )
 
 
+def enabled(option):
+    return option.lower() in ['true', 'yes', '1', 'enabled']
+
+
 def report_test(*, color_handler, section, result, reason):
     print("{section:<26} [{status}] ({reason})".format(
         section=section,
@@ -82,8 +88,7 @@ def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measu
     echo_handler(command)
     subprocess.run(command,
                    stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE,
-                   check=True)
+                   stderr=subprocess.PIPE)
 
 
 def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, group, log, additional_arguments):
@@ -103,8 +108,7 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
     subprocess.run(command,
                    env=environment,
                    stdout=log,
-                   stderr=log,
-                   check=True)
+                   stderr=log)
 
 
 def start_storage_server(*, log, port, storage_folder):
@@ -155,25 +159,27 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
     return None, "Dataset matched reference"
 
 
-def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
-                    value_threshold, scale_threshold):
+def validate_output(*, output_file, reference_file, output_group, reference_group, value_threshold, scale_threshold):
+
     try:
-        output = numpy.squeeze(h5py.File(output_file, mode='r')[output_dataset])
+        # The errors produced by h5py are not entirely excellent. We spend some code here to clear them up a bit.
+        def get_group_data(file, group):
+            with h5py.File(file, mode='r') as f:
+                try:
+                    group = group + '/data'
+                    return numpy.squeeze(f[group])
+                except KeyError:
+                    raise RuntimeError("Did not find group '{}' in file {}".format(group, file))
+
+        output_data = get_group_data(output_file, output_group)
+        reference_data = get_group_data(reference_file, reference_group)
     except OSError as e:
-        return Failure, "Could not read output: {}".format(str(e))
-    except KeyError:
-        return Failure, "Missing output data: {}".format(output_dataset)
+        return Failure, str(e)
+    except RuntimeError as e:
+        return Failure, str(e)
 
-    try:
-        reference = numpy.squeeze(h5py.File(reference_file, mode='r')[reference_dataset])
-    except KeyError:
-        return Failure, "Missing reference data"
-
-    if not output.shape == reference.shape:
-        return Failure, "Data dimensions do not match: {} != {}".format(output.shape, reference.shape)
-
-    output = output[...].flatten().astype('float32')
-    reference = reference[...].flatten().astype('float32')
+    output = output_data[...].flatten().astype('float32')
+    reference = reference_data[...].flatten().astype('float32')
 
     norm_diff = numpy.linalg.norm(output - reference) / numpy.linalg.norm(reference)
     scale = numpy.dot(output, output) / numpy.dot(output, reference)
@@ -187,6 +193,92 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
 
     return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
                                                                scale_threshold)
+
+
+def validate_image_header(*, output_file, reference_file, output_group, reference_group):
+
+    def equals():
+        return lambda out, ref: out == ref
+
+    def approx(threshold=1e-6):
+        return lambda out, ref: abs(out - ref) <= threshold
+
+    def ignore():
+        return lambda out, ref: True
+
+    def each(rule):
+        return lambda out, ref: all(rule(out, ref) for out, ref in itertools.zip_longest(out, ref))
+
+    header_rules = {
+        'version': equals(),
+        'data_type': equals(),
+        'flags': equals(),
+        'measurement_uid': equals(),
+        'matrix_size': each(equals()),
+        'field_of_view': each(approx()),
+        'channels': equals(),
+        'position': each(approx()),
+        'read_dir': each(approx()),
+        'phase_dir': each(approx()),
+        'slice_dir': each(approx()),
+        'patient_table_position': each(approx()),
+        'average': equals(),
+        'slice': equals(),
+        'contrast': equals(),
+        'phase': equals(),
+        'repetition': equals(),
+        'set': equals(),
+        'acquisition_time_stamp': ignore(),
+        'physiology_time_stamp': each(ignore()),
+        'image_type': equals(),
+        'image_index': equals(),
+        'image_series_index': ignore(),
+        'user_int': each(equals()),
+        'user_float': each(approx()),
+        'attribute_string_len': ignore()
+    }
+
+    def check_image_header(output, reference):
+
+        if not output:
+            raise RuntimeError("Missing output")
+
+        if not reference:
+            raise RuntimeError("Missing reference")
+
+        output = output.getHead()
+        reference = reference.getHead()
+
+        for attribute, rule in header_rules.items():
+            if not rule(getattr(output, attribute), getattr(reference, attribute)):
+
+                print(output)
+                print(reference)
+
+                raise RuntimeError(
+                    "Image header '{}' does not match reference. [index {}, series {}]".format(
+                        attribute,
+                        output.image_index,
+                        output.image_series_index
+                    )
+                )
+
+    try:
+        with ismrmrd.File(output_file, 'r') as output_file:
+            with ismrmrd.File(reference_file, 'r') as reference_file:
+
+                output_images = output_file[output_group].images or []
+                reference_images = reference_file[reference_group].images or []
+
+                for output_image, reference_image in itertools.zip_longest(output_images, reference_images):
+                    check_image_header(output_image, reference_image)
+
+    except OSError as e:
+        return Failure, str(e)
+    except RuntimeError as e:
+        return Failure, str(e)
+
+    return None, "Output headers matched reference"
 
 
 def error_handlers(args, config):
@@ -303,7 +395,7 @@ def ensure_gadgetron_instance(args, config):
 
 
 def copy_input_data(args, config, section):
-    destination_file = os.path.join(args.test_folder, section + '.copied.h5')
+    destination_file = os.path.join(args.test_folder, section + '.copied.mrd')
 
     def copy_input_action(cont, **state):
         source_file = os.path.join(args.data_folder, config[section]['source'])
@@ -318,7 +410,7 @@ def copy_input_data(args, config, section):
 
 
 def convert_siemens_data(args, config, section):
-    destination_file = os.path.join(args.test_folder, section + '.converted.h5')
+    destination_file = os.path.join(args.test_folder, section + '.converted.mrd')
 
     def convert_siemens_data_action(cont, **state):
         source_file = os.path.join(args.data_folder, config[section]['data_file'])
@@ -341,7 +433,7 @@ def convert_siemens_data(args, config, section):
 
 
 def run_gadgetron_client(args, config, section):
-    output_file = os.path.join(args.test_folder, section + '.output.h5')
+    output_file = os.path.join(args.test_folder, section + '.output.mrd')
 
     def prepare_config_action(cont, **state):
         state.update(
@@ -414,12 +506,14 @@ def run_gadgetron_client(args, config, section):
 
 
 def validate_client_output(args, config, section):
+
+    reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
+
     def validate_output_action(cont, *, client_output, status=Passed, **state):
-        reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
         result, reason = validate_output(output_file=client_output,
                                          reference_file=reference_file,
-                                         output_dataset=config[section]['output_dataset'],
-                                         reference_dataset=config[section]['reference_dataset'],
+                                         output_group=config[section]['output_images'],
+                                         reference_group=config[section]['reference_images'],
                                          value_threshold=float(config[section]['value_comparison_threshold']),
                                          scale_threshold=float(config[section]['scale_comparison_threshold']))
 
@@ -431,7 +525,24 @@ def validate_client_output(args, config, section):
             **state
         )
 
+    def validate_meta(validator, cont, *, client_output, status=Passed, **state):
+        result, reason = validator(output_file=client_output,
+                                   reference_file=reference_file,
+                                   output_group=config[section]['output_images'],
+                                   reference_group=config[section]['reference_images'])
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            client_output=client_output,
+            status=status if result is None else Failure,
+            **state
+        )
+
     yield validate_output_action
+
+    if not enabled(config[section]['disable_image_header_test']):
+        yield functools.partial(validate_meta, validate_image_header)
 
 
 def validate_dataset_output(args, config, section):

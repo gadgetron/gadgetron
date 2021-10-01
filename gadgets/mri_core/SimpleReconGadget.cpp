@@ -68,7 +68,8 @@ int SimpleReconGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     //[E1, E2, N, S, LOC]
                     ISMRMRD::AcquisitionHeader & acqhdr = dbuff.headers_(dbuff.sampling_.sampling_limits_[1].center_,
                                                                          dbuff.sampling_.sampling_limits_[2].center_,
-                                                                         n, s, loc);                    
+                                                                         n, s, loc);
+                    imarray.headers_(n,s,loc).measurement_uid    = acqhdr.measurement_uid;
                     imarray.headers_(n,s,loc).matrix_size[0]     = E0;
                     imarray.headers_(n,s,loc).matrix_size[1]     = E1;
                     imarray.headers_(n,s,loc).matrix_size[2]     = E2;
