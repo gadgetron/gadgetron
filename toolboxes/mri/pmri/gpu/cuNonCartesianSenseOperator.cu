@@ -75,7 +75,7 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
   }
   
   boost::shared_ptr< std::vector<size_t> > domain_dims = this->get_domain_dimensions();
-  if( domain_dims.get() == 0x0 || domain_dims->size() == 0 ){
+  if( domain_dims.get() == 0x0 || domain_dims->empty() ){
     throw std::runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set");
   }
   plan_->preprocess( trajectory, NFFT_prep_mode::ALL );

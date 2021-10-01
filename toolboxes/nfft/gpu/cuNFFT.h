@@ -21,6 +21,7 @@
 #include "vector_td.h"
 #include "complext.h"
 #include "cuSparseMatrix.h"
+#include "cuFFTCachedPlan.h"
 
 #include "NFFT.h"
 #include "cuGriddingConvolution.h"
@@ -98,7 +99,9 @@ namespace Gadgetron
         boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filter; 
 
         // Fourier transformed deapodization filter.
-        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT; 
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT;
+
+        cuFFTCachedPlan<complext<REAL>> fft_plan;
 
         int device_;
     };

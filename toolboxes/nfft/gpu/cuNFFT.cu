@@ -57,14 +57,10 @@ Gadgetron::cuNFFT_impl<REAL, D, CONV>::~cuNFFT_impl()
 template<class REAL, unsigned int D, ConvolutionType CONV>
 void
 Gadgetron::cuNFFT_impl<REAL, D, CONV>::fft(cuNDArray <complext<REAL>>& data, NFFT_fft_mode mode, bool do_scale) {
-
-    typename uint64d<D>::Type _dims_to_transform = counting_vec<size_t, D>();
-    std::vector<size_t> dims_to_transform = to_std_vector(_dims_to_transform);
-
     if (mode == NFFT_fft_mode::FORWARDS) {
-        cuNDFFT<REAL>::instance()->fft(&data, &dims_to_transform, do_scale);
+        fft_plan.fft<D>(data);
     } else {
-        cuNDFFT<REAL>::instance()->ifft(&data, &dims_to_transform, do_scale);
+        fft_plan.ifft<D>(data);
     }
 
 }

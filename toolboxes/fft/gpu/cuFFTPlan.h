@@ -45,6 +45,9 @@ template <class ComplexType, class = std::enable_if_t<is_complex_type_v<ComplexT
     cufftHandle plan;
     const int rank;
     const std::vector<size_t> dimensions;
-}
+};
 }
 
+#include "cuFFTPlan.hpp"
+
+Gadgetron::cuFFTPlan<Gadgetron::complext<float>>* bilbo_planning;

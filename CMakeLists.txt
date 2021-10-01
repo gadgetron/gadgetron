@@ -106,7 +106,7 @@ endif ()
 
 #set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
-
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
@@ -294,17 +294,16 @@ set(GADGETRON_BUILD_RPATH "")
 
 option(USE_MKL Off)
 if (USE_MKL)
+    if (LINUX)
+        list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/mkl/latest")
+    endif()
     find_package(MKL REQUIRED)
+    link_directories(GTBLAS BEFORE INTERFACE "${MKL_ROOT}/lib/intel64/")
     add_library(GTBLAS INTERFACE)
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES MKL::MKL)
+    message("MKL LIB DIR ${MKL_ROOT}/lib/intel64")
 
-
-    string(REPLACE ";" ":" MKL_COMPILER_LIB_DIR_NO_SEMICOLON "${MKL_COMPILER_LIB_DIR}")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${MKL_LIB_DIR}:${MKL_COMPILER_LIB_DIR_NO_SEMICOLON}")
-    add_definitions(-DUSE_MKL)
-    set(GADGETRON_BUILD_RPATH "${MKL_LIB_DIR};${MKL_COMPILER_LIB_DIR}")
+    add_definitions(-DUSE_MKL -DARMA_BLAS_LONG_LONG -DARMA_USE_BLAS -DARMA_USE_LAPACK)
 else ()
     find_package(CBLAS REQUIRED)
     find_package(LAPACK REQUIRED)
@@ -413,7 +412,6 @@ if (BUILD_WITH_GPERFTOOLS_PROFILER)
 endif()
 
 
-add_subdirectory(cmake)
 add_subdirectory(chroot)
 
 option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)

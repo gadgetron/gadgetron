@@ -1,5 +1,4 @@
 #pragma once
-#include "cuFFTPlan.h"
 #include "cuNDFFT.h"
 #include <numeric>
 
@@ -64,7 +63,7 @@ cufftResult_t executePlan(cufftHandle handle, const ComplexType* idata, ComplexT
     return cufftResult::CUFFT_NOT_SUPPORTED;
 }
 
-template <class ComplexType> void timeswitch(cuNDArray<T>& in_out, int rank) {
+template <class ComplexType> void timeswitch(cuNDArray<ComplexType>& in_out, int rank) {
 
     switch (rank) {
     case 1:
@@ -94,11 +93,11 @@ Gadgetron::cuFFTPlan<ComplexType, ENABLER>::cuFFTPlan(int rank, const std::vecto
                          ? std::accumulate(dimensions.begin() + rank, dimensions.end(), 1, std::multiplies())
                          : 1;
 
-    auto result = cufftPlanMany(handle, rank, int_dimensions.data(), nullptr, 1, dist, int_dimensions.data(), 1, dist,
+    auto result = cufftPlanMany(plan, rank, int_dimensions.data(), nullptr, 1, dist, int_dimensions.data(), 1, dist,
                                 FFT_internal::transform_type<ComplexType>> (), batch_size);
 
     if (result != cufftResult::CUFFT_SUCCESS) {
-        throw std::runtime_error("FFT plan failed with error" + CUFFT_error_string(result));
+        throw std::runtime_error("FFT plan failed with error" + FFT_internal::CUFFT_error_string(result));
     }
 }
 template <class ComplexType, class ENABLER> Gadgetron::cuFFTPlan<ComplexType, ENABLER>::~cuFFTPlan() {
@@ -111,7 +110,7 @@ void Gadgetron::cuFFTPlan<ComplexType, ENABLER>::fft(cuNDArray<ComplexType>& in_
         throw std::runtime_error("Dimensions do not match FFT plan");
     auto result = FFT_internal::executePlan(plan, in_out.data(), in_out.data(), CUFFT_FORWARD);
     if (result != cufftResult::CUFFT_SUCCESS) {
-        throw std::runtime_error("FFT failed with error" + CUFFT_error_string(result));
+        throw std::runtime_error("FFT failed with error" + FFT_internal::CUFFT_error_string(result));
     }
 }
 
@@ -121,10 +120,10 @@ void Gadgetron::cuFFTPlan<ComplexType, ENABLER>::ifft(cuNDArray<ComplexType>& in
         throw std::runtime_error("Dimensions do not match FFT plan");
     auto result = FFT_internal::executePlan(plan, in_out.data(), in_out.data(), CUFFT_INVERSE);
     if (result != cufftResult::CUFFT_SUCCESS) {
-        throw std::runtime_error("IFFT failed with error" + CUFFT_error_string(result));
-    }:
+        throw std::runtime_error("IFFT failed with error" + FFT_internal::CUFFT_error_string(result));
+    }
 }
-}
+
 
 template <class ComplexType, class ENABLER>
 void Gadgetron::cuFFTPlan<ComplexType, ENABLER>::fftc(cuNDArray<ComplexType>& in_out) {
