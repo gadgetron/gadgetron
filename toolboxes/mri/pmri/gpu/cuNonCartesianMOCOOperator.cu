@@ -4,6 +4,9 @@
 #include "vector_td_utilities.h"
 #include <thrust/extrema.h>
 #include "stdio.h"
+#include "../registration/optical_flow/gpu/internal/bspline_kernel.cu"
+#include "../registration/optical_flow/gpu/cubicTex3D.cu"
+
 using namespace Gadgetron;
 
 template <class REAL, unsigned int D>
@@ -392,13 +395,25 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cpy_params_i.srcPtr =
         make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width, extent.height);
 
-    // CubicBSplinePrefilter3DTimer((float*)cpy_params_r.srcPtr.ptr, (uint)cpy_params_r.srcPtr.pitch, extent.width,
-    //                              extent.height, extent.depth);
-    // CubicBSplinePrefilter3DTimer((float*)cpy_params_i.srcPtr.ptr, (uint)cpy_params_i.srcPtr.pitch, extent.width,
-    //                              extent.height, extent.depth);
+   
+
     cudaMemcpy3D(&cpy_params_r);
     cudaMemcpy3D(&cpy_params_i);
 
+    texture<float, 3, cudaReadModeElementType> coeffsr;  //3D texture
+    texture<float, 3, cudaReadModeElementType> coeffsi;  //3D texture
+    cudaArray *coeffArrayr = 0;
+    cudaArray *coeffArrayi = 0;
+	cudaExtent volumeExtent = make_cudaExtent(extent.width,extent.height, extent.depth);
+	
+
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_r.dstPtr.ptr, (uint)cpy_params_r.dstPtr.pitch, extent.width,
+                                  extent.height, extent.depth);
+    CubicBSplinePrefilter3DTimer((float*)cpy_params_i.dstPtr.ptr, (uint)cpy_params_i.dstPtr.pitch, extent.width,
+                                  extent.height, extent.depth);
+   
+    CreateTextureFromVolume<float,cudaReadModeElementType>(&coeffsr, &coeffArrayr, cpy_params_r.dstPtr, volumeExtent, true);
+	CreateTextureFromVolume<float,cudaReadModeElementType>(&coeffsi, &coeffArrayi, cpy_params_i.dstPtr, volumeExtent, true);
     // create the b-spline coefficients texture
     // CreateTextureFromVolume(&coeffs, &coeffArray, cpy_params.srcPtr, volumeExtent, true);
     // cudaDestroyTextureObject(texObj);
@@ -421,7 +436,7 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cudaCreateTextureObject(&texObj_r, &resDesc, &texDesc, NULL);
     resDesc.res.array.array = image_array_i;
     cudaCreateTextureObject(&texObj_i, &resDesc, &texDesc, NULL);
-
+    
     // cudaPitchedPtr bsplineCoeffs = make_cudaPitchedPtr((void*)mii.data(), extent.width * sizeof(float), extent.width,
     // extent.height);
 
@@ -441,7 +456,7 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cuNDArray<REAL> outputi(image->get_dimensions());
 
     deform_imageKernel<REAL>
-        <<<grid, threads>>>(outputr.data(), vector_field.data(), texObj_r, extent.width, extent.height, extent.depth);
+        <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffsr, extent.width, extent.height, extent.depth);
 
     // deform_imageKernel<REAL>
     //     <<<grid, threads>>>(outputr.data(), vector_field.data(), coeffs, extent.width, extent.height, extent.depth);
@@ -451,7 +466,7 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     cudaDeviceSynchronize();
 
     deform_imageKernel<REAL>
-        <<<grid, threads>>>(outputi.data(), vector_field.data(), texObj_i, extent.width, extent.height, extent.depth);
+        <<<grid, threads>>>(outputi.data(), vector_field.data(), coeffsi, extent.width, extent.height, extent.depth);
 
     cudaDeviceSynchronize();
     // cudaFree(&coeffs);
