@@ -945,7 +945,7 @@ namespace Gadgetron {
 
 
           }
-          template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,int scale, int factor){
+          template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,int scale, float factor){
               namespace ba = boost::adaptors;
               namespace bm = boost::math;
               auto new_dims = *array.get_dimensions();
