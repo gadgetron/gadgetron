@@ -6,9 +6,11 @@ from gadgetron.util.cfft import cifftn
 import ismrmrd
 import ismrmrd.xsd
 
+
 class AccumulateAndRecon(Gadget):
+
     def __init__(self, next_gadget=None):
-        Gadget.__init__(self,next_gadget)
+        Gadget.__init__(self, next_gadget)
         self.myBuffer = None
         self.myCounter = 1
         self.mySeries = 1
@@ -40,8 +42,14 @@ class AccumulateAndRecon(Gadget):
             image = image * np.product(image.shape)*100 #Scaling for the scanner
             #Create a new image header and transfer value
             img_head = ismrmrd.ImageHeader()
+            img_head.version = 1
+            img_head.measurement_uid = acq.measurement_uid
+            img_head.field_of_view = (
+                self.enc.reconSpace.fieldOfView_mm.x,
+                self.enc.reconSpace.fieldOfView_mm.y,
+                self.enc.reconSpace.fieldOfView_mm.z
+            )
             img_head.channels = acq.active_channels
-            img_head.slice = acq.idx.slice
             img_head.matrix_size[0] = self.myBuffer.shape[0]
             img_head.matrix_size[1] = self.myBuffer.shape[1]
             img_head.matrix_size[2] = self.myBuffer.shape[2]
@@ -50,7 +58,14 @@ class AccumulateAndRecon(Gadget):
             img_head.phase_dir = acq.phase_dir
             img_head.slice_dir = acq.slice_dir
             img_head.patient_table_position = acq.patient_table_position
+            img_head.average = acq.idx.average
+            img_head.slice = acq.idx.slice
+            img_head.contrast = acq.idx.contrast
+            img_head.phase = acq.idx.phase
+            img_head.repetition = acq.idx.repetition
+            img_head.set = acq.idx.set
             img_head.acquisition_time_stamp = acq.acquisition_time_stamp
+            img_head.physiology_time_stamp = acq.physiology_time_stamp
             img_head.image_index = self.myCounter
             img_head.image_series_index = self.mySeries
             img_head.data_type = ismrmrd.DATATYPE_CXFLOAT
@@ -60,7 +75,7 @@ class AccumulateAndRecon(Gadget):
                     self.myCounter = 1
 
             #Return image to Gadgetron
-            self.put_next(img_head,image.astype('complex64'),*args)
+            self.put_next(img_head, image.astype('complex64'), *args)
             
         #print "Returning to Gadgetron"
         return 0 #Everything OK
