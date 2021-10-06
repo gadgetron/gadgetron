@@ -58,9 +58,9 @@ template<class REAL, unsigned int D, ConvolutionType CONV>
 void
 Gadgetron::cuNFFT_impl<REAL, D, CONV>::fft(cuNDArray <complext<REAL>>& data, NFFT_fft_mode mode, bool do_scale) {
     if (mode == NFFT_fft_mode::FORWARDS) {
-        fft_plan.fft<D>(data);
+        fft_plan.fftc(data,D, do_scale);
     } else {
-        fft_plan.ifft<D>(data);
+        fft_plan.ifftc(data,D, do_scale);
     }
 
 }

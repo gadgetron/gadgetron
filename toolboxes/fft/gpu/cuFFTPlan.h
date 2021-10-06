@@ -19,26 +19,26 @@ template <class ComplexType, class = std::enable_if_t<is_complex_type_v<ComplexT
      * Creates a non-centered inplace FFT
      * @param in_out
      */
-    void fft(cuNDArray<ComplexType>& in_out);
+    void fft(cuNDArray<ComplexType>& in_out, bool scale = true);
 ;
     /**
     * Creates a non-centered inplace inverse FFT
     * @param in_out
      */
-    void ifft(cuNDArray<ComplexType>& in_out);
+    void ifft(cuNDArray<ComplexType>& in_out, bool scale = true);
 ;
 
     /**
     * Creates a centered inplace FFT
     * @param in_out
      */
-    void fftc(cuNDArray<ComplexType>& in_out);
+    void fftc(cuNDArray<ComplexType>& in_out, bool scale=true );
 
     /**
     * Created a centered inplace inverse FFT
     * @param in_out
      */
-    void ifftc(cuNDArray<ComplexType>& in_out);
+    void ifftc(cuNDArray<ComplexType>& in_out, bool scale=true);
 ;
 
   private:
@@ -49,5 +49,3 @@ template <class ComplexType, class = std::enable_if_t<is_complex_type_v<ComplexT
 }
 
 #include "cuFFTPlan.hpp"
-
-Gadgetron::cuFFTPlan<Gadgetron::complext<float>>* bilbo_planning;
