@@ -520,6 +520,14 @@ cuNDArray<complext<REAL>> cuNonCartesianMOCOOperator<REAL, D>::deform_image(cuND
     // Free device memory
 
     auto output = *cureal_imag_to_complex<float_complext>(&outputr, &outputi);
+
+    cudaFreeArray(image_array_r);
+    cudaFreeArray(image_array_i);
+    outputr.clear();
+    outputi.clear();
+    mir.clear();
+    mii.clear();
+
     return output;
 }
 
