@@ -803,6 +803,7 @@ protected:
 				u_k_prev = *u_k;
 			}
 		} // end of outer loop
+		deinitialize();
 	}
 
 	virtual REAL normalize_data( ARRAY_TYPE_ELEMENT *f )
