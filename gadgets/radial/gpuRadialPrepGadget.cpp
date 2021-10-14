@@ -440,6 +440,8 @@ namespace Gadgetron{
 
       header->getObjectPtr()->version = base_head->version;
 
+      header->getObjectPtr()->measurement_uid = base_head->measurement_uid;
+
       header->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
       header->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
       header->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
