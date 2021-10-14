@@ -1,6 +1,7 @@
 #pragma once
 #include "cuFFTCachedPlan.h"
 #include "cuFFTPlan.h"
+#include "cuNDArray_math.h"
 
 namespace {
 namespace cufft_detail{

@@ -18,7 +18,7 @@ namespace Gadgetron{
     typedef typename reald<REAL,D>::Type _reald;
 
     cuNonCartesianSenseOperator(ConvolutionType conv = ConvolutionType::STANDARD);
-    virtual ~cuNonCartesianSenseOperator() {}
+    virtual ~cuNonCartesianSenseOperator() = default;
     
     inline boost::shared_ptr< cuNFFT_plan<REAL, D> > get_plan() { return plan_; }
     inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
