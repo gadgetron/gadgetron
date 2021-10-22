@@ -2,7 +2,7 @@
 
 #include "cuNonCartesianTSenseOperator.h"
 #include "vector_td_utilities.h"
-
+#include "gadgetron/GadgetronTimer.h"
 using namespace Gadgetron;
 
 template <class REAL, unsigned int D>
@@ -26,7 +26,7 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
     // Cart -> noncart
     std::vector<size_t> full_dimensions = *this->get_domain_dimensions();   // cart
     std::vector<size_t> data_dimensions = *this->get_codomain_dimensions(); // Non-cart
-    data_dimensions.pop_back(); // remove coil dimension from tmp_data;
+    data_dimensions.pop_back();                                             // remove coil dimension from tmp_data;
 
     auto timeD = full_dimensions[full_dimensions.size() - 1];
     full_dimensions.pop_back();
@@ -44,7 +44,7 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in
 
     std::vector<size_t> tmp_dims = *this->get_codomain_dimensions();
     auto stride_data = std::accumulate(tmp_dims.begin(), tmp_dims.end() - 1, 1, std::multiplies<size_t>());
-
+    GadgetronTimer timer("Deconstruct");
 
     for (size_t it = 0; it < shots_per_time_.size(); it++) {
 
@@ -122,6 +122,8 @@ void cuNonCartesianTSenseOperator<REAL, D>::mult_MH(cuNDArray<complext<REAL>>* i
     if (!accumulate) {
         clear(out);
     }
+    GadgetronTimer timer("Reconstruct");
+
     for (size_t it = 0; it < shots_per_time_.size(); it++) {
 
         size_t inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, 0) * in_dimensions[0];
