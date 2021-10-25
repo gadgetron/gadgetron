@@ -59,22 +59,16 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
         auto inter_acc = std::accumulate(shots_per_time_.begin(), shots_per_time_.begin() + it, size_t(0)) *
                          tmp_dims[0]; // sum of cum sum shots per time
 
-        // auto slice_view_in = cuNDArray<complext<REAL>>(slice_dimensions, moving_images.data() + stride * it);
 
         // Move the image to moving image
         auto slice_view_in = deform_image(&input, backward_deformation_[it]);
-        // auto adj_deformation = forward_deformation_[it];
-        // adj_deformation *= (REAL)-1.0;
-        // applyDeformationbSpline(&slice_view_in, backward_deformation_[it]);
-        
+       
         cuNDArray<complext<REAL>> tmp(&full_dimensions);
         this->mult_csm(&slice_view_in, &tmp);
 
         data_dimensions.pop_back();                     // remove interleave
         data_dimensions.push_back(shots_per_time_[it]); // insert correct interleave
-        // data_dimensions.push_back(this->ncoils_);       // insert coils again
 
-        // cuNDArray<complext<REAL>> tmp_data(&data_dimensions);
 
         full_dimensions.pop_back(); // remove ch
         for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++) {
@@ -90,14 +84,7 @@ void cuNonCartesianMOCOOperator<REAL, D>::mult_M(cuNDArray<complext<REAL>>* in, 
                 plan_[it]->compute(tmp_view, slice_view_out, &dcw_[it], NFFT_comp_mode::FORWARDS_C2NC);
         }
         full_dimensions.push_back(this->ncoils_);
-        // size_t inter_acc = 0;
-        // if (it > 0)
-
-        // This is not correct yet ! -- AJ
-        // for (size_t iCHA = 0; iCHA < this->ncoils_; iCHA++)
-        //     cudaMemcpy(out->get_data_ptr() + inter_acc + stride_data * iCHA,
-        //                tmp_data.get_data_ptr() + tmp_data.get_size(0) * tmp_data.get_size(1) * iCHA,
-        //                tmp_data.get_size(0) * tmp_data.get_size(1) * sizeof(complext<REAL>), cudaMemcpyDefault);
+       
     }
 }
 
