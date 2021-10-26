@@ -65,8 +65,9 @@ include(GoogleTest)
     endif ()
     target_link_libraries(test_all
             gadgetron_core
-    gadgetron_core_readers
-		gadgetron_core_writers        gadgetron_mricore
+            gadgetron_core_readers
+	    gadgetron_core_writers
+            gadgetron_mricore
             gadgetron_toolbox_cpucore
             gadgetron_toolbox_cpucore_math
             gadgetron_toolbox_cpufft
