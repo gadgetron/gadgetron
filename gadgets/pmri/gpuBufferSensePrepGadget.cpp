@@ -8,8 +8,8 @@
 #include "gpuBufferSensePrepGadget.h"
 #include <ismrmrd/xml.h>
 #include "GenericReconJob.h"
-#include "NFFTOperator.h"
 #include "cuNFFT.h"
+#include "NFFTOperator.h"
 #include "cuNDArray_math.h"
 #include "vector_td_utilities.h"
 #include <boost/shared_ptr.hpp>
