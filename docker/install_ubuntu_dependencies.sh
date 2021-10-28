@@ -68,7 +68,7 @@ cd /opt/code &&
 pip3 install -U pip setuptools testresources
 DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes python3-tk
 
-# h5py needs to be recompiled to compile agains HDF5 1.10, which is what we install on Ubuntu 20.04
+# h5py needs to be recompiled to compile against HDF5 1.10, which is what we install on Ubuntu 20.04
 pip3 install --no-binary=h5py h5py
 
 # Rest of the Python "stuff"

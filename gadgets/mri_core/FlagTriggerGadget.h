@@ -59,7 +59,7 @@ class FlagTriggerGadget : public Core::ChannelGadget<Core::Acquisition> {
     void process(Core::InputChannel<Core::Acquisition>& input,
                  Core::OutputChannel& output) override;
 
-    NODE_PROPERTY(trigger_flags, std::string, "Trigger flags (seperated by comma)", "");
+    NODE_PROPERTY(trigger_flags, std::string, "Trigger flags (separated by comma)", "");
 
     static std::function<bool(const Core::Acquisition& acq)> create_trigger_filter(const std::string& trigger_string);
 

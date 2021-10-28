@@ -25,7 +25,7 @@ namespace Gadgetron {
 
         NODE_PROPERTY(send_out_raw, bool, "Whether to set out raw images", false);
         NODE_PROPERTY(
-            send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple seires", false);
+            send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple series", false);
 
         /// parameters for raw image reconstruction
         NODE_PROPERTY(arrhythmia_rejector_factor, float,

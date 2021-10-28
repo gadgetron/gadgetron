@@ -366,7 +366,7 @@ endif()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
-    message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
+    message("For Windows users in particular, for ease of installation we do not recommend installing these libraries.")
 endif()
 
 find_package(OpenGL)

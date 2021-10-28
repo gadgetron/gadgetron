@@ -25,10 +25,10 @@ if(CUDA_FOUND)
   # RUN_RESULT_VAR is zero when a GPU is found
   if(COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR)
     set(CUDA_HAVE_GPU TRUE CACHE BOOL "Whether CUDA-capable GPU is present")
-    set(CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} CACHE STRING "Compute capability of CUDA-capable GPU present. Seperate multiple by ;. For all known, use ALL")
+    set(CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} CACHE STRING "Compute capability of CUDA-capable GPU present. Separate multiple by ;. For all known, use ALL")
   else()
     set(CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present")
-    set(CUDA_COMPUTE_CAPABILITY ALL CACHE STRING "Compute capability of CUDA-capable GPU present. Seperate multiple by ;. For all known, use ALL")
+    set(CUDA_COMPUTE_CAPABILITY ALL CACHE STRING "Compute capability of CUDA-capable GPU present. Separate multiple by ;. For all known, use ALL")
   endif()
 
 find_cuda_helper_libs(cusparse)
@@ -51,4 +51,3 @@ else()
 endif()
 
 endif()
-

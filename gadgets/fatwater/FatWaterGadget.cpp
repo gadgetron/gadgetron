@@ -26,7 +26,7 @@ namespace Gadgetron {
                 return GADGET_FAIL;
             }
         } else {
-            GERROR("Sequence parameters are required to do water fat seperations\n");
+            GERROR("Sequence parameters are required to do water fat separations\n");
             return GADGET_FAIL;
         }
 
@@ -39,7 +39,7 @@ namespace Gadgetron {
             this->fieldStrength_ = *(hdr.acquisitionSystemInformation->systemFieldStrength_T);
             GDEBUG("Field strength: %f\n", this->fieldStrength_);
         } else {
-            GERROR("Field strength not defined. Required for fat-water seperation\n");
+            GERROR("Field strength not defined. Required for fat-water separation\n");
             return GADGET_FAIL;
         }
 
@@ -132,7 +132,7 @@ namespace Gadgetron {
         uint16_t loc_images = wfimages.get_size(6);
 
         if (n_images != N || loc_images != LOC) {
-            GERROR("Wrong number of N or LOC images received from fat water seperation\n");
+            GERROR("Wrong number of N or LOC images received from fat water separation\n");
             m1->release();
             return GADGET_FAIL;
         }

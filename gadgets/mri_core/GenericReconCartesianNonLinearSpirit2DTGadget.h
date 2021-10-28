@@ -40,7 +40,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(spirit_reg_level                     , int,     "Spirit image domain regularizer, number of transformation levels", 1);
         GADGET_PROPERTY(spirit_reg_keep_approx_coeff         , bool,    "Spirit whether to keep the approximation coefficients from being regularized", true);
         GADGET_PROPERTY(spirit_reg_keep_redundant_dimension_coeff, bool,    "Spirit whether to keep the boundary coefficients of N dimension from being regularized", false);
-        GADGET_PROPERTY(spirit_reg_proximity_across_cha      , bool,    "Spirit whether to perform promixity operation across channels", false);
+        GADGET_PROPERTY(spirit_reg_proximity_across_cha      , bool,    "Spirit whether to perform proximity operation across channels", false);
         GADGET_PROPERTY(spirit_reg_use_coil_sen_map          , bool,    "Spirit whether to use coil map in the imaging term", false);
         GADGET_PROPERTY(spirit_reg_estimate_noise_floor      , bool,    "Spirit whether to estimate noise floor for the imaging term", false);
         GADGET_PROPERTY(spirit_reg_minimal_num_images_for_noise_floor, int,    "Spirit minimal number of images for noise floor estimation", 16);

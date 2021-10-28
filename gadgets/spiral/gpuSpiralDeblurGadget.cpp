@@ -208,13 +208,13 @@ typedef cuNFFT_impl<_real,2> plan_type;
 				B0_data = recon_bit_->rbit_[0].ref_->data_;
     }
 
-		//Set up image conatiners, trajectory, and NFFT_plan - if not already prepared
+		//Set up image containers, trajectory, and NFFT_plan - if not already prepared
 		ISMRMRD::AcquisitionHeader& curr_header = recon_bit_->rbit_[0].data_.headers_(0,0,0,0,0);
 		if(!prepared_ && host_data.get_size(0) > 0){ //TODO: move to process_config?
 		    Prepare_Plan(recon_bit_->rbit_[0].data_);
 		}
 
-		//Set up B0 map conatiners, trajectory, and NFFT_plan - if not already prepared
+		//Set up B0 map containers, trajectory, and NFFT_plan - if not already prepared
 		if(!prepared_B0_ && recon_bit_->rbit_[0].ref_){
 				Prepare_B0_Plan(*recon_bit_->rbit_[0].ref_);
 		}
@@ -238,7 +238,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
                                 image_dimensions_recon_os_, sample_time, .001)){
 				output_image = MFI.MFI_apply(host_image, B0_map);
 			}
-			host_image = *(reg_image.to_host()); //caling MFI_apply corrupts host_image, Recall it from GPU;
+			host_image = *(reg_image.to_host()); //calling MFI_apply corrupts host_image, Recall it from GPU;
 			//queue deblurred im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header = get_image_header(curr_header,1);
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
@@ -431,7 +431,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		B0_traj.create(R0*E1);
 		B0_weights.create(R0*E1);
 
-		float krmaxB0_ = 2.*(B0_header.user_float[4])/10000.; //TODO: B0 acquisition info currently embeded into user parameters. In the future this should be in Encoding[1]. Requires ammending XSL.
+		float krmaxB0_ = 2.*(B0_header.user_float[4])/10000.; //TODO: B0 acquisition info currently embedded into user parameters. In the future this should be in Encoding[1]. Requires amending XSL.
 		if (B0_header.trajectory_dimensions != 3) {
 			//Setup calc_vds parameters
 			const int     nfov   = 2;
