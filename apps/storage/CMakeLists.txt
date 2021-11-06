@@ -5,7 +5,7 @@ add_library(gadgetron_storage
         RESTStorageClient.cpp
         )
 
-target_link_libraries(gadgetron_storage Boost::coroutine gadgetron_core RocksDB::RocksDB Boost::date_time)
+target_link_libraries(gadgetron_storage gadgetron_core RocksDB::RocksDB Boost::date_time)
 
 target_include_directories(gadgetron_storage PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
