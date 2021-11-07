@@ -1259,7 +1259,6 @@ namespace Gadgetron
 
         im_header.version         = acq_header.version;
         im_header.data_type       = ISMRMRD::ISMRMRD_CXFLOAT;
-        im_header.flags           = acq_header.flags;
         im_header.measurement_uid = acq_header.measurement_uid;
 
         im_header.matrix_size[0] = (uint16_t)data.get_size(0);

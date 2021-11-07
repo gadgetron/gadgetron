@@ -358,7 +358,7 @@ void gesv(hoNDArray<T>& A, hoNDArray<T>& b)
     T* pA = A.data();
     size_t lda = (size_t)A.get_size(0);
     T* pB = b.data();
-    size_t ldb = (size_t)b.get_size(1);
+    size_t ldb = (size_t)b.get_size(0);
 
     hoNDArray<Lapack::Int> work(n);
     Gadgetron::clear(work);
