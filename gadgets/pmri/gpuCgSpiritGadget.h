@@ -7,6 +7,7 @@
 #include "GenericReconJob.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
+#include "cuNFFT.h"
 #include "../../toolboxes/nfft/NFFTOperator.h"
 #include "cuSpiritOperator.h"
 #include "cuCgPreconditioner.h"

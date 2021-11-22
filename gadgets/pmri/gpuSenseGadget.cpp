@@ -10,6 +10,7 @@
 #include "vector_td_utilities.h"
 #include "hoNDArray_math.h"
 #include "cuNDArray_math.h"
+#include "cudaDeviceManager.h"
 namespace Gadgetron {
 
 gpuSenseGadget::gpuSenseGadget() 
@@ -27,11 +28,7 @@ gpuSenseGadget::~gpuSenseGadget() {
 int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
   device_number_ = deviceno.value();
 
-  int number_of_devices = 0;
-  if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-    GDEBUG( "Error: unable to query number of CUDA devices.\n" );
-    return GADGET_FAIL;
-  }
+  int number_of_devices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
 
   if (number_of_devices == 0) {
     GDEBUG( "Error: No available CUDA devices.\n" );

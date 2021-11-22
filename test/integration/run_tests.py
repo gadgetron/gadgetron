@@ -82,7 +82,13 @@ def query_capabilities_from_instance(host, port):
     return subprocess.check_output(command, universal_newlines=True)
 
 
+def ignore_gadgetron_capabilities(args):
+    return {}
+
+
 def query_gadgetron_capabilities(args):
+    print("Querying Gadgetron capabilities...")
+
     info_string = query_capabilities_from_instance(args.host, args.port) if args.external else \
                   query_capabilities_from_executable()
 
@@ -267,6 +273,10 @@ def main():
 
     parser.add_argument('--ignore-requirements', type=split_tag_list, default='none', metavar='tags',
                         help="Run tests with the specified tags regardless of Gadgetron capabilities.")
+    parser.add_argument('--disable-capability-query', action='store_const', dest='capability_query_function',
+                        const=ignore_gadgetron_capabilities,
+                        default=query_gadgetron_capabilities,
+                        help="Disable querying Gadgetron capabilities. Few tests will run unless you force them.")
 
     parser.add_argument('--only', type=split_tag_list, default='all', metavar='tags',
                         help="Only run tests with the specified tags.")
@@ -277,8 +287,7 @@ def main():
 
     args = parser.parse_args()
 
-    print("Querying Gadgetron capabilities...")
-    capabilities = query_gadgetron_capabilities(args)
+    capabilities = args.capability_query_function(args)
 
     files = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
     tests = [read_test_details(file) for file in files]
