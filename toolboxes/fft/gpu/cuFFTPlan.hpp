@@ -1,5 +1,4 @@
 #pragma once
-
 #include "cuNDFFT.h"
 #include <numeric>
 
