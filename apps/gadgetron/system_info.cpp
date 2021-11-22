@@ -4,6 +4,7 @@
 #include "gadgetron_config.h"
 #include "connection/nodes/external/Python.h"
 #include "connection/nodes/external/Matlab.h"
+#include "connection/nodes/external/Julia.h"
 #include "log.h"
 #include "Process.h"
 
@@ -83,6 +84,9 @@ namespace Gadgetron::Server::Info {
 
     bool matlab_support() {
         return Gadgetron::Server::Connection::Nodes::matlab_available();
+    }
+    bool julia_support() {
+        return Gadgetron::Server::Connection::Nodes::julia_available();
     }
 
 #if defined USE_CUDA
