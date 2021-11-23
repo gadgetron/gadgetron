@@ -23,7 +23,7 @@ namespace Gadgetron::Server::Connection::Nodes {
         if (!execute.target) throw std::invalid_argument("Target must be specified for Julia modules");
 
         std::list<std::string> args{
-            "-e", "import Gadgetron; Gadgetron.main()",
+            "-e", "import Gadgetron; Gadgetron.External.main()",
             std::to_string(port),
             execute.name, *execute.target
         };
