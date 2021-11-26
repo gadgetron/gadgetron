@@ -67,21 +67,24 @@ namespace Gadgetron {
 
         NoiseHandler noisehandler = IgnoringNoise{};
 
+
+
+
+
         template<class NOISEHANDLER>
         void add_noise(NOISEHANDLER& nh, const Core::Acquisition&) const ;
 
         template<class NOISEHANDLER>
-        NoiseHandler handle_acquisition(NOISEHANDLER nh, Core::Acquisition&);
+        NoiseHandler handle_acquisition(NOISEHANDLER nh, Core::Acquisition&) const;
 
 
-        Core::optional<NoiseCovariance> load_noisedata(const std::string& measurement_id) const;
+
 
         template<class NOISEHANDLER>
-        void save_noisedata(NOISEHANDLER& nh);
-
+        void save_noisedata(NOISEHANDLER& nh) const;
 
         NoiseHandler load_or_gather() const;
-        MeasurementSpace measurement_storage;
+            
+        bool first_run_;
     };
 }
-BOOST_HANA_ADAPT_STRUCT(Gadgetron::NoiseCovariance,header,noise_dwell_time_us,noise_covariance_matrix);
