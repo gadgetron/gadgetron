@@ -91,9 +91,11 @@ env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install git+https://github.com/ismrmrd/ismr
 
 pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
-pip3 install jill
-
-jill install
+wget https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.4-linux-x86_64.tar.gz
+tar zxvf julia-1.6.4-linux-x86_64.tar.gz -C /opt/
+cp /opt/julia-1.6.4/* /usr/local
+rm julia-1.6.4-linux-x86_64.tar.gz
+rm -rf /opt/julia-1.6.4
 
 julia -e "Import Pkg; Pkg.add(\"https://github.com/gadgetron/Gadgetron.jl.git\");
         Pkg.add(\"https://github.com/gadgetron/GadgetronExamples.jl.git\");"
