@@ -91,6 +91,13 @@ env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install git+https://github.com/ismrmrd/ismr
 
 pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
+pip3 install jill
+
+jill install
+
+julia -e "Import Pkg; Pkg.add(\"https://github.com/gadgetron/Gadgetron.jl.git\");
+        Pkg.add(\"https://github.com/gadgetron/GadgetronExamples.jl.git\");"
+
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
   DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes libcudnn8-dev
