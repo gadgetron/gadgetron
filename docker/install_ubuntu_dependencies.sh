@@ -97,8 +97,8 @@ cp -r /opt/julia-1.6.4/* /usr/local
 rm julia-1.6.4-linux-x86_64.tar.gz
 rm -rf /opt/julia-1.6.4
 
-julia -e "import Pkg; Pkg.add(\"https://github.com/gadgetron/Gadgetron.jl.git\");
-        Pkg.add(\"https://github.com/gadgetron/GadgetronExamples.jl.git\");"
+julia -e "import Pkg; Pkg.add(url=\"https://github.com/gadgetron/Gadgetron.jl.git\");
+        Pkg.add(url=\"https://github.com/gadgetron/GadgetronExamples.jl.git\");"
 
 # If this is an image with CUDA...
 if [ -f /usr/local/cuda/bin/nvcc ]; then
