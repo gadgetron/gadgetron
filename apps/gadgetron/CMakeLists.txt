@@ -44,6 +44,8 @@ add_executable(gadgetron
         connection/nodes/common/ExternalChannel.h
         connection/nodes/external/Matlab.cpp
         connection/nodes/external/Matlab.h
+        connection/nodes/external/Julia.cpp
+        connection/nodes/external/Julia.h
         connection/nodes/external/Python.cpp
         connection/nodes/external/Python.h
         connection/nodes/common/Discovery.cpp
