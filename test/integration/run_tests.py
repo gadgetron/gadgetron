@@ -18,6 +18,7 @@ from pathlib import Path
 
 reqs = {
     'python_support': 'python',
+    'julia_support': 'julia',
     'matlab_support': 'matlab',
     'system_memory': 'memory',
     'gpu_support': 'cuda',
@@ -99,6 +100,7 @@ def query_gadgetron_capabilities(args):
         'build': "Git SHA1",
         'memory': "System Memory size",
         'python': "Python Support",
+        'julia': "Julia Support",
         'matlab': "Matlab Support",
         'cuda': "CUDA Support",
     }
@@ -165,6 +167,7 @@ def read_test_details(filename):
         rules = [
             ('matlab_support', lambda req: Rule('matlab', is_enabled, "MATLAB support required.")),
             ('python_support', lambda req: Rule('python', is_enabled, "Python support required.")),
+            ('julia_support', lambda req: Rule('julia', is_enabled, "Julia support required.")),
             ('system_memory', lambda req: Rule('memory', has_more_than(req), "Not enough system memory.")),
             ('gpu_support', lambda req: Rule('cuda', is_enabled, "CUDA support required.")),
             ('gpu_memory', lambda req: Rule('cuda_memory', each(has_more_than(req)), "Not enough graphics memory."))

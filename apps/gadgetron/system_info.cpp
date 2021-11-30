@@ -205,6 +205,7 @@ namespace Gadgetron::Server::Info {
         os << "  -- Git SHA1           : " << gadgetron_build().c_str() << std::endl;
         os << "  -- System Memory size : " << std::to_string(system_memory() / (1024 * 1024)) << " MB" << std::endl;
         os << "  -- Python Support     : " << (python_support() ? "YES" : "NO") << std::endl;
+        os << "  -- Julia Support      : " << (julia_support() ? "YES" : "NO") << std::endl;
         os << "  -- Matlab Support     : " << (matlab_support() ? "YES" : "NO") << std::endl;
         CUDA::print_cuda_information(os);
         os << std::endl;
