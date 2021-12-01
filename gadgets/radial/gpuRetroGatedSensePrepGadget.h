@@ -11,6 +11,7 @@
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
+#include <queue>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 
@@ -142,7 +143,9 @@ namespace Gadgetron{
     std::vector<size_t> image_dimensions_recon_;
     uint64d2 image_dimensions_recon_os_;
 
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_profiles_queue_;
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_profiles_queue_;
+    using ProfileMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>>*;
+
+    std::vector<std::queue<ProfileMessagePtr>> buffer_profiles_queue_;
+    std::vector<std::queue<ProfileMessagePtr>> recon_profiles_queue_;
   };
 }
