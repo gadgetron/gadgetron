@@ -1,7 +1,7 @@
 
 configure_file(core_defines.h.in ${CMAKE_BINARY_DIR}/toolboxes/core/core_defines.h)
 
-
+add_compile_options(-Werror)
 install(FILES
   ${CMAKE_BINARY_DIR}/toolboxes/core/core_defines.h
   NDArray.h

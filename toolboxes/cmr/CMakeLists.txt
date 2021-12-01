@@ -3,6 +3,7 @@ if (WIN32)
 endif ()
 
 
+add_compile_options(-Werror)
 
 set(cmr_header_fiels cmr_export.h 
                     cmr_kspace_binning.h
