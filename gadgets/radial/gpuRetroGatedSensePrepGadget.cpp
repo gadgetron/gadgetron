@@ -668,7 +668,7 @@ namespace Gadgetron{
     dims.push_back(samples_per_profile_*profiles_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
-    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(&dims));
+    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<profiles_buffered; p++) {
 
@@ -718,7 +718,7 @@ namespace Gadgetron{
     std::vector<size_t> dims_for_buffer = dims_per_readout;
     dims_for_buffer.push_back(profiles_buffered);
     
-    hoNDArray< std::complex<float> > host_buffer(&dims_for_buffer);
+    hoNDArray< std::complex<float> > host_buffer(dims_for_buffer);
 
     for (long p=0; p<profiles_buffered; p++) {
       
@@ -738,7 +738,7 @@ namespace Gadgetron{
 
       {
         // Copy daq into host_buffer array
-        hoNDArray< std::complex<float> > tmp( &dims_per_readout, host_buffer.get_data_ptr() + p*dims_per_readout[0]*dims_per_readout[1] );
+        hoNDArray< std::complex<float> > tmp( dims_per_readout, host_buffer.get_data_ptr() + p*dims_per_readout[0]*dims_per_readout[1] );
         if( !tmp.dimensions_equal( daq->getObjectPtr()->get_dimensions().get() )){
           GDEBUG("Unexpected dimensionality of array on message queue\n");
           return GADGET_FAIL;

@@ -186,7 +186,7 @@ namespace Gadgetron{
         //
         
         std::vector<size_t> dims; dims.push_back(order_+1); dims.push_back(channels_);
-        hoNDArray<double> vec( &dims, &polyfit_[set*(order_+1)*channels_*slices_+slice*(order_+1)*channels_] );
+        hoNDArray<double> vec( dims, &polyfit_[set*(order_+1)*channels_*slices_+slice*(order_+1)*channels_] );
 
         arma::mat x = as_arma_matrix(vec);
         x = arma::solve(A.t()*A,A.t()*b);

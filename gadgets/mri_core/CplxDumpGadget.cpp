@@ -83,7 +83,7 @@ namespace Gadgetron{
       }
       
       entry = daq->getObjectPtr();
-      hoNDArray< std::complex<float> > tmp( &dims_profile, result.get_data_ptr()+i*entry->get_number_of_elements() );
+      hoNDArray< std::complex<float> > tmp( dims_profile, result.get_data_ptr()+i*entry->get_number_of_elements() );
       tmp = *entry;
       mbq->release();
     }      

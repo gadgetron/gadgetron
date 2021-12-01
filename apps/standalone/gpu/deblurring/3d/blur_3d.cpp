@@ -62,11 +62,11 @@ int main( int argc, char** argv)
 
   // Convert image and kernel to _real
   //
-  hoNDArray<_real> host_image; host_image.create(_host_image->get_dimensions().get()); 
+  hoNDArray<_real> host_image; host_image.create(_host_image->dimensions());
   for( unsigned int i=0; i<host_image.get_number_of_elements(); i++ )
     host_image.get_data_ptr()[i] = (_real) _host_image->get_data_ptr()[i];
     
-  hoNDArray<_real> host_kernel; host_kernel.create(_host_kernel->get_dimensions().get()); 
+  hoNDArray<_real> host_kernel; host_kernel.create(_host_kernel->dimensions());
   for( unsigned int i=0; i<host_kernel.get_number_of_elements(); i++ )
     host_kernel.get_data_ptr()[i] = (_real) _host_kernel->get_data_ptr()[i];
 

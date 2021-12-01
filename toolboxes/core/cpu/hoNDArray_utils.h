@@ -222,10 +222,10 @@ namespace Gadgetron {
 
     const size_t number_of_elements_in = in.get_number_of_elements();
 
-    std::vector<size_t> dims = *in.get_dimensions();
+    std::vector<size_t> dims = in.dimensions();
     dims.push_back(new_dim_size);
 
-    auto out = hoNDArray<T>(&dims);
+    auto out = hoNDArray<T>(dims);
 
 #ifdef USE_OMP
 #pragma omp parallel for

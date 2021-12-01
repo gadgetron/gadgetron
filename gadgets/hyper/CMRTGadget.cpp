@@ -381,7 +381,7 @@ CMRTGadget::extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *que
 	dims.push_back(samples_per_readout_);
 	dims.push_back(readouts_buffered);
 
-	boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(&dims));
+	boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(dims));
 
 	for (unsigned int p=0; p<readouts_buffered; p++) {
 		ACE_Message_Block* mbq;
@@ -424,7 +424,7 @@ void CMRTGadget::extract_trajectory_and_dcw_from_queue
 		//This is an evil evil hack to get the trajectories out. Ohh the horror.
 		boost::shared_ptr<hoNDArray<float> > tmp_traj = extract_trajectory_from_queue( queue );
 		std::vector<size_t> dims_1d; dims_1d.push_back(tmp_traj->get_size(1)*tmp_traj->get_size(2));
-		traj = boost::shared_ptr<hoNDArray<floatd2> >(new hoNDArray<floatd2>(&dims_1d));
+		traj = boost::shared_ptr<hoNDArray<floatd2> >(new hoNDArray<floatd2>(dims_1d));
 		memcpy(traj->get_data_ptr(),tmp_traj->get_data_ptr(),tmp_traj->get_number_of_elements()*sizeof(float));
 
 
@@ -441,18 +441,18 @@ void CMRTGadget::extract_trajectory_and_dcw_from_queue
 		std::vector<size_t> dims_1d;
 		dims_1d.push_back(host_traj_dcw_shifted.get_size(0)*host_traj_dcw_shifted.get_size(1));
 
-		dcw = boost::shared_ptr<hoNDArray<float> > (new hoNDArray<float>(&dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]));
+		dcw = boost::shared_ptr<hoNDArray<float> > (new hoNDArray<float>(dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]));
 
 
 		std::vector<size_t> dims_2d = dims_1d; dims_2d.push_back(2);
 		order.clear(); order.push_back(1); order.push_back(0);
 
 
-		hoNDArray<float> tmp(&dims_2d, host_traj_dcw_shifted.get_data_ptr());
+		hoNDArray<float> tmp(dims_2d, host_traj_dcw_shifted.get_data_ptr());
 
 		auto _traj = permute( tmp, order );
 
-		traj = boost::shared_ptr<hoNDArray<floatd2> > (new hoNDArray<floatd2>(&dims_1d, (floatd2*)_traj.get_data_ptr()));
+		traj = boost::shared_ptr<hoNDArray<floatd2> > (new hoNDArray<floatd2>(dims_1d, (floatd2*)_traj.get_data_ptr()));
 	}
 
 	std::vector<size_t >dims_2d;

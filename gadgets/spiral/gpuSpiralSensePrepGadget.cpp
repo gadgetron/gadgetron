@@ -509,8 +509,8 @@ namespace Gadgetron {
                                            interleaves_counter_singleframe_[set * slices_ + slice],
                                            (use_multiframe_grouping_) ? (size_t) acceleration_factor_ : 1};
 
-        boost::shared_ptr<hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(&ddimensions));
-        boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(&ddimensions));
+        boost::shared_ptr<hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(ddimensions));
+        boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(ddimensions));
 
         for (unsigned int p = 0; p < profiles_buffered; p++) {
 

@@ -730,7 +730,7 @@ namespace Gadgetron{
     dims.push_back(samples_per_readout_*readouts_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
-    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(&dims));
+    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {
       
@@ -799,7 +799,7 @@ namespace Gadgetron{
     dims.push_back(samples_per_readout_);
     dims.push_back(readouts_buffered);
     
-    boost::shared_ptr< hoNDArray<float> > host_samples(new hoNDArray<float>(&dims));
+    boost::shared_ptr< hoNDArray<float> > host_samples(new hoNDArray<float>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {      
       ACE_Message_Block* mbq;
@@ -862,7 +862,7 @@ namespace Gadgetron{
     dims_1d.push_back(host_traj_dcw_shifted.get_size(0)*host_traj_dcw_shifted.get_size(1));
     
     {
-      hoNDArray<float> tmp(&dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
+      hoNDArray<float> tmp(dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
       *dcw = tmp;
     }
     
@@ -872,7 +872,7 @@ namespace Gadgetron{
     order.clear();
     order.push_back(1); order.push_back(0);
 
-    hoNDArray<float> tmp(&dims_2d, host_traj_dcw_shifted.get_data_ptr());
+    hoNDArray<float> tmp(dims_2d, host_traj_dcw_shifted.get_data_ptr());
     cuNDArray<float> __traj(&tmp);
     cuNDArray<float> _traj = permute( __traj, order );
     

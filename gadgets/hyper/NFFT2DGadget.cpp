@@ -167,7 +167,7 @@ namespace Gadgetron{
       std::vector<size_t> img_dims(2);
       img_dims[0] = dimensions_[0];
       img_dims[1] = dimensions_[1];
-      cm2->getObjectPtr()->create(&img_dims);
+      cm2->getObjectPtr()->create(img_dims);
       cuNDArray<float_complext> image(&img_dims);
       
       // Initialize plan
@@ -281,7 +281,7 @@ namespace Gadgetron{
     dims.push_back(samples_per_readout_);
     dims.push_back(readouts_buffered);
     
-    boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(&dims));
+    boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {      
       ACE_Message_Block* mbq;
@@ -323,7 +323,7 @@ namespace Gadgetron{
     if( num_trajectory_dims_ == 2 ){
       boost::shared_ptr< hoNDArray<float> > host_traj = extract_trajectory_from_queue( queue );
       std::vector<size_t> dims_1d; dims_1d.push_back(host_traj->get_size(1)*host_traj->get_size(2));
-      hoNDArray<floatd2> host_traj2(&dims_1d,(floatd2*)host_traj->get_data_ptr());
+      hoNDArray<floatd2> host_traj2(dims_1d,(floatd2*)host_traj->get_data_ptr());
       *traj = cuNDArray<floatd2>(host_traj2);
 
     }
@@ -339,15 +339,15 @@ namespace Gadgetron{
       std::vector<size_t> dims_1d;
       dims_1d.push_back(host_traj_dcw_shifted.get_size(0)*host_traj_dcw_shifted.get_size(1));
       
-      hoNDArray<float> tmp(&dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
+      hoNDArray<float> tmp(dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
       *dcw = tmp;
       
       std::vector<size_t> dims_2d = dims_1d; dims_2d.push_back(2);
       order.clear(); order.push_back(1); order.push_back(0);
       
-      tmp.create(&dims_2d, host_traj_dcw_shifted.get_data_ptr());
+      tmp.create(dims_2d, host_traj_dcw_shifted.get_data_ptr());
       auto _traj = permute( tmp, order );
-      hoNDArray<floatd2> tmp2(&dims_1d,(floatd2*)_traj.get_data_ptr());
+      hoNDArray<floatd2> tmp2(dims_1d,(floatd2*)_traj.get_data_ptr());
       
       *traj = cuNDArray<floatd2>(tmp2);
     }

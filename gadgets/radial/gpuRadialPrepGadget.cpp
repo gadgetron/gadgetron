@@ -853,7 +853,7 @@ namespace Gadgetron{
     dims.push_back(samples_per_profile_*profiles_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
-    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(&dims));
+    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<profiles_buffered; p++) {
 

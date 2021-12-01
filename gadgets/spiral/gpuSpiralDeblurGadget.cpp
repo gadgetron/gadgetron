@@ -242,7 +242,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			//queue deblurred im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header = get_image_header(curr_header,1);
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
-			cm2->getObjectPtr()->create(host_image.get_dimensions());
+			cm2->getObjectPtr()->create(host_image.dimensions());
 			memcpy(cm2->getObjectPtr()->get_data_ptr(), output_image.get_data_ptr(), output_image.get_number_of_elements()*sizeof(std::complex<float>));
 			header->cont(cm2);
 			if (this->next()->putq(header) < 0) {
@@ -254,7 +254,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			//queue original im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header2 = get_image_header(curr_header,10);
 			GadgetContainerMessage<hoNDArray< std::complex<float> > >* cm3 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
-			cm3->getObjectPtr()->create(host_image.get_dimensions());
+			cm3->getObjectPtr()->create(host_image.dimensions());
 			memcpy(cm3->getObjectPtr()->get_data_ptr(), host_image.get_data_ptr(), host_image.get_number_of_elements()*sizeof(std::complex<float>));
 			header2->cont(cm3);
 			if (this->next()->putq(header2) < 0) {
@@ -267,11 +267,11 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header3 = get_image_header(curr_header,20);
 			GadgetContainerMessage<hoNDArray< std::complex<float> > >* cm4 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
 			hoNDArray< std::complex<float> >B0_image;
-			B0_image.create(B0_map.get_dimensions());
+			B0_image.create(B0_map.dimensions());
 			for(int i = 0; i<B0_map.get_number_of_elements(); i++){
 				B0_image[i] = std::complex<float>(B0_map[i],0.0);
 			}
-			cm4->getObjectPtr()->create(B0_image.get_dimensions());
+			cm4->getObjectPtr()->create(B0_image.dimensions());
 			memcpy(cm4->getObjectPtr()->get_data_ptr(), B0_image.get_data_ptr(), B0_image.get_number_of_elements()*sizeof(std::complex<float>));header3->cont(cm4);
 			if (this->next()->putq(header3) < 0) {
 				GDEBUG("Failed to put job on queue.\n");
@@ -351,7 +351,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		hoNDArray<complext<float>> B0_temp_1 = *reg_image.to_host();
 		//Compute map
 		B0_map->clear();
-		B0_map->create(B0_temp_0.get_dimensions());
+		B0_map->create(B0_temp_0.dimensions());
 		B0_map->fill(0.0);
 		auto map_ptr = B0_map->get_data_ptr();
 		for (int i = 0; i < B0_temp_0.get_number_of_elements(); i++) {

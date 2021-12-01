@@ -168,7 +168,7 @@ namespace Gadgetron{
           GadgetContainerMessage<ISMRMRD::ImageHeader> *header;
 
           ARRAY_TYPE fixed_image;
-          ARRAY_TYPE moving_image(&moving_dims);
+          ARRAY_TYPE moving_image(moving_dims);
 	
           for( unsigned int image=0; image<num_images; image++ ){
 	  
@@ -216,7 +216,7 @@ namespace Gadgetron{
             else{
 
               // Assign this image as the 'image-1'th frame in the moving image
-              ARRAY_TYPE tmp_moving(&image_dimensions_, moving_image.get_data_ptr()+(image-1)*num_image_elements);
+              ARRAY_TYPE tmp_moving(image_dimensions_, moving_image.get_data_ptr()+(image-1)*num_image_elements);
               tmp_moving = *m2->getObjectPtr(); // Copy as for the fixed image
               m1->release();	    
             }
