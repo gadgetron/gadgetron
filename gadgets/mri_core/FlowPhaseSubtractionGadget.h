@@ -1,6 +1,4 @@
-#ifndef FlowPhaseSubtractionGadget_H
-#define FlowPhaseSubtractionGadget_H
-
+#pragma once
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
@@ -13,26 +11,15 @@
 
 namespace Gadgetron{
   
-    class EXPORTGADGETSMRICORE FlowPhaseSubtractionGadget :
-        public Gadget2< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
+    class FlowPhaseSubtractionGadget : public Core::ChannelGadget<Core::Image<std::complex<float>>>
     {
 
     public:
-        GADGET_DECLARE(FlowPhaseSubtractionGadget);
+        using Core::ChannelGadget<Core::Image<std::complex<float>>>::ChannelGadget;
 
-        FlowPhaseSubtractionGadget();
-        virtual ~FlowPhaseSubtractionGadget();
+        ~FlowPhaseSubtractionGadget() override = default;
 
-    protected:
-        virtual int process_config(ACE_Message_Block* mb);
-
-        virtual int process(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1,
-            GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
-
-    private:
-        unsigned int sets_;
-	boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
+        void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
     };
 }
 
-#endif //FlowPhaseSubtractionGadget_H
