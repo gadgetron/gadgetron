@@ -42,7 +42,7 @@ namespace Gadgetron::Core {
         }
         T message = std::move(queue.front());
         queue.pop_front();
-        return std::move(message);
+        return message;
     }
 
     template <class T> T MPMCChannel<T>::pop() {
