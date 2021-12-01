@@ -7,107 +7,76 @@
 #include "ismrmrd/xml.h"
 
 #include <numeric>
+#include <queue>
+
 #ifdef USE_OMP
 #include <omp.h>
 #endif 
 
 namespace Gadgetron{
 
-    PhysioInterpolationGadget::PhysioInterpolationGadget() 
-        : phys_time_index_(0)
-        , phases_to_reconstruct_(30)
-        , image_with_attrib_(false)
-        , first_beat_on_trigger_(false)
-        , interp_method_("Spline")
-    {
+    namespace {
+
+        struct Intervals {
+            std::vector<float> intervals;
+            std::vector<size_t> cycle_starts;
+        };
+
+         Intervals find_intervals(const std::vector<float>& time_stamps, bool first_beat_on_trigger) {
+
+            float previous = -100.0;
+            std::vector<float> intervals;
+            std::vector<size_t> cycle_starts;
+            for (size_t i = 0; i < time_stamps.size(); i++) {
+                if ((time_stamps[i] < previous) || (first_beat_on_trigger && i == 0)) {
+                    cycle_starts.push_back(i);
+                } else if (i > 0) {
+                    intervals.push_back(time_stamps[i] - time_stamps[i - 1]);
+                }
+                previous = time_stamps[i];
+            }
+            return {intervals,cycle_starts};
+        };
+
     }
 
-    PhysioInterpolationGadget::~PhysioInterpolationGadget() {}
 
-    int PhysioInterpolationGadget::process_config(ACE_Message_Block* mb)
-    {
-        phys_time_index_ = physiology_time_index.value();
-        phases_to_reconstruct_ = phases.value();
-        mode_ = mode.value();
-        first_beat_on_trigger_ = first_beat_on_trigger.value();
+    void PhysioInterpolationGadget::process(Core::InputChannel<Core::Image<std::complex<float>>>& in,
+                                            Core::OutputChannel& out) {
 
-        ISMRMRD::IsmrmrdHeader h;
-        ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-        interp_method_ = interp_method.value();
-        if ( interp_method_.empty() ) interp_method_ = "Spline";
+        ISMRMRD::EncodingLimits e_limits = header.encoding[0].encodingLimits;
+        auto slc_limit = e_limits.slice ? e_limits.slice->maximum+1 : 1;
 
-        if (h.encoding.size() == 0) {
-            GDEBUG("Missing encoding section");
-            return GADGET_FAIL;
+
+        auto buffers = std::map<int, std::queue<Core::Image<std::complex<float>>>>{};
+        auto time_stamp_buffer = std::map<int, std::vector<float>>{};
+
+        for (auto [hdr,data,meta] : in ){
+            buffers[hdr.slice].emplace(hdr,data,meta);
+            time_stamp_buffer[hdr.slice].push_back( (float)(hdr.physiology_time_stamp[physiology_time_index]) );
+            out.push(Core::Image<std::complex<float>>{hdr,std::move(data),std::move(meta)});
         }
 
-        ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-        slc_limit_ = e_limits.slice ? e_limits.slice->maximum+1 : 1; 
-
-        buffer_.resize(slc_limit_);
-
-        size_t slc;
-        for ( slc=0; slc<slc_limit_; slc++ )
-        {
-            buffer_[slc] = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>(ACE_Message_Queue_Base::DEFAULT_HWM * 10, ACE_Message_Queue_Base::DEFAULT_LWM * 10) );
-        }
-
-        time_stamps_.resize(slc_limit_);
-
-        return GADGET_OK;
-    }
-
-    int PhysioInterpolationGadget::close(unsigned long flags)
-    {
-        int ret = Gadget::close(flags);
-
-        if ( flags != 0 )
-        {
-            GDEBUG("PhysioInterpolationGadget::close...\n");
-
-            size_t slc;
-            for ( slc=0; slc<slc_limit_; slc ++ )
+            for (auto& [slc,buffer] : buffers )
             {
                 GDEBUG("Processing slice: %d ... \n", slc);
-                GDEBUG("Number of items on Q: %d\n", buffer_[slc]->message_count());
-                GDEBUG("Image with attribute flag : %d\n", image_with_attrib_);
+                GDEBUG("Number of items on Q: %d\n", buffer.size());
+                GDEBUG("Image with attribute flag : %d\n", bool(std::get<2>(buffer.front())));
 
-                if (time_stamps_[slc].size() != buffer_[slc]->message_count())
-                {
-                    GDEBUG("Inconsistent number of messages and time stamps\n");
-                    buffer_[slc]->flush();
-                    return GADGET_FAIL;
-                }
 
-                float previous = -100.0;
-                float sum_int  = 0.0; 
-                std::vector<float> intervals;
-                float int_count = 0.0;
-                std::vector<size_t> cycle_starts;
-                for (size_t i = 0; i < time_stamps_[slc].size(); i++)
-                {
-                    if ( (time_stamps_[slc][i] < previous) || (first_beat_on_trigger_ && i==0) )
-                    {
-                        cycle_starts.push_back(i);
-                    }
-                    else if (i > 0 )
-                    {
-                        sum_int += time_stamps_[slc][i]-time_stamps_[slc][i-1];
-                        intervals.push_back(time_stamps_[slc][i]-time_stamps_[slc][i-1]);
-                        int_count += 1.0;
-                    }
-                    previous = time_stamps_[slc][i];
-                }
+
+                const auto& time_stamp = time_stamp_buffer[slc];
+
+                auto [intervals,cycle_stars] = find_intervals(time_stamp, first_beat_on_trigger);
 
                 if ( intervals.empty() ) continue;
 
                 std::sort(intervals.begin(),intervals.end());
 
-                float mean_interval = sum_int/int_count;
+                float mean_interval = std::accumulate(intervals.begin(), intervals.end(),0.0f)/intervals.size();
                 float median_interval = intervals[(intervals.size()>>1)];
 
-                float average_cycle_length = 0.0f;
                 std::vector<float> cycle_lengths;
                 float count = 0;
                 for (size_t i = 1; i < cycle_starts.size(); i++)
