@@ -9,6 +9,9 @@
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 
+#include <vector>
+#include <queue>
+
 namespace Gadgetron {
 
   class EXPORTGADGETS_RADIAL RadialPhaseCorrectionGadget :
@@ -36,9 +39,16 @@ namespace Gadgetron {
     int slices_;
     int sets_;
     int channels_;
-    boost::shared_array<bool> fit_calculated_;
-    boost::shared_array<double> polyfit_;
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > profiles_queue_;
+
+    using AcquisitionMessagePtr = GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*;
+
+    std::vector<bool> fit_calculated;
+    std::vector<double> polyfit;
+    std::vector<std::queue<AcquisitionMessagePtr>> profiles_queue;
+
+//    boost::shared_array<bool> fit_calculated_;
+//    boost::shared_array<double> polyfit_;
+//    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > profiles_queue_;
 
   private:
     double get_projection_angle( unsigned int profile_idx );

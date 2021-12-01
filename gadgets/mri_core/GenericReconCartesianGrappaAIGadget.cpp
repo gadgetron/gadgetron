@@ -123,7 +123,6 @@ namespace Gadgetron {
                 if (perform_timing.value()) { gt_timer_.stop(); }
                 // ---------------------------------------------------------------
 
-                recon_bit_->rbit_[e].ref_->clear();
                 recon_bit_->rbit_[e].ref_ = Core::none;
             }
 

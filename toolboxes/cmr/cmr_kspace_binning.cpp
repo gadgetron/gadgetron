@@ -1779,12 +1779,11 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
         std::vector<float> cpt(N+2);
 
         memcpy(mag.begin()+RO*E1, mag_bestHB.begin(), mag_bestHB.get_number_of_bytes());
-        memcpy(cpt.data()+1, cpt_time_ratio_bestHB_checked.data(), sizeof(float)*N);
+        std::copy(cpt_time_ratio_bestHB_checked.begin(), cpt_time_ratio_bestHB_checked.end(), cpt.begin() + 1);
 
         size_t n;
 
         // first phase
-        // memcpy(mag.begin(), mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
         memcpy(mag.begin(), mag_bestHB.begin(), sizeof(T)*RO*E1);
         cpt[0] = (float)( -(1.0 - cpt_time_ratio_bestHB_checked[N-1]) );
 
