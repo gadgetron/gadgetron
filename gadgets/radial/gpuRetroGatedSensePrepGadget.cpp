@@ -139,11 +139,9 @@ namespace Gadgetron{
     sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
     
     // Allocate profile queues
-    // - one queue for the currently incoming frame (for the accumulation buffer)
-    // - one queue for the next reconstruction
-    
-    buffer_profiles_queue_ = std::vector<std::queue<ProfileMessagePtr>>(slices_*sets_);
-    recon_profiles_queue_ = std::vector<std::queue<ProfileMessagePtr>>(slices_*sets_);
+
+    buffer_profiles_queue_ = std::map<unsigned int, std::queue<ProfileMessagePtr>>();
+    recon_profiles_queue_ = std::map<unsigned int, std::queue<ProfileMessagePtr>>();
 
     // Define some profile counters for book-keeping
     //

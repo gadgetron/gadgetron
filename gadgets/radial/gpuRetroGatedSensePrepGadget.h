@@ -12,6 +12,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <queue>
+#include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 
@@ -145,7 +146,7 @@ namespace Gadgetron{
 
     using ProfileMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>>*;
 
-    std::vector<std::queue<ProfileMessagePtr>> buffer_profiles_queue_;
-    std::vector<std::queue<ProfileMessagePtr>> recon_profiles_queue_;
+    std::map<unsigned int, std::queue<ProfileMessagePtr>> buffer_profiles_queue_;
+    std::map<unsigned int, std::queue<ProfileMessagePtr>> recon_profiles_queue_;
   };
 }
