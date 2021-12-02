@@ -19,9 +19,5 @@ namespace Gadgetron{
       NODE_PROPERTY(filename, std::string, "Filename of dumpfile", "profiles.cplx");
 
       void process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) override;
-
-    private:
-      std::string filename_;
-      ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
     };
 }
