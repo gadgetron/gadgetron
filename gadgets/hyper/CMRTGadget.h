@@ -8,6 +8,7 @@
 #include "CMRTOperator.h"
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
+#include <queue>
 
 namespace Gadgetron{
 
@@ -16,7 +17,9 @@ namespace Gadgetron{
   {
     
   public:
-    
+    using ReadoutMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>>*;
+    using TrajectoryMessagePtr = GadgetContainerMessage<hoNDArray<float>>*;
+
     CMRTGadget(): num_frames(0) {
     }
     ~CMRTGadget() {}
@@ -39,13 +42,13 @@ namespace Gadgetron{
       duplicate_array( GadgetContainerMessage< hoNDArray<T> > *array );        
     
     boost::shared_ptr< hoNDArray<float_complext> > 
-      extract_samples_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue );
+      extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue );
     
     boost::shared_ptr< hoNDArray<float> >
-      extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue );
+      extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &queue );
     
     void extract_trajectory_and_dcw_from_queue
-      ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, boost::shared_ptr< hoNDArray<floatd2> > & traj, boost::shared_ptr< hoNDArray<float> > & dcw  );
+      ( std::queue<TrajectoryMessagePtr> &queue, boost::shared_ptr< hoNDArray<floatd2> > & traj, boost::shared_ptr< hoNDArray<float> > & dcw  );
 
     /***
      * Combines all stored frames and resets the frame buffer
@@ -58,9 +61,9 @@ namespace Gadgetron{
     unsigned int projections_per_recon_;
 
 
-    
-    boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> > frame_readout_queue_;
-    boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> > frame_traj_queue_;
+    std::queue<ReadoutMessagePtr> frame_readout_queue_;
+    std::queue<TrajectoryMessagePtr> frame_traj_queue_;
+
     std::vector<size_t> dimensions_;
     std::vector<float> field_of_view_;
     size_t repetitions_;

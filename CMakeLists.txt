@@ -339,34 +339,28 @@ endif()
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
-    find_package(PythonLibs 3  REQUIRED)
+    find_package(Python3 COMPONENTS Development NumPy REQUIRED)
+    find_package(Boost COMPONENTS python3${Python3_VERSION_MINOR} REQUIRED)
 
-    find_package(NumPy REQUIRED)
-    message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
+    message("Found numpy : ${Python3_Numpy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
 
+    if (Python3_VERSION_MINOR LESS 7)
+        message(FATAL_ERROR "Gadgetron Python support requires Python 3.7 or newer. Found: ${Python3_VERSION}")
+    endif()
+
+    message("Boost Version: ${Boost_VERSION_STRING} (with Python ${Python3_VERSION})")
+    message("Secret: ${Boost_PYTHON3_TARGET}")
 
     add_library(python INTERFACE)
-    set_property(TARGET python PROPERTY
-    INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-    message("Boost_VERSION ${Boost_VERSION_STRING} ${PYTHONLIBS_VERSION_STRING}")
-    if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
-        find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
-        set(Boost_PYTHON3_TARGET Boost::python3)
-        else()
-        string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
-        set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
-        find_package(Boost 1.65.0 COMPONENTS "python3${PYTHON_MINOR_VERSION}" REQUIRED)
-        set(Boost_PYTHON3_FOUND TRUE)
-        set(Boost_PYTHON3_TARGET Boost::python3${PYTHON_MINOR_VERSION})
-    endif()
-    set_property(TARGET python PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-    target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_PYTHON3_TARGET})
+    set_property(TARGET python PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+    target_link_libraries(python INTERFACE Python3::Python Python3::NumPy Boost::python3${Python3_VERSION_MINOR})
+
     install(TARGETS python EXPORT gadgetron-export)
 endif()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
-    message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
+    message("For Windows users in particular, for ease of installation we do not recommend installing these libraries.")
 endif()
 
 find_package(OpenGL)

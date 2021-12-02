@@ -139,26 +139,10 @@ namespace Gadgetron{
     sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
     
     // Allocate profile queues
-    // - one queue for the currently incoming frame (for the accumulation buffer)
-    // - one queue for the next reconstruction
-    
-    buffer_profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
-    recon_profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
 
-    size_t bsize = sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >)*profiles_per_buffer_frame_*10;
+    buffer_profiles_queue_ = std::map<unsigned int, std::queue<ProfileMessagePtr>>();
+    recon_profiles_queue_ = std::map<unsigned int, std::queue<ProfileMessagePtr>>();
 
-    for( unsigned int i=0; i<slices_*sets_; i++ ){
-      buffer_profiles_queue_[i].high_water_mark(bsize);
-      buffer_profiles_queue_[i].low_water_mark(bsize);
-    }
-
-    bsize = sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >)*profiles_per_frame_*frames_per_cardiac_cycle_*10;
-    
-    for( unsigned int i=0; i<slices_*sets_; i++ ){
-      recon_profiles_queue_[i].high_water_mark(bsize);
-      recon_profiles_queue_[i].low_water_mark(bsize);
-    }
-    
     // Define some profile counters for book-keeping
     //
 
@@ -334,14 +318,14 @@ namespace Gadgetron{
     //   belong to the current cardiac cycle and we delay enqueing
     //
 
-    buffer_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
+    buffer_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
     
     if( !new_cardiac_cycle_detected ) {
-      if( recon_profiles_queue_[set*slices_+slice].message_count() == 0 ){
+      if( recon_profiles_queue_[set*slices_+slice].empty()){
         first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->acquisition_time_stamp;
         first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
       }
-      recon_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
+      recon_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
     }
     
     // If the profile is the last of a "buffer frame" 
@@ -349,7 +333,7 @@ namespace Gadgetron{
     //
     
     bool is_last_profile_in_buffer_frame = 
-      ( buffer_profiles_queue_[set*slices_+slice].message_count() == profiles_per_buffer_frame_ );
+      ( buffer_profiles_queue_[set*slices_+slice].size() == profiles_per_buffer_frame_ );
     
     if( is_last_profile_in_buffer_frame ){
       
@@ -359,7 +343,7 @@ namespace Gadgetron{
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
         extract_samples_from_buffer_queue( set, slice );
       
-      if( host_samples.get() == 0x0 ){
+      if( host_samples.get() == nullptr ){
         GDEBUG("Failed to extract buffer samples from queue\n");
         return GADGET_FAIL;
       }
@@ -522,11 +506,11 @@ namespace Gadgetron{
     //
 
     if( new_cardiac_cycle_detected ){      
-      if( recon_profiles_queue_[set*slices_+slice].message_count() == 0 ){
+      if( recon_profiles_queue_[set*slices_+slice].empty()){
         first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->acquisition_time_stamp;
         first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
       }
-      recon_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2)); 
+      recon_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
     }
     
     profiles_counter_global_[set*slices_+slice]++;
@@ -660,9 +644,9 @@ namespace Gadgetron{
   boost::shared_ptr< hoNDArray<float_complext> > 
   gpuRetroGatedSensePrepGadget::extract_samples_from_buffer_queue( unsigned int set, unsigned int slice )
   {    
-    ACE_Message_Queue<ACE_MT_SYNCH> *queue = &buffer_profiles_queue_[set*slices_+slice];
+    auto &queue = buffer_profiles_queue_[set*slices_+slice];
 
-    unsigned int profiles_buffered = queue->message_count();
+    unsigned int profiles_buffered = queue.size();
     
     std::vector<size_t> dims;
     dims.push_back(samples_per_profile_*profiles_buffered);
@@ -672,12 +656,9 @@ namespace Gadgetron{
     
     for (unsigned int p=0; p<profiles_buffered; p++) {
 
-      ACE_Message_Block* mbq;
-      if (queue->dequeue_head(mbq) < 0) {
-        GDEBUG("Message dequeue failed\n");
-        return boost::shared_ptr< hoNDArray<float_complext> >();
-      }
-      
+      ProfileMessagePtr mbq = queue.front();
+      queue.pop();
+
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
@@ -708,8 +689,8 @@ namespace Gadgetron{
     // Extract samples from queue and put into buffer 
     //
 
-    ACE_Message_Queue<ACE_MT_SYNCH> *queue = &recon_profiles_queue_[set*slices_+slice];
-    long profiles_buffered = queue->message_count();
+    auto &queue = recon_profiles_queue_[set*slices_+slice];
+    long profiles_buffered = queue.size();
     
     std::vector<size_t> dims_per_readout;
     dims_per_readout.push_back(samples_per_profile_);
@@ -721,14 +702,11 @@ namespace Gadgetron{
     hoNDArray< std::complex<float> > host_buffer(dims_for_buffer);
 
     for (long p=0; p<profiles_buffered; p++) {
-      
-      ACE_Message_Block* mbq;
-      if (queue->dequeue_head(mbq) < 0) {
-        GDEBUG("Message dequeue failed\n");
-        return GADGET_FAIL;
-      }
-      
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = 
+
+      ProfileMessagePtr mbq = queue.front();
+      queue.pop();
+
+      GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq =
         AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {

@@ -8,9 +8,8 @@
 #include <boost/shared_array.hpp>
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
-
-#include <vector>
 #include <queue>
+#include <map>
 
 namespace Gadgetron {
 
@@ -44,7 +43,7 @@ namespace Gadgetron {
 
     std::vector<bool> fit_calculated;
     std::vector<double> polyfit;
-    std::vector<std::queue<AcquisitionMessagePtr>> profiles_queue;
+    std::map<unsigned int, std::queue<AcquisitionMessagePtr>> profiles_queue;
 
 //    boost::shared_array<bool> fit_calculated_;
 //    boost::shared_array<double> polyfit_;
