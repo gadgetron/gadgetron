@@ -5,6 +5,7 @@ if (WIN32)
   set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
 endif ()
 
+add_compile_options(-Werror)
 add_library(gadgetron_gpuparallelmri SHARED
     gadgetron_gpupmri_export.h
     GenericReconJob.h

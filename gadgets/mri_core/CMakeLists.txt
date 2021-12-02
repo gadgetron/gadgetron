@@ -2,6 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_MRICORE__)
 endif ()
 
+add_compile_options(-Werror)
 find_package(ZFP)
 
 include_directories(${HDF5_INCLUDE_DIR})
