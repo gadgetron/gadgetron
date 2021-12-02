@@ -7,8 +7,17 @@
 #include "hoNDArray_iterators.h"
 #include "vector_td_utilities.h"
 
-#include <boost/math/special_functions/trunc.hpp>
+#include <boost/version.hpp>
+
+#if (BOOST_VERSION < 107200)
+#include <boost/math/interpolators/cubic_b_spline.hpp>
+namespace boost::math::interpolators {
+    auto cardinal_cubic_b_spline = [](auto ... args){return boost::math::cubic_b_spline(args...);};
+}
+#else
 #include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
+#endif
+#include <boost/math/special_functions/trunc.hpp>
 #include <boost/range/adaptor/strided.hpp>
 #include <range/v3/numeric.hpp>
 #include <range/v3/view.hpp>
