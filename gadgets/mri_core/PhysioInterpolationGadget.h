@@ -21,6 +21,19 @@ enum class PhysioInterpolationMethod {
     BSpline
 };
 
+
+inline void from_string(const std::string& str, PhysioInterpolationMode& mode ){
+    if (str == "separate" || str == "0" ) mode = PhysioInterpolationMode::separate;
+    else if (str == "complete" || str == "1") mode = PhysioInterpolationMode::complete;
+    else throw std::invalid_argument(str + " is not a valid PhysioInterpolationMode");
+}
+
+inline void from_string(const std::string& str, PhysioInterpolationMethod& method ){
+    if (str == "Spline") method = PhysioInterpolationMethod::Spline;
+    else if (str == "BSpline") method = PhysioInterpolationMethod::BSpline;
+    else throw std::invalid_argument(str + " is not a valid input for PhysioInterpolationMethod");
+}
+
 class PhysioInterpolationGadget : public Core::ChannelGadget<Core::Image<std::complex<float>>>
     {
     public:
@@ -41,6 +54,14 @@ class PhysioInterpolationGadget : public Core::ChannelGadget<Core::Image<std::co
 
       public:
         void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
+
+    std::vector<float> calculate_cycle_lengths(const std::vector<float> &time_stamps, float median_interval,
+                                               const std::vector<size_t> &cycle_starts) const;
+
+    std::vector<float>
+    calculate_relative_cycle_time(const std::vector<size_t> &cycle_starts, const std::vector<float> &cycle_lengths,
+                                  std::vector<float> &time_stamps) const;
+
 };
 }
 
