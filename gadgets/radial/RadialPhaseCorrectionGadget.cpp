@@ -57,7 +57,7 @@ namespace Gadgetron{
 
     fit_calculated = std::vector<bool>(sets_ * slices_, false);
     polyfit = std::vector<double>(channels_ * sets_ * slices_ * (order_ + 1), 0.0);
-    profiles_queue = std::vector<std::queue<AcquisitionMessagePtr>>(sets_ * slices_);
+    profiles_queue = std::map<unsigned int, std::queue<AcquisitionMessagePtr>>();
 
     return GADGET_OK;
   }
