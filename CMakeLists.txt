@@ -163,6 +163,7 @@ else ()
         endif ()
     endif ()
 
+    add_compile_options(-Werror)
     check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
     if (COMPILER_SUPPORTS_WRETURNTYPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")

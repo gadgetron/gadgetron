@@ -1,6 +1,3 @@
-
-add_compile_options(-Werror)
-
 if (CUDA_FOUND)
 add_library(gadgetron_toolbox_deblur SHARED
         MFIOperator.h

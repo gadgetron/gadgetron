@@ -2,10 +2,7 @@ if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_CMR__)
 endif ()
 
-
-add_compile_options(-Werror)
-
-set(cmr_header_fiels cmr_export.h 
+set(cmr_header_fiels cmr_export.h
                     cmr_kspace_binning.h
                     cmr_time_stamp.h 
                     cmr_motion_correction.h 
