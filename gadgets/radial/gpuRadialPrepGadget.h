@@ -76,8 +76,8 @@ namespace Gadgetron{
   {
 
   public:
-    using ProfileMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>> *;
-    using ImageHeaderMessagePtr = GadgetContainerMessage<ISMRMRD::ImageHeader> *;
+    using ProfileMessage = GadgetContainerMessage<hoNDArray<std::complex<float>>>;
+    using ImageHeaderMessage = GadgetContainerMessage<ISMRMRD::ImageHeader>;
 
 
     gpuRadialPrepGadget();
@@ -120,7 +120,7 @@ namespace Gadgetron{
       duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile );
 
     boost::shared_ptr< hoNDArray<float_complext> > 
-      extract_samples_from_queue( std::queue<ProfileMessagePtr> &queue,
+      extract_samples_from_queue( std::queue<std::unique_ptr<ProfileMessage>> &queue,
 				  bool acknowledge_sliding_window,
 				  unsigned int set, unsigned int slice );
 
@@ -211,9 +211,9 @@ namespace Gadgetron{
     std::vector<size_t> image_dimensions_recon_;
     uint64d2 image_dimensions_recon_os_;
 
-    std::map<unsigned int, std::queue<ProfileMessagePtr>> frame_profiles_queue_;
-    std::map<unsigned int, std::queue<ProfileMessagePtr>> recon_profiles_queue_;
-    std::map<unsigned int, std::queue<ImageHeaderMessagePtr>> image_headers_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ProfileMessage>>> frame_profiles_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ProfileMessage>>> recon_profiles_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ImageHeaderMessage>>> image_headers_queue_;
 
   private:
 

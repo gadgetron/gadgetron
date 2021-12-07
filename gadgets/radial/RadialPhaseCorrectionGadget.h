@@ -39,11 +39,11 @@ namespace Gadgetron {
     int sets_;
     int channels_;
 
-    using AcquisitionMessagePtr = GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*;
+    using AcquisitionMessage = GadgetContainerMessage<ISMRMRD::AcquisitionHeader>;
 
     std::vector<bool> fit_calculated;
     std::vector<double> polyfit;
-    std::map<unsigned int, std::queue<AcquisitionMessagePtr>> profiles_queue;
+    std::map<unsigned int, std::queue<std::unique_ptr<AcquisitionMessage>>> profiles_queue;
 
 //    boost::shared_array<bool> fit_calculated_;
 //    boost::shared_array<double> polyfit_;

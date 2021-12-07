@@ -38,9 +38,6 @@ namespace Gadgetron{
     repetitions_ = e_limits.repetition.is_present() ? e_limits.repetition.get().maximum + 1 : 1;
     GDEBUG("#Repetitions: %d\n", repetitions_);
 
-    // Allocate readout and trajectory/dcw queues
-    //
-
     return GADGET_OK;
   }
 
@@ -75,8 +72,8 @@ namespace Gadgetron{
     // Enqueue incoming readouts and trajectories
     //
 
-    frame_readout_queue_.push(duplicate_array(m2));
-    frame_traj_queue_.push(duplicate_array(m3));
+    frame_readout_queue_.push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
+    frame_traj_queue_.push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
     
     // If the last readout for a slice has arrived then perform a reconstruction
     //
@@ -209,7 +206,7 @@ namespace Gadgetron{
   }
   
   boost::shared_ptr< hoNDArray<float_complext> > 
-  NFFT2DGadget::extract_samples_from_queue (std::queue<ReadoutMessagePtr> &queue)
+  NFFT2DGadget::extract_samples_from_queue (std::queue<std::unique_ptr<ReadoutMessage>> &queue)
   {    
     unsigned int readouts_buffered = queue.size();
     
@@ -220,7 +217,7 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {
-      ReadoutMessagePtr mbq = queue.front();
+      ReadoutMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
@@ -248,7 +245,7 @@ namespace Gadgetron{
   }
 
   boost::shared_ptr< hoNDArray<float> > 
-  NFFT2DGadget::extract_trajectory_from_queue (std::queue<TrajectoryMessagePtr> &queue)
+  NFFT2DGadget::extract_trajectory_from_queue (std::queue<std::unique_ptr<TrajectoryMessage>> &queue)
   {    
     unsigned int readouts_buffered = queue.size();
     
@@ -260,7 +257,7 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {      
-      TrajectoryMessagePtr mbq = queue.front();
+      TrajectoryMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
@@ -284,7 +281,7 @@ namespace Gadgetron{
   }
 
   void NFFT2DGadget::extract_trajectory_and_dcw_from_queue
-  ( std::queue<TrajectoryMessagePtr> &queue, cuNDArray<floatd2> *traj, cuNDArray<float> *dcw )
+  ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue, cuNDArray<floatd2> *traj, cuNDArray<float> *dcw )
   {
     // Extract trajectory and (if present) density compensation weights.
     // They are stored as a float array of dimensions: {2,3} x #samples_per_readout x #readouts.

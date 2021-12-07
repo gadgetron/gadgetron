@@ -144,9 +144,9 @@ namespace Gadgetron{
     std::vector<size_t> image_dimensions_recon_;
     uint64d2 image_dimensions_recon_os_;
 
-    using ProfileMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>>*;
+    using ProfileMessage = GadgetContainerMessage<hoNDArray<std::complex<float>>>;
 
-    std::map<unsigned int, std::queue<ProfileMessagePtr>> buffer_profiles_queue_;
-    std::map<unsigned int, std::queue<ProfileMessagePtr>> recon_profiles_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ProfileMessage>>> buffer_profiles_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ProfileMessage>>> recon_profiles_queue_;
   };
 }

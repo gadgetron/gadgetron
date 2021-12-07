@@ -57,7 +57,7 @@ namespace Gadgetron{
 
     fit_calculated = std::vector<bool>(sets_ * slices_, false);
     polyfit = std::vector<double>(channels_ * sets_ * slices_ * (order_ + 1), 0.0);
-    profiles_queue = std::map<unsigned int, std::queue<AcquisitionMessagePtr>>();
+    profiles_queue = std::map<unsigned int, std::queue<std::unique_ptr<AcquisitionMessage>>>();
 
     return GADGET_OK;
   }
@@ -96,7 +96,7 @@ namespace Gadgetron{
       // Enqueue the first 'profiles_' profiles...
       //
 
-      profiles_queue[idx].push(m1);
+      profiles_queue[idx].push(std::unique_ptr<AcquisitionMessage>(m1));
 
       // ...before estimating the polynomial fit of order 'order_'
       //
@@ -127,7 +127,7 @@ namespace Gadgetron{
 
         for( int m=0; m<profiles_; m++ ){
 
-          AcquisitionMessagePtr mbq = profiles_queue[idx].front();
+          AcquisitionMessage *mbq = profiles_queue[idx].front().release();
           profiles_queue[idx].pop();
 
           GadgetContainerMessage< hoNDArray< std::complex<float> > > *_profile = 
@@ -182,7 +182,7 @@ namespace Gadgetron{
 
         for( int m=0; m<profiles_; m++ ){
 
-          AcquisitionMessagePtr header = profiles_queue[idx].front();
+          AcquisitionMessage *header = profiles_queue[idx].front().release();
           profiles_queue[idx].pop();
 
           if(!header) {

@@ -66,15 +66,10 @@ int CMRTGadget::process_config(ACE_Message_Block* mb)
 	repetitions_ = e_limits.repetition.is_present() ? e_limits.repetition.get().maximum + 1 : 1;
 	GDEBUG("#Repetitions: %d\n", repetitions_);
 
-	// Allocate readout and trajectory/dcw queues
-	//
-
 	golden_ratio_ =golden_ratio.value();
 	use_TV_ = use_TV.value();
 	projections_per_recon_ = projections_per_recon.value();
 	iterations_ = iterations.value();
-
-	size_t bsize = sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >)*dimensions_[0]*10;
 
 	return GADGET_OK;
 }
@@ -106,11 +101,10 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 	// Enqueue incoming readouts and trajectories
 	//
 
-	frame_readout_queue_.push(duplicate_array(m2));
+	frame_readout_queue_.push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
 
 	//Only extract trajectories for first frame. Assume next frames are equal
-	if (frames.empty())
-		frame_traj_queue_.push(duplicate_array(m3));
+	if (frames.empty()) frame_traj_queue_.push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
 
 	// If the last readout for a slice has arrived then perform a reconstruction
 	//
@@ -291,7 +285,7 @@ CMRTGadget::duplicate_array( GadgetContainerMessage< hoNDArray<T> > *array )
 }
 
 boost::shared_ptr< hoNDArray<float_complext> >
-CMRTGadget::extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue )
+CMRTGadget::extract_samples_from_queue ( std::queue<std::unique_ptr<ReadoutMessage>> &queue )
 {
 	unsigned int readouts_buffered = queue.size();
 
@@ -304,7 +298,7 @@ CMRTGadget::extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue )
 
 	for (unsigned int p=0; p<readouts_buffered; p++) {
 
-            ReadoutMessagePtr mbq = queue.front();
+            ReadoutMessage *mbq = queue.front().release();
             queue.pop();
 
             GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
@@ -332,7 +326,7 @@ CMRTGadget::extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue )
 }
 
 boost::shared_ptr< hoNDArray<float> >
-CMRTGadget::extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &queue )
+CMRTGadget::extract_trajectory_from_queue ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue )
 {
 	unsigned int readouts_buffered = queue.size();
 
@@ -345,7 +339,7 @@ CMRTGadget::extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &qu
 
 	for (unsigned int p=0; p<readouts_buffered; p++) {
 
-            TrajectoryMessagePtr mbq = queue.front();
+            TrajectoryMessage *mbq = queue.front().release();
             queue.pop();
 
             GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
@@ -369,7 +363,7 @@ CMRTGadget::extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &qu
 }
 
 void CMRTGadget::extract_trajectory_and_dcw_from_queue
-( std::queue<TrajectoryMessagePtr> &queue, boost::shared_ptr< hoNDArray<floatd2> > & traj, boost::shared_ptr< hoNDArray<float> > & dcw )
+( std::queue<std::unique_ptr<TrajectoryMessage>> &queue, boost::shared_ptr< hoNDArray<floatd2> > & traj, boost::shared_ptr< hoNDArray<float> > & dcw )
 {
 	// Extract trajectory and (if present) density compensation weights.
 	// They are stored as a float array of dimensions: {2,3} x #samples_per_readout x #readouts.

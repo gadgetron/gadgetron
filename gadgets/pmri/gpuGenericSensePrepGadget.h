@@ -23,9 +23,9 @@ namespace Gadgetron{
   {
     
   public:
-    using ReadoutMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>> *;
-    using TrajectoryMessagePtr = GadgetContainerMessage<hoNDArray<float>> *;
-    using ImageHeaderMessagePtr = GadgetContainerMessage<ISMRMRD::ImageHeader> *;
+    using ReadoutMessage = GadgetContainerMessage<hoNDArray<std::complex<float>>>;
+    using TrajectoryMessage = GadgetContainerMessage<hoNDArray<float>>;
+    using ImageHeaderMessage = GadgetContainerMessage<ISMRMRD::ImageHeader>;
 
     GADGET_DECLARE(gpuGenericSensePrepGadget);
 
@@ -72,15 +72,15 @@ namespace Gadgetron{
       duplicate_array( GadgetContainerMessage< hoNDArray<T> > *array );
     
     boost::shared_ptr< hoNDArray<float_complext> > 
-      extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue,
+      extract_samples_from_queue ( std::queue<std::unique_ptr<ReadoutMessage>> &queue,
 				   bool sliding_window, unsigned int set, unsigned int slice );
     
     boost::shared_ptr< hoNDArray<float> > 
-      extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &queue,
+      extract_trajectory_from_queue ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue,
 				      bool sliding_window, unsigned int set, unsigned int slice );
       
     void extract_trajectory_and_dcw_from_queue
-      ( std::queue<TrajectoryMessagePtr> &queue, bool sliding_window, unsigned int set, unsigned int slice,
+      ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue, bool sliding_window, unsigned int set, unsigned int slice,
 	unsigned int samples_per_frame, unsigned int num_frames,
 	cuNDArray<floatd2> *traj, cuNDArray<float> *dcw );
     
@@ -140,10 +140,10 @@ namespace Gadgetron{
     std::vector<size_t> image_dimensions_recon_;
     uint64d2 image_dimensions_recon_os_;
 
-    std::map<unsigned int, std::queue<ReadoutMessagePtr>> frame_readout_queue_;
-    std::map<unsigned int, std::queue<ReadoutMessagePtr>> recon_readout_queue_;
-    std::map<unsigned int, std::queue<TrajectoryMessagePtr>> frame_traj_queue_;
-    std::map<unsigned int, std::queue<TrajectoryMessagePtr>> recon_traj_queue_;
-    std::map<unsigned int, std::queue<ImageHeaderMessagePtr>> image_headers_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ReadoutMessage>>> frame_readout_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ReadoutMessage>>> recon_readout_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<TrajectoryMessage>>> frame_traj_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<TrajectoryMessage>>> recon_traj_queue_;
+    std::map<unsigned int, std::queue<std::unique_ptr<ImageHeaderMessage>>> image_headers_queue_;
   };
 }

@@ -16,8 +16,8 @@ namespace Gadgetron{
   {
     
   public:
-    using ReadoutMessagePtr = GadgetContainerMessage<hoNDArray<std::complex<float>>> *;
-    using TrajectoryMessagePtr = GadgetContainerMessage<hoNDArray<float>> *;
+    using ReadoutMessage = GadgetContainerMessage<hoNDArray<std::complex<float>>>;
+    using TrajectoryMessage = GadgetContainerMessage<hoNDArray<float>>;
 
     NFFT2DGadget() {}
     ~NFFT2DGadget() {}
@@ -36,17 +36,17 @@ namespace Gadgetron{
       duplicate_array( GadgetContainerMessage< hoNDArray<T> > *array );        
     
     boost::shared_ptr< hoNDArray<float_complext> > 
-      extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue);
+      extract_samples_from_queue ( std::queue<std::unique_ptr<ReadoutMessage>> &queue);
     
     boost::shared_ptr< hoNDArray<float> > 
-      extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &queue );
+      extract_trajectory_from_queue ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue );
     
     void extract_trajectory_and_dcw_from_queue
-      ( std::queue<TrajectoryMessagePtr> &queue, cuNDArray<floatd2> *traj, cuNDArray<float> *dcw );
+      ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue, cuNDArray<floatd2> *traj, cuNDArray<float> *dcw );
 
   protected:
-    std::queue<ReadoutMessagePtr> frame_readout_queue_;
-    std::queue<TrajectoryMessagePtr> frame_traj_queue_;
+    std::queue<std::unique_ptr<ReadoutMessage>> frame_readout_queue_;
+    std::queue<std::unique_ptr<TrajectoryMessage>> frame_traj_queue_;
     std::vector<size_t> dimensions_;
     std::vector<float> field_of_view_;
     size_t repetitions_;

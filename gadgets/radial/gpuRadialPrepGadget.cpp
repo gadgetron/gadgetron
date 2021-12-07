@@ -353,8 +353,8 @@ namespace Gadgetron{
     if( !new_frame_detected ) {
       
       // Memory handling is easier if we make copies for our internal queues
-      frame_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
-      recon_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
+      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
     }
 
     // If the profile is the last of a "true frame" (ignoring any sliding window profiles)
@@ -439,7 +439,7 @@ namespace Gadgetron{
       header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
       header->getObjectPtr()->image_series_index = set*slices_+slice;
 
-      image_headers_queue_[set*slices_+slice].push(header);
+      image_headers_queue_[set*slices_+slice].push(std::unique_ptr<ImageHeaderMessage>(header));
     }
     
     // If it is time to reconstruct (downstream) then prepare the Sense job
@@ -523,7 +523,7 @@ namespace Gadgetron{
       
       for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
 
-        ImageHeaderMessagePtr mbq = image_headers_queue_[set*slices_+slice].front();
+        ImageHeaderMessage *mbq = image_headers_queue_[set*slices_+slice].front().release();
         image_headers_queue_[set*slices_+slice].pop();
 
         GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
@@ -533,7 +533,7 @@ namespace Gadgetron{
         // 
 	
         if( i >= frames_per_reconstruction-sliding_window_rotations_*frames_per_rotation_[set*slices_+slice] ){
-          image_headers_queue_[set*slices_+slice].push(m);
+          image_headers_queue_[set*slices_+slice].push(std::unique_ptr<ImageHeaderMessage>(m));
         }
         else {
           m->release();
@@ -567,8 +567,8 @@ namespace Gadgetron{
       // This is the first profile of the next frame, enqueue.
       // We have encountered deadlocks if the same profile is enqueued twice in different queues. Hence the copy.
       
-      frame_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
-      recon_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
+      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
 
       profiles_counter_frame_[set*slices_+slice]++;
     }
@@ -809,7 +809,7 @@ namespace Gadgetron{
   }
 
   boost::shared_ptr< hoNDArray<float_complext> > gpuRadialPrepGadget::
-  extract_samples_from_queue( std::queue<ProfileMessagePtr> &queue, bool sliding_window,
+  extract_samples_from_queue( std::queue<std::unique_ptr<ProfileMessage>> &queue, bool sliding_window,
                               unsigned int set, unsigned int slice )
   {    
     //GDEBUG("Emptying queue...\n");
@@ -823,7 +823,7 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<profiles_buffered; p++) {
-      ProfileMessagePtr mbq = queue.front();
+      ProfileMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
@@ -851,7 +851,7 @@ namespace Gadgetron{
         profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
 
       if( sliding_window && p >= (profiles_buffered-profiles_in_sliding_window) )
-        queue.push(mbq);
+        queue.push(std::unique_ptr<ProfileMessage>(mbq));
       else
         mbq->release();
     } 

@@ -140,8 +140,8 @@ namespace Gadgetron{
     
     // Allocate profile queues
 
-    buffer_profiles_queue_ = std::map<unsigned int, std::queue<ProfileMessagePtr>>();
-    recon_profiles_queue_ = std::map<unsigned int, std::queue<ProfileMessagePtr>>();
+    buffer_profiles_queue_ = std::map<unsigned int, std::queue<std::unique_ptr<ProfileMessage>>>();
+    recon_profiles_queue_ = std::map<unsigned int, std::queue<std::unique_ptr<ProfileMessage>>>();
 
     // Define some profile counters for book-keeping
     //
@@ -318,14 +318,14 @@ namespace Gadgetron{
     //   belong to the current cardiac cycle and we delay enqueing
     //
 
-    buffer_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
+    buffer_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
     
     if( !new_cardiac_cycle_detected ) {
       if( recon_profiles_queue_[set*slices_+slice].empty()){
         first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->acquisition_time_stamp;
         first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
       }
-      recon_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
     }
     
     // If the profile is the last of a "buffer frame" 
@@ -510,7 +510,7 @@ namespace Gadgetron{
         first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->acquisition_time_stamp;
         first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
       }
-      recon_profiles_queue_[set*slices_+slice].push(duplicate_profile(m2));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
     }
     
     profiles_counter_global_[set*slices_+slice]++;
@@ -656,7 +656,7 @@ namespace Gadgetron{
     
     for (unsigned int p=0; p<profiles_buffered; p++) {
 
-      ProfileMessagePtr mbq = queue.front();
+      ProfileMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
@@ -703,7 +703,7 @@ namespace Gadgetron{
 
     for (long p=0; p<profiles_buffered; p++) {
 
-      ProfileMessagePtr mbq = queue.front();
+      ProfileMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq =

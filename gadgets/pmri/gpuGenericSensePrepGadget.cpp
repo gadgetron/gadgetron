@@ -381,10 +381,10 @@ namespace Gadgetron{
     if( !new_frame_detected ) {
       
       // Memory handling is easier if we make copies for our internal queues
-      frame_readout_queue_[idx].push(duplicate_array(m2));
-      recon_readout_queue_[idx].push(duplicate_array(m2));
-      frame_traj_queue_[idx].push(duplicate_array(m3));
-      recon_traj_queue_[idx].push(duplicate_array(m3));
+      frame_readout_queue_[idx].push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
+      recon_readout_queue_[idx].push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
+      frame_traj_queue_[idx].push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
+      recon_traj_queue_[idx].push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
     }
 
     // If the readout is the last of a "true frame" (ignoring any sliding window readouts)
@@ -480,7 +480,7 @@ namespace Gadgetron{
       header->getObjectPtr()->image_index = image_counter_[idx]++; 
       header->getObjectPtr()->image_series_index = idx;
 
-      image_headers_queue_[idx].push(header);
+      image_headers_queue_[idx].push(std::unique_ptr<ImageHeaderMessage>(header));
     }
     
     // If it is time to reconstruct (downstream) then prepare the Sense job
@@ -618,7 +618,7 @@ namespace Gadgetron{
       
       for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
 
-        ImageHeaderMessagePtr mbq = image_headers_queue_[idx].front();
+        ImageHeaderMessage *mbq = image_headers_queue_[idx].front().release();
         image_headers_queue_[idx].pop();
 
         GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
@@ -628,7 +628,7 @@ namespace Gadgetron{
         // 
 	
         if( i >= frames_per_reconstruction-sliding_window_rotations_*frames_per_rotation_[idx] ){
-          image_headers_queue_[idx].push(m);
+          image_headers_queue_[idx].push(std::unique_ptr<ImageHeaderMessage>(m));
         }
         else {
           m->release();
@@ -664,10 +664,10 @@ namespace Gadgetron{
       // The incoming profile was actually the first readout of the next frame, enqueue.
       //
 
-      frame_readout_queue_[idx].push(duplicate_array(m2));
-      recon_readout_queue_[idx].push(duplicate_array(m2));
-      frame_traj_queue_[idx].push(duplicate_array(m3));
-      recon_traj_queue_[idx].push(duplicate_array(m3));
+      frame_readout_queue_[idx].push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
+      recon_readout_queue_[idx].push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
+      frame_traj_queue_[idx].push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
+      recon_traj_queue_[idx].push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
 
       readout_counter_frame_[idx]++;
     }
@@ -682,7 +682,7 @@ namespace Gadgetron{
   }
   
   boost::shared_ptr< hoNDArray<float_complext> > 
-  gpuGenericSensePrepGadget::extract_samples_from_queue ( std::queue<ReadoutMessagePtr> &queue,
+  gpuGenericSensePrepGadget::extract_samples_from_queue ( std::queue<std::unique_ptr<ReadoutMessage>> &queue,
                                                           bool sliding_window, unsigned int set, unsigned int slice )
   {    
     unsigned int readouts_buffered = queue.size();
@@ -695,7 +695,7 @@ namespace Gadgetron{
     
     for (unsigned int p=0; p<readouts_buffered; p++) {
       
-      ReadoutMessagePtr mbq = queue.front();
+      ReadoutMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
@@ -723,7 +723,7 @@ namespace Gadgetron{
         readouts_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
 
       if( sliding_window && p >= (readouts_buffered-readouts_in_sliding_window) )
-        queue.push(mbq);
+        queue.push(std::unique_ptr<ReadoutMessage>(mbq));
       else
         mbq->release();
     } 
@@ -732,7 +732,7 @@ namespace Gadgetron{
   }
   
   boost::shared_ptr< hoNDArray<float> > 
-  gpuGenericSensePrepGadget::extract_trajectory_from_queue ( std::queue<TrajectoryMessagePtr> &queue,
+  gpuGenericSensePrepGadget::extract_trajectory_from_queue ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue,
                                                              bool sliding_window, unsigned int set, unsigned int slice )
   {    
     if(queue.empty()) {
@@ -755,7 +755,7 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float> > host_samples(new hoNDArray<float>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {      
-      TrajectoryMessagePtr mbq = queue.front();
+      TrajectoryMessage *mbq = queue.front().release();
       queue.pop();
 
       GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
@@ -779,7 +779,7 @@ namespace Gadgetron{
         readouts_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
 
       if( sliding_window && p >= (readouts_buffered-readouts_in_sliding_window) )
-        queue.push(mbq);
+        queue.push(std::unique_ptr<TrajectoryMessage>(mbq));
       else
         mbq->release();
     } 
@@ -788,7 +788,7 @@ namespace Gadgetron{
   }
   
   void gpuGenericSensePrepGadget::extract_trajectory_and_dcw_from_queue
-  ( std::queue<TrajectoryMessagePtr> &queue, bool sliding_window, unsigned int set, unsigned int slice,
+  ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue, bool sliding_window, unsigned int set, unsigned int slice,
     unsigned int samples_per_frame, unsigned int num_frames,
     cuNDArray<floatd2> *traj, cuNDArray<float> *dcw )
   {

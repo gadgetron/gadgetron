@@ -9,6 +9,7 @@
 #include <numeric>
 #include <queue>
 #include <range/v3/view/transform.hpp>
+#include <range/v3/range/conversion.hpp>
 
 #ifdef USE_OMP
 
