@@ -27,8 +27,6 @@ namespace Gadgetron::Server::Connection::Nodes {
             std::to_string(port),
             execute.name, *execute.target
         };
-
-
         namespace bp = boost::process;
         //Workaround for bug in Boost process
         auto env = boost::this_process::environment();
