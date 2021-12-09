@@ -41,9 +41,6 @@ cd ${WORKDIR} && \
     ninja && \
     ninja install
 
-# Install Python interfaces.
-pip3 install ismrmrd multimethod 
-
 #SIEMENS_TO_ISMRMRD
 cd ${WORKDIR} && \
     rm -rf siemens_to_ismrmrd && \
