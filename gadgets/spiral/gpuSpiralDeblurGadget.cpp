@@ -417,7 +417,8 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		gpu_traj = host_traj;
 		gpu_weights = host_weights;
 		//pre-process
-		nfft_plan_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+                if (nfft_plan_) nfft_plan_->reconfigure(from_std_vector<size_t,2>(image_dimensions_recon_),image_dimensions_recon_os_,kernel_width_);
+            	else nfft_plan_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
 		nfft_plan_->preprocess(&gpu_traj, NFFT_prep_mode::ALL);
 		prepared_ = true;
 	}
@@ -475,7 +476,8 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		gpu_weights_B0 = B0_weights;
 
 		//pre-process
-		nfft_plan_B0_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+                if (nfft_plan_B0_) nfft_plan_B0_->reconfigure(from_std_vector<size_t,2>(image_dimensions_recon_),image_dimensions_recon_os_,kernel_width_);
+		else nfft_plan_B0_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
 		nfft_plan_B0_->preprocess(&gpu_traj, NFFT_prep_mode::NC2C);
 		prepared_B0_= true;
 	}
