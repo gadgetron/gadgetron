@@ -348,7 +348,7 @@ if (BUILD_PYTHON_SUPPORT)
     add_library(python INTERFACE)
     set_property(TARGET python PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-    message("Boost_VERSION ${Boost_VERSION_STRING}")
+    message("Boost_VERSION ${Boost_VERSION_STRING} ${PYTHONLIBS_VERSION_STRING}")
     if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
         find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
         set(Boost_PYTHON3_TARGET Boost::python3)
