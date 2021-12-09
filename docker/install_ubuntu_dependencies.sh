@@ -87,7 +87,7 @@ pip3 install \
   tk-tools \
   junitparser
 
-env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install ismrmrd==1.9.3
+env LC_ALL=C.UTF-8 LANG=C.UTF-8 pip3 install ismrmrd==1.9.5
 
 pip3 install git+https://github.com/gadgetron/gadgetron-python.git
 
