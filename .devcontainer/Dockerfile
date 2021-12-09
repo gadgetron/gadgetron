@@ -1,4 +1,5 @@
-FROM ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_2004_cuda11_cudnn8_base
+ARG BASE_IMAGE=ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_2004_cuda11_cudnn8_base
+FROM ${BASE_IMAGE}
 
 # Options for setup script
 ARG INSTALL_ZSH="false"
