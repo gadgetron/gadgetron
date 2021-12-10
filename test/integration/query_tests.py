@@ -3,7 +3,7 @@ import argparse
 import glob
 import itertools
 import re
-from xml.dom.minidom import parse
+import xml.etree.ElementTree as ET
 import configparser
 from pathlib import Path
 import subprocess
@@ -47,10 +47,9 @@ def find_config_dir():
 
 
 def extract_gadgets_from_xml(xml_file, config_folder):
-    with open(Path(config_folder) / xml_file) as f:
-        document = parse(f)
-
-    return [x.childNodes[0].nodeValue for x in document.getElementsByTagName("classname")]
+    with open(Path(config_folder)/xml_file) as f:
+        root = ET.parse(f)
+    return  [node.text for node in root.findall('.//classname')]
 
 
 def extract_xmlfilenames(cfg_file):
