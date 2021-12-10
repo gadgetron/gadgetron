@@ -504,7 +504,7 @@ public:
         }
         else
         {
-            throw GadgetronClientException("Invalide image data type ... ");
+            throw GadgetronClientException("Invalid image data type ... ");
         }
     }
 
@@ -977,7 +977,7 @@ public:
         }
         else
         {
-            throw GadgetronClientException("Invalide image data type ... ");
+            throw GadgetronClientException("Invalid image data type ... ");
         }
     }
 
@@ -1644,7 +1644,7 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
         con.send_gadgetron_close();
         con.wait();
     } catch (...) {
-        std::cerr << "Unable to retrive noise statistics from server" << std::endl;
+        std::cerr << "Unable to retrieve noise statistics from server" << std::endl;
         stat.status = false;
     }
 

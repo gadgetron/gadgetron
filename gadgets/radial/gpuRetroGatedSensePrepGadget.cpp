@@ -331,7 +331,7 @@ namespace Gadgetron{
 
     // Enqueue profile
     // - if 'new_cardiac_cycle_detected' the current profile does not
-    //   belong to the current cardiac cycle and we delay enqueing
+    //   belong to the current cardiac cycle and we delay enqueuing
     //
 
     buffer_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
