@@ -1,0 +1,43 @@
+name: gadgetron
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - armadillo=9.900.5             # dev
+  - boost=1.76.0                  # dev
+  - cmake=3.21.3                  # dev
+  - cudatoolkit=11.0.3
+  - cudatoolkit-dev=11.0.3        # dev
+  - fftw=3.3.9
+  - gcc_linux-64=9.4.0            # dev
+  - gdb=11.1                      # dev
+  - gmock=1.10.0                  # dev
+  - gxx_linux-64=9.4.0            # dev
+  - gtest=1.10.0                  # dev
+  - h5py=3.2.1
+  - hdf5=1.10.6
+  - jupyter=1.0.0                 # dev
+  - libblas=*=*mkl
+  - libcurl=7.79.1                # dev
+  - libxml2=2.9.12                # dev
+  - libxslt=1.1.33                # dev
+  - make=4.3                      # dev
+  - matplotlib=3.4.3              # dev
+  - mkl=2021.4.0
+  - mkl-include=2021.4.0          # dev
+  - mkl-service=2.4.0
+  - ninja=1.10.2                  # dev
+  - nlohmann_json=3.10.4          # dev
+  - numpy=1.21.2
+  - pip=21.2.4
+  - pugixml=1.11.4                # dev
+  - python=3.9.7
+  - pyfftw=0.12.0
+  - rocksdb=6.13.3
+  - scipy=1.7.1
+  - shellcheck=0.7.2              # dev
+  - valgrind=3.17.0               # dev
+  - xsdata=21.12
+  - pip:
+    - ismrmrd==1.9.5
+    - gadgetron==1.3.6
