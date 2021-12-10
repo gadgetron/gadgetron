@@ -213,7 +213,7 @@ namespace Gadgetron {
                 //    calculate a scaling factor to cover the whole dynamic range
                 if (maxInten*scaling_factor_[encoding] > max_intensity_value.value())
                 {
-                    GDEBUG_CONDITION_STREAM(verbose.value(), "The fixed intensity scaling factor leads to dynamic range overflow - switch to dyanmic intensity scaling ... ");
+                    GDEBUG_CONDITION_STREAM(verbose.value(), "The fixed intensity scaling factor leads to dynamic range overflow - switch to dynamic intensity scaling ... ");
                     scaling_factor_[encoding] = (float)(max_intensity_value.value()) / maxInten;
                 }
             }

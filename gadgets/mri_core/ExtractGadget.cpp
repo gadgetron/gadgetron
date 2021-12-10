@@ -41,7 +41,7 @@ namespace Gadgetron {
                 return extract(data, [](auto& val) { return std::arg(val) + boost::math::constants::pi<float>(); });
             case ISMRMRD::ISMRMRD_IMTYPE_REAL: return extract(data, [&](auto& val) { return std::real(val) + offset; });
             case ISMRMRD::ISMRMRD_IMTYPE_IMAG: return extract(data, [&](auto& val) { return std::imag(val) + offset; });
-            default: throw std::runtime_error("Illegal image tpye encounted in extract_image");
+            default: throw std::runtime_error("Illegal image type encountered in extract_image");
             }
         }
 

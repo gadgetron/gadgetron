@@ -23,7 +23,7 @@ namespace Gadgetron{
 
     protected:
         GADGET_PROPERTY(physiology_time_index, int, "Physiology time index", 0);
-        GADGET_PROPERTY_LIMITS(mode, int, "Mode, 0=seperate series for each RR, 1=First complete RR only", 0, GadgetPropertyLimitsEnumeration, 0, 1);
+        GADGET_PROPERTY_LIMITS(mode, int, "Mode, 0=separate series for each RR, 1=First complete RR only", 0, GadgetPropertyLimitsEnumeration, 0, 1);
         GADGET_PROPERTY(phases, unsigned short, "Number of cardiac phases", 30);
         GADGET_PROPERTY(first_beat_on_trigger, bool, "Indicates that acquisition was started on trigger", false);
         GADGET_PROPERTY_LIMITS(interp_method, std::string, "Interpolation method", "Spline", GadgetPropertyLimitsEnumeration, "Spline", "BSpline", "");
@@ -37,7 +37,7 @@ namespace Gadgetron{
 
         unsigned short phys_time_index_;
         unsigned short phases_to_reconstruct_;
-        unsigned short mode_; //0=seperate series for each complete RR,
+        unsigned short mode_; //0=separate series for each complete RR,
                               //1=First complete RR interval only
 
         // true, if the first beat is on trigger

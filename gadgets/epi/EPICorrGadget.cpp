@@ -224,7 +224,7 @@ namespace Gadgetron {
                 //GDEBUG_STREAM("Excitation number:" << exc << "; slice: " << slc);
 
                 // If, for whatever reason, we are getting more repetitions than the header
-                //   specified, increase the size of the array to accomodate:
+                //   specified, increase the size of the array to accommodate:
                 if (exc >= (Nav_mag_.get_size(0) / E2_)) {
                     increase_no_repetitions(100);     // add 100 volumes more, to be safe
                 }
@@ -497,7 +497,7 @@ namespace Gadgetron {
 //
 //  filter_nav_correction_parameter
 //
-//    funtion to filter (over e2/repetition number) a navigator parameter.
+//    function to filter (over e2/repetition number) a navigator parameter.
 //    - nav_corr_param_array: array of navigator parameters
 //    - weights_array       : array with weights for the filtering
 //    - exc                 : current excitation number (for this set and slice)
@@ -588,7 +588,7 @@ namespace Gadgetron {
 //
 //  increase_no_repetitions
 //
-//    funtion to increase the size of the navigator parameter arrays used for filtering
+//    function to increase the size of the navigator parameter arrays used for filtering
 //    - delta_rep: how many more repetitions to add
 
     void EPICorrGadget::increase_no_repetitions(size_t delta_rep) {
