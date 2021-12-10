@@ -188,7 +188,7 @@ namespace Gadgetron {
         interleaves_counter_multiframe_[set * slices_ + slice]++;
 
         // Duplicate the profile to avoid double deletion in case problems are encountered below.
-        // Enque profile until all profiles for the reconstruction have been received.
+        // Enqueue profile until all profiles for the reconstruction have been received.
         buffer_[set * slices_ + slice].push_back(std::make_pair(m1,m2));
 
         // Copy profile into the accumulation buffer for csm/regularization estimation
@@ -422,7 +422,7 @@ namespace Gadgetron {
         header.image_index = image_counter_[set * slices_ + slice]++;
         header.image_series_index = set * slices_ + slice;
 
-        // Enque header until we are ready to assemble a Sense job
+        // Enqueue header until we are ready to assemble a Sense job
         //
 
         return header;

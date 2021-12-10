@@ -251,7 +251,7 @@ namespace {
 
         auto n_valid = boost::count_if(potentials, to_bool);
         if (n_valid < 1) { throw ConfigNodeError("Unable to parse property", node); }
-        if (n_valid > 1) { throw ConfigNodeError("Ambigous property parse", node); }
+        if (n_valid > 1) { throw ConfigNodeError("Ambiguous property parse", node); }
         return **boost::find_if(potentials, to_bool);
     }
 

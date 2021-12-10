@@ -121,7 +121,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
 
     this->gt_io_.export_array_complex(res, this->gt_ut_res_folder_ + "/spiral/res_regridding");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray< std::complex<T> > ref;
     this->gt_io_.import_array_complex(ref, this->gt_ut_data_folder_ + "/spiral/ref_regridding_REAL",
         this->gt_ut_data_folder_ + "/spiral/ref_regridding_IMAG");

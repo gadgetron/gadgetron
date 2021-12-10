@@ -145,7 +145,12 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
     except OSError as e:
         return Failure, "Failed to read reference file '{}'".format(reference_file)
 
+    header = dataset_file[dataset_group].header
+    ref_header = reference_file[reference_group].header
     if not dataset_file[dataset_group].header == reference_file[reference_group].header:
+        import deepdiff
+        diff = deepdiff.diff.DeepDiff(header,ref_header)
+        print(diff.pretty())
         return Failure, "Dataset header did not match reference header"
 
     for attribute in ['acquisitions', 'waveforms', 'images']:

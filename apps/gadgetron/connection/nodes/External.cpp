@@ -8,6 +8,7 @@
 
 #include "external/Python.h"
 #include "external/Matlab.h"
+#include "external/Julia.h"
 
 #include <boost/asio/use_future.hpp>
 #include <boost/algorithm/string.hpp>
@@ -23,7 +24,9 @@ namespace {
 
     const std::map<std::string, std::function<boost::process::child(const Config::Execute &, unsigned short, const StreamContext &)>> modules{
             {"python", start_python_module},
-            {"matlab", start_matlab_module}
+            {"matlab", start_matlab_module},
+            {"julia", start_julia_module}
+
     };
 
     void process_input(GenericInputChannel input, std::shared_ptr<ExternalChannel> external, OutputChannel bypass ) {

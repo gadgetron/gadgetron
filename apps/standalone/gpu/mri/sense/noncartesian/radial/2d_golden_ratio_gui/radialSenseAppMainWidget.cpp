@@ -169,7 +169,7 @@ void radialSenseAppMainWindow::replan()
   progress.setValue(0);
   progress.show();
 
-  // Set GUI elements before the plan is created to avoid triggering unneccessary reconstructions
+  // Set GUI elements before the plan is created to avoid triggering unnecessary reconstructions
   unsigned int maxProjections = min(get_matrix_size().vec[0]<<2, (get_num_points_per_array_coil()/get_num_samples_per_projection())>>1);
   reconWidget->numProjectionsScrollBar->setMaximum(maxProjections);
   reconWidget->numProjectionsSpinBox->setMaximum(maxProjections);

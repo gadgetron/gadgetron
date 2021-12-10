@@ -4,6 +4,7 @@
 #include <cmath>
 #include <numeric>
 #include <set>
+#include <omp.h>
 
 #include "hoMatrix.h"
 #include "hoNDArray_elemwise.h"

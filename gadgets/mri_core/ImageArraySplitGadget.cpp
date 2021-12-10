@@ -66,7 +66,7 @@ int ImageArraySplitGadget::process( GadgetContainerMessage<IsmrmrdImageArray>* m
                 //Chain them
                 cm1->cont(cm2);
 
-                //Creat a new meta container if needed and copy
+                //Create a new meta container if needed and copy
                 if (imagearr.meta_.size()>0) {
                     GadgetContainerMessage< ISMRMRD::MetaContainer >* cm3 = 
                             new GadgetContainerMessage< ISMRMRD::MetaContainer >();

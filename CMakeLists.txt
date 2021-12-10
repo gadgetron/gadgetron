@@ -348,7 +348,7 @@ if (BUILD_PYTHON_SUPPORT)
     add_library(python INTERFACE)
     set_property(TARGET python PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-    message("Boost_VERSION ${Boost_VERSION_STRING}")
+    message("Boost_VERSION ${Boost_VERSION_STRING} ${PYTHONLIBS_VERSION_STRING}")
     if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
         find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
         set(Boost_PYTHON3_TARGET Boost::python3)
@@ -366,7 +366,7 @@ endif()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
-    message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
+    message("For Windows users in particular, for ease of installation we do not recommend installing these libraries.")
 endif()
 
 find_package(OpenGL)

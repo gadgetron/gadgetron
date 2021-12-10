@@ -29,7 +29,7 @@ namespace Gadgetron{
     //
     // We use hoNDArray to interface the gadget chain, even if ARRAY_TYPE is a cuNDArray
     // Instead of hard coding the interface to use single precision (float), 
-    // "typename ARRAY_TYPE::element_type" could in principle denote a double precison type (double) as well.
+    // "typename ARRAY_TYPE::element_type" could in principle denote a double precision type (double) as well.
     // Registration of complex images is however not supported currently.
     //
     

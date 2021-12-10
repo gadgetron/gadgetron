@@ -129,7 +129,7 @@ int main(int argc, char** argv)
   // Use a rhs buffer to estimate the csm -- from all the data
   //
 
-  unsigned int profiles_per_subcycle = matrix_size_os[0]<<1; // causes no alising
+  unsigned int profiles_per_subcycle = matrix_size_os[0]<<1; // causes no aliasing
   unsigned int num_subcycles = profiles_per_subcycle / profiles_per_frame;
   unsigned int num_cycles = num_profiles / profiles_per_subcycle;
 

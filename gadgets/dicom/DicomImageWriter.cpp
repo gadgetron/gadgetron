@@ -59,7 +59,7 @@ namespace Gadgetron {
 
         stream.write(serialized, serialized_length);
 
-        // chech whether the image filename is attached
+        // check whether the image filename is attached
         if (dcm_filename_message) {
             unsigned long long len = dcm_filename_message->length();
             Core::IO::write_string_to_stream<unsigned long long>(stream, *dcm_filename_message);

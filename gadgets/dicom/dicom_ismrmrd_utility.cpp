@@ -820,7 +820,7 @@ namespace Gadgetron
             }
 
             // ----------------------------------
-            // sequence discription
+            // sequence description
             // ----------------------------------
             N = attrib.length(GADGETRON_SEQUENCEDESCRIPTION);
             if(N>0)

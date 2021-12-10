@@ -132,12 +132,12 @@ namespace Gadgetron {
         }
         else if (data_type == ISMRMRD::ISMRMRD_CXFLOAT)
         {
-            GERROR("DicomFinishGadget::process, does not supprot ISMRMRD_CXFLOAT data type\n");
+            GERROR("DicomFinishGadget::process, does not support ISMRMRD_CXFLOAT data type\n");
             return GADGET_FAIL;
         }
         else if (data_type == ISMRMRD::ISMRMRD_CXDOUBLE)
         {
-            GERROR("DicomFinishGadget::process, does not supprot ISMRMRD_CXDOUBLE data type\n");
+            GERROR("DicomFinishGadget::process, does not support ISMRMRD_CXDOUBLE data type\n");
             return GADGET_FAIL;
         }
 
