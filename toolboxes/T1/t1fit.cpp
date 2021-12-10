@@ -171,7 +171,9 @@ double estimate_t1_standard_deviation(const std::vector<double>& TI, const std::
 
 hoNDArray<float> Gadgetron::T1::calculate_error_map(const T1_3param& params, const hoNDArray<float>& data,
                                                     const std::vector<float>& TI) {
-    const auto& [A, B, T1] = params;
+    const auto& A = params.A; 
+    const auto& B = params.B;
+    const auto& T1 = params.T1star;
 
     auto TId = std::vector<double>(TI.begin(),TI.end());
     auto result = hoNDArray<float>(A.dimensions());

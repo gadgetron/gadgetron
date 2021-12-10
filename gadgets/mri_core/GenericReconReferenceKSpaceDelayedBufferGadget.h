@@ -1,6 +1,6 @@
 /** \file   GenericReconReferenceKSpaceDelayedBufferGadget.h
     \brief  Generic chain does requires that reference data is acquried right before the imaging data, depending on the triggering scheme
-            Sometimes for the seperate acceleration mode, ref data for all SLC may be acuquired all at once at the beginning of scan
+            Sometimes for the separate acceleration mode, ref data for all SLC may be acuquired all at once at the beginning of scan
 
             This gadget will buffer the ref data for every slice and only send them down stream when imaging data for a slice arrives.
 

@@ -66,11 +66,11 @@ int gpuCSICoilEstimationGadget::process(
 
 
 
-			auto seperated = split_calibration_lines<std::complex<float>>(*ho_data,skip_lines_,1);
+			auto separated = split_calibration_lines<std::complex<float>>(*ho_data,skip_lines_,1);
 
-			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<0>(seperated).get());
+			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<0>(separated).get());
 			senseData->freq_calibration->squeeze();
-			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<1>(seperated).get());
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<1>(separated).get());
 		} else {
 
 			senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));

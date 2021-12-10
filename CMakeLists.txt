@@ -106,7 +106,7 @@ endif ()
 
 #set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
-
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
@@ -294,17 +294,16 @@ set(GADGETRON_BUILD_RPATH "")
 
 option(USE_MKL Off)
 if (USE_MKL)
+    if (LINUX)
+        list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/mkl/latest")
+    endif()
     find_package(MKL REQUIRED)
+    link_directories(GTBLAS BEFORE INTERFACE "${MKL_ROOT}/lib/intel64/")
     add_library(GTBLAS INTERFACE)
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES MKL::MKL)
+    message("MKL LIB DIR ${MKL_ROOT}/lib/intel64")
 
-
-    string(REPLACE ";" ":" MKL_COMPILER_LIB_DIR_NO_SEMICOLON "${MKL_COMPILER_LIB_DIR}")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${MKL_LIB_DIR}:${MKL_COMPILER_LIB_DIR_NO_SEMICOLON}")
-    add_definitions(-DUSE_MKL)
-    set(GADGETRON_BUILD_RPATH "${MKL_LIB_DIR};${MKL_COMPILER_LIB_DIR}")
+    add_definitions(-DUSE_MKL -DARMA_BLAS_LONG_LONG -DARMA_USE_BLAS -DARMA_USE_LAPACK)
 else ()
     find_package(CBLAS REQUIRED)
     find_package(LAPACK REQUIRED)
@@ -349,7 +348,7 @@ if (BUILD_PYTHON_SUPPORT)
     add_library(python INTERFACE)
     set_property(TARGET python PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-    message("Boost_VERSION ${Boost_VERSION_STRING}")
+    message("Boost_VERSION ${Boost_VERSION_STRING} ${PYTHONLIBS_VERSION_STRING}")
     if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
         find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
         set(Boost_PYTHON3_TARGET Boost::python3)
@@ -367,7 +366,7 @@ endif()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
-    message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
+    message("For Windows users in particular, for ease of installation we do not recommend installing these libraries.")
 endif()
 
 find_package(OpenGL)
@@ -413,7 +412,6 @@ if (BUILD_WITH_GPERFTOOLS_PROFILER)
 endif()
 
 
-add_subdirectory(cmake)
 add_subdirectory(chroot)
 
 option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)

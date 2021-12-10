@@ -278,7 +278,7 @@ namespace Gadgetron {
                 end_E2 = std::get<1>(t);
             }
 
-            // crop the ref_calib, along RO, E1 and E2 for seperate or embedded mode
+            // crop the ref_calib, along RO, E1 and E2 for separate or embedded mode
             vector_td<size_t, 3> crop_offset;
             crop_offset[0] = sampling_limits[0].min_;
             crop_offset[1] = start_E1;
@@ -329,7 +329,7 @@ namespace Gadgetron {
             }
             else
             {
-                // sepearate, embedded mode, the ref center is the kspace center
+                // separate, embedded mode, the ref center is the kspace center
                 sampling_limits[1].center_ = (sampling_limits[1].max_ + 1) / 2;
                 sampling_limits[2].center_ = (sampling_limits[2].max_ + 1) / 2;
             }

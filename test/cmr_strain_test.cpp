@@ -85,7 +85,7 @@ TYPED_TEST(cmr_strain_test, Cine)
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/Strain/circ_mask_6");
     this->gt_io_.export_array(thetas, this->gt_ut_res_folder_ + "/Strain/theta_6");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;
@@ -141,7 +141,7 @@ TYPED_TEST(cmr_strain_test, QuadarticStrain)
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/QuadraticStrain/circ");
     this->gt_io_.export_array(thetas, this->gt_ut_res_folder_ + "/QuadraticStrain/thetas");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;
@@ -197,7 +197,7 @@ TYPED_TEST(cmr_strain_test, ConstStrain)
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/ConstStrain/circ");
     this->gt_io_.export_array(thetas, this->gt_ut_res_folder_ + "/ConstStrain/thetas");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;

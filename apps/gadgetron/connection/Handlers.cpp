@@ -79,7 +79,7 @@ namespace Gadgetron::Server::Connection::Handlers {
         if (answers.count(query))
             channel.push(Response(corr_id, answers.at(query)()));
         else
-            channel.push(Response(corr_id,"Uknown query"));
+            channel.push(Response(corr_id,"Unknown query"));
     }
 
 

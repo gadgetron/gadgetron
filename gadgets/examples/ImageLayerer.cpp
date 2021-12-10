@@ -42,7 +42,7 @@ namespace {
 
     template<class A, class B>
     Image<A> merge(const Image<A> &, const Image<B> &) {
-        throw std::runtime_error("Images have different types; merging will be a hazzle.");
+        throw std::runtime_error("Images have different types; merging will be a hassle.");
     }
 }
 
