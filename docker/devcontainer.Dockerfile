@@ -41,6 +41,7 @@ COPY environment.yml /tmp/build/
 ENV LD_LIBRARY_PATH="/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/lib"
 
 RUN /opt/conda/bin/conda env create -f /tmp/build/environment.yml \
+    && /opt/conda/bin/conda clean -afy \
     && chown -R $USER_UID:$USER_GID /opt/conda/envs \
     && chown -R $USER_UID:$USER_GID ${HOME}/.conda
 
