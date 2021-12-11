@@ -8,7 +8,7 @@ ARG HOME=/home/$USERNAME
 ARG CONDA_ENVIRONMENT_NAME=gadgetron
 
 # The version of conda to use
-ARG CONDA_VERSION=4.10.3
+ARG CONDA_VERSION=4.11.0
 
 # Based on https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile.
 # We also install conda-lock.
@@ -36,6 +36,10 @@ fi\n" >> /etc/bash.bashrc
 
 # Create a conda environment from the lockfile in the repo root.
 COPY environment.yml /tmp/build/
+
+# For some reason the install of CUDA in the conda environment needs this set
+ENV LD_LIBRARY_PATH="/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/lib"
+
 RUN /opt/conda/bin/conda env create -f /tmp/build/environment.yml \
     && chown -R $USER_UID:$USER_GID /opt/conda/envs \
     && chown -R $USER_UID:$USER_GID ${HOME}/.conda

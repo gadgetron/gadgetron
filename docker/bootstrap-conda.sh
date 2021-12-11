@@ -3,6 +3,7 @@
 set -eu
 
 WORKDIR="$(dirname "$0")/../dep-build"
+mkdir -p "$WORKDIR"
 
 #ranges-v3 (not included with conda)
 cd "${WORKDIR}" && \
