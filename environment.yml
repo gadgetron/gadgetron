@@ -36,6 +36,7 @@ dependencies:
   - rocksdb=6.13.3
   - scipy=1.7.1
   - shellcheck=0.7.2              # dev
+  - supervisor=4.2.2
   - valgrind=3.17.0               # dev
   - xsdata=21.12
   - pip:

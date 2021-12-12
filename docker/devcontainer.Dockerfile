@@ -31,19 +31,16 @@ RUN echo "\n\
 if ! grep -q \"^source /opt/conda/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then\n\
 	echo \"source /opt/conda/etc/profile.d/conda.sh\" >> ${HOME}/.bashrc\n\
 	echo \"conda activate ${CONDA_ENVIRONMENT_NAME}\" >> ${HOME}/.bashrc\n\
-    echo \"source <(kubectl completion bash)\" >> ${HOME}/.bashrc\n\
 fi\n" >> /etc/bash.bashrc
 
 # Create a conda environment from the lockfile in the repo root.
 COPY environment.yml /tmp/build/
 
-# For some reason the install of CUDA in the conda environment needs this set
-ENV LD_LIBRARY_PATH="/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/lib"
-
-RUN /opt/conda/bin/conda env create -f /tmp/build/environment.yml \
+# For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
+RUN LD_LIBRARY_PATH="/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/lib" /opt/conda/bin/conda env create -f /tmp/build/environment.yml \
     && /opt/conda/bin/conda clean -afy \
-    && chown -R $USER_UID:$USER_GID /opt/conda/envs \
-    && chown -R $USER_UID:$USER_GID ${HOME}/.conda
+    && chown -R $USER_UID:$USER_GID /opt/conda \
+    && chown -R $USER_UID:$USER_GID  ${HOME}/.conda
 
 ENV CMAKE_GENERATOR=Ninja
 
@@ -76,6 +73,6 @@ ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
 
 # Create a kits file for the VSCode CMake Tools extension, so you are not prompted for which kit to select whenever you open VSCode
-# RUN mkdir -p /home/vscode/.local/share/CMakeTools \
-#    && echo '[{"name":"GCC-10","compilers":{"C":"/opt/conda/envs/wabakimi/bin/x86_64-conda_cos6-linux-gnu-gcc","CXX":"/opt/conda/envs/wabakimi/bin/x86_64-conda_cos6-linux-gnu-g++"}}]' > /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json \
-#    && chown vscode /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
+RUN mkdir -p /home/vscode/.local/share/CMakeTools \
+    && echo '[{"name":"GCC-10","compilers":{"C":"/opt/conda/envs/gadgetron/bin/x86_64-conda_cos6-linux-gnu-gcc","CXX":"/opt/conda/envs/gadgetron/bin/x86_64-conda_cos6-linux-gnu-g++"}}]' > /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json \
+    && chown vscode /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json

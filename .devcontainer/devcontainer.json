@@ -1,12 +1,13 @@
 {
 	"name": "Gadgetron",
 
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			"BASE_IMAGE": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_2004_cuda11_cudnn8_base"
-		}
-	},
+	"image": "gtdevcontaintertest",
+	// "build": {
+	//	"dockerfile": "Dockerfile",
+	//	"args": {
+	//		"BASE_IMAGE": "gtdevcontaintertest"
+	//	}
+	//},
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": { 
@@ -14,7 +15,13 @@
 	},
 
 	// To enable your local GPUs in container if they are on enabled by default
-	// "runArgs": [ "--gpus=all" ],
+	//"runArgs": ["--init", "--network=host"],
+	"runArgs": ["--init", "--network=host", "--gpus=all" ],
+
+	"mounts": [
+		// Bind mount docker socket under an alias to support docker-from-docker
+		"source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
+	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [9002],
@@ -29,8 +36,12 @@
 		"eamodio.gitlens",
 	],
 
+	"overrideCommand": false,
+	
 	// Use the non-root user
 	"remoteUser": "vscode",
 
+	// We have to make sure the current user owns the conda folder
+	"onCreateCommand": ["sudo", "chown", "-R", "vscode:vscode", "/opt/conda"],
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
