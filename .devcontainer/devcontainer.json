@@ -1,47 +1,67 @@
 {
 	"name": "Gadgetron",
-
 	"build": {
 		"dockerfile": "Dockerfile",
 		"args": {
 			"BASE_IMAGE": "gadgetron_cudadevimage"
 		}
 	},
-
 	// Set *default* container specific settings.json values on container create.
-	"settings": { 
+	"settings": {
 		"terminal.integrated.inheritEnv": true, // this is so that the "code" executable is available from the integrated terminal
-		"terminal.integrated.shell.linux": null	
+		"terminal.integrated.shell.linux": null,
+		"cmake.configureOnOpen": true,
+		"cmake.preferredGenerators": [
+			"Ninja",
+			"Unix Makefiles"
+		],
+		"cmake.cmakePath": "/opt/conda/envs/gadgetron/bin/cmake",
+		"cmake.configureSettings": {
+			"USE_CUDA": "ON",
+			"USE_MKL": "ON",
+			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron"
+		}
 	},
-
 	// To enable your local GPUs in container if they are on enabled by default
 	//"runArgs": ["--init", "--network=host"],
-	"runArgs": ["--init", "--network=host", "--gpus=all" ],
-
+	"runArgs": [
+		"--init",
+		"--network=host",
+		"--gpus=all"
+	],
 	"mounts": [
 		// Bind mount docker socket under an alias to support docker-from-docker
 		"source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
 	],
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [9002],
-
+	"forwardPorts": [
+		9002
+	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
 		"eamodio.gitlens",
+		"esbenp.prettier-vscode",
+		"matepek.vscode-catch2-test-adapter",
+		"mhutchie.git-graph",
+		"ms-azuretools.vscode-docker",
+		"ms-python.python",
+		"oderwat.indent-rainbow",
+		"timonwong.shellcheck"
 	],
-
 	"overrideCommand": false,
-	
 	// Use the non-root user
 	"remoteUser": "vscode",
-
 	// We have to make sure the current user owns the conda folder
-	"onCreateCommand": ["sudo", "chown", "-R", "vscode:vscode", "/opt/conda"],
-	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
+	"onCreateCommand": [
+		"sudo",
+		"chown",
+		"-R",
+		"vscode:vscode",
+		"/opt/conda"
+	],
+	// "postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
