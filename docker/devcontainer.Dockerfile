@@ -11,7 +11,7 @@ ARG USER_GID
 ARG HOME=/home/$USERNAME
 
 RUN apt-get update \
-    && apt-get install -y sudo wget git-core rsync \
+    && apt-get install -y sudo wget git-core rsync curl \
     && apt-get clean
 
 # Create the user
@@ -36,8 +36,8 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     && [ -z "$CONDA_VERSION" ] || /opt/conda/bin/conda install -n base conda=$CONDA_VERSION \
     && /opt/conda/bin/conda install -c conda-forge -n base conda-lock \
     && /opt/conda/bin/conda clean -afy \
-	&& chown -R $USER_UID:$USER_GID /opt/conda
-    && mkdir -p ${HOME}/.conda
+	&& chown -R $USER_UID:$USER_GID /opt/conda \
+    && mkdir -p ${HOME}/.conda \
     && chown -R $USER_UID:$USER_GID ${HOME}/.conda
 
 COPY --chown=$USER_UID:${USER_GID} environment.yml /tmp/build/
@@ -52,14 +52,15 @@ if ! grep -q \"^source /opt/conda/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then
 	echo \"conda activate $(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')\" >> ${HOME}/.bashrc\n\
 fi\n" >> /etc/bash.bashrc
 
-FROM gadgetron_baseimage AS gadgetron_nocudadevimage_base
+FROM gadgetron_baseimage AS gadgetron_cudadevimage_base
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
-RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
+RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
+# For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
+RUN LD_LIBRARY_PATH="/opt/conda/envs/$(grep 'name:' /tmp/build/filtered_environment.yml | awk '{print $2}')/lib" /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy 
 
-FROM gadgetron_nocudadevimage_base AS gadgetron_dependency_build
+FROM gadgetron_cudadevimage_base AS gadgetron_dependency_build
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
@@ -68,18 +69,17 @@ RUN chmod +x /tmp/build/bootstrap-conda.sh
 ENV PATH="/app:/opt/conda/condabin:${PATH}"
 RUN conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/build/bootstrap-conda.sh
 
-FROM gadgetron_nocudadevimage_base AS gadgetron_nocudadevimage
-ARG USER_UID
-ARG USER_GID
-COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
-
-FROM gadgetron_baseimage AS gadgetron_cudadevimage
+FROM gadgetron_baseimage AS gadgetron_nocudadevimage
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
-RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-# For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
-RUN LD_LIBRARY_PATH="/opt/conda/envs/$(grep 'name:' /tmp/build/filtered_environment.yml | awk '{print $2}')/lib" /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy 
+RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
+RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
+
+FROM gadgetron_cudadevimage_base AS gadgetron_cudadevimage
+ARG USER_UID
+ARG USER_GID
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
 FROM gadgetron_baseimage AS gadgetron_cudartimage

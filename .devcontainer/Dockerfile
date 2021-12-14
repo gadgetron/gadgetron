@@ -8,8 +8,7 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 ARG VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION=v0.209.3
-
-ENV CMAKE_GENERATOR=Ninja
+USER root
 
 # Install needed packages and setup non-root user.
 RUN script=$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-containers/${VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION}/script-library/common-debian.sh") && bash -c "$script" -- "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" "true" "true"
@@ -36,6 +35,8 @@ RUN mkdir -p /home/vscode/.local/share/CMakeTools \
     && chown vscode /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
 
 RUN update-locale LANG=en_US.UTF-8
+
+ENV CMAKE_GENERATOR=Ninja
 
 # Setting the ENTRYPOINT to docker-init.sh will configure non-root access to
 # the Docker socket if "overrideCommand": false is set in devcontainer.json.
