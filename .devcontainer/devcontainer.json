@@ -10,7 +10,8 @@
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash"
+		"terminal.integrated.inheritEnv": true, // this is so that the "code" executable is available from the integrated terminal
+		"terminal.integrated.shell.linux": null	
 	},
 
 	// To enable your local GPUs in container if they are on enabled by default

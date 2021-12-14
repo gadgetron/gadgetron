@@ -82,7 +82,23 @@ ARG USER_UID
 ARG USER_GID
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
-FROM gadgetron_cudadevimage AS gadgetron_build
+FROM gadgetron_cudadevimage AS gadgetron_cudabuild
+ARG USER_UID
+ARG USER_GID
+USER ${USER_UID}:${USER_GID}
+WORKDIR /opt
+RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
+COPY --chown=$USER_UID:${USER_GID} . /opt/code/gadgetron/
+SHELL ["/bin/bash", "-c"]
+RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && \
+    cd /opt/code/gadgetron && \
+    mkdir build && \
+    cd build && \
+    cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package && \
+    ninja && \
+    ninja install
+
+FROM gadgetron_nocudadevimage AS gadgetron_nocudabuild
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
@@ -106,14 +122,17 @@ RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_enviro
 # For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
 RUN LD_LIBRARY_PATH="/opt/conda/envs/$(grep 'name:' /tmp/build/filtered_environment.yml | awk '{print $2}')/lib" /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_build --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_build --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
-COPY --from=gadgetron_build --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
 
 FROM gadgetron_baseimage AS gadgetron_nocudartimage
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
 RUN grep -v "#.*\<cuda\|dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml /opt/conda/bin/conda clean -afy
+RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
