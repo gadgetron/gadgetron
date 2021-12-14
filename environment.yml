@@ -6,8 +6,8 @@ dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0                  # dev
   - cmake=3.21.3                  # dev
-  - cudatoolkit=11.0.3
-  - cudatoolkit-dev=11.0.3        # dev
+  - cudatoolkit=11.0.3            # cuda
+  - cudatoolkit-dev=11.0.3        # dev, cuda
   - fftw=3.3.9
   - gcc_linux-64=9.4.0            # dev
   - gdb=11.1                      # dev

@@ -2,19 +2,18 @@
 
 set -eu
 
-WORKDIR="$(dirname "$0")/../dep-build"
+WORKDIR="$(readlink -f $(dirname "$0")/../dep-build)"
 mkdir -p "$WORKDIR"
+
+PACKAGE_PATH="${WORKDIR}/package"
+mkdir -p "$PACKAGE_PATH"
 
 #ranges-v3 (not included with conda)
 cd "${WORKDIR}" && \
     rm -rf range-v3 && \
     git clone https://github.com/ericniebler/range-v3.git && \
     cd range-v3 && \
-    mkdir -p build && \
-    cd build && \
-    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$CONDA_PREFIX" ../ && \
-    ninja && \
-    ninja install 
+    cp -r include "$PACKAGE_PATH"/
 
 #ISMRMRD
 cd "${WORKDIR}" && \
@@ -23,8 +22,7 @@ cd "${WORKDIR}" && \
     cd ismrmrd && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX="$CONDA_PREFIX" -G Ninja ../  && \
-    ninja && \
+    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
     ninja install
 
 #SIEMENS_TO_ISMRMRD
@@ -34,6 +32,7 @@ cd "${WORKDIR}" && \
     cd siemens_to_ismrmrd && \
     mkdir build && \
     cd build && \
-    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$CONDA_PREFIX" -DBUILD_DYNAMIC=ON ../ && \
-    ninja && \
-    ninja install 
+    cmake -G Ninja -DBUILD_DYNAMIC=ON -DCMAKE_PREFIX_PATH="$PACKAGE_PATH" -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
+    ninja install
+
+rsync -a "${PACKAGE_PATH}/" "$CONDA_PREFIX"

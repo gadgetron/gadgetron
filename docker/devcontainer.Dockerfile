@@ -1,11 +1,26 @@
-FROM mcr.microsoft.com/vscode/devcontainers/base:0.201.8-focal AS devcontainer
-
-# Install needed packages and setup non-root user.
+# Shared arguments
 ARG USERNAME="vscode"
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
+
+FROM ubuntu:20.04 AS gadgetron_baseimage
+
+ARG USERNAME
+ARG USER_UID
+ARG USER_GID
 ARG HOME=/home/$USERNAME
-ARG CONDA_ENVIRONMENT_NAME=gadgetron
+
+RUN apt-get update \
+    && apt-get install -y sudo wget git-core rsync \
+    && apt-get clean
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # The version of conda to use
 ARG CONDA_VERSION=4.11.0
@@ -22,6 +37,10 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     && /opt/conda/bin/conda install -c conda-forge -n base conda-lock \
     && /opt/conda/bin/conda clean -afy \
 	&& chown -R $USER_UID:$USER_GID /opt/conda
+    && mkdir -p ${HOME}/.conda
+    && chown -R $USER_UID:$USER_GID ${HOME}/.conda
+
+COPY --chown=$USER_UID:${USER_GID} environment.yml /tmp/build/
 
 # Add a section to /etc/bash.bashrc that ensures that a section is present at the end of ~/.bashrc.
 # We can't just write to .bashrc from here because it will be overwritten if the vscode user has
@@ -30,49 +49,54 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 RUN echo "\n\
 if ! grep -q \"^source /opt/conda/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then\n\
 	echo \"source /opt/conda/etc/profile.d/conda.sh\" >> ${HOME}/.bashrc\n\
-	echo \"conda activate ${CONDA_ENVIRONMENT_NAME}\" >> ${HOME}/.bashrc\n\
+	echo \"conda activate $(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')\" >> ${HOME}/.bashrc\n\
 fi\n" >> /etc/bash.bashrc
 
-# Create a conda environment from the lockfile in the repo root.
-COPY environment.yml /tmp/build/
+FROM gadgetron_baseimage AS gadgetron_nocudadevimage_base
+ARG USER_UID
+ARG USER_GID
+USER ${USER_UID}:${USER_GID}
+RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
+RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 
-# For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
-RUN LD_LIBRARY_PATH="/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/lib" /opt/conda/bin/conda env create -f /tmp/build/environment.yml \
-    && /opt/conda/bin/conda clean -afy \
-    && chown -R $USER_UID:$USER_GID /opt/conda \
-    && chown -R $USER_UID:$USER_GID  ${HOME}/.conda
-
-ENV CMAKE_GENERATOR=Ninja
-
-# Install dependencies not evailable through conda or pip
-COPY docker/bootstrap-conda.sh /tmp/build/
+FROM gadgetron_nocudadevimage_base AS gadgetron_dependency_build
+ARG USER_UID
+ARG USER_GID
+USER ${USER_UID}:${USER_GID}
+COPY --chown=$USER_UID:${USER_GID} docker/bootstrap-conda.sh /tmp/build/
 RUN chmod +x /tmp/build/bootstrap-conda.sh
 ENV PATH="/app:/opt/conda/condabin:${PATH}"
-RUN conda run --no-capture-output -n ${CONDA_ENVIRONMENT_NAME} /tmp/build/bootstrap-conda.sh
+RUN conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/build/bootstrap-conda.sh
 
-# Download Tini for cleaning up zombie processes and default signal handling. We will copy into the runtime images
-# (which do not have curl installed)
-ARG TINI_VERSION=v0.19.0
-RUN mkdir -p /opt/code \
-    && curl -fsSL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini --output /opt/code/tini \
-    && chmod +x /opt/code/tini
+FROM gadgetron_nocudadevimage_base AS gadgetron_nocudadevimage
+ARG USER_UID
+ARG USER_GID
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
-ARG VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION=v0.179.0
+FROM gadgetron_baseimage AS gadgetron_cudadevimage
+ARG USER_UID
+ARG USER_GID
+USER ${USER_UID}:${USER_GID}
+RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
+# For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
+RUN LD_LIBRARY_PATH="/opt/conda/envs/$(grep 'name:' /tmp/build/filtered_environment.yml | awk '{print $2}')/lib" /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy 
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
-# Enable non-root Docker access in container
-ARG ENABLE_NONROOT_DOCKER="true"
-# Use the OSS Moby CLI instead of the licensed Docker CLI
-ARG USE_MOBY="false"
+FROM gadgetron_baseimage AS gadgetron_cudartimage
+ARG USER_UID
+ARG USER_GID
+RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
+# For some reason the install of CUDA in the conda environment needs LD_LIBRARY_PATH set
+RUN LD_LIBRARY_PATH="/opt/conda/envs/$(grep 'name:' /tmp/build/filtered_environment.yml | awk '{print $2}')/lib" /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml \
+    && /opt/conda/bin/conda clean -afy \
+    && chown -R $USER_UID:$USER_GID /opt/conda
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
-RUN script=$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-containers/${VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION}/script-library/docker-debian.sh") && bash -c "$script" -- "${ENABLE_NONROOT_DOCKER}" "/var/run/docker-host.sock" "/var/run/docker.sock" "${USERNAME}" "${USE_MOBY}"
-
-# Setting the ENTRYPOINT to docker-init.sh will configure non-root access to
-# the Docker socket if "overrideCommand": false is set in devcontainer.json.
-# The script will also execute CMD if you need to alter startup behaviors.
-ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
-CMD [ "sleep", "infinity" ]
-
-# Create a kits file for the VSCode CMake Tools extension, so you are not prompted for which kit to select whenever you open VSCode
-RUN mkdir -p /home/vscode/.local/share/CMakeTools \
-    && echo '[{"name":"GCC-10","compilers":{"C":"/opt/conda/envs/gadgetron/bin/x86_64-conda_cos6-linux-gnu-gcc","CXX":"/opt/conda/envs/gadgetron/bin/x86_64-conda_cos6-linux-gnu-g++"}}]' > /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json \
-    && chown vscode /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
+FROM gadgetron_baseimage AS gadgetron_nocudartimage
+ARG USER_UID
+ARG USER_GID
+RUN grep -v "#.*\<cuda\|dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
+RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml \
+    && /opt/conda/bin/conda clean -afy \
+    && chown -R $USER_UID:$USER_GID /opt/conda
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
