@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - armadillo=9.900.5             # dev
-  - boost=1.76.0                  # dev
+  - boost=1.76.0
   - cmake=3.21.3                  # dev
   - cudatoolkit=11.0.3            # cuda
   - cudatoolkit-dev=11.0.3        # dev, cuda
