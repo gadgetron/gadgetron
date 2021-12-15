@@ -80,7 +80,10 @@ namespace Gadgetron{
       if(use_dcw) 
         this->acc_buffer_sense_cg_[set*this->slices_+slice].set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
 
-      this->acc_buffer_sense_cg_[set*this->slices_+slice].preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
+      auto t = calculate_trajectory_for_rhs(0, set, slice);
+      auto tmp = this->acc_buffer_sense_cg_[set*this->slices_+slice];
+      tmp.preprocess(t.get());
+      this->acc_buffer_sense_cg_[set*this->slices_+slice].preprocess(t.get()); //calculate_trajectory_for_rhs(0, set, slice).get());
     }    
   }
 

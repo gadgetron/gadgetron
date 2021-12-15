@@ -369,7 +369,8 @@ namespace Gadgetron
         GDEBUG("trajectory.size() = %d\n", trajectory.size());
 
         REAL radius = this->plan_.kernel_.get_radius();
-        GDEBUG("radius = %d\n", radius);
+        // radius = 1.0;
+        GDEBUG("radius = %f\n", radius);
         transform(trajectory.begin(), trajectory.end(),
                   c_p_s.begin(), compute_num_cells_per_sample<REAL, D>(radius));
         inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
@@ -398,7 +399,7 @@ namespace Gadgetron
 
         // Sort by grid indices.
         GDEBUG("num_pairs = %d\n", num_pairs);
-        GDEBUG("tuples_first.begin() = %d", tuples_first.begin());
+        GDEBUG("tuples_first.begin() = %d\n", tuples_first.begin());
         sort_by_key(tuples_first.begin(), tuples_first.end(), tuples_last.begin());
 
         // Each bucket_begin[i] indexes the first element of bucket i's list of points.
