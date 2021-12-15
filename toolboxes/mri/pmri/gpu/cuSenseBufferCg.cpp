@@ -24,7 +24,6 @@ namespace Gadgetron{
   
   template<class REAL, unsigned int D>
   void cuSenseBufferCg<REAL,D>::preprocess( cuNDArray<_reald> *traj ) {
-    GDEBUG("trajectory ptr: %p, %p\n", traj->get_device_ptr(), traj->get_data_ptr());
     this->E_->preprocess(traj);
     std::vector<size_t> dims = *traj->get_dimensions();
     dims.push_back(this->num_coils_);

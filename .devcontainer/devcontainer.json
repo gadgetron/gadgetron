@@ -6,6 +6,9 @@
 			"BASE_IMAGE": "gadgetron_cudadevimage"
 		}
 	},
+	"containerEnv": {
+		"DOCKER_BUILDKIT": "1",
+	},
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.inheritEnv": true, // this is so that the "code" executable is available from the integrated terminal
