@@ -66,5 +66,5 @@
 		"vscode:vscode",
 		"/opt/conda"
 	],
-	// "postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
+	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
