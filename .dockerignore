@@ -1,2 +1,19 @@
-build/
-test/integration/data
+# Ignore everything...
+**
+
+# ...except:
+!CMakeLists.txt
+!apps/
+!cmake/
+!core/
+!docker/
+!gadgets/
+!test/
+!toolboxes/
+!environment.yml
+!chroot/
+!doc/
+
+# but also ignore:
+test/integration/data/
+*.Dockerfile
