@@ -69,7 +69,7 @@ RUN chmod +x /tmp/build/bootstrap-conda.sh
 ENV PATH="/app:/opt/conda/condabin:${PATH}"
 RUN conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/build/bootstrap-conda.sh
 
-FROM gadgetron_baseimage AS gadgetron_nocudadevimage
+FROM gadgetron_baseimage AS gadgetron_dev_nocuda
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
@@ -77,12 +77,12 @@ RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_envir
 RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
-FROM gadgetron_cudadevimage_base AS gadgetron_cudadevimage
+FROM gadgetron_cudadevimage_base AS gadgetron_dev_cuda
 ARG USER_UID
 ARG USER_GID
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
-FROM gadgetron_cudadevimage AS gadgetron_cudabuild
+FROM gadgetron_dev_cuda AS gadgetron_cudabuild
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
@@ -98,7 +98,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && 
     ninja && \
     ninja install
 
-FROM gadgetron_nocudadevimage AS gadgetron_nocudabuild
+FROM gadgetron_dev_nocuda AS gadgetron_nocudabuild
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
@@ -114,7 +114,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && 
     ninja && \
     ninja install
 
-FROM gadgetron_baseimage AS gadgetron_cudartimage
+FROM gadgetron_baseimage AS gadgetron_rt_cuda
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
@@ -127,7 +127,7 @@ COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetro
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
 CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
 
-FROM gadgetron_baseimage AS gadgetron_nocudartimage
+FROM gadgetron_baseimage AS gadgetron_rt_nocuda
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}

@@ -3,7 +3,7 @@
 	"build": {
 		"dockerfile": "Dockerfile",
 		"args": {
-			"BASE_IMAGE": "gadgetron_cudadevimage"
+			"BASE_IMAGE": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest"
 		}
 	},
 	"containerEnv": {
