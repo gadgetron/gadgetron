@@ -217,7 +217,7 @@ namespace Gadgetron {
             return boost::algorithm::to_lower_copy(dependency.dependencyType) == "noise";
         });
 
-        // find the noise depencies if any
+        // find the noise dependencies if any
         if (val == measurementDependency.end())
             return NoiseGatherer{};
 

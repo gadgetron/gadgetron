@@ -61,7 +61,7 @@ TEST_P(NHLBICompression, Tolerance)
 
     const float signal_variance = signal_sigma*signal_sigma;
 
-    // We will make a fairly big compression error here to make the compression error noticable relative to noise
+    // We will make a fairly big compression error here to make the compression error noticeable relative to noise
     const float tolerance = 0.5*signal_sigma; 
 
     fill_random(signal, signal_mean, signal_sigma, seed);

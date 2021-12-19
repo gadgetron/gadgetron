@@ -24,7 +24,7 @@ namespace Gadgetron{
       GADGET_PROPERTY(range_r2star,value_range,"Range of R2* values in Hz",value_range(5,500));
       GADGET_PROPERTY(number_of_r2stars,unsigned int, "Number of R2* value to use during graph-cut",5);
       GADGET_PROPERTY(number_of_r2stars_fine,unsigned int,"Number of R2* values used for refinement after graph-cut",200);
-      GADGET_PROPERTY(graph_cut_iterations,unsigned int, "Nummber of graph cut iterations to run",40);
+      GADGET_PROPERTY(graph_cut_iterations,unsigned int, "Number of graph cut iterations to run",40);
       GADGET_PROPERTY(regularization_lambda,float,"Strength of the spatial regularization",0.02);
       GADGET_PROPERTY(regularization_offset,float, "Fixed value to add to the regularization for increased smoothness in low signal areas",0.01);
       GADGET_PROPERTY(do_gradient_descent, bool, "Use gradient descent after graph-cut",true);

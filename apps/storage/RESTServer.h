@@ -103,7 +103,7 @@ void handle_session( beast::tcp_stream stream, asio::yield_context yield, Reques
         }
         stream.socket().shutdown(tcp::socket::shutdown_send);
     } catch(const std::runtime_error& error){
-        std::cerr <<"HTTP session faild with error " <<  error.what() << std::endl;
+        std::cerr <<"HTTP session failed with error " <<  error.what() << std::endl;
     }
 
 }
