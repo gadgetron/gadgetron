@@ -11,7 +11,7 @@ ARG USER_GID
 ARG HOME=/home/$USERNAME
 
 RUN apt-get update \
-    && apt-get install -y sudo wget git-core rsync curl \
+    && apt-get install -y sudo wget git-core rsync curl net-tools \
     && apt-get clean
 
 # Create the user
@@ -125,6 +125,8 @@ COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-bu
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
+RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/test/integration /opt/integration-test/
 CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
 
 FROM gadgetron_baseimage AS gadgetron_rt_nocuda
@@ -137,4 +139,6 @@ COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-bu
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
+RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/test/integration /opt/integration-test/
 CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
