@@ -1,7 +1,7 @@
 variables:
   AzureConnection: 'BiomedicalImaging-NonProd(87d8acb3-5176-4651-b457-6ab9cefd8e3d)'
   imageBaseName: 'ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu'
-  DOCKER_BUILDKIT: 0
+  DOCKER_BUILDKIT: 1
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   isCI: $[or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI'))]
 
