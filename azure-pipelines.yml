@@ -29,7 +29,7 @@ jobs:
   steps:
   - task: AzureKeyVault@1
     inputs:
-      azureSubscription: ${{ parameters.azureconnection }}
+      azureSubscription: $(AzureConnection)
       keyVaultName: gadgetron-build-secrets
   - script: |
         set -e
