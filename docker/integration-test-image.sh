@@ -2,7 +2,6 @@
 
 set -eu
 
-IMAGE_NAME="$1"
 REPO_ROOT="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
 
 usage()
@@ -65,14 +64,9 @@ fi
 
 # Since the Gadgetron instance is not running as root, we need some gymnastics to get the test stats out of the container. 
 volume_name="gadgetron_test_${RANDOM}"
-docker volume create "$volume_name"
+docker volume create "$volume_name" 1>/dev/null
 docker run --rm -it --gpus="${gpus}" -v ${HOST_WORKSPACE_DIR}/test/integration/data:/opt/integration-test/data \
-    --mount src="$volume_name",destination=/opt/integration-test/results "$image_name" \
-    /bin/bash -c "ls -al /opt/integration-test/"
-# docker run --rm -it --gpus="${gpus}" -v ${HOST_WORKSPACE_DIR}/test/integration/data:/opt/integration-test/data \
-#     --mount src="$volume_name",destination=/opt/integration-test/results "$image_name" \
-#     /bin/bash -c ". /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && cd /opt/integration-test/ && python run_tests.py --echo-log-on-failure --timeout=600 -F --stats /opt/integration-test/results/stats.csv ${cases}"
-TMP_CID=$(docker run --rm -d --mount src="$volume_name",destination=/test busybox true)
-docker cp "$TMP_CID":/test/stats.csv .
-docker rm "$TMP_CID"
-docker volume rm "$volume_name"
+    --mount src="$volume_name",destination=/test "$image_name" \
+    /bin/bash -c ". /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && cd /opt/integration-test/ && python run_tests.py --echo-log-on-failure --timeout=600 -F --stats /test/stats.csv ${cases}"
+docker run --rm -it --mount src="$volume_name",destination=/test busybox cat /test/stats.csv > stats.csv
+docker volume rm "$volume_name" 1>/dev/null

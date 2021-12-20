@@ -40,7 +40,12 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     && mkdir -p ${HOME}/.conda \
     && chown -R $USER_UID:$USER_GID ${HOME}/.conda
 
+# Copy environment, which will be filtered for later staged
 COPY --chown=$USER_UID:${USER_GID} environment.yml /tmp/build/
+
+# Create mount points for tests
+RUN mkdir -p /test && chown ${USER_UID}:${USER_GID} /test
+VOLUME /test
 
 # Add a section to /etc/bash.bashrc that ensures that a section is present at the end of ~/.bashrc.
 # We can't just write to .bashrc from here because it will be overwritten if the vscode user has
