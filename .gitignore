@@ -30,3 +30,4 @@ test/integration/*.xml
 .vscode/
 dep-build/
 stats.csv
+junit.xml

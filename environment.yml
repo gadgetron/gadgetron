@@ -44,3 +44,4 @@ dependencies:
   - pip:
     - ismrmrd==1.9.5
     - gadgetron==1.3.6
+    - junitparser==2.2.0
