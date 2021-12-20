@@ -15,6 +15,7 @@ Options:
   --flavor <flavor>                Flavor: 'cuda' or 'nocuda' or 'all' (default)
   --base-name <name>               Base name for images, <base-name>_<type>_<flavor>:<tag>, default 'ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu'
   --tag <tag>                      Tag for images, default 'latest'
+  --push                           Push images
   -h, --help                       Brings up this menu
 EOF
 }
@@ -48,6 +49,10 @@ while [[ $# -gt 0 ]]; do
       base_name="$2"
       shift 2
       ;;
+    --push)
+      push=1
+      shift 1
+      ;;
     -h|--help)
       usage
       exit
@@ -72,6 +77,9 @@ for t in "${types[@]}"; do
   for f in "${flavors[@]}"; do
     image_name="${base_name}_${t}_${f}:${image_tag}"
     build_stage="gadgetron_${t}_${f}"
-    docker build --target "$build_stage" -t "$image_name" -f "$(dirname "$0")/Dockerfile" "$(dirname "$0")" 
+    docker build --target "$build_stage" -t "$image_name" -f "$(dirname "$0")/Dockerfile" "$(dirname "$0")"
+    if [[ -n "${push:-}" ]]; then
+      docker push "$image_name"
+    fi
   done
 done
