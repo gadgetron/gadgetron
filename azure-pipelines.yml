@@ -36,7 +36,7 @@ jobs:
         # First build a dev image and run unit tests
         stage_name="gadgetron_$(flavor)build"
         docker build --target ${stage_name} -t ${stage_name} .
-        docker run --gpus=all -ti ${stage_name} /opt/code/gadgetron/build/test/test_all
+        docker run --gpus=all ${stage_name} /opt/code/gadgetron/build/test/test_all
     displayName: "Run unit tests"
   - script: |
         set -e
