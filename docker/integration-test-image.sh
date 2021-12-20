@@ -15,7 +15,7 @@ Usage: $0 [options]
 Options:
   --image <image name>             Type of image to build: 'dev' (development) or 'rt' (runtime) or 'all' (default)
   --cases <cases glob>             Flavor: 'cuda' or 'nocuda' or 'all' (default)
-  --ignore-requirement | -i <name> ignore requirements parameters for test
+  --ignore-requirements | -i <name> ignore requirements parameters for test, e.g. python,cuda
   --gpus                           gpus argument for docker run
   -h, --help                       Brings up this menu
 EOF
@@ -37,7 +37,7 @@ while [[ $# -gt 0 ]]; do
       cases="$2"
       shift 2
       ;;
-    --ignore-requirement | -i)
+    --ignore-requirements | -i)
       ignore_requirements="$2"
       shift 2
       ;;
@@ -62,11 +62,17 @@ if [[ -z "${HOST_WORKSPACE_DIR:-}" ]]; then
     HOST_WORKSPACE_DIR="$REPO_ROOT"
 fi
 
+if [[ -z "${ignore_requirements:-}" ]]; then
+  ignore=""
+else
+  ignore="--ignore-requirements=${ignore_requirements}"
+fi
+
 # Since the Gadgetron instance is not running as root, we need some gymnastics to get the test stats out of the container. 
 volume_name="gadgetron_test_${RANDOM}"
 docker volume create "$volume_name" 1>/dev/null
 docker run --rm -it --gpus="${gpus}" -v ${HOST_WORKSPACE_DIR}/test/integration/data:/opt/integration-test/data \
     --mount src="$volume_name",destination=/test "$image_name" \
-    /bin/bash -c ". /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && cd /opt/integration-test/ && python run_tests.py --echo-log-on-failure --timeout=600 -F --stats /test/stats.csv ${cases}"
+    /bin/bash -c ". /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && cd /opt/integration-test/ && python run_tests.py --echo-log-on-failure ${ignore} --timeout=600 -F --stats /test/stats.csv ${cases}"
 docker run --rm -it --mount src="$volume_name",destination=/test busybox cat /test/stats.csv > stats.csv
 docker volume rm "$volume_name" 1>/dev/null

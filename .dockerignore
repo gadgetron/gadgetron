@@ -17,3 +17,4 @@
 # but also ignore:
 test/integration/data/
 *.Dockerfile
+docker/integration-test-image.sh
