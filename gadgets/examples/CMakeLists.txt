@@ -35,8 +35,18 @@ install(FILES
 		config/external_julia_acquisition_example.xml
 		config/external_python_bucket_example.xml
 		config/external_python_buffer_example.xml
+                config/external_python_passthrough_acquisition.xml
+                config/external_python_passthrough_image.xml
+                config/external_python_passthrough_imageArray.xml
+                config/external_python_passthrough_reconData.xml
+                config/external_python_passthrough_acquisitionBucket.xml
         config/external_matlab_acquisition_example.xml
         config/external_matlab_bucket_example.xml
 		config/external_matlab_buffer_example.xml
 		config/external_matlab_tiny_example.xml
+                config/external_matlab_passthrough_acquisition.xml
+                config/external_matlab_passthrough_image.xml
+                config/external_matlab_passthrough_imageArray.xml
+                config/external_matlab_passthrough_reconData.xml
+                config/external_matlab_passthrough_acquisitionBucket.xml
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
