@@ -2,7 +2,7 @@
 
 set -eu
 
-REPO_ROOT="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+REPO_ROOT="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/../")"
 
 usage()
 {
