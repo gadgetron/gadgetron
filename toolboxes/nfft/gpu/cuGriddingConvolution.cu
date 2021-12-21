@@ -141,7 +141,7 @@ namespace Gadgetron
 
         thrust::pair<thrust::device_ptr<REAL>, thrust::device_ptr<REAL>> mm_pair =
             thrust::minmax_element(traj_view.begin(), traj_view.end());
-
+        
         if (*mm_pair.first < REAL(-0.5) || *mm_pair.second > REAL(0.5))
         {
             std::stringstream ss;
@@ -170,7 +170,7 @@ namespace Gadgetron
                           this->trajectory_.begin(),
                           trajectory_scale<REAL, D>(matrix_size_os_fp,
                                                     matrix_size_os_padded_fp));
-
+        
         // Prepare convolution.
         if (prep_mode == GriddingConvolutionPrepMode::C2NC ||
             prep_mode == GriddingConvolutionPrepMode::ALL)
@@ -366,23 +366,17 @@ namespace Gadgetron
         // (#cells influenced per sample).
         thrust::device_vector<unsigned int> c_p_s(trajectory.size());
         thrust::device_vector<unsigned int> c_p_s_ps(trajectory.size());
+        CHECK_FOR_CUDA_ERROR();
+
+        GDEBUG("trajectory.size() = %d\n", trajectory.size());
 
         REAL radius = this->plan_.kernel_.get_radius();
-        transform(trajectory.begin(), trajectory.end(), c_p_s.begin(), compute_num_cells_per_sample<REAL, D>(radius));
-
-        const bool thrust_workaround = true;
-        if (thrust_workaround) {
-            thrust::host_vector<unsigned int> h_c_p_s(c_p_s);
-            thrust::host_vector<unsigned int> h_c_p_s_ps(c_p_s_ps.size());
-            inclusive_scan(thrust::host, h_c_p_s.begin(), h_c_p_s.end(), h_c_p_s_ps.begin());
-            c_p_s_ps = h_c_p_s_ps;
-        }
-        else
-        {
-            inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
-                        thrust::plus<unsigned int>()); // Prefix sum.
-        }
-
+        // radius = 1.0;
+        GDEBUG("radius = %f\n", radius);
+        transform(trajectory.begin(), trajectory.end(),
+                  c_p_s.begin(), compute_num_cells_per_sample<REAL, D>(radius));
+        inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
+                       thrust::plus<unsigned int>()); // Prefix sum.
 
         // Build the vector of (grid_idx, sample_idx) tuples. Actually kept in
         // two separate vectors.
@@ -391,6 +385,8 @@ namespace Gadgetron
 
         tuples_first = thrust::device_vector<unsigned int>(num_pairs);
         tuples_last = thrust::device_vector<unsigned int>(num_pairs);
+
+        CHECK_FOR_CUDA_ERROR();
 
         // Fill tuple vector.
         write_pairs<REAL, D>(vector_td<unsigned int, D>(this->plan_.matrix_size_os_),
@@ -404,16 +400,10 @@ namespace Gadgetron
         c_p_s_ps.clear();
 
         // Sort by grid indices.
-        if (thrust_workaround) {
-            thrust::host_vector<unsigned int> tuples_first_host(tuples_first);
-            thrust::host_vector<unsigned int> tuples_last_host(tuples_last);
-            sort_by_key(tuples_first_host.begin(), tuples_first_host.end(), tuples_last_host.begin());
-            tuples_first = tuples_first_host;
-            tuples_last = tuples_last_host;
-        } else {
-            sort_by_key(tuples_first.begin(), tuples_first.end(), tuples_last.begin());
-        }
-    
+        GDEBUG("num_pairs = %d\n", num_pairs);
+        GDEBUG("tuples_first.begin() = %d\n", tuples_first.begin());
+        sort_by_key(tuples_first.begin(), tuples_first.end(), tuples_last.begin());
+
         // Each bucket_begin[i] indexes the first element of bucket i's list of points.
         // Each bucket_end[i] indexes one past the last element of bucket i's list of points.
         bucket_begin = thrust::device_vector<unsigned int>(
