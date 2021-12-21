@@ -104,7 +104,7 @@ namespace Gadgetron{
       if( profiles_queue[idx].size() == profiles_ ){
 
         // Perform polynomial fit,
-        // assemble system matix A.
+        // assemble system matrix A.
         //
         
         arma::mat A( profiles_, order_+1 );

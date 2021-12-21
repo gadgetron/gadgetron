@@ -45,7 +45,7 @@ class PhysioInterpolationGadget : public Core::ChannelGadget<Core::Image<std::co
 
     protected:
         NODE_PROPERTY(physiology_time_index, int, "Physiology time index", 0);
-        NODE_PROPERTY(mode, PhysioInterpolationMode, "Mode, 0=seperate series for each RR, 1=First complete RR only", PhysioInterpolationMode::separate);
+        NODE_PROPERTY(mode, PhysioInterpolationMode, "Mode, 0=separate series for each RR, 1=First complete RR only", PhysioInterpolationMode::separate);
         NODE_PROPERTY(phases, unsigned short, "Number of cardiac phases", 30);
         NODE_PROPERTY(first_beat_on_trigger, bool, "Indicates that acquisition was started on trigger", false);
         NODE_PROPERTY(interp_method, PhysioInterpolationMethod, "Interpolation method", PhysioInterpolationMethod::Spline);

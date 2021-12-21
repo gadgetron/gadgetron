@@ -264,7 +264,7 @@ namespace Gadgetron{
     if( output_timing_ )
       process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuGenericSensePrepGadget::process()") );
 
-    // Some convienient utility variables
+    // Some convenient utility variables
     //
 
     unsigned int set = m1->getObjectPtr()->idx.set;
@@ -376,7 +376,7 @@ namespace Gadgetron{
     previous_readout_no_[idx] = readout;
 
     // Enqueue readout
-    // - unless 'new_frame_detected', then the current readout does not belong to the current frame and we delay enqueing
+    // - unless 'new_frame_detected', then the current readout does not belong to the current frame and we delay enqueuing
 
     if( !new_frame_detected ) {
       
@@ -577,7 +577,7 @@ namespace Gadgetron{
       boost::shared_ptr< hoNDArray<float_complext> > samples_host = 
         extract_samples_from_queue( recon_readout_queue_[idx], true, set, slice );
       
-      // Preapre the trajectory and dcw arrays.
+      // Prepare the trajectory and dcw arrays.
       // They have already been computed above 
       // - if 'rotations_per_reconstruction_' is 0
       // - if 'buffer_using_solver_' is true

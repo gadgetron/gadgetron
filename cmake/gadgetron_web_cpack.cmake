@@ -19,7 +19,7 @@ list(APPEND CPACK_SOURCE_GENERATOR "TGZ")
 list(APPEND CPACK_SOURCE_GENERATOR "ZIP")
 list(APPEND CPACK_SOURCE_IGNORE_FILES ";.git;.gitignore;todo.txt;_clang-format;build/")
 
-# set dependencies explictly
+# set dependencies explicitly
 set(DEBIAN_PACKAGE_DEPENDS "gadgetron, python-psutil, python-twisted")
 
 # where the package metadata are

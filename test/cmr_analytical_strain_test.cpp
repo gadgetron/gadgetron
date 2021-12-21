@@ -87,7 +87,7 @@ TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_rad_strain");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_circ_strain");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;
@@ -145,7 +145,7 @@ TYPED_TEST(cmr_analytical_strain_test, ConstStrain)
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_rad_strain");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_circ_strain");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;

@@ -77,7 +77,7 @@ TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
     this->gt_io_.export_array(edge_endo, this->gt_ut_res_folder_ + "/RadialThickening/retro_edge_endo");
     this->gt_io_.export_array(edge_epi, this->gt_ut_res_folder_ + "/RadialThickening/retro_edge_epi");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;

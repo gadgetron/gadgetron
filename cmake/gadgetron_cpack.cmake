@@ -36,5 +36,5 @@ list(APPEND CPACK_SOURCE_GENERATOR "TGZ")
 list(APPEND CPACK_SOURCE_GENERATOR "ZIP")
 list(APPEND CPACK_SOURCE_IGNORE_FILES ";.git;.gitignore;todo.txt;_clang-format;build/")
 
-# Set dependencies explictly
+# Set dependencies explicitly
 include(InstallRequiredSystemLibraries)

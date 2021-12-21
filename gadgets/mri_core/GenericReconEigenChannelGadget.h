@@ -39,7 +39,7 @@ namespace Gadgetron {
         /// if update_eigen_channel_coefficients==true, every incoming IsmrmrdReconData will be used to compute KLT coefficients
         /// and the older one will be replaced
         /// if update_eigen_channel_coefficients==false, the KLT coefficients will be computed only once for the first incoming IsmrmrdReconData
-        GADGET_PROPERTY(update_eigen_channel_coefficients, bool, "Whether to update KLT coeffients for eigen channel computation", false);
+        GADGET_PROPERTY(update_eigen_channel_coefficients, bool, "Whether to update KLT coefficients for eigen channel computation", false);
 
         /// optionally, upstream coil compression can be applied
         /// if upstream_coil_compression==true, only kept channels will be sent out to next gadgets and other channels will be removed

@@ -63,7 +63,7 @@ int NoiseCovariancePlottingGadget::process_config(ACE_Message_Block* mb)
             GDEBUG("Measurement ID is %s\n", measurement_id_.c_str());
         }
 
-        // find the noise depencies if any
+        // find the noise dependencies if any
         if (current_ismrmrd_header_.measurementInformation->measurementDependency.size() > 0)
         {
             measurement_id_of_noise_dependency_.clear();

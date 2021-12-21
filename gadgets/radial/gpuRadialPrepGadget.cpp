@@ -348,7 +348,7 @@ namespace Gadgetron{
     previous_profile_[set*slices_+slice] = profile;
 
     // Enqueue profile
-    // - if 'new_frame_detected' the current profile does not belong to the current frame and we delay enqueing
+    // - if 'new_frame_detected' the current profile does not belong to the current frame and we delay enqueuing
 
     if( !new_frame_detected ) {
       

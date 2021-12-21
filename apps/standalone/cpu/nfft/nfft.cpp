@@ -31,7 +31,7 @@ int main(int argc, char** argv){
 	parms.add_parameter('k', COMMAND_LINE_STRING, 1, "Trajectories (.real", true, "k.real");
 	parms.add_parameter('w', COMMAND_LINE_STRING, 1, "Density compensation (.real)", true, "w.real");
 	parms.add_parameter('s', COMMAND_LINE_FLOAT, 1, "Oversampling factor (float)", true, "1.5");
-	parms.add_parameter('q', COMMAND_LINE_FLOAT, 1, "Kernel width (flaot)", true, "7");
+	parms.add_parameter('q', COMMAND_LINE_FLOAT, 1, "Kernel width (float)", true, "7");
 	parms.add_parameter('n', COMMAND_LINE_INT, 1, "Image size (int)", true, "128");
 	parms.add_parameter('o', COMMAND_LINE_STRING, 1, "Output file (.cplx)", true, "out.cplx");
 

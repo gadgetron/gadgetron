@@ -131,7 +131,7 @@ TEST_F(python_converter_test, numpy_hoNDArray_two_inputs)
 TEST_F(python_converter_test, numpy_hoNDArray_three_outputs)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
-    GDEBUG_STREAM("Test return mutltiple hoNDArray arrays reutrn and multi-inputs");
+    GDEBUG_STREAM("Test return mutltiple hoNDArray arrays return and multi-inputs");
     {
         GILLock gl;     // this is needed
         boost::python::object main(boost::python::import("__main__"));
