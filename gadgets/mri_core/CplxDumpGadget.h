@@ -8,27 +8,16 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE CplxDumpGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class CplxDumpGadget :
+    public Core::ChannelGadget<Core::Acquisition>
     {
     public:
-      GADGET_DECLARE(CplxDumpGadget);
 
-      CplxDumpGadget();
-      ~CplxDumpGadget();
+        using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
+      ~CplxDumpGadget() override = default;
 
-    protected:
-      GADGET_PROPERTY(filename, std::string, "Filename of dumpfile", "profiles.cplx");
+      NODE_PROPERTY(filename, std::string, "Filename of dumpfile", "profiles.cplx");
 
-      virtual int process_config(ACE_Message_Block* mb);
-
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
-
-      virtual int close(unsigned long flags); //All the work is done here in this Gadget
-
-    private:
-      std::string filename_;
-      ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
+      void process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) override;
     };
 }

@@ -146,28 +146,6 @@ namespace Gadgetron{
     slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
     sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
     
-    // Allocate profile queues
-    // - one queue for the currently incoming frame
-    // - one queue for the next reconstruction
-
-    frame_profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
-    recon_profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
-    image_headers_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
-
-    size_t bsize = sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >)*image_dimensions_[0]*10;
-
-    for( unsigned int i=0; i<slices_*sets_; i++ ){
-      frame_profiles_queue_[i].high_water_mark(bsize);
-      frame_profiles_queue_[i].low_water_mark(bsize);
-    }
-    
-    bsize *= (rotations_per_reconstruction_+1);
-    
-    for( unsigned int i=0; i<slices_*sets_; i++ ){
-      recon_profiles_queue_[i].high_water_mark(bsize);
-      recon_profiles_queue_[i].low_water_mark(bsize);
-    }
-
     // Define some profile counters for book-keeping
     //
 
@@ -222,12 +200,6 @@ namespace Gadgetron{
         else
           frames_per_rotation_[i] = image_dimensions_[0]/profiles_per_frame_[i];
       }
-
-      bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*
-        std::max(1L, frames_per_rotation_[i]*rotations_per_reconstruction_);
-    
-      image_headers_queue_[i].high_water_mark(bsize);
-      image_headers_queue_[i].low_water_mark(bsize);
     }
         
     position_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
@@ -381,8 +353,8 @@ namespace Gadgetron{
     if( !new_frame_detected ) {
       
       // Memory handling is easier if we make copies for our internal queues
-      frame_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
-      recon_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
+      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
     }
 
     // If the profile is the last of a "true frame" (ignoring any sliding window profiles)
@@ -397,7 +369,7 @@ namespace Gadgetron{
       //
 
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
-        extract_samples_from_queue( &frame_profiles_queue_[set*slices_+slice], false, set, slice );
+        extract_samples_from_queue( frame_profiles_queue_[set*slices_+slice], false, set, slice );
 
       if( host_samples.get() == 0x0 ){
         GDEBUG("Failed to extract frame data from queue\n");
@@ -420,14 +392,14 @@ namespace Gadgetron{
     if( rotations_per_reconstruction_ > 0 )
       profiles_per_reconstruction *= (frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
     
-    bool is_last_profile_in_reconstruction = ( recon_profiles_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction );
+    bool is_last_profile_in_reconstruction = ( recon_profiles_queue_[set*slices_+slice].size() == profiles_per_reconstruction );
         
     // Prepare the image header for this frame
     // - if this is indeed the last profile of a new frame
     // - or if we are about to reconstruct due to 'sliding_window_profiles_' > 0
 
     if( is_last_profile_in_frame || 
-        (is_last_profile_in_reconstruction && image_headers_queue_[set*slices_+slice].message_count() == 0) ){
+        (is_last_profile_in_reconstruction && image_headers_queue_[set*slices_+slice].empty()) ){
       
       GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
@@ -467,7 +439,7 @@ namespace Gadgetron{
       header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
       header->getObjectPtr()->image_series_index = set*slices_+slice;
 
-      image_headers_queue_[set*slices_+slice].enqueue_tail(header);
+      image_headers_queue_[set*slices_+slice].push(std::unique_ptr<ImageHeaderMessage>(header));
     }
     
     // If it is time to reconstruct (downstream) then prepare the Sense job
@@ -506,9 +478,9 @@ namespace Gadgetron{
       //
       
       boost::shared_ptr< hoNDArray<float_complext> > samples_host = 
-        extract_samples_from_queue( &recon_profiles_queue_[set*slices_+slice], true, set, slice );
+        extract_samples_from_queue( recon_profiles_queue_[set*slices_+slice], true, set, slice );
       
-      if( samples_host.get() == 0x0 ){
+      if( samples_host.get() == nullptr ){
         GDEBUG("Failed to extract frame data from queue\n");
         return GADGET_FAIL;
       }
@@ -539,10 +511,10 @@ namespace Gadgetron{
       long frames_per_reconstruction = 
         std::max( 1L, frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_ );
       
-      if( image_headers_queue_[set*slices_+slice].message_count() != frames_per_reconstruction ){
+      if( image_headers_queue_[set*slices_+slice].size() != frames_per_reconstruction ){
         m4->release();
         GDEBUG("Unexpected size of image header queue: %d, %d\n", 
-                      image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
+                      image_headers_queue_[set*slices_+slice].size(), frames_per_reconstruction);
         return GADGET_FAIL;
       }
 
@@ -551,14 +523,9 @@ namespace Gadgetron{
       
       for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
 
-        ACE_Message_Block *mbq;
+        ImageHeaderMessage *mbq = image_headers_queue_[set*slices_+slice].front().release();
+        image_headers_queue_[set*slices_+slice].pop();
 
-        if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
-          m4->release();
-          GDEBUG("Image header dequeue failed\n");
-          return GADGET_FAIL;
-        }
-	
         GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
         m4->getObjectPtr()->image_headers_[i] = *m->getObjectPtr();
 
@@ -566,7 +533,7 @@ namespace Gadgetron{
         // 
 	
         if( i >= frames_per_reconstruction-sliding_window_rotations_*frames_per_rotation_[set*slices_+slice] ){
-          image_headers_queue_[set*slices_+slice].enqueue_tail(m);
+          image_headers_queue_[set*slices_+slice].push(std::unique_ptr<ImageHeaderMessage>(m));
         }
         else {
           m->release();
@@ -600,8 +567,8 @@ namespace Gadgetron{
       // This is the first profile of the next frame, enqueue.
       // We have encountered deadlocks if the same profile is enqueued twice in different queues. Hence the copy.
       
-      frame_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
-      recon_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2)); 
+      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
 
       profiles_counter_frame_[set*slices_+slice]++;
     }
@@ -842,27 +809,23 @@ namespace Gadgetron{
   }
 
   boost::shared_ptr< hoNDArray<float_complext> > gpuRadialPrepGadget::
-  extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window,
+  extract_samples_from_queue( std::queue<std::unique_ptr<ProfileMessage>> &queue, bool sliding_window,
                               unsigned int set, unsigned int slice )
   {    
     //GDEBUG("Emptying queue...\n");
 
-    unsigned int profiles_buffered = queue->message_count();
+    unsigned int profiles_buffered = queue.size();
     
     std::vector<size_t> dims;
     dims.push_back(samples_per_profile_*profiles_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
-    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(&dims));
+    boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<profiles_buffered; p++) {
+      ProfileMessage *mbq = queue.front().release();
+      queue.pop();
 
-      ACE_Message_Block* mbq;
-      if (queue->dequeue_head(mbq) < 0) {
-        GDEBUG("Message dequeue failed\n");
-        return boost::shared_ptr< hoNDArray<float_complext> >();
-      }
-      
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
@@ -888,7 +851,7 @@ namespace Gadgetron{
         profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
 
       if( sliding_window && p >= (profiles_buffered-profiles_in_sliding_window) )
-        queue->enqueue_tail(mbq);
+        queue.push(std::unique_ptr<ProfileMessage>(mbq));
       else
         mbq->release();
     } 

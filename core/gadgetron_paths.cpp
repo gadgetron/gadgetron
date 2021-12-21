@@ -63,12 +63,12 @@ namespace {
             throw std::runtime_error("Failed to read /proc/self/exe - cannot determine Gadgetron binary path.");
         }
 
-        if (len == buffer_size) {
+        if (size_t(len) == buffer_size) {
             // Allocated buffer was probably too small. Try again with a bigger buffer.
             return get_executable_path(buffer_size * 2);
         }
 
-        return std::string(buffer.get(), size_t(len));
+        return {buffer.get(), size_t(len)};
     }
 
     boost::filesystem::path get_data_directory(){
