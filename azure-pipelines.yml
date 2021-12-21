@@ -22,10 +22,10 @@ jobs:
     matrix:
       cuda:
         flavor: cuda
-        requirements: python
+        requirements: python,cuda
       nocuda:
         flavor: nocuda
-        requirements: python,cuda
+        requirements: python
   steps:
   - task: AzureKeyVault@1
     inputs:
