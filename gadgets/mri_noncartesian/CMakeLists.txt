@@ -2,8 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_MRI_NONCARTESIAN__)
 endif ()
 
-
-
 set( gadgetron_mri_noncartesian_header_files
 	CPUGriddingReconGadget.h NonCartesianTools.h GriddingReconGadgetBase.h GriddingReconGadgetBase.hpp)
 

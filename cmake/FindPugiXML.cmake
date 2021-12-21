@@ -10,9 +10,8 @@ find_path(PUGIXML_INCLUDE_DIRS
 file(STRINGS "${PUGIXML_INCLUDE_DIRS}/pugixml.hpp" _pugixml_HEADER_CONTENTS REGEX "PUGIXML_VERSION")
 string(REGEX REPLACE ".*PUGIXML_VERSION (.*)" "\\1" PUGIXML_VERSION "${_pugixml_HEADER_CONTENTS}")
 
-
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(pugixml DEFAULT_MSG
+find_package_handle_standard_args(PugiXML DEFAULT_MSG
         PUGIXML_LIBRARIES
         PUGIXML_INCLUDE_DIRS
         )

@@ -89,7 +89,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 
 			std::vector<size_t> img_dims {cgresult->get_size(0),cgresult->get_size(1)};
 
-			cm->getObjectPtr()->create(&img_dims);
+			cm->getObjectPtr()->create(img_dims);
 
 			size_t data_length = cm->getObjectPtr()->get_number_of_bytes();
 

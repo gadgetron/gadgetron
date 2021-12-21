@@ -38,19 +38,6 @@ namespace Gadgetron{
     repetitions_ = e_limits.repetition.is_present() ? e_limits.repetition.get().maximum + 1 : 1;
     GDEBUG("#Repetitions: %d\n", repetitions_);
 
-    // Allocate readout and trajectory/dcw queues
-    //
-
-    frame_readout_queue_ = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>());
-    frame_traj_queue_ = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>());
-    
-    size_t bsize = sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >)*dimensions_[0]*10;
-    
-    frame_readout_queue_->high_water_mark(bsize);
-    frame_readout_queue_->low_water_mark(bsize);
-    frame_traj_queue_->high_water_mark(bsize);
-    frame_traj_queue_->low_water_mark(bsize);
-
     return GADGET_OK;
   }
 
@@ -70,7 +57,7 @@ namespace Gadgetron{
     // First pass initialization
     //
     
-    if (frame_readout_queue_->message_count() == 0 ) {      
+    if (frame_readout_queue_.empty()) {
       samples_per_readout_ = m1->getObjectPtr()->number_of_samples;
       num_coils_ = m1->getObjectPtr()->active_channels;      
       dimensions_.push_back(m1->getObjectPtr()->active_channels);
@@ -85,8 +72,8 @@ namespace Gadgetron{
     // Enqueue incoming readouts and trajectories
     //
 
-    frame_readout_queue_->enqueue_tail(duplicate_array(m2));
-    frame_traj_queue_->enqueue_tail(duplicate_array(m3));
+    frame_readout_queue_.push(std::unique_ptr<ReadoutMessage>(duplicate_array(m2)));
+    frame_traj_queue_.push(std::unique_ptr<TrajectoryMessage>(duplicate_array(m3)));
     
     // If the last readout for a slice has arrived then perform a reconstruction
     //
@@ -147,7 +134,7 @@ namespace Gadgetron{
       // Get samples for frame
       //
 
-      cuNDArray<float_complext> samples( extract_samples_from_queue( frame_readout_queue_.get()).get() );
+      cuNDArray<float_complext> samples(extract_samples_from_queue(frame_readout_queue_).get() );
 
       // Get trajectories/dcw for frame
       //
@@ -155,7 +142,7 @@ namespace Gadgetron{
       boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2>);
       boost::shared_ptr<cuNDArray<float> > dcw(new cuNDArray<float>);
 
-      extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), traj.get(), dcw.get() );
+      extract_trajectory_and_dcw_from_queue(frame_traj_queue_, traj.get(), dcw.get() );
       //traj = compute_radial_trajectory_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1,0,GR_ORIGINAL);
 
       unsigned int num_profiles = samples.get_number_of_elements()/samples_per_readout_;
@@ -167,7 +154,7 @@ namespace Gadgetron{
       std::vector<size_t> img_dims(2);
       img_dims[0] = dimensions_[0];
       img_dims[1] = dimensions_[1];
-      cm2->getObjectPtr()->create(&img_dims);
+      cm2->getObjectPtr()->create(img_dims);
       cuNDArray<float_complext> image(&img_dims);
       
       // Initialize plan
@@ -219,14 +206,9 @@ namespace Gadgetron{
   }
   
   boost::shared_ptr< hoNDArray<float_complext> > 
-  NFFT2DGadget::extract_samples_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue )                                             
+  NFFT2DGadget::extract_samples_from_queue (std::queue<std::unique_ptr<ReadoutMessage>> &queue)
   {    
-    if(!queue) {
-      GDEBUG("Illegal queue pointer, cannot extract samples\n");
-      throw std::runtime_error("NFFT2DGadget::extract_samples_from_queue: illegal queue pointer");	
-    }
-
-    unsigned int readouts_buffered = queue->message_count();
+    unsigned int readouts_buffered = queue.size();
     
     std::vector<size_t> dims;
     dims.push_back(samples_per_readout_*readouts_buffered);
@@ -235,13 +217,9 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {
-      
-      ACE_Message_Block* mbq;
-      if (queue->dequeue_head(mbq) < 0) {
-        GDEBUG("Message dequeue failed\n");
-        throw std::runtime_error("NFFT2DGadget::extract_samples_from_queue: dequeing failed");	
-      }
-      
+      ReadoutMessage *mbq = queue.front().release();
+      queue.pop();
+
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
@@ -267,29 +245,21 @@ namespace Gadgetron{
   }
 
   boost::shared_ptr< hoNDArray<float> > 
-  NFFT2DGadget::extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue )
+  NFFT2DGadget::extract_trajectory_from_queue (std::queue<std::unique_ptr<TrajectoryMessage>> &queue)
   {    
-    if(!queue) {
-      GDEBUG("Illegal queue pointer, cannot extract trajectory\n");
-      throw std::runtime_error("NFFT2DGadget::extract_trajectory_from_queue: illegal queue pointer");	
-    }
-
-    unsigned int readouts_buffered = queue->message_count();
+    unsigned int readouts_buffered = queue.size();
     
     std::vector<size_t> dims;
     dims.push_back(num_trajectory_dims_); // 2 for trajectories only, 3 for both trajectories + dcw
     dims.push_back(samples_per_readout_);
     dims.push_back(readouts_buffered);
     
-    boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(&dims));
+    boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {      
-      ACE_Message_Block* mbq;
-      if (queue->dequeue_head(mbq) < 0) {
-        GDEBUG("Message dequeue failed\n");
-        throw std::runtime_error("NFFT2DGadget::extract_trajectory_from_queue: dequeing failed");	
-      }
-      
+      TrajectoryMessage *mbq = queue.front().release();
+      queue.pop();
+
       GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
 	
       if (!daq) {
@@ -311,7 +281,7 @@ namespace Gadgetron{
   }
 
   void NFFT2DGadget::extract_trajectory_and_dcw_from_queue
-  ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, cuNDArray<floatd2> *traj, cuNDArray<float> *dcw )
+  ( std::queue<std::unique_ptr<TrajectoryMessage>> &queue, cuNDArray<floatd2> *traj, cuNDArray<float> *dcw )
   {
     // Extract trajectory and (if present) density compensation weights.
     // They are stored as a float array of dimensions: {2,3} x #samples_per_readout x #readouts.
@@ -323,7 +293,7 @@ namespace Gadgetron{
     if( num_trajectory_dims_ == 2 ){
       boost::shared_ptr< hoNDArray<float> > host_traj = extract_trajectory_from_queue( queue );
       std::vector<size_t> dims_1d; dims_1d.push_back(host_traj->get_size(1)*host_traj->get_size(2));
-      hoNDArray<floatd2> host_traj2(&dims_1d,(floatd2*)host_traj->get_data_ptr());
+      hoNDArray<floatd2> host_traj2(dims_1d,(floatd2*)host_traj->get_data_ptr());
       *traj = cuNDArray<floatd2>(host_traj2);
 
     }
@@ -339,15 +309,15 @@ namespace Gadgetron{
       std::vector<size_t> dims_1d;
       dims_1d.push_back(host_traj_dcw_shifted.get_size(0)*host_traj_dcw_shifted.get_size(1));
       
-      hoNDArray<float> tmp(&dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
+      hoNDArray<float> tmp(dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
       *dcw = tmp;
       
       std::vector<size_t> dims_2d = dims_1d; dims_2d.push_back(2);
       order.clear(); order.push_back(1); order.push_back(0);
       
-      tmp.create(&dims_2d, host_traj_dcw_shifted.get_data_ptr());
+      tmp.create(dims_2d, host_traj_dcw_shifted.get_data_ptr());
       auto _traj = permute( tmp, order );
-      hoNDArray<floatd2> tmp2(&dims_1d,(floatd2*)_traj.get_data_ptr());
+      hoNDArray<floatd2> tmp2(dims_1d,(floatd2*)_traj.get_data_ptr());
       
       *traj = cuNDArray<floatd2>(tmp2);
     }

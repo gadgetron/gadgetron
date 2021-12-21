@@ -440,8 +440,8 @@ namespace Gadgetron {
         samples_per_interleave_ = host_traj_.get_size(0);
 
 
-        host_traj_.reshape({size_t(samples_per_interleave_*interleaves_)});
-        host_weights_.reshape({size_t(samples_per_interleave_*interleaves_)});
+        host_traj_.reshape({int64_t(samples_per_interleave_*interleaves_)});
+        host_weights_.reshape({int64_t(samples_per_interleave_*interleaves_)});
 
         cuNDArray<floatd2> traj(host_traj_);
         dcw_buffer_ = boost::make_shared<cuNDArray<float>>(host_weights_);
@@ -509,8 +509,8 @@ namespace Gadgetron {
                                            interleaves_counter_singleframe_[set * slices_ + slice],
                                            (use_multiframe_grouping_) ? (size_t) acceleration_factor_ : 1};
 
-        boost::shared_ptr<hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(&ddimensions));
-        boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(&ddimensions));
+        boost::shared_ptr<hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(ddimensions));
+        boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(ddimensions));
 
         for (unsigned int p = 0; p < profiles_buffered; p++) {
 

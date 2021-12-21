@@ -272,7 +272,7 @@ template<template<class> class ARRAY> 	void GriddingReconGadgetBase<ARRAY>::pseu
 		}
 
 
-		hoNDArray<float> mag(rep_array.get_dimensions());
+		hoNDArray<float> mag(rep_array.dimensions());
 		hoNDArray<float> mean(image_dims_[0],image_dims_[1]);
 		hoNDArray<float> std(image_dims_[0],image_dims_[1]);
 

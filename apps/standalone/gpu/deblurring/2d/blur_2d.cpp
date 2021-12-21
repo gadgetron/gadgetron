@@ -53,7 +53,7 @@ int main( int argc, char** argv)
   }
 
   // Convert to _real
-  hoNDArray<_real> host_image; host_image.create(_host_image->get_dimensions().get()); 
+  hoNDArray<_real> host_image; host_image.create(_host_image->dimensions());
   for( unsigned int i=0; i<host_image.get_number_of_elements(); i++ )
     host_image.get_data_ptr()[i] = (_real) _host_image->get_data_ptr()[i];
     
@@ -69,7 +69,7 @@ int main( int argc, char** argv)
   // Generate convolution kernel (just do this on the host for now)
   _real sigma = 2.5;
   hoNDArray<_real> host_kernel;
-  host_kernel.create(image->get_dimensions().get());
+  host_kernel.create(image->dimensions());
   for( unsigned int y=0; y<image->get_size(1); y++ ){
     for( unsigned int x=0; x<image->get_size(0); x++ ){
       _real biasx = (_real)(image->get_size(0)>>1);
