@@ -366,13 +366,8 @@ namespace Gadgetron
         // (#cells influenced per sample).
         thrust::device_vector<unsigned int> c_p_s(trajectory.size());
         thrust::device_vector<unsigned int> c_p_s_ps(trajectory.size());
-        CHECK_FOR_CUDA_ERROR();
-
-        GDEBUG("trajectory.size() = %d\n", trajectory.size());
 
         REAL radius = this->plan_.kernel_.get_radius();
-        // radius = 1.0;
-        GDEBUG("radius = %f\n", radius);
         transform(trajectory.begin(), trajectory.end(),
                   c_p_s.begin(), compute_num_cells_per_sample<REAL, D>(radius));
         inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
@@ -400,8 +395,6 @@ namespace Gadgetron
         c_p_s_ps.clear();
 
         // Sort by grid indices.
-        GDEBUG("num_pairs = %d\n", num_pairs);
-        GDEBUG("tuples_first.begin() = %d\n", tuples_first.begin());
         sort_by_key(tuples_first.begin(), tuples_first.end(), tuples_last.begin());
 
         // Each bucket_begin[i] indexes the first element of bucket i's list of points.
@@ -410,8 +403,6 @@ namespace Gadgetron
             this->plan_.num_frames_ * prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_));
         bucket_end = thrust::device_vector<unsigned int>(
             this->plan_.num_frames_ * prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_));
-
-        CHECK_FOR_CUDA_ERROR();
 
         // Find the beginning of each bucket's list of points.
         thrust::counting_iterator<unsigned int> search_begin(0);
