@@ -22,7 +22,7 @@ In the conda environment (see above), you can build with:
 ```bash
 mkdir -p build
 cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX ../
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} ../
 ninja
 ninja install
 ```
