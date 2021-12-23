@@ -23,7 +23,8 @@
 			"USE_CUDA": "ON",
 			"USE_MKL": "ON",
 			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron"
-		}
+		},
+		"indentRainbow.includedLanguages": [ "yaml", "python" ]
 	},
 	// To enable your local GPUs in container if they are on enabled by default
 	//"runArgs": ["--init", "--network=host"],
