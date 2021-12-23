@@ -60,11 +60,7 @@
 	"remoteUser": "vscode",
 	// We have to make sure the current user owns the conda folder
 	"onCreateCommand": [
-		"sudo",
-		"chown",
-		"-R",
-		"vscode:vscode",
-		"/opt/conda"
+		"./.devcontainer/set-devcontainer-permissions.sh"
 	],
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
