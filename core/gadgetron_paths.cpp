@@ -16,6 +16,7 @@ namespace {
     namespace fs = boost::filesystem;
 
 #if defined __APPLE__
+    #include <mach-o/dyld.h>
     std::string get_executable_path() {
         char path[PATH_MAX];
         char resolved[PATH_MAX];
@@ -27,6 +28,15 @@ namespace {
             throw std::runtime_error("Could not determine location of Gadgetron binary.");
         }
     }
+
+    boost::filesystem::path get_data_directory(){
+        auto home_dir = std::getenv("HOME");
+        if (!home_dir){
+            home_dir = getpwuid(getuid())->pw_dir;
+        }
+        return boost::filesystem::path(home_dir) / ".gadgetron";
+    }
+
 #elif defined _WIN32 || _WIN64
     #define MAX_GADGETRON_HOME_LENGTH 1024
 
