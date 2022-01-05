@@ -18,7 +18,6 @@ target_include_directories(gadgetron_toolbox_hyper
 target_link_libraries(gadgetron_toolbox_hyper 
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft
-  ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
