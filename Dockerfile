@@ -68,10 +68,10 @@ FROM gadgetron_cudadevimage_base AS gadgetron_dependency_build
 ARG USER_UID
 ARG USER_GID
 USER ${USER_UID}:${USER_GID}
-COPY --chown=$USER_UID:${USER_GID} docker/bootstrap-conda.sh /tmp/build/
-RUN chmod +x /tmp/build/bootstrap-conda.sh
+COPY --chown=$USER_UID:${USER_GID} bootstrap-conda.sh /tmp/
+RUN chmod +x /tmp/bootstrap-conda.sh
 ENV PATH="/app:/opt/conda/condabin:${PATH}"
-RUN conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/build/bootstrap-conda.sh
+RUN conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/bootstrap-conda.sh
 
 FROM gadgetron_baseimage AS gadgetron_dev_nocuda
 ARG USER_UID

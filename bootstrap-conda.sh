@@ -2,7 +2,7 @@
 
 set -eu
 
-WORKDIR="$(readlink -f $(dirname "$0")/../dep-build)"
+WORKDIR="$(readlink -f $(dirname "$0")/dep-build)"
 mkdir -p "$WORKDIR"
 
 PACKAGE_PATH="${WORKDIR}/package"

@@ -20,6 +20,8 @@ Options:
 EOF
 }
 
+export DOCKER_BUILDKIT=1
+
 types=()
 types_default=("dev" "rt")
 

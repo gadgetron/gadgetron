@@ -364,6 +364,7 @@ namespace Gadgetron
         // (#cells influenced per sample).
         thrust::device_vector<unsigned int> c_p_s(trajectory.size());
         thrust::device_vector<unsigned int> c_p_s_ps(trajectory.size());
+        CHECK_FOR_CUDA_ERROR();
 
         REAL radius = this->plan_.kernel_.get_radius();
         transform(trajectory.begin(), trajectory.end(),
@@ -401,6 +402,8 @@ namespace Gadgetron
             this->plan_.num_frames_ * prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_));
         bucket_end = thrust::device_vector<unsigned int>(
             this->plan_.num_frames_ * prod(this->plan_.matrix_size_os_ + this->plan_.matrix_padding_));
+
+        CHECK_FOR_CUDA_ERROR();
 
         // Find the beginning of each bucket's list of points.
         thrust::counting_iterator<unsigned int> search_begin(0);

@@ -13,11 +13,11 @@ Test a Gadgetron docker container image
 Usage: $0 [options]
 
 Options:
-  --image <image name>             Type of image to build: 'dev' (development) or 'rt' (runtime) or 'all' (default)
-  --cases <cases glob>             Flavor: 'cuda' or 'nocuda' or 'all' (default)
-  --ignore-requirements | -i <name> ignore requirements parameters for test, e.g. python,cuda
-  --gpus                           gpus argument for docker run
-  -h, --help                       Brings up this menu
+  --image <image name>              Name of image to test
+  --cases <cases glob>              Test cases
+  --ignore-requirements | -i <name> Ignore requirements parameters for test, e.g. python,cuda
+  --gpus                            gpus argument for docker run
+  -h, --help                        Brings up this menu
 EOF
 }
 
