@@ -1,8 +1,5 @@
 add_subdirectory(cpu)
 
-if (CUDA_FOUND)
-  add_subdirectory(gpu)
-endif ()
 
 add_library(gadgetron_toolbox_sdc INTERFACE)
 target_include_directories(gadgetron_toolbox_sdc
