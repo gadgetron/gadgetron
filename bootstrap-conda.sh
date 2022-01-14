@@ -2,7 +2,8 @@
 
 set -eu
 
-WORKDIR="$(readlink -f $(dirname "$0")/dep-build)"
+this_file="$(echo $0 | rev | cut -d/ -f 1 | rev)"
+WORKDIR="$(find $(pwd) -type f -name "$this_file" | rev | cut -d/ -f 2- | rev)/dep-build"
 mkdir -p "$WORKDIR"
 
 PACKAGE_PATH="${WORKDIR}/package"

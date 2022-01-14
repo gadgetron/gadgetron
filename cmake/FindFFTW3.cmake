@@ -103,7 +103,7 @@ else ()
 
     # Set fftw3 version to be read in other CMakeLists.
     list(GET FFTW3_LIBRARIES 0 _first_lib)
-    execute_process(COMMAND readlink -f ${_first_lib}
+    execute_process(COMMAND ls ${_first_lib}
                     OUTPUT_VARIABLE _readlink_output_string
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
