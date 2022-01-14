@@ -1,14 +1,13 @@
 name: gadgetron
 channels:
-  - nvidia
   - conda-forge
   - defaults
 dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
   - cmake=3.21.3                  # dev
-  - cudatoolkit-dev=11.0.3        # dev, cuda
-  - cudatoolkit=11.0.3            # cuda
+  - cudatoolkit=11.2.2            # cuda
+  - cudatoolkit-dev=11.2.2        # cuda, dev
   - fftw=3.3.9
   - gcc_linux-64=9.4.0            # dev
   - gdb=11.1                      # dev
