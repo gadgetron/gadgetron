@@ -2,8 +2,12 @@
 
 set -eu
 
+<<<<<<< HEAD
 this_file="$(echo $0 | rev | cut -d/ -f 1 | rev)"
 WORKDIR="$(find $(pwd) -type f -name "$this_file" | rev | cut -d/ -f 2- | rev)/dep-build"
+=======
+WORKDIR="$(readlink -f $(dirname "$0")/dep-build)"
+>>>>>>> 847bf07324ecb8e33d05c880d2cedfa99f790a44
 mkdir -p "$WORKDIR"
 
 PACKAGE_PATH="${WORKDIR}/package"
@@ -23,7 +27,11 @@ cd "${WORKDIR}" && \
     cd ismrmrd && \
     mkdir build && \
     cd build && \
+<<<<<<< HEAD
     cmake -G Ninja -DCMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -DCMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
+=======
+    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
+>>>>>>> 847bf07324ecb8e33d05c880d2cedfa99f790a44
     ninja install
 
 #SIEMENS_TO_ISMRMRD
@@ -33,7 +41,14 @@ cd "${WORKDIR}" && \
     cd siemens_to_ismrmrd && \
     mkdir build && \
     cd build && \
+<<<<<<< HEAD
     cmake -G Ninja -DCMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -DCMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ -DBUILD_DYNAMIC=ON -DCMAKE_PREFIX_PATH="$PACKAGE_PATH" -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
     ninja install
 
 rsync -a "${PACKAGE_PATH}/" "$CONDA_PREFIX"
+=======
+    cmake -G Ninja -DBUILD_DYNAMIC=ON -DCMAKE_PREFIX_PATH="$PACKAGE_PATH" -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
+    ninja install
+
+rsync -a "${PACKAGE_PATH}/" "$CONDA_PREFIX"
+>>>>>>> 847bf07324ecb8e33d05c880d2cedfa99f790a44

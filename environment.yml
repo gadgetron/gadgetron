@@ -1,12 +1,17 @@
 name: gadgetron
 channels:
+<<<<<<< HEAD
   - nvidia
   - conda-forge
   - bioconda
+=======
+  - conda-forge
+>>>>>>> 847bf07324ecb8e33d05c880d2cedfa99f790a44
   - defaults
 dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
+<<<<<<< HEAD
   - clang=13.0.0                  # dev
   - clangxx=13.0.0                # dev
   - cmake=3.21.3                  # dev
@@ -14,6 +19,16 @@ dependencies:
   - fftw=3.3.9
   - gdb=11.1                      # dev
   - gmock=1.10.0                  # dev
+=======
+  - cmake=3.21.3                  # dev
+  - cudatoolkit=11.2.2            # cuda
+  - cudatoolkit-dev=11.2.2        # cuda, dev
+  - fftw=3.3.9
+  - gcc_linux-64=9.4.0            # dev
+  - gdb=11.1                      # dev
+  - gmock=1.10.0                  # dev
+  - gxx_linux-64=9.4.0            # dev
+>>>>>>> 847bf07324ecb8e33d05c880d2cedfa99f790a44
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
   - hdf5=1.10.6
@@ -39,6 +54,10 @@ dependencies:
   - shellcheck=0.7.2              # dev
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
+<<<<<<< HEAD
+=======
+  - valgrind=3.17.0               # dev
+>>>>>>> 847bf07324ecb8e33d05c880d2cedfa99f790a44
   - xsdata=21.12
   - pip:
     - ismrmrd==1.9.5
