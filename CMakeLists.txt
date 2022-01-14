@@ -208,7 +208,8 @@ if (WIN32)
 else()
     find_package(Boost 1.71.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
 endif()
-
+add_definitions("-DBOOST_BIND_GLOBAL_PLACEHOLDERS") # To suppress messages in later versions of boost, in version 1.76.0 there are internal conflicts in boost
+add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS") # To suppress messages in later versions of boost, in version 1.76.0 there are internal conflicts in boost
 if (NOT DEFINED Boost_VERSION_STRING)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
@@ -301,7 +302,7 @@ if (USE_MKL)
     find_package(MKL REQUIRED)
     link_directories(GTBLAS BEFORE INTERFACE "${MKL_ROOT}/lib/intel64/")
     add_library(GTBLAS INTERFACE)
-    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES MKL::MKL)
+    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
     message("MKL LIB DIR ${MKL_ROOT}/lib/intel64")
 
     add_definitions(-DUSE_MKL -DARMA_BLAS_LONG_LONG -DARMA_USE_BLAS -DARMA_USE_LAPACK)

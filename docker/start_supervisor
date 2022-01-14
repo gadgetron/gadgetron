@@ -14,4 +14,4 @@ export OPENBLAS_NUM_THREADS=1
 # if want to ensure high numerical reproducibility, turn on this option
 # export MKL_CBWR=COMPATIBLE
 
-/usr/bin/supervisord -c /opt/supervisord.conf 
+supervisord -c "$(dirname "$0")/supervisord.conf" 

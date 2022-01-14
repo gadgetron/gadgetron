@@ -5,7 +5,7 @@
 
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_GPUDWT__)
+#if defined (__BUILD_GADGETRON_GPU__)
 #define EXPORTGPUDWT __declspec(dllexport)
 #else
 #define EXPORTGPUDWT __declspec(dllimport)

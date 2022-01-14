@@ -20,12 +20,9 @@ target_link_libraries(gadgetron_gpuradial
         gadgetron_mricore
         gadgetron_toolbox_log
         gadgetron_gpuparallelmri
-        gadgetron_toolbox_gpunfft
-        gadgetron_toolbox_gpusolvers
-        gadgetron_toolbox_gpuoperators
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_cpucore_math
-        gadgetron_toolbox_gpucore)
+        gadgetron_toolbox_gpu)
 
 install (FILES  gadgetron_radial_export.h
                 gpuRadialPrepGadget.h 
