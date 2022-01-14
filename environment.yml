@@ -2,6 +2,7 @@ name: gadgetron
 channels:
   - nvidia
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - armadillo=9.900.5             # dev
@@ -9,6 +10,7 @@ dependencies:
   - clang=13.0.0                  # dev
   - clangxx=13.0.0                # dev
   - cmake=3.21.3                  # dev
+  - dcmtk=3.6.5
   - fftw=3.3.9
   - gdb=11.1                      # dev
   - gmock=1.10.0                  # dev
