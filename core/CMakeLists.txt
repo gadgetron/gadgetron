@@ -2,7 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CORE__)
 endif ()
 
-add_compile_options(-Wall -Werror)
+add_compile_options(-Wall)
 add_subdirectory(readers)
 add_subdirectory(writers)
 add_subdirectory(parallel)
