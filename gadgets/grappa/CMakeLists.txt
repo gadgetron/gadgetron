@@ -36,9 +36,8 @@ target_link_libraries(gadgetron_grappa
 
 if (CUDA_FOUND)
     target_link_libraries(gadgetron_grappa
-            gadgetron_toolbox_gpunfft
-            gadgetron_toolbox_gpucore
-            gadgetron_toolbox_gpuparallelmri)
+            gadgetron_toolbox_gpu
+    )
 endif()
 
 install(TARGETS gadgetron_grappa

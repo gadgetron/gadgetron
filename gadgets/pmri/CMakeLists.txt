@@ -32,12 +32,9 @@ target_link_libraries(gadgetron_gpuparallelmri
   gadgetron_mricore
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore
-  gadgetron_toolbox_gpudwt
-  gadgetron_toolbox_gpucore
-  gadgetron_toolbox_gpusolvers
-  gadgetron_toolbox_gpuoperators)
+  gadgetron_toolbox_gpu)
 
-target_link_libraries(gadgetron_gpuparallelmri gadgetron_toolbox_gpuparallelmri)
+target_link_libraries(gadgetron_gpuparallelmri gadgetron_toolbox_gpu)
 
 target_include_directories(gadgetron_gpuparallelmri
         PUBLIC

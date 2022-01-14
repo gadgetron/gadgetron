@@ -6,7 +6,7 @@
 #define GPUSOLVERS_EXPORT_H_
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_GPUSOLVERS__) || defined (gpusolvers_EXPORTS)
+#if defined (__BUILD_GADGETRON_GPU__) || defined (gpusolvers_EXPORTS)
 #define EXPORTGPUSOLVERS __declspec(dllexport)
 #else
 #define EXPORTGPUSOLVERS __declspec(dllimport)
