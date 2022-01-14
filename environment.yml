@@ -6,14 +6,12 @@ channels:
 dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
+  - clang=13.0.0                  # dev
+  - clangxx=13.0.0                # dev
   - cmake=3.21.3                  # dev
-  - cuda-toolkit=11.5.1           # dev, cuda
-  - cuda-runtime=11.5.1           # cuda
   - fftw=3.3.9
-  - gcc_linux-64=9.4.0            # dev
   - gdb=11.1                      # dev
   - gmock=1.10.0                  # dev
-  - gxx_linux-64=9.4.0            # dev
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
   - hdf5=1.10.6
@@ -39,7 +37,6 @@ dependencies:
   - shellcheck=0.7.2              # dev
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
-  - valgrind=3.17.0               # dev
   - xsdata=21.12
   - pip:
     - ismrmrd==1.9.5
