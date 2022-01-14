@@ -1,6 +1,5 @@
 name: gadgetron
 channels:
-<<<<<<< HEAD
   - nvidia
   - conda-forge
   - bioconda
