@@ -22,7 +22,7 @@ cd "${WORKDIR}" && \
     cd ismrmrd && \
     mkdir build && \
     cd build && \
-    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
+    cmake -G Ninja -DCMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -DCMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
     ninja install
 
 #SIEMENS_TO_ISMRMRD
@@ -32,7 +32,7 @@ cd "${WORKDIR}" && \
     cd siemens_to_ismrmrd && \
     mkdir build && \
     cd build && \
-    cmake -G Ninja -DBUILD_DYNAMIC=ON -DCMAKE_PREFIX_PATH="$PACKAGE_PATH" -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
+    cmake -G Ninja -DCMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -DCMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ -DBUILD_DYNAMIC=ON -DCMAKE_PREFIX_PATH="$PACKAGE_PATH" -DCMAKE_INSTALL_PREFIX="$PACKAGE_PATH" ../ && \
     ninja install
 
 rsync -a "${PACKAGE_PATH}/" "$CONDA_PREFIX"
