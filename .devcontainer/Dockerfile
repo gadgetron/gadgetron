@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_2004_cuda11_cudnn8_base
+ARG BASE_IMAGE=ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest
 FROM ${BASE_IMAGE}
 
 # Options for setup script
