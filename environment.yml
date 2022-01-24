@@ -1,4 +1,4 @@
-name: gadgetron-master
+name: gadgetron
 channels:
   - conda-forge
   - defaults
