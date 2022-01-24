@@ -1,7 +1,5 @@
 
 #include "CmrRealTimeLAXCineAIAnalysisGadget.h"
-#include <cstdio>
-#include "python_toolbox.h"
 #include "hoNDImage_util.h"
 #include "GadgetronTimer.h"
 #include "mri_core_def.h"
@@ -33,14 +31,19 @@ namespace Gadgetron {
 
             Gadgetron::initialize_python();
             Gadgetron::add_python_path(gadgetron_python_path.generic_string());
-
             this->gt_home_ = gadgetron_python_path.generic_string();
+
+            boost::filesystem::path model_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python" / this->model_dest.value();
+            Gadgetron::add_python_path(model_path.generic_string());
+            this->gt_model_home_ = model_path.generic_string();
+
             GDEBUG_STREAM("Set up python path using context : " << this->gt_home_);
+            GDEBUG_STREAM("Set up model path using context : " << this->gt_model_home_);
         }
         catch (...)
         {
-            this->gt_home_.clear();
             GERROR_STREAM("Exception happened when adding  path to python ... ");
+            return GADGET_FAIL;
         }
 
         GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
@@ -76,6 +79,33 @@ namespace Gadgetron {
         meas_max_idx_.segment = 0;
 
         GDEBUG_STREAM("meas_max_idx_.slice is " << meas_max_idx_.slice);
+
+        // load the model
+        if (this->perform_AI.value())
+        {
+            std::string model_file_name = this->gt_model_home_ + "/" + this->model_file.value();
+            boost::filesystem::path p(model_file_name);
+
+            if (boost::filesystem::exists(p) && boost::filesystem::is_regular_file(p))
+            {
+                GDEBUG_STREAM("model file already exists :  " << model_file_name);
+            }
+            else
+            {
+                GDEBUG_STREAM("model file does not exist :  " << model_file_name);
+                gt_timer_.start("gadgetron_cmr_landmark_detection_util, get_model");
+                PythonFunction<> get_model("gadgetron_cmr_landmark_detection_util", "get_model");
+                get_model(this->model_url.value(), this->model_file.value(), this->gt_model_home_, this->model_file_checksum.value());
+                gt_timer_.stop();
+            }
+
+            // read in the model
+            gt_timer_.start("gadgetron_cmr_landmark_detection, load_model_onnx");
+            PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
+            model_ = load_model_onnx(this->gt_model_home_, this->model_file.value());
+            bp::incref(model_.ptr());
+            gt_timer_.stop();
+        }
 
         return GADGET_OK;
     }
@@ -426,25 +456,11 @@ namespace Gadgetron {
             {
                 GDEBUG_STREAM("=============================================");
 
-                // load model
-                //boost::python::object model;
-                //{
-                //    GILLock lg;
-                //    PythonFunction<boost::python::object> load_model_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "load_model_cmr_landmark_detection");
-                //    model = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
-                //    bp::incref(model.ptr());
-                //}
-
-                //// apply model
-                //{
-                //    GILLock lg;
-                //    PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
-                //    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, model, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
-                //}
-
-                GILLock lg;
-                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection_with_model("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection_with_model");
-                std::tie(pts, probs) = perform_cmr_landmark_detection_with_model(lax_images, this->gt_home_, this->lax_landmark_detection_model.value(), 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
+                gt_timer_.start("gadgetron_cmr_landmark_detection_util, perform_cmr_landmark_detection");
+                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
+                float p_thresh=0.1;
+                std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, this->model_, p_thresh, this->oper_RO.value(), this->oper_E1.value());
+                gt_timer_.stop();
 
                 pts.print(std::cout);  
                 probs.print(std::cout);

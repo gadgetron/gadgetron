@@ -45,9 +45,11 @@ set( config_cmr_files
     ${config_BinningCine_files} 
     ${config_Mapping_files})
 
-if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+if (BUILD_PYTHON_SUPPORT)
 
     message("Build python cmr gadgets ... ")
+
+    include_directories(${CMAKE_SOURCE_DIR}/toolboxes/python)
 
     set( gadgetron_cmr_header_files ${gadgetron_cmr_header_files} CmrRealTimeLAXCineAIAnalysisGadget.h)
     set( gadgetron_cmr_src_files ${gadgetron_cmr_src_files} CmrRealTimeLAXCineAIAnalysisGadget.cpp)
@@ -71,14 +73,14 @@ if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
         ${config_LandmarkDetection_files} 
         ${python_LandmarkDetection_files} )
 
-    install(FILES ${python_LandmarkDetection_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+    install(FILES ${python_LandmarkDetection_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH}/cmr_lax_landmark_detection COMPONENT main)
 endif ()
 
 add_library(gadgetron_cmr SHARED 
     ${gadgetron_cmr_header_files} 
     ${gadgetron_cmr_src_files}
     ${config_cmr_files} )
-
+  
 set_target_properties(gadgetron_cmr PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_cmr 
@@ -93,6 +95,10 @@ target_link_libraries(gadgetron_cmr
     gadgetron_toolbox_image_analyze_io
     gadgetron_toolbox_cmr
 )
+
+if (BUILD_PYTHON_SUPPORT)
+    target_link_libraries(gadgetron_cmr gadgetron_toolbox_python)
+endif ()
 
 install(FILES ${gadgetron_cmr_header_files} DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
