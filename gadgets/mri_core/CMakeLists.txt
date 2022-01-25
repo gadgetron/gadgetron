@@ -4,8 +4,6 @@ endif ()
 
 find_package(ZFP)
 
-include_directories(${HDF5_INCLUDE_DIR})
-
 if(MSVC)
   set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX2")
 else()
