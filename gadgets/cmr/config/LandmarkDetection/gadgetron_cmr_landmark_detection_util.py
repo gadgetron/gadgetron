@@ -4,63 +4,91 @@ import os
 import sys
 import urllib.request
 import hashlib
+import fcntl
 import numpy as np
 from scipy import ndimage
 
-def is_model_valid(model_file, model_md5):
-    """Check whether the md5 hash is valid"""
+class model_file_lock:
+    """A python inter-process file lock
+    
+    Adaptive from https://stackoverflow.com/questions/6931342/system-wide-mutex-in-python-on-linux
+    """
+    
+    def __init__(self, model_dest):
+        self.model_dest = model_dest
+    
+    def __enter__ (self):
+        self.fp = open(os.path.join(self.model_dest, "ai_model_lockfile.lck"), 'w')
+        fcntl.flock(self.fp.fileno(), fcntl.LOCK_EX)
+
+    def __exit__ (self, _type, value, tb):
+        fcntl.flock(self.fp.fileno(), fcntl.LOCK_UN)
+        self.fp.close()
+            
+def is_model_valid(model_file, model_sha256):
+    """Check whether the sha256 hash is valid"""
     
     if not os.path.isfile(model_file):
         return False
 
     with open(model_file, "rb") as f:
-        file_hash = hashlib.md5()
+        file_hash = hashlib.sha256()
         while chunk := f.read(65536):
             file_hash.update(chunk)
         
-    return model_md5 == file_hash.hexdigest()
+    return model_sha256 == file_hash.hexdigest()
 
 
-def get_model(model_host, model_file, model_dest, model_md5):
+def check_and_get_model(model_host, model_file, model_dest, model_sha256):
     """Get the model from the storage account.
     
     Input:
         model_host [str] : host address to download the model
         model_file [str] : model file name
         model_dest [str] : destination path to store the model
-        model_md5 [str] : model md5 hash
+        model_sha256 [str] : model sha256 hash
     
     Return:
         0 or 1 for success or fail
         
+    If the model already exist, check its integrity; if invalid, download file
     If model cannot be downloaded, an exception is thrown
     """
     try:
-        print(f"get_model,  model_host is {model_host}")
-        print(f"get_model,  model_file is {model_file}")
-        print(f"get_model,  model_dest is {model_dest}")
-        print(f"get_model,  model_md5 is {model_md5}")
+        print(f"check_and_get_model,  model_host is {model_host}")
+        print(f"check_and_get_model,  model_file is {model_file}")
+        print(f"check_and_get_model,  model_dest is {model_dest}")
+        print(f"check_and_get_model,  model_sha256 is {model_sha256}")
         
         # assemble the source and destination of model
         model_url = model_host + model_file
         destination = os.path.join(model_dest, model_file)
         
-        print(f"get_model,  model_url is {model_url}")
-        print(f"get_model,  destination is {destination}")
+        print(f"check_and_get_model,  model_url is {model_url}")
+        print(f"check_and_get_model,  destination is {destination}")
         
         # make sure destination exist
         os.makedirs(model_dest, exist_ok=True)
         
-        # download the model
-        print(f"get_model,  start downloading model")
-        urllib.request.urlretrieve(model_url, destination)
-        print(f"get_model,  finish downloading model")
+        # download the model if not exist
+        if(not os.path.isfile(destination)):
+            with model_file_lock(model_dest):
+                print(f"check_and_get_model, start downloading model")
+                urllib.request.urlretrieve(model_url, destination)
+                print(f"check_and_get_model, finish downloading model")
 
-        if not is_model_valid(destination, model_md5):
-            print(f"Downloaded model file {destination} failed in md5 validation.")
-            raise "Cannot download model"
+        if not is_model_valid(destination, model_sha256):
+            print(f"Downloaded model file {destination} failed in sha256 validation.")
+            with model_file_lock(model_dest):
+                urllib.request.urlretrieve(model_url, destination)
+                
+            if not is_model_valid(destination, model_sha256):
+                print(f"Newly downloaded model file {destination} failed in sha256 validation.")
+                raise "invalid model"
+        else:
+            print(f"Downloaded model file {destination} succeeded in sha256 validation.")
     except Exception as e:
-            print("Error happened in get_model ... ")
+            print("Error happened in check_and_get_model ... ")
             print(e)
             raise e
 
@@ -218,6 +246,6 @@ if __name__=="__main__":
     model_host = 'https://gadgetrondata.blob.core.windows.net/cmr-ai-models/'
     model_file = 'CMR_landmark_network_RO_320_E1_320_CH2_CH3_CH4_Myo_Pts_sFOV_LossMultiSoftProb_KLD_Dice_Pytorch_1.8.0a0+37c1f4a_2021-08-08_20210808_085042.onnx'
     model_dest = os.path.join(GT_PYTHON_DIR, 'cmr_lax_landmark_detection')
-    model_md5 = '44cd1e1202aead1a33b1d35ca022dc8c'
+    model_sha256 = '48efe3e70b1ff083c9dd0066469f62bf495e52857d68893296e7375b69f691e4'
     
-    res = get_model(model_host, model_file, model_dest, model_md5)
+    res = check_and_get_model(model_host, model_file, model_dest, model_sha256)

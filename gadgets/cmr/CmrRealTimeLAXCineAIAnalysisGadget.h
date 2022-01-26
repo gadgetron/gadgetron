@@ -30,7 +30,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(perform_AI, bool, "Whether to perform AI", true);
 
         GADGET_PROPERTY(model_file, std::string, "Cine AI ONNX model file for lax landmark detection", "CMR_landmark_network_RO_320_E1_320_CH2_CH3_CH4_Myo_Pts_sFOV_LossMultiSoftProb_KLD_Dice_Pytorch_1.8.0a0+37c1f4a_2021-08-08_20210808_085042.onnx");
-        GADGET_PROPERTY(model_file_checksum, std::string, "Checksum of the model to check its integrity", "44cd1e1202aead1a33b1d35ca022dc8c");
+        GADGET_PROPERTY(model_file_sha256, std::string, "Checksum sha256 of the model to check its integrity", "48efe3e70b1ff083c9dd0066469f62bf495e52857d68893296e7375b69f691e4");
         GADGET_PROPERTY(oper_RO, size_t, "Operation image size for AI, RO", 320);
         GADGET_PROPERTY(oper_E1, size_t, "Operation image size for AI, E1", 320);
         GADGET_PROPERTY(pixel_size_send, double, "Pixel size used for AI and image sending", 1.0);

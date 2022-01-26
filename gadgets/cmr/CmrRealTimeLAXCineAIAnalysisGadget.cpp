@@ -93,11 +93,13 @@ namespace Gadgetron {
             else
             {
                 GDEBUG_STREAM("model file does not exist :  " << model_file_name);
-                gt_timer_.start("gadgetron_cmr_landmark_detection_util, get_model");
-                PythonFunction<> get_model("gadgetron_cmr_landmark_detection_util", "get_model");
-                get_model(this->model_url.value(), this->model_file.value(), this->gt_model_home_, this->model_file_checksum.value());
-                gt_timer_.stop();
             }
+
+            // check the model file, if not exists or invalid, download it
+            gt_timer_.start("gadgetron_cmr_landmark_detection_util, check_and_get_model");
+            PythonFunction<> check_and_get_model("gadgetron_cmr_landmark_detection_util", "check_and_get_model");
+            check_and_get_model(this->model_url.value(), this->model_file.value(), this->gt_model_home_, this->model_file_sha256.value());
+            gt_timer_.stop();
 
             // read in the model
             gt_timer_.start("gadgetron_cmr_landmark_detection, load_model_onnx");
