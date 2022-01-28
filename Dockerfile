@@ -36,9 +36,11 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     && [ -z "$CONDA_VERSION" ] || /opt/conda/bin/conda install -n base conda=$CONDA_VERSION \
     && /opt/conda/bin/conda install -c conda-forge -n base conda-lock \
     && /opt/conda/bin/conda clean -afy \
-	&& chown -R $USER_UID:$USER_GID /opt/conda \
-    && mkdir -p ${HOME}/.conda \
-    && chown -R $USER_UID:$USER_GID ${HOME}/.conda
+    && groupadd -r conda --gid 900 \
+    && usermod -aG conda ${USERNAME} \
+    && chown -R :conda /opt/conda \
+    && chmod -R g+w /opt/conda \
+    && find /opt -type d | xargs -n 1 chmod g+s 
 
 # Copy environment, which will be filtered for later staged
 COPY --chown=$USER_UID:${USER_GID} environment.yml /tmp/build/
@@ -59,42 +61,37 @@ fi\n" >> /etc/bash.bashrc
 
 FROM gadgetron_baseimage AS gadgetron_cudadevimage_base
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy 
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy 
 
 FROM gadgetron_cudadevimage_base AS gadgetron_dependency_build
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 COPY --chown=$USER_UID:${USER_GID} bootstrap-conda.sh /tmp/
 RUN chmod +x /tmp/bootstrap-conda.sh
 ENV PATH="/app:/opt/conda/condabin:${PATH}"
-RUN conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/bootstrap-conda.sh
+RUN umask 0002 && conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/bootstrap-conda.sh
 
 FROM gadgetron_baseimage AS gadgetron_dev_nocuda
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
 FROM gadgetron_cudadevimage_base AS gadgetron_dev_cuda
 ARG USER_UID
-ARG USER_GID
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
 FROM gadgetron_dev_cuda AS gadgetron_cudabuild
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 WORKDIR /opt
 RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
 COPY --chown=$USER_UID:${USER_GID} . /opt/code/gadgetron/
 SHELL ["/bin/bash", "-c"]
-RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && \
+RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
     cd /opt/code/gadgetron && \
     mkdir build && \
     cd build && \
@@ -104,13 +101,12 @@ RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && 
 
 FROM gadgetron_dev_nocuda AS gadgetron_nocudabuild
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 WORKDIR /opt
 RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
 COPY --chown=$USER_UID:${USER_GID} . /opt/code/gadgetron/
 SHELL ["/bin/bash", "-c"]
-RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && \
+RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
     cd /opt/code/gadgetron && \
     mkdir build && \
     cd build && \
@@ -120,10 +116,9 @@ RUN . /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && sh -x && 
 
 FROM gadgetron_baseimage AS gadgetron_rt_cuda
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
@@ -134,10 +129,9 @@ CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/
 
 FROM gadgetron_baseimage AS gadgetron_rt_nocuda
 ARG USER_UID
-ARG USER_GID
-USER ${USER_UID}:${USER_GID}
+USER ${USER_UID}
 RUN grep -v "#.*\<cuda\|dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
 COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
