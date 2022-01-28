@@ -116,7 +116,7 @@ def wait_for_server(port, retries=20):
     with socket.socket(socket.AF_INET) as sock:
 
         for i in range(retries):
-            if sock.connect_ex("localhost", port) == 0:
+            if sock.connect_ex(("localhost", int(port))) == 0:
                 return
             time.sleep(0.2)
         raise RuntimeError("Unable to connect to server")
