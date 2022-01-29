@@ -43,7 +43,7 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     && find /opt -type d | xargs -n 1 chmod g+s 
 
 # Copy environment, which will be filtered for later staged
-COPY --chown=$USER_UID:${USER_GID} environment.yml /tmp/build/
+COPY --chown=$USER_UID:conda environment.yml /tmp/build/
 
 # Create mount points for tests
 RUN mkdir -p /test && chown ${USER_UID}:${USER_GID} /test
@@ -63,12 +63,12 @@ FROM gadgetron_baseimage AS gadgetron_cudadevimage_base
 ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy 
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
 
 FROM gadgetron_cudadevimage_base AS gadgetron_dependency_build
 ARG USER_UID
 USER ${USER_UID}
-COPY --chown=$USER_UID:${USER_GID} bootstrap-conda.sh /tmp/
+COPY --chown=$USER_UID:conda bootstrap-conda.sh /tmp/
 RUN chmod +x /tmp/bootstrap-conda.sh
 ENV PATH="/app:/opt/conda/condabin:${PATH}"
 RUN umask 0002 && conda run --no-capture-output -n "$(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')" /tmp/bootstrap-conda.sh
@@ -77,19 +77,19 @@ FROM gadgetron_baseimage AS gadgetron_dev_nocuda
 ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
-COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:conda /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
 FROM gadgetron_cudadevimage_base AS gadgetron_dev_cuda
 ARG USER_UID
-COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:conda /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
 
 FROM gadgetron_dev_cuda AS gadgetron_cudabuild
 ARG USER_UID
 USER ${USER_UID}
 WORKDIR /opt
 RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
-COPY --chown=$USER_UID:${USER_GID} . /opt/code/gadgetron/
+COPY --chown=$USER_UID:conda . /opt/code/gadgetron/
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
     cd /opt/code/gadgetron && \
@@ -104,7 +104,7 @@ ARG USER_UID
 USER ${USER_UID}
 WORKDIR /opt
 RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
-COPY --chown=$USER_UID:${USER_GID} . /opt/code/gadgetron/
+COPY --chown=$USER_UID:conda . /opt/code/gadgetron/
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
     cd /opt/code/gadgetron && \
@@ -118,24 +118,24 @@ FROM gadgetron_baseimage AS gadgetron_rt_cuda
 ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
-COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:conda /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/start_supervisor /opt/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/supervisord.conf /opt/
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/test/integration /opt/integration-test/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
 CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
 
 FROM gadgetron_baseimage AS gadgetron_rt_nocuda
 ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<cuda\|dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy
-COPY --from=gadgetron_dependency_build --chown=$USER_UID:${USER_GID} /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/package /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/start_supervisor /opt/
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/docker/supervisord.conf /opt/
+RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+COPY --from=gadgetron_dependency_build --chown=$USER_UID:conda /tmp/dep-build/package/ /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/start_supervisor /opt/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/supervisord.conf /opt/
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:${USER_GID} /opt/code/gadgetron/test/integration /opt/integration-test/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
 CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
