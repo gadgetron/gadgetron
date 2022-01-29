@@ -145,7 +145,7 @@ namespace Gadgetron
             ind += sizeof(size_t) * NDim;
 
             // allocate memory
-            this->create(&dimensions);
+            this->create(dimensions);
 
             // deserialize the content
             size_t N = this->get_number_of_elements();
