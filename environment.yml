@@ -13,10 +13,10 @@ dependencies:
   - cuda-runtime                  # cuda
   - cuda-nvcc                     # cuda, dev
   - fftw=3.3.9
-  - gcc_linux-64=9.4.0            # dev
+  - gcc_linux-64=11.2.0           # dev
   - gdb=11.1                      # dev
   - gmock=1.10.0                  # dev
-  - gxx_linux-64=9.4.0            # dev
+  - gxx_linux-64=11.2.0           # dev
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
   - hdf5=1.10.6
