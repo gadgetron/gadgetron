@@ -379,10 +379,6 @@ if (REQUIRE_SIGNED_CONFIG)
     find_package(GTBabylon REQUIRED)
 endif()
 
-add_subdirectory(core)
-add_subdirectory(toolboxes)
-add_subdirectory(gadgets)
-
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)
     message("Adding gpertools to build.")
@@ -413,12 +409,10 @@ else()
     MESSAGE("Testing not being built")
 endif()
 
+add_subdirectory(core)
+add_subdirectory(toolboxes)
+add_subdirectory(gadgets)
 add_subdirectory(apps)
-
-#add_subdirectory(core)
-#add_subdirectory(toolboxes)
-#add_subdirectory(gadgets)
-#add_subdirectory(apps)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)

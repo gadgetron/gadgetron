@@ -1,7 +1,5 @@
     include(GoogleTest)
 
-    message("teat_all, GTEST_LIBRARIES is ${GTEST_LIBRARIES}")
-
     if (WIN32)
         link_directories(${Boost_LIBRARY_DIRS})
     endif ()
@@ -66,7 +64,7 @@
     target_link_libraries(test_all
             gadgetron_core
             gadgetron_core_readers
-	    gadgetron_core_writers
+	        gadgetron_core_writers
             gadgetron_mricore
             gadgetron_toolbox_cpucore
             gadgetron_toolbox_cpucore_math
@@ -95,7 +93,7 @@
                 python)
     endif ()
 
-    #gtest_discover_tests(test_all)
+    gtest_discover_tests(test_all)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 

@@ -18,7 +18,8 @@
 namespace Gadgetron {
 
     PCACoilGadget::PCACoilGadget()
-        : max_buffered_profiles_(100), samples_to_use_(16), first_run_(true)
+        : max_buffered_profiles_(100)
+        , samples_to_use_(16)
     {
     }
 
@@ -70,13 +71,6 @@ namespace Gadgetron {
 
     int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
     {
-        if (this->first_run_) {
-#ifdef USE_OMP
-            omp_set_num_threads(1);
-#endif // USE_OMP
-            this->first_run_ = false;
-        }
-
         bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
 
         //We should not be receiving noise here
