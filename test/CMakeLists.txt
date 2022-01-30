@@ -1,4 +1,6 @@
-include(GoogleTest)
+    include(GoogleTest)
+
+    message("teat_all, GTEST_LIBRARIES is ${GTEST_LIBRARIES}")
 
     if (WIN32)
         link_directories(${Boost_LIBRARY_DIRS})

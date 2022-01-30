@@ -26,8 +26,8 @@ install(TARGETS gadgetron_storage_server DESTINATION bin COMPONENT main)
 
 if (BUILD_TESTING)
     include(GoogleTest)
-    add_executable(session_tests storage_test.cpp server_test.cpp)
+    add_executable(session_tests tests.cpp storage_test.cpp server_test.cpp)
     target_link_libraries(session_tests ${GTEST_LIBRARIES} gadgetron_storage gadgetron_core)
-
+    gtest_add_tests(TARGET session_tests SOURCES storage_test.cpp tests.cpp server_test.cpp)
     gtest_discover_tests(session_tests)
 endif ()

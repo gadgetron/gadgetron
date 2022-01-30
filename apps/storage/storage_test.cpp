@@ -30,7 +30,7 @@ protected:
 
 };
 
-TEST(temporary,basics){
+TEST(SessionsTest, basics){
     rocksdb::DB* db;
     rocksdb::DBOptions options;
     options.create_if_missing= true;
@@ -50,10 +50,7 @@ TEST(temporary,basics){
     EXPECT_EQ(return_value,"I can be anything");
 
     delete db;
-
-
 }
-
 
 TEST_F(SessionsTest,pendingwrites){
 
@@ -124,6 +121,4 @@ TEST_F(SessionsTest,blobs_append) {
     EXPECT_EQ(metas[0],meta);
     EXPECT_EQ(metas[1],meta2);
 }
-
-
 
