@@ -14,8 +14,8 @@ protected:
     virtual void SetUp() {
         size_t vdims[] = { 37, 49, 23, 19 }; // Using prime numbers for setup because they are messy
         dims           = std::vector<size_t>(vdims, vdims + sizeof(vdims) / sizeof(size_t));
-        Array          = hoNDArray<T>(&dims);
-        Array2         = hoNDArray<T>(&dims);
+        Array          = hoNDArray<T>(dims);
+        Array2         = hoNDArray<T>(dims);
     }
     std::vector<size_t> dims;
     hoNDArray<T> Array;

@@ -58,9 +58,7 @@ include(GoogleTest)
 
     if (CUDA_FOUND)
         target_link_libraries(test_all
-                gadgetron_toolbox_gpucore
-                gadgetron_toolbox_gpufft
-                gadgetron_toolbox_gpusdc
+                gadgetron_toolbox_gpu
                 )
     endif ()
     target_link_libraries(test_all

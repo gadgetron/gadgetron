@@ -106,7 +106,7 @@ namespace Gadgetron{
         }
 
         size_t sRO = m2->getObjectPtr()->get_size(0);
-        size_t start = (size_t)( (m2->getObjectPtr()->get_size(0)-data_out_dims[0])/ratioFOV );
+        size_t start = (size_t)( (m2->getObjectPtr()->get_size(0)-data_out_dims[0]) / 2 );
 
         size_t dRO = m3->getObjectPtr()->get_size(0);
         size_t numOfBytes = data_out_dims[0]*sizeof(std::complex<float>);

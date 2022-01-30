@@ -3,7 +3,7 @@
 
 	Handles reconstruction of 2D float data with 
 	density compensation provided. Iterative reconstruction 
-	can be easily integreated
+	can be easily integrated
 */
 
 #pragma once 

@@ -33,38 +33,20 @@ Gadgetron::cuNFFT_impl<REAL, D, CONV>::cuNFFT_impl(
     int device)
   : NFFT_plan<cuNDArray, REAL, D>(matrix_size, matrix_size_os, W)
 {
-    // Initialize gridding convolution. This was done in base class already, but
-    // we need to do it again in order to provide the appropriate convolution
-    // type.
-    KaiserKernel<REAL, D> kernel(vector_td<unsigned int, D>(matrix_size),
-                                 vector_td<unsigned int, D>(matrix_size_os),
-                                 W);
-    this->conv_ = GriddingConvolution<cuNDArray, complext<REAL>, D, KaiserKernel>::make(
-        matrix_size, matrix_size_os, kernel, CONV);
-
     // Minimal initialization.
     this->initialize(device);
 }
 
 
-template<class REAL, unsigned int D, ConvolutionType CONV>
-Gadgetron::cuNFFT_impl<REAL, D, CONV>::~cuNFFT_impl()
-{
-
-}
 
 
 template<class REAL, unsigned int D, ConvolutionType CONV>
 void
 Gadgetron::cuNFFT_impl<REAL, D, CONV>::fft(cuNDArray <complext<REAL>>& data, NFFT_fft_mode mode, bool do_scale) {
-
-    typename uint64d<D>::Type _dims_to_transform = counting_vec<size_t, D>();
-    std::vector<size_t> dims_to_transform = to_std_vector(_dims_to_transform);
-
     if (mode == NFFT_fft_mode::FORWARDS) {
-        cuNDFFT<REAL>::instance()->fft(&data, &dims_to_transform, do_scale);
+        fft_plan.fftc(data,D, do_scale);
     } else {
-        cuNDFFT<REAL>::instance()->ifft(&data, &dims_to_transform, do_scale);
+        fft_plan.ifftc(data,D, do_scale);
     }
 
 }

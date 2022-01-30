@@ -52,19 +52,19 @@ namespace Gadgetron
 
     atexit(&CleanUp);
 
-    if (cudaGetDeviceCount(&_num_devices) != cudaSuccess)
+    if (auto res = cudaGetDeviceCount(&_num_devices); res != cudaSuccess)
     {
       _num_devices = 0;
-      throw cuda_error("Error: no Cuda devices present.");
+      throw cuda_error(res);
     }
 
     _mutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
     _sparseMutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
 
     int old_device;
-    if (cudaGetDevice(&old_device) != cudaSuccess)
+    if (auto res = cudaGetDevice(&old_device); res != cudaSuccess)
     {
-      throw std::runtime_error("Error: unable to get device no");
+      throw cuda_error(res);
     }
 
     _total_global_mem = std::vector<size_t>(_num_devices, 0);
@@ -80,16 +80,16 @@ namespace Gadgetron
     for (int device = 0; device < _num_devices; device++)
     {
 
-      if (cudaSetDevice(device) != cudaSuccess)
+      if (auto res = cudaSetDevice(device); res != cudaSuccess)
       {
-        throw cuda_error("Error: unable to set device no");
+        throw cuda_error(res);
       }
 
       cudaDeviceProp deviceProp;
 
-      if (cudaGetDeviceProperties(&deviceProp, device) != cudaSuccess)
+      if (auto res = cudaGetDeviceProperties(&deviceProp, device); res != cudaSuccess)
       {
-        throw cuda_error("Error: unable to determine device properties.");
+        throw cuda_error(res);
       }
 
       _total_global_mem[device] = deviceProp.totalGlobalMem;
@@ -101,9 +101,9 @@ namespace Gadgetron
       _minor[device] = deviceProp.minor;
     }
 
-    if (cudaSetDevice(old_device) != cudaSuccess)
+    if (auto res = cudaSetDevice(old_device); res != cudaSuccess)
     {
-      throw cuda_error("Error: unable to restore device no");
+      throw cuda_error(res);
     }
   }
 

@@ -31,7 +31,7 @@ namespace Gadgetron {
         /// parameters to control the reconstruction
         /// ------------------------------------------------------------------------------------
         /// image scaling
-        GADGET_PROPERTY(use_constant_scalingFactor, bool, "Whether to use constrant scaling; if not, the auto-scaling factor will be computed only ONCE", true);
+        GADGET_PROPERTY(use_constant_scalingFactor, bool, "Whether to use constraint scaling; if not, the auto-scaling factor will be computed only ONCE", true);
         GADGET_PROPERTY(scalingFactor, float, "Default scaling ratio", 4.0);
         GADGET_PROPERTY(min_intensity_value, int, "Minimal intensity value for auto image scaling", 64);
         GADGET_PROPERTY(max_intensity_value, int, "Maximal intensity value for auto image scaling", 4095);

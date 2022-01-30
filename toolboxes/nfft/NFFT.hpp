@@ -1,3 +1,4 @@
+#pragma once
 #include "NFFT.h"
 
 namespace Gadgetron
@@ -8,15 +9,7 @@ namespace Gadgetron
         const vector_td <size_t, D> &matrix_size,
         const vector_td <size_t, D> &matrix_size_os,
         REAL width)
-      : matrix_size_(matrix_size)
-      , matrix_size_os_(matrix_size_os)
-      , width_(width)
-    {
-        KaiserKernel<REAL, D> kernel(vector_td<unsigned int, D>(matrix_size),
-                                     vector_td<unsigned int, D>(matrix_size_os),
-                                     width);
-        conv_ = GriddingConvolution<ARRAY, complext<REAL>, D, KaiserKernel>::make(
-            matrix_size, matrix_size_os, kernel);
+    { reconfigure(matrix_size,matrix_size_os,width);
     }
 
 
@@ -25,16 +18,26 @@ namespace Gadgetron
         const vector_td <size_t, D>& matrix_size,
         REAL os_factor,
         REAL width)
-      : matrix_size_(matrix_size)
-      , matrix_size_os_(vector_td<size_t, D>(os_factor * vector_td<REAL, D>(matrix_size)))
-      , width_(width)
-    {
+    { reconfigure(matrix_size,os_factor,width);}
+
+    template<template<class> class ARRAY, class REAL, unsigned int D>
+    void NFFT_plan<ARRAY, REAL, D>::reconfigure(const vector_td<size_t, D>& matrix_size, REAL oversampling_Factor, REAL width) {
+        reconfigure(matrix_size,vector_td<size_t, D>(oversampling_Factor * vector_td<REAL, D>(matrix_size)), width);
+    }
+
+    template<template<class> class ARRAY, class REAL, unsigned int D>
+    void NFFT_plan<ARRAY, REAL, D>::reconfigure(const vector_td<size_t, D>& matrix_size, const vector_td<size_t, D>& matrix_size_os, REAL width) {
+        matrix_size_ = matrix_size;
+        matrix_size_os_ = matrix_size_os;
+        width_ = width;
         KaiserKernel<REAL, D> kernel(vector_td<unsigned int, D>(matrix_size),
-                                     os_factor,
+                                     vector_td<unsigned int, D>(matrix_size_os),
                                      width);
         conv_ = GriddingConvolution<ARRAY, complext<REAL>, D, KaiserKernel>::make(
-            matrix_size, os_factor, kernel);
+            matrix_size, matrix_size_os, kernel);
     }
+
+
 
 
     template<template<class> class ARRAY, class REAL, unsigned int D>

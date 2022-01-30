@@ -4,6 +4,7 @@
 */
 
 #include "cmr_file_and_directory_handling.h"
+#include "io/primitives.h"
 
 #include <boost/filesystem.hpp>
 
@@ -238,14 +239,7 @@ namespace Gadgetron
                             continue;
                         }
 
-                        fid.seekg(0, std::ios::end);
-                        size_t file_length = fid.tellg();
-                        fid.seekg(0, std::ios::beg);
-                        std::vector<char> buf(file_length, '\0');
-                        fid.read(&buf[0], file_length);
-                        fid.close();
-
-                        GADGET_CHECK_THROW(items[ii].deserialize(&buf[0], file_length)==true);
+                        Gadgetron::Core::IO::read(fid, items[ii]);
                     }
                 }
             }
@@ -303,15 +297,7 @@ namespace Gadgetron
                         GADGET_THROW("Exceptions happened in save_item(...) ... ");
                     }
 
-                    char* buf = NULL;
-                    size_t file_length = 0;
-                    item.serialize(buf, file_length);
-
-                    fid.write(buf, file_length);
-                    fid.close();
-
-                    delete[] buf;
-                    buf = NULL;
+                    Gadgetron::Core::IO::write(fid, item);
                 }
             }
         }

@@ -218,7 +218,7 @@
         <dll>gadgetron_mricore</dll>
         <classname>PhysioInterpolationGadget</classname>
         <property><name>phases</name><value>30</value></property>
-        <!-- 0=seperate series for each complete RR -->
+        <!-- 0=separate series for each complete RR -->
         <!-- 1=First complete RR interval only -->
         <property><name>mode</name><value>0</value></property>
         <property><name>first_beat_on_trigger</name><value>true</value></property>

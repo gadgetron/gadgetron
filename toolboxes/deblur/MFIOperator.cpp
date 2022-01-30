@@ -116,8 +116,8 @@ void MFIOperator::calc_phase_mask()
 {
   //Phase mask for fast demodulation in gridded domain (See MFI paper)
   hoNDArray<std::complex<float>> tau(data_dims[0],data_dims[1],data_dims[2]);
-  hoNDArray<complext<float>> phase_mask(&image_dims);
-  cuNDArray<complext<float>> ch_images(&image_dims);
+  hoNDArray<complext<float>> phase_mask(image_dims);
+  cuNDArray<complext<float>> ch_images(image_dims);
   float f_step = fmax/((L-1)/2.);
   size_t R0 = data_dims[0];
 
@@ -140,7 +140,7 @@ void MFIOperator::calc_phase_mask()
 void MFIOperator::calc_kspace_filter(std::vector<size_t>& matrix_size)
 {
   //Setup circular k-space filter to get rid of spurious high-frequency data from forward and backward FFTs (Similar to CG-sense)
-  hoNDArray<std::complex<float>> kspace_filter(&matrix_size);
+  hoNDArray<std::complex<float>> kspace_filter(matrix_size);
   float kx;
   float ky;
   for(int x = 0; x < matrix_size[0]; x++){
@@ -159,10 +159,10 @@ hoNDArray<complext<float>> MFIOperator::MFI_apply(hoNDArray<complext<float>>& ho
 
   //Core MFI function - assumes MFI operator has already been prepared
   //Takes in blurred imaged (ho_image) and field map (B0_map) as inputs
-  hoNDArray<complext<float>> output_image(&image_dims);
-  hoNDArray<complext<float>> temp_image(&image_dims);
+  hoNDArray<complext<float>> output_image(image_dims);
+  hoNDArray<complext<float>> temp_image(image_dims);
   output_image.fill(0.0);
-  cuNDArray<complext<float>> cu_image(&image_dims);
+  cuNDArray<complext<float>> cu_image(image_dims);
   int mfc_index;
 
   //Upload image and transform

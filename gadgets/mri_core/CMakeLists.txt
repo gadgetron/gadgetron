@@ -4,8 +4,6 @@ endif ()
 
 find_package(ZFP)
 
-include_directories(${HDF5_INCLUDE_DIR})
-
 if(MSVC)
   set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX2")
 else()
@@ -72,7 +70,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
-	cpuisa.h
+    	cpuisa.h
         ImageAccumulatorGadget.h
         writers/GadgetIsmrmrdWriter.h
         ImageResizingGadget.h
@@ -80,7 +78,9 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageArraySendMixin.hpp
         DenoiseGadget.h
         CoilComputationGadget.h 
-        ImageFFTGadget.h 
+        ImageFFTGadget.h
+        FlagTriggerGadget.h
+        ImageIndexGadget.h
         )
 
 set(gadgetron_mricore_src_files
@@ -137,10 +137,10 @@ set(gadgetron_mricore_src_files
         GenericReconAccumulateImageTriggerGadget.cpp
         GenericImageReconArrayToImageGadget.cpp
         GenericReconImageToImageArrayGadget.cpp 
-	CompressedFloatBuffer.cpp
-	CompressedFloatBufferSse41.cpp
-	CompressedFloatBufferAvx2.cpp
-	cpuisa.cpp
+        CompressedFloatBuffer.cpp
+        CompressedFloatBufferSse41.cpp
+        CompressedFloatBufferAvx2.cpp
+        cpuisa.cpp
         WhiteNoiseInjectorGadget.cpp
         RateLimitGadget.cpp
         dependencyquery/NoiseSummaryGadget.cpp
@@ -151,7 +151,9 @@ set(gadgetron_mricore_src_files
         DenoiseGadget.cpp
         CoilComputationGadget.cpp
         ImageFFTGadget.cpp
-        FlagTriggerGadget.cpp FlagTriggerGadget.h)
+        FlagTriggerGadget.cpp
+        ImageIndexGadget.cpp
+        )
 
 set(gadgetron_mricore_config_files
         config/default.xml

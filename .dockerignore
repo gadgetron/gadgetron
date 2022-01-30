@@ -1,1 +1,21 @@
-build/
+# Ignore everything...
+**
+
+# ...except:
+!CMakeLists.txt
+!apps/
+!bootstrap-conda.sh
+!cmake/
+!core/
+!docker/
+!gadgets/
+!test/
+!toolboxes/
+!environment.yml
+!chroot/
+!doc/
+
+# but also ignore:
+test/integration/data/
+*.Dockerfile
+docker/integration-test-image.sh

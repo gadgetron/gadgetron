@@ -17,4 +17,4 @@ export LANG=en_US.UTF-8
 # if want to ensure high numerical reproducibility, turn on this option
 # export MKL_CBWR=COMPATIBLE
 
-/usr/bin/supervisord -c /opt/supervisord.conf 
+supervisord -c "$(dirname "$0")/supervisord.conf" 

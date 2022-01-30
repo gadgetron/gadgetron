@@ -25,7 +25,7 @@ int main() {
       ++gpuDeviceCount;
       if (gpuDeviceCount > 1)
       	printf(";");
-      if (properties.major == 2) //Need a special case for Fermi. Compute capabillity 2.1 exists, but compute model 2.1 does not.
+      if (properties.major == 2) //Need a special case for Fermi. Compute capability 2.1 exists, but compute model 2.1 does not.
       	printf("%d%d",properties.major, 0);
       else
       	printf("%d%d",properties.major, properties.minor);

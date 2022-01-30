@@ -1,27 +1,65 @@
 {
-	"name": "ubuntu_2004_cuda11_cudnn8",
-	"image": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_2004_cuda11_cudnn8_base",
-
-	// Set *default* container specific settings.json values on container create.
-	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash"
+	"name": "Gadgetron",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			"BASE_IMAGE": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest"
+		}
 	},
+	"containerEnv": {
+		"DOCKER_BUILDKIT": "1",
+		"HOST_WORKSPACE_DIR": "${localWorkspaceFolder}", // The host's path to the repo's folder
+	},
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.inheritEnv": true, // this is so that the "code" executable is available from the integrated terminal
+		"cmake.configureOnOpen": true,
+		"cmake.preferredGenerators": [
+			"Ninja",
+			"Unix Makefiles"
+		],
+		"cmake.cmakePath": "/opt/conda/envs/gadgetron/bin/cmake",
+		"cmake.configureSettings": {
+			"USE_CUDA": "ON",
+			"USE_MKL": "ON",
+			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron"
+		},
+		"indentRainbow.includedLanguages": [ "yaml", "python" ]
+	},
+	"runArgs": ["--init", "--network=host"],
 
-	// To enable your local GPUs in container if they are on enabled by default
-	// "runArgs": [ "--gpus=all" ],
+	// To enable your local GPUs in container if they are on enabled by default devcontainer will fail to start on hosts without GPU
+	// "runArgs": ["--init", "--network=host", "--gpus=all"],
 
+	"mounts": [
+		// Bind mount docker socket under an alias to support docker-from-docker
+		"source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
+	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [9002],
-
+	"forwardPorts": [
+		9002
+	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
 		"eamodio.gitlens",
+		"esbenp.prettier-vscode",
+		"matepek.vscode-catch2-test-adapter",
+		"mhutchie.git-graph",
+		"ms-azuretools.vscode-docker",
+		"ms-python.python",
+		"oderwat.indent-rainbow",
+		"timonwong.shellcheck"
 	],
-
-	"postCreateCommand": "apt-get update && apt-get -y install locales gdb && locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 && .devcontainer/bootstrap-vscode.sh ",
+	"overrideCommand": false,
+	// Use the non-root user
+	"remoteUser": "vscode",
+	// We have to make sure the current user owns the conda folder
+	"onCreateCommand": [
+		"./.devcontainer/set-devcontainer-permissions.sh"
+	],
+	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }

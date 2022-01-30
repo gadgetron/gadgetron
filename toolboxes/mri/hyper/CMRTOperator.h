@@ -9,6 +9,7 @@
 #include "linearOperator.h"
 #include "cuNDArray.h"
 #include "radial_utilities.h"
+#include "cuNFFT.h"
 #include "../../nfft/NFFTOperator.h"
 #include "cuNDFFT.h"
 #include "vector_td_operators.h"

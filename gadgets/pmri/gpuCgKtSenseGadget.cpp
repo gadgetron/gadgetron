@@ -265,7 +265,7 @@ namespace Gadgetron{
       img_dims[0] = matrix_size_seq_[0];
       img_dims[1] = matrix_size_seq_[1];
 
-      cm->getObjectPtr()->create(&img_dims);
+      cm->getObjectPtr()->create(img_dims);
 
       size_t data_length = prod(matrix_size_seq_);
 

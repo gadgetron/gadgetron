@@ -1,7 +1,7 @@
 Type matching
 =============
 
-:cpp:class:`PureGadget<Gadgetron::Core::PureGadget>`, :cpp:class:`ChannelGadget<Gadgetron::Core::ChannelGadget>` as well as several other classes in Gadgetron have a template arguement defining what type of data they accept.
+:cpp:class:`PureGadget<Gadgetron::Core::PureGadget>`, :cpp:class:`ChannelGadget<Gadgetron::Core::ChannelGadget>` as well as several other classes in Gadgetron have a template argument defining what type of data they accept.
 In the simplest case, this is simply a list of types. For instance 
 
 .. code-block:: cpp
@@ -54,7 +54,7 @@ For instance, a toy example which counts the number of data points in all wavefo
            
            size_t counts = 0;
            Core::visit( [counts&](auto& val){
-               auto& data = std::get<1>(val); //Data the second arguement for both acquisitons and waveforms
+               auto& data = std::get<1>(val); //Data the second argument for both acquisitons and waveforms
                counts += data.size();
            },
            acquisition_or_waveform);

@@ -208,13 +208,13 @@ typedef cuNFFT_impl<_real,2> plan_type;
 				B0_data = recon_bit_->rbit_[0].ref_->data_;
     }
 
-		//Set up image conatiners, trajectory, and NFFT_plan - if not already prepared
+		//Set up image containers, trajectory, and NFFT_plan - if not already prepared
 		ISMRMRD::AcquisitionHeader& curr_header = recon_bit_->rbit_[0].data_.headers_(0,0,0,0,0);
 		if(!prepared_ && host_data.get_size(0) > 0){ //TODO: move to process_config?
 		    Prepare_Plan(recon_bit_->rbit_[0].data_);
 		}
 
-		//Set up B0 map conatiners, trajectory, and NFFT_plan - if not already prepared
+		//Set up B0 map containers, trajectory, and NFFT_plan - if not already prepared
 		if(!prepared_B0_ && recon_bit_->rbit_[0].ref_){
 				Prepare_B0_Plan(*recon_bit_->rbit_[0].ref_);
 		}
@@ -238,11 +238,11 @@ typedef cuNFFT_impl<_real,2> plan_type;
                                 image_dimensions_recon_os_, sample_time, .001)){
 				output_image = MFI.MFI_apply(host_image, B0_map);
 			}
-			host_image = *(reg_image.to_host()); //caling MFI_apply corrupts host_image, Recall it from GPU;
+			host_image = *(reg_image.to_host()); //calling MFI_apply corrupts host_image, Recall it from GPU;
 			//queue deblurred im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header = get_image_header(curr_header,1);
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
-			cm2->getObjectPtr()->create(host_image.get_dimensions());
+			cm2->getObjectPtr()->create(host_image.dimensions());
 			memcpy(cm2->getObjectPtr()->get_data_ptr(), output_image.get_data_ptr(), output_image.get_number_of_elements()*sizeof(std::complex<float>));
 			header->cont(cm2);
 			if (this->next()->putq(header) < 0) {
@@ -254,7 +254,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			//queue original im
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header2 = get_image_header(curr_header,10);
 			GadgetContainerMessage<hoNDArray< std::complex<float> > >* cm3 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
-			cm3->getObjectPtr()->create(host_image.get_dimensions());
+			cm3->getObjectPtr()->create(host_image.dimensions());
 			memcpy(cm3->getObjectPtr()->get_data_ptr(), host_image.get_data_ptr(), host_image.get_number_of_elements()*sizeof(std::complex<float>));
 			header2->cont(cm3);
 			if (this->next()->putq(header2) < 0) {
@@ -267,11 +267,11 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			GadgetContainerMessage<ISMRMRD::ImageHeader> *header3 = get_image_header(curr_header,20);
 			GadgetContainerMessage<hoNDArray< std::complex<float> > >* cm4 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
 			hoNDArray< std::complex<float> >B0_image;
-			B0_image.create(B0_map.get_dimensions());
+			B0_image.create(B0_map.dimensions());
 			for(int i = 0; i<B0_map.get_number_of_elements(); i++){
 				B0_image[i] = std::complex<float>(B0_map[i],0.0);
 			}
-			cm4->getObjectPtr()->create(B0_image.get_dimensions());
+			cm4->getObjectPtr()->create(B0_image.dimensions());
 			memcpy(cm4->getObjectPtr()->get_data_ptr(), B0_image.get_data_ptr(), B0_image.get_number_of_elements()*sizeof(std::complex<float>));header3->cont(cm4);
 			if (this->next()->putq(header3) < 0) {
 				GDEBUG("Failed to put job on queue.\n");
@@ -351,7 +351,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		hoNDArray<complext<float>> B0_temp_1 = *reg_image.to_host();
 		//Compute map
 		B0_map->clear();
-		B0_map->create(B0_temp_0.get_dimensions());
+		B0_map->create(B0_temp_0.dimensions());
 		B0_map->fill(0.0);
 		auto map_ptr = B0_map->get_data_ptr();
 		for (int i = 0; i < B0_temp_0.get_number_of_elements(); i++) {
@@ -417,7 +417,8 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		gpu_traj = host_traj;
 		gpu_weights = host_weights;
 		//pre-process
-		nfft_plan_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+                if (nfft_plan_) nfft_plan_->reconfigure(from_std_vector<size_t,2>(image_dimensions_recon_),image_dimensions_recon_os_,kernel_width_);
+            	else nfft_plan_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
 		nfft_plan_->preprocess(&gpu_traj, NFFT_prep_mode::ALL);
 		prepared_ = true;
 	}
@@ -430,7 +431,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		B0_traj.create(R0*E1);
 		B0_weights.create(R0*E1);
 
-		float krmaxB0_ = 2.*(B0_header.user_float[4])/10000.; //TODO: B0 acquisition info currently embeded into user parameters. In the future this should be in Encoding[1]. Requires ammending XSL.
+		float krmaxB0_ = 2.*(B0_header.user_float[4])/10000.; //TODO: B0 acquisition info currently embedded into user parameters. In the future this should be in Encoding[1]. Requires amending XSL.
 		if (B0_header.trajectory_dimensions != 3) {
 			//Setup calc_vds parameters
 			const int     nfov   = 2;
@@ -475,7 +476,8 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		gpu_weights_B0 = B0_weights;
 
 		//pre-process
-		nfft_plan_B0_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+                if (nfft_plan_B0_) nfft_plan_B0_->reconfigure(from_std_vector<size_t,2>(image_dimensions_recon_),image_dimensions_recon_os_,kernel_width_);
+		else nfft_plan_B0_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
 		nfft_plan_B0_->preprocess(&gpu_traj, NFFT_prep_mode::NC2C);
 		prepared_B0_= true;
 	}

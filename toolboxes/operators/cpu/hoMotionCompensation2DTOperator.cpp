@@ -77,7 +77,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::gradient(ARRAY_TYPE* x, ARRA
 
         if (!moco_im_Norm_approx_.dimensions_equal(&moco_im_Norm_))
         {
-            moco_im_Norm_approx_.create(moco_im_Norm_.get_dimensions());
+            moco_im_Norm_approx_.create(moco_im_Norm_.dimensions());
         }
 
         const value_type* pCoeffNorm = moco_im_Norm_.begin();

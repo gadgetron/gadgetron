@@ -21,7 +21,9 @@
 #include "vector_td.h"
 #include "complext.h"
 #include "cuSparseMatrix.h"
-
+#include "cuFFTCachedPlan.h"
+#include "cuNDArray_utils.h"
+#include "cuNDArray_math.h"
 #include "NFFT.h"
 #include "cuGriddingConvolution.h"
 
@@ -72,7 +74,7 @@ namespace Gadgetron
         /**
            Destructor
         */
-        virtual ~cuNFFT_impl();
+        virtual ~cuNFFT_impl() = default;
 
         /**
            Cartesian FFT. For completeness, just invokes the cuNDFFT class.
@@ -80,13 +82,13 @@ namespace Gadgetron
            \param mode enum class specifying the direction of the FFT.
            \param do_scale boolean specifying whether FFT normalization is desired.
         */
-        virtual void fft(cuNDArray <complext<REAL>> &data, NFFT_fft_mode mode, bool do_scale = true) override;
+        void fft(cuNDArray <complext<REAL>> &data, NFFT_fft_mode mode, bool do_scale = true) override;
 
         /**
            NFFT deapodization.
            \param[in,out] image the image to be deapodized (inplace).
         */
-        virtual void deapodize(cuNDArray <complext<REAL>> &image, bool fourier_domain = false);
+        void deapodize(cuNDArray <complext<REAL>> &image, bool fourier_domain = false) override;
 
     private:
 
@@ -98,7 +100,9 @@ namespace Gadgetron
         boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filter; 
 
         // Fourier transformed deapodization filter.
-        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT; 
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT;
+
+        cuFFTCachedPlan<complext<REAL>> fft_plan;
 
         int device_;
     };

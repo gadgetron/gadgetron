@@ -129,5 +129,9 @@
             </property>
         </gadget>
 
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>ImageIndexGadget</classname>
+        </gadget>
     </stream>
 </configuration>

@@ -40,7 +40,7 @@ namespace Gadgetron {
 
             size_t nbatches = gradients.get_size(1);
 
-            hoNDArray<vector_td<float,D>> result(gradients.get_dimensions());
+            hoNDArray<vector_td<float,D>> result(gradients.dimensions());
 
             for (int batch = 0; batch < nbatches; batch++) {
 
