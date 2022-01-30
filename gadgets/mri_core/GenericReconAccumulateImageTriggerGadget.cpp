@@ -326,6 +326,44 @@ namespace Gadgetron {
         // find the data role
         std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
 
+        std::string data_role = this->data_role_series_to_process.value();
+
+        bool has_data_role = false;
+        if (!data_role.empty())
+        {
+            GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconAccumulateImageTriggerGadget, data role to process is " << data_role);
+
+            size_t num = recon_res_->meta_[0].length(GADGETRON_DATA_ROLE);
+
+            for (size_t ii = 0; ii < num; ii++)
+            {
+                std::string v = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE, ii));
+                GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconAccumulateImageTriggerGadget, data role of incoming array is " << v);
+                if (v == data_role)
+                {
+                    has_data_role = true;
+                    break;
+                }
+            }
+
+            if (!has_data_role)
+            {
+                GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconAccumulateImageTriggerGadget, DO NOT have data role to process ... ");
+
+                if (this->next()->putq(m1) < 0)
+                {
+                    m1->release();
+                    return GADGET_FAIL;
+                }
+
+                return GADGET_OK;
+            }
+        }
+        else
+        {
+            has_data_role = true;
+        }
+
         size_t encoding = 0;
         if (recon_res_->meta_[0].length("encoding") > 0)
         {
