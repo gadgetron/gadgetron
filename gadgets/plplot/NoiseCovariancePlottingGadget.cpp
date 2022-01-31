@@ -14,7 +14,6 @@
 #include <boost/algorithm/string/split.hpp>
 
 #include "mri_core_def.h"
-#include "io/primitives.h"
 
 namespace Gadgetron{
 
@@ -151,11 +150,18 @@ bool NoiseCovariancePlottingGadget::loadNoiseCovariance()
         size_t len;
         infile.read(reinterpret_cast<char*>(&len), sizeof(size_t));
 
-        auto buf = std::vector<char>(len);
+        char* buf = new char[len];
+        if (buf == NULL) return false;
 
-        infile.read(buf.data(), len);
+        infile.read(buf, len);
 
-        noise_covariance_matrixf_ = Core::IO::read<hoNDArray<std::complex<float>>>(infile);
+        if (!noise_covariance_matrixf_.deserialize(buf, len))
+        {
+            delete[] buf;
+            return false;
+        }
+
+        delete[] buf;
         infile.close();
     }
     else
