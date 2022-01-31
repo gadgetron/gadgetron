@@ -4,6 +4,7 @@
 #include "hoMRImage.h"
 #include "hoNDArray_elemwise.h"
 #include "io/primitives.h"
+#include "cmr_file_and_directory_handling.h"
 
 TEST(TypeTests, hoNDImageTest) {
 
@@ -243,4 +244,13 @@ TEST(TypeTests, hoNDObjectArrayTest) {
 
         EXPECT_STREQ(attrib_content.c_str(), attrib_content_readed.c_str());
     }
+
+    std::string workingdirectory = "/tmp/gadgetron";
+    std::string session_id = "23456";
+
+    Gadgetron::save_item(workingdirectory, session_id, array);
+
+    std::vector<std::string> items_list(1, session_id);
+    std::vector< Gadgetron::hoNDObjectArray<ImageType> > arrays;
+    Gadgetron::load_items(workingdirectory, items_list, arrays);
 }

@@ -3,10 +3,9 @@
     \author     Hui Xue
 */
 
+#include <boost/filesystem.hpp>
 #include "cmr_file_and_directory_handling.h"
 #include "io/primitives.h"
-
-#include <boost/filesystem.hpp>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -240,6 +239,7 @@ namespace Gadgetron
                         }
 
                         Gadgetron::Core::IO::read(fid, items[ii]);
+                        fid.close();
                     }
                 }
             }
@@ -298,6 +298,7 @@ namespace Gadgetron
                     }
 
                     Gadgetron::Core::IO::write(fid, item);
+                    fid.close();
                 }
             }
         }
@@ -331,5 +332,4 @@ namespace Gadgetron
     template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<float>, 3> >& item);
     template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<double>, 2> >& item);
     template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<double>, 3> >& item);
-
 }
