@@ -136,6 +136,19 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoMRImage
     Gadgetron::Core::IO::write(stream, array.get_data_ptr(), array.get_number_of_elements());
 }
 
+template<class TObjectType>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDObjectArray<TObjectType> &array) {
+
+    std::vector<size_t> dimensions;
+    array.get_dimensions(dimensions);
+
+    Gadgetron::Core::IO::write(stream, dimensions);
+
+    size_t N = array.get_number_of_elements();
+    for (size_t i = 0; i < N; i++) {
+        Gadgetron::Core::IO::write(stream, array[i]);
+    }
+}
 
 template<class T>
 std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
@@ -250,6 +263,20 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoMRImage<T, D> 
     ISMRMRD::deserialize(attrib_content.data(), array.attrib_);
     
     Gadgetron::Core::IO::read(stream, array.data(), array.size());
+}
+
+template<class TObjectType>
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDObjectArray<TObjectType> &array) {
+
+    std::vector<size_t> dimensions;
+    Gadgetron::Core::IO::read(stream, dimensions);
+
+    array.create(dimensions);
+
+    size_t N = array.get_number_of_elements();
+    for (size_t i = 0; i < N; i++) {
+        Gadgetron::Core::IO::read(stream, array[i]);
+    }
 }
 
 template<class... ARGS>
