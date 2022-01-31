@@ -1,6 +1,6 @@
 /** \file   hoNDObjectArray.h
-\brief  CPU-based N-dimensional array for object pointers
-if delete_data_on_destruct == true, the object will be released; otherwise, only the object array memory is released
+\brief  N-dimensional array for objects
+        The stored objects should support read/write interfaces
 \author Hui Xue
 */
 
@@ -10,5 +10,57 @@ if delete_data_on_destruct == true, the object will be released; otherwise, only
 
 namespace Gadgetron
 {
-    template<class T> using hoNDObjectArray = hoNDArray<T>;
+    template <typename TObjectType> class hoNDObjectArray : public hoNDArray<TObjectType>
+    {
+    public:
+
+        typedef hoNDArray<TObjectType> BaseClass;
+
+        hoNDObjectArray();
+        virtual ~hoNDObjectArray();
+
+        hoNDObjectArray(const std::vector<size_t> *dimensions);
+        hoNDObjectArray(const std::vector<size_t> &dimensions);
+        hoNDObjectArray(boost::shared_ptr< std::vector<size_t> > dimensions);
+        hoNDObjectArray(const hoNDObjectArray<TObjectType>* a);
+        hoNDObjectArray(const hoNDObjectArray<TObjectType> &a);
+    };
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray() : BaseClass()
+    {
+    }
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(const std::vector<size_t> *dimensions) : BaseClass(dimensions)
+    {
+    }
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(const std::vector<size_t> &dimensions) : BaseClass(dimensions)
+    {
+    }
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(boost::shared_ptr< std::vector<size_t> > dimensions) : BaseClass(dimensions)
+    {
+    }
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::~hoNDObjectArray()
+    {
+        this->clear();
+    }
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(const hoNDObjectArray<TObjectType>* a)
+    {
+        this->copyFrom(*a);
+    }
+
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(const hoNDObjectArray<TObjectType> &a)
+    {
+        this->copyFrom(a);
+    }
 }
