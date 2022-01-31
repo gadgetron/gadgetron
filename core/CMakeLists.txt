@@ -18,6 +18,7 @@ add_library(gadgetron_core SHARED
         Process.cpp
         gadgetron_paths.cpp
         io/from_string.cpp)
+
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
         SOVERSION ${GADGETRON_SOVERSION})
@@ -31,6 +32,7 @@ target_link_libraries(gadgetron_core
 
 target_include_directories(gadgetron_core PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/mri_image>
         $<INSTALL_INTERFACE:include>
         )
 
