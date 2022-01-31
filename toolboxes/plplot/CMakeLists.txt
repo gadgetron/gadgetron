@@ -48,7 +48,7 @@ install (FILES
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 if (GTEST_FOUND)
-#    add_subdirectory(ut)
+    add_subdirectory(ut)
 endif ()
 
 set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
