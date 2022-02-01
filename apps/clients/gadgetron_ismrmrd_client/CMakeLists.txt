@@ -9,7 +9,7 @@ if (ZFP_FOUND)
    include_directories(${ZFP_INCLUDE_DIR})
 endif()
 
-
+include_directories(${HDF5_INCLUDE_DIRS})
 add_executable(gadgetron_ismrmrd_client gadgetron_ismrmrd_client.cpp)
 target_link_libraries(gadgetron_ismrmrd_client ISMRMRD::ISMRMRD Boost::program_options gadgetron_mricore )
 

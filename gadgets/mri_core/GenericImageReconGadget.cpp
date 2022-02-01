@@ -1801,6 +1801,8 @@ namespace Gadgetron {
                                                     if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
                                                 }
 
+                                                GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, send out image for series " << pImage->header_.image_series_index);
+
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
                                                 size_t E1 = pImage->get_size(1);
