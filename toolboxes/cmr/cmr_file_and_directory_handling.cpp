@@ -198,7 +198,7 @@ namespace Gadgetron
     }
 
     template<typename T>
-    void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<T> >& items)
+    void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<T> >& items)
     {
         try
         {
@@ -250,33 +250,33 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDArray<float> > >& items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDArray<double> > >& items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDArray< std::complex<float> > > >& items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDArray< std::complex<double> > > >& items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDArray<float> > >& items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDArray<double> > >& items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDArray< std::complex<float> > > >& items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDArray< std::complex<double> > > >& items);
 
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<float, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<float, 3> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<double, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<double, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<float, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<float, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<double, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<double, 3> > > & items);
 
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<std::complex<float>, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<std::complex<float>, 3> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<std::complex<double>, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoNDImage<std::complex<double>, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<std::complex<float>, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<std::complex<float>, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<std::complex<double>, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoNDImage<std::complex<double>, 3> > > & items);
 
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<float, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<float, 3> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<double, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<double, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<float, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<float, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<double, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<double, 3> > > & items);
 
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<std::complex<float>, 2> > >& items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<std::complex<float>, 3> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<std::complex<double>, 2> > > & items);
-    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<hoMRImage<std::complex<double>, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<std::complex<float>, 2> > >& items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<std::complex<float>, 3> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<std::complex<double>, 2> > > & items);
+    template EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<hoMRImage<std::complex<double>, 3> > > & items);
 
     template<typename T>
-    void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<T>& item)
+    void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<T>& item)
     {
         try
         {
@@ -308,28 +308,28 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDArray<float> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDArray<double> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDArray< std::complex<float> > >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDArray< std::complex<double> > >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDArray<float> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDArray<double> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDArray< std::complex<float> > >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDArray< std::complex<double> > >& item);
 
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<float, 2> > & item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<float, 3> > & item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<double, 2> > & item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<double, 3> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<float, 2> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<float, 3> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<double, 2> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<double, 3> > & item);
 
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<std::complex<float>, 2> > & item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<std::complex<float>, 3> > & item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<std::complex<double>, 2> > & item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoNDImage<std::complex<double>, 3> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<std::complex<float>, 2> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<std::complex<float>, 3> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<std::complex<double>, 2> > & item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoNDImage<std::complex<double>, 3> > & item);
 
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<float, 2> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<float, 3> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<double, 2> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<double, 3> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<float, 2> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<float, 3> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<double, 2> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<double, 3> >& item);
 
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<float>, 2> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<float>, 3> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<double>, 2> >& item);
-    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<hoMRImage<std::complex<double>, 3> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<std::complex<float>, 2> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<std::complex<float>, 3> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<std::complex<double>, 2> >& item);
+    template EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<hoMRImage<std::complex<double>, 3> >& item);
 }

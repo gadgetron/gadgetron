@@ -60,6 +60,20 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const Core::tuple<ARGS...>
     Core::apply([&](const auto&... elements){(write(stream,elements),...);},tup);
 }
 
+template<class TObjectType>
+void Gadgetron::Core::IO::write_objects_to_stream(std::ostream &stream, const Gadgetron::hoNDArray<TObjectType> &array)
+{
+    std::vector<size_t> dimensions;
+    array.get_dimensions(dimensions);
+
+    Gadgetron::Core::IO::write(stream, dimensions);
+
+    size_t N = array.get_number_of_elements();
+    for (size_t i = 0; i < N; i++) {
+        Gadgetron::Core::IO::write(stream, array[i]);
+    }
+}
+
 template<class T>
 void Gadgetron::Core::IO::write_string_to_stream(std::ostream &stream, const std::string &str) {
     auto string_length = static_cast<T>(str.size());
@@ -99,55 +113,8 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDImage
 }
 
 template<class T, unsigned int D>
-void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &array) {
-
-    typedef typename Gadgetron::hoMRImage<T, D>::coord_type coord_type;
-    typedef typename Gadgetron::hoMRImage<T, D>::axis_type axis_type;
-    
-    std::vector<size_t> dimensions;
-    std::vector<coord_type> pixelSize;
-    std::vector<coord_type> origin;
-    axis_type axis;
-
-    array.get_dimensions(dimensions);
-    array.get_pixel_size(pixelSize);
-    array.get_origin(origin);
-    array.get_axis(axis);
-
-    std::vector<coord_type> axis_values(D*D);
-    for (auto d=0; d<D; d++) {
-        for (auto a=0; a<D; a++) {
-            axis_values[a + d*D] = axis[d][a];
-        }
-    }
-
-    Gadgetron::Core::IO::write(stream, dimensions);
-    Gadgetron::Core::IO::write(stream, pixelSize);
-    Gadgetron::Core::IO::write(stream, origin);
-    Gadgetron::Core::IO::write(stream, axis_values);
-
-    stream.write(reinterpret_cast<const char *>(&array.header_), sizeof(ISMRMRD::ISMRMRD_ImageHeader));
-
-    std::stringstream str;
-    ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(array.attrib_), str);
-    std::string attribContent = str.str();
-    Gadgetron::Core::IO::write_string_to_stream(stream, attribContent);
-
-    Gadgetron::Core::IO::write(stream, array.get_data_ptr(), array.get_number_of_elements());
-}
-
-template<class TObjectType>
-void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDObjectArray<TObjectType> &array) {
-
-    std::vector<size_t> dimensions;
-    array.get_dimensions(dimensions);
-
-    Gadgetron::Core::IO::write(stream, dimensions);
-
-    size_t N = array.get_number_of_elements();
-    for (size_t i = 0; i < N; i++) {
-        Gadgetron::Core::IO::write(stream, array[i]);
-    }
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array) {
+    Gadgetron::Core::IO::write_objects_to_stream(stream, array);
 }
 
 template<class T>
@@ -234,40 +201,9 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDImage<T, D> 
     Gadgetron::Core::IO::read(stream, array.data(), array.size());
 }
 
-template<class T, unsigned int D>
-void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoMRImage<T, D> &array) {
-
-    typedef typename Gadgetron::hoMRImage<T, D>::coord_type coord_type;
-    typedef typename Gadgetron::hoMRImage<T, D>::axis_type axis_type;
-
-    std::vector<size_t> dimensions;
-    std::vector<coord_type> pixelSize, origin, axis_values;
-
-    Gadgetron::Core::IO::read(stream, dimensions);
-    Gadgetron::Core::IO::read(stream, pixelSize);
-    Gadgetron::Core::IO::read(stream, origin);
-    Gadgetron::Core::IO::read(stream, axis_values);
-
-    axis_type axis(D);
-    for (auto d=0; d<D; d++) {
-        for (auto a=0; a<D; a++) {
-            axis[d][a] = axis_values[a + d*D]; 
-        }
-    }
-
-    array = Gadgetron::hoMRImage<T, D>(dimensions, pixelSize, origin, axis);
-
-    stream.read(reinterpret_cast<char *>(&array.header_), sizeof(ISMRMRD::ISMRMRD_ImageHeader));
-
-    std::string attrib_content = Gadgetron::Core::IO::read_string_from_stream(stream);    
-    ISMRMRD::deserialize(attrib_content.data(), array.attrib_);
-    
-    Gadgetron::Core::IO::read(stream, array.data(), array.size());
-}
-
 template<class TObjectType>
-void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDObjectArray<TObjectType> &array) {
-
+void Gadgetron::Core::IO::read_objects_from_stream(std::istream &stream, Gadgetron::hoNDArray<TObjectType> &array)
+{
     std::vector<size_t> dimensions;
     Gadgetron::Core::IO::read(stream, dimensions);
 
@@ -277,6 +213,11 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDObjectArray<
     for (size_t i = 0; i < N; i++) {
         Gadgetron::Core::IO::read(stream, array[i]);
     }
+}
+    
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array) {
+    Gadgetron::Core::IO::read_objects_from_stream(stream, array);
 }
 
 template<class... ARGS>
