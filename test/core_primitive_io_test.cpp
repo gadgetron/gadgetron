@@ -135,7 +135,7 @@ TEST(TypeTests, hoMRImageTest) {
     EXPECT_STREQ(attrib_content.c_str(), attrib_content_readed.c_str());
 }
 
-TEST(TypeTests, hoNDObjectArrayTest) {
+TEST(TypeTests, hoNDArrayObjectTest) {
 
     typedef Gadgetron::hoMRImage<float, 3> ImageType;
 
@@ -176,7 +176,7 @@ TEST(TypeTests, hoNDObjectArrayTest) {
     im.attrib_.set("hoNDObjectArray_Test2", (long)2);
     im.attrib_.set("hoNDObjectArray_Test3", "This is a test");
 
-    Gadgetron::hoNDObjectArray<ImageType> array;
+    Gadgetron::hoNDArray<ImageType> array;
     array.create(3, 4);
     for (auto i=0; i<12; i++)
         array[i] = im;
@@ -194,7 +194,7 @@ TEST(TypeTests, hoNDObjectArrayTest) {
     std::istringstream istr;
     istr.str(content);
 
-    Gadgetron::hoNDObjectArray<ImageType> array_readed;
+    Gadgetron::hoNDArray<ImageType> array_readed;
     Gadgetron::Core::IO::read(istr, array_readed);
 
     for (auto i=0; i<12; i++) {

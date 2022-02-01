@@ -20,8 +20,8 @@
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_utils.h"
 #include "hoNDArray_reductions.h"
+#include "hoNDImage.h"
 #include "hoMRImage.h"
-#include "hoNDObjectArray.h"
 
 namespace Gadgetron
 {
@@ -45,11 +45,11 @@ namespace Gadgetron
     // load items
     // -------------------------------------------------------------------
     template<typename T>
-    EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDObjectArray<T> >& items);
+    EXPORTCMR void load_items(const std::string& workingdirectory, const std::vector<std::string>& items_list, std::vector<hoNDArray<T> >& items);
 
     // --------------------------------------------------------
     // save items
     // -------------------------------------------------------------------
     template<typename T>
-    EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDObjectArray<T>& item);
+    EXPORTCMR void save_item(const std::string& workingdirectory, const std::string& session_id, const hoNDArray<T>& item);
 }

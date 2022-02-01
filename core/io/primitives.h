@@ -7,8 +7,6 @@
 
 #include "hoNDArray.h"
 #include "hoNDImage.h"
-#include "hoMRImage.h"
-#include "hoNDObjectArray.h"
 #include "Types.h"
 #include <boost/hana/adapt_struct.hpp>
 
@@ -39,10 +37,7 @@ namespace Gadgetron::Core::IO {
     void read(std::istream &stream, Gadgetron::hoNDImage<T, D> &array);
 
     template<class T, unsigned int D>
-    void read(std::istream &stream, Gadgetron::hoMRImage<T, D> &array);
-
-    template<class TObjectType>
-    void read(std::istream &stream, Gadgetron::hoNDObjectArray<TObjectType> &array);
+    void read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array);
     
     template<class... ARGS>
     void read(std::istream& stream, Core::tuple<ARGS...>& tup);
@@ -56,6 +51,9 @@ namespace Gadgetron::Core::IO {
         IO::read(stream, val);
         return val;
     }
+
+    template<class TObjectType>
+    void read_objects_from_stream(std::istream &stream, Gadgetron::hoNDArray<TObjectType> &array);
 
     template<class T = uint64_t >
     std::string read_string_from_stream(std::istream &stream);
@@ -103,10 +101,10 @@ namespace Gadgetron::Core::IO {
     void write(std::ostream &stream, const Gadgetron::hoNDImage<T, D> &array);
 
     template<class T, unsigned int D>
-    void write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &array);
+    void write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array);
 
     template<class TObjectType>
-    void write(std::ostream &stream, const Gadgetron::hoNDObjectArray<TObjectType> &array);
+    void write_objects_to_stream(std::ostream &stream, const Gadgetron::hoNDArray<TObjectType> &array);
 
     template<class T = uint64_t>
     void write_string_to_stream(std::ostream &stream, const std::string &str);
