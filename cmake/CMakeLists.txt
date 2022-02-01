@@ -14,6 +14,8 @@ install(FILES
     FindPugiXML.cmake
     FindPython3_compat.cmake
     FindSphinx.cmake
+    FindGperftools.cmake
+    FindRocksDB.cmake
     DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
 
