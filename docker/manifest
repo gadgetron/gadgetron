@@ -1,0 +1,44 @@
+#!/bin/bash
+
+function usage
+{
+    echo "usage manifest --key <com.mykey.blah> [--value <VALUE>] [--file <FILE>]"
+}
+
+filename=/opt/manifest.json
+key="."
+value=""
+jq_command="jq -M"
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -f | --file )           shift
+                                filename=$1
+                                ;;
+        -k | --key )            shift
+                                key=$1
+                                ;;
+        -v | --value )          shift
+                                value=$1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+if [ ! -f $filename ]; then
+    echo "{}" > $filename
+fi
+
+if [ -z "$value" ]; then
+    #This is a query
+    $jq_command $key $filename
+else
+    #This is an assignment
+    out=`${jq_command} "$key=\"$value\"" $filename`
+    echo $out > $filename
+fi
