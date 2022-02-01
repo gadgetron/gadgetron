@@ -57,9 +57,5 @@
 	"overrideCommand": false,
 	// Use the non-root user
 	"remoteUser": "vscode",
-	// We have to make sure the current user owns the conda folder
-	"onCreateCommand": [
-		"./.devcontainer/set-devcontainer-permissions.sh"
-	],
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
