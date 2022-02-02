@@ -1,11 +1,11 @@
-//
-// Created by dch on 5/5/21.
-//
 
 #include "gtest/gtest.h"
+
 #include "StorageServer.h"
-#include "RESTStorageClient.h"
+#include "storage.h"
+
 #include <range/v3/range.hpp>
+
 using namespace Gadgetron::Storage;
 using namespace Gadgetron;
 
@@ -20,7 +20,7 @@ protected:
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
         header.studyInformation = ISMRMRD::StudyInformation{{},{},std::string("YAAARH")};
-        storage = Storage::setup_storage("https://localhost:" + std::to_string(server->port()), header);
+        storage = Gadgetron::Server::setup_storage_spaces("https://localhost:" + std::to_string(server->port()), header);
     }
 
     void TearDown() override {

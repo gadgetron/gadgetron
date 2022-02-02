@@ -26,7 +26,6 @@ namespace Gadgetron::Storage {
     };
 
     std::unique_ptr<std::istream> istream_from_data(const std::vector<char> &data);
-
     std::unique_ptr<std::ostream> ostream_view(std::vector<char> &data);
 
     template<class T>

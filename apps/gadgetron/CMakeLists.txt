@@ -65,15 +65,18 @@ add_executable(gadgetron
         connection/nodes/distributed/Worker.cpp
         connection/nodes/distributed/Worker.h
         connection/nodes/common/Closer.h
-        connection/nodes/distributed/Pool.cpp connection/core/Processable.cpp storage.h storage.cpp)
+        connection/nodes/distributed/Pool.cpp
+        connection/core/Processable.cpp
+        storage.h
+        storage.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core
-        gadgetron_storage
         gadgetron_toolbox_log
         Boost::system
         Boost::filesystem
         Boost::program_options
+        cpr::cpr
         GTBLAS
         ${CMAKE_DL_LIBS})
 

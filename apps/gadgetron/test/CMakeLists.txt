@@ -1,8 +1,10 @@
 #include(GoogleTest)
 enable_testing()
 
-add_executable( server_tests
-        socket_test.cpp ../connection/SocketStreamBuf.cpp)
+add_executable(server_tests
+        # server_test.cpp
+        socket_test.cpp
+        ../connection/SocketStreamBuf.cpp)
 
 target_link_libraries(server_tests
         gadgetron_core
