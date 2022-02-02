@@ -1,56 +1,88 @@
 
 #include "gtest/gtest.h"
 
-#include "StorageServer.h"
 #include "storage.h"
 
+#include <chrono>
+#include <thread>
+
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 #include <range/v3/range.hpp>
 
 using namespace Gadgetron::Storage;
 using namespace Gadgetron;
 
+using namespace boost::filesystem;
+using namespace boost::program_options;
 
 class ServerTest : public ::testing::Test {
 protected:
-    void SetUp() override {
+    static void SetUpTestSuite() {
+
         temp_dir = boost::filesystem::temp_directory_path() / "gadgetron_session_test";
         boost::filesystem::remove_all(temp_dir);
         boost::filesystem::create_directory(temp_dir);
-        server = std::make_unique<StorageServer>(0,temp_dir/"database", temp_dir);
+
+        options_description desc("Storage options");
+        desc.add_options()
+                ("storage_port,s",
+                 value<unsigned short>()->default_value(26589),
+                 "Port on which to run the storage server.")
+                ("database_dir,D",
+                 value<path>()->default_value(temp_dir),
+                 "Directory in which to store the storage server database.")
+                ("storage_dir,S",
+                 value<path>()->default_value(temp_dir),
+                 "Directory in which to store data blobs.");
+
+        variables_map args;
+        store(parse_environment(desc, "GADGETRON_STORAGE_TEST_"), args);
+        notify(args);
+
+        auto [address, process] = Server::ensure_storage_server(args);
+
+        // We need to make sure the storage server is up and ready before proceeding.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
         header.studyInformation = ISMRMRD::StudyInformation{{},{},std::string("YAAARH")};
-        storage = Gadgetron::Server::setup_storage_spaces("https://localhost:" + std::to_string(server->port()), header);
+
+        server = std::move(*process);
+        storage = Gadgetron::Server::setup_storage_spaces(address, header);
     }
 
-    void TearDown() override {
-        server = nullptr;
+    static void TearDownTestSuite() {
         boost::filesystem::remove_all(temp_dir);
+        server.terminate();
+        server.wait();
     }
 
-    StorageSpaces storage;
-    std::unique_ptr<StorageServer> server;
-    boost::filesystem::path temp_dir;
-
+    inline static StorageSpaces storage;
+    inline static boost::process::child server;
+    inline static boost::filesystem::path temp_dir;
 };
 
-TEST_F(ServerTest,basic_storage){
+TEST_F(ServerTest, do_nothing) {
+    // This should pass.
+}
+
+TEST_F(ServerTest, basic_storage){
     hoNDArray<float> x(10);
     std::fill(x.begin(),x.end(),23);
-    this->storage.session.store("stuff",x);
+    storage.session.store("stuff",x);
 
-    auto storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
-
+    auto storage_list = storage.session.fetch<hoNDArray<float>>("stuff");
     ASSERT_EQ(storage_list.size(),1);
-
     auto fetched = storage_list[0];
     ASSERT_EQ(x,fetched);
+
     hoNDArray<float> y(2,2);
     std::fill(x.begin(),x.end(),23);
-    this->storage.session.store("stuff",y);
+    storage.session.store("stuff",y);
 
-    storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
-
+    storage_list = storage.session.fetch<hoNDArray<float>>("stuff");
     ASSERT_EQ(storage_list.size(),2);
     fetched = storage_list[0];
     ASSERT_EQ(fetched,y);
@@ -58,52 +90,42 @@ TEST_F(ServerTest,basic_storage){
     ASSERT_EQ(fetched,x);
 }
 
-TEST_F(ServerTest,larger_storage){
+TEST_F(ServerTest, larger_storage){
     hoNDArray<float> x(1024*255);
     std::fill(x.begin(),x.end(),23);
-    this->storage.session.store("stuff",x);
+    storage.session.store("larger_storage_test",x);
 
-    auto storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
-
+    auto storage_list = storage.session.fetch<hoNDArray<float>>("larger_storage_test");
     ASSERT_EQ(storage_list.size(),1);
-
     auto fetched = storage_list[0];
     ASSERT_EQ(x,fetched);
-
-
 }
-TEST_F(ServerTest,range_test){
 
-
+TEST_F(ServerTest, range_test){
     hoNDArray<float> y(2,2);
     std::fill(y.begin(),y.end(),23);
-    this->storage.session.store("stuff",y);
-    this->storage.session.store("stuff",y);
+    storage.session.store("range_test",y);
+    storage.session.store("range_test",y);
 
-    auto storage_list = this->storage.session.fetch<hoNDArray<float>>("stuff");
-
+    auto storage_list = storage.session.fetch<hoNDArray<float>>("range_test");
     auto storage_vector = storage_list | ranges::to<std::vector>();
-
-
-    auto storage_vector2 = this->storage.session.fetch<hoNDArray<float>>("stuff") | ranges::to<std::vector>();
-    ASSERT_EQ(storage_list.size(),2);
+    auto storage_vector2 = storage.session.fetch<hoNDArray<float>>("range_test") | ranges::to<std::vector>();
+    ASSERT_EQ(storage_list.size(), 2);
     ASSERT_EQ(storage_list.size(), std::distance(storage_list.begin(),storage_list.end()));
-    ASSERT_EQ(storage_list.size(),storage_vector.size());
-    ASSERT_EQ(storage_list.size(),storage_vector2.size());
-
-
+    ASSERT_EQ(storage_list.size(), storage_vector.size());
+    ASSERT_EQ(storage_list.size(), storage_vector2.size());
 }
 
-TEST_F(ServerTest,image_test){
+TEST_F(ServerTest, image_test){
     Core::Image<float> image;
 
     auto& [header,data,meta] = image;
 
     data = hoNDArray<float>(2,2,1,4);
     std::fill(data.begin(),data.end(),3);
-    this->storage.session.store("image",image);
+    storage.session.store("image",image);
 
-    auto storage_list = this->storage.session.fetch<Core::Image<float>>("image");
+    auto storage_list = storage.session.fetch<Core::Image<float>>("image");
 
     auto [stored_header,stored_data,stored_meta] = storage_list[0];
     ASSERT_EQ(data,stored_data);

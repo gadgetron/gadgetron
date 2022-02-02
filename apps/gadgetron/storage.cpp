@@ -177,12 +177,12 @@ namespace Gadgetron::Server {
 
         auto environment = boost::this_process::environment();
         environment.set("MRD_STORAGE_SERVER_PORT", std::to_string(args["storage_port"].as<uint16_t>()));
-        environment.set("MRD_STORAGE_SERVER_DatabaseConnectionString",
+        environment.set("MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING",
                         (args["database_dir"].as<path>() / "metadata.db").string());
-        environment.set("MRD_STORAGE_SERVER_StorageConnectionString",
+        environment.set("MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING",
                         (args["storage_dir"].as<path>()).string());
 
-        auto storage_executable = boost::process::search_path("mrd-storage-servers");
+        auto storage_executable = boost::process::search_path("mrd-storage-server");
         if (storage_executable.empty()) {
             throw std::runtime_error("Failed to find MRD Storage Server.\n"
                                      "Please ensure 'mrd-storage-server' is found on your PATH.\n"

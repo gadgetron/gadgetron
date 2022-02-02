@@ -1,16 +1,28 @@
-#include(GoogleTest)
+# include(GoogleTest)
 enable_testing()
 
 add_executable(server_tests
-        # server_test.cpp
+        server_test.cpp
         socket_test.cpp
         ../connection/SocketStreamBuf.cpp)
 
-target_link_libraries(server_tests
+add_library(storage OBJECT
+        ../storage.cpp)
+
+target_link_libraries(storage
         gadgetron_core
+        cpr::cpr
+        Boost::filesystem
+        Boost::program_options)
+
+target_link_libraries(server_tests
+        storage
+        gadgetron_core
+        gadgetron_toolbox_log
         GTest::GTest
         GTest::Main
         gtest
         gtest_main
         )
-#gtest_add_tests(TARGET server_tests AUTO)
+
+# gtest_add_tests(TARGET server_tests AUTO)
