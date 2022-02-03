@@ -175,8 +175,9 @@ namespace Gadgetron::Server {
             return {args["storage_address"].as<std::string>(), std::nullopt};
         }
 
+        auto port = args["storage_port"].empty() ? args["port"].as<unsigned short>() + 110 : args["storage_port"].as<unsigned short>();
         auto environment = boost::this_process::environment();
-        environment.set("MRD_STORAGE_SERVER_PORT", std::to_string(args["storage_port"].as<uint16_t>()));
+        environment.set("MRD_STORAGE_SERVER_PORT", std::to_string(port));
         environment.set("MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING",
                         (args["database_dir"].as<path>() / "metadata.db").string());
         environment.set("MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING",

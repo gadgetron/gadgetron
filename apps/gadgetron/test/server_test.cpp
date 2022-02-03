@@ -64,10 +64,6 @@ protected:
     inline static boost::filesystem::path temp_dir;
 };
 
-TEST_F(ServerTest, do_nothing) {
-    // This should pass.
-}
-
 TEST_F(ServerTest, basic_storage){
     hoNDArray<float> x(10);
     std::fill(x.begin(),x.end(),23);
