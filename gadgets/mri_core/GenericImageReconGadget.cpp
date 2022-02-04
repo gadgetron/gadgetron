@@ -1682,6 +1682,8 @@ namespace Gadgetron {
 
                                                 this->decorateImageHeader(*cm1->getObjectPtr(), *cm3->getObjectPtr(), seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
 
+                                                GDEBUG_CONDITION_STREAM(verbose.value(), "--> sending out image series " << cm1->getObjectPtr()->image_series_index);
+
                                                 if (anchor != NULL)
                                                 {
                                                     if (anchor->putq(cm1) < 0)
@@ -2094,6 +2096,8 @@ namespace Gadgetron {
                                                 {
                                                     if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
                                                 }
+
+                                                GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out image series " << pImage->header_.image_series_index);
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
