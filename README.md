@@ -70,6 +70,32 @@ This will run the GPU enabled version of the Gadgetron and expose it on port `90
 
 The repository has a `.devcontainer` configuration for use with the [VS Code Remote](https://code.visualstudio.com/docs/remote/remote-overview). Open the Gadgetron folder in VS Code and make sure you have the [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension installed. The extension should prompt you to reopen in a devcontainer, which will have all the dependences and tools needed for Gadgetron development.
 
+## Installing in conda environment
+
+The Gadgetron can be installed in a [conda](https://conda.io) environment. To install the Gadgetron define and `environment.yaml` file with:
+
+```yaml
+name: gadgetron
+channels:
+  - nvidia/label/cuda-11.6.0
+  - gadgetron
+  - conda-forge
+  - bioconda
+  - defaults
+  - intel
+dependencies:
+  - gadgetron>=4.1.2
+  - siemens_to_ismrmrd>=1.0.0
+```
+
+And create the environment with:
+
+```bash
+conda env create -f environment.yaml
+```
+
+After activating the environment (with `conda activate gadgetron`), you should be able to check that everything is working with `gadgetron --info`
+
 ## Running the Gadgetron in Kubernetes
 
 The Docker images can be deployed in a Kubernetes cluster. See [this repository](https://github.com/Microsoft/gadgetron-azure) for details.
