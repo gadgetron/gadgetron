@@ -79,8 +79,9 @@ int main(int argc, char *argv[]) {
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
-        auto [storage_address, storage_server] = ensure_storage_server(args);
+        // auto [storage_address, storage_server] = ensure_storage_server(args);
 
+        std::string storage_address;
         Server server(args, storage_address);
         server.serve();
     }
