@@ -265,7 +265,7 @@ namespace Gadgetron::Server {
         client.store(value,
                      {{"name", name},
                       {"subject", "$null"},
-                      {"ttl", format_duration(duration)},
+                      {"_ttl", format_duration(duration)},
                       {this->space, identifier}});
     }
 }
