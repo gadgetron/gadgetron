@@ -24,7 +24,7 @@ dependencies:
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
   - hdf5=1.10.6
-  - ismrmrd=1.5.0
+  - ismrmrd=1.5.1
   - ismrmrd-python=1.9.6
   - jupyter=1.0.0                 # dev
   - libblas=*=*mkl
