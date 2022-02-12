@@ -46,7 +46,7 @@ dependencies:
   - range-v3=0.11.0
   - rocksdb=6.13.3
   - scipy=1.7.1
-  - siemens_to_ismrmrd=1.0.1
+  - siemens_to_ismrmrd=1.0.2
   - shellcheck=0.7.2              # dev
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
