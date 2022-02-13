@@ -21,6 +21,8 @@ and you are ready to work with the Gadgetron codebase.
 In the conda environment (see above), you can build with:
 
 ```bash
+git clone https://github.com/gadgetron/gadgetron.git
+cd gadgetron
 mkdir -p build
 cd build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} ../
