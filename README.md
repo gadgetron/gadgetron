@@ -8,12 +8,13 @@ The Gadgetron project uses [conda](ttps://conda.io) to manage dependencies. To s
 conda env create -f environment.yml
 ```
 
-Using the `environment.yml` file provided in the root of this repository. There are a few dependencies that are not available from conda. Use the provided [script](bootstrap-conda.sh) to install:
+Then activate the environment with:
 
 ```bash
 conda activate gadgetron
-./bootstrap-conda.sh
 ```
+
+and you are ready to work with the Gadgetron codebase.
 
 ## Building in conda environment
 
