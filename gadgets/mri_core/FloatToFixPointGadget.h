@@ -44,27 +44,27 @@ namespace Gadgetron
     {
     public:
         using FloatToFixPointGadget<unsigned short,FloatToUShortGadget>::FloatToFixPointGadget;
-        NODE_PROPERTY(max_intensity, short, "Maximum intensity value", 4095 );
+        NODE_PROPERTY(max_intensity, short, "Maximum intensity value", 32767 );
         NODE_PROPERTY(min_intensity, short , "Minimal intensity value", 0);
-        NODE_PROPERTY(intensity_offset, short , "Intensity offset", 2048);
+        NODE_PROPERTY(intensity_offset, short , "Intensity offset", 16384);
         ~FloatToUShortGadget() override = default;
     };
     class EXPORTGADGETSMRICORE FloatToUIntGadget :public FloatToFixPointGadget < unsigned int,FloatToUIntGadget >
     {
     public:
         using FloatToFixPointGadget<unsigned int,FloatToUIntGadget>::FloatToFixPointGadget;
-        NODE_PROPERTY(max_intensity, int, "Maximum intensity value", 4095 );
+        NODE_PROPERTY(max_intensity, int, "Maximum intensity value", 32767 );
         NODE_PROPERTY(min_intensity, int , "Minimal intensity value", 0);
-        NODE_PROPERTY(intensity_offset, int , "Intensity offset", 2048);
+        NODE_PROPERTY(intensity_offset, int , "Intensity offset", 16384);
         ~FloatToUIntGadget() override = default;
     };
     class EXPORTGADGETSMRICORE FloatToIntGadget :public FloatToFixPointGadget < int,FloatToIntGadget >
     {
     public:
         using FloatToFixPointGadget<int,FloatToIntGadget>::FloatToFixPointGadget;
-        NODE_PROPERTY(max_intensity, int, "Maximum intensity value", 4095 );
+        NODE_PROPERTY(max_intensity, int, "Maximum intensity value", 32767 );
         NODE_PROPERTY(min_intensity, int , "Minimal intensity value", 0);
-        NODE_PROPERTY(intensity_offset, int , "Intensity offset", 2048);
+        NODE_PROPERTY(intensity_offset, int , "Intensity offset", 16384);
         ~FloatToIntGadget() override = default;
     };
 

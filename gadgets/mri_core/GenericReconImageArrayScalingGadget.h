@@ -34,7 +34,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(use_constant_scalingFactor, bool, "Whether to use constraint scaling; if not, the auto-scaling factor will be computed only ONCE", true);
         GADGET_PROPERTY(scalingFactor, float, "Default scaling ratio", 4.0);
         GADGET_PROPERTY(min_intensity_value, int, "Minimal intensity value for auto image scaling", 64);
-        GADGET_PROPERTY(max_intensity_value, int, "Maximal intensity value for auto image scaling", 4095);
+        GADGET_PROPERTY(max_intensity_value, int, "Maximal intensity value for auto image scaling", 32768);
         GADGET_PROPERTY(auto_scaling_only_once, bool, "Whether to compute auto-scaling factor only once; if false, an auto-scaling factor is computed for every incoming image array", true);
 
         GADGET_PROPERTY(use_dedicated_scalingFactor_meta_field, std::string, "If this meta field exists, scale the images with the dedicated scaling factor", "Use_dedicated_scaling_factor");
