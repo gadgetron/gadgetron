@@ -1,17 +1,19 @@
 set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "")
 
-find_package(CUDA)
+find_package(CUDA 11.1)
 
 # Check for GPUs present and their compute capability
 # based on http://stackoverflow.com/questions/2285185/easiest-way-to-test-for-existence-of-cuda-capable-gpu-from-cmake/2297877#2297877 (Christopher Bruns)
 if(CUDA_FOUND)
-    if (${CUDA_VERSION_MAJOR} VERSION_GREATER "7")
-        set(CUDA_NVCC_FLAGS6 "-gencode arch=compute_60,code=sm_60")   
-        set(CUDA_NVCC_FLAGS61 "-gencode arch=compute_61,code=sm_61")   
-    endif()
-    if (${CUDA_VERSION_MAJOR} VERSION_GREATER "8")
-        set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_70,code=sm_70")
-    endif()
+
+  # Enumerate the compute capabilities we will be building for if not targeting build system GPU
+  set(CUDA_NVCC_FLAGS6 "-gencode arch=compute_60,code=sm_60")
+  set(CUDA_NVCC_FLAGS61 "-gencode arch=compute_61,code=sm_61")
+  set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_70,code=sm_70")
+  set(CUDA_NVCC_FLAGS75 "-gencode arch=compute_75,code=sm_75")
+  set(CUDA_NVCC_FLAGS8 "-gencode arch=compute_80,code=sm_80")
+  set(CUDA_NVCC_FLAGS86 "-gencode arch=compute_86,code=sm_86")
+
   cuda_find_helper_file(cuda_compute_capability c)
   try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
     ${CMAKE_BINARY_DIR} 
@@ -34,11 +36,14 @@ if(CUDA_FOUND)
 find_cuda_helper_libs(cusparse)
 set(CUDA_CUSPARSE_LIBRARIES ${CUDA_cusparse_LIBRARY})
 if( "${CUDA_COMPUTE_CAPABILITY}" MATCHES ALL)
-  if (${CUDA_VERSION_MAJOR} VERSION_GREATER "6")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS4} ${CUDA_NVCC_FLAGS5} ${CUDA_NVCC_FLAGS52} ${CUDA_NVCC_FLAGS6} ${CUDA_NVCC_FLAGS61} ${CUDA_NVCC_FLAGS7})
-  else()
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS4})
-  endif()
+  set(CUDA_NVCC_FLAGS
+    ${CUDA_NVCC_FLAGS} 
+    ${CUDA_NVCC_FLAGS6}
+    ${CUDA_NVCC_FLAGS61}
+    ${CUDA_NVCC_FLAGS7}
+    ${CUDA_NVCC_FLAGS75}
+    ${CUDA_NVCC_FLAGS8}
+    ${CUDA_NVCC_FLAGS86})
 else()
   set(CUDA_MOSTUSED_ARCH "")
   foreach(code ${CUDA_COMPUTE_CAPABILITY})
