@@ -8,18 +8,21 @@ The Gadgetron project uses [conda](ttps://conda.io) to manage dependencies. To s
 conda env create -f environment.yml
 ```
 
-Using the `environment.yml` file provided in the root of this repository. There are a few dependencies that are not available from conda. Use the provided [script](bootstrap-conda.sh) to install:
+Then activate the environment with:
 
 ```bash
 conda activate gadgetron
-./bootstrap-conda.sh
 ```
+
+and you are ready to work with the Gadgetron codebase.
 
 ## Building in conda environment
 
 In the conda environment (see above), you can build with:
 
 ```bash
+git clone https://github.com/gadgetron/gadgetron.git
+cd gadgetron
 mkdir -p build
 cd build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} ../
@@ -69,6 +72,32 @@ This will run the GPU enabled version of the Gadgetron and expose it on port `90
 ## Using a devcontainer for development
 
 The repository has a `.devcontainer` configuration for use with the [VS Code Remote](https://code.visualstudio.com/docs/remote/remote-overview). Open the Gadgetron folder in VS Code and make sure you have the [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension installed. The extension should prompt you to reopen in a devcontainer, which will have all the dependences and tools needed for Gadgetron development.
+
+## Installing in conda environment
+
+The Gadgetron can be installed in a [conda](https://conda.io) environment. To install the Gadgetron define and `environment.yaml` file with:
+
+```yaml
+name: gadgetron
+channels:
+  - nvidia/label/cuda-11.6.0
+  - gadgetron
+  - conda-forge
+  - bioconda
+  - defaults
+  - intel
+dependencies:
+  - gadgetron>=4.1.2
+  - siemens_to_ismrmrd>=1.0.0
+```
+
+And create the environment with:
+
+```bash
+conda env create -f environment.yaml
+```
+
+After activating the environment (with `conda activate gadgetron`), you should be able to check that everything is working with `gadgetron --info`
 
 ## Running the Gadgetron in Kubernetes
 
