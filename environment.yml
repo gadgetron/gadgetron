@@ -1,7 +1,7 @@
 name: gadgetron
 channels:
   - gadgetron
-  - nvidia/label/cuda-11.6.0
+  - nvidia/label/cuda-11.6.1
   - conda-forge
   - bioconda
   - defaults
