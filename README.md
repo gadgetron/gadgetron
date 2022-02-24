@@ -75,26 +75,26 @@ The repository has a `.devcontainer` configuration for use with the [VS Code Rem
 
 ## Installing in conda environment
 
-The Gadgetron can be installed in a [conda](https://conda.io) environment. To install the Gadgetron define and `environment.yaml` file with:
+The Gadgetron can be installed in a [conda](https://conda.io) environment. To install the Gadgetron define and `environment.yml` file with:
 
 ```yaml
 name: gadgetron
 channels:
-  - nvidia/label/cuda-11.6.0
+  - nvidia/label/cuda-11.6.1
   - gadgetron
   - conda-forge
   - bioconda
   - defaults
   - intel
 dependencies:
-  - gadgetron>=4.1.2
-  - siemens_to_ismrmrd>=1.0.0
+  - gadgetron>=4.1.5
+  - siemens_to_ismrmrd>=1.2
 ```
 
 And create the environment with:
 
 ```bash
-conda env create -f environment.yaml
+conda env create -f environment.yml
 ```
 
 After activating the environment (with `conda activate gadgetron`), you should be able to check that everything is working with `gadgetron --info`
