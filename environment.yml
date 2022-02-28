@@ -1,7 +1,7 @@
 name: gadgetron
 channels:
   - gadgetron
-  - nvidia/label/cuda-11.6.0
+  - nvidia/label/cuda-11.6.1
   - conda-forge
   - bioconda
   - defaults
@@ -25,7 +25,7 @@ dependencies:
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
   - hdf5=1.10.6
-  - ismrmrd=1.7.0
+  - ismrmrd=1.7.1
   - ismrmrd-python=1.9.6
   - jupyter=1.0.0                 # dev
   - libblas=*=*mkl
@@ -47,7 +47,7 @@ dependencies:
   - range-v3=0.11.0
   - rocksdb=6.13.3
   - scipy=1.7.1
-  - siemens_to_ismrmrd=1.1.0
+  - siemens_to_ismrmrd=1.2.2
   - shellcheck=0.7.2              # dev
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
