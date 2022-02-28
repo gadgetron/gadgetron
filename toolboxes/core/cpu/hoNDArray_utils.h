@@ -1008,7 +1008,7 @@ namespace Gadgetron {
       const hoNDArray<T>& first = *std::begin(arrays);
       std::vector dims = first.dimensions();
 
-      size_t count = ranges::accumulate(arrays | view::transform([dimension](const auto& array) {
+      size_t count = ranges::accumulate(arrays | views::transform([dimension](const auto& array) {
                                             return array.dimensions().at(dimension);
                                         }),
                                         size_t(0));
@@ -1025,7 +1025,7 @@ namespace Gadgetron {
           return result && (d.size() == dims.size());
       };
 
-      bool all_dimensions_valid = ranges::accumulate(arrays | view::transform(dimensions_valid), true, std::logical_and() );
+      bool all_dimensions_valid = ranges::accumulate(arrays | views::transform(dimensions_valid), true, std::logical_and() );
       if (!all_dimensions_valid) throw std::runtime_error("The dimensions of all provided arrays must be equal except along the concatenate dimension");
 
       auto result = hoNDArray<T>(dims);
@@ -1084,7 +1084,7 @@ namespace Gadgetron {
 
       static_assert((std::is_same_v<hoNDArray<T>,std::decay_t<ARRAYS>> && ...));
       using namespace ranges;
-      return concat(view::concat(view::single(first_array),view::single(arrays)...));
+      return concat(views::concat(views::single(first_array),views::single(arrays)...));
   }
 }
 
