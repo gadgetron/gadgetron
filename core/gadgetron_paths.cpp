@@ -16,6 +16,8 @@ namespace {
     namespace fs = boost::filesystem;
 
 #if defined __APPLE__
+    #include <mach-o/dyld.h>
+
     std::string get_executable_path() {
         char path[PATH_MAX];
         char resolved[PATH_MAX];
