@@ -38,8 +38,8 @@ namespace Gadgetron::Server::Connection {
         auto pid = fork();
         if (pid == 0) {
             handle_connection(std::move(stream), paths, args, storage_address);
-            #ifdef (__clang__)
-                exit(0)
+            #if (__clang__)
+                exit(0);
             #else
                 std::quick_exit(0);
             #endif
