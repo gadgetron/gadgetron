@@ -22,7 +22,8 @@
 		"cmake.configureSettings": {
 			"USE_CUDA": "ON",
 			"USE_MKL": "ON",
-			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron"
+			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron",
+			"BUILD_DOCUMENTATION": "ON"
 		},
 		"indentRainbow.includedLanguages": [ "yaml", "python" ]
 	},
