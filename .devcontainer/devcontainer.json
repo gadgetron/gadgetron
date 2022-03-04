@@ -46,6 +46,7 @@
 	"extensions": [
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
+		"ms-vscode.live-server",
 		"eamodio.gitlens",
 		"esbenp.prettier-vscode",
 		"matepek.vscode-catch2-test-adapter",
