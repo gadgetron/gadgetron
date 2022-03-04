@@ -2,7 +2,6 @@
 
 We recommend two different ways of obtaining and running the Gadgetron; using a conda environment or using Docker containers.
 
-
 ## Installing in conda environment
 
 The Gadgetron can be installed in a [conda](https://conda.io) environment. To install the Gadgetron define and `environment.yml` file with:

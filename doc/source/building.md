@@ -1,5 +1,7 @@
 # Building the Gadgetron
 
+The Gadgetron source code is [available on GitHub](https://github.com/gadgetron/gadgetron). The maintainers of the code build the Gadgetron in a [conda](https://conda.io) environment to ensure that we are explicit about which versions of dependencies we use, etc. You can follow the same workflow: 
+
 ## Setting up a development environment
 
 The Gadgetron project uses [conda](https://conda.io) to manage dependencies. To set up a build environment, make sure you have [conda installed](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) and then:
@@ -42,7 +44,7 @@ python run_tests.py --echo-log-on-failure --timeout=600 -F --stats stats.csv cas
 
 ## Building Docker images
 
-The Gadgetron project uses Docker images for building and distributing the Gadgetron. The [Dockerfile](Dockerfile) at the root of the repo provides multiple build stages for the different types (`dev` or `rt`) and flavors (`cuda` or `nocuda`) of images that you may want to use. Use the [build-images.sh](build-images.sh) convenience script to build the images, e.g.:
+The Gadgetron project also uses Docker images for building and distributing the Gadgetron. The [Dockerfile](Dockerfile) at the root of the repo provides multiple build stages for the different types (`dev` or `rt`) and flavors (`cuda` or `nocuda`) of images that you may want to use. Use the [build-images.sh](build-images.sh) convenience script to build the images, e.g.:
 
 ```bash
 ./build-images --type dev --flavor cuda
