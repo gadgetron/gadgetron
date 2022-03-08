@@ -27,6 +27,7 @@ import pathlib
 import tempfile
 import itertools
 import subprocess
+import socket
 
 default_config_values = {
     "DEFAULT": {
@@ -111,6 +112,16 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    stderr=log)
 
 
+def wait_for_server(port, retries=20):
+    with socket.socket(socket.AF_INET) as sock:
+
+        for i in range(retries):
+            if sock.connect_ex(("localhost", int(port))) == 0:
+                return
+            time.sleep(0.2)
+        raise RuntimeError("Unable to connect to server")
+
+
 def start_storage_server(*, log, port, storage_folder):
     print("Starting Gadgetron Storage Server on port", port)
     proc = subprocess.Popen(["gadgetron_storage_server",
@@ -120,6 +131,7 @@ def start_storage_server(*, log, port, storage_folder):
                             stdout=log,
                             stderr=log,
                             env=environment)
+    wait_for_server(port)
     return proc
 
 
@@ -129,12 +141,11 @@ def start_gadgetron_instance(*, log, port, storage_address, env=environment):
                             stdout=log,
                             stderr=log,
                             env=env)
-    time.sleep(2)
+    wait_for_server(port)
     return proc
 
 
 def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_group):
-
     try:
         dataset_file = ismrmrd.File(dataset_file, 'r')
     except OSError as e:
@@ -149,7 +160,7 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
     ref_header = reference_file[reference_group].header
     if not dataset_file[dataset_group].header == reference_file[reference_group].header:
         import deepdiff
-        diff = deepdiff.diff.DeepDiff(header,ref_header)
+        diff = deepdiff.diff.DeepDiff(header, ref_header)
         print(diff.pretty())
         return Failure, "Dataset header did not match reference header"
 
@@ -165,7 +176,6 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
 
 
 def validate_output(*, output_file, reference_file, output_group, reference_group, value_threshold, scale_threshold):
-
     try:
         # The errors produced by h5py are not entirely excellent. We spend some code here to clear them up a bit.
         def get_group_data(file, group):
@@ -201,7 +211,6 @@ def validate_output(*, output_file, reference_file, output_group, reference_grou
 
 
 def validate_image_header(*, output_file, reference_file, output_group, reference_group):
-
     def equals():
         return lambda out, ref: out == ref
 
@@ -256,7 +265,6 @@ def validate_image_header(*, output_file, reference_file, output_group, referenc
 
         for attribute, rule in header_rules.items():
             if not rule(getattr(output, attribute), getattr(reference, attribute)):
-
                 print(output)
                 print(reference)
 
@@ -271,7 +279,6 @@ def validate_image_header(*, output_file, reference_file, output_group, referenc
     try:
         with ismrmrd.File(output_file, 'r') as output_file:
             with ismrmrd.File(reference_file, 'r') as reference_file:
-
                 output_images = output_file[output_group].images or []
                 reference_images = reference_file[reference_group].images or []
 
@@ -511,7 +518,6 @@ def run_gadgetron_client(args, config, section):
 
 
 def validate_client_output(args, config, section):
-
     reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
 
     def validate_output_action(cont, *, client_output, status=Passed, **state):
@@ -551,7 +557,6 @@ def validate_client_output(args, config, section):
 
 
 def validate_dataset_output(args, config, section):
-
     def find_dataset_action(cont, status=Passed, **state):
 
         dataset_prefix = os.path.join(args.test_folder, config[section]['dataset_prefix'])

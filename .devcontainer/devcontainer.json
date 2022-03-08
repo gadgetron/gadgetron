@@ -22,7 +22,8 @@
 		"cmake.configureSettings": {
 			"USE_CUDA": "ON",
 			"USE_MKL": "ON",
-			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron"
+			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron",
+			"BUILD_DOCUMENTATION": "ON"
 		},
 		"indentRainbow.includedLanguages": [ "yaml", "python" ]
 	},
@@ -45,6 +46,7 @@
 	"extensions": [
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
+		"ms-vscode.live-server",
 		"eamodio.gitlens",
 		"esbenp.prettier-vscode",
 		"matepek.vscode-catch2-test-adapter",
@@ -57,9 +59,5 @@
 	"overrideCommand": false,
 	// Use the non-root user
 	"remoteUser": "vscode",
-	// We have to make sure the current user owns the conda folder
-	"onCreateCommand": [
-		"./.devcontainer/set-devcontainer-permissions.sh"
-	],
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
