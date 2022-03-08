@@ -11,6 +11,7 @@ dependencies:
   - boost=1.76.0
   - breathe=4.32.0                # dev
   - cmake=3.21.3                  # dev
+  - cpr=1.7.2
   - cuda-libraries-dev            # cuda, dev
   - cuda-libraries                # cuda
   - cuda-runtime                  # cuda
@@ -38,6 +39,7 @@ dependencies:
   - memkind=1.10.1
   - mkl=2022.0.1
   - mkl-include=2022.0.1          # dev
+  - mrd-storage-server=0.0.7
   - ninja=1.10.2                  # dev
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
