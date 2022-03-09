@@ -27,7 +27,7 @@ dependencies:
   - h5py=3.2.1
   - hdf5=1.10.6
   - ismrmrd=1.7.1
-  - ismrmrd-python=1.9.6
+  - ismrmrd-python=1.9.8
   - jupyter=1.0.0                 # dev
   - libblas=*=*mkl
   - libcurl=7.79.1                # dev
@@ -56,6 +56,6 @@ dependencies:
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
   - valgrind=3.17.0               # dev
-  - xsdata=21.12
+  - xsdata=22.2
   - pip:
     - junitparser==2.2.0
