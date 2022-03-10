@@ -195,6 +195,7 @@ namespace Gadgetron::Server {
         return {
             "http://localhost:" + environment.get("MRD_STORAGE_SERVER_PORT"),
             Process::child(storage_executable,
+                           "--require-parent-pid", std::to_string(boost::this_process::get_id()), // have child process exit if parent crashes
                            boost::process::std_out > boost::process::null,
                            boost::process::std_err > stderr,
                            environment)
