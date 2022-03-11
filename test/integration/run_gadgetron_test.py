@@ -136,8 +136,13 @@ def start_storage_server(*, log, port, storage_folder):
                             stdout=log,
                             stderr=log,
                             env=storage_server_environment)
-    wait_for_storage_server(port)
-    return proc
+    
+    try:
+        wait_for_storage_server(port)
+        return proc
+    except:
+        proc.kill()
+        raise
 
 
 def start_gadgetron_instance(*, log, port, storage_address, env=environment):

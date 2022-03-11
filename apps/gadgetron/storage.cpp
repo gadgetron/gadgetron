@@ -168,11 +168,35 @@ using namespace boost::program_options;
 
 namespace Gadgetron::Server {
 
+    void invoke_storage_server_health_check(std::string base_address) {
+        GINFO_STREAM("Verifying connectivity to storage server...")
+        auto health_check_uri = base_address + "/healthcheck";
+        for (int i=0; ;i++) {
+            auto response = cpr::Get(cpr::Url(health_check_uri));
+            if (response.status_code == 200) {
+                GINFO_STREAM("Received successful response from storage server.");
+                break;
+            }
+
+            if (i == 49) {
+                if (response.status_code == 0) {
+                    throw std::runtime_error("Failed to connect to the MRD Storage Server: " + response.error.message);
+                }
+
+                throw std::runtime_error("Did not get a successful response from the the MRD Storage Server: " + response.status_line);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+    } 
+
     std::tuple<std::string, std::optional<boost::process::child>>
     ensure_storage_server(const variables_map& args) {
 
         if (args.count("storage_address")) {
-            return {args["storage_address"].as<std::string>(), std::nullopt};
+            auto uri = args["storage_address"].as<std::string>();
+            invoke_storage_server_health_check(uri);
+            return {uri, std::nullopt};
         }
 
         auto port = args["storage_port"].empty() ? args["port"].as<unsigned short>() + 110 : args["storage_port"].as<unsigned short>();
@@ -192,14 +216,17 @@ namespace Gadgetron::Server {
 
         GDEBUG_STREAM("Found storage server: " + storage_executable.string())
         GINFO_STREAM("Starting storage server on port " + environment.get("MRD_STORAGE_SERVER_PORT"))
-        return {
-            "http://localhost:" + environment.get("MRD_STORAGE_SERVER_PORT"),
-            Process::child(storage_executable,
+
+        auto uri = "http://localhost:" + environment.get("MRD_STORAGE_SERVER_PORT");
+        auto process = Process::child(storage_executable,
                            "--require-parent-pid", std::to_string(boost::this_process::get_id()), // have child process exit if parent crashes
                            boost::process::std_out > boost::process::null,
                            boost::process::std_err > stderr,
-                           environment)
-        };
+                           environment);
+
+        invoke_storage_server_health_check(uri);
+        
+        return {uri, std::move(process)};
     }
 
     StorageSpaces setup_storage_spaces(

@@ -42,9 +42,6 @@ protected:
 
         auto [address, process] = Server::ensure_storage_server(args);
 
-        // We need to make sure the storage server is up and ready before proceeding.
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
         ISMRMRD::IsmrmrdHeader header;
         header.subjectInformation = ISMRMRD::SubjectInformation{{},{},std::string("Penny the Pirate"),{},{}};
         header.studyInformation = ISMRMRD::StudyInformation{{},{},std::string("YAAARH")};
