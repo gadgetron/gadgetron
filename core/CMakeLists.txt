@@ -11,6 +11,7 @@ add_subdirectory(distributed)
 add_library(gadgetron_core SHARED
         Channel.cpp
         Gadget.cpp
+        IsmrmrdContextVariables.cpp
         LegacyACE.cpp
         Message.cpp
         Response.cpp

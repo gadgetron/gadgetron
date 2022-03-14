@@ -15,6 +15,7 @@ include(GoogleTest)
             hoNDWavelet_test.cpp
             curveFitting_test.cpp
             image_morphology_test.cpp
+            IsmrmrdContextVariables_test.cpp
             pattern_recognition_test.cpp
             cmr_mapping_test.cpp
             hoNDArray_linalg_test.cpp
