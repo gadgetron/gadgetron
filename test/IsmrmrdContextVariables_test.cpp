@@ -97,11 +97,21 @@ TEST(IsmrmrdContextVariablesTest, initialize_from_structured_id) {
   EXPECT_EQ(ctx_vars.get_device_id(), "45387");
   EXPECT_EQ(ctx_vars.get_subject_id(), "925046864");
   EXPECT_EQ(ctx_vars.get_session_id(), "1076436037");
-  EXPECT_EQ(ctx_vars.get_measurement_id(), "393");
+  EXPECT_EQ(ctx_vars.get_measurement_id(), "45387_925046864_1076436037_393");
 }
 
 TEST(IsmrmrdContextVariablesTest, malformed_structured_ids_handled) {
-  IsmrmrdContextVariables ctx_vars("45387_925046864_925046864_1076436037_393");
-  IsmrmrdContextVariables ctx_vars("453879250468649250468641076436037393")
-  IsmrmrdContextVariables ctx_vars("45387__925046864_1076436037_393")
+  auto measurements = std::vector<std::string> {
+    "45387_925046864_925046864_1076436037_393",
+    "453879250468649250468641076436037393",
+    "45387__925046864_1076436037_393",
+    };
+
+  for (auto measurement_id : measurements) {
+    IsmrmrdContextVariables ctx_vars(measurement_id);
+    EXPECT_EQ(ctx_vars.get_subject_id(), "");
+    EXPECT_EQ(ctx_vars.get_device_id(), "");
+    EXPECT_EQ(ctx_vars.get_session_id(), "");
+    EXPECT_EQ(ctx_vars.get_measurement_id(), measurement_id);
+  }
 }
