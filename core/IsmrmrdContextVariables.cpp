@@ -7,23 +7,6 @@
 
 namespace Gadgetron {
 
-struct ExtractedContextVariables {
-  std::string SubjectId;
-  std::string DeviceId;
-  std::string SessionId;
-};
-
-std::optional<ExtractedContextVariables> ExtractContextVariables(std::string const& structured_id) {
-  std::regex reg("^([^_]*)_([^_]*)_([^_]*)_([^_]*)$");
-  std::smatch match;
-
-  if (std::regex_match(structured_id, match, reg)) {
-    return ExtractedContextVariables{match[2], match[1], match[3]};
-  } else {
-    return std::nullopt;
-  }
-}
-
 IsmrmrdContextVariables::IsmrmrdContextVariables(ISMRMRD::IsmrmrdHeader const& head) {
   if (head.acquisitionSystemInformation.is_present()) {
     auto acq_system = head.acquisitionSystemInformation.get();
@@ -53,38 +36,30 @@ IsmrmrdContextVariables::IsmrmrdContextVariables(ISMRMRD::IsmrmrdHeader const& h
     }
   }
 
-  if (measurement_id.empty()) {
-    throw std::runtime_error("Empty measurement ID not allowed");
+  if (measurement_id.empty() || (!session_id.empty() && !device_id.empty() && !subject_id.empty())) {
+    return;
   }
 
-  if (session_id.empty() || device_id.empty() || subject_id.empty()) {
-    // We were unable to find all that we need, we can attempt to extract from measurement id.
-    auto extracted = ExtractContextVariables(measurement_id);
-    if (!extracted)  {
-      GWARN_STREAM("WARNING: Attempted to extract context variables from measurement id, but failed.");
-      return;
-    }
+  // We were unable to find all that we need, we can attempt to extract from measurement id.
 
-    if (device_id.empty()) {
-      device_id = extracted->DeviceId;
-    }
+  static  std::regex reg("^([^_]*)_([^_]*)_([^_]*)_([^_]*)$");
+  std::smatch match;
 
-    if (subject_id.empty()) {
-      subject_id = extracted->SubjectId;
-    }
-
-    if (session_id.empty()) {
-      session_id = extracted->SessionId;
-    }
+  if (!std::regex_match(measurement_id, match, reg)) {
+    GWARN_STREAM("WARNING: Attempted to extract context variables from measurement id, but failed.");
+    return;
   }
-}
 
-IsmrmrdContextVariables::IsmrmrdContextVariables(std::string const& structured_measurement_id)
-  : measurement_id(structured_measurement_id) {
-  if (auto extracted = ExtractContextVariables(structured_measurement_id); extracted) {
-    device_id = extracted->DeviceId;
-    subject_id = extracted->SubjectId;
-    session_id = extracted->SessionId;
+  if (device_id.empty()) {
+    device_id = match[1];
+  }
+
+  if (subject_id.empty()) {
+    subject_id = match[2];
+  }
+
+  if (session_id.empty()) {
+    session_id = match[3];
   }
 }
 
