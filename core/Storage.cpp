@@ -8,6 +8,7 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
+#include <date/date.h>
 
 namespace bio = boost::iostreams;
 using json = nlohmann::json;
@@ -33,7 +34,13 @@ StorageItem storage_item_from_json(json j) {
         } else if (p.key() == "location") {
             s.location = p.value().get<std::string>();
         } else if (p.key() == "lastModified") {
-            s.lastModified = p.value().get<std::string>();
+            std::istringstream in(p.value().get<std::string>());
+            in >> date::parse("%FT%TZ", s.lastModified);
+        } else if (p.key() == "expires") {
+            std::istringstream in(p.value().get<std::string>());
+            decltype(s.expires)::value_type expiration;
+            in >> date::parse("%FT%TZ", expiration);
+            s.expires = expiration;
         } else {
             if (p.value().is_array()) {
                 for (auto& v : p.value()) {
@@ -122,8 +129,12 @@ std::shared_ptr<std::istream> StorageClient::get_item_by_url(const std::string& 
     return stream;
 }
 
-StorageItem StorageClient::store_item(StorageItemTags const& tags, std::istream& data) {
+StorageItem StorageClient::store_item(StorageItemTags const& tags, std::istream& data, std::optional<std::chrono::seconds> time_to_live) {
     auto query_parameters = tags_to_query_parameters(tags);
+    if (time_to_live) {
+        query_parameters.Add({"_ttl", std::to_string(time_to_live->count()) + "s"});
+    }
+
     std::string s(std::istreambuf_iterator<char>(data), {});
     cpr::Body body(s);
     auto resp = cpr::Post(cpr::Url(base_url + "/v1/blobs/data"), query_parameters, body);

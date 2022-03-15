@@ -1,9 +1,3 @@
-
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-
-#include "storage.h"
-
 #include <chrono>
 #include <random>
 #include <thread>
@@ -11,6 +5,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <range/v3/range.hpp>
+#include <date/date.h>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include "storage.h"
 
 using namespace Gadgetron::Storage;
 using namespace Gadgetron;
@@ -193,6 +192,25 @@ TEST_F(StorageTest, storage_client_should_store_items_and_return_list) {
     EXPECT_EQ(list.items.size(), 3);
     list = storage_client.list_items(tags2);
     EXPECT_EQ(list.items.size(), 2);
+}
+
+TEST_F(StorageTest, storage_client_supports_time_to_live) {
+    StorageClient storage_client(storage_address);
+    auto data = generate_random_vector(256);
+    auto datastream = std::stringstream(std::string(data.begin(), data.end()), std::ios::binary);
+    std::string session_id = "mysession6";
+
+    auto tags = StorageItemTags::Builder("mypatient")
+                .with_device("mydevice")
+                .with_session(session_id)
+                .with_name("myname")
+                .build();
+
+    auto resp = storage_client.store_item(tags, datastream, std::chrono::seconds(10));
+    ASSERT_TRUE(resp.expires.has_value());
+
+    resp = storage_client.store_item(tags, datastream);
+    ASSERT_FALSE(resp.expires.has_value());
 }
 
 TEST_F(StorageTest, basic_storage) {

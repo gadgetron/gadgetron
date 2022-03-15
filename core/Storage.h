@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <istream>
 #include <ostream>
@@ -61,7 +62,8 @@ public:
     StorageItemTags tags;
     std::string location;
     std::string contentType;
-    std::string lastModified;
+    std::chrono::time_point<std::chrono::system_clock> lastModified;
+    std::optional<std::chrono::time_point<std::chrono::system_clock>> expires;
     std::string data;
 };
 
@@ -86,7 +88,7 @@ public:
 
     std::shared_ptr<std::istream> get_item_by_url(const std::string& url);
 
-    StorageItem store_item(StorageItemTags const& tags, std::istream& data);
+    StorageItem store_item(StorageItemTags const& tags, std::istream& data, std::optional<std::chrono::seconds> time_to_live = {});
 
     std::optional<std::string> health_check();
 
