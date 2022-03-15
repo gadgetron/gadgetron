@@ -2,7 +2,7 @@
 enable_testing()
 
 add_executable(server_tests
-        server_test.cpp
+        storage_test.cpp
         socket_test.cpp
         ../connection/SocketStreamBuf.cpp)
 

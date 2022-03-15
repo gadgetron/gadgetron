@@ -28,6 +28,7 @@ target_link_libraries(gadgetron_core
         gadgetron_toolbox_cpucore
         Boost::boost
         Boost::filesystem
+        cpr::cpr
         )
 
 target_include_directories(gadgetron_core PUBLIC
