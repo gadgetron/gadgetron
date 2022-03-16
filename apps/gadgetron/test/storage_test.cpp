@@ -216,49 +216,28 @@ TEST_F(StorageTest, storage_client_supports_time_to_live) {
 TEST_F(StorageTest, basic_storage) {
     hoNDArray<float> x(10);
     std::fill(x.begin(), x.end(), 23);
-    storage.session.store("stuff", x);
+    storage.session->store("stuff", x);
 
-    auto storage_list = storage.session.fetch<hoNDArray<float>>("stuff");
-    ASSERT_EQ(storage_list.size(), 1);
-    auto fetched = storage_list[0];
-    ASSERT_EQ(x, fetched);
+    auto item = storage.session->get_latest<hoNDArray<float>>("stuff");
+    ASSERT_TRUE(item.has_value());
+    ASSERT_EQ(x, *item);
 
     hoNDArray<float> y(2, 2);
     std::fill(x.begin(), x.end(), 23);
-    storage.session.store("stuff", y);
+    storage.session->store("stuff", y);
 
-    storage_list = storage.session.fetch<hoNDArray<float>>("stuff");
-    ASSERT_EQ(storage_list.size(), 2);
-    fetched = storage_list[0];
-    ASSERT_EQ(fetched, y);
-    fetched = storage_list[1];
-    ASSERT_EQ(fetched, x);
+    item = storage.session->get_latest<hoNDArray<float>>("stuff");
+    ASSERT_TRUE(item.has_value());
+    ASSERT_EQ(y, *item);
 }
 
 TEST_F(StorageTest, larger_storage) {
     hoNDArray<float> x(1024 * 255);
     std::fill(x.begin(), x.end(), 23);
-    storage.session.store("larger_storage_test", x);
+    storage.session->store("larger_storage_test", x);
 
-    auto storage_list = storage.session.fetch<hoNDArray<float>>("larger_storage_test");
-    ASSERT_EQ(storage_list.size(), 1);
-    auto fetched = storage_list[0];
-    ASSERT_EQ(x, fetched);
-}
-
-TEST_F(StorageTest, range_test) {
-    hoNDArray<float> y(2, 2);
-    std::fill(y.begin(), y.end(), 23);
-    storage.session.store("range_test", y);
-    storage.session.store("range_test", y);
-
-    auto storage_list = storage.session.fetch<hoNDArray<float>>("range_test");
-    auto storage_vector = storage_list | ranges::to<std::vector>();
-    auto storage_vector2 = storage.session.fetch<hoNDArray<float>>("range_test") | ranges::to<std::vector>();
-    ASSERT_EQ(storage_list.size(), 2);
-    ASSERT_EQ(storage_list.size(), std::distance(storage_list.begin(), storage_list.end()));
-    ASSERT_EQ(storage_list.size(), storage_vector.size());
-    ASSERT_EQ(storage_list.size(), storage_vector2.size());
+    auto item = storage.session->get_latest<hoNDArray<float>>("larger_storage_test");
+    ASSERT_EQ(x, *item);
 }
 
 TEST_F(StorageTest, image_test) {
@@ -268,10 +247,10 @@ TEST_F(StorageTest, image_test) {
 
     data = hoNDArray<float>(2, 2, 1, 4);
     std::fill(data.begin(), data.end(), 3);
-    storage.session.store("image", image);
+    storage.session->store("image", image);
 
-    auto storage_list = storage.session.fetch<Core::Image<float>>("image");
+    auto item = storage.session->get_latest<Core::Image<float>>("image");
 
-    auto [stored_header, stored_data, stored_meta] = storage_list[0];
+    auto [stored_header, stored_data, stored_meta] = *item;
     ASSERT_EQ(data, stored_data);
 }

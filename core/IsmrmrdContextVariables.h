@@ -15,27 +15,27 @@ class IsmrmrdContextVariables {
   public:
   IsmrmrdContextVariables(ISMRMRD::IsmrmrdHeader const& head);
 
-  std::string get_subject_id() {
-    return subject_id;
+  std::string subject_id() const {
+    return subject_id_;
   }
 
-  std::string get_device_id() {
-    return device_id;
+  std::string device_id() const {
+    return device_id_;
   }
 
-  std::string get_session_id() {
-    return session_id;
+  std::string session_id() const {
+    return session_id_;
   }
 
-  std::string get_measurement_id() {
-    return measurement_id;
+  std::string measurement_id() const {
+    return measurement_id_;
   }
 
   private:
-  std::string subject_id = "";
-  std::string device_id = "";
-  std::string session_id = "";
-  std::string measurement_id = "";
+  std::string subject_id_ = "";
+  std::string device_id_ = "";
+  std::string session_id_ = "";
+  std::string measurement_id_ = "";
 };
 
 } // namespace Gadgetron

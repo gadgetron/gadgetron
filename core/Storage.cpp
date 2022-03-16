@@ -110,6 +110,10 @@ StorageItemList StorageClient::get_next_page_of_items(StorageItemList const& pag
 
 std::shared_ptr<std::istream> StorageClient::get_latest_item(StorageItemTags const& tags) {
     auto resp = cpr::Get(cpr::Url(base_url +  "/v1/blobs/data/latest"), tags_to_query_parameters(tags));
+    if (resp.status_code == 404 ) {
+        return {};
+    }
+
     if (resp.status_code != 200) {
         throw std::runtime_error("Storage server error when getting latest item: " +  resp.status_line);
     }
@@ -120,6 +124,10 @@ std::shared_ptr<std::istream> StorageClient::get_latest_item(StorageItemTags con
 
 std::shared_ptr<std::istream> StorageClient::get_item_by_url(const std::string& url) {
     auto resp = cpr::Get(cpr::Url(url));
+    if (resp.status_code == 404 ) {
+        return {};
+    }
+    
     if (resp.status_code != 200) {
         throw std::runtime_error("Storage server error when getting item: " +  resp.status_line);
     }
@@ -156,19 +164,5 @@ std::optional<std::string> StorageClient::health_check() {
     }
     
     return "Did not get a successful response from the the MRD Storage Server: " + response.status_line;
-}
-
-GenericStorageSpace::GenericStorageSpace(std::shared_ptr<StreamProvider> provider,
-                                         const Core::optional<std::string>& subject,
-                                         boost::posix_time::time_duration default_duration)
-    : subject{subject}, provider(std::move(provider)), default_duration{default_duration} {}
-
-std::unique_ptr<std::istream> istream_from_data(const std::vector<char>& data) {
-
-    return std::make_unique<bio::stream<bio::array_source>>(data.data(), data.size());
-}
-
-std::unique_ptr<std::ostream> ostream_view(std::vector<char>& data) {
-    return std::make_unique<bio::stream<bio::back_insert_device<std::vector<char>>>>(data);
 }
 }

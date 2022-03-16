@@ -311,10 +311,10 @@ TEST(IsmrmrdContextVariablesTest, initialize_from_ismrmrd_header_with_all_elemen
 
   IsmrmrdContextVariables ctx_vars(head);
 
-  EXPECT_EQ(ctx_vars.get_device_id(), "20434");
-  EXPECT_EQ(ctx_vars.get_subject_id(), "925046864");
-  EXPECT_EQ(ctx_vars.get_session_id(), "1076436037");
-  EXPECT_EQ(ctx_vars.get_measurement_id(), "LLJGHH888986");
+  EXPECT_EQ(ctx_vars.device_id(), "20434");
+  EXPECT_EQ(ctx_vars.subject_id(), "925046864");
+  EXPECT_EQ(ctx_vars.session_id(), "1076436037");
+  EXPECT_EQ(ctx_vars.measurement_id(), "LLJGHH888986");
 }
 
 TEST(IsmrmrdContextVariablesTest, initialize_from_ismrmrd_header_with_structured_measurement_id) {
@@ -324,10 +324,10 @@ TEST(IsmrmrdContextVariablesTest, initialize_from_ismrmrd_header_with_structured
 
   IsmrmrdContextVariables ctx_vars(head);
   
-  EXPECT_EQ(ctx_vars.get_device_id(), "45387");
-  EXPECT_EQ(ctx_vars.get_subject_id(), "925046864");
-  EXPECT_EQ(ctx_vars.get_session_id(), "1076436037");
-  EXPECT_EQ(ctx_vars.get_measurement_id(), "45387_925046864_1076436037_393");
+  EXPECT_EQ(ctx_vars.device_id(), "45387");
+  EXPECT_EQ(ctx_vars.subject_id(), "925046864");
+  EXPECT_EQ(ctx_vars.session_id(), "1076436037");
+  EXPECT_EQ(ctx_vars.measurement_id(), "45387_925046864_1076436037_393");
 }
 
 TEST(IsmrmrdContextVariablesTest, malformed_structured_ids_handled) {
@@ -343,9 +343,9 @@ TEST(IsmrmrdContextVariablesTest, malformed_structured_ids_handled) {
     head.measurementInformation.get().measurementID = measurement_id;
 
     IsmrmrdContextVariables ctx_vars(head);
-    EXPECT_EQ(ctx_vars.get_subject_id(), "");
-    EXPECT_EQ(ctx_vars.get_device_id(), "");
-    EXPECT_EQ(ctx_vars.get_session_id(), "");
-    EXPECT_EQ(ctx_vars.get_measurement_id(), measurement_id);
+    EXPECT_EQ(ctx_vars.subject_id(), "");
+    EXPECT_EQ(ctx_vars.device_id(), "");
+    EXPECT_EQ(ctx_vars.session_id(), "");
+    EXPECT_EQ(ctx_vars.measurement_id(), measurement_id);
   }
 }
