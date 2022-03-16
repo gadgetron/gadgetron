@@ -105,7 +105,7 @@ TEST(StorageSpacesTest, session_space_fields_missing) {
     EXPECT_FALSE(space.get_latest<std::vector<char>>("myname").has_value());
 }
 
-TEST(StorageSpacesTest, measurement_space_subject_missing) {
+TEST(StorageSpacesTest, measurement_space_subject_missing_unstructured_dependency) {
     IsmrmrdContextVariables vars("", "mydevice", "mysession", "mymeasurement");
     auto client = std::make_shared<MockStorageClient>("address");
 
@@ -113,6 +113,26 @@ TEST(StorageSpacesTest, measurement_space_subject_missing) {
 
     EXPECT_THROW(space.store("myname", "mydata"), IncompleteStorageContextException);
     EXPECT_FALSE(space.get_latest<std::vector<char>>("mydependency", "myname").has_value());
+}
+
+
+TEST(StorageSpacesTest, measurement_space_subject_missing_structured_dependency_fallback) {
+    IsmrmrdContextVariables vars("", "mydevice", "mysession", "mymeasurement");
+    auto client = std::make_shared<MockStorageClient>("address");
+
+    MeasurementSpace space(client, vars, std::chrono::hours(1));
+
+    EXPECT_THROW(space.store("myname", "mydata"), IncompleteStorageContextException);
+
+    auto expected_read_tags = StorageItemTags::Builder("mysubject2")
+                                  .with_device("mydevice2")
+                                  .with_session("mysession2")
+                                  .with_name("myname")
+                                  .with_custom_tag("measurement", "mydevice2_mysubject2_mysession2_xyz")
+                                  .build();
+
+    EXPECT_CALL(*client, get_latest_item(TagsEq(expected_read_tags)));
+    space.get_latest<std::vector<char>>("mydevice2_mysubject2_mysession2_xyz", "myname").has_value();
 }
 
 TEST(StorageSpacesTest, measurement_space_measurement_missing) {

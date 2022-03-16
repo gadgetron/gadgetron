@@ -161,7 +161,8 @@ class StorageSpaceWithDefaultRead : public StorageSpace {
         try {
             auto tags = get_tag_builder(false).with_name(key).build();
             return StorageSpace::get_latest<T>(tags);
-        } catch (IncompleteStorageContextException const&) {
+        } catch (IncompleteStorageContextException const& e) {
+            GWARN_STREAM("An incomplete context prevents reading from the storage server: " + std::string(e.what()));
             return {};
         }
     }
@@ -211,39 +212,54 @@ class MeasurementSpace : public StorageSpace {
     using StorageSpace::StorageSpace;
 
     template <class T> std::optional<T> get_latest(const std::string& measurement_id, const std::string& key) {
+        std::optional<StorageItemTags::Builder> tag_builder;
         try {
-            auto tags = get_tag_builder(false).with_name(key).with_custom_tag("measurement", measurement_id).build();
-            return StorageSpace::get_latest<T>(tags);
-        } catch (IncompleteStorageContextException const&) {
-            return {};
+            tag_builder = get_tag_builder(false);
+        } catch (IncompleteStorageContextException const& e) {
+            // There is no subject ID in the XML header. We now fall back to attempting to interpret the measurement ID
+            // as a structured ID.
+            try {
+            tag_builder = get_tag_builder_using_context(false, IsmrmrdContextVariables(measurement_id));
+            } catch (IncompleteStorageContextException const&) {
+                GWARN_STREAM("An incomplete context prevents reading from the storage server: " + std::string(e.what()));
+                return {};
+            }
         }
+
+        auto tags = tag_builder->with_name(key).with_custom_tag("measurement", measurement_id).build();
+        return StorageSpace::get_latest<T>(tags);
     }
 
   protected:
     StorageItemTags::Builder get_tag_builder(bool for_write) override {
-        if (context_vars.subject_id().empty()) {
+        return get_tag_builder_using_context(for_write, context_vars);
+    }
+
+  private:
+    StorageItemTags::Builder get_tag_builder_using_context(bool for_write, IsmrmrdContextVariables const& context) {
+        if (context.subject_id().empty()) {
             throw IncompleteStorageContextException(
                 "Storage space is unavailable due to missing subject ID in the ISMRMRD header");
         }
 
-        auto builder = StorageItemTags::Builder(context_vars.subject_id());
+        auto builder = StorageItemTags::Builder(context.subject_id());
 
         // reads will use the dependency measurement id which is not taken from the context
         if (for_write) {
-            if (context_vars.measurement_id().empty()) {
+            if (context.measurement_id().empty()) {
                 throw IncompleteStorageContextException(
                     "Storage space is unavailable due to missing measurement ID in the ISMRMRD header");
             } else {
-                builder.with_custom_tag("measurement", context_vars.measurement_id());
+                builder.with_custom_tag("measurement", context.measurement_id());
             }
         }
 
-        if (!context_vars.device_id().empty()) {
-            builder.with_device(context_vars.device_id());
+        if (!context.device_id().empty()) {
+            builder.with_device(context.device_id());
         }
 
-        if (!context_vars.session_id().empty()) {
-            builder.with_session(context_vars.session_id());
+        if (!context.session_id().empty()) {
+            builder.with_session(context.session_id());
         }
 
         return builder;

@@ -15,6 +15,8 @@ class IsmrmrdContextVariables {
   public:
     IsmrmrdContextVariables(ISMRMRD::IsmrmrdHeader const& head);
 
+    IsmrmrdContextVariables(std::string measurement_id);
+
     IsmrmrdContextVariables(std::string const& subject_id, std::string const& device_id, std::string const& session_id,
                             std::string const& measurement_id)
         : subject_id_(subject_id), device_id_(device_id), session_id_(session_id), measurement_id_(measurement_id){};
@@ -28,6 +30,8 @@ class IsmrmrdContextVariables {
     std::string const& measurement_id() const { return measurement_id_; }
 
   private:
+    void update_from_measurement_id();
+
     std::string subject_id_ = "";
     std::string device_id_ = "";
     std::string session_id_ = "";
