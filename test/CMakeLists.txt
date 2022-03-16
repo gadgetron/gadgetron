@@ -16,6 +16,7 @@ include(GoogleTest)
             curveFitting_test.cpp
             image_morphology_test.cpp
             IsmrmrdContextVariables_test.cpp
+            StorageSpaces_test.cpp
             pattern_recognition_test.cpp
             cmr_mapping_test.cpp
             hoNDArray_linalg_test.cpp
@@ -84,7 +85,7 @@ include(GoogleTest)
             gadgetron_toolbox_cpusdc
 
             ${GTEST_LIBRARIES}
-
+            gmock
             )
 
     if (PYTHONLIBS_FOUND)

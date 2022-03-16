@@ -77,22 +77,22 @@ struct StorageItemList {
 
 class StorageClient {
   public:
-    class Builder;
-
     StorageClient(std::string base_url) { this->base_url = base_url.erase(base_url.find_last_not_of("/") + 1); }
 
-    StorageItemList list_items(StorageItemTags const& tags, size_t limit = 20);
+    virtual ~StorageClient() = default;
 
-    StorageItemList get_next_page_of_items(StorageItemList const& page);
+    virtual StorageItemList list_items(StorageItemTags const& tags, size_t limit = 20);
 
-    std::shared_ptr<std::istream> get_latest_item(StorageItemTags const& tags);
+    virtual StorageItemList get_next_page_of_items(StorageItemList const& page);
 
-    std::shared_ptr<std::istream> get_item_by_url(std::string const& url);
+    virtual std::shared_ptr<std::istream> get_latest_item(StorageItemTags const& tags);
 
-    StorageItem store_item(StorageItemTags const& tags, std::istream& data,
-                           std::optional<std::chrono::seconds> time_to_live = {});
+    virtual std::shared_ptr<std::istream> get_item_by_url(std::string const& url);
 
-    std::optional<std::string> health_check();
+    virtual StorageItem store_item(StorageItemTags const& tags, std::istream& data,
+                                   std::optional<std::chrono::seconds> time_to_live = {});
+
+    virtual std::optional<std::string> health_check();
 
   private:
     std::string base_url;
@@ -101,14 +101,13 @@ class StorageClient {
 class StorageSpace {
   public:
     StorageSpace(std::shared_ptr<StorageClient> client, IsmrmrdContextVariables context_vars,
-                        std::chrono::seconds default_duration)
+                 std::chrono::seconds default_duration)
         : client(client), context_vars(context_vars), default_duration(default_duration) {}
 
     template <typename Rep, typename Period>
     StorageSpace(std::shared_ptr<StorageClient> client, StorageItemTags::Builder tag_builder,
-                        std::chrono::duration<Rep, Period> default_duration)
-        : StorageSpace(client, tag_builder, std::chrono::duration_cast<std::chrono::seconds>(default_duration)) {
-    }
+                 std::chrono::duration<Rep, Period> default_duration)
+        : StorageSpace(client, tag_builder, std::chrono::duration_cast<std::chrono::seconds>(default_duration)) {}
 
     virtual ~StorageSpace() = default;
 
@@ -222,17 +221,21 @@ class MeasurementSpace : public StorageSpace {
 
   protected:
     StorageItemTags::Builder get_tag_builder(bool for_write) override {
-        auto subject_id = context_vars.subject_id().empty() ? "$null" : context_vars.subject_id();
-        auto builder = StorageItemTags::Builder(subject_id);
+        if (context_vars.subject_id().empty()) {
+            throw IncompleteStorageContextException(
+                "Storage space is unavailable due to missing information in the ISMRMRD header");
+        }
 
-        if (context_vars.measurement_id().empty()) {
-            if (for_write) {
+        auto builder = StorageItemTags::Builder(context_vars.subject_id());
+
+        // reads will use the dependency measurement id which is not taken from the context
+        if (for_write) {
+            if (context_vars.measurement_id().empty()) {
                 throw IncompleteStorageContextException(
                     "Storage space is unavailable due to missing information in the ISMRMRD header");
+            } else {
+                builder.with_custom_tag("measurement", context_vars.measurement_id());
             }
-            // reads will use the dependency measurement id which is not taken from the context
-        } else {
-            builder.with_custom_tag("measurement", context_vars.measurement_id());
         }
 
         if (!context_vars.device_id().empty()) {
