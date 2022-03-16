@@ -98,19 +98,19 @@ class StorageClient {
     std::string base_url;
 };
 
-class GenericStorageSpace {
+class StorageSpace {
   public:
-    GenericStorageSpace(std::shared_ptr<StorageClient> client, IsmrmrdContextVariables context_vars,
+    StorageSpace(std::shared_ptr<StorageClient> client, IsmrmrdContextVariables context_vars,
                         std::chrono::seconds default_duration)
         : client(client), context_vars(context_vars), default_duration(default_duration) {}
 
     template <typename Rep, typename Period>
-    GenericStorageSpace(std::shared_ptr<StorageClient> client, StorageItemTags::Builder tag_builder,
+    StorageSpace(std::shared_ptr<StorageClient> client, StorageItemTags::Builder tag_builder,
                         std::chrono::duration<Rep, Period> default_duration)
-        : GenericStorageSpace(client, tag_builder, std::chrono::duration_cast<std::chrono::seconds>(default_duration)) {
+        : StorageSpace(client, tag_builder, std::chrono::duration_cast<std::chrono::seconds>(default_duration)) {
     }
 
-    virtual ~GenericStorageSpace() = default;
+    virtual ~StorageSpace() = default;
 
     template <class T> void store(const std::string& key, const T& value) { this->store(key, value, default_duration); }
 
@@ -154,14 +154,14 @@ class IncompleteStorageContextException : std::exception {
     std::string what_;
 };
 
-class StorageSpaceWithDefaultRead : public GenericStorageSpace {
+class StorageSpaceWithDefaultRead : public StorageSpace {
   public:
-    using GenericStorageSpace::GenericStorageSpace;
+    using StorageSpace::StorageSpace;
 
     template <class T> std::optional<T> get_latest(const std::string& key) {
         try {
             auto tags = get_tag_builder(false).with_name(key).build();
-            return GenericStorageSpace::get_latest<T>(tags);
+            return StorageSpace::get_latest<T>(tags);
         } catch (IncompleteStorageContextException const&) {
             return {};
         }
@@ -207,14 +207,14 @@ class ScannerSpace : public StorageSpaceWithDefaultRead {
     }
 };
 
-class MeasurementSpace : public GenericStorageSpace {
+class MeasurementSpace : public StorageSpace {
   public:
-    using GenericStorageSpace::GenericStorageSpace;
+    using StorageSpace::StorageSpace;
 
     template <class T> std::optional<T> get_latest(const std::string& measurement_id, const std::string& key) {
         try {
             auto tags = get_tag_builder(false).with_name(key).with_custom_tag("measurement", measurement_id).build();
-            return GenericStorageSpace::get_latest<T>(tags);
+            return StorageSpace::get_latest<T>(tags);
         } catch (IncompleteStorageContextException const&) {
             return {};
         }
