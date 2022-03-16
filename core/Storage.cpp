@@ -2,13 +2,13 @@
 
 #include <iterator>
 
-#include <cpr/cpr.h>
-#include <nlohmann/json.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
+#include <cpr/cpr.h>
 #include <date/date.h>
+#include <nlohmann/json.hpp>
 
 namespace bio = boost::iostreams;
 using json = nlohmann::json;
@@ -56,8 +56,8 @@ StorageItem storage_item_from_json(json j) {
 }
 
 cpr::Parameters tags_to_query_parameters(StorageItemTags const& tags) {
-    cpr::Parameters parameters {{"subject", tags.subject}};
-    
+    cpr::Parameters parameters{{"subject", tags.subject}};
+
     if (tags.device) {
         parameters.Add({"device", *tags.device});
     }
@@ -68,15 +68,28 @@ cpr::Parameters tags_to_query_parameters(StorageItemTags const& tags) {
         parameters.Add({"name", *tags.name});
     }
     for (auto const& [key, value] : tags.custom_tags) {
-        parameters.Add({key,value});
+        parameters.Add({key, value});
     }
 
     return parameters;
 }
 
+std::string get_response_error_message(cpr::Response const& resp) {
+    std::string details;
+    if (resp.error.code != cpr::ErrorCode::OK) {
+        if (resp.error.message.empty()) {
+            return "CPR error code " + std::to_string((int)resp.error.code);
+        } else {
+            return resp.error.message;
+        }
+    }
+
+    return resp.status_line + "\n" + resp.text;
+}
+
 StorageItemList read_items_from_response(cpr::Response const& resp) {
     if (resp.status_code != 200) {
-        throw std::runtime_error("Storage server error when listing items: " +  resp.status_line);
+        throw std::runtime_error("Storage server error when listing items: " + get_response_error_message(resp));
     }
 
     json j = json::parse(resp.text);
@@ -109,13 +122,13 @@ StorageItemList StorageClient::get_next_page_of_items(StorageItemList const& pag
 }
 
 std::shared_ptr<std::istream> StorageClient::get_latest_item(StorageItemTags const& tags) {
-    auto resp = cpr::Get(cpr::Url(base_url +  "/v1/blobs/data/latest"), tags_to_query_parameters(tags));
-    if (resp.status_code == 404 ) {
+    auto resp = cpr::Get(cpr::Url(base_url + "/v1/blobs/data/latest"), tags_to_query_parameters(tags));
+    if (resp.status_code == 404) {
         return {};
     }
 
     if (resp.status_code != 200) {
-        throw std::runtime_error("Storage server error when getting latest item: " +  resp.status_line);
+        throw std::runtime_error("Storage server error when getting latest items: " + get_response_error_message(resp));
     }
     auto stream = std::make_shared<std::stringstream>();
     stream->str(resp.text);
@@ -124,12 +137,12 @@ std::shared_ptr<std::istream> StorageClient::get_latest_item(StorageItemTags con
 
 std::shared_ptr<std::istream> StorageClient::get_item_by_url(const std::string& url) {
     auto resp = cpr::Get(cpr::Url(url));
-    if (resp.status_code == 404 ) {
+    if (resp.status_code == 404) {
         return {};
     }
-    
+
     if (resp.status_code != 200) {
-        throw std::runtime_error("Storage server error when getting item: " +  resp.status_line);
+        throw std::runtime_error("Storage server error when getting item: " + get_response_error_message(resp));
     }
 
     auto stream = std::make_shared<std::stringstream>();
@@ -137,7 +150,8 @@ std::shared_ptr<std::istream> StorageClient::get_item_by_url(const std::string& 
     return stream;
 }
 
-StorageItem StorageClient::store_item(StorageItemTags const& tags, std::istream& data, std::optional<std::chrono::seconds> time_to_live) {
+StorageItem StorageClient::store_item(StorageItemTags const& tags, std::istream& data,
+                                      std::optional<std::chrono::seconds> time_to_live) {
     auto query_parameters = tags_to_query_parameters(tags);
     if (time_to_live) {
         query_parameters.Add({"_ttl", std::to_string(time_to_live->count()) + "s"});
@@ -147,7 +161,7 @@ StorageItem StorageClient::store_item(StorageItemTags const& tags, std::istream&
     cpr::Body body(s);
     auto resp = cpr::Post(cpr::Url(base_url + "/v1/blobs/data"), query_parameters, body);
     if (resp.status_code != 201) {
-        throw std::runtime_error("Storage server error when storing item: " +  resp.status_line);
+        throw std::runtime_error("Storage server error when storing item: " + get_response_error_message(resp));
     }
 
     return storage_item_from_json(json::parse(resp.text));
@@ -159,10 +173,6 @@ std::optional<std::string> StorageClient::health_check() {
         return std::nullopt;
     }
 
-    if (response.status_code == 0) {
-        return "Failed to connect to the MRD Storage Server: " + response.error.message;
-    }
-    
-    return "Did not get a successful response from the the MRD Storage Server: " + response.status_line;
+    return "Storage server error: " + get_response_error_message(response);
 }
-}
+} // namespace Gadgetron::Storage

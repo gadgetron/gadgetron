@@ -4,10 +4,10 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <range/v3/range.hpp>
 #include <date/date.h>
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <range/v3/range.hpp>
 
 #include "storage.h"
 
@@ -16,8 +16,6 @@ using namespace Gadgetron;
 
 using namespace boost::filesystem;
 using namespace boost::program_options;
-
-using testing::ElementsAre;
 
 class StorageTest : public ::testing::Test {
   protected:
@@ -28,11 +26,12 @@ class StorageTest : public ::testing::Test {
         boost::filesystem::create_directory(temp_dir);
 
         options_description desc("Storage options");
-        desc.add_options()("storage_port,s", value<unsigned short>()->default_value(26589),
-                           "Port on which to run the storage server.")(
-            "database_dir,D", value<path>()->default_value(temp_dir),
-            "Directory in which to store the storage server database.")(
-            "storage_dir,S", value<path>()->default_value(temp_dir), "Directory in which to store data blobs.");
+        // clang-format off
+        desc.add_options()
+        ("storage_port", value<unsigned short>()->default_value(26589))
+        ("database_dir,D", value<path>()->default_value(temp_dir))
+        ("storage_dir,S", value<path>()->default_value(temp_dir));
+        // clang-format on
 
         variables_map args;
         store(parse_environment(desc, "GADGETRON_STORAGE_TEST_"), args);
@@ -62,14 +61,14 @@ class StorageTest : public ::testing::Test {
 };
 
 std::vector<char> generate_random_vector(size_t size) {
-  std::vector<char> data(size, 0);
-  std::random_device rd;  // Will be used to obtain a seed for the random number engine
-  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_int_distribution<> distrib(0, 255);
-  for (size_t n = 0; n < data.size(); n++) {
-    data[n] = (char)distrib(gen);
-  }
-  return data;
+    std::vector<char> data(size, 0);
+    std::random_device rd;  // Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> distrib(0, 255);
+    for (size_t n = 0; n < data.size(); n++) {
+        data[n] = (char)distrib(gen);
+    }
+    return data;
 }
 
 TEST_F(StorageTest, storage_client_should_return_inserted_data_and_all_meta_tags) {
@@ -113,8 +112,9 @@ TEST_F(StorageTest, storage_client_should_return_inserted_data_and_all_meta_tags
     EXPECT_EQ(list.items[0].tags.custom_tags.find("tagtwo")->second, "second");
     auto multival_iterators = list.items[0].tags.custom_tags.equal_range("multival");
     std::vector<std::string> multival_values;
-    std::transform(multival_iterators.first, multival_iterators.second, std::back_inserter(multival_values), [](auto p) { return p.second; });
-    ASSERT_THAT(multival_values, ElementsAre("value1", "value2"));
+    std::transform(multival_iterators.first, multival_iterators.second, std::back_inserter(multival_values),
+                   [](auto p) { return p.second; });
+    ASSERT_THAT(multival_values, testing::ElementsAre("value1", "value2"));
 }
 
 TEST_F(StorageTest, storage_client_supports_paging) {
@@ -137,7 +137,7 @@ TEST_F(StorageTest, storage_client_supports_paging) {
     EXPECT_FALSE(list.complete);
     EXPECT_EQ(list.items.size(), 5);
 
-    for (int i=0; i<3; i++) {
+    for (int i = 0; i < 3; i++) {
         list = storage_client.get_next_page_of_items(list);
         EXPECT_EQ(list.items.size(), 5);
         EXPECT_EQ(list.complete, i == 2);
@@ -201,16 +201,47 @@ TEST_F(StorageTest, storage_client_supports_time_to_live) {
     std::string session_id = "mysession6";
 
     auto tags = StorageItemTags::Builder("mypatient")
-                .with_device("mydevice")
-                .with_session(session_id)
-                .with_name("myname")
-                .build();
+                    .with_device("mydevice")
+                    .with_session(session_id)
+                    .with_name("myname")
+                    .build();
 
     auto resp = storage_client.store_item(tags, datastream, std::chrono::seconds(10));
     ASSERT_TRUE(resp.expires.has_value());
 
     resp = storage_client.store_item(tags, datastream);
     ASSERT_FALSE(resp.expires.has_value());
+}
+
+TEST_F(StorageTest, storage_client_should_return_empty_ptr_when_not_found) {
+    StorageClient storage_client(storage_address);
+    std::string session_id = "mysession7";
+    auto tags = StorageItemTags::Builder("mypatient")
+                    .with_device("mydevice")
+                    .with_session(session_id)
+                    .with_name("myvariable1")
+                    .build();
+
+    ASSERT_FALSE(storage_client.get_latest_item(tags));
+    ASSERT_FALSE(storage_client.get_item_by_url(storage_address + "/foo"));;
+}
+
+TEST_F(StorageTest, storage_client_exception_contains_server_error_message) {
+    StorageClient storage_client(storage_address);
+    std::cout << storage_address << std::endl;
+    auto tags = StorageItemTags::Builder("")
+                    .build();
+
+    auto datastream = std::stringstream("abc");
+    EXPECT_THROW(
+        try{
+            storage_client.store_item(tags, datastream);
+        } catch (std::runtime_error const& e) {
+            EXPECT_THAT(e.what(), testing::HasSubstr("InvalidSubject"));
+            throw;
+        },
+        std::runtime_error
+    );
 }
 
 TEST_F(StorageTest, storage_client_handles_trailing_slash_in_address) {
