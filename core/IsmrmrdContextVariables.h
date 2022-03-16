@@ -8,7 +8,7 @@ namespace Gadgetron {
 
 /**
  * Used to extract subject, device, session, and measurement IDs from an ISMRMRD
- * header, falling back to extracting values from a the measurement ID if
+ * XML header, falling back to extracting values from the measurement ID element if
  * it is formatted as DEVICE_SUBJECT_SESSION_MEASUREMENT.
  */
 class IsmrmrdContextVariables {

@@ -62,8 +62,8 @@ class StorageTest : public ::testing::Test {
 
 std::vector<char> generate_random_vector(size_t size) {
     std::vector<char> data(size, 0);
-    std::random_device rd;  // Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    std::random_device rd;
+    std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, 255);
     for (size_t n = 0; n < data.size(); n++) {
         data[n] = (char)distrib(gen);

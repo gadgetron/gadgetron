@@ -175,7 +175,7 @@ class SessionSpace : public StorageSpaceWithDefaultRead {
     StorageItemTags::Builder get_tag_builder(bool for_write) override {
         if (context_vars.subject_id().empty()) {
             throw IncompleteStorageContextException(
-                "Storage space is unavailable due to missing information in the ISMRMRD header");
+                "Storage space is unavailable due to missing subject ID in the ISMRMRD header");
         }
 
         auto builder = StorageItemTags::Builder(context_vars.subject_id());
@@ -223,7 +223,7 @@ class MeasurementSpace : public StorageSpace {
     StorageItemTags::Builder get_tag_builder(bool for_write) override {
         if (context_vars.subject_id().empty()) {
             throw IncompleteStorageContextException(
-                "Storage space is unavailable due to missing information in the ISMRMRD header");
+                "Storage space is unavailable due to missing subject ID in the ISMRMRD header");
         }
 
         auto builder = StorageItemTags::Builder(context_vars.subject_id());
@@ -232,7 +232,7 @@ class MeasurementSpace : public StorageSpace {
         if (for_write) {
             if (context_vars.measurement_id().empty()) {
                 throw IncompleteStorageContextException(
-                    "Storage space is unavailable due to missing information in the ISMRMRD header");
+                    "Storage space is unavailable due to missing measurement ID in the ISMRMRD header");
             } else {
                 builder.with_custom_tag("measurement", context_vars.measurement_id());
             }

@@ -1,4 +1,3 @@
-# include(GoogleTest)
 enable_testing()
 
 add_executable(server_tests
@@ -25,4 +24,3 @@ target_link_libraries(server_tests
         gtest_main
         )
 
-# gtest_add_tests(TARGET server_tests AUTO)
