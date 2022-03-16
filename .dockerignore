@@ -4,7 +4,6 @@
 # ...except:
 !CMakeLists.txt
 !apps/
-!bootstrap-conda.sh
 !cmake/
 !core/
 !docker/
