@@ -40,8 +40,8 @@ class StorageTest : public ::testing::Test {
         auto [address, process] = Server::ensure_storage_server(args);
 
         ISMRMRD::IsmrmrdHeader header;
-        header.subjectInformation = ISMRMRD::SubjectInformation{{}, {}, std::string("Penny the Pirate"), {}, {}};
-        header.studyInformation = ISMRMRD::StudyInformation{{}, {}, std::string("YAAARH")};
+        header.subjectInformation = ISMRMRD::SubjectInformation{{}, {}, std::string("mypatient"), {}, {}};
+        header.studyInformation = ISMRMRD::StudyInformation{{}, {}, std::string("mystudy")};
 
         storage_address = address;
         server = std::move(*process);
@@ -254,7 +254,7 @@ TEST_F(StorageTest, storage_client_healthcheck_returns_error_when_address_invali
     ASSERT_TRUE(storage_client.health_check().has_value());
 }
 
-TEST_F(StorageTest, basic_storage) {
+TEST_F(StorageTest, storage_spaces_basic) {
     hoNDArray<float> x(10);
     std::fill(x.begin(), x.end(), 23);
     storage.session->store("stuff", x);
@@ -272,7 +272,7 @@ TEST_F(StorageTest, basic_storage) {
     ASSERT_EQ(y, *item);
 }
 
-TEST_F(StorageTest, larger_storage) {
+TEST_F(StorageTest, storage_spaces_larger_data) {
     hoNDArray<float> x(1024 * 255);
     std::fill(x.begin(), x.end(), 23);
     storage.session->store("larger_storage_test", x);
@@ -281,7 +281,7 @@ TEST_F(StorageTest, larger_storage) {
     ASSERT_EQ(x, *item);
 }
 
-TEST_F(StorageTest, image_test) {
+TEST_F(StorageTest, storage_spaces_image_data) {
     Core::Image<float> image;
 
     auto& [header, data, meta] = image;
