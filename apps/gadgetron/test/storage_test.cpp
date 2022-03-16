@@ -213,6 +213,16 @@ TEST_F(StorageTest, storage_client_supports_time_to_live) {
     ASSERT_FALSE(resp.expires.has_value());
 }
 
+TEST_F(StorageTest, storage_client_handles_trailing_slash_in_address) {
+    StorageClient storage_client(storage_address + "/");
+    ASSERT_FALSE(storage_client.health_check().has_value());
+}
+
+TEST_F(StorageTest, storage_client_healthcheck_returns_error_when_address_invalid) {
+    StorageClient storage_client(storage_address + "/foobar");
+    ASSERT_TRUE(storage_client.health_check().has_value());
+}
+
 TEST_F(StorageTest, basic_storage) {
     hoNDArray<float> x(10);
     std::fill(x.begin(), x.end(), 23);
