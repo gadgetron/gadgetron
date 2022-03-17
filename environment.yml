@@ -43,7 +43,7 @@ dependencies:
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
   - pip=21.2.4
-  - plplot=5.11.1
+  - plplot=5.13.0
   - pugixml=1.11.4                # dev
   - pyfftw=0.12.0
   - python=3.9.7
