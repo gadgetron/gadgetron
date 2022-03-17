@@ -47,9 +47,6 @@ def check_and_get_model(model_host, model_file, model_dest, model_sha256):
         model_file [str] : model file name
         model_dest [str] : destination path to store the model
         model_sha256 [str] : model sha256 hash
-    
-    Return:
-        0 or 1 for success or fail
         
     If the model already exist, check its integrity; if invalid, download file
     If model cannot be downloaded, an exception is thrown
@@ -62,31 +59,31 @@ def check_and_get_model(model_host, model_file, model_dest, model_sha256):
         
         # assemble the source and destination of model
         model_url = model_host + model_file
-        destination = os.path.join(model_dest, model_file)
+        destination = os.path.join(model_dest, model_sha256, model_file)
         
         print(f"check_and_get_model,  model_url is {model_url}")
         print(f"check_and_get_model,  destination is {destination}")
         
-        # make sure destination exist
-        os.makedirs(model_dest, exist_ok=True)
-        
-        # download the model if not exist
-        if(not os.path.isfile(destination)):
-            with model_file_lock(model_dest):
+        with model_file_lock(model_dest):
+            # make sure destination exist
+            os.makedirs(model_dest, exist_ok=True)
+            
+            # download the model if not exist
+            if(not os.path.isfile(destination)):            
                 print(f"check_and_get_model, start downloading model")
                 urllib.request.urlretrieve(model_url, destination)
                 print(f"check_and_get_model, finish downloading model")
 
-        if not is_model_valid(destination, model_sha256):
-            print(f"Downloaded model file {destination} failed in sha256 validation.")
-            with model_file_lock(model_dest):
-                urllib.request.urlretrieve(model_url, destination)
-                
             if not is_model_valid(destination, model_sha256):
-                print(f"Newly downloaded model file {destination} failed in sha256 validation.")
-                raise "invalid model"
-        else:
-            print(f"Downloaded model file {destination} succeeded in sha256 validation.")
+                print(f"Downloaded model file {destination} failed in sha256 validation.")
+                urllib.request.urlretrieve(model_url, destination)
+                    
+                if not is_model_valid(destination, model_sha256):
+                    print(f"Newly downloaded model file {destination} failed in sha256 validation.")
+                    raise "invalid model"
+            else:
+                print(f"Downloaded model file {destination} succeeded in sha256 validation.")
+                
     except Exception as e:
             print("Error happened in check_and_get_model ... ")
             print(e)
