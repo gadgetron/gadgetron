@@ -14,11 +14,12 @@ class model_file_lock:
     Adaptive from https://stackoverflow.com/questions/6931342/system-wide-mutex-in-python-on-linux
     """
     
-    def __init__(self, model_dest):
+    def __init__(self, model_dest, model_sha256):
         self.model_dest = model_dest
+        self.model_sha256 = model_sha256
     
     def __enter__ (self):
-        self.fp = open(os.path.join(self.model_dest, "ai_model_lockfile.lck"), 'w')
+        self.fp = open(os.path.join(self.model_dest, self.model_sha256 + "_ai_model_lockfile.lck"), 'w')
         fcntl.flock(self.fp.fileno(), fcntl.LOCK_EX)
 
     def __exit__ (self, _type, value, tb):
@@ -59,15 +60,12 @@ def check_and_get_model(model_host, model_file, model_dest, model_sha256):
         
         # assemble the source and destination of model
         model_url = model_host + model_file
-        destination = os.path.join(model_dest, model_sha256, model_file)
+        destination = os.path.join(model_dest, model_file)
         
         print(f"check_and_get_model,  model_url is {model_url}")
         print(f"check_and_get_model,  destination is {destination}")
-        
-        with model_file_lock(model_dest):
-            # make sure destination exist
-            os.makedirs(model_dest, exist_ok=True)
-            
+                
+        with model_file_lock(model_dest, model_sha256):
             # download the model if not exist
             if(not os.path.isfile(destination)):            
                 print(f"check_and_get_model, start downloading model")
