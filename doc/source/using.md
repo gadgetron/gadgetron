@@ -154,3 +154,13 @@ plt.imshow(data[0,:,:])
 ```
 
 In this case, you should see an image of the Shepp-Logan phantom.
+
+## Storage Server
+
+Gadgetron uses a [storage server](https://github.com/ismrmrd/mrd-storage-server) to persist data that subsequent reconstructions may depend on. The storage server address is specified as a command-line argument to gadgetron:
+
+```bash
+gadgetron --storage-address https://my-storage-server:3333
+```
+
+For convenience during development, Gadgetron will start a storage server if no address is specified. However, for production scenarios, we stongly recommend setting up the storage server ahead of time and passing in its URL to Gadgetron.
