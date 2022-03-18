@@ -64,7 +64,7 @@ def check_and_get_model(model_host, model_file, model_dest, model_sha256):
         
         print(f"check_and_get_model,  model_url is {model_url}")
         print(f"check_and_get_model,  destination is {destination}")
-                
+                   
         with model_file_lock(model_dest, model_sha256):
             # download the model if not exist
             if(not os.path.isfile(destination)):            

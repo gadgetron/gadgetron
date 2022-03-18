@@ -293,3 +293,21 @@ def perform_cmr_landmark_detection(im, model, p_thresh=0.1, oper_RO=320, oper_E1
     print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  im_used at final is {im_used.shape}")
 
     return pts.astype(np.float32), probs.astype(np.float32), im_used.astype(np.float32)
+
+def perform_cmr_landmark_detection_model(im, model_dir, model_file, p_thresh=0.1, oper_RO=320, oper_E1=320):
+    """Perform detection with model loading
+
+    Args:
+        im : [RO, E1, N],image
+        model_dir (str): folder to model
+        model_file (str): model file
+        p_thresh: if max(prob)<p_thresh, then no landmark is found
+        oper_RO, oper_E1: expected array size of model. Image will be padded.
+        
+    Output:
+        pts: [N_pts, 2, N], landmark points, if no landmark, it is -1
+    """
+    
+    model = load_model_onnx(model_dir, model_file)
+    pts, probs, im_used = perform_cmr_landmark_detection(im=im, model=model, p_thresh=p_thresh, oper_RO=oper_RO, oper_E1=oper_E1)
+    return pts

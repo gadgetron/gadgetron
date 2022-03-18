@@ -100,13 +100,6 @@ namespace Gadgetron {
             PythonFunction<> check_and_get_model("gadgetron_cmr_landmark_detection_util", "check_and_get_model");
             check_and_get_model(this->model_url.value(), this->model_file.value(), this->gt_model_home_, this->model_file_sha256.value());
             gt_timer_.stop();
-
-            // read in the model
-            gt_timer_.start("gadgetron_cmr_landmark_detection, load_model_onnx");
-            PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
-            model_ = load_model_onnx(this->gt_model_home_, this->model_file.value());
-            bp::incref(model_.ptr());
-            gt_timer_.stop();
         }
 
         return GADGET_OK;
@@ -124,29 +117,29 @@ namespace Gadgetron {
 
         // -------------------------------------------------------------
 
-        IsmrmrdImageArray* data = m1->getObjectPtr();
+        IsmrmrdImageArray lax = *m1->getObjectPtr();
 
         // print out data info
         if (verbose.value())
         {
             GDEBUG_STREAM("----> CmrRealTimeLAXCineAIAnalysisGadget::process(...) has been called " << process_called_times_ << " times ...");
             std::stringstream os;
-            data->data_.print(os);
+            lax.data_.print(os);
             GDEBUG_STREAM(os.str());
         }
 
         // -------------------------------------------------------------
 
-        size_t encoding = (size_t)data->meta_[0].as_long("encoding", 0);
+        size_t encoding = (size_t)lax.meta_[0].as_long("encoding", 0);
         GADGET_CHECK_RETURN(encoding < num_encoding_spaces_, GADGET_FAIL);
 
-        size_t RO = data->data_.get_size(0);
-        size_t E1 = data->data_.get_size(1);
-        size_t E2 = data->data_.get_size(2);
-        size_t CHA = data->data_.get_size(3);
-        size_t N = data->data_.get_size(4);
-        size_t S = data->data_.get_size(5);
-        size_t PHS = data->data_.get_size(6);
+        size_t RO = lax.data_.get_size(0);
+        size_t E1 = lax.data_.get_size(1);
+        size_t E2 = lax.data_.get_size(2);
+        size_t CHA = lax.data_.get_size(3);
+        size_t N = lax.data_.get_size(4);
+        size_t S = lax.data_.get_size(5);
+        size_t PHS = lax.data_.get_size(6);
 
         std::stringstream os;
         os << "_encoding_" << encoding << "_processing_" << process_called_times_;
@@ -156,13 +149,10 @@ namespace Gadgetron {
 
         if (!this->debug_folder_full_path_.empty())
         {
-            gt_exporter_.export_array_complex(data->data_, this->debug_folder_full_path_ + "data" + str);
+            gt_exporter_.export_array_complex(lax.data_, this->debug_folder_full_path_ + "data" + str);
         }
 
         // -------------------------------------------------------------
-
-        // copy the incoming image array
-        IsmrmrdImageArray lax = *data;
 
         // send out the incoming images first
         if (this->next()->putq(m1) == -1)
@@ -172,8 +162,9 @@ namespace Gadgetron {
             return GADGET_FAIL;
         }
 
+
         // call the AI analysis
-        IsmrmrdImageArray lax_ai, report;
+        IsmrmrdImageArray lax_ai;
         int status = this->perform_LAX_detection_AI(lax, lax_ai);
 
         // send out AI analysis results
@@ -199,6 +190,11 @@ namespace Gadgetron {
     {
         GDEBUG_CONDITION_STREAM(true, "CmrRealTimeLAXCineAIAnalysisGadget - close(flags) : " << flags);
         if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
+
+        if (flags != 0)
+        {
+        }
+        
         return GADGET_OK;
     }
 
@@ -452,20 +448,19 @@ namespace Gadgetron {
 
             // ---------------------------------------------------------
             // call cmr landmark detection
-            hoNDArray<float> pts, probs;
+            hoNDArray<float> pts;
 
             if(!this->gt_home_.empty())
             {
                 GDEBUG_STREAM("=============================================");
 
                 gt_timer_.start("gadgetron_cmr_landmark_detection_util, perform_cmr_landmark_detection");
-                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
+                PythonFunction< hoNDArray<float> > perform_cmr_landmark_detection_model("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection_model");
                 float p_thresh=0.1;
-                std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, this->model_, p_thresh, this->oper_RO.value(), this->oper_E1.value());
+                pts = perform_cmr_landmark_detection_model(lax_images, this->gt_model_home_, this->model_file.value(), p_thresh, this->oper_RO.value(), this->oper_E1.value());
                 gt_timer_.stop();
 
                 pts.print(std::cout);  
-                probs.print(std::cout);
 
                 GDEBUG_STREAM("=============================================");
 
@@ -474,13 +469,6 @@ namespace Gadgetron {
                     std::stringstream str;
                     str << "lax_images_landmark_pts";
                     gt_exporter_.export_array(pts, this->debug_folder_full_path_ + "/" + str.str());
-                }
-
-                if (!this->debug_folder_full_path_.empty())
-                {
-                    std::stringstream str;
-                    str << "lax_images_landmark_probs";
-                    gt_exporter_.export_array(probs, this->debug_folder_full_path_ + "/" + str.str());
                 }
 
                 // -------------------------------------------
