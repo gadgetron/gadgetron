@@ -42,6 +42,7 @@ dependencies:
   - ninja=1.10.2                  # dev
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
+  - onnxruntime=1.10.0
   - pip=21.2.4
   - plplot=5.11.2
   - pugixml=1.11.4                # dev
