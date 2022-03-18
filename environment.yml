@@ -6,7 +6,7 @@ channels:
   - bioconda
   - defaults
   - intel
-  - eumetsat
+  - cefca
 dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
@@ -43,7 +43,7 @@ dependencies:
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
   - pip=21.2.4
-  - plplot=5.13.0
+  - plplot=5.11.2
   - pugixml=1.11.4                # dev
   - pyfftw=0.12.0
   - python=3.9.7
@@ -57,7 +57,6 @@ dependencies:
   - sphinx_rtd_theme=0.4.3        # dev
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
-  - urllib3=1.25.11
   - valgrind=3.17.0               # dev
   - xsdata=22.2
   - pip:
