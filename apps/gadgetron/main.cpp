@@ -40,8 +40,9 @@ int main(int argc, char *argv[]) {
                 value<std::string>(),
                 "External address of a storage server. If not provided, a storage server will be started.")
             ("storage_port,s",
-                value<unsigned short>()->default_value(9112),
-                "Port on which to run the storage server.")
+                value<unsigned short>(),
+                "Port on which to run the storage server. "
+                "If no port is provided, a port offset from the port argument (-p) is selected.")
             ("database_dir,D",
                 value<path>()->default_value(default_database_folder()),
                 "Directory in which to store the storage server database.")

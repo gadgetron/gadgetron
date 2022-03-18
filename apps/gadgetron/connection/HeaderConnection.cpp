@@ -4,7 +4,7 @@
 #include <map>
 #include <iostream>
 
-#include "RESTStorageClient.h"
+#include "storage.h"
 #include "Handlers.h"
 #include "StreamConnection.h"
 #include "VoidConnection.h"
@@ -113,7 +113,7 @@ namespace Gadgetron::Server::Connection::HeaderConnection {
             paths,
             args,
             storage_address,
-            Storage::setup_storage(storage_address, header)
+            setup_storage_spaces(storage_address, header)
         };
 
         auto process = context.header ? StreamConnection::process : VoidConnection::process;

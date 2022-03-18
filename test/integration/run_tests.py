@@ -333,6 +333,8 @@ def main():
     print("\n{} tests passed. {} tests failed. {} tests skipped.".format(len(passed), len(failed), len(skipped)))
     print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
+    sys.exit(bool(failed))
+
 
 if __name__ == '__main__':
     main()

@@ -1,18 +1,25 @@
 name: gadgetron
 channels:
-  - nvidia/label/cuda-11.6.0
+  - gadgetron
+  - nvidia/label/cuda-11.6.1
   - conda-forge
+  - bioconda
   - defaults
   - intel
 dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
+  - breathe=4.32.0                # dev
   - cmake=3.21.3                  # dev
+  - cpr=1.7.2
   - cuda-libraries-dev            # cuda, dev
   - cuda-libraries                # cuda
   - cuda-runtime                  # cuda
   - cuda-nvcc                     # cuda, dev
+  - dcmtk=3.6.1
+  - doxygen=1.9.2                 # dev
   - fftw=3.3.9
+  - gadgetron-python=1.3.6
   - gcc_linux-64=9.4.0            # dev
   - gdb=11.1                      # dev
   - gmock=1.10.0                  # dev
@@ -20,6 +27,9 @@ dependencies:
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
   - hdf5=1.10.6
+  - howardhinnant_date=3.0.1      # dev
+  - ismrmrd=1.7.1
+  - ismrmrd-python=1.9.8
   - jupyter=1.0.0                 # dev
   - libblas=*=*mkl
   - libcurl=7.79.1                # dev
@@ -30,6 +40,7 @@ dependencies:
   - memkind=1.10.1
   - mkl=2022.0.1
   - mkl-include=2022.0.1          # dev
+  - mrd-storage-server=0.0.8
   - ninja=1.10.2                  # dev
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
@@ -37,14 +48,16 @@ dependencies:
   - pugixml=1.11.4                # dev
   - pyfftw=0.12.0
   - python=3.9.7
-  - rocksdb=6.13.3
+  - range-v3=0.11.0
+  - recommonmark=0.7.1            # dev
   - scipy=1.7.1
+  - siemens_to_ismrmrd=1.2.2
   - shellcheck=0.7.2              # dev
+  - sphinx=4.4.0                  # dev
+  - sphinx_rtd_theme=0.4.3        # dev
   - supervisor=4.2.2
   - sysroot_linux-64=2.17
   - valgrind=3.17.0               # dev
-  - xsdata=21.12
+  - xsdata=22.2
   - pip:
-    - ismrmrd==1.9.5
-    - gadgetron==1.3.6
     - junitparser==2.2.0

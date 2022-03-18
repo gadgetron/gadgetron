@@ -9,7 +9,6 @@
 #include "Writer.h"
 #include "Channel.h"
 #include "Context.h"
-#include "Address.h"
 
 namespace Gadgetron::Server::Connection {
 
