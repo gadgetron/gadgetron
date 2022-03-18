@@ -81,7 +81,7 @@ namespace Gadgetron {
 
 
         NoiseHandler load_or_gather() const;
-        MeasurementSpace measurement_storage;
+        std::shared_ptr<MeasurementSpace> measurement_storage;
     };
 }
 BOOST_HANA_ADAPT_STRUCT(Gadgetron::NoiseCovariance,header,noise_dwell_time_us,noise_covariance_matrix);
