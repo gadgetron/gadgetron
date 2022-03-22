@@ -1,10 +1,10 @@
 {
 	"name": "Gadgetron",
 	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			"BASE_IMAGE": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest"
-		}
+		"dockerfile": "../Dockerfile",
+		"target": "gadgetron_dev_cuda",
+		"context": "../",
+		"cacheFrom": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest",
 	},
 	"containerEnv": {
 		"DOCKER_BUILDKIT": "1",
@@ -34,7 +34,7 @@
 
 	"mounts": [
 		// Bind mount docker socket under an alias to support docker-from-docker
-		"source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
+		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
@@ -59,5 +59,9 @@
 	"overrideCommand": false,
 	// Use the non-root user
 	"remoteUser": "vscode",
+	"features": {
+		"docker-from-docker": "20.10",
+		"git": "os-provided"
+	},
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }
