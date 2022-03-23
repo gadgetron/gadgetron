@@ -9,5 +9,4 @@ set -eo pipefail
 # activate the environment
 conda activate gadgetron
 
-# exec the cmd/command in this process, making it pid 1
 exec gadgetron "$@"
