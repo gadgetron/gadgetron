@@ -109,11 +109,11 @@ USER ${USER_UID}
 RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
 RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/start_supervisor /opt/
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/supervisord.conf /opt/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
+RUN chmod +x /opt/entrypoint.sh
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
-CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
 FROM gadgetron_baseimage AS gadgetron_rt_nocuda
 ARG USER_UID
@@ -121,8 +121,8 @@ USER ${USER_UID}
 RUN grep -v "#.*\<cuda\|dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
 RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/start_supervisor /opt/
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/supervisord.conf /opt/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
+RUN chmod +x /opt/entrypoint.sh
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
-CMD ["/opt/conda/bin/conda", "run", "-n", "gadgetron", "--no-capture-output", "/opt/start_supervisor"]
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
