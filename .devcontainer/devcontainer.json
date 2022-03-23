@@ -33,8 +33,6 @@
 	// "runArgs": ["--init", "--network=host", "--gpus=all"],
 
 	"mounts": [
-		// Bind mount docker socket under an alias to support docker-from-docker
-		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
@@ -56,11 +54,16 @@
 		"oderwat.indent-rainbow",
 		"timonwong.shellcheck"
 	],
-	"overrideCommand": false,
 	// Use the non-root user
 	"remoteUser": "vscode",
 	"features": {
-		"docker-from-docker": "20.10",
+		"common": {
+			"username": "automatic"
+		},
+		"docker-from-docker": {
+			"version": "latest",
+			"moby": "false"
+		},
 		"git": "os-provided"
 	},
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
