@@ -64,12 +64,14 @@ ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
 RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+USER root
 
 FROM gadgetron_baseimage AS gadgetron_dev_nocuda
 ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
 RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+USER root
 
 FROM gadgetron_dev_cuda AS gadgetron_cudabuild
 ARG USER_UID
