@@ -1,48 +1,31 @@
+#pragma once
+
 #ifndef IMAGESORTGADGET_H
 #define IMAGESORTGADGET_H
 
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
-#include "gadgetron_mricore_export.h"
-
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "Node.h"
+#include "Types.h"
 
 namespace Gadgetron{
 
   struct ImageEntry
   {
+    Core::AnyImage image_;
     int index_;
-    GadgetContainerMessage<ISMRMRD::ImageHeader>* mb_;
   };
 
-  bool image_entry_compare(const ImageEntry& i, const ImageEntry& j)
-  {
-    return (i.index_<j.index_);
-  }
-
-  class EXPORTGADGETSMRICORE ImageSortGadget : public Gadget1 < ISMRMRD::ImageHeader >
-  {
-  public:
-    GADGET_DECLARE(ImageSortGadget);
-
-  protected:
-    GADGET_PROPERTY_LIMITS(sorting_dimension, std::string, "Dimension that data will be sorted by", "slice",
-			   GadgetPropertyLimitsEnumeration, 
-			   "average",
-			   "slice",
-			   "contrast",
-			   "phase",
-			   "repetition",
-			   "set");
-
-    virtual int close(unsigned long flags);
-    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
-    int index(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
-    
-    std::vector<ImageEntry> images_;
-    
+  class ImageSortGadget : public Core::ChannelGadget<Core::AnyImage> {
+    public:
+      GADGET_DECLARE(ImageSortGadget);
+      ImageSortGadget(const Core::Context &, const Core::GadgetProperties &);
+      void process(Core::InputChannel<Core::AnyImage> &, Core::OutputChannel &) override;
+    protected:
+      //GadgetPropertyLimitsEnumeration<std::string> limits { "average", "slice", "contrast", "phase", "repetition", "set" };
+      NODE_PROPERTY(sorting_dimension, std::string, "Dimension that data will be sorted by", "slice"); // TODO: Add property limits back on? 
+      std::vector<ImageEntry> images_;
   };
 }
 
