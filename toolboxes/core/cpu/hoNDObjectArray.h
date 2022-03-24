@@ -1,6 +1,6 @@
 /** \file   hoNDObjectArray.h
-\brief  CPU-based N-dimensional array for object pointers
-if delete_data_on_destruct == true, the object will be released; otherwise, only the object array memory is released
+\brief  N-dimensional array for objects
+        The stored objects should support read/write interfaces
 \author Hui Xue
 */
 
