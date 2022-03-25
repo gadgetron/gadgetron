@@ -13,7 +13,6 @@ set(cmr_header_fiels cmr_export.h
                     cmr_strain_analysis.h 
                     cmr_radial_thickening.h 
                     cmr_analytical_strain.h 
-                    cmr_file_and_directory_handling.h 
                     cmr_image_container_util.h 
                     cmr_ismrmrd_util.h 
                     )
@@ -28,7 +27,6 @@ set(cmr_src_fiels cmr_kspace_binning.cpp
                 cmr_strain_analysis.cpp 
                 cmr_radial_thickening.cpp 
                 cmr_analytical_strain.cpp 
-                cmr_file_and_directory_handling.cpp 
                 cmr_image_container_util.cpp 
                 cmr_ismrmrd_util.cpp 
                 )

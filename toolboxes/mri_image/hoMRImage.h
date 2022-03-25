@@ -190,15 +190,15 @@ namespace Gadgetron
 }
 
 template<class T, unsigned int D>
-void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoMRImage<T, D> &array);
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoMRImage<T, D> &image);
 
 template<class T, unsigned int D>
-void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &array);
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image);
 
 template<class T, unsigned int D>
-void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &array);
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &image);
 
 template<class T, unsigned int D>
-void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &array);
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image);
 
 #include "hoMRImage.hxx"
