@@ -1,34 +1,30 @@
 #ifndef RATELIMITGADGET_H
 #define RATELIMITGADGET_H
 
+#pragma once
+
 #include "Gadget.h"
-#include "hoNDArray.h"
+#include "Node.h"
 #include "gadgetron_mricore_export.h"
-
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
 #include <chrono>
+#include <complex>
+#include <ismrmrd/ismrmrd.h>
 
-namespace Gadgetron{
-  
-  class EXPORTGADGETSMRICORE RateLimitGadget :
-  public BasicPropertyGadget
-    {
-      
+namespace Gadgetron {
+
+    class EXPORTGADGETSMRICORE RateLimitGadget : public Core::GenericChannelGadget {
     public:
-      GADGET_DECLARE(RateLimitGadget);
-      
-      RateLimitGadget();
-      ~RateLimitGadget();
-      
+        RateLimitGadget(
+                const Core::Context &context,
+                const Core::GadgetProperties &properties
+        ) : GenericChannelGadget(context,properties) {};
+
     protected:
-      GADGET_PROPERTY(sleep_time_, int, "sleep_time", 0);
-
-      virtual int process_config(ACE_Message_Block* mb);
-        int process(ACE_Message_Block* mb);
-
-
+        void process(Core::GenericInputChannel& in,
+                    Core::OutputChannel& out) override;
+                    
         std::chrono::milliseconds sleep_time;
+        NODE_PROPERTY(sleep_time_, int, "sleep_time", 0);
 
     };
 }
