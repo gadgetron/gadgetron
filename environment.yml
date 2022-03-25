@@ -1,7 +1,7 @@
 name: gadgetron
 channels:
   - gadgetron
-  - nvidia/label/cuda-11.6.1
+  - nvidia
   - conda-forge
   - bioconda
   - defaults
@@ -12,10 +12,10 @@ dependencies:
   - breathe=4.32.0                # dev
   - cmake=3.21.3                  # dev
   - cpr=1.7.2
-  - cuda-libraries-dev            # cuda, dev
-  - cuda-libraries                # cuda
-  - cuda-runtime                  # cuda
-  - cuda-nvcc                     # cuda, dev
+  - cuda-libraries-dev=11.6.1     # cuda, dev
+  - cuda-libraries=11.6.1         # cuda
+  - cuda-runtime=11.6.1           # cuda
+  - cuda-nvcc=11.6.112            # cuda, dev
   - dcmtk=3.6.1
   - doxygen=1.9.2                 # dev
   - fftw=3.3.9
