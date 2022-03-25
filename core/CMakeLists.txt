@@ -11,6 +11,7 @@ add_subdirectory(distributed)
 add_library(gadgetron_core SHARED
         Channel.cpp
         Gadget.cpp
+        IsmrmrdContextVariables.cpp
         LegacyACE.cpp
         Message.cpp
         Response.cpp
@@ -27,6 +28,7 @@ target_link_libraries(gadgetron_core
         gadgetron_toolbox_cpucore
         Boost::boost
         Boost::filesystem
+        cpr::cpr
         )
 
 target_include_directories(gadgetron_core PUBLIC

@@ -9,14 +9,14 @@ The Gadgetron can be installed in a [conda](https://conda.io) environment. To in
 ```yaml
 name: gadgetron
 channels:
-  - nvidia/label/cuda-11.6.1
+  - nvidia
   - gadgetron
   - conda-forge
   - bioconda
   - defaults
   - intel
 dependencies:
-  - gadgetron>=4.1.5
+  - gadgetron
   - siemens_to_ismrmrd>=1.2
 ```
 

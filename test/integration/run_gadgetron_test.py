@@ -27,7 +27,8 @@ import pathlib
 import tempfile
 import itertools
 import subprocess
-import socket
+import urllib.request
+import urllib.error
 
 default_config_values = {
     "DEFAULT": {
@@ -112,27 +113,43 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    stderr=log)
 
 
-def wait_for_server(port, retries=20):
-    with socket.socket(socket.AF_INET) as sock:
-
-        for i in range(retries):
-            if sock.connect_ex(("localhost", int(port))) == 0:
-                return
+def wait_for_storage_server(port, proc, retries=20):
+    for i in range(retries):
+        try:
+            urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
+            return
+        except (urllib.error.URLError, urllib.error.HTTPError) as e:
+            if i == retries - 1 or proc.poll() is not None:
+                raise RuntimeError("Unable to get a successful response from storage server.") from e
             time.sleep(0.2)
-        raise RuntimeError("Unable to connect to server")
 
 
 def start_storage_server(*, log, port, storage_folder):
-    print("Starting Gadgetron Storage Server on port", port)
-    proc = subprocess.Popen(["gadgetron_storage_server",
-                             "--storage_port", port,
-                             "--storage_dir", storage_folder,
-                             "--database_dir", storage_folder + "/database"],
-                            stdout=log,
-                            stderr=log,
-                            env=environment)
-    wait_for_server(port)
-    return proc
+    storage_server_environment = environment.copy()
+    storage_server_environment["MRD_STORAGE_SERVER_PORT"] = port
+    storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
+    storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
+    
+    retries = 5
+    for i in range(retries):
+        print("Starting MRD Storage Server on port", port)
+        proc = subprocess.Popen(["mrd-storage-server", "--require-parent-pid", str(os.getpid())],
+                                stdout=log,
+                                stderr=log,
+                                env=storage_server_environment)
+        
+        try:
+            wait_for_storage_server(port, proc)
+            return proc
+        except:
+            # If the process has exited, it might be because the 
+            # port was in use. This can be because the previous storage server
+            # instance was just killed. So we try again.
+            if proc.poll() is not None and i < retries:
+                time.sleep(1)
+            else:
+                proc.kill()
+                raise
 
 
 def start_gadgetron_instance(*, log, port, storage_address, env=environment):
@@ -141,7 +158,6 @@ def start_gadgetron_instance(*, log, port, storage_address, env=environment):
                             stdout=log,
                             stderr=log,
                             env=env)
-    wait_for_server(port)
     return proc
 
 
@@ -321,7 +337,6 @@ def ensure_storage_server(args, config):
     class Storage:
         def __init__(self, address):
             self.address = address
-
     if args.external:
         return
 

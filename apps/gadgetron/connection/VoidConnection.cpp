@@ -8,7 +8,6 @@
 #include "Reader.h"
 #include "Channel.h"
 #include "Context.h"
-#include "RESTStorageClient.h"
 
 
 namespace {
