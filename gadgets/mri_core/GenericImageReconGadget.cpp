@@ -1201,8 +1201,8 @@ namespace Gadgetron {
 
     int GenericImageReconGadget::process(ACE_Message_Block *mb)
     {
-        GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 2> > >* m1 = nullptr;
-        GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
+        GadgetContainerMessage< hoNDArray< hoMRImage<ValueType, 2> > >* m1 = nullptr;
+        GadgetContainerMessage< hoNDArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
         GadgetContainerMessage< ISMRMRD::ImageHeader >* m3 = nullptr;
 
         if (m1 = AsContainerMessage<Image2DBufferType>(mb))
@@ -1808,7 +1808,7 @@ namespace Gadgetron {
                 }
             }
 
-            Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 2> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 2> > >();
+            Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 2> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 2> > >();
             cm1->getObjectPtr()->copyFrom(images);
 
             if (anchor != NULL)
@@ -2100,7 +2100,7 @@ namespace Gadgetron {
                 }
             }
 
-            Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 3> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 3> > >();
+            Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 3> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 3> > >();
             cm1->getObjectPtr()->copyFrom(images);
 
             if (anchor != NULL)
@@ -2129,7 +2129,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
+    bool GenericImageReconGadget::releaseImageBuffer(hoNDArray< hoMRImage<ValueType, 2> >& buf)
     {
         try
         {
@@ -2144,7 +2144,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
+    bool GenericImageReconGadget::releaseImageBuffer(hoNDArray< hoMRImage<ValueType, 3> >& buf)
     {
         try
         {
