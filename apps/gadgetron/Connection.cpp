@@ -8,7 +8,7 @@
 #if !(_WIN32)
 #include <cstdlib>
 #include <unistd.h>
-#include <wait.h>
+#include <sys/wait.h>
 #endif
 
 using namespace Gadgetron::Server::Connection;
