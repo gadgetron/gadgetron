@@ -1,85 +1,86 @@
 /*
 *       ImageResizingGadget.cpp
-*       Author: Hui Xue
+*       Author: Hui Xue & Andrew Dupuis
 */
 
 #include "ImageResizingGadget.h"
+#include "Node.h"
+#include "Types.h"
+#include "log.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
 
-namespace Gadgetron
-{
-    ImageResizingGadget::ImageResizingGadget()
-    {
-    }
+using namespace Gadgetron::Core;
 
-    ImageResizingGadget::~ImageResizingGadget()
-    {
-    }
+namespace {
 
-    int ImageResizingGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2)
-    {
-        ArrayType* input_array = m2->getObjectPtr();
-
-        ArrayType output_array;
+    template<class T>
+    Image<T> resize(const Image<T> &image, size_t new_RO, double scale_factor_RO, size_t new_E1, double scale_factor_E1, size_t new_E2, double scale_factor_E2 , size_t order_interpolator) {
+        auto header = std::get<ISMRMRD::ImageHeader>(image);
+        const auto &input_array = std::get<hoNDArray<T>>(image);
+        ISMRMRD::ImageHeader output_header = ISMRMRD::ImageHeader(header);
+        hoNDArray<T> output_array;
 
         std::vector<size_t> dims;
-        input_array->get_dimensions(dims);
+        input_array.get_dimensions(dims);
 
         size_t RO = dims[0];
         size_t E1 = dims[1];
         size_t E2 = 1;
 
-        if (this->new_RO.value() > 0)
+        if (new_RO > 0)
         {
-            dims[0] = this->new_RO.value();
+            dims[0] = new_RO;
         }
-        else if (this->scale_factor_RO.value()>0)
+        else if (scale_factor_RO > 0)
         {
-            dims[0] = (size_t)(dims[0]*this->scale_factor_RO.value() + 0.5);
-        }
-
-        if (this->new_E1.value() > 0)
-        {
-            dims[1] = this->new_E1.value();
-        }
-        else if (this->scale_factor_E1.value() > 0)
-        {
-            dims[1] = (size_t)(dims[1] * this->scale_factor_E1.value() + 0.5);
+            dims[0] = (size_t)(dims[0]*scale_factor_RO + 0.5);
         }
 
-        if (input_array->get_number_of_dimensions() > 2)
+        if (new_E1 > 0)
+        {
+            dims[1] = new_E1;
+        }
+        else if (scale_factor_E1 > 0)
+        {
+            dims[1] = (size_t)(dims[1] * scale_factor_E1 + 0.5);
+        }
+
+        if (input_array.get_number_of_dimensions() > 2)
         {
             E2 = dims[2];
-            if (this->new_E2.value() > 0)
+            if (new_E2 > 0)
             {
-                dims[2] = this->new_E2.value();
+                dims[2] = new_E2;
             }
-            else if (this->scale_factor_E2.value() > 0)
+            else if (scale_factor_E2 > 0)
             {
-                dims[2] = (size_t)(dims[2] * this->scale_factor_E2.value() + 0.5);
+                dims[2] = (size_t)(dims[2] * scale_factor_E2 + 0.5);
             }
         }
 
-        if (input_array->get_number_of_dimensions() == 2)
+        if (input_array.get_number_of_dimensions() == 2)
         {
-            typedef hoNDImage<ValueType, 2> ImageType;
-            ImageType input_image(RO, E1, input_array->begin()), output_image;
+            typedef hoNDImage<T, 2> ImageType;
+            ImageType input_image(RO, E1, input_array.begin());
+            ImageType output_image;
 
             hoNDBoundaryHandlerBorderValue<ImageType> bhBorderValue(input_image);
-            hoNDInterpolatorBSpline<ImageType, 2> interp(input_image, bhBorderValue, this->order_interpolator.value());
+            hoNDInterpolatorBSpline<ImageType, 2> interp(input_image, bhBorderValue, order_interpolator);
 
             Gadgetron::resampleImage(input_image, interp, dims, output_image);
 
             output_array = output_image;
         }
-        else if (input_array->get_number_of_dimensions() == 3)
+        else if (input_array.get_number_of_dimensions() == 3)
         {
-            typedef hoNDImage<ValueType, 3> ImageType;
-            ImageType input_image(RO, E1, E2, input_array->begin()), output_image;
+            typedef hoNDImage<T, 3> ImageType;
+            
+            ImageType input_image(RO, E1, E2, input_array.begin());
+            ImageType output_image;
 
             hoNDBoundaryHandlerBorderValue<ImageType> bhBorderValue(input_image);
-            hoNDInterpolatorBSpline<ImageType, 3> interp(input_image, bhBorderValue, this->order_interpolator.value());
+            hoNDInterpolatorBSpline<ImageType, 3> interp(input_image, bhBorderValue, order_interpolator);
 
             Gadgetron::resampleImage(input_image, interp, dims, output_image);
 
@@ -88,30 +89,31 @@ namespace Gadgetron
         else 
         {
             GERROR_STREAM("ImageResizingGadget, only support 2D or 3D input images ... ");
-
-            if (this->next()->putq(m1) < 0)
-            {
-                GERROR_STREAM("ImageResizingGadget, failed to pass images to next gadget ... ");
-                return GADGET_FAIL;
-            }
-
-            return GADGET_OK;
+            return image;
         }
-
-        *m2->getObjectPtr() = output_array;
-
-        m1->getObjectPtr()->matrix_size[0] = output_array.get_size(0);
-        m1->getObjectPtr()->matrix_size[1] = output_array.get_size(1);
-        m1->getObjectPtr()->matrix_size[2] = output_array.get_size(2);
-
-        if (this->next()->putq(m1) < 0)
-        {
-            GERROR_STREAM("ImageResizingGadget, failed to pass images to next gadget ... ");
-            return GADGET_FAIL;
-        }
-
-        return GADGET_OK;
+        output_header.matrix_size[0] = output_array.get_size(0);
+        output_header.matrix_size[1] = output_array.get_size(1);
+        output_header.matrix_size[2] = output_array.get_size(2);
+        return Image<T>(output_header, output_array, Core::none);
     }
+}
 
-    GADGET_FACTORY_DECLARE(ImageResizingGadget)
+namespace Gadgetron {
+
+    ImageResizingGadget::ImageResizingGadget(const Context &context, const GadgetProperties &properties)
+        : ChannelGadget(context, properties) {}
+
+    void ImageResizingGadget::process(InputChannel<Core::AnyImage> &input, OutputChannel &output) {
+
+        // Lambda, performs image resizing
+        auto resizeAndPushImage = [&](auto image){ 
+            output.push(resize(image, new_RO, new_E1, new_E2, scale_factor_RO, scale_factor_E1, scale_factor_E2, order_interpolator));   
+        };
+
+        // Add all the images from input channel to vector of ImageEntries
+        for (auto image : input) {
+          visit(resizeAndPushImage, image);
+        }
+    }
+    GADGETRON_GADGET_EXPORT(ImageResizingGadget);
 }

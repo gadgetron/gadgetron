@@ -1,43 +1,39 @@
-/** \file   ComplexToFloatGadget.h
-    \brief  This Gadget converts complex float values to float format.
-    \author Hui Xue
+/** \file   ImageResizingGadget.h
+    \brief  This Gadget resizes images 
+    \author Hui Xue & Andrew Dupuis
 */
 
 #pragma once
 
+#ifndef IMAGERESIZINGGADGET_H
+#define IMAGERESIZINGGADGET_H
+
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd/meta.h"
-#include "gadgetron_mricore_export.h"
-
-#include <ismrmrd/ismrmrd.h>
+#include "GadgetMRIHeaders.h"
+#include "Node.h"
+#include "Types.h"
 
 namespace Gadgetron
 {
-    class EXPORTGADGETSMRICORE ImageResizingGadget :public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
-    {
+
+
+  class ImageResizingGadget : public Core::ChannelGadget<Core::AnyImage> {
     public:
-
-        GADGET_DECLARE(ImageResizingGadget);
-
-        typedef std::complex<float> ValueType;
-        typedef hoNDArray< ValueType > ArrayType;
-
-        ImageResizingGadget();
-        virtual ~ImageResizingGadget();
-
-        GADGET_PROPERTY(new_RO, size_t, "New image size along RO; if 0, no effect", 0);
-        GADGET_PROPERTY(new_E1, size_t, "New image size along E1; if 0, no effect", 0);
-        GADGET_PROPERTY(new_E2, size_t, "New image size along E2; if 0, no effect", 0);
-
-        GADGET_PROPERTY(scale_factor_RO, double, "Scale factors; if 0, no effect", 1.0);
-        GADGET_PROPERTY(scale_factor_E1, double, "Scale factors; if 0, no effect", 1.0);
-        GADGET_PROPERTY(scale_factor_E2, double, "Scale factors; if 0, no effect", 1.0);
-
-        // BSpline interpolation was used
-        GADGET_PROPERTY(order_interpolator, size_t, "Order of interpolator; higher order may increase noise level", 5);
-
+      GADGET_DECLARE(ImageResizingGadget);
+      ImageResizingGadget(const Core::Context &, const Core::GadgetProperties &);
+      void process(Core::InputChannel<Core::AnyImage> &, Core::OutputChannel &) override;
     protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2);
-    };
+      NODE_PROPERTY(new_RO, size_t, "New image size along RO; if 0, no effect", 0);
+      NODE_PROPERTY(new_E1, size_t, "New image size along E1; if 0, no effect", 0);
+      NODE_PROPERTY(new_E2, size_t, "New image size along E2; if 0, no effect", 0);
+
+      NODE_PROPERTY(scale_factor_RO, double, "Scale factors; if 0, no effect", 1.0);
+      NODE_PROPERTY(scale_factor_E1, double, "Scale factors; if 0, no effect", 1.0);
+      NODE_PROPERTY(scale_factor_E2, double, "Scale factors; if 0, no effect", 1.0);
+
+      // BSpline interpolation was used
+      NODE_PROPERTY(order_interpolator, size_t, "Order of interpolator; higher order may increase noise level", 5);
+  };
 }
+#endif //IMAGERESIZINGGADGET_H
