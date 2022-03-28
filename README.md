@@ -9,3 +9,4 @@ Documentation for the project is available at [https://gadgetron.readthedocs.io]
 ## License
 
 The Gadgetron is available under a modified MIT license. Please read [LICENSE](LICENSE) file for licensing details.
+
