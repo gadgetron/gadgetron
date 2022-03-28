@@ -4,6 +4,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <thread>
 
 #include <boost/process.hpp>
 #include <boost/program_options.hpp>

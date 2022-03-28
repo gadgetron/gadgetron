@@ -10,7 +10,6 @@
 #include "ismrmrd/xml.h"
 #include "cmr_time_stamp.h"
 #include "hoNDKLT.h"
-#include "cmr_file_and_directory_handling.h"
 #include "cmr_image_container_util.h"
 #include "cmr_ismrmrd_util.h"
 
