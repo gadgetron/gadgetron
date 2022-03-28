@@ -23,8 +23,7 @@ namespace Gadgetron {
         void process(Core::GenericInputChannel& in,
                     Core::OutputChannel& out) override;
                     
-        std::chrono::milliseconds sleep_time;
-        NODE_PROPERTY(sleep_time_, int, "sleep_time", 0);
+        NODE_PROPERTY(sleep_time, int, "Sleep Time", 0);
 
     };
 }

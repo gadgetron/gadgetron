@@ -9,9 +9,11 @@ namespace Gadgetron {
 
     void RateLimitGadget::process(Core::GenericInputChannel& in, Core::OutputChannel& out) {
         for (auto message : in) {
-            this->sleep_time = std::chrono::milliseconds(sleep_time_);
-            std::this_thread::sleep_for(this->sleep_time);
+            std::string msg = "Rate Limit || Sleep for: " + std::to_string(sleep_time) + "ms\n";
+            GDEBUG(msg.c_str());
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
             out.push_message(std::move(message));
+            GDEBUG("Rate Limit || Finished Sleep\n");
         }
     }
 

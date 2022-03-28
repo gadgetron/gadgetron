@@ -59,19 +59,19 @@
         </gadget>
 
         <gadget>
-            <name>SimpleRecon</name>
-            <dll>gadgetron_mricore</dll>
-            <classname>SimpleReconGadget</classname>
-        </gadget>
-
-        <gadget>
             <name>RateLimitGadget</name>
             <dll>gadgetron_mricore</dll>
             <classname>RateLimitGadget</classname>
             <property>
                 <name>sleep_time</name>
-                <value>5</value>
+                <value>1000</value>
             </property>
+        </gadget>
+
+        <gadget>
+            <name>SimpleRecon</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>SimpleReconGadget</classname>
         </gadget>
 
         <gadget>
