@@ -13,6 +13,49 @@
 
 namespace Gadgetron { 
 
+    // a singleton class to load model
+    // the current finding is the python runtime may not always release memory after loading in the model and related libraries
+    // as a result, repeated model loading (e.g. from multiple calls of this chain) will increase VM usage
+    // although not fully resolving the problem, making the model loading a singleton can mitigate this problme
+
+    class CmrRealTimeLAXCineAIModel
+    {
+    public:
+
+        static CmrRealTimeLAXCineAIModel* instance(const std::string& model_home, const std::string& model_file);
+
+        boost::python::object get_model();
+
+    protected:
+        CmrRealTimeLAXCineAIModel() = default;
+        static CmrRealTimeLAXCineAIModel* instance_;
+
+        static boost::python::object model_;
+    };
+
+    CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance(const std::string& model_home, const std::string& model_file)
+    {
+        if (!instance_)
+        {
+            instance_ = new CmrRealTimeLAXCineAIModel();
+
+            // let's load the model
+            PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
+            model_ = load_model_onnx(model_home, model_file);
+            bp::incref(model_.ptr());
+        }
+        return instance_;
+    }
+
+    boost::python::object CmrRealTimeLAXCineAIModel::get_model()
+    {
+        return model_;
+    }
+
+    CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance_ = NULL;
+
+    // ----------------------------------------------------
+
     CmrRealTimeLAXCineAIAnalysisGadget::CmrRealTimeLAXCineAIAnalysisGadget() : BaseClass()
     {
     }
@@ -98,6 +141,11 @@ namespace Gadgetron {
             gt_timer_.start("gadgetron_cmr_landmark_detection_util, check_and_get_model");
             PythonFunction<> check_and_get_model("gadgetron_cmr_landmark_detection_util", "check_and_get_model");
             check_and_get_model(this->model_url.value(), this->model_file.value(), this->gt_model_home_, this->model_file_sha256.value());
+            gt_timer_.stop();
+
+            // load model using the singleton
+            gt_timer_.start("CmrRealTimeLAXCineAIModel, load model");
+            model_ = CmrRealTimeLAXCineAIModel::instance(this->gt_model_home_, this->model_file.value())->get_model();
             gt_timer_.stop();
         }
 
@@ -447,16 +495,16 @@ namespace Gadgetron {
 
             // ---------------------------------------------------------
             // call cmr landmark detection
-            hoNDArray<float> pts;
+            hoNDArray<float> pts, probs;
 
             if(!this->gt_home_.empty())
             {
                 GDEBUG_STREAM("=============================================");
 
                 gt_timer_.start("gadgetron_cmr_landmark_detection_util, perform_cmr_landmark_detection");
-                PythonFunction< hoNDArray<float> > perform_cmr_landmark_detection_model("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection_model");
+                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
                 float p_thresh=0.1;
-                pts = perform_cmr_landmark_detection_model(lax_images, this->gt_model_home_, this->model_file.value(), p_thresh, this->oper_RO.value(), this->oper_E1.value());
+                std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, this->model_, p_thresh, this->oper_RO.value(), this->oper_E1.value());
                 gt_timer_.stop();
 
                 pts.print(std::cout);  
