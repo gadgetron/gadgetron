@@ -19,6 +19,7 @@ add_library(gadgetron_core SHARED
         Process.cpp
         gadgetron_paths.cpp
         io/from_string.cpp)
+
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
         SOVERSION ${GADGETRON_SOVERSION})
