@@ -24,12 +24,11 @@ namespace Gadgetron {
 
         static CmrRealTimeLAXCineAIModel* instance(const std::string& model_home, const std::string& model_file);
 
-        boost::python::object get_model();
-
+        static boost::python::object get_model() {return model_; }
+      
     protected:
         CmrRealTimeLAXCineAIModel() = default;
         static CmrRealTimeLAXCineAIModel* instance_;
-
         static boost::python::object model_;
     };
 
@@ -43,17 +42,18 @@ namespace Gadgetron {
             PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
             model_ = load_model_onnx(model_home, model_file);
             bp::incref(model_.ptr());
+	    GDEBUG_STREAM("Model is loaded in CmrRealTimeLAXCineAIModel");
         }
+	else
+	{
+	    GDEBUG_STREAM("Model has been loaded in CmrRealTimeLAXCineAIModel");  
+	}
         return instance_;
     }
 
-    boost::python::object CmrRealTimeLAXCineAIModel::get_model()
-    {
-        return model_;
-    }
-
     CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance_ = NULL;
-
+    boost::python::object CmrRealTimeLAXCineAIModel::model_ = boost::python::object();
+  
     // ----------------------------------------------------
 
     CmrRealTimeLAXCineAIAnalysisGadget::CmrRealTimeLAXCineAIAnalysisGadget() : BaseClass()
