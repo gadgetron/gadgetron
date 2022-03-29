@@ -15,10 +15,9 @@ using namespace Gadgetron::Core;
 namespace {
 
     template<class T>
-    Image<T> resize(const Image<T> &image, size_t new_RO, double scale_factor_RO, size_t new_E1, double scale_factor_E1, size_t new_E2, double scale_factor_E2 , size_t order_interpolator) {
-        auto header = std::get<ISMRMRD::ImageHeader>(image);
-        const auto &input_array = std::get<hoNDArray<T>>(image);
-        ISMRMRD::ImageHeader output_header = ISMRMRD::ImageHeader(header);
+    Image<T> resize(Image<T> &image, size_t new_RO, double scale_factor_RO, size_t new_E1, double scale_factor_E1, size_t new_E2, double scale_factor_E2 , size_t order_interpolator) {
+        auto &header = std::get<ISMRMRD::ImageHeader>(image);
+        auto &input_array = std::get<hoNDArray<T>>(image);
         hoNDArray<T> output_array;
 
         std::vector<size_t> dims;
@@ -91,10 +90,11 @@ namespace {
             GERROR_STREAM("ImageResizingGadget, only support 2D or 3D input images ... ");
             return image;
         }
-        output_header.matrix_size[0] = output_array.get_size(0);
-        output_header.matrix_size[1] = output_array.get_size(1);
-        output_header.matrix_size[2] = output_array.get_size(2);
-        return Image<T>(output_header, output_array, Core::none);
+
+        header.matrix_size[0] = output_array.get_size(0);
+        header.matrix_size[1] = output_array.get_size(1);
+        header.matrix_size[2] = output_array.get_size(2);
+        return image;
     }
 }
 
