@@ -1,4 +1,5 @@
 
+#include <mutex>
 #include "CmrRealTimeLAXCineAIAnalysisGadget.h"
 #include "hoNDImage_util.h"
 #include "GadgetronTimer.h"
@@ -22,38 +23,66 @@ namespace Gadgetron {
     {
     public:
 
-        static CmrRealTimeLAXCineAIModel* instance(const std::string& model_home, const std::string& model_file);
-
-        static boost::python::object get_model() {return model_; }
+        static void get_model_singleton(const std::string& model_home, const std::string& model_file, boost::python::object& model);
       
     protected:
         CmrRealTimeLAXCineAIModel() = default;
         static CmrRealTimeLAXCineAIModel* instance_;
-        static boost::python::object model_;
+        static std::map<std::string, boost::python::object> models_;
+        static std::mutex model_mtx_;
+
+        static void load_from_file(const std::string& model_home, const std::string& model_file, boost::python::object& model);
     };
 
-    CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance(const std::string& model_home, const std::string& model_file)
+    void CmrRealTimeLAXCineAIModel::get_model_singleton(const std::string& model_home, const std::string& model_file, boost::python::object& model)
     {
+        std::lock_guard<std::mutex> guard(model_mtx_);
+
         if (!instance_)
         {
             instance_ = new CmrRealTimeLAXCineAIModel();
 
-            // let's load the model
-            PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
-            model_ = load_model_onnx(model_home, model_file);
-            bp::incref(model_.ptr());
-	    GDEBUG_STREAM("Model is loaded in CmrRealTimeLAXCineAIModel");
+            try
+            {
+                models_[model_file] = boost::python::object();
+                load_from_file(model_home, model_file, models_[model_file]);
+                model = models_[model_file];
+            }
+            catch(...)
+            {
+                GERROR_STREAM("Exceptions happened in model loading : " << model_home << " - " << model_file);
+            }
         }
-	else
-	{
-	    GDEBUG_STREAM("Model has been loaded in CmrRealTimeLAXCineAIModel");  
-	}
-        return instance_;
+        else
+        {
+            // check whether model has been loaded
+            auto model_ptr = models_.find(model_file);
+            if(model_ptr!=models_.end())
+            {                
+                GDEBUG_STREAM("Model has been loaded in CmrRealTimeLAXCineAIModel");
+                model = models_[model_file];
+            }
+            else
+            {
+                models_[model_file] = boost::python::object();
+                load_from_file(model_home, model_file, models_[model_file]);
+                model = models_[model_file];
+            }
+        }
+    }
+
+    void CmrRealTimeLAXCineAIModel::load_from_file(const std::string& model_home, const std::string& model_file, boost::python::object& model)
+    {
+        PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
+        model = load_model_onnx(model_home, model_file);
+        bp::incref(model.ptr());
+        GDEBUG_STREAM("Model is loaded in CmrRealTimeLAXCineAIModel");
     }
 
     CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance_ = NULL;
-    boost::python::object CmrRealTimeLAXCineAIModel::model_ = boost::python::object();
-  
+    std::map<std::string, boost::python::object> CmrRealTimeLAXCineAIModel::models_;
+    std::mutex CmrRealTimeLAXCineAIModel::model_mtx_;
+    
     // ----------------------------------------------------
 
     CmrRealTimeLAXCineAIAnalysisGadget::CmrRealTimeLAXCineAIAnalysisGadget() : BaseClass()
@@ -145,7 +174,7 @@ namespace Gadgetron {
 
             // load model using the singleton
             gt_timer_.start("CmrRealTimeLAXCineAIModel, load model");
-            model_ = CmrRealTimeLAXCineAIModel::instance(this->gt_model_home_, this->model_file.value())->get_model();
+            CmrRealTimeLAXCineAIModel::get_model_singleton(this->gt_model_home_, this->model_file.value(), model_);
             gt_timer_.stop();
         }
 
