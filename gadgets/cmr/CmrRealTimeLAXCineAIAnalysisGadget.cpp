@@ -1,7 +1,6 @@
 
+#include <mutex>
 #include "CmrRealTimeLAXCineAIAnalysisGadget.h"
-#include <cstdio>
-#include "python_toolbox.h"
 #include "hoNDImage_util.h"
 #include "GadgetronTimer.h"
 #include "mri_core_def.h"
@@ -14,6 +13,71 @@
 #include "cmr_ismrmrd_util.h"
 
 namespace Gadgetron { 
+
+    // a singleton class to load model
+    // the current finding is the python runtime may not always release memory after loading in the model and related libraries
+    // as a result, repeated model loading (e.g. from multiple calls of this chain) will increase VM usage
+    // although not fully resolving the problem, making the model loading a singleton can mitigate this problme
+
+    class CmrRealTimeLAXCineAIModel
+    {
+    public:
+
+        static CmrRealTimeLAXCineAIModel* instance();
+        boost::python::object get_model(const std::string& model_home, const std::string& model_file);
+
+    protected:
+        CmrRealTimeLAXCineAIModel() = default;
+        static CmrRealTimeLAXCineAIModel* instance_;
+        std::map<std::string, boost::python::object> models_;
+        std::mutex model_mtx_;
+
+        static void load_from_file(const std::string& model_home, const std::string& model_file, boost::python::object& model);
+    };
+
+    CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance()
+    {
+        if (!instance_)
+        {
+            instance_ = new CmrRealTimeLAXCineAIModel();
+        }
+
+        return instance_;
+    }
+
+    boost::python::object CmrRealTimeLAXCineAIModel::get_model(const std::string& model_home, const std::string& model_file)
+    {
+        std::lock_guard<std::mutex> guard(model_mtx_);
+
+        std::string model_key = model_home + "/" + model_file;
+        auto model_ptr = models_.find(model_key);
+        if(model_ptr==models_.end())
+        {
+            models_[model_key] = boost::python::object();
+            load_from_file(model_home, model_file, models_[model_key]);
+        }
+        return models_[model_key];
+    }
+
+    void CmrRealTimeLAXCineAIModel::load_from_file(const std::string& model_home, const std::string& model_file, boost::python::object& model)
+    {
+        try
+        {
+            PythonFunction<boost::python::object> load_model_onnx("gadgetron_cmr_landmark_detection", "load_model_onnx");
+            model = load_model_onnx(model_home, model_file);
+            bp::incref(model.ptr());
+            GDEBUG_STREAM("Model is loaded in CmrRealTimeLAXCineAIModel");
+        }
+        catch(...)
+        {
+            GERROR_STREAM("Exceptions happened in CmrRealTimeLAXCineAIModel::load_from_file for " << model_home << " - " << model_file);
+            throw;
+        }
+    }
+
+    CmrRealTimeLAXCineAIModel* CmrRealTimeLAXCineAIModel::instance_ = NULL;
+
+    // ----------------------------------------------------
 
     CmrRealTimeLAXCineAIAnalysisGadget::CmrRealTimeLAXCineAIAnalysisGadget() : BaseClass()
     {
@@ -32,14 +96,19 @@ namespace Gadgetron {
 
             Gadgetron::initialize_python();
             Gadgetron::add_python_path(gadgetron_python_path.generic_string());
-
             this->gt_home_ = gadgetron_python_path.generic_string();
+
+            boost::filesystem::path model_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python" / this->model_dest.value();
+            Gadgetron::add_python_path(model_path.generic_string());
+            this->gt_model_home_ = model_path.generic_string();
+
             GDEBUG_STREAM("Set up python path using context : " << this->gt_home_);
+            GDEBUG_STREAM("Set up model path using context : " << this->gt_model_home_);
         }
         catch (...)
         {
-            this->gt_home_.clear();
             GERROR_STREAM("Exception happened when adding  path to python ... ");
+            return GADGET_FAIL;
         }
 
         GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
@@ -76,6 +145,33 @@ namespace Gadgetron {
 
         GDEBUG_STREAM("meas_max_idx_.slice is " << meas_max_idx_.slice);
 
+        // load the model
+        if (this->perform_AI.value())
+        {
+            std::string model_file_name = this->gt_model_home_ + "/" + this->model_file.value();
+            boost::filesystem::path p(model_file_name);
+
+            if (boost::filesystem::exists(p) && boost::filesystem::is_regular_file(p))
+            {
+                GDEBUG_STREAM("model file already exists :  " << model_file_name);
+            }
+            else
+            {
+                GDEBUG_STREAM("model file does not exist :  " << model_file_name);
+            }
+
+            // check the model file, if not exists or invalid, download it
+            gt_timer_.start("gadgetron_cmr_landmark_detection_util, check_and_get_model");
+            PythonFunction<> check_and_get_model("gadgetron_cmr_landmark_detection_util", "check_and_get_model");
+            check_and_get_model(this->model_url.value(), this->model_file.value(), this->gt_model_home_, this->model_file_sha256.value());
+            gt_timer_.stop();
+
+            // load model using the singleton
+            gt_timer_.start("CmrRealTimeLAXCineAIModel, load model");
+            model_ = CmrRealTimeLAXCineAIModel::instance()->get_model(this->gt_model_home_, this->model_file.value());
+            gt_timer_.stop();
+        }
+
         return GADGET_OK;
     }
 
@@ -91,29 +187,29 @@ namespace Gadgetron {
 
         // -------------------------------------------------------------
 
-        IsmrmrdImageArray* data = m1->getObjectPtr();
+        IsmrmrdImageArray lax = *m1->getObjectPtr();
 
         // print out data info
         if (verbose.value())
         {
             GDEBUG_STREAM("----> CmrRealTimeLAXCineAIAnalysisGadget::process(...) has been called " << process_called_times_ << " times ...");
             std::stringstream os;
-            data->data_.print(os);
+            lax.data_.print(os);
             GDEBUG_STREAM(os.str());
         }
 
         // -------------------------------------------------------------
 
-        size_t encoding = (size_t)data->meta_[0].as_long("encoding", 0);
+        size_t encoding = (size_t)lax.meta_[0].as_long("encoding", 0);
         GADGET_CHECK_RETURN(encoding < num_encoding_spaces_, GADGET_FAIL);
 
-        size_t RO = data->data_.get_size(0);
-        size_t E1 = data->data_.get_size(1);
-        size_t E2 = data->data_.get_size(2);
-        size_t CHA = data->data_.get_size(3);
-        size_t N = data->data_.get_size(4);
-        size_t S = data->data_.get_size(5);
-        size_t PHS = data->data_.get_size(6);
+        size_t RO = lax.data_.get_size(0);
+        size_t E1 = lax.data_.get_size(1);
+        size_t E2 = lax.data_.get_size(2);
+        size_t CHA = lax.data_.get_size(3);
+        size_t N = lax.data_.get_size(4);
+        size_t S = lax.data_.get_size(5);
+        size_t PHS = lax.data_.get_size(6);
 
         std::stringstream os;
         os << "_encoding_" << encoding << "_processing_" << process_called_times_;
@@ -123,13 +219,10 @@ namespace Gadgetron {
 
         if (!this->debug_folder_full_path_.empty())
         {
-            gt_exporter_.export_array_complex(data->data_, this->debug_folder_full_path_ + "data" + str);
+            gt_exporter_.export_array_complex(lax.data_, this->debug_folder_full_path_ + "data" + str);
         }
 
         // -------------------------------------------------------------
-
-        // copy the incoming image array
-        IsmrmrdImageArray lax = *data;
 
         // send out the incoming images first
         if (this->next()->putq(m1) == -1)
@@ -139,8 +232,9 @@ namespace Gadgetron {
             return GADGET_FAIL;
         }
 
+
         // call the AI analysis
-        IsmrmrdImageArray lax_ai, report;
+        IsmrmrdImageArray lax_ai;
         int status = this->perform_LAX_detection_AI(lax, lax_ai);
 
         // send out AI analysis results
@@ -166,6 +260,11 @@ namespace Gadgetron {
     {
         GDEBUG_CONDITION_STREAM(true, "CmrRealTimeLAXCineAIAnalysisGadget - close(flags) : " << flags);
         if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
+
+        if (flags != 0)
+        {
+        }
+        
         return GADGET_OK;
     }
 
@@ -425,28 +524,13 @@ namespace Gadgetron {
             {
                 GDEBUG_STREAM("=============================================");
 
-                // load model
-                //boost::python::object model;
-                //{
-                //    GILLock lg;
-                //    PythonFunction<boost::python::object> load_model_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "load_model_cmr_landmark_detection");
-                //    model = load_model_cmr_landmark_detection(this->gt_home_, this->lax_landmark_detection_model.value());
-                //    bp::incref(model.ptr());
-                //}
-
-                //// apply model
-                //{
-                //    GILLock lg;
-                //    PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
-                //    std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, model, 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
-                //}
-
-                GILLock lg;
-                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection_with_model("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection_with_model");
-                std::tie(pts, probs) = perform_cmr_landmark_detection_with_model(lax_images, this->gt_home_, this->lax_landmark_detection_model.value(), 1.0, 8, 0.1, this->oper_RO.value(), this->oper_E1.value());
+                gt_timer_.start("gadgetron_cmr_landmark_detection_util, perform_cmr_landmark_detection");
+                PythonFunction< hoNDArray<float>, hoNDArray<float> > perform_cmr_landmark_detection("gadgetron_cmr_landmark_detection", "perform_cmr_landmark_detection");
+                float p_thresh=0.1;
+                std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, this->model_, p_thresh, this->oper_RO.value(), this->oper_E1.value());
+                gt_timer_.stop();
 
                 pts.print(std::cout);  
-                probs.print(std::cout);
 
                 GDEBUG_STREAM("=============================================");
 
@@ -455,13 +539,6 @@ namespace Gadgetron {
                     std::stringstream str;
                     str << "lax_images_landmark_pts";
                     gt_exporter_.export_array(pts, this->debug_folder_full_path_ + "/" + str.str());
-                }
-
-                if (!this->debug_folder_full_path_.empty())
-                {
-                    std::stringstream str;
-                    str << "lax_images_landmark_probs";
-                    gt_exporter_.export_array(probs, this->debug_folder_full_path_ + "/" + str.str());
                 }
 
                 // -------------------------------------------
