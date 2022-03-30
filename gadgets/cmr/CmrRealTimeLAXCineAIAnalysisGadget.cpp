@@ -49,22 +49,14 @@ namespace Gadgetron {
     {
         std::lock_guard<std::mutex> guard(model_mtx_);
 
-        if (instance_)
+        std::string model_key = model_home + "/" + model_file;
+        auto model_ptr = models_.find(model_key);
+        if(model_ptr==models_.end())
         {
-            std::string model_key = model_home + "/" + model_file;
-
-            auto model_ptr = models_.find(model_key);
-            if(model_ptr==models_.end())
-            {
-                models_[model_key] = boost::python::object();
-                load_from_file(model_home, model_file, models_[model_key]);
-            }
-            return models_[model_key];
+            models_[model_key] = boost::python::object();
+            load_from_file(model_home, model_file, models_[model_key]);
         }
-        else
-        {
-            throw("Please instantiate CmrRealTimeLAXCineAIModel by calling CmrRealTimeLAXCineAIModel::instance() first");
-        }
+        return models_[model_key];
     }
 
     void CmrRealTimeLAXCineAIModel::load_from_file(const std::string& model_home, const std::string& model_file, boost::python::object& model)
