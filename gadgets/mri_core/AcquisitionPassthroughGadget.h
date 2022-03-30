@@ -1,24 +1,18 @@
-#ifndef ACQUISITIONPASSTHROUGHGADGET_H
-#define ACQUISITIONPASSTHROUGHGADGET_H
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
-
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "GadgetMRIHeaders.h"
+#include "Node.h"
+#include "Types.h"
 
 namespace Gadgetron{
-
-  class EXPORTGADGETSMRICORE AcquisitionPassthroughGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  class AcquisitionPassthroughGadget :
+    public Core::ChannelGadget<Core::Acquisition> 
     {
-    public:
-      GADGET_DECLARE(AcquisitionPassthroughGadget);
-      
-    protected:
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+      public:
+        AcquisitionPassthroughGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        ~AcquisitionPassthroughGadget() override = default;
+        void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
     };
 }
-#endif //ACQUISITIONPASSTHROUGHGADGET_H

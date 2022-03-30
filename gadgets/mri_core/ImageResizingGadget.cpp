@@ -110,7 +110,7 @@ namespace Gadgetron {
             output.push(resize(image, new_RO, new_E1, new_E2, scale_factor_RO, scale_factor_E1, scale_factor_E2, order_interpolator));   
         };
 
-        // Add all the images from input channel to vector of ImageEntries
+        // Resize all the images
         for (auto image : input) {
           visit(resizeAndPushImage, image);
         }
