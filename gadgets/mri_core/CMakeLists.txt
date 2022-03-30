@@ -162,7 +162,6 @@ set(gadgetron_mricore_config_files
         config/default_short.xml
         config/default_optimized.xml
         config/default_measurement_dependencies.xml
-        config/default_rate_limited.xml
         config/default_measurement_dependencies_ismrmrd_storage.xml
         config/isalive.xml
         config/gtquery.xml
@@ -185,6 +184,8 @@ set(gadgetron_mricore_config_files
         config/Generic_Cartesian_Image_Chain_FFT.xml
         config/NoiseSummary.xml
         config/ismrmrd_dump.xml
+        config/test_rate_limit.xml
+        config/test_acquisition_passthrough.xml
         )
 
 # if there is python, add gadgets using python
