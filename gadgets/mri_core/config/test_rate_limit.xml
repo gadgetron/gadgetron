@@ -22,12 +22,6 @@
     <stream>
 
         <gadget>
-            <name>AcquisitionPassthroughGadget</name>
-            <dll>gadgetron_mricore</dll>
-            <classname>AcquisitionPassthroughGadget</classname>
-        </gadget>
-
-        <gadget>
             <name>RemoveROOversampling</name>
             <dll>gadgetron_mricore</dll>
             <classname>RemoveROOversamplingGadget</classname>
@@ -71,7 +65,7 @@
             <classname>RateLimitGadget</classname>
             <property>
                 <name>sleep_time</name>
-                <value>1000</value>
+                <value>100</value>
             </property>
         </gadget>
 

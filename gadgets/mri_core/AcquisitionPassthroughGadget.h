@@ -7,8 +7,7 @@
 #include "Types.h"
 
 namespace Gadgetron{
-  class AcquisitionPassthroughGadget :
-    public Core::ChannelGadget<Core::Acquisition> 
+  class AcquisitionPassthroughGadget : public Core::ChannelGadget<Core::Acquisition> 
     {
       public:
         using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
