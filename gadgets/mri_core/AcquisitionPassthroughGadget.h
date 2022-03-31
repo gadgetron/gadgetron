@@ -11,7 +11,7 @@ namespace Gadgetron{
     public Core::ChannelGadget<Core::Acquisition> 
     {
       public:
-        AcquisitionPassthroughGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
         ~AcquisitionPassthroughGadget() override = default;
         void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
     };
