@@ -14,6 +14,7 @@ Hansen MS, Sørensen TS. Gadgetron: An Open Source Framework for Medical Image R
    building
    using
    gadget
+   gadgets
    type_matching
    api
 
