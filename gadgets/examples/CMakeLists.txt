@@ -5,7 +5,9 @@ set(EXAMPLE_SOURCES
         ImageInverter.cpp
         ImageInverter.h
         AcquisitionWaveformBranch.cpp
-        AcquisitionWaveformBranch.h)
+        AcquisitionWaveformBranch.h
+        SaveImageToStorageServer.cpp
+        SaveImageToStorageServer.h)
 
 add_library(gadgetron_examples SHARED ${EXAMPLE_SOURCES})
 set_target_properties(gadgetron_examples PROPERTIES
