@@ -90,7 +90,6 @@ namespace Gadgetron{
                     header.center_sample = header.number_of_samples / 2;
                 }
             }
-            GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
             out.push(Core::Acquisition{header,std::move(acq),std::move(traj)});  
         }
     }

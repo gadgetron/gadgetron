@@ -2,24 +2,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-namespace {
-int addPrePostZeros(size_t centre_column, size_t samples) {
-    // 1 : pre zeros
-    // 2 : post zeros
-    // 0 : no zeros
-    if (2 * centre_column == samples) {
-        return 0;
-    }
-    if (2 * centre_column < samples) {
-        return 1;
-    }
-    if (2 * centre_column > samples) {
-        return 2;
-    }
-    return 0;
-}
-} // namespace
-
 namespace Gadgetron {
 
 CoilReductionGadget::CoilReductionGadget(const Core::Context& context, const Core::GadgetProperties& props)
@@ -96,7 +78,6 @@ void CoilReductionGadget::process(Core::InputChannel<Core::Acquisition>& in, Cor
         for (int c = 0; c < header.active_channels; c++) {
             if (c > coil_mask_.size()) {
                 GDEBUG("Fatal error, too many coils for coil mask\n");
-                delete &m3;
                 // TODO: How to throw Gadget failures?
             }
             if (coil_mask_[c]) {
@@ -104,8 +85,6 @@ void CoilReductionGadget::process(Core::InputChannel<Core::Acquisition>& in, Cor
                 coils_copied++;
             }
         }
-
-        delete &acq;
         header.active_channels = coils_out_;
         out.push(Core::Acquisition{header, std::move(m3), std::move(traj)});
     }

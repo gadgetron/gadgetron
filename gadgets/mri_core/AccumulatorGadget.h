@@ -1,38 +1,33 @@
-#ifndef ACCUMULATORGADGET_H
-#define ACCUMULATORGADGET_H
+/**
+    \brief  
+    \author Original: Thomas Sangild Sorensen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Untested
+*/
+
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
-
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "GadgetMRIHeaders.h"
+#include "Node.h"
+#include "Types.h"
 
 namespace Gadgetron{
-  
-  class EXPORTGADGETSMRICORE AccumulatorGadget : 
-  public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class AccumulatorGadget : public Core::ChannelGadget<Core::Acquisition> 
     {
-      
-    public:
-      GADGET_DECLARE(AccumulatorGadget);
-      
-      AccumulatorGadget();
-      ~AccumulatorGadget();
-      
-    protected:
-      GADGET_PROPERTY(image_series, int, "Image series", 0);
-
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
-      
-      hoNDArray< std::complex<float> >* buffer_;
-      std::vector<size_t> dimensions_;
-      std::vector<float> field_of_view_;
-      size_t slices_;
-      long long image_counter_;
-      long long image_series_;
+      public:
+        using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
+        AccumulatorGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        ~AccumulatorGadget() override;
+        void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
+      protected:
+        NODE_PROPERTY(image_series, int, "Image series", 0);
+        hoNDArray<std::complex<float>>* buffer_;
+        std::vector<size_t> dimensions_;
+        std::vector<float> field_of_view_;
+        size_t slices_;
+        long long image_counter_;
+        long long image_series_;
     };
 }
-#endif //ACCUMULATORGADGET_H
