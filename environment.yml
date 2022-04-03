@@ -6,6 +6,7 @@ channels:
   - bioconda
   - defaults
   - intel
+  - cefca
 dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
@@ -44,7 +45,9 @@ dependencies:
   - ninja=1.10.2                  # dev
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
+  - onnxruntime=1.10.0
   - pip=21.2.4
+  - plplot=5.11.2
   - pugixml=1.11.4                # dev
   - pyfftw=0.12.0
   - python=3.9.7

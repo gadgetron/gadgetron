@@ -346,5 +346,13 @@
   {
     "file": "tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/ref_20210923_klk.mrd",
     "md5": "49543ca1fa648279b7b68c339f2f7010"
+  },
+  {
+    "file": "cmr/RTCine/CH4/rtcine_R4_CH2.mrd",
+    "md5": "fcf7253923df0fee8fff8fb68e410929"
+  },
+  {
+    "file": "cmr/RTCine/CH4/ref_20220124_173736.mrd",
+    "md5": "b5e9c37bbd3eb4be076d89fd7dd7db6d"
   }
 ]
