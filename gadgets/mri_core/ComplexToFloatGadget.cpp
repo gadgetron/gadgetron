@@ -1,11 +1,5 @@
-/*
- *       ComplexToFloatGadget.cpp
- *       Author: Hui Xue
- */
-
 #include "ComplexToFloatGadget.h"
 #include "hoNDArray_elemwise.h"
-
 #include "log.h"
 
 Gadgetron::ComplexToFloatGadget::ComplexToFloatGadget(

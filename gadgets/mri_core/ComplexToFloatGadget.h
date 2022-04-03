@@ -1,6 +1,8 @@
-/** \file   ComplexToFloatGadget.h
+/** 
     \brief  This Gadget converts complex float values to float format.
-    \author Hui Xue
+    \author Original: Hui Xue
+    \author PureGadget Conversion: David Christoffer Hansen
+    \test   Untested
 */
 
 #pragma once
@@ -17,7 +19,6 @@ class ComplexToFloatGadget: public Core::PureGadget<Core::Image<float>,Core::Ima
     {
     public:
         ComplexToFloatGadget(const Core::Context& context, const Core::GadgetProperties& props);
-
         Core::Image<float> process_function(Core::Image<std::complex<float>> args) const override;
     private:
         std::map<uint16_t,std::function<hoNDArray<float>(const hoNDArray<std::complex<float>>&)>> converters;

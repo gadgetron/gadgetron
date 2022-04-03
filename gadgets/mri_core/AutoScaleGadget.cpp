@@ -1,12 +1,4 @@
-/*
- * AutoScaleGadget.cpp
- *
- *  Created on: Dec 19, 2011
- *      Author: Michael S. Hansen
- */
-
 #include "AutoScaleGadget.h"
-
 #include "hoNDArray_math.h"
 
 using namespace Gadgetron;
