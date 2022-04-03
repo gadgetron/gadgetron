@@ -1,6 +1,9 @@
-//
-// Created by david on 24/08/2020.
-//
+/**
+    \brief  
+    \author Original: David C Hansen
+    \test   Untested
+*/
+
 #pragma once
 #include "Node.h"
 

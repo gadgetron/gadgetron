@@ -1,3 +1,10 @@
+/**
+    \brief  
+    \author Original: Thomas Sangild Sorensen
+    \author PureGadget Conversion: Kristoffer Langeland Knudsen
+    \test   Untested
+*/
+
 #pragma once
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"

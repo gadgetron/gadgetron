@@ -1,3 +1,10 @@
+/**
+    \brief  Converts float values to fix point integer format.
+    \author Original: Hui Xue
+    \author PureGadget Conversion: David Christoffer Hansen
+    \test   Untested
+*/
+
 #pragma once
 #include "Gadget.h"
 #include "hoNDArray.h"
