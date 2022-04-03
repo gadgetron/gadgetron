@@ -1,6 +1,8 @@
-/** \file   ImageResizingGadget.h
-    \brief  This Gadget resizes images 
-    \author Hui Xue & Andrew Dupuis
+/**
+    \brief  Resizes images to either a deisred size or by a desired scaling factor
+    \author Original: Hui Xue
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Untested
 */
 
 #pragma once

@@ -1,3 +1,10 @@
+/**
+    \brief  Passes through an acquisition to the next gadget in the pipeline
+    \author Original: Thomas Sangild Sorensen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Tested by: simple_gre_acquisition_passthrough.cfg
+*/
+
 #pragma once
 
 #include "Gadget.h"

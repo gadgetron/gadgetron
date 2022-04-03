@@ -1,7 +1,11 @@
-#pragma once
+/**
+    \brief  Sorts all pipeline images by the selected sorting dimension flag
+    \author Original: Michael S. Hansen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Tested by: distributed_simple_gre.cfg, distributed_buffer_simple_gre.cfg
+*/
 
-#ifndef IMAGESORTGADGET_H
-#define IMAGESORTGADGET_H
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
@@ -28,5 +32,3 @@ namespace Gadgetron{
       std::vector<ImageEntry> images_;
   };
 }
-
-#endif //IMAGESORTGADGET_H

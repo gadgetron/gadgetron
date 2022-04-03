@@ -1,3 +1,10 @@
+/**
+    \brief  Re-aligns the readout data with the center of the echo at the center of the incoming array (if not a noise scan and partial fourier along readout is detected)
+    \author Original: Hui Xue
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Tested by: gpu_grappa_simple.cfg, cpu_grappa_simple.cfg, generic_cartesian_cine_denoise.cfg, and others 
+*/
+
 #pragma once
 
 #include "Gadget.h"
@@ -6,9 +13,6 @@
 #include "Node.h"
 #include "Types.h"
 
-/// for incoming readout
-/// if not the noise scan and the partial fourier along readout is detected
-/// the readout data will be realigned with center of echo at the centre of incoming 1D array
 namespace Gadgetron{
   class AsymmetricEchoAdjustROGadget : public Core::ChannelGadget<Core::Acquisition> 
     {

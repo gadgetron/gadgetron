@@ -1,5 +1,9 @@
-#ifndef RATELIMITGADGET_H
-#define RATELIMITGADGET_H
+/**
+    \brief  Imposes an artificial ms-delay as a rate limit at a point in the Gadgetron pipeline
+    \author Original: David Christoffer Hansen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Tested by: simple_gre_ratelimit.cfg
+*/
 
 #pragma once
 
@@ -27,4 +31,3 @@ namespace Gadgetron {
 
     };
 }
-#endif //ACCUMULATORGADGET_H
