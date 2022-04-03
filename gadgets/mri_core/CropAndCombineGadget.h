@@ -1,25 +1,19 @@
-#ifndef CROPANDCOMBINEGADGET_H
-#define CROPANDCOMBINEGADGET_H
+/**
+    \brief  
+    \author Original: Thomas Sangild Sorensen
+    \author PureGadget Conversion: Andrew Dupuis
+    \test   Untested
+*/
 
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#pragma once
 
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "PureGadget.h"
+#include "Types.h"
 
 namespace Gadgetron{
-  
-  class EXPORTGADGETSMRICORE CropAndCombineGadget : 
-  public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
-    {
+    class CropAndCombineGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
     public:
-      GADGET_DECLARE(CropAndCombineGadget);
-      
-    protected:
-      virtual int process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);     
+      using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
+        Core::AnyImage process_function(Core::AnyImage image) const override;        
     };
 }
-
-#endif //CROPANDCOMBINEGADGET_H

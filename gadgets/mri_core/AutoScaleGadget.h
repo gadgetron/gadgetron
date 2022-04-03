@@ -1,5 +1,5 @@
 /**
-    \brief  This Gadget autoscales real-type images based on a given max value and the 99th percentile of the data
+    \brief  Autoscales real-type images based on a given max value and the 99th percentile of the data
     \author Original: David Christoffer Hansen
     \author PureGadget Conversion: Andrew Dupuis
     \test   Untested

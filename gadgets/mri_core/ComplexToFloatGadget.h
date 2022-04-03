@@ -2,7 +2,7 @@
     \brief  This Gadget converts complex float values to float format.
     \author Original: Hui Xue
     \author PureGadget Conversion: David Christoffer Hansen
-    \test   Untested
+    \test   Tested by: 
 */
 
 #pragma once

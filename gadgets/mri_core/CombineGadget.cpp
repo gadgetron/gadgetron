@@ -5,13 +5,13 @@ using namespace Gadgetron;
 using namespace Gadgetron::Core;
 
 namespace {
-  template <class T> Image<T> autoscale(Image<T>& image) {
+  template <class T> Image<T> combine(Image<T>& image) {
       GDEBUG("CombineGadget is not well defined for real-valued images. Doing nothing.");
       return image;
   }
 
   template <class T>
-  Image<std::complex<T>> autoscale(Image<std::complex<T>>& image) {
+  Image<std::complex<T>> combine(Image<std::complex<T>>& image) {
     auto& header = std::get<ISMRMRD::ImageHeader>(image);
       auto& data = std::get<hoNDArray<std::complex<T>>>(image);
 
@@ -64,7 +64,7 @@ namespace {
 
 namespace Gadgetron {
   AnyImage CombineGadget::process_function(AnyImage image) const {
-      return visit([&](auto& image) -> AnyImage { return autoscale(image); }, image);
+      return visit([&](auto& image) -> AnyImage { return combine(image); }, image);
 }
 
 GADGETRON_GADGET_EXPORT(CombineGadget);

@@ -1,69 +1,78 @@
 #include "CropAndCombineGadget.h"
+#include "hoNDArray_math.h"
 
-namespace Gadgetron{
-int CropAndCombineGadget::
-process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-{
+using namespace Gadgetron;
+using namespace Gadgetron::Core;
 
-
-  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 = 
-    new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-
-  std::vector<size_t> new_dimensions(3);
-  new_dimensions[0] = m2->getObjectPtr()->get_size(0)>>1;
-  new_dimensions[1] = m2->getObjectPtr()->get_size(1);
-  new_dimensions[2] = m2->getObjectPtr()->get_size(2);
-
-  try{m3->getObjectPtr()->create(new_dimensions);}
-  catch (std::runtime_error &err){
-  	GEXCEPTION(err,"CropAndCombineGadget, failed to allocate new array\n");
-    return -1;
+namespace {
+  template <class T> Image<T> cropAndCombine(Image<T>& image) {
+      GDEBUG("CropAndCombineGadget is not well defined for real-valued images. Doing nothing.");
+      return image;
   }
 
-  size_t dimx     = m3->getObjectPtr()->get_size(0);
-  size_t dimx_old = m2->getObjectPtr()->get_size(0);
+  template <class T> Image<std::complex<T>> cropAndCombine(Image<std::complex<T>>& image) {
+      auto& header = std::get<ISMRMRD::ImageHeader>(image);
+      auto& data = std::get<hoNDArray<std::complex<T>>>(image);
 
-  size_t dimy = m3->getObjectPtr()->get_size(1);
-  size_t dimz = m3->getObjectPtr()->get_size(2);
+      hoNDArray<std::complex<T>> m3 = hoNDArray<std::complex<T>>();
 
-  size_t channels = m2->getObjectPtr()->get_size(3);
+      std::vector<size_t> new_dimensions(3);
+      new_dimensions[0] = data.get_size(0) >> 1;
+      new_dimensions[1] = data.get_size(1);
+      new_dimensions[2] = data.get_size(2);
 
-  std::complex<float>* d1 = m2->getObjectPtr()->get_data_ptr();
-  std::complex<float>* d2 = m3->getObjectPtr()->get_data_ptr();
+      try {
+          m3.create(new_dimensions);
+      } 
+      catch (std::runtime_error& err) {
+          GEXCEPTION(err, "CropAndCombineGadget, failed to allocate new array\n");
+      }
 
-  size_t img_block_old = dimx_old*dimy*dimz;
+    size_t dimx     = m3.get_size(0);
+    size_t dimx_old = data.get_size(0);
 
-  for (size_t z = 0; z < dimz; z++) {
-    for (size_t y = 0; y < dimy; y++) {
-      for (size_t x = 0; x < dimx; x++) {
-	float mag = 0;
-	float phase = 0;
-	size_t offset_1 = z*dimy*dimx_old+y*dimx_old+x+((dimx_old-dimx)>>1);
-	size_t offset_2 = z*dimy*dimx+y*dimx+x;
-	for (size_t c = 0; c < channels; c++) {
-	  float mag_tmp = norm(d1[offset_1 + c*img_block_old]);
-	  phase += mag_tmp*arg(d1[offset_1 + c*img_block_old]);
-	  mag += mag_tmp;
-	}
+    size_t dimy = m3.get_size(1);
+    size_t dimz = m3.get_size(2);
 
-	d2[offset_2] = std::polar(std::sqrt(mag),phase);
+    size_t channels = data.get_size(3);
+
+    std::complex<T>* d1 = data.get_data_ptr();
+    std::complex<T>* d2 = m3.get_data_ptr();
+
+    size_t img_block_old = dimx_old*dimy*dimz;
+
+    for (size_t z = 0; z < dimz; z++) {
+      for (size_t y = 0; y < dimy; y++) {
+        for (size_t x = 0; x < dimx; x++) {
+          float mag = 0;
+          float phase = 0;
+          size_t offset_1 = z*dimy*dimx_old+y*dimx_old+x+((dimx_old-dimx)>>1);
+          size_t offset_2 = z*dimy*dimx+y*dimx+x;
+          for (size_t c = 0; c < channels; c++) {
+            float mag_tmp = norm(d1[offset_1 + c*img_block_old]);
+            phase += mag_tmp*arg(d1[offset_1 + c*img_block_old]);
+            mag += mag_tmp;
+          }
+          d2[offset_2] = std::polar(std::sqrt(mag),phase);
+        }
       }
     }
+
+    //Modify header to match
+    header.matrix_size[0] = header.matrix_size[0]>>1;
+    header.channels = 1;
+
+    header.field_of_view[0] = header.field_of_view[0]/2;
+
+    //Now add the new array to the outgoing message
+    return Image<std::complex<T>>(std::get<ISMRMRD::ImageHeader>(image), std::move(m3), std::get<optional<ISMRMRD::MetaContainer>>(image));
+  }
+} // namespace
+
+namespace Gadgetron {
+  AnyImage CropAndCombineGadget::process_function(AnyImage image) const {
+      return visit([&](auto& image) -> AnyImage { return cropAndCombine(image); }, image);
   }
 
-  //Now add the new array to the outgoing message
-  m1->cont(m3);
-  m2->release();
-
-  //Modify header to match
-  m1->getObjectPtr()->matrix_size[0] = m1->getObjectPtr()->matrix_size[0]>>1;
-  m1->getObjectPtr()->channels = 1;
-
-  m1->getObjectPtr()->field_of_view[0] = m1->getObjectPtr()->field_of_view[0]/2;
-
-  return this->next()->putq(m1);
-}
-
-GADGET_FACTORY_DECLARE(CropAndCombineGadget)
-}
+  GADGETRON_GADGET_EXPORT(CropAndCombineGadget);
+} // namespace Gadgetron
