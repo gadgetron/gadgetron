@@ -10,7 +10,8 @@ namespace {
 
 		auto &header = std::get<ISMRMRD::ImageHeader>(image);
         auto &data = std::get<hoNDArray<T>>(image);
-
+		auto &meta = std::get<optional<ISMRMRD::MetaContainer>>(image);
+		
 		if (header.image_type == ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE) { //Only scale magnitude images for now
 			auto max = *std::max_element(data.begin(), data.end());
 			auto current_scale_ = 1.0;
@@ -46,11 +47,7 @@ namespace {
 
 		}
 
-        return Image<T>(
-                std::get<ISMRMRD::ImageHeader>(image),
-                data,
-                std::get<optional<ISMRMRD::MetaContainer>>(image)
-        );
+        return Image<T>(header,data,meta);
     }
 
     template<class T>
