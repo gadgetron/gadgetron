@@ -2,7 +2,7 @@
     \brief  
     \author Original: Souheil Inati
     \author PureGadget Conversion: Andrew Dupuis
-    \test   Untested
+    \test   EPI_2d.cfg
 */
 
 #pragma once

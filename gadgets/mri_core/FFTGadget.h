@@ -1,19 +1,23 @@
-/**
-    \brief  
-    \author Original: Thomas Sangild Sorensen
-    \author PureGadget Conversion: Andrew Dupuis
-    \test   Untested
-*/
-
 #pragma once
+#include "Gadget.h"
+#include "hoNDArray.h"
+#include "gadgetron_mricore_export.h"
 
-#include "PureGadget.h"
-#include "Types.h"
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/xml.h>
+#include "mri_core_data.h"
 
 namespace Gadgetron{
-    class FFTGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
+
+  class EXPORTGADGETSMRICORE FFTGadget : 
+  public Gadget1<IsmrmrdReconData>
+    {
     public:
-      using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
-      Core::AnyImage process_function(Core::AnyImage image) const override;        
-    };   
+      GADGET_DECLARE(FFTGadget)
+      FFTGadget();
+	
+    protected:
+      virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
+      long long image_counter_;      
+    };
 }
