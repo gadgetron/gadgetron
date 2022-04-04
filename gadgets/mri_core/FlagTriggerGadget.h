@@ -1,7 +1,7 @@
 /**
     \brief  
     \author Original: David C Hansen
-    \test   Untested
+    \test   test/gadget/FlagTriggerParsing_test.cpp
 */
 
 #pragma once
