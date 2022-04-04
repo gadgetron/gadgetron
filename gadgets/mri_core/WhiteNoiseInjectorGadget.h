@@ -6,82 +6,65 @@
 #include "ismrmrd/ismrmrd.h"
 #include "gadgetron_mricore_export.h"
 #include <random>
+#include "PureGadget.h"
 
 namespace Gadgetron
 {
 
-template <typename T>
-class RandNormGenerator
-{
-public:
+    template <typename T>
+    class RandNormGenerator
+    {
+        public:
 
-    typedef std::mt19937 RandomGeneratorType;
+            typedef std::mt19937 RandomGeneratorType;
 
-    RandNormGenerator();
-    RandNormGenerator(long long seed, T mean = 0, T sigma = 1);
-    ~RandNormGenerator();
+            RandNormGenerator();
+            RandNormGenerator(long long seed, T mean = 0, T sigma = 1);
+            ~RandNormGenerator();
 
-    void seed(unsigned long seed);
-    void setPara(T mean = 0, T sigma = 1);
+            void seed(unsigned long seed);
+            void setPara(T mean = 0, T sigma = 1);
 
-    RandomGeneratorType& getRandomer() { return rng_; }
-    const RandomGeneratorType& getRandomer() const { return rng_; }
+            RandomGeneratorType& getRandomer() { return rng_; }
+            const RandomGeneratorType& getRandomer() const { return rng_; }
 
-    void gen(hoNDArray<T>& randNum);
-    void gen(hoNDArray< std::complex<T> >& randNum);
+            void gen(hoNDArray<T>& randNum);
+            void gen(hoNDArray< std::complex<T> >& randNum);
 
-protected:
+        protected:
 
-    RandomGeneratorType rng_;
-    std::normal_distribution<T> dist_norm_;
-};
+            RandomGeneratorType rng_;
+            std::normal_distribution<T> dist_norm_;
+    };
 
-/// add white noise to the kspace data
-class EXPORTGADGETSMRICORE WhiteNoiseInjectorGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
-{
-public:
 
-    GADGET_DECLARE(WhiteNoiseInjectorGadget);
+    class WhiteNoiseInjectorGadget : public Core::PureGadget<Core::Acquisition, Core::Acquisition> {
+    public:
+        WhiteNoiseInjectorGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        ~WhiteNoiseInjectorGadget() override;
+        Core::Acquisition process_function(Core::Acquisition acquisition) const override;
+    protected:
+        NODE_PROPERTY(noise_mean, float, "Noise mean", 0.0);
+        NODE_PROPERTY(noise_std, float, "Noise standard deviation", 0.0);
+        NODE_PROPERTY(add_noise_ref, bool, "Add noise to reference scans", false);
 
-    typedef Gadgetron::RandNormGenerator<double> RandGenType;
+        /// random noise generator
+        RandNormGenerator<double>* randn_;
 
-    WhiteNoiseInjectorGadget();
-    virtual ~WhiteNoiseInjectorGadget();
+        /// helper memory to store noise
+        hoNDArray<std::complex<double>> noise_;
+        hoNDArray<std::complex<float>> noise_fl_;
 
-protected:
-    GADGET_PROPERTY(noise_mean, float, "Noise mean", 0.0);
-    GADGET_PROPERTY(noise_std, float, "Noise standard deviation", 0.0);
-    GADGET_PROPERTY(add_noise_ref, bool, "Add noise to reference scans", false);
+        /// calibration mode and rate
+        size_t acceFactorE1_;
+        size_t acceFactorE2_;
 
-    virtual int process_config(ACE_Message_Block* mb);
-
-    virtual int process(Gadgetron::GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-        Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray< std::complex<float> > >* m2);
-
-    /// whether to add noise to ref acquisition
-    bool add_noise_ref_;
-
-    /// noise mean and standard deviation
-    float noise_mean_;
-    float noise_std_;
-
-    /// random noise generator
-    RandGenType* randn_;
-
-    /// helper memory to store noise
-    hoNDArray< std::complex<double> > noise_;
-    hoNDArray< std::complex<float> > noise_fl_;
-
-    /// calibration mode and rate
-    size_t acceFactorE1_;
-    size_t acceFactorE2_;
-
-    bool is_interleaved_;
-    bool is_embeded_;
-    bool is_seperate_;
-    bool is_external_;
-    bool is_other_;
-    bool is_no_acceleration_;
-};
-
+        bool is_interleaved_;
+        bool is_embeded_;
+        bool is_seperate_;
+        bool is_external_;
+        bool is_other_;
+        bool is_no_acceleration_;
+    };
 }
+
