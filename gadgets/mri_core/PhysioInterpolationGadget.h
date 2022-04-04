@@ -1,5 +1,11 @@
-#ifndef PhysioInterpolationGadget_H
-#define PhysioInterpolationGadget_H
+/**
+    \brief  
+    \author Original: Michael S. Hansen
+    \author ChannelGadget Conversion: Kristoffer Langeland Knudsen
+    \test   Tested by: generic_nl_spirit_cartesian_sampling_cine.cfg
+*/
+
+#pragma once
 
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
@@ -21,7 +27,6 @@ enum class PhysioInterpolationMethod {
     BSpline
 };
 
-
 inline void from_string(const std::string& str, PhysioInterpolationMode& mode ){
     if (str == "separate" || str == "0" ) mode = PhysioInterpolationMode::separate;
     else if (str == "complete" || str == "1") mode = PhysioInterpolationMode::complete;
@@ -37,11 +42,8 @@ inline void from_string(const std::string& str, PhysioInterpolationMethod& metho
 class PhysioInterpolationGadget : public Core::ChannelGadget<Core::Image<std::complex<float>>>
     {
     public:
-
         using Core::ChannelGadget<Core::Image<std::complex<float>>>::ChannelGadget;
-
         ~PhysioInterpolationGadget() override = default;
-
 
     protected:
         NODE_PROPERTY(physiology_time_index, int, "Physiology time index", 0);
@@ -56,5 +58,3 @@ class PhysioInterpolationGadget : public Core::ChannelGadget<Core::Image<std::co
 
 };
 }
-
-#endif //PhysioInterpolationGadget_H

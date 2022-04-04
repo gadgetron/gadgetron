@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef IMAGERESIZINGGADGET_H
-#define IMAGERESIZINGGADGET_H
-
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
@@ -18,8 +15,6 @@
 
 namespace Gadgetron
 {
-
-
   class ImageResizingGadget : public Core::ChannelGadget<Core::AnyImage> {
     public:
       GADGET_DECLARE(ImageResizingGadget);
@@ -38,4 +33,3 @@ namespace Gadgetron
       NODE_PROPERTY(order_interpolator, size_t, "Order of interpolator; higher order may increase noise level", 5);
   };
 }
-#endif //IMAGERESIZINGGADGET_H

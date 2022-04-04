@@ -1,3 +1,10 @@
+/**
+    \brief  Saves noise adjustment prescan information
+    \author Original: Thomas Sanglid Sorensen
+    \author ChannelGadget Conversion: David Christoffer Hansen
+    \test   Tested by: 
+*/
+
 #pragma once
 
 #include "GadgetronTimer.h"

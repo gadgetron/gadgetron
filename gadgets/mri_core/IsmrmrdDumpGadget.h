@@ -1,3 +1,10 @@
+/**
+    \brief  Dumps Acquisition or Waveform data to a defined ISMRM-RD file
+    \author Original: Michael S. Hansen
+    \author ChannelGadget Conversion: David Christoffer Hansen
+    \test   Untested
+*/
+
 #pragma once 
 #include "Node.h"
 #include "Types.h"
