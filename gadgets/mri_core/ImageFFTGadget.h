@@ -1,33 +1,27 @@
-/** \file   ImageFFTGadget.h
-    \brief  This Gadget image to its fft.
-    \author Hui Xue
+/**
+    \brief  Performs fft on complex image
+    \author Original: Hui Xue
+    \author PureGadget Conversion: Andrew Dupuis
+    \test   Untested
 */
 
 #pragma once
 
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "ismrmrd/meta.h"
-#include "gadgetron_mricore_export.h"
+#include "PureGadget.h"
+#include "Types.h"
+#include "hoNDArray_math.h"
+#include "hoNDArray_elemwise.h"
+#include "hoNDImage_util.h"
+#include "hoNDFFT.h"
+#include "mri_core_def.h"
 
-#include <ismrmrd/ismrmrd.h>
-#include <ismrmrd/meta.h>
+namespace Gadgetron{
 
-namespace Gadgetron
-{
-    class EXPORTGADGETSMRICORE ImageFFTGadget :public Gadget3<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >
-    {
+    using ComplexImage = Core::variant<Core::Image<std::complex<float>>, Core::Image<std::complex<double>>>;
+
+    class ImageFFTGadget : public Core::PureGadget<ComplexImage, ComplexImage> {
     public:
-
-        GADGET_DECLARE(ImageFFTGadget);
-
-        typedef std::complex<float> ValueType;
-        typedef hoNDArray< ValueType > ArrayType;
-
-        ImageFFTGadget();
-        virtual ~ImageFFTGadget();
-
-    protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage <ISMRMRD::MetaContainer> * m3);
+        using Core::PureGadget<ComplexImage,ComplexImage>::PureGadget;
+        ComplexImage process_function(ComplexImage image) const override; 
     };
 }

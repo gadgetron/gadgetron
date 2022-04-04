@@ -1,32 +1,17 @@
-/*
-*       ImageFFTGadget.cpp
-*       Author: Hui Xue
-*/
-
 #include "ImageFFTGadget.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDImage_util.h"
-#include "hoNDFFT.h"
-#include "mri_core_def.h"
 
-namespace Gadgetron
-{
-    ImageFFTGadget::ImageFFTGadget()
-    {
-    }
+using namespace Gadgetron;
+using namespace Gadgetron::Core;
 
-    ImageFFTGadget::~ImageFFTGadget()
-    {
-    }
-
-    int ImageFFTGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage <ISMRMRD::MetaContainer>* m3)
-    {
-        ArrayType* input_array = m2->getObjectPtr();
-
-        ArrayType output_array(*input_array);
-
+namespace {
+    template<class T>
+    Image<std::complex<T>> imageFFT(Image<std::complex<T>> &image) {
+        ISMRMRD::ImageHeader &header = std::get<ISMRMRD::ImageHeader>(image);
+        hoNDArray<std::complex<T>> &data = std::get<hoNDArray<std::complex<T>>>(image);
+		optional<ISMRMRD::MetaContainer> &meta = std::get<optional<ISMRMRD::MetaContainer>>(image);
+		
         std::vector<size_t> dims;
-        input_array->get_dimensions(dims);
+        data.get_dimensions(dims);
 
         size_t RO = dims[0];
         size_t E1 = dims[1];
@@ -34,24 +19,25 @@ namespace Gadgetron
 
         if (E2 > 1)
         {
-            Gadgetron::hoNDFFT<float>::instance()->fft3c(*input_array, output_array);
+            Gadgetron::hoNDFFT<T>::instance()->fft3c(data);
         }
         else
         {
-            Gadgetron::hoNDFFT<float>::instance()->fft2c(*input_array, output_array);
+            Gadgetron::hoNDFFT<T>::instance()->fft2c(data);
         }
-
-        *m2->getObjectPtr() = output_array;
-        m3->getObjectPtr()->append(GADGETRON_IMAGEPROCESSINGHISTORY, "FFT");
-
-        if (this->next()->putq(m1) < 0)
-        {
-            GERROR_STREAM("ImageFFTGadget, failed to pass images to next gadget ... ");
-            return GADGET_FAIL;
+        if(meta.has_value()){
+            meta.value().append(GADGETRON_IMAGEPROCESSINGHISTORY, "FFT");
         }
+        return image;
+    }
+}
 
-        return GADGET_OK;
+namespace Gadgetron {
+
+    ComplexImage ImageFFTGadget::process_function(ComplexImage image) const {
+        return visit([&](auto &image) -> ComplexImage { return imageFFT(image); }, image);
     }
 
-    GADGET_FACTORY_DECLARE(ImageFFTGadget)
+    GADGETRON_GADGET_EXPORT(ImageFFTGadget);
 }
+
