@@ -1,3 +1,9 @@
+/**
+    \brief  Adds parameterized white noise to an incoming acquisition
+    \author Original: Hui Xue
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Untested
+*/
 
 #pragma once
 
@@ -38,11 +44,11 @@ namespace Gadgetron
     };
 
 
-    class WhiteNoiseInjectorGadget : public Core::PureGadget<Core::Acquisition, Core::Acquisition> {
+    class WhiteNoiseInjectorGadget : public Core::ChannelGadget<Core::Acquisition> {
     public:
         WhiteNoiseInjectorGadget(const Core::Context& context, const Core::GadgetProperties& props);
         ~WhiteNoiseInjectorGadget() override;
-        Core::Acquisition process_function(Core::Acquisition acquisition) const override;
+        void process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) override;
     protected:
         NODE_PROPERTY(noise_mean, float, "Noise mean", 0.0);
         NODE_PROPERTY(noise_std, float, "Noise standard deviation", 0.0);

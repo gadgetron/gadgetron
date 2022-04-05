@@ -1,11 +1,10 @@
 #include "WhiteNoiseInjectorGadget.h"
-#include "hoNDArray_elemwise.h"
-#include "ismrmrd/xml.h"
-#include "hoNDArray_math.h"
-#include <array>
 #include "PureGadget.h"
 #include "Types.h"
-
+#include "hoNDArray_elemwise.h"
+#include "hoNDArray_math.h"
+#include "ismrmrd/xml.h"
+#include <array>
 
 namespace Gadgetron {
 
@@ -56,11 +55,12 @@ template <typename T> inline void RandNormGenerator<T>::gen(hoNDArray<std::compl
         GADGET_THROW("Errors in RandNormGenerator<T>::gen(hoNDArray< std::complex<T> >& randNum) ... ");
     }
 }
+
 WhiteNoiseInjectorGadget::~WhiteNoiseInjectorGadget() { delete randn_; }
 
-WhiteNoiseInjectorGadget::WhiteNoiseInjectorGadget(const Gadgetron::Core::Context& context,
-                                                   const Gadgetron::Core::GadgetProperties& props)
-    : PureGadget(context, props) {
+WhiteNoiseInjectorGadget::WhiteNoiseInjectorGadget(const Core::Context& context, const Core::GadgetProperties& props)
+    : Core::ChannelGadget<Core::Acquisition>(context, props) {
+
     randn_ = new RandNormGenerator<double>();
 
     acceFactorE1_ = 1;
@@ -156,57 +156,62 @@ WhiteNoiseInjectorGadget::WhiteNoiseInjectorGadget(const Gadgetron::Core::Contex
     }
 }
 
-Core::Acquisition WhiteNoiseInjectorGadget::process_function(Core::Acquisition input) const{
-    auto header = std::get<ISMRMRD::AcquisitionHeader>(input);
-    auto input_data = std::get<hoNDArray<std::complex<float>>>(input);
+void WhiteNoiseInjectorGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
 
-    hoNDArray<float> output_data;
+    for (auto acquisition : in) {
+        auto header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
+        auto input_data = std::get<hoNDArray<std::complex<float>>>(acquisition);
 
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(header.flags);
-    bool is_scc_correction = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA).isSet(header.flags);
-    bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(header.flags);
-    bool is_ref_kspace = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(header.flags);
+        hoNDArray<float> output_data;
 
-    size_t channels = header.active_channels;
-    size_t samples = header.number_of_samples;
+        bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(header.flags);
+        bool is_scc_correction =
+            ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA).isSet(header.flags);
+        bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(header.flags);
+        bool is_ref_kspace =
+            ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(header.flags);
 
-    if (!is_noise && !is_scc_correction) {
-        bool add_noise = true;
-        if (is_ref && !is_ref_kspace && (is_seperate_ || is_external_)) {
-            add_noise = add_noise_ref;
-            if (!add_noise) {
-                GDEBUG_STREAM("WhiteNoiseInjectorGadget, noise is not added to the ref acquisitions ... ");
+        size_t channels = header.active_channels;
+        size_t samples = header.number_of_samples;
+
+        if (!is_noise && !is_scc_correction) {
+            bool add_noise = true;
+            if (is_ref && !is_ref_kspace && (is_seperate_ || is_external_)) {
+                add_noise = add_noise_ref;
+                if (!add_noise) {
+                    GDEBUG_STREAM("WhiteNoiseInjectorGadget, noise is not added to the ref acquisitions ... ");
+                }
+            }
+            if (add_noise) {
+                if (!noise_.dimensions_equal(&input_data)) {
+                    auto dims = input_data.dimensions();
+                    noise_.create(dims);
+                    noise_fl_.create(dims);
+                }
+
+                try {
+                    randn_->gen(noise_);
+                } catch (...) {
+                    GERROR_STREAM("WhiteNoiseInjectorGadget, randn_->gen(noise_) failed ... ");
+                    // TODO: How to throw Gadget failures?
+                }
+
+                if (!noise_fl_.copyFrom(noise_)) {
+                    GERROR_STREAM("WhiteNoiseInjectorGadget, noise_fl_.copyFrom(noise_) failed ... ");
+                    // TODO: How to throw Gadget failures?
+                }
+
+                try {
+                    Gadgetron::add(input_data, noise_fl_, input_data);
+                } catch (...) {
+                    GERROR_STREAM("WhiteNoiseInjectorGadget, Gadgetron::add(*m2->getObjectPtr(), noise_, "
+                                  "*m2->getObjectPtr()) failed ... ");
+                    // TODO: How to throw Gadget failures?
+                }
             }
         }
-        if (add_noise) {
-            if (!noise_.dimensions_equal(&input_data)) {
-                auto dims = input_data.dimensions();
-                noise_.create(dims);
-                noise_fl_.create(dims);
-            }
-
-            try {
-                randn_->gen(noise_);
-            } catch (...) {
-                GERROR_STREAM("WhiteNoiseInjectorGadget, randn_->gen(noise_) failed ... ");
-                // TODO: How to throw Gadget failures?
-            }
-
-            if (!noise_fl_.copyFrom(noise_)) {
-                GERROR_STREAM("WhiteNoiseInjectorGadget, noise_fl_.copyFrom(noise_) failed ... ");
-                // TODO: How to throw Gadget failures?
-            }
-
-            try {
-                Gadgetron::add(input_data, noise_fl_, input_data);
-            } catch (...) {
-                GERROR_STREAM("WhiteNoiseInjectorGadget, Gadgetron::add(*m2->getObjectPtr(), noise_, "
-                              "*m2->getObjectPtr()) failed ... ");
-                // TODO: How to throw Gadget failures?
-            }
-        }
+        out.push(acquisition);
     }
-    return input;
 }
 
 GADGET_FACTORY_DECLARE(WhiteNoiseInjectorGadget)
