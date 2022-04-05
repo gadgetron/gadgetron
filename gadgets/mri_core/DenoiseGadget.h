@@ -2,7 +2,7 @@
     \brief  Performs denoising with non-local means and non-local Bayes
     \author Original: David Christoffer Hansen
     \author PureGadget Conversion: David Christoffer Hansen
-    \test   Tested by: 
+    \test   Tested by: generic_cartesian_cine_denoise.cfg
 */
 
 #pragma once

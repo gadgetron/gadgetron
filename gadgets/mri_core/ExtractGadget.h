@@ -2,7 +2,7 @@
     \brief  Performs denoising with non-local means and non-local Bayes
     \author Original: Thomas Sangild Sorensen
     \author PureGadget Conversion: David Christoffer Hansen
-    \test   Tested by: 
+    \test   Tested by:epi_2d.cfg and others
 */
 
 #pragma once

@@ -28,7 +28,6 @@ namespace Gadgetron {
                 uint16_t S = dbuff.data_.get_size(5);
                 uint16_t LOC = dbuff.data_.get_size(6);
 
-
                 //Create an image array message
                 IsmrmrdImageArray* cm1 = new IsmrmrdImageArray();
 
@@ -61,6 +60,7 @@ namespace Gadgetron {
                 for (uint16_t loc = 0; loc < LOC; loc++) {
                     for (uint16_t s = 0; s < S; s++) {
                         for (uint16_t n = 0; n < N; n++) {
+                            GDEBUG("HERE1");
 
                             // Set some information into the image header
                             // Use the middle acquisition header for some info
@@ -122,8 +122,6 @@ namespace Gadgetron {
                             img_dims[2] = E2;
                             hoNDArray<std::complex<float>> output =
                                 hoNDArray<std::complex<float>>(img_dims, &imarray.data_(0, 0, 0, 0, n, s, loc));
-                            // Zero out the output
-                            output.clear();
 
                             // Compute d* d in place
                             multiplyConj(chunk, chunk, chunk);

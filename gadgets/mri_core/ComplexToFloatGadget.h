@@ -2,7 +2,7 @@
     \brief  This Gadget converts complex float values to float format.
     \author Original: Hui Xue
     \author PureGadget Conversion: David Christoffer Hansen
-    \test   Tested by: 
+    \test   Tested by: distributed_image_simple_gre.cfg and others
 */
 
 #pragma once
