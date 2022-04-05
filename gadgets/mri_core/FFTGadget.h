@@ -1,5 +1,5 @@
 /**
-    \brief  Breaks IsmrmrdReconData into separate images and performs FFT
+    \brief  Separates IsmrmrdReconData into separate images and performs FFT
     \author Original: Thomas Sangild Sorensen
     \author ChannelGadget Conversion: Andrew Dupuis
     \test   Tested by: epi_2d.cfg

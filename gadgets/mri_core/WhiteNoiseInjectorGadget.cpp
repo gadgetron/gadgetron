@@ -1,10 +1,4 @@
 #include "WhiteNoiseInjectorGadget.h"
-#include "PureGadget.h"
-#include "Types.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_math.h"
-#include "ismrmrd/xml.h"
-#include <array>
 
 namespace Gadgetron {
 
@@ -157,8 +151,7 @@ WhiteNoiseInjectorGadget::WhiteNoiseInjectorGadget(const Core::Context& context,
 }
 
 void WhiteNoiseInjectorGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
-
-    for (auto acquisition : in) {
+for (auto acquisition : in) {
         auto header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
         auto input_data = std::get<hoNDArray<std::complex<float>>>(acquisition);
 
@@ -214,5 +207,6 @@ void WhiteNoiseInjectorGadget::process(Core::InputChannel<Core::Acquisition>& in
     }
 }
 
-GADGET_FACTORY_DECLARE(WhiteNoiseInjectorGadget)
+GADGETRON_GADGET_EXPORT(WhiteNoiseInjectorGadget)
+
 } // namespace Gadgetron
