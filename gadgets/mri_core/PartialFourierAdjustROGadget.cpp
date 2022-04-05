@@ -1,134 +1,88 @@
 #include "PartialFourierAdjustROGadget.h"
-#include "ismrmrd/xml.h"
 
-namespace Gadgetron
-{
-
-PartialFourierAdjustROGadget::PartialFourierAdjustROGadget() : maxRO_(0)
-{
-
-}
-
-int PartialFourierAdjustROGadget::process_config(ACE_Message_Block* mb)
-{
-  ISMRMRD::IsmrmrdHeader h;
-  deserialize(mb->rd_ptr(),h);
-
-  if (h.encoding.size() != 1) {
-    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
-    GDEBUG("This partial fourier gadget only supports one encoding space\n");
-    return GADGET_FAIL;
-  }
-
-  ISMRMRD::EncodingSpaceType e_space = h.encoding[0].encodedSpace;
-  maxRO_ = e_space.matrixSize.x;
-  GDEBUG_STREAM("max RO : " << maxRO_);
-  return GADGET_OK;
-}
-
-int addPrePostZeros(size_t centre_column, size_t samples)
-{
+namespace {
+int addPrePostZeros(size_t centre_column, size_t samples) {
     // 1 : pre zeros
     // 2 : post zeros
     // 0 : no zeros
-    if ( 2*centre_column == samples )
-    {
+    if (2 * centre_column == samples) {
         return 0;
     }
-
-    if ( 2*centre_column < samples )
-    {
+    if (2 * centre_column < samples) {
         return 1;
     }
-
-    if ( 2*centre_column > samples )
-    {
+    if (2 * centre_column > samples) {
         return 2;
     }
-
     return 0;
 }
+} // namespace
 
-int PartialFourierAdjustROGadget
-::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-        GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-{
+namespace Gadgetron {
 
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
-    size_t channels = m1->getObjectPtr()->active_channels;
-    size_t samples = m1->getObjectPtr()->number_of_samples;
-    size_t centre_column = m1->getObjectPtr()->center_sample;
+PartialFourierAdjustROGadget::PartialFourierAdjustROGadget(const Core::Context& context,
+                                                           const Core::GadgetProperties& props)
+    : Core::ChannelGadget<Core::Acquisition>(context, props) {
 
-    if (!is_noise) 
-    {
-        // adjust the center echo
-        int az = addPrePostZeros(centre_column, samples);
+    auto h = (context.header);
 
-        if ( az!= 0 && samples < maxRO_ )
-        {
-            GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-            if (!m3)
-            {
-                return GADGET_FAIL;
-            }
-
-            std::vector<size_t> data_out_dims = *m2->getObjectPtr()->get_dimensions();
-            data_out_dims[0] = maxRO_;
-            try
-            {
-                m3->getObjectPtr()->create(&data_out_dims);
-            }
-            catch(...)
-            {
-                GDEBUG("Unable to create new data array for downsampled data\n");
-                return GADGET_FAIL;
-            }
-            m3->getObjectPtr()->fill(0);
-
-            std::complex<float>* pM3 = m3->getObjectPtr()->get_data_ptr();
-            std::complex<float>* pM2 = m2->getObjectPtr()->get_data_ptr();
-
-            size_t c;
-            if ( az == 1 ) // pre zeros
-            {
-                for ( c=0; c<channels; c++ )
-                {
-                    memcpy(pM3+c*maxRO_+maxRO_-samples, pM2+c*samples, sizeof( std::complex<float> )*samples);
-                }
-            }
-
-            if ( az == 2 ) // post zeros
-            {
-                for ( c=0; c<channels; c++ )
-                {
-                    memcpy(pM3+c*maxRO_, pM2+c*samples, sizeof( std::complex<float> )*samples);
-                }
-            }
-
-            m2->release(); //We are done with this data
-
-            m1->cont(m3);
-            m1->getObjectPtr()->number_of_samples = data_out_dims[0];
-        }
-
-        if (this->next()->putq(m1) == -1) 
-        {
-	  GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
-	  return -1;
-        }
-    }
-    else
-    {
-        if (this->next()->putq(m1) == -1) 
-        {
-	  GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
-	  return -1;
-        }
+    if (h.encoding.size() != 1) {
+        GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+        GERROR("This partial fourier gadget only supports one encoding space\n");
+        return;
     }
 
-    return GADGET_OK;
+    ISMRMRD::EncodingSpaceType e_space = h.encoding[0].encodedSpace;
+    maxRO_ = e_space.matrixSize.x;
+    GDEBUG_STREAM("max RO : " << maxRO_);
+    return;
 }
 
-GADGET_FACTORY_DECLARE(PartialFourierAdjustROGadget)
+void PartialFourierAdjustROGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
+    for (auto [header, acq, traj] : in) {
+        bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+        size_t channels = m1->getObjectPtr()->active_channels;
+        size_t samples = m1->getObjectPtr()->number_of_samples;
+        size_t centre_column = m1->getObjectPtr()->center_sample;
 
+        if (!is_noise) {
+            // adjust the center echo
+            int az = addPrePostZeros(centre_column, samples);
+
+            if (az != 0 && samples < maxRO_) {
+                std::vector<size_t> data_out_dims = *acq.get_dimensions();
+                data_out_dims[0] = maxRO_;
+                hoNDArray<std::complex<float>> temp;
+                try {
+                    temp = hoNDArray<std::complex<float>>(data_out_dims);
+                } catch (...) {
+                    GDEBUG("Unable to create new data array for downsampled data\n");
+                }
+                temp.fill(0);
+                std::complex<float>* pM3 = temp.get_data_ptr();
+                std::complex<float>* pM2 = acq.get_data_ptr();
+                size_t c;
+                if (az == 1) // pre zeros
+                {
+                    for (c = 0; c < channels; c++) {
+                        memcpy(pM3 + c * maxRO_ + maxRO_ - samples, pM2 + c * samples,
+                               sizeof(std::complex<float>) * samples);
+                    }
+                }
+
+                if (az == 2) // post zeros
+                {
+                    for (c = 0; c < channels; c++) {
+                        memcpy(pM3 + c * maxRO_, pM2 + c * samples, sizeof(std::complex<float>) * samples);
+                    }
+                }
+
+                acq = temp;
+                header.number_of_samples = (uint16_t)data_out_dims[0];
+            }
+        }
+        out.push(Core::Acquisition{header, std::move(acq), std::move(traj)});
+    }
 }
+GADGETRON_GADGET_EXPORT(PartialFourierAdjustROGadget)
+} // namespace Gadgetron
