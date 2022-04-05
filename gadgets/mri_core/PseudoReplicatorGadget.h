@@ -1,28 +1,22 @@
-/*
- * PseudoReplicator.h
+/**
+    \brief  Appends defined number of noisy pseudoreplicas to incoming IsmrmrdReconData
+    \author Original: David Hansen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Untested
+*/
 
- *
- *  Created on: Jun 23, 2015
- *      Author: David Hansen
- */
 #pragma once
-#include "Gadget.h"
+#include "Node.h"
 #include "mri_core_data.h"
-#include "gadgetron_mricore_export.h"
+#include <random>
 
-namespace Gadgetron {
+namespace Gadgetron{
+    class PseudoReplicatorGadget : public Core::ChannelGadget<IsmrmrdReconData> {
+    public:
+      using Core::ChannelGadget<IsmrmrdReconData>::ChannelGadget;
+      void process(Core::InputChannel<IsmrmrdReconData>& input, Core::OutputChannel& out) override;
+      NODE_PROPERTY(repetitions,int,"Number of pseudoreplicas to produce",10);
+    };
+}
 
-class EXPORTGADGETSMRICORE PseudoReplicatorGadget : public Gadget1<IsmrmrdReconData>{
-public:
-	GADGET_PROPERTY(repetitions,int,"Number of pseudoreplicas to produce",10);
-	PseudoReplicatorGadget()  ;
-	virtual ~PseudoReplicatorGadget();
 
-	virtual int process_config(ACE_Message_Block *);
-	virtual int process(GadgetContainerMessage<IsmrmrdReconData>*);
-
-private:
-	int repetitions_;
-};
-
-} /* namespace Gadgetron */
