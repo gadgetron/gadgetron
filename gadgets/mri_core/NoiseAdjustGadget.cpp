@@ -377,6 +377,9 @@ namespace Gadgetron {
         if (ng.noise_dwell_time_us == 0)
             ng.noise_dwell_time_us = head.sample_time_us;
 
+        if (this->noise_dwell_time_us_preset>0)
+            ng.noise_dwell_time_us = this->noise_dwell_time_us_preset;
+
         auto dataM = as_arma_matrix(data);
         auto covariance = as_arma_matrix(ng.tmp_covariance);
         covariance += dataM.t()*dataM;
