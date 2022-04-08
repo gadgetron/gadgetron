@@ -29,7 +29,6 @@ namespace Gadgetron
                 outfile.write( reinterpret_cast<char*>(&len_ismrmrd_header), sizeof(size_t) );
                 outfile.write( ismrmrd_header.c_str(), len_ismrmrd_header );
 
-
                 auto array_byte_length = [](auto& array) {return array.get_number_of_bytes()+ sizeof(size_t)*(array.get_number_of_dimensions()+1);};
                 size_t len_scc_array = array_byte_length(scc_array);
                 size_t len_body_array = array_byte_length(body_array);
