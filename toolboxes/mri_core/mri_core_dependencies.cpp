@@ -106,7 +106,7 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GADGET_THROW("Errors in save_dependency_data(...) ... ");
+            GADGET_THROW("Errors in load_dependency_data(...) ... ");
         }
     }
 

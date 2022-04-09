@@ -38,7 +38,6 @@
         <name>NoiseAdjust</name>
         <dll>gadgetron_mricore</dll>
         <classname>NoiseAdjustGadget</classname>
-        <property><name>noise_dwell_time_us_preset</name><value>5.0</value></property>
     </gadget>
 
     <!-- RO asymmetric echo handling -->
