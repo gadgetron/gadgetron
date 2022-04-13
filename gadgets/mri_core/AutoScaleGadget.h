@@ -1,6 +1,6 @@
 /**
     \brief  Autoscales real-type images based on a given max value and the 99th percentile of the data
-    \author Original: David Christoffer Hansen
+    \author Original: Michael S. Hansen
     \author PureGadget Conversion: Andrew Dupuis
     \test   Tested by: epi_2d.cfg and others
 */
