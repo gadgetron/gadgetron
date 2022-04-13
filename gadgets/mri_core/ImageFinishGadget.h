@@ -1,3 +1,10 @@
+/**
+    \brief  Finalizes image and sends out generic message to generic channel
+    \author Original: Thomas Sangild Sorensen
+    \author PureGadget Conversion: David Christoffer Hansen
+    \test   Tested by: simple_gre_3d.cfg and others
+*/
+
 #pragma once
 
 #include "Gadget.h"

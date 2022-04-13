@@ -1,6 +1,11 @@
+/**
+    \brief  Performs denoising with non-local means and non-local Bayes
+    \author Original: David Christoffer Hansen
+    \author PureGadget Conversion: David Christoffer Hansen
+    \test   Tested by: generic_cartesian_cine_denoise.cfg
+*/
 
-#ifndef GADGETRON_DENOISEGADGET_H
-#define GADGETRON_DENOISEGADGET_H
+#pragma once
 
 #include "Gadget.h"
 #include "gadgetron_mricore_export.h"
@@ -38,5 +43,3 @@ namespace Gadgetron {
     };
 
 }
-
-#endif // GADGETRON_DENOISEGADGET_H

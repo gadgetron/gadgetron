@@ -1,35 +1,31 @@
-#ifndef COILREDUCTIONGADGET_H_
-#define COILREDUCTIONGADGET_H_
+/**
+    \brief  Reduces number of coils in an acquisition based on a mask or threshold count
+    \author Original: Michael S. Hansen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   Tested by: simple_gre_3d.cfg, gpu_spiral_realtime_deblurring.cfg, gpu_fixed_radial_mode1_realtime.cfg, and others
+*/
+
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
-
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "GadgetMRIHeaders.h"
+#include "Node.h"
+#include "Types.h"
 
 namespace Gadgetron{
-
-class EXPORTGADGETSMRICORE CoilReductionGadget :
-  public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class CoilReductionGadget : public Core::ChannelGadget<Core::Acquisition> 
     {
-    public:
-      GADGET_DECLARE(CoilReductionGadget);
-      
-      CoilReductionGadget();
-      virtual ~CoilReductionGadget();
-      
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
-      
-    protected:
-      GADGET_PROPERTY(coil_mask, std::string, "String mask of zeros and ones, e.g. 000111000 indicating which coils to keep", "");
-      GADGET_PROPERTY_LIMITS(coils_out, int, "Number of coils to keep, coils with higher indices will be discarded", 128,
-			     GadgetPropertyLimitsRange, 1, 1024);
-      std::vector<unsigned short> coil_mask_;
-      unsigned int coils_in_;
-      unsigned int coils_out_;      
+      public:
+        using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
+        CoilReductionGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        ~CoilReductionGadget() override = default;
+        void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
+      protected:
+        NODE_PROPERTY(coil_mask, std::string, "String mask of zeros and ones, e.g. 000111000 indicating which coils to keep", "");
+        NODE_PROPERTY(coils_out, int, "Number of coils to keep, coils with higher indices will be discarded", 128); // TODO: re-add limits
+        std::vector<unsigned short> coil_mask_;
+        unsigned int coils_in_;
+        unsigned int coils_out_;
     };
 }
-#endif /* COILREDUCTIONGADGET_H_ */

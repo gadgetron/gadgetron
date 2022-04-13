@@ -1,3 +1,10 @@
+/**
+    \brief  Fills the IsmrmrdReconData structures with kspace readouts and sets up the sampling limits
+    \author Original: Souheil Inati
+    \author ChannelGadget Conversion: David Christoffer Hansen
+    \test   Tested by: EPI_2d.cfg and others
+*/
+
 #pragma once
 #include "Node.h"
 #include "gadgetron_mricore_export.h"
