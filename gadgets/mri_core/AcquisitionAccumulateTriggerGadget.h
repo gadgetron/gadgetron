@@ -1,8 +1,10 @@
 /**
     \brief  Accumulates acquisitions into buckets based on a specified trigger
     \author Original: Michael S. Hansen
+    \author Original: Michael S. Hansen
+
     \author ChannelGadget Conversion: David Christoffer Hansen
-    \test   Tested by:
+    \test   Tested by: test/gadgets/AcquisitionAccumulateTrigget_test.cpp, simple_gre.cfg, simple_gre_python_image_array_recon.cfg and others
 */
 
 #pragma once
@@ -46,10 +48,8 @@ class AcquisitionAccumulateTriggerGadget
     };
     NODE_PROPERTY(trigger_dimension, TriggerDimension, "Dimension to trigger on", TriggerDimension::none);
     NODE_PROPERTY(sorting_dimension, TriggerDimension, "Dimension to trigger on", TriggerDimension::none);
-
     NODE_PROPERTY(n_acquisitions_before_trigger, unsigned long, "Number of acquisition before first trigger", 40);
-    NODE_PROPERTY(n_acquisitions_before_ongoing_trigger, unsigned long, "Number of acquisition before ongoing triggers",
-                  40);
+    NODE_PROPERTY(n_acquisitions_before_ongoing_trigger, unsigned long, "Number of acquisition before ongoing triggers", 40);
 
     size_t trigger_events = 0;
 
@@ -60,4 +60,4 @@ class AcquisitionAccumulateTriggerGadget
 
 void from_string(const std::string& str, AcquisitionAccumulateTriggerGadget::TriggerDimension& val);
 
-} // namespace Gadgetron
+}
