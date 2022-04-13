@@ -43,12 +43,9 @@ namespace Gadgetron{
     if( idx < prod(dims) ){
     
       T val = T(0);
-      typename intd<D>::Type coN;
 
       typename intd<D>::Type co = idx_to_co(idx, dims);
-
       typename intd<D>::Type stride(0);
-
 
       inner_laplace_functor<T,D,D-1>::apply(val,in,dims,co,stride);
       out[idx] = val+in[co_to_idx(co, dims)]*((REAL) Pow<3,D>::Value);

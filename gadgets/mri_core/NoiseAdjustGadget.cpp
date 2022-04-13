@@ -217,7 +217,7 @@ namespace Gadgetron {
             return boost::algorithm::to_lower_copy(dependency.dependencyType) == "noise";
         });
 
-        // find the noise depencies if any
+        // find the noise dependencies if any
         if (val == measurementDependency.end())
             return NoiseGatherer{};
 
@@ -316,7 +316,7 @@ namespace Gadgetron {
 
         normalize_covariance(ng);
 
-        this->measurement_storage.store("noise_covariance",NoiseCovariance{ this->current_ismrmrd_header, ng.noise_dwell_time_us, ng.tmp_covariance });
+        this->measurement_storage->store("noise_covariance",NoiseCovariance{ this->current_ismrmrd_header, ng.noise_dwell_time_us, ng.tmp_covariance });
     }
 
     template <> void NoiseAdjustGadget::save_noisedata(NoiseHandler& nh) {
@@ -403,12 +403,7 @@ namespace Gadgetron {
     }
 
     Core::optional<NoiseCovariance> NoiseAdjustGadget::load_noisedata(const std::string &noise_measurement_id) const {
-       auto list = this->measurement_storage.fetch<NoiseCovariance>(noise_measurement_id,"noise_covariance");
-       if (!list.empty()){
-           return list[0];
-       }
-        return {};
-
+       return measurement_storage->get_latest<NoiseCovariance>(noise_measurement_id, "noise_covariance");
     }
 
     GADGETRON_GADGET_EXPORT(NoiseAdjustGadget)

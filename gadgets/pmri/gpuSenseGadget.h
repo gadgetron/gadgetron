@@ -29,7 +29,7 @@ protected:
   GADGET_PROPERTY(oversampling_factor, float, "Oversampling factor for NFFT", 1.5);
   GADGET_PROPERTY(kernel_width, float, "Kernel width for NFFT", 5.5);
   GADGET_PROPERTY(save_individual_frames, bool, "Save individual frames", true);
-  GADGET_PROPERTY(output_convergence, bool, "Ouput convergence information", false);
+  GADGET_PROPERTY(output_convergence, bool, "Output convergence information", false);
   GADGET_PROPERTY(rotations_to_discard, int, "Number of rotations to dump", 0);
   GADGET_PROPERTY(output_timing, bool, "Output timing information", false);
 

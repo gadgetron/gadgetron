@@ -69,6 +69,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_T2STARAMAP                     "T2STARAMAP"
     #define GADGETRON_IMAGE_T2STARTRUNCMAP                 "T2STARTRUNCMAP"
     #define GADGETRON_IMAGE_R2STARMAP                      "R2STAR"
+    #define GADGETRON_IMAGE_T1RHOMAP                       "T1RHO"
 
     #define GADGETRON_IMAGE_FAT                            "FAT"
     #define GADGETRON_IMAGE_WATER                          "WATER"

@@ -55,17 +55,10 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    fit_calculated_ = boost::shared_array<bool>(new bool[sets_*slices_]);
-    polyfit_ = boost::shared_array<double>(new double[(order_+1)*channels_*sets_*slices_]);   
-    profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
+    fit_calculated = std::vector<bool>(sets_ * slices_, false);
+    polyfit = std::vector<double>(channels_ * sets_ * slices_ * (order_ + 1), 0.0);
+    profiles_queue = std::map<unsigned int, std::queue<std::unique_ptr<AcquisitionMessage>>>();
 
-    size_t bsize = sizeof(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>)*profiles_*10;
-    for( unsigned int i=0; i<slices_*sets_; i++ ){
-      fit_calculated_[i] = false;
-      profiles_queue_[i].high_water_mark(bsize);
-      profiles_queue_[i].low_water_mark(bsize);
-    }    
-    
     return GADGET_OK;
   }
   
@@ -96,22 +89,22 @@ namespace Gadgetron{
 
     unsigned int slice = m1->getObjectPtr()->idx.slice;
     unsigned int set = m1->getObjectPtr()->idx.set;
-    int idx = set*slices_+slice;
+    auto idx = set*slices_+slice;
 
-    if( !fit_calculated_[idx] ){
+    if( !fit_calculated[idx] ){
 
       // Enqueue the first 'profiles_' profiles...
       //
-      
-      profiles_queue_[idx].enqueue_tail(m1);
+
+      profiles_queue[idx].push(std::unique_ptr<AcquisitionMessage>(m1));
 
       // ...before estimating the polynomial fit of order 'order_'
       //
 
-      if( profiles_queue_[idx].message_count() == profiles_ ){
+      if( profiles_queue[idx].size() == profiles_ ){
 
         // Perform polynomial fit,
-        // assemble system matix A.
+        // assemble system matrix A.
         //
         
         arma::mat A( profiles_, order_+1 );
@@ -131,19 +124,12 @@ namespace Gadgetron{
         arma::mat b( profiles_, channels_ );
         //double prev_phase[channels_];
         std::vector<double> prev_phase(channels_);
-        ACE_Message_Queue<ACE_MT_SYNCH>::ITERATOR iter(profiles_queue_[idx]);
-        
-        for( int m=0; m<profiles_; m++ ){                     
-          
-          ACE_Message_Block* mbq = 0x0;
-          iter.next( mbq );
-          iter.advance();
-          
-          if(!mbq) {
-            GDEBUG("Unable to interpret data on message queue (1)\n");
-            return GADGET_FAIL;
-          }
-          
+
+        for( int m=0; m<profiles_; m++ ){
+
+          AcquisitionMessage *mbq = profiles_queue[idx].front().release();
+          profiles_queue[idx].pop();
+
           GadgetContainerMessage< hoNDArray< std::complex<float> > > *_profile = 
             AsContainerMessage< hoNDArray< std::complex<float> > >(mbq->cont());
         
@@ -186,32 +172,19 @@ namespace Gadgetron{
         //
         
         std::vector<size_t> dims; dims.push_back(order_+1); dims.push_back(channels_);
-        hoNDArray<double> vec( &dims, &polyfit_[set*(order_+1)*channels_*slices_+slice*(order_+1)*channels_] );
+        hoNDArray<double> vec( dims, &polyfit[set*(order_+1)*channels_*slices_+slice*(order_+1)*channels_] );
 
         arma::mat x = as_arma_matrix(vec);
         x = arma::solve(A.t()*A,A.t()*b);
 
-        /*
-        static int counter = 0;
-        char filename[256];
-        sprintf((char*)filename, "_polyfit_%d.real", counter);
-        write_nd_array<double>( &vec, filename );
-        */
-        
         // Phase correct buffered profiles
         //
 
-        for( int m=0; m<profiles_; m++ ){          
+        for( int m=0; m<profiles_; m++ ){
 
-          ACE_Message_Block *mbq;
-          if( profiles_queue_[idx].dequeue_head(mbq) < 0 ){
-            GDEBUG("Message dequeue failed\n");
-            GADGET_FAIL;
-          }
+          AcquisitionMessage *header = profiles_queue[idx].front().release();
+          profiles_queue[idx].pop();
 
-          GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *header = 
-            AsContainerMessage<ISMRMRD::AcquisitionHeader>(mbq);
-          
           if(!header) {
             GDEBUG("Unable to interpret data on message queue (3)\n");
             return GADGET_FAIL;
@@ -224,7 +197,7 @@ namespace Gadgetron{
             return GADGET_FAIL;
           }          
         }
-        fit_calculated_[idx] = true;
+        fit_calculated[idx] = true;
       }
     }
     else{
@@ -273,10 +246,10 @@ namespace Gadgetron{
 
       for( unsigned int i=0; i<order_+1; i++ ){
 
-        double weight = polyfit_[set*(order_+1)*channels_*slices_ +
-                                 slice*(order_+1)*channels_ +
-                                 coil*(order_+1) + 
-                                 i ];
+        double weight = polyfit[set*(order_+1)*channels_*slices_ +
+                                slice*(order_+1)*channels_ +
+                                coil*(order_+1) +
+                                i ];
 
         double power = std::pow(angle, double(i));
 

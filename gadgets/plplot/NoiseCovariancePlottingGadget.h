@@ -26,7 +26,7 @@ namespace Gadgetron {
 
     protected:
 
-        GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix of noise depencency file", "GadgetronNoiseCovarianceMatrix");
+        GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix of noise dependency file", "GadgetronNoiseCovarianceMatrix");
         GADGET_PROPERTY(xlabel, std::string, "Label for x axis", "Channel");
         GADGET_PROPERTY(ylabel, std::string, "Label for y axis", "Noise Standard Deviation");
         GADGET_PROPERTY(title, std::string, "Label for y axis", "Gadgetron, Noise STD Plot");

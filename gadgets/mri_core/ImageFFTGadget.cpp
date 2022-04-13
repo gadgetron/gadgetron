@@ -23,7 +23,7 @@ namespace Gadgetron
     {
         ArrayType* input_array = m2->getObjectPtr();
 
-        ArrayType output_array(input_array);
+        ArrayType output_array(*input_array);
 
         std::vector<size_t> dims;
         input_array->get_dimensions(dims);

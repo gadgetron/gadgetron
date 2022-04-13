@@ -105,7 +105,7 @@ TYPED_TEST(cmr_mapping_test, T2Mapping)
     this->gt_io_.export_array(t2mapper.map_, this->gt_ut_res_folder_ + "/T2Mapping/t2_map");
     this->gt_io_.export_array(t2mapper.sd_map_, this->gt_ut_res_folder_ + "/T2Mapping/t2_sd_map");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;

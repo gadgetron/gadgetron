@@ -7,8 +7,17 @@
 #include "hoNDArray_iterators.h"
 #include "vector_td_utilities.h"
 
-#include <boost/math/special_functions/trunc.hpp>
+#include <boost/version.hpp>
+
+#if (BOOST_VERSION < 107200)
 #include <boost/math/interpolators/cubic_b_spline.hpp>
+namespace boost::math::interpolators {
+    auto cardinal_cubic_b_spline = [](auto ... args){return boost::math::cubic_b_spline(args...);};
+}
+#else
+#include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
+#endif
+#include <boost/math/special_functions/trunc.hpp>
 #include <boost/range/adaptor/strided.hpp>
 #include <range/v3/numeric.hpp>
 #include <range/v3/view.hpp>
@@ -222,10 +231,10 @@ namespace Gadgetron {
 
     const size_t number_of_elements_in = in.get_number_of_elements();
 
-    std::vector<size_t> dims = *in.get_dimensions();
+    std::vector<size_t> dims = in.dimensions();
     dims.push_back(new_dim_size);
 
-    auto out = hoNDArray<T>(&dims);
+    auto out = hoNDArray<T>(dims);
 
 #ifdef USE_OMP
 #pragma omp parallel for
@@ -932,7 +941,11 @@ namespace Gadgetron {
 
                   for (size_t k = 0; k < stride; k++){
                       auto strided_iterator = std::make_pair(input_ptr+k,input_ptr+k+old_batch_size) | ba::strided(stride);
-                      auto spline = bm::cubic_b_spline<T>(boost::begin(strided_iterator),boost::end(strided_iterator),T(0.25)*scale,T(scale),T(0),T(0));
+                      auto spline = bm::interpolators::cardinal_cubic_b_spline(
+                          boost::begin(strided_iterator),
+                          boost::end(strided_iterator),
+                          T(0.25)*scale, T(scale), T(0), T(0)
+                      );
                       for (int i = 0; i < new_dims[dim]; i++){
                           result_ptr[k+i*stride] = spline(i);
                       }
@@ -1096,7 +1109,7 @@ namespace Gadgetron {
       const hoNDArray<T>& first = *std::begin(arrays);
       std::vector dims = first.dimensions();
 
-      size_t count = ranges::accumulate(arrays | view::transform([dimension](const auto& array) {
+      size_t count = ranges::accumulate(arrays | views::transform([dimension](const auto& array) {
                                             return array.dimensions().at(dimension);
                                         }),
                                         size_t(0));
@@ -1113,7 +1126,7 @@ namespace Gadgetron {
           return result && (d.size() == dims.size());
       };
 
-      bool all_dimensions_valid = ranges::accumulate(arrays | view::transform(dimensions_valid), true, std::logical_and() );
+      bool all_dimensions_valid = ranges::accumulate(arrays | views::transform(dimensions_valid), true, std::logical_and() );
       if (!all_dimensions_valid) throw std::runtime_error("The dimensions of all provided arrays must be equal except along the concatenate dimension");
 
       auto result = hoNDArray<T>(dims);
@@ -1172,7 +1185,7 @@ namespace Gadgetron {
 
       static_assert((std::is_same_v<hoNDArray<T>,std::decay_t<ARRAYS>> && ...));
       using namespace ranges;
-      return concat(view::concat(view::single(first_array),view::single(arrays)...));
+      return concat(views::concat(views::single(first_array),views::single(arrays)...));
   }
 }
 

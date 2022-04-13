@@ -28,4 +28,6 @@ test/integration/*.xprot
 test/integration/*.xml
 .atom-build.json
 .vscode/
-
+dep-build/
+stats.csv
+junit.xml

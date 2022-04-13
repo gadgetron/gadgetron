@@ -2,6 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CORE__)
 endif ()
 
+add_compile_options(-Wall -Werror)
 add_subdirectory(readers)
 add_subdirectory(writers)
 add_subdirectory(parallel)
@@ -10,6 +11,7 @@ add_subdirectory(distributed)
 add_library(gadgetron_core SHARED
         Channel.cpp
         Gadget.cpp
+        IsmrmrdContextVariables.cpp
         LegacyACE.cpp
         Message.cpp
         Response.cpp
@@ -17,6 +19,7 @@ add_library(gadgetron_core SHARED
         Process.cpp
         gadgetron_paths.cpp
         io/from_string.cpp)
+
 set_target_properties(gadgetron_core PROPERTIES
         VERSION ${GADGETRON_VERSION_STRING}
         SOVERSION ${GADGETRON_SOVERSION})
@@ -26,6 +29,7 @@ target_link_libraries(gadgetron_core
         gadgetron_toolbox_cpucore
         Boost::boost
         Boost::filesystem
+        cpr::cpr
         )
 
 target_include_directories(gadgetron_core PUBLIC

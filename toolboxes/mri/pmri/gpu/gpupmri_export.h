@@ -6,7 +6,7 @@
 #define GPUPMRI_EXPORT_H_
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_GPUPMRI__) || defined (gpuparallelmri_EXPORTS)
+#if defined (__BUILD_GADGETRON_GPU__) || defined (gpuparallelmri_EXPORTS)
 #define EXPORTGPUPMRI __declspec(dllexport)
 #else
 #define EXPORTGPUPMRI __declspec(dllimport)

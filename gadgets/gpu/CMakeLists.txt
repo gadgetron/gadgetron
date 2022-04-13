@@ -10,7 +10,7 @@ set_target_properties(gadgetron_gpugadget PROPERTIES VERSION ${GADGETRON_VERSION
 
 target_link_libraries(gadgetron_gpugadget
         gadgetron_core
-        gadgetron_toolbox_gpunfft)
+        gadgetron_toolbox_gpu)
 
 install(FILES
         cuFFTGadget.h

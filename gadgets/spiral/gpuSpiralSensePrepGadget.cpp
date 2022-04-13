@@ -188,7 +188,7 @@ namespace Gadgetron {
         interleaves_counter_multiframe_[set * slices_ + slice]++;
 
         // Duplicate the profile to avoid double deletion in case problems are encountered below.
-        // Enque profile until all profiles for the reconstruction have been received.
+        // Enqueue profile until all profiles for the reconstruction have been received.
         buffer_[set * slices_ + slice].push_back(std::make_pair(m1,m2));
 
         // Copy profile into the accumulation buffer for csm/regularization estimation
@@ -422,7 +422,7 @@ namespace Gadgetron {
         header.image_index = image_counter_[set * slices_ + slice]++;
         header.image_series_index = set * slices_ + slice;
 
-        // Enque header until we are ready to assemble a Sense job
+        // Enqueue header until we are ready to assemble a Sense job
         //
 
         return header;
@@ -440,8 +440,8 @@ namespace Gadgetron {
         samples_per_interleave_ = host_traj_.get_size(0);
 
 
-        host_traj_.reshape({size_t(samples_per_interleave_*interleaves_)});
-        host_weights_.reshape({size_t(samples_per_interleave_*interleaves_)});
+        host_traj_.reshape({int64_t(samples_per_interleave_*interleaves_)});
+        host_weights_.reshape({int64_t(samples_per_interleave_*interleaves_)});
 
         cuNDArray<floatd2> traj(host_traj_);
         dcw_buffer_ = boost::make_shared<cuNDArray<float>>(host_weights_);
@@ -509,8 +509,8 @@ namespace Gadgetron {
                                            interleaves_counter_singleframe_[set * slices_ + slice],
                                            (use_multiframe_grouping_) ? (size_t) acceleration_factor_ : 1};
 
-        boost::shared_ptr<hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(&ddimensions));
-        boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(&ddimensions));
+        boost::shared_ptr<hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(ddimensions));
+        boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(ddimensions));
 
         for (unsigned int p = 0; p < profiles_buffered; p++) {
 

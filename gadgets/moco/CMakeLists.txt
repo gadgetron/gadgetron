@@ -29,8 +29,7 @@ if (CUDA_FOUND)
     target_link_libraries(gadgetron_moco
             gadgetron_core
             gadgetron_toolbox_cpucore gadgetron_mricore
-            gadgetron_toolbox_gpucore
-            gadgetron_toolbox_gpureg
+            gadgetron_toolbox_gpu
             )
 
 	install(TARGETS gadgetron_moco

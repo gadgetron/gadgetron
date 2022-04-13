@@ -1,8 +1,17 @@
+#pragma once
+
+#include <optional>
+
+#include <ismrmrd/xml.h>
+
+#include <boost/process.hpp>
 #include <boost/program_options.hpp>
 
-#include "StorageServer.h"
+#include "Storage.h"
 
 namespace Gadgetron::Server {
-    std::tuple<std::string, std::optional<Gadgetron::Storage::StorageServer>>
-    ensure_storage_server(const boost::program_options::variables_map &args);
-}
+std::tuple<std::string, std::optional<boost::process::child>>
+ensure_storage_server(const boost::program_options::variables_map& args);
+
+StorageSpaces setup_storage_spaces(const std::string& address, const ISMRMRD::IsmrmrdHeader& header);
+} // namespace Gadgetron::Server

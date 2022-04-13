@@ -34,7 +34,7 @@ namespace Gadgetron::Core {
         ) : Context{
                 std::move(header),
                 paths,
-                std::move(storage)
+                storage
             },
             args{args},
             storage_address{storage_address} {}

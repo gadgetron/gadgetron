@@ -32,20 +32,161 @@
 
 #define FFD_MKINT(a) (((a)>=0)?((int)((a)+0.5)):((int)((a)-0.5)))
 
-namespace Gadgetron { 
+namespace Gadgetron {
+
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
-class FFDBase
+class FFDBase;
+
+namespace ffd_internal {
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut, unsigned int DCur> class FFDBaseN;
+
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
+class FFDBaseN<T, CoordType, DIn, DOut, 1> {
+  public:
+    virtual bool evaluateFFDDX(const CoordType pt[DIn], T dx[DOut]) const{
+        T deriv[1][DOut];
+        GADGET_CHECK_RETURN_FALSE(self()->evaluateFFDDerivative(pt, deriv));
+        std::copy(std::begin(deriv[0]),std::end(deriv[0]),dx);
+        return true;
+    }
+
+    virtual bool evaluateWorldDX(const CoordType pt[DIn], T dx[DOut]) const {
+
+        auto really_this = this->self();
+        CoordType pt_g[DIn];
+        really_this->world_to_grid(pt, pt_g);
+        GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDX(pt_g, dx));
+
+        CoordType sx = CoordType(1.0)/really_this->get_spacing(0);
+
+        unsigned int d;
+        for ( d=0; d<DOut; d++ )
+        {
+            dx[d] *= sx;
+        }
+        return true;
+
+    }
+
+    virtual ~FFDBaseN() = default;
+
+    FFDBase<T, CoordType, DIn, DOut>* self() { return reinterpret_cast<FFDBase<T, CoordType, DIn, DOut>*>(this); }
+
+    const FFDBase<T, CoordType, DIn, DOut>* self() const { return reinterpret_cast<const FFDBase<T, CoordType, DIn, DOut>*>(this); }
+};
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
+class FFDBaseN<T, CoordType, DIn, DOut, 2> : public FFDBaseN<T, CoordType, DIn, DOut, 1> {
+  public:
+    virtual ~FFDBaseN() = default;
+    virtual bool evaluateFFDDY(const CoordType pt[DIn], T dy[DOut]) const{
+        T deriv[2][DOut];
+        GADGET_CHECK_RETURN_FALSE(this->self()->evaluateFFDDerivative(pt, deriv));
+        std::copy(std::begin(deriv[1]),std::end(deriv[1]),dy);
+        return true;
+    }
+
+    virtual bool evaluateWorldDY(const CoordType pt[DIn], T dy[DOut]) const
+    {
+
+        auto really_this = this->self();
+        CoordType pt_g[DIn];
+        really_this->world_to_grid(pt, pt_g);
+        GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDY(pt_g, dy));
+
+        CoordType sy = CoordType(1.0)/really_this->get_spacing(1);
+
+        unsigned int d;
+        for ( d=0; d<DOut; d++ )
+        {
+            dy[d] *= sy;
+        }
+
+        return true;
+    }
+};
+
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
+class FFDBaseN<T, CoordType, DIn, DOut, 3> : public FFDBaseN<T, CoordType, DIn, DOut, 2> {
+  public:
+    virtual ~FFDBaseN() = default;
+    virtual bool evaluateFFDDZ(const CoordType pt[DIn], T dz[DOut]) const{
+        T deriv[3][DOut];
+        GADGET_CHECK_RETURN_FALSE(this->self()->evaluateFFDDerivative(pt, deriv));
+        std::copy(std::begin(deriv[2]),std::end(deriv[2]),dz);
+        return true;
+    }
+
+    virtual bool evaluateWorldDZ(const CoordType pt[DIn], T dz[DOut]) const
+    {
+
+        auto really_this = this->self();
+        CoordType pt_g[DIn];
+        really_this->world_to_grid(pt, pt_g);
+        GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDZ(pt_g, dz));
+
+        CoordType sz = CoordType(1.0)/really_this->get_spacing(2);
+
+        unsigned int d;
+        for ( d=0; d<DOut; d++ )
+        {
+            dz[d] *= sz;
+        }
+
+        return true;
+    }
+};
+
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
+class FFDBaseN<T, CoordType, DIn, DOut, 4> : public FFDBaseN<T, CoordType, DIn, DOut, 3> {
+  public:
+    virtual ~FFDBaseN() = default;
+    virtual bool evaluateFFDDS(const CoordType pt[DIn], T ds[DOut]) const{
+        T deriv[4][DOut];
+        GADGET_CHECK_RETURN_FALSE(this->self()->evaluateFFDDerivative(pt, deriv));
+        std::copy(std::begin(deriv[3]),std::end(deriv[4]),ds);
+        return true;
+    }
+
+
+    virtual bool evaluateWorldDS(const CoordType pt[DIn], T ds[DOut]) const
+    {
+        auto really_this = this->self();
+        CoordType pt_g[DIn];
+        really_this->world_to_grid(pt, pt_g);
+        GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDS(pt_g, ds));
+
+        CoordType ss = CoordType(1.0)/really_this->get_spacing(3);
+
+        unsigned int d;
+        for ( d=0; d<DOut; d++ )
+        {
+            ds[d] *= ss;
+        }
+
+        return true;
+    }
+
+};
+
+}
+
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
+class FFDBase : public ffd_internal::FFDBaseN<T,CoordType,DIn,DOut,DIn>
 {
 public:
+    static_assert(DIn > 0);
+    static_assert(DOut > 0);
 
     typedef FFDBase<T, CoordType, DIn, DOut> Self;
 
     typedef typename realType<T>::Type real_value_type;
+    using value_type = T;
 
     typedef CoordType coord_type;
 
-    enum { D = DIn };
+    static constexpr unsigned int D = DIn;
+    static constexpr unsigned int Dout = DOut;
 
     /// array to store the coordinates of spatial points
     /// has the dimension of DIn by N for N points
@@ -84,18 +225,11 @@ public:
     virtual bool evaluateFFDDerivative(const CoordType pt[D], T deriv[D][DOut]) const = 0;
     virtual bool evaluateFFDDerivative(const PointType& pt, T deriv[D][DOut]) const;
 
-    virtual bool evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const;
-    virtual bool evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const;
-    virtual bool evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const;
-    virtual bool evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const;
+
 
     /// calculate the 1st order derivative of FFD at a world coordinate location with the world coordinate unit
     virtual bool evaluateWorldDerivative(const CoordType pt[D], T deriv[D][DOut]) const;
 
-    virtual bool evaluateWorldDX(const CoordType pt[D], T dx[DOut]) const;
-    virtual bool evaluateWorldDY(const CoordType pt[D], T dy[DOut]) const;
-    virtual bool evaluateWorldDZ(const CoordType pt[D], T dz[DOut]) const;
-    virtual bool evaluateWorldDS(const CoordType pt[D], T ds[DOut]) const;
 
     /// evaluate the 2nd order derivative of FFD at a grid location
     /// dderiv : D*D vector, stores dxx dxy dxz ...; dyx dyy dyz ...; dzx dzy dzz ...
@@ -337,41 +471,10 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivative(const PointT
     return true;
 }
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
-{
-    T deriv[D][DOut];
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
-    memcpy(dx, deriv, sizeof(T)*DOut);
-    return true;
-}
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
-{
-    T deriv[D][DOut];
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
-    memcpy(dy, deriv+sizeof(T)*DOut, sizeof(T)*DOut);
-    return true;
-}
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
-{
-    T deriv[D][DOut];
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
-    memcpy(dz, deriv+2*sizeof(T)*DOut, sizeof(T)*DOut);
-    return true;
-}
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
-{
-    T deriv[D][DOut];
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
-    memcpy(ds, deriv+3*sizeof(T)*DOut, sizeof(T)*DOut);
-    return true;
-}
+
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
 inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDerivative(const CoordType pt[D], T deriv[D][DOut]) const
@@ -395,77 +498,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDerivative(const Coor
     return true;
 }
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDX(const CoordType pt[D], T dx[DOut]) const
-{
-    CoordType pt_g[D];
-    this->world_to_grid(pt, pt_g);
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDX(pt_g, dx));
 
-    coord_type sx = coord_type(1.0)/this->get_spacing(0);
-
-    unsigned int d;
-    for ( d=0; d<DOut; d++ )
-    {
-        dx[d] *= sx;
-    }
-
-    return true;
-}
-
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDY(const CoordType pt[D], T dy[DOut]) const
-{
-    CoordType pt_g[D];
-    this->world_to_grid(pt, pt_g);
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDY(pt_g, dy));
-
-    coord_type sy = coord_type(1.0)/this->get_spacing(1);
-
-    unsigned int d;
-    for ( d=0; d<DOut; d++ )
-    {
-        dy[d] *= sy;
-    }
-
-    return true;
-}
-
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDZ(const CoordType pt[D], T dz[DOut]) const
-{
-    CoordType pt_g[D];
-    this->world_to_grid(pt, pt_g);
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDZ(pt_g, dz));
-
-    coord_type sz = coord_type(1.0)/this->get_spacing(2);
-
-    unsigned int d;
-    for ( d=0; d<DOut; d++ )
-    {
-        dz[d] *= sz;
-    }
-
-    return true;
-}
-
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDS(const CoordType pt[D], T ds[DOut]) const
-{
-    CoordType pt_g[D];
-    this->world_to_grid(pt, pt_g);
-    GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDS(pt_g, ds));
-
-    coord_type ss = coord_type(1.0)/this->get_spacing(3);
-
-    unsigned int d;
-    for ( d=0; d<DOut; d++ )
-    {
-        ds[d] *= ss;
-    }
-
-    return true;
-}
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
 inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivative(const PointType& pt, T dderiv[D*D][DOut]) const
@@ -708,7 +741,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArrayType
     return true;
 }
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
 inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const
 {
     try
@@ -724,10 +757,10 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordType pt_g
     return true;
 }
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
 inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const
 {
-    GADGET_CHECK_RETURN_FALSE(DIn==2);
+    GADGET_CHECK_RETURN_FALSE(DIn == 2);
 
     try
     {
@@ -742,7 +775,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, Coor
     return true;
 }
 
-template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
+template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
 inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==3);

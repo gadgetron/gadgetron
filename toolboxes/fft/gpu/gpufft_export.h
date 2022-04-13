@@ -6,7 +6,7 @@
 #define GPUFFT_EXPORT_H_
 
 #if defined (WIN32)
-    #if defined (__BUILD_GADGETRON_GPUFFT__) || defined (gpufft_EXPORTS)
+    #if defined (__BUILD_GADGETRON_GPU__) || defined (gpufft_EXPORTS)
         #define EXPORTGPUFFT __declspec(dllexport)
     #else
         #define EXPORTGPUFFT __declspec(dllimport)

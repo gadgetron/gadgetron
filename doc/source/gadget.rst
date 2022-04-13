@@ -2,7 +2,7 @@ Writing a Gadget
 ================
 
 A Gadget is a :cpp:class:`Node<Gadgetron::Core::Node>` in the Gadgetron chain, 
-which processes data comming in through an :cpp:class:`GenericInputChannel<Gadgetron::Core::GenericInputChannel>` and
+which processes data coming in through an :cpp:class:`GenericInputChannel<Gadgetron::Core::GenericInputChannel>` and
 sends the processed data to the next :cpp:class:`Node<Gadgetron::Core::Node>` in the chain using an
  :cpp:class:`OutputChannel<Gadgetron::Core::OutputChannel>`.
 

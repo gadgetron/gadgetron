@@ -29,7 +29,7 @@
             <value>GadgetronNoiseCovarianceMatrix</value>
         </property>
 
-        <!-- Whether to pass the nonconformant data without applyting the prewhitening -->
+        <!-- Whether to pass the nonconformant data without applying the prewhitening -->
         <property>
             <name>pass_nonconformant_data</name>
             <value>true</value>

@@ -46,15 +46,13 @@ namespace Gadgetron
                 legacy_id = legacy_id.substr(legacy_prefix.size());
             }
 
-           auto  noise_covariance_list = this->context.storage.measurement.fetch<NoiseCovariance>(legacy_id, "noise_covariance");
+            auto noise_covariance = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
 
-
-            if ( noise_covariance_list.empty()) {
+            if (!noise_covariance) {
                 dependencies.append("status", "failed");
             } else {
 
-                const auto noise_covariance = noise_covariance_list[0];
-                const auto& noise_covariance_matrix = noise_covariance.noise_covariance_matrix;
+                const auto& noise_covariance_matrix = noise_covariance->noise_covariance_matrix;
 
                 size_t coils = noise_covariance_matrix.get_size(0);
                 
@@ -74,7 +72,7 @@ namespace Gadgetron
                 GDEBUG("Max Sigma: %f\n", max_sigma);
                 GDEBUG("Mean Sigma: %f\n", mean_sigma);
 
-                dependencies.append("noise_dwell_time_us",noise_covariance.noise_dwell_time_us);
+                dependencies.append("noise_dwell_time_us",noise_covariance->noise_dwell_time_us);
                 dependencies.append("min_sigma",min_sigma);
                 dependencies.append("max_sigma",max_sigma);
                 dependencies.append("mean_sigma",mean_sigma);

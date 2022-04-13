@@ -50,16 +50,14 @@ namespace Gadgetron{
                static constexpr bool value = is_contiguous_index<ARGS...>::value;
            };
 
-           void test(){
-               static_assert(is_contiguous_index<Indexing::Slice>::value);
-               static_assert(is_contiguous_index<Indexing::Slice,size_t>::value);
-               static_assert(is_contiguous_index<Indexing::Slice,long long >::value);
-               static_assert(is_contiguous_index<Indexing::Slice,Indexing::Slice,size_t>::value);
-               static_assert(is_contiguous_index<Indexing::Slice,Indexing::Slice,long long>::value);
-               static_assert(!is_contiguous_index<size_t ,Indexing::Slice,Indexing::Slice,size_t>::value);
-               static_assert(!is_contiguous_index<int,Indexing::Slice,Indexing::Slice,size_t>::value);
-               static_assert(!is_contiguous_index<long long,Indexing::Slice,Indexing::Slice,size_t>::value);
-           }
+           static_assert(is_contiguous_index<Indexing::Slice>::value);
+           static_assert(is_contiguous_index<Indexing::Slice,size_t>::value);
+           static_assert(is_contiguous_index<Indexing::Slice,long long >::value);
+           static_assert(is_contiguous_index<Indexing::Slice,Indexing::Slice,size_t>::value);
+           static_assert(is_contiguous_index<Indexing::Slice,Indexing::Slice,long long>::value);
+           static_assert(!is_contiguous_index<size_t ,Indexing::Slice,Indexing::Slice,size_t>::value);
+           static_assert(!is_contiguous_index<int,Indexing::Slice,Indexing::Slice,size_t>::value);
+           static_assert(!is_contiguous_index<long long,Indexing::Slice,Indexing::Slice,size_t>::value);
 
        }
     }

@@ -32,12 +32,14 @@ namespace Gadgetron { namespace Core {
         ChannelIterator& operator=(const ChannelIterator&) = default;
         ChannelIterator& operator=(ChannelIterator&&) = default;
 
-        template <class T> void operator=(T&& data) {
+        template <class T> ChannelIterator& operator=(T&& data) {
             channel->push(std::forward<T>(data));
+            return *this;
         }
 
-        void operator=(Message&& message) {
+        ChannelIterator& operator=(Message&& message) {
             channel->push_message(std::move(message));
+            return *this;
         }
 
         ChannelIterator& operator++() {
@@ -66,3 +68,13 @@ namespace Gadgetron { namespace Core {
 
 
 } }
+
+template<>
+class std::iterator_traits<Gadgetron::Core::ChannelIterator<Gadgetron::Core::OutputChannel>> {
+public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = void;
+    using reference = void;
+    using iterator_category = std::output_iterator_tag;
+};
+

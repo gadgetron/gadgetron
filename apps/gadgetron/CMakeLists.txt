@@ -1,6 +1,6 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
-
+add_subdirectory(test)
 
 add_executable(gadgetron
         main.cpp
@@ -44,6 +44,8 @@ add_executable(gadgetron
         connection/nodes/common/ExternalChannel.h
         connection/nodes/external/Matlab.cpp
         connection/nodes/external/Matlab.h
+        connection/nodes/external/Julia.cpp
+        connection/nodes/external/Julia.h
         connection/nodes/external/Python.cpp
         connection/nodes/external/Python.h
         connection/nodes/common/Discovery.cpp
@@ -63,15 +65,18 @@ add_executable(gadgetron
         connection/nodes/distributed/Worker.cpp
         connection/nodes/distributed/Worker.h
         connection/nodes/common/Closer.h
-        connection/nodes/distributed/Pool.cpp connection/core/Processable.cpp storage.h storage.cpp)
+        connection/nodes/distributed/Pool.cpp
+        connection/core/Processable.cpp
+        storage.h
+        storage.cpp)
 
 target_link_libraries(gadgetron
         gadgetron_core
-        gadgetron_storage
         gadgetron_toolbox_log
         Boost::system
         Boost::filesystem
         Boost::program_options
+        cpr::cpr
         GTBLAS
         ${CMAKE_DL_LIBS})
 

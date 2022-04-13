@@ -2,7 +2,7 @@
 #define _GPUREG_EXPORT_H_
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_GPUREG__) || defined (gpureg_EXPORTS)
+#if defined (__BUILD_GADGETRON_GPU__) || defined (gpureg_EXPORTS)
 #define EXPORTGPUREG __declspec(dllexport)
 #else
 #define EXPORTGPUREG __declspec(dllimport)

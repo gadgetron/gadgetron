@@ -3,7 +3,6 @@ set(gadgetron_python_config_files
 		legacy/config/pseudoreplica.xml
 		legacy/config/python_buckets.xml
 		legacy/config/python_short.xml
-		legacy/config/python_image_array.xml
 		legacy/config/python_image_array_recon.xml
 		legacy/config/python_passthrough.xml
 		legacy/config/python_short.xml
@@ -11,8 +10,7 @@ set(gadgetron_python_config_files
 
 set(gadgetron_python_gadgets_files
 		legacy/gadgets/accumulate_and_recon.py
-		legacy/gadgets/array_image.py
-		legacy/gadgets/bucket_recon.py
+        legacy/gadgets/bucket_recon.py
         legacy/gadgets/image_array_recon.py
 		legacy/gadgets/image_array_recon_rtcine_plotting.py
 		legacy/gadgets/passthrough.py
