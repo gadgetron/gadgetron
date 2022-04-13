@@ -14,8 +14,8 @@ CoilReductionGadget::CoilReductionGadget(const Core::Context& context, const Cor
 
     if (coil_mask_int.compare(std::string("")) == 0) {
         if (coils_out <= 0) {
-            GDEBUG("Invalid number of output coils %d\n", coils_out);
-            // TODO: How to throw Gadget failures?
+            GERROR("Invalid number of output coils %d\n", coils_out);
+            return;
         }
         coil_mask_ = std::vector<unsigned short>(coils_out, 1);
     } else {
@@ -41,8 +41,8 @@ CoilReductionGadget::CoilReductionGadget(const Core::Context& context, const Cor
         coil_mask_.pop_back();
 
     if (coil_mask_.size() != coils_in_) {
-        GDEBUG("Error configuring coils for coil reduction\n");
-        // TODO: How to throw Gadget failures?
+        GERROR("Error configuring coils for coil reduction\n");
+        return;
     }
 
     coils_out_ = 0;
@@ -67,7 +67,7 @@ void CoilReductionGadget::process(Core::InputChannel<Core::Acquisition>& in, Cor
             m3.create(dims_out);
         } catch (std::runtime_error& err) {
             GEXCEPTION(err, "Unable to create storage for reduced dataset size\n");
-            // TODO: How to throw Gadget failures?
+            return;
         }
 
         std::complex<float>* s = acq.get_data_ptr();
@@ -77,8 +77,8 @@ void CoilReductionGadget::process(Core::InputChannel<Core::Acquisition>& in, Cor
         size_t coils_copied = 0;
         for (int c = 0; c < header.active_channels; c++) {
             if (c > coil_mask_.size()) {
-                GDEBUG("Fatal error, too many coils for coil mask\n");
-                // TODO: How to throw Gadget failures?
+                GERROR("Fatal error, too many coils for coil mask\n");
+                return;
             }
             if (coil_mask_[c]) {
                 memcpy(d + coils_copied * samples, s + c * samples, sizeof(std::complex<float>) * samples);

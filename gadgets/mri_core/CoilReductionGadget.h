@@ -23,7 +23,7 @@ namespace Gadgetron{
         void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
       protected:
         NODE_PROPERTY(coil_mask, std::string, "String mask of zeros and ones, e.g. 000111000 indicating which coils to keep", "");
-        NODE_PROPERTY(coils_out, int, "Number of coils to keep, coils with higher indices will be discarded", 128); // TODO: re-add limits
+        NODE_PROPERTY(coils_out, int, "Number of coils to keep, coils with higher indices will be discarded", 128);
         std::vector<unsigned short> coil_mask_;
         unsigned int coils_in_;
         unsigned int coils_out_;

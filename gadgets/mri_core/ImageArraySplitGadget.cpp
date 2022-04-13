@@ -43,7 +43,7 @@ void doProcessing(IsmrmrdImageArray imagearr, Core::OutputChannel& out) {
                        X * Y * Z * CHA * sizeof(std::complex<float>));
 
                 // Create a new meta container if needed and copy
-                auto imageMetaContainer = std::optional<ISMRMRD::MetaContainer>(); // TODO: Should this be empty? Seems like it should be populated somehow
+                auto imageMetaContainer = std::optional<ISMRMRD::MetaContainer>();
                 if (imagearr.meta_.size() > 0) {
                     size_t mindex = loc * N * S + s * N + n;
                     imageMetaContainer = imagearr.meta_[mindex];

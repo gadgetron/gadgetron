@@ -15,8 +15,8 @@ RemoveROOversamplingGadget::RemoveROOversamplingGadget(const Core::Context& cont
 
     if (h.encoding.size() == 0) {
         GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
-        GDEBUG("This Gadget needs an encoding description\n");
-        // TODO: How to throw gadget failures?
+        GERROR("This Gadget needs an encoding description\n");
+        return;
     }
 
     ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
@@ -49,7 +49,8 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
       hoNDArray<std::complex<float>>* m3 = new hoNDArray<std::complex<float>>();
       if (!m3)
       {
-        // TODO: How to throw gadget failures?
+        GERROR("Error creating new temp storage array");
+        return;
       }
       std::vector<size_t> data_out_dims = *acq.get_dimensions();
       if (!ifft_buf_.dimensions_equal(&data_out_dims) )
@@ -68,7 +69,7 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
       catch (std::runtime_error &err)
       {
           GEXCEPTION(err,"Unable to create new data array for downsampled data\n");
-          // TODO: How to throw gadget failures?
+          return;
       }
       size_t sRO = acq.get_size(0);
       size_t start = (size_t)((acq.get_size(0)-data_out_dims[0]) / 2);
