@@ -1,8 +1,6 @@
 /**
     \brief  Accumulates acquisitions into buckets based on a specified trigger
     \author Original: Michael S. Hansen
-    \author Original: Michael S. Hansen
-
     \author ChannelGadget Conversion: David Christoffer Hansen
     \test   Tested by: test/gadgets/AcquisitionAccumulateTrigget_test.cpp, simple_gre.cfg, simple_gre_python_image_array_recon.cfg and others
 */

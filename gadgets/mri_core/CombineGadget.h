@@ -1,5 +1,5 @@
 /**
-    \brief  
+    \brief  Combines coils and outputs magnitude images
     \author Original: Souheil Inati
     \author PureGadget Conversion: Andrew Dupuis
     \test   EPI_2d.cfg

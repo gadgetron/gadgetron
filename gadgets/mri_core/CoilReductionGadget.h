@@ -1,5 +1,5 @@
 /**
-    \brief  
+    \brief  Reduces number of coils in an acquisition based on a mask or threshold count
     \author Original: Michael S. Hansen
     \author ChannelGadget Conversion: Andrew Dupuis
     \test   Tested by: simple_gre_3d.cfg, gpu_spiral_realtime_deblurring.cfg, gpu_fixed_radial_mode1_realtime.cfg, and others
