@@ -130,6 +130,10 @@ if(CUDA_FOUND)
         mri/pmri/gpu/spirit_calibration.h
         mri/pmri/gpu/trajectory_utils.cu
         mri/pmri/gpu/trajectory_utils.h
+        mri/pmri/gpu/cuNonCartesianTSenseOperator.h
+        mri/pmri/gpu/cuNonCartesianTSenseOperator.cu
+        mri/pmri/gpu/cuNonCartesianMOCOOperator.h
+        mri/pmri/gpu/cuNonCartesianMOCOOperator.cu
         mri/sdc/gpu/cuSDC.cu
         nfft/gpu/cuGriddingConvolution.cu
         nfft/gpu/cuGriddingConvolution.h
@@ -247,6 +251,8 @@ if(CUDA_FOUND)
         mri/pmri/gpu/htgrappa.h
         mri/pmri/gpu/sense_utilities.h
         mri/pmri/gpu/senseOperator.h
+        mri/pmri/gpu/cuNonCartesianTSenseOperator.h
+        mri/pmri/gpu/cuNonCartesianMOCOOperator.h
         mri/sdc/gpu/cuSDC.h
         nfft/gpu/cuGriddingConvolution.h 
         nfft/gpu/cuNFFT.h
