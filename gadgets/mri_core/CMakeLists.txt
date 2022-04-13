@@ -17,13 +17,10 @@ endif()
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         NoiseAdjustGadget.h
         PCACoilGadget.h
-        RateLimitGadget.h
-        AcquisitionPassthroughGadget.h
         AccumulatorGadget.h
         FFTGadget.h
         CombineGadget.h
         CropAndCombineGadget.h
-        ImageWriterGadget.h
         writers/MRIImageWriter.h
         readers/MRIImageReader.h
         NoiseAdjustGadget_unoptimized.h
@@ -35,17 +32,14 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         FlowPhaseSubtractionGadget.h
         readers/GadgetIsmrmrdReader.h
         PhysioInterpolationGadget.h
-        IsmrmrdDumpGadget.h
         AsymmetricEchoAdjustROGadget.h
         MaxwellCorrectionGadget.h
-        CplxDumpGadget.h
         dependencyquery/DependencyQueryGadget.h
         dependencyquery/DependencyQueryWriter.h
         ComplexToFloatGadget.h
         AcquisitionAccumulateTriggerGadget.h
         BucketToBufferGadget.h
         ImageArraySplitGadget.h
-        PseudoReplicatorGadget.h
         SimpleReconGadget.h
         ImageSortGadget.h
         GenericReconBase.h
@@ -68,7 +62,6 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         GenericImageReconArrayToImageGadget.h
         GenericReconReferenceKSpaceDelayedBufferGadget.h
         GenericReconImageToImageArrayGadget.h 
-        WhiteNoiseInjectorGadget.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
@@ -86,7 +79,6 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         )
 
 set(gadgetron_mricore_src_files
-        AcquisitionPassthroughGadget.cpp
         NoiseAdjustGadget.cpp
         PCACoilGadget.cpp
         AccumulatorGadget.cpp
@@ -94,7 +86,6 @@ set(gadgetron_mricore_src_files
         CombineGadget.cpp
         CropAndCombineGadget.cpp
         ImageFinishGadget.cpp
-        ImageWriterGadget.cpp
         writers/MRIImageWriter.cpp
         readers/MRIImageReader.cpp
         NoiseAdjustGadget_unoptimized.cpp
@@ -106,17 +97,14 @@ set(gadgetron_mricore_src_files
         FlowPhaseSubtractionGadget.cpp
         readers/GadgetIsmrmrdReader.cpp
         PhysioInterpolationGadget.cpp
-        IsmrmrdDumpGadget.cpp
         AsymmetricEchoAdjustROGadget.cpp
         MaxwellCorrectionGadget.cpp
-        CplxDumpGadget.cpp
         dependencyquery/DependencyQueryGadget.cpp
         dependencyquery/DependencyQueryWriter.cpp
         ComplexToFloatGadget.cpp
         AcquisitionAccumulateTriggerGadget.cpp
         BucketToBufferGadget.cpp
         ImageArraySplitGadget.cpp
-        PseudoReplicatorGadget.cpp
         SimpleReconGadget.cpp
         ImageSortGadget.cpp
         GenericReconBase.cpp
@@ -143,8 +131,6 @@ set(gadgetron_mricore_src_files
         CompressedFloatBufferSse41.cpp
         CompressedFloatBufferAvx2.cpp
         cpuisa.cpp
-        WhiteNoiseInjectorGadget.cpp
-        RateLimitGadget.cpp
         dependencyquery/NoiseSummaryGadget.cpp
         ImageAccumulatorGadget.cpp
         writers/GadgetIsmrmrdWriter.cpp
@@ -183,7 +169,6 @@ set(gadgetron_mricore_config_files
         config/Generic_Cartesian_Grappa_Cine_Denoise.xml
         config/Generic_Cartesian_Image_Chain_FFT.xml
         config/NoiseSummary.xml
-        config/ismrmrd_dump.xml
         )
 
 # if there is python, add gadgets using python
