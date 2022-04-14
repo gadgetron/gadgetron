@@ -352,9 +352,7 @@ template <typename T> size_t amax(cuNDArray<T>* x) {
             x->get_data_ptr() + INT_MAX * ii, 1, &interim_result));
 
         cudaDeviceManager::Instance()->unlockHandle(device);
-        //  if((std::is_same<T, double>::value || std::is_same<T, float>::value))
-        //      if((((cuNDArray<float> *x)[INT_MAX * ii + (size_t)interim_result - 1]) > ((*x)[result])))
-
+       
         if (ii == 0)
             result = (size_t)interim_result - 1;
         else if ((((*x)[INT_MAX * ii + (size_t)interim_result - 1]) > ((*x)[result])))
@@ -429,9 +427,7 @@ template <typename T> size_t amax(cuNDArray<complext<T>>* x) {
             x->get_data_ptr() + INT_MAX * ii, 1, &interim_result));
 
         cudaDeviceManager::Instance()->unlockHandle(device);
-        //  if((std::is_same<T, double>::value || std::is_same<T, float>::value))
-        //      if((((cuNDArray<float> *x)[INT_MAX * ii + (size_t)interim_result - 1]) > ((*x)[result])))
-
+        
         auto interim_value = (*x)[INT_MAX * ii + (size_t)interim_result - 1];
         
         if (ii == 0)
