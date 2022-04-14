@@ -35,14 +35,16 @@ namespace Gadgetron{
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
   template<class T> size_t amin( cuNDArray<T> *x );
-  
+  template<typename T> size_t amin( cuNDArray<complext<T>> *x);
+
   /**
    * @brief Gets the index of the index of the element with maximum absolute
    * @param x Input data
    * @return index of absolute maximum values
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
-  template<class T> size_t amax( cuNDArray<T> *x);
+  template<typename T> size_t amax( cuNDArray<T> *x);
+  template<typename T> size_t amax( cuNDArray<complext<T>> *x);
   
   template<class T> typename realType<T>::Type asum( cuNDArray<T> *x );
   
