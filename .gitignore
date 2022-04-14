@@ -31,4 +31,3 @@ test/integration/*.xml
 dep-build/
 stats.csv
 junit.xml
-cmake/
