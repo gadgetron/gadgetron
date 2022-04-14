@@ -41,7 +41,8 @@ namespace Gadgetron
 
             auto padded_kernel = pad<std::complex<float>, 1>(uint64d1(nlines_new), girf_kernel, 0);
             //auto padded_kernel = GIRF::zeropadding(girf_kernel, 5);
-            hoNDArray<vector_td<float, D>> result(gradients.get_dimensions());
+            auto dims = gradients.get_dimensions();
+            auto result = hoNDArray<vector_td<float, D>>(gradients.get_dimensions());
 
             hoNDArray<float> filter;
             using namespace Gadgetron::Indexing;

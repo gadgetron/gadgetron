@@ -188,6 +188,8 @@ if(CUDA_FOUND)
         gadgetron_toolbox_nfft
         gadgetron_toolbox_operator
         gadgetron_toolbox_sdc
+        gadgetron_toolbox_mri_core
+        gadgetron_toolbox_mri_image
         ${CUDA_LIBRARIES}
         ${CUDA_CUFFT_LIBRARIES} 
         ${CUDA_CUBLAS_LIBRARIES} 
