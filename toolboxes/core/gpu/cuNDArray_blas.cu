@@ -323,10 +323,11 @@ template <typename T> size_t amin(cuNDArray<T>* x) {
         else if (((*x)[INT_MAX * ii + (size_t)interim_result - 1]) < ((*x)[result]))
             result = INT_MAX * ii + (size_t)interim_result - 1;
 
-        if (result > x->get_number_of_elements()) {
-            throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
-        }
     }
+   
+    if (result > x->get_number_of_elements()) {
+            throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
+        }
     return result; // result - 1;
 }
 
@@ -358,10 +359,11 @@ template <typename T> size_t amax(cuNDArray<T>* x) {
         else if ((((*x)[INT_MAX * ii + (size_t)interim_result - 1]) > ((*x)[result])))
             result = INT_MAX * ii + (size_t)interim_result - 1;
 
-        if (result > x->get_number_of_elements()) {
+    }
+
+    if (result > x->get_number_of_elements()) {
             throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
         }
-    }
     return result; //(size_t)result - 1;
 }
 // Complex
@@ -398,10 +400,12 @@ template <typename T> size_t amin(cuNDArray<complext<T>>* x) {
 
         saved_value = (*x)[result];
 
-        if (result > x->get_number_of_elements()) {
+        
+    }
+    if (result > x->get_number_of_elements()) {
             throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
         }
-    }
+    
     return result; // result - 1;
 }
 
@@ -438,10 +442,11 @@ template <typename T> size_t amax(cuNDArray<complext<T>>* x) {
         
         saved_value = (*x)[result];
 
-        if (result > x->get_number_of_elements()) {
+        
+    }
+    if (result > x->get_number_of_elements()) {
             throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
         }
-    }
     return result; //(size_t)result - 1;
 }
 
