@@ -48,12 +48,12 @@ TYPED_TEST(cuNDArray_blas_Real, axpyTest) {
 
     fill(&this->Array2, TypeParam(97));
     axpy(TypeParam(11), &this->Array, &this->Array2 ,16);
-    TypeParam val = this->Array2[10];
+    val = this->Array2[10];
     EXPECT_FLOAT_EQ(878, real(val));
 
     fill(&this->Array2, TypeParam(97));
     axpy(TypeParam(11), &this->Array, &this->Array2 ,17);
-    TypeParam val = this->Array2[10];
+    val = this->Array2[10];
     EXPECT_FLOAT_EQ(878, real(val));
 
 }
