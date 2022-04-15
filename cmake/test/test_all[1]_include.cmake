@@ -1,0 +1,5 @@
+if(EXISTS "/home/javeda2/mrprogs/gadgetron_fork/cmake/test/test_all[1]_tests.cmake")
+  include("/home/javeda2/mrprogs/gadgetron_fork/cmake/test/test_all[1]_tests.cmake")
+else()
+  add_test(test_all_NOT_BUILT test_all_NOT_BUILT)
+endif()

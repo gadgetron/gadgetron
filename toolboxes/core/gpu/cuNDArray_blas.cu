@@ -196,13 +196,15 @@ template <class T> typename realType<T>::Type nrm2(cuNDArray<T>* arr , size_t ba
                                    (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
                                    arr->get_data_ptr() + batchSize * ii, 1, &val));
 
-        cudaDeviceManager::Instance()->unlockHandle(device);
 
         if (ii == 0)
             ret = val;
         else
             ret = sqrt(pow(ret, 2) + pow(val, 2));
     }
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return ret;
 }
 
@@ -231,12 +233,13 @@ template <class T> T dot(cuNDArray<T>* arr1, cuNDArray<T>* arr2, size_t batchSiz
                                arr1->get_data_ptr() + batchSize * ii, 1, arr2->get_data_ptr() + batchSize * ii, 1, &val,
                                cc));
 
-        cudaDeviceManager::Instance()->unlockHandle(device);
         if (ii == 0)
             ret = val;
         else
             ret += val;
     }
+    
+    cudaDeviceManager::Instance()->unlockHandle(device);
 
     return ret;
 }
@@ -262,8 +265,9 @@ template <class T> void axpy(T a, cuNDArray<T>* x, cuNDArray<T>* y, size_t batch
                                 (ii == num_splits - 1) ? remainder : batchSize, &a, x->get_data_ptr() + batchSize * ii, 1,
                                 y->get_data_ptr() + batchSize * ii, 1));
 
-        cudaDeviceManager::Instance()->unlockHandle(device);
     }
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
 }
 
 template <class T> void axpy(T a, cuNDArray<complext<T>>* x, cuNDArray<complext<T>>* y, size_t batchSize ) { axpy(complext<T>(a), x, y, batchSize); }
@@ -289,13 +293,14 @@ template <class T> typename realType<T>::Type asum(cuNDArray<T>* x, size_t batch
                                 (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
                                 x->get_data_ptr() + batchSize * ii, 1, &interim_result));
 
-        cudaDeviceManager::Instance()->unlockHandle(device);
 
         if (ii == 0)
             result = interim_result;
         else
             result += interim_result;
     }
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return result;
 }
 
