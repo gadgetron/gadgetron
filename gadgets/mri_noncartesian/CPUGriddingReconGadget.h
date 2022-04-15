@@ -7,7 +7,7 @@
 */
 
 #pragma once 
-#include "GenericReconGadget.h"
+#include "generic_recon_gadgets/GenericReconGadget.h"
 #include "gadgetron_mri_noncartesian_export.h"
 #include "hoNDArray.h"
 #include "GriddingReconGadgetBase.h"
