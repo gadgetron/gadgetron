@@ -310,6 +310,7 @@ template <class T> size_t amin(cuNDArray<T>* x, size_t batchSize ) {
     auto handle = cudaDeviceManager::Instance()->lockHandle(device);
     T saved_value = T(0);
     
+    // Since operators cannot be overloaded inside functions - this lambda function should do the comparison and mimic cublas comparisons
     auto lessThan = [](auto c1, auto c2)
     {
         if constexpr (std::is_same_v<decltype(c1),float> || std::is_same_v<decltype(c1),double>)
@@ -359,6 +360,7 @@ template <class T> size_t amax(cuNDArray<T>* x, size_t batchSize ) {
     auto handle = cudaDeviceManager::Instance()->lockHandle(device);
     T saved_value = T(0);
 
+    // Since operators cannot be overloaded inside functions - this lambda function should do the comparison and mimic cublas comparisons
     auto greaterThan = [](auto c1, auto c2)
     {
         if constexpr (std::is_same_v<decltype(c1),float> || std::is_same_v<decltype(c1),double>)
@@ -392,92 +394,6 @@ template <class T> size_t amax(cuNDArray<T>* x, size_t batchSize ) {
 
     return result; //(size_t)result - 1;
 }
-// // Complex
-// template <typename T> size_t amin(cuNDArray<complext<T>>* x, size_t batchSize ) {
-//     if (x == 0x0)
-//         throw std::runtime_error("Gadgetron::amin(): Invalid input array");
-
-//     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-//     size_t result = x->get_number_of_elements() + 1;
-
-//     // If number of elements in the array is greater than INT_MAX break it up and perform calculations this is done to
-//     // support large data arrays
-
-//     int num_splits = x->get_number_of_elements() / batchSize + 1;
-//     int remainder = x->get_number_of_elements() - batchSize * (num_splits - 1);
-//     auto handle = cudaDeviceManager::Instance()->lockHandle(device);
-//     complext<T> saved_value;
-
-//     for (int ii = 0; ii < num_splits; ii++) {
-
-//         int interim_result;
-
-//         CUBLAS_CALL(cublas_amin(handle,
-//                                 (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
-//                                 x->get_data_ptr() + batchSize * ii, 1, &interim_result));
-
-
-//         auto interim_value = (*x)[batchSize * ii + (size_t)interim_result - 1];
-//         if (ii == 0)
-//             result = (size_t)interim_result - 1;
-//         else if ((abs(interim_value.real()) + abs(interim_value.imag())) <
-//                  (abs(saved_value.real()) + abs(saved_value.imag())))
-//             result = batchSize * ii + (size_t)interim_result - 1;
-
-//         saved_value = (*x)[result];
-
-       
-//     }
-//     if (result > x->get_number_of_elements()) {
-//         throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
-//     }
-//     cudaDeviceManager::Instance()->unlockHandle(device);
-
-//     return result; // result - 1;
-// }
-
-// template <typename T> size_t amax(cuNDArray<complext<T>>* x, size_t batchSize) {
-//     if (x == 0x0)
-//         throw std::runtime_error("Gadgetron::amax(): Invalid input array");
-
-//     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-//     size_t result = x->get_number_of_elements() + 1;
-
-//     // If number of elements in the array is greater than INT_MAX break it up and perform calculations this is done to
-//     // support large data arrays
-
-//     int num_splits = x->get_number_of_elements() / batchSize + 1;
-//     int remainder = x->get_number_of_elements() - batchSize * (num_splits - 1);
-//     auto handle = cudaDeviceManager::Instance()->lockHandle(device);
-//     complext<T> saved_value;
-
-//     for (int ii = 0; ii < num_splits; ii++) {
-
-//         int interim_result;
-//         CUBLAS_CALL(cublas_amax(
-//             handle,
-//             (ii == num_splits - 1) ? remainder : batchSize, // n number of elements (int)x->get_number_of_elements(),
-//             x->get_data_ptr() + batchSize * ii, 1, &interim_result));
-
-        
-//         auto interim_value = (*x)[batchSize * ii + (size_t)interim_result - 1];
-        
-//         if (ii == 0)
-//             result = (size_t)interim_result - 1;
-//         else if (abs(interim_value.real()) + abs(interim_value.imag()) >
-//                  abs(saved_value.real()) + abs(saved_value.imag()))
-//             result = batchSize * ii + (size_t)interim_result - 1;
-        
-//         saved_value = (*x)[result];
-
-        
-//     }
-//     cudaDeviceManager::Instance()->unlockHandle(device);
-//     if (result > x->get_number_of_elements()) {
-//                 throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
-//             }
-//     return result; //(size_t)result - 1;
-// }
 
 std::string gadgetron_getCublasErrorString(cublasStatus_t err) {
     switch (err) {
