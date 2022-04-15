@@ -20,13 +20,13 @@
 
 namespace Gadgetron{
 
-  template<class T> T dot( cuNDArray<T> *x, cuNDArray<T> *y, bool cc = true );
+  template<class T> T dot( cuNDArray<T> *x, cuNDArray<T> *y, size_t batchSize = INT_MAX, bool cc = true );
 
-  template<class T> typename realType<T>::Type nrm2( cuNDArray<T> *x );
+  template<class T> typename realType<T>::Type nrm2( cuNDArray<T> *x , size_t batchSize = INT_MAX);
 
-  template<class T> void axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y );
+  template<class T> void axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y , size_t batchSize = INT_MAX);
 
-  template<class T> void axpy( T a, cuNDArray<complext<T> > *x, cuNDArray<complext<T> > *y );
+  template<class T> void axpy( T a, cuNDArray<complext<T> > *x, cuNDArray<complext<T> > *y , size_t batchSize = INT_MAX);
   
   /**
    * @brief Gets the index of the index of the element with minimum absolute
@@ -34,8 +34,8 @@ namespace Gadgetron{
    * @return index of absolute minimum values
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
-  template<class T> size_t amin( cuNDArray<T> *x );
-  template<typename T> size_t amin( cuNDArray<complext<T>> *x);
+  template<class T> size_t amin( cuNDArray<T> *x , size_t batchSize = INT_MAX);
+  //template<typename T> size_t amin( cuNDArray<complext<T>> *x , size_t batchSize = INT_MAX);
 
   /**
    * @brief Gets the index of the index of the element with maximum absolute
@@ -43,10 +43,10 @@ namespace Gadgetron{
    * @return index of absolute maximum values
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
-  template<typename T> size_t amax( cuNDArray<T> *x);
-  template<typename T> size_t amax( cuNDArray<complext<T>> *x);
+  template<class T> size_t amax( cuNDArray<T> *x , size_t batchSize = INT_MAX);
+  //template<typename T> size_t amax( cuNDArray<complext<T>> *x , size_t batchSize = INT_MAX);
   
-  template<class T> typename realType<T>::Type asum( cuNDArray<T> *x );
+  template<class T> typename realType<T>::Type asum( cuNDArray<T> *x , size_t batchSize = INT_MAX );
   
   std::string gadgetron_getCublasErrorString(cublasStatus_t err);
 
