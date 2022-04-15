@@ -21,7 +21,7 @@
 #pragma once
 
 #include "gadgetron_cmr_export.h"
-#include "GenericReconGadget.h"
+#include "generic_recon_gadgets/GenericReconGadget.h"
 #include "cmr_kspace_binning.h"
 
 namespace Gadgetron {
