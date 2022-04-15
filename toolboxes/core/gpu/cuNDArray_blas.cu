@@ -1,79 +1,63 @@
-#include "GadgetronCuException.h"
-#include "complext.h"
 #include "cuNDArray_blas.h"
+#include "complext.h"
+#include "GadgetronCuException.h"
 #include "cudaDeviceManager.h"
 
 #include <cublas_v2.h>
 
-namespace Gadgetron {
+namespace Gadgetron{
 
-#define CUBLAS_CALL(fun)                                                                                               \
-    {                                                                                                                  \
-        cublasStatus_t err = fun;                                                                                      \
-        if (err != CUBLAS_STATUS_SUCCESS) {                                                                            \
-            throw cuda_error(gadgetron_getCublasErrorString(err));                                                     \
-        }                                                                                                              \
-    }
+#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {throw cuda_error(gadgetron_getCublasErrorString(err));}}
 
-template <class T>
-cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a, const T* x, int incx, T* y, int incy);
-template <class T> cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const T*, int, T*, bool cc = true);
-template <class T> cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type* result);
-template <class T> cublasStatus_t cublas_amax(cublasHandle_t handle, int n, const T* x, int incx, int* result);
-template <class T> cublasStatus_t cublas_amin(cublasHandle_t handle, int n, const T* x, int incx, int* result);
-template <class T>
-cublasStatus_t cublas_asum(cublasHandle_t handle, int n, const T* x, int incx, typename realType<T>::Type* result);
+  //NRM2
+  //
 
-// NRM2
-template <> cublasStatus_t cublas_nrm2<float>(cublasHandle_t hndl, int n, const float* x, int inc, float* res) {
-    return cublasSnrm2(hndl, n, x, inc, res);
-}
+  template<class T> cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
+  template<class T> cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
+  template<class T> cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
+  template<class T> cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
 
-template <> cublasStatus_t cublas_nrm2<double>(cublasHandle_t hndl, int n, const double* x, int inc, double* res) {
-    return cublasDnrm2(hndl, n, x, inc, res);
-}
+  template<> cublasStatus_t cublas_nrm2<float>(cublasHandle_t hndl, int n, const float*  x, int inc, float* res){
+    return cublasSnrm2(hndl,n,x,inc,res);
+  }
 
-template <>
-cublasStatus_t cublas_nrm2<float_complext>(cublasHandle_t hndl, int n, const float_complext* x, int inc, float* res) {
-    return cublasScnrm2(hndl, n, (const cuComplex*)x, inc, res);
-}
+  template<> cublasStatus_t cublas_nrm2<double>(cublasHandle_t hndl, int n, const double*  x, int inc, double* res){
+    return cublasDnrm2(hndl,n,x,inc,res);
+  }
 
-template <>
-cublasStatus_t cublas_nrm2<double_complext>(cublasHandle_t hndl, int n, const double_complext* x, int inc,
-                                            double* res) {
-    return cublasDznrm2(hndl, n, (const cuDoubleComplex*)x, inc, res);
-}
+  template<> cublasStatus_t cublas_nrm2<float_complext>(cublasHandle_t hndl, int n, const float_complext*  x, int inc, float* res){
+    return cublasScnrm2(hndl,n,(const cuComplex*)x,inc,res);
+  }
 
-// DOT
-//
+  template<> cublasStatus_t cublas_nrm2<double_complext>(cublasHandle_t hndl, int n, const double_complext*  x, int inc, double* res){
+    return cublasDznrm2(hndl,n,(const cuDoubleComplex*) x,inc,res);
+  }
 
-template <>
-cublasStatus_t cublas_dot<float>(cublasHandle_t hndl, int n, const float* x, int incx, const float* y, int incy,
-                                 float* res, bool cc) {
-    return cublasSdot(hndl, n, x, incx, y, incy, res);
-}
+  //DOT
+  //
 
-template <>
-cublasStatus_t cublas_dot<double>(cublasHandle_t hndl, int n, const double* x, int incx, const double* y, int incy,
-                                  double* res, bool cc) {
-    return cublasDdot(hndl, n, x, incx, y, incy, res);
-}
+  template<> cublasStatus_t cublas_dot<float>(cublasHandle_t hndl, int n , const float* x , int incx, const  float* y , int incy, float* res, bool cc){
+    return cublasSdot( hndl, n, x, incx, y, incy, res);
+  }
 
-template <>
-cublasStatus_t cublas_dot<float_complext>(cublasHandle_t hndl, int n, const float_complext* x, int incx,
-                                          const float_complext* y, int incy, float_complext* res, bool cc) {
-    if (cc)
-        return cublasCdotc(hndl, n, (const cuComplex*)x, incx, (const cuComplex*)y, incy, (cuComplex*)res);
+  template<> cublasStatus_t cublas_dot<double>(cublasHandle_t hndl, int n , const double* x , int incx, const  double* y , int incy, double* res, bool cc){
+    return cublasDdot( hndl, n, x, incx, y, incy, res);
+  }
+
+  template<> cublasStatus_t cublas_dot<float_complext>(cublasHandle_t hndl, int n , const float_complext* x ,
+										int incx, const  float_complext* y , int incy, float_complext* res, bool cc){
+    if(cc)
+      return cublasCdotc( hndl, n, (const cuComplex*) x, incx, (const cuComplex*) y, incy, (cuComplex*) res);
     else
-        return cublasCdotu(hndl, n, (const cuComplex*)x, incx, (const cuComplex*)y, incy, (cuComplex*)res);
-}
+      return cublasCdotu( hndl, n, (const cuComplex*) x, incx, (const cuComplex*) y, incy, (cuComplex*) res);
+  }
 
-template <>
-cublasStatus_t cublas_dot<double_complext>(cublasHandle_t hndl, int n, const double_complext* x, int incx,
-                                           const double_complext* y, int incy, double_complext* res, bool cc) {
-    if (cc)
-        return cublasZdotc(hndl, n, (const cuDoubleComplex*)x, incx, (const cuDoubleComplex*)y, incy,
-                           (cuDoubleComplex*)res);
+  template<> cublasStatus_t cublas_dot<double_complext>(cublasHandle_t hndl, int n , const double_complext* x ,
+										 int incx, const  double_complext* y , int incy, double_complext* res, bool cc){
+    if(cc)
+      return cublasZdotc( hndl, n, (const cuDoubleComplex*) x, incx, (const cuDoubleComplex*) y, incy, (cuDoubleComplex*) res);
     else
         return cublasZdotu(hndl, n, (const cuDoubleComplex*)x, incx, (const cuDoubleComplex*)y, incy,
                            (cuDoubleComplex*)res);
@@ -183,27 +167,22 @@ template <class T> typename realType<T>::Type nrm2(cuNDArray<T>* arr , size_t ba
 
     // If number of elements in the array is greater than INT_MAX break it up and perform calculations this is done to
     // support large data arrays
-
-    int num_splits = arr->get_number_of_elements() / INT_MAX + 1;
-    int remainder = arr->get_number_of_elements() - INT_MAX * (num_splits - 1);
+    int num_splits = arr->get_number_of_elements() / batchSize + 1;
+    int remainder = arr->get_number_of_elements() - batchSize * (num_splits - 1);
 
     for (int ii = 0; ii < num_splits; ii++) {
-
-        REAL val;
-
-        CUBLAS_CALL(cublas_nrm2<T>(cudaDeviceManager::Instance()->lockHandle(device),
-                                   (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
-                                   arr->get_data_ptr() + INT_MAX * ii, 1, &val));
-
-        cudaDeviceManager::Instance()->unlockHandle(device);
-
-        if (ii == 0)
-            ret = val;
-        else
-            ret = sqrt(pow(ret, 2) + pow(val, 2));
+      REAL val;
+      CUBLAS_CALL(cublas_nrm2<T>(cudaDeviceManager::Instance()->lockHandle(device),
+                                   (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
+                                   arr->get_data_ptr() + batchSize * ii, 1, &val));
+      cudaDeviceManager::Instance()->unlockHandle(device);
+      if (ii == 0)
+        ret = val;
+      else
+        ret = sqrt(pow(ret, 2) + pow(val, 2));
     }
     return ret;
-}
+  }
 
 template <class T> T dot(cuNDArray<T>* arr1, cuNDArray<T>* arr2, size_t batchSize , bool cc) {
     if (arr1 == 0x0 || arr2 == 0x0)
@@ -217,25 +196,21 @@ template <class T> T dot(cuNDArray<T>* arr1, cuNDArray<T>* arr2, size_t batchSiz
 
     // If number of elements in the array is greater than INT_MAX break it up and perform calculations this is done to
     // support large data arrays
-
     int num_splits = arr1->get_number_of_elements() / INT_MAX + 1;
     int remainder = arr1->get_number_of_elements() - INT_MAX * (num_splits - 1);
 
     for (int ii = 0; ii < num_splits; ii++) {
-
-        T val;
-        CUBLAS_CALL(cublas_dot(cudaDeviceManager::Instance()->lockHandle(device),
-                               (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
-                               arr1->get_data_ptr() + INT_MAX * ii, 1, arr2->get_data_ptr() + INT_MAX * ii, 1, &val,
-                               cc));
-
-        cudaDeviceManager::Instance()->unlockHandle(device);
-        if (ii == 0)
-            ret = val;
-        else
-            ret += val;
+      T val;
+      CUBLAS_CALL(cublas_dot(cudaDeviceManager::Instance()->lockHandle(device),
+                              (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
+                              arr1->get_data_ptr() + INT_MAX * ii, 1, arr2->get_data_ptr() + INT_MAX * ii, 1, &val,
+                              cc));
+      cudaDeviceManager::Instance()->unlockHandle(device);
+      if (ii == 0)
+        ret = val;
+      else
+        ret += val;
     }
-
     return ret;
 }
 
@@ -243,8 +218,13 @@ template <class T> void axpy(T a, cuNDArray<T>* x, cuNDArray<T>* y, size_t batch
     if (x == 0x0 || y == 0x0)
         throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
 
-    if (x->get_number_of_elements() != y->get_number_of_elements())
-        throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
+  template<class T> void axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
+  {
+    if( x == 0x0 || y == 0x0 )
+      throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
+    
+    if( x->get_number_of_elements() != y->get_number_of_elements() )
+      throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
 
@@ -254,12 +234,11 @@ template <class T> void axpy(T a, cuNDArray<T>* x, cuNDArray<T>* y, size_t batch
     int remainder = x->get_number_of_elements() - INT_MAX * (num_splits - 1);
 
     for (int ii = 0; ii < num_splits; ii++) {
-
-        CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->lockHandle(device),
+      CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->lockHandle(device),
                                 (ii == num_splits - 1) ? remainder : INT_MAX, &a, x->get_data_ptr() + INT_MAX * ii, 1,
                                 y->get_data_ptr() + INT_MAX * ii, 1));
 
-        cudaDeviceManager::Instance()->unlockHandle(device);
+      cudaDeviceManager::Instance()->unlockHandle(device);
     }
 }
 
@@ -274,23 +253,22 @@ template <class T> typename realType<T>::Type asum(cuNDArray<T>* x, size_t batch
 
     // If number of elements in the array is greater than INT_MAX break it up and perform calculations this is done to
     // support large data arrays
-
     int num_splits = x->get_number_of_elements() / INT_MAX + 1;
     int remainder = x->get_number_of_elements() - INT_MAX * (num_splits - 1);
 
     for (int ii = 0; ii < num_splits; ii++) {
-        typename realType<T>::Type interim_result;
+      typename realType<T>::Type interim_result;
 
-        CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->lockHandle(device),
-                                (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
-                                x->get_data_ptr() + INT_MAX * ii, 1, &interim_result));
+      CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->lockHandle(device),
+                              (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
+                              x->get_data_ptr() + INT_MAX * ii, 1, &interim_result));
 
-        cudaDeviceManager::Instance()->unlockHandle(device);
+      cudaDeviceManager::Instance()->unlockHandle(device);
 
-        if (ii == 0)
-            result = interim_result;
-        else
-            result += interim_result;
+      if (ii == 0)
+          result = interim_result;
+      else
+          result += interim_result;
     }
     return result;
 }
@@ -395,26 +373,27 @@ template <class T> size_t amax(cuNDArray<T>* x, size_t batchSize ) {
     return result; //(size_t)result - 1;
 }
 
-std::string gadgetron_getCublasErrorString(cublasStatus_t err) {
-    switch (err) {
+  std::string gadgetron_getCublasErrorString(cublasStatus_t err)
+  {
+    switch (err){
     case CUBLAS_STATUS_NOT_INITIALIZED:
-        return "NOT INITIALIZED";
+      return "NOT INITIALIZED";
     case CUBLAS_STATUS_ALLOC_FAILED:
-        return "ALLOC FAILED";
+      return "ALLOC FAILED";
     case CUBLAS_STATUS_INVALID_VALUE:
-        return "INVALID VALUE";
+      return "INVALID VALUE";
     case CUBLAS_STATUS_ARCH_MISMATCH:
-        return "ARCH MISMATCH";
+      return "ARCH MISMATCH";
     case CUBLAS_STATUS_MAPPING_ERROR:
-        return "MAPPING ERROR";
+      return "MAPPING ERROR";
     case CUBLAS_STATUS_EXECUTION_FAILED:
-        return "EXECUTION FAILED";
+      return "EXECUTION FAILED";
     case CUBLAS_STATUS_INTERNAL_ERROR:
-        return "INTERNAL ERROR";
+      return "INTERNAL ERROR";      
     case CUBLAS_STATUS_SUCCESS:
-        return "SUCCES";
+      return "SUCCES";
     default:
-        return "UNKNOWN CUBLAS ERROR";
+      return "UNKNOWN CUBLAS ERROR";
     }
 }
 
