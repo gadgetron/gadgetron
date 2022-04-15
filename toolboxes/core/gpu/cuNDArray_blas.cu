@@ -169,18 +169,21 @@ template <class T> typename realType<T>::Type nrm2(cuNDArray<T>* arr , size_t ba
     // support large data arrays
     int num_splits = arr->get_number_of_elements() / batchSize + 1;
     int remainder = arr->get_number_of_elements() - batchSize * (num_splits - 1);
-
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
     for (int ii = 0; ii < num_splits; ii++) {
       REAL val;
-      CUBLAS_CALL(cublas_nrm2<T>(cudaDeviceManager::Instance()->lockHandle(device),
+      CUBLAS_CALL(cublas_nrm2<T>(handle,
                                    (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
                                    arr->get_data_ptr() + batchSize * ii, 1, &val));
-      cudaDeviceManager::Instance()->unlockHandle(device);
+
       if (ii == 0)
         ret = val;
       else
         ret = sqrt(pow(ret, 2) + pow(val, 2));
     }
+    
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return ret;
   }
 
@@ -198,19 +201,20 @@ template <class T> T dot(cuNDArray<T>* arr1, cuNDArray<T>* arr2, size_t batchSiz
     // support large data arrays
     int num_splits = arr1->get_number_of_elements() / INT_MAX + 1;
     int remainder = arr1->get_number_of_elements() - INT_MAX * (num_splits - 1);
-
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
     for (int ii = 0; ii < num_splits; ii++) {
       T val;
-      CUBLAS_CALL(cublas_dot(cudaDeviceManager::Instance()->lockHandle(device),
+      CUBLAS_CALL(cublas_dot(handle,
                               (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
                               arr1->get_data_ptr() + INT_MAX * ii, 1, arr2->get_data_ptr() + INT_MAX * ii, 1, &val,
                               cc));
-      cudaDeviceManager::Instance()->unlockHandle(device);
       if (ii == 0)
         ret = val;
       else
         ret += val;
     }
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return ret;
 }
 
@@ -232,14 +236,15 @@ template <class T> void axpy(T a, cuNDArray<T>* x, cuNDArray<T>* y, size_t batch
     // support large data arrays
     int num_splits = x->get_number_of_elements() / INT_MAX + 1;
     int remainder = x->get_number_of_elements() - INT_MAX * (num_splits - 1);
-
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
     for (int ii = 0; ii < num_splits; ii++) {
-      CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->lockHandle(device),
+      CUBLAS_CALL(cublas_axpy(handle,
                                 (ii == num_splits - 1) ? remainder : INT_MAX, &a, x->get_data_ptr() + INT_MAX * ii, 1,
                                 y->get_data_ptr() + INT_MAX * ii, 1));
 
-      cudaDeviceManager::Instance()->unlockHandle(device);
     }
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
 }
 
 template <class T> void axpy(T a, cuNDArray<complext<T>>* x, cuNDArray<complext<T>>* y, size_t batchSize ) { axpy(complext<T>(a), x, y); }
@@ -249,27 +254,29 @@ template <class T> typename realType<T>::Type asum(cuNDArray<T>* x, size_t batch
         throw std::runtime_error("Gadgetron::asum(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-    typename realType<T>::Type result;
+    typename realType<T>::Type result = realType<T>::Type(0);
 
     // If number of elements in the array is greater than INT_MAX break it up and perform calculations this is done to
     // support large data arrays
     int num_splits = x->get_number_of_elements() / INT_MAX + 1;
     int remainder = x->get_number_of_elements() - INT_MAX * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
 
     for (int ii = 0; ii < num_splits; ii++) {
       typename realType<T>::Type interim_result;
 
-      CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->lockHandle(device),
+      CUBLAS_CALL(cublas_asum(handle,
                               (ii == num_splits - 1) ? remainder : INT_MAX, // n number of elements
                               x->get_data_ptr() + INT_MAX * ii, 1, &interim_result));
-
-      cudaDeviceManager::Instance()->unlockHandle(device);
 
       if (ii == 0)
           result = interim_result;
       else
           result += interim_result;
     }
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return result;
 }
 

@@ -32,8 +32,8 @@ TYPED_TEST(cuNDArray_blas_Real, dotTest) {
     fill(&this->Array2, TypeParam(2));
     EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 2, real(dot(&this->Array, &this->Array2)));
 
-    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 2, real(dot(&this->Array, &this->Array2, 2)));
-    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 2, real(dot(&this->Array, &this->Array2, 3)));
+    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 2, real(dot(&this->Array, &this->Array2, 16)));
+    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 2, real(dot(&this->Array, &this->Array2, 17)));
 
 
 }
@@ -53,8 +53,8 @@ TYPED_TEST(cuNDArray_blas_Real, nrm2Test) {
     fill(&this->Array, TypeParam(3));
     EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array));
 
-    EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 2));
-    EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 3));
+    EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 16));
+    EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 17));
 
 }
 
@@ -63,8 +63,8 @@ TYPED_TEST(cuNDArray_blas_Real, asumTest) {
     EXPECT_FLOAT_EQ(this->Array.get_number_of_elements(), real(asum(&this->Array)));
     fill(&this->Array, TypeParam(-3));
     EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 3, real(asum(&this->Array)));
-    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 3, real(asum(&this->Array,2)));
-    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 3, real(asum(&this->Array,3)));
+    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 3, real(asum(&this->Array,16)));
+    EXPECT_FLOAT_EQ(this->Array.get_number_of_elements() * 3, real(asum(&this->Array,17)));
 
 }
 
