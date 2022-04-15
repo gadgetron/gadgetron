@@ -8,7 +8,6 @@ set(gadgetron_debugging_header_files
         AcquisitionPassthroughGadget.h
         CplxDumpGadget.h
         ImageWriterGadget.h
-        IsmrmrdDumpGadget.h
         PseudoReplicatorGadget.h
         RateLimitGadget.h
         WhiteNoiseInjectorGadget.h
@@ -18,14 +17,12 @@ set(gadgetron_debugging_src_files
         AcquisitionPassthroughGadget.cpp
         CplxDumpGadget.cpp
         ImageWriterGadget.cpp
-        IsmrmrdDumpGadget.cpp
         PseudoReplicatorGadget.cpp
         RateLimitGadget.cpp
         WhiteNoiseInjectorGadget.cpp
         )
 
 set(gadgetron_debugging_config_files
-        config/ismrmrd_dump.xml
         )
 
 add_library(gadgetron_debugging SHARED
