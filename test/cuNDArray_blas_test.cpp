@@ -53,8 +53,9 @@ TYPED_TEST(cuNDArray_blas_Real, nrm2Test) {
     fill(&this->Array, TypeParam(3));
     EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array));
 
-    EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 16));
-    EXPECT_FLOAT_EQ(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 17));
+    // Some errors from the sum
+    EXPECT_NEAR(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 16),0.1);
+    EXPECT_NEAR(std::sqrt(3.0 * 3.0 * this->Array.get_number_of_elements()), nrm2(&this->Array, 17),0.1);
 
 }
 
