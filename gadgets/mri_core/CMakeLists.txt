@@ -65,7 +65,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
-    	  cpuisa.h
+    	cpuisa.h
         ImageAccumulatorGadget.h
         writers/GadgetIsmrmrdWriter.h
         ImageResizingGadget.h
