@@ -4,7 +4,7 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-#include "gadgetron_mricore_export.h"
+#include "gadgetron_debugging_export.h"
 #include <random>
 
 namespace Gadgetron
@@ -37,7 +37,7 @@ protected:
 };
 
 /// add white noise to the kspace data
-class EXPORTGADGETSMRICORE WhiteNoiseInjectorGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+class EXPORTGADGETSDEBUGGING WhiteNoiseInjectorGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 public:
 
