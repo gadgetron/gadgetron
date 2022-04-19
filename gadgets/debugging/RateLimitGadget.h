@@ -3,7 +3,7 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#include "gadgetron_debugging_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
@@ -11,7 +11,7 @@
 
 namespace Gadgetron{
   
-  class EXPORTGADGETSMRICORE RateLimitGadget :
+  class EXPORTGADGETSDEBUGGING RateLimitGadget :
   public BasicPropertyGadget
     {
       
