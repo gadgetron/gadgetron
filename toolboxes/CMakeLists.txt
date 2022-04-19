@@ -11,6 +11,7 @@ add_subdirectory(solvers)
 add_subdirectory(fft)
 add_subdirectory(core)
 add_subdirectory(mri_core)
+
 add_subdirectory(mri)
 add_subdirectory(cmr)
 
@@ -130,10 +131,6 @@ if(CUDA_FOUND)
         mri/pmri/gpu/spirit_calibration.h
         mri/pmri/gpu/trajectory_utils.cu
         mri/pmri/gpu/trajectory_utils.h
-        mri/pmri/gpu/cuNonCartesianTSenseOperator.h
-        mri/pmri/gpu/cuNonCartesianTSenseOperator.cu
-        mri/pmri/gpu/cuNonCartesianMOCOOperator.h
-        mri/pmri/gpu/cuNonCartesianMOCOOperator.cu
         mri/sdc/gpu/cuSDC.cu
         nfft/gpu/cuGriddingConvolution.cu
         nfft/gpu/cuGriddingConvolution.h
@@ -156,6 +153,10 @@ if(CUDA_FOUND)
         registration/optical_flow/gpu/cuCKOpticalFlowSolver.cu
         registration/optical_flow/gpu/cuHSOpticalFlowSolver.cu
         registration/optical_flow/gpu/cuLinearResampleOperator.cu
+        mri/pmri/gpu/cuNonCartesianTSenseOperator.h
+        mri/pmri/gpu/cuNonCartesianTSenseOperator.cu
+        mri/pmri/gpu/cuNonCartesianMOCOOperator.h
+        mri/pmri/gpu/cuNonCartesianMOCOOperator.cu
         registration/optical_flow/gpu/cuOpticalFlowSolver.cu
         registration/optical_flow/gpu/cuResampleOperator.cu
         solvers/gpu/cuSolverUtils.cu
@@ -284,6 +285,10 @@ if(CUDA_FOUND)
         registration/optical_flow/gpu/cuLinearResampleOperator.h
         registration/optical_flow/gpu/cuOpticalFlowSolver.h
         registration/optical_flow/gpu/cuResampleOperator.h
+        registration/optical_flow/gpu/cubicPrefilter3D.cu
+        registration/optical_flow/gpu/cubicTex3D.cu
+        mri/pmri/gpu/cuNonCartesianTSenseOperator.h
+        mri/pmri/gpu/cuNonCartesianMOCOOperator.h
         registration/optical_flow/gpu/gpureg_export.h
         solvers/gpu/cuCgPreconditioner.h
         solvers/gpu/cuCgSolver.h

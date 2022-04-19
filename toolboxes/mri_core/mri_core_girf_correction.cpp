@@ -41,8 +41,8 @@ namespace Gadgetron
 
             auto padded_kernel = pad<std::complex<float>, 1>(uint64d1(nlines_new), girf_kernel, 0);
             //auto padded_kernel = GIRF::zeropadding(girf_kernel, 5);
-            auto dims = gradients.get_dimensions();
-            auto result = hoNDArray<vector_td<float, D>>(gradients.get_dimensions());
+
+            hoNDArray<vector_td<float,D>> result(gradients.dimensions());
 
             hoNDArray<float> filter;
             using namespace Gadgetron::Indexing;
@@ -73,8 +73,6 @@ namespace Gadgetron
                 Gadgetron::maxValue(hoNDArray<float>(temp(slice, 0)), maxTx);
                 Gadgetron::minValue(hoNDArray<float>(temp(slice, 0)), minTx);
 
-                if (maxTx > 100 || minTx < -100)
-                    GERROR("What the heck");
                 // Add filter to smooth out the transition for the gradients after zero-padding
                 // This reduces ringing !
                 for (size_t k = 0; k < 3; k++)
@@ -82,10 +80,6 @@ namespace Gadgetron
                     for (size_t i = nlines; i < nlines + filter.size() / 2; i++)
                     {
                         rotated(i, k) = filter[filter.size() / 2 + i - nlines] * (rotated(nlines - 1, k)); // last term for fft scaling
-                        if (real(rotated(i, k)) > 100 || real(rotated(i, k)) < -100)
-                        {
-                            GERROR("What the heck");
-                        }
                     }
                     std::rotate(rotated.begin() + k * rotated.get_size(0), rotated.begin() + k * rotated.get_size(0) + (nlines / 2 + nlines_new / 2),
                                 rotated.begin() + (k + 1) * rotated.get_size(0));
@@ -279,5 +273,17 @@ namespace Gadgetron
             }
             return gk;
         }
+
+        template 
+        hoNDArray<vector_td<float, 3>> girf_correct_D(const hoNDArray<vector_td<float, 3>> &,
+                                                      const hoNDArray<std::complex<float>> &,
+                                                      const arma::fmat33 &, float ,
+                                                      float , float ); // Times are in us
+
+        template 
+        hoNDArray<vector_td<float, 2>> girf_correct_D(const hoNDArray<vector_td<float, 2>> &,
+                                                      const hoNDArray<std::complex<float>> &,
+                                                      const arma::fmat33 &, float ,
+                                                      float , float TE); // Times are in us
     } // namespace GIRF
 } // namespace Gadgetron

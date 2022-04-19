@@ -1,5 +1,3 @@
-#pragma once
-
 #include "cuNonCartesianTSenseOperator.h"
 #include "vector_td_utilities.h"
 #include "gadgetron/GadgetronTimer.h"

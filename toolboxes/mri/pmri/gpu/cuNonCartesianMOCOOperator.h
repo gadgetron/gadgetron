@@ -13,7 +13,7 @@
 #include "hoNDArray.h"
 #include "hoNDInterpolator.h"
 #include "hoMRImage.h"
-#include "demons_registration.h"
+//#include "demons_registration.h"
 #include "hoNDArray_elemwise.h"
 #include <thrust/extrema.h>
 

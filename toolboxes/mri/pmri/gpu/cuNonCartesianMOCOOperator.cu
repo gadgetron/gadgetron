@@ -199,30 +199,30 @@ void cuNonCartesianMOCOOperator<REAL, D>::applyDeformation(cuNDArray<complext<RE
     moving_image = cureal_imag_to_complex<complext<REAL>>(&deformed_movingr, &deformed_movingi).get();
     // return deformed_image;
 }
-template <class REAL, unsigned int D>
-void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray<complext<REAL>>* moving_image,
-                                                                  cuNDArray<REAL> transformation) {
-    auto mir = *real(moving_image);
-    auto mii = *imag(moving_image);
+// template <class REAL, unsigned int D>
+// void cuNonCartesianMOCOOperator<REAL, D>::applyDeformationbSpline(cuNDArray<complext<REAL>>* moving_image,
+//                                                                   cuNDArray<REAL> transformation) {
+//     auto mir = *real(moving_image);
+//     auto mii = *imag(moving_image);
 
-    auto ho_mir = hoNDArray<float>(*mir.to_host());
-    auto ho_mii = hoNDArray<float>(*mii.to_host());
+//     auto ho_mir = hoNDArray<float>(*mir.to_host());
+//     auto ho_mii = hoNDArray<float>(*mii.to_host());
 
-    auto ho_transformation = *transformation.to_host();
-    auto dims = *ho_transformation.get_dimensions();
-    //        dims.pop_back();
-    dims.erase(dims.begin());
+//     auto ho_transformation = *transformation.to_host();
+//     auto dims = *ho_transformation.get_dimensions();
+//     //        dims.pop_back();
+//     dims.erase(dims.begin());
 
-    auto transform = Gadgetron::hoNDArray<Gadgetron::vector_td<float, 3>>(dims);
-    GDEBUG("ho_transformation.size(): %d \n", ho_transformation.size());
-    std::copy_n(ho_transformation.data(), ho_transformation.size(), (float*)transform.data());
+//     auto transform = Gadgetron::hoNDArray<Gadgetron::vector_td<float, 3>>(dims);
+//     GDEBUG("ho_transformation.size(): %d \n", ho_transformation.size());
+//     std::copy_n(ho_transformation.data(), ho_transformation.size(), (float*)transform.data());
 
-    auto defr =
-        cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mir, transform)));
-    auto defi =
-        cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mii, transform)));
-    moving_image = cureal_imag_to_complex<complext<REAL>>(&defr, &defi).get();
-}
+//     auto defr =
+//         cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mir, transform)));
+//     auto defi =
+//         cuNDArray<REAL>(hoNDArray<REAL>(Gadgetron::Registration::deform_image_bspline<float, 3>(ho_mii, transform)));
+//     moving_image = cureal_imag_to_complex<complext<REAL>>(&defr, &defi).get();
+// }
 
 __device__ float cubictex(cudaTextureObject_t tex, float3 coord)
 {
