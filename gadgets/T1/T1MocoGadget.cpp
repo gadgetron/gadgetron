@@ -332,7 +332,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
         const hoNDArray<float> reference_frame = abs_data(slice, slice, arg_max_TI);
 
         const auto valid_transforms =
-            view::iota(size_t(0), abs_data.get_size(2)) |
+            views::iota(size_t(0), abs_data.get_size(2)) |
             views::filter([&arg_max_TI](auto index) { return index != arg_max_TI; }) | views::filter([&](auto index) {
                 return jensen_shannon_divergence(abs_data(slice, slice, index), reference_frame) < 0.2;
             }) |
@@ -345,7 +345,7 @@ class T1MocoGadget : public Core::ChannelGadget<IsmrmrdImageArray> {
             vfields[valid_transforms[i]] =
                 T1::register_groups_CMR(abs_data(slice, slice, valid_transforms[i]), reference_frame);
         }
-        auto missing_indices = view::iota(size_t(0), abs_data.get_size(2)) | view::filter([&](auto index) {
+        auto missing_indices = views::iota(size_t(0), abs_data.get_size(2)) | views::filter([&](auto index) {
                                    return !binary_search(valid_transforms, index) && (index != arg_max_TI);
                                });
 
