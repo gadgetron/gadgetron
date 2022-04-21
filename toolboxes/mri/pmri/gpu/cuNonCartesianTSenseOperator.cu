@@ -1,6 +1,6 @@
 #include "cuNonCartesianTSenseOperator.h"
 #include "vector_td_utilities.h"
-#include "gadgetron/GadgetronTimer.h"
+#include "GadgetronTimer.h"
 using namespace Gadgetron;
 
 template <class REAL, unsigned int D>
