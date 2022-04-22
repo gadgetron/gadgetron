@@ -206,9 +206,9 @@ TYPED_TEST(cuNDArray_blas_Cplx, amaxTest) {
 
     tmp = TypeParam(6, 1);
     CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[48], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
-    EXPECT_EQ(768, amax(&this->Array));
-    EXPECT_EQ(768, amax(&this->Array,16));
-    EXPECT_EQ(768, amax(&this->Array,17));
+    EXPECT_EQ(3, amax(&this->Array));
+    EXPECT_EQ(3, amax(&this->Array,16));
+    EXPECT_EQ(3, amax(&this->Array,17));
 
     tmp = TypeParam(-3, -6);
     CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[999], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
