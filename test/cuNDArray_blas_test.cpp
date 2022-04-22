@@ -83,10 +83,10 @@ TYPED_TEST(cuNDArray_blas_Real, asumTest) {
 TYPED_TEST(cuNDArray_blas_Real, aminTest) {
     fill(&this->Array, TypeParam(100));
     TypeParam tmp(-50);
-    CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[23], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
-    EXPECT_EQ(23, amin(&this->Array));
-    EXPECT_EQ(23, amin(&this->Array,16));
-    EXPECT_EQ(23, amin(&this->Array,17));
+    CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[4], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
+    EXPECT_EQ(4, amin(&this->Array));
+    EXPECT_EQ(4, amin(&this->Array,16));
+    EXPECT_EQ(4, amin(&this->Array,17));
 
     tmp = TypeParam(2);
     CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[48], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
@@ -101,10 +101,10 @@ TYPED_TEST(cuNDArray_blas_Real, aminTest) {
 TYPED_TEST(cuNDArray_blas_Real, amaxTest) {
     fill(&this->Array, TypeParam(1));
     TypeParam tmp(2);
-    CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[23], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
-    EXPECT_EQ(23, amax(&this->Array));
-    EXPECT_EQ(23, amax(&this->Array,16));
-    EXPECT_EQ(23, amax(&this->Array,17));
+    CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[4], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
+    EXPECT_EQ(4, amax(&this->Array));
+    EXPECT_EQ(4, amax(&this->Array,16));
+    EXPECT_EQ(4, amax(&this->Array,17));
 
     tmp = TypeParam(50);
     CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[48], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
@@ -179,7 +179,7 @@ TYPED_TEST(cuNDArray_blas_Cplx, aminTest) {
     TypeParam tmp(-50, -51);
     CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[23], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
     EXPECT_EQ(23, amin(&this->Array));
-    EXPECT_EQ(23, amin(&this->Array,16));
+    EXPECT_EQ(23, amin(&this->Array,27));
     EXPECT_EQ(23, amin(&this->Array,17));
 
     tmp = TypeParam(2, 100);
@@ -199,10 +199,10 @@ TYPED_TEST(cuNDArray_blas_Cplx, aminTest) {
 TYPED_TEST(cuNDArray_blas_Cplx, amaxTest) {
     fill(&this->Array, TypeParam(1, 1));
     TypeParam tmp(4, 4);
-    CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[768], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
-    EXPECT_EQ(768, amax(&this->Array));
-    EXPECT_EQ(768, amax(&this->Array,16));
-    EXPECT_EQ(768, amax(&this->Array,17));
+    CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[3], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
+    EXPECT_EQ(3, amax(&this->Array));
+    EXPECT_EQ(3, amax(&this->Array,16));
+    EXPECT_EQ(3, amax(&this->Array,17));
 
     tmp = TypeParam(6, 1);
     CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[48], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
