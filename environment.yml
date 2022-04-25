@@ -11,6 +11,8 @@ dependencies:
   - armadillo=9.900.5             # dev
   - boost=1.76.0
   - breathe=4.32.0                # dev
+  - clang=13.0.1                  # dev
+  - clangxx=13.0.1                # dev
   - cmake=3.21.3                  # dev
   - cpr=1.7.2
   - cuda-libraries-dev=11.6.1     # cuda, dev
