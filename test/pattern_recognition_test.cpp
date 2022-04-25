@@ -22,7 +22,7 @@ protected:
 };
 
 typedef Types<float> realImplementations;
-TYPED_TEST_CASE(pattern_recognition_test, realImplementations);
+TYPED_TEST_SUITE(pattern_recognition_test, realImplementations);
 
 TYPED_TEST(pattern_recognition_test, kmeans_test)
 {

@@ -43,7 +43,7 @@ protected:
 typedef Types<float, double> realImplementations;
 typedef Types<std::complex<float>, std::complex<double>, float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_operators_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_operators_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest1){
   TypeParam v1 = TypeParam(46865.35435);
@@ -121,7 +121,7 @@ TYPED_TEST(hoNDArray_operators_TestReal,equalsDivideTest2){
   EXPECT_FLOAT_EQ(v1/v2,this->Array.get_data_ptr()[idx]);
 }
 
-TYPED_TEST_CASE(hoNDArray_operators_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_operators_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest1){
   TypeParam v1 = TypeParam(46865.35435, 534544.534523);
