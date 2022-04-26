@@ -3,14 +3,14 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#include "gadgetron_debugging_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE AcquisitionPassthroughGadget : 
+  class EXPORTGADGETSDEBUGGING AcquisitionPassthroughGadget : 
   public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
