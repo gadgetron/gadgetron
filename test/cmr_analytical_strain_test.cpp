@@ -49,7 +49,7 @@ protected:
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(cmr_analytical_strain_test, realImplementations);
+TYPED_TEST_SUITE(cmr_analytical_strain_test, realImplementations);
 
 TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
 {
