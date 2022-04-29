@@ -72,6 +72,7 @@ namespace Gadgetron
 
     #define GADGETRON_IMAGE_FAT                            "FAT"
     #define GADGETRON_IMAGE_WATER                          "WATER"
+    #define GADGETRON_IMAGE_FAT_FRACTION                   "FATFRACTION"
     #define GADGETRON_IMAGE_FREQMAP                        "FREQMAP"
     #define GADGETRON_IMAGE_B1MAP                          "B1MAP"
     #define GADGETRON_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
