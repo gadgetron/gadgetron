@@ -30,7 +30,7 @@ protected:
 
 };
 typedef Types<float, double> realImplementations;
-TYPED_TEST_CASE(hoNDFFT_test, realImplementations);
+TYPED_TEST_SUITE(hoNDFFT_test, realImplementations);
 
 TYPED_TEST(hoNDFFT_test,fftNrm2Test){
 	hoNDFFT<TypeParam>::instance()->fft(&this->Array);

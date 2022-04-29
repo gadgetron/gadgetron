@@ -49,7 +49,7 @@ class hoSDC_test : public ::testing::Test
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(hoSDC_test, realImplementations);
+TYPED_TEST_SUITE(hoSDC_test, realImplementations);
 
 TYPED_TEST(hoSDC_test, randomTestOne)
 {
