@@ -76,7 +76,7 @@ namespace Gadgetron {
                     header.center_sample = header.number_of_samples / 2;
                 }
             }
-            out.push(Core::Acquisition{header, acq, traj});
+            out.push(Core::Acquisition{std::move(header), std::move(acq), std::move(traj)});
         }
     }
     GADGETRON_GADGET_EXPORT(AsymmetricEchoAdjustROGadget)
