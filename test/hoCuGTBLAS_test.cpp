@@ -27,7 +27,7 @@ template <typename T> class hoCuGTBLAS_Test : public ::testing::Test {
 
 typedef Types<float,double,float_complext,double_complext> Implementations;
 
-TYPED_TEST_CASE(hoCuGTBLAS_Test, Implementations);
+TYPED_TEST_SUITE(hoCuGTBLAS_Test, Implementations);
 
 
 TYPED_TEST(hoCuGTBLAS_Test,dotTest){

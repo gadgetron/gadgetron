@@ -34,7 +34,7 @@ template <typename T> class vector_td_Test : public ::testing::Test {
 //typedef Types<float,double,float_complext,double_complext> Implementations;
 typedef Types<float> Implementations;
 
-TYPED_TEST_CASE(vector_td_Test, Implementations);
+TYPED_TEST_SUITE(vector_td_Test, Implementations);
 
 
 TYPED_TEST(vector_td_Test,absTest){

@@ -29,7 +29,7 @@ protected:
 };
 
 typedef Types<float> realImplementations;
-TYPED_TEST_CASE(curveFitting_test, realImplementations);
+TYPED_TEST_SUITE(curveFitting_test, realImplementations);
 
 TYPED_TEST(curveFitting_test, T2SE)
 {
