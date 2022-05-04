@@ -71,6 +71,7 @@ install(FILES
         variant.hpp
         MessageID.h
         Storage.h
+        IsmrmrdContextVariables.h
         Process.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
