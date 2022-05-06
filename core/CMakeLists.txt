@@ -70,7 +70,7 @@ install(FILES
         ChannelAlgorithms.h
         variant.hpp
         MessageID.h
-        Storage.h
+        StorageSetup.h
         IsmrmrdContextVariables.h
         Process.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
