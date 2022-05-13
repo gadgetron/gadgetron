@@ -4,7 +4,7 @@
 
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
-#include "Storage.h"
+#include "StorageSetup.h"
 
 namespace Gadgetron::Core {
 
