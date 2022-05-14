@@ -7,15 +7,15 @@
 namespace {
     using namespace Gadgetron;
     template<class T> inline constexpr uint16_t ismrmrd_data_type(){ return 0;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<unsigned short>(){return ISMRMRD::ISMRMRD_USHORT;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<unsigned int>(){return ISMRMRD::ISMRMRD_UINT;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<int>(){return ISMRMRD::ISMRMRD_INT;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<float>(){return ISMRMRD::ISMRMRD_FLOAT;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<double>(){return ISMRMRD::ISMRMRD_DOUBLE;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<complext<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
-    template<> inline constexpr uint16_t ismrmrd_data_type<complext<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<unsigned short>(){return ISMRMRD::ISMRMRD_USHORT;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<unsigned int>(){return ISMRMRD::ISMRMRD_UINT;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<int>(){return ISMRMRD::ISMRMRD_INT;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<float>(){return ISMRMRD::ISMRMRD_FLOAT;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<double>(){return ISMRMRD::ISMRMRD_DOUBLE;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<std::complex<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<complext<float>>(){return ISMRMRD::ISMRMRD_CXFLOAT;}
+    // template<> inline constexpr uint16_t ismrmrd_data_type<complext<double>>(){return ISMRMRD::ISMRMRD_CXDOUBLE;}
 
 
     using image_datatypes = Core::variant<unsigned short, unsigned int, int, float, double, std::complex<float>,std::complex<double>>;
