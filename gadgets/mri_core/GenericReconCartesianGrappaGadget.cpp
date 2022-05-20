@@ -212,6 +212,11 @@ namespace Gadgetron {
                     res.headers_ = recon_obj_[e].recon_res_.headers_;
                     res.meta_ = recon_obj_[e].recon_res_.meta_;
 
+                    if (!debug_folder_full_path_.empty()) {
+                        gt_exporter_.export_array_complex(res.data_,
+                                                        debug_folder_full_path_ + "gfactor_" + os.str());
+                    }
+
                     if (perform_timing.value()) {
                         gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array, gfactor");
                     }
@@ -536,15 +541,15 @@ namespace Gadgetron {
                     memcpy(&(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)), gFactor.begin(),
                            gFactor.get_number_of_bytes());
 
-                    /*if (!debug_folder_full_path_.empty())
-                    {
-                        gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_" + suffix);
-                    }
+                    // if (!debug_folder_full_path_.empty())
+                    // {
+                    //     gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_" + suffix);
+                    // }
 
-                    if (!debug_folder_full_path_.empty())
-                    {
-                        gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_" + suffix);
-                    }*/
+                    // if (!debug_folder_full_path_.empty())
+                    // {
+                    //     gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_" + suffix);
+                    // }
                 }
 
                 // -----------------------------------

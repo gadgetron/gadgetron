@@ -51,7 +51,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(scaling_factor_sd_map, double, "Scale factor for sd map", 100.0);
 
         GADGET_PROPERTY(perform_hole_filling, bool, "Whether to perform hole filling on map", true);
-        GADGET_PROPERTY(max_size_hole, int, "Maximal size for hole", 20);
+        GADGET_PROPERTY(max_size_hole, int, "Maximal size for hole", 50);
 
         GADGET_PROPERTY(std_thres_masking, double, "Number of noise std for masking", 3.0);
         GADGET_PROPERTY(mapping_with_masking, bool, "Whether to compute and apply a mask for mapping", true);
