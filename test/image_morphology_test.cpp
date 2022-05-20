@@ -19,7 +19,7 @@ protected:
 };
 
 typedef Types<float> realImplementations;
-TYPED_TEST_CASE(image_morphology_test, realImplementations);
+TYPED_TEST_SUITE(image_morphology_test, realImplementations);
 
 TYPED_TEST(image_morphology_test, bwlabel)
 {

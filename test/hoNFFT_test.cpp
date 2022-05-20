@@ -48,7 +48,7 @@ class hoNFFT_2D_NC2C_BACKWARDS : public ::testing::Test{
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(hoNFFT_2D_NC2C_BACKWARDS, realImplementations);
+TYPED_TEST_SUITE(hoNFFT_2D_NC2C_BACKWARDS, realImplementations);
 
 TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
 {
