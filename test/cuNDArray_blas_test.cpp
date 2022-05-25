@@ -24,7 +24,7 @@ template <typename T> class cuNDArray_blas_Real : public ::testing::Test {
 
 typedef Types<float, double> realImplementations;
 
-TYPED_TEST_CASE(cuNDArray_blas_Real, realImplementations);
+TYPED_TEST_SUITE(cuNDArray_blas_Real, realImplementations);
 
 TYPED_TEST(cuNDArray_blas_Real, dotTest) {
     fill(&this->Array, TypeParam(1));
@@ -133,7 +133,7 @@ template <typename T> class cuNDArray_blas_Cplx : public ::testing::Test {
 
 typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(cuNDArray_blas_Cplx, cplxImplementations);
+TYPED_TEST_SUITE(cuNDArray_blas_Cplx, cplxImplementations);
 
 TYPED_TEST(cuNDArray_blas_Cplx, dotTest) {
     fill(&this->Array, TypeParam(1, 1));

@@ -49,7 +49,7 @@ class cmr_mapping_test : public ::testing::Test
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(cmr_mapping_test, realImplementations);
+TYPED_TEST_SUITE(cmr_mapping_test, realImplementations);
 
 TYPED_TEST(cmr_mapping_test, T2Mapping)
 {

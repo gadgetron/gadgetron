@@ -23,7 +23,7 @@ protected:
 };
 
 typedef Types<float, double> realImplementations;
-TYPED_TEST_CASE(hoNDArray_reductions_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_reductions_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_reductions_TestReal, sortTest) {
     hoNDArray<TypeParam> x, r;

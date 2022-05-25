@@ -7,7 +7,7 @@
 #include <boost/process.hpp>
 #include <boost/program_options.hpp>
 
-#include "Storage.h"
+#include "StorageSetup.h"
 
 namespace Gadgetron::Server {
 std::tuple<std::string, std::optional<boost::process::child>>

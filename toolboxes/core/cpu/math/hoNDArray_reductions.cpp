@@ -484,14 +484,14 @@ namespace Gadgetron {
         const auto prob_p = normalized_histogram(dataset1);
         const auto prob_q = normalized_histogram(dataset2);
 
-        auto prob_m = view::zip_with([](auto val1, auto val2){return (val1+val2)/2;},prob_p, prob_q);
+        auto prob_m = views::zip_with([](auto val1, auto val2){return (val1+val2)/2;},prob_p, prob_q);
 
 
-        auto left = accumulate( view::zip_with([&rel_entr](const auto& d1,const auto& d2) -> float{
+        auto left = accumulate( views::zip_with([&rel_entr](const auto& d1,const auto& d2) -> float{
             return rel_entr(d1,d2);
         },prob_p,prob_m),0.0f);
 
-        auto right = accumulate( view::zip_with([&rel_entr](const auto& d1,const auto& d2){
+        auto right = accumulate( views::zip_with([&rel_entr](const auto& d1,const auto& d2){
             return rel_entr(d1,d2);
         },prob_q,prob_m),0.0f);
 

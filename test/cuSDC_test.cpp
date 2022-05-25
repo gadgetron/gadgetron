@@ -50,7 +50,7 @@ class cuSDC_test : public ::testing::Test
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(cuSDC_test, realImplementations);
+TYPED_TEST_SUITE(cuSDC_test, realImplementations);
 
 TYPED_TEST(cuSDC_test, randomTestOne)
 {
