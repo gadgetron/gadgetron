@@ -6,7 +6,6 @@
 
 namespace {
     using namespace Gadgetron;
-    template<class T> inline constexpr uint16_t ismrmrd_data_type(){ return 0;}
 
     using image_datatypes = Core::variant<unsigned short, unsigned int, int, float, double, std::complex<float>,std::complex<double>>;
     std::map<uint16_t,image_datatypes> ismrmrd_to_variant = {
