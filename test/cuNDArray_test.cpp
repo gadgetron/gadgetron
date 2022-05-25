@@ -32,7 +32,7 @@ template <typename T> class cuNDArray_Test : public ::testing::Test {
 
 typedef Types<float,double,float_complext,double_complext> Implementations;
 
-TYPED_TEST_CASE(cuNDArray_Test, Implementations);
+TYPED_TEST_SUITE(cuNDArray_Test, Implementations);
 
 TYPED_TEST(cuNDArray_Test,fillTest){
 	this->Array.fill(TypeParam(1));

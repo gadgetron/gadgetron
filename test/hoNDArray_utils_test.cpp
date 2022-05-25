@@ -37,7 +37,7 @@ protected:
 typedef Types<float, double> realImplementations;
 typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_utils_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_utils_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_utils_TestReal, fillTest)
 {
@@ -136,7 +136,7 @@ TYPED_TEST(hoNDArray_utils_TestReal,sumTest){
   EXPECT_FLOAT_EQ(19*v1,sum(this->Array,3)[idx]);
 }
 
-TYPED_TEST_CASE(hoNDArray_utils_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_utils_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
 

@@ -27,7 +27,7 @@ protected:
 };
 
 typedef Types<float, double> realImplementations;
-TYPED_TEST_CASE(hoNDWavelet_test, realImplementations);
+TYPED_TEST_SUITE(hoNDWavelet_test, realImplementations);
 
 TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest1D)
 {
