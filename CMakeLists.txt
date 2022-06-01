@@ -159,7 +159,7 @@ else ()
     include(CheckCXXCompilerFlag)
     if (APPLE)
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-inconsistent-missing-override")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-inconsistent-missing-override -Wno-array-bounds")
         endif ()
     endif ()
 
