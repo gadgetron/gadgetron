@@ -1,24 +1,28 @@
-#ifndef IMAGEARRAYSPLIT_H
-#define IMAGEARRAYSPLIT_H
+/**
+    \brief  Splits an ImageArray and outputs separate images
+    \author Original: David Christoffer Hansen
+    \author ChannelGadget Conversion: Andrew Dupuis
+    \test   simple_gre_3d.cfg, distributed_simple_gre.cfg, and others
+*/
+
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
-
-#include "mri_core_data.h"
+#include "GadgetMRIHeaders.h"
+#include "Node.h"
+#include "Types.h"
+#include <mri_core_data.h>
+#include "hoNDArray_math.h"
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE ImageArraySplitGadget : 
-  public Gadget1Of2<IsmrmrdImageArray, ISMRMRD::ImageHeader >
+  using ImageOrImageArray = Core::variant<Core::AnyImage, IsmrmrdImageArray>;
+
+  class ImageArraySplitGadget : public Core::ChannelGadget<ImageOrImageArray> 
     {
-    public:
-      GADGET_DECLARE(ImageArraySplitGadget)
-      ImageArraySplitGadget();
-	
-    protected:
-      virtual int process(GadgetContainerMessage<IsmrmrdImageArray>* m1);
-      virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
+      public:
+        using Core::ChannelGadget<ImageOrImageArray>::ChannelGadget;
+        void process(Core::InputChannel<ImageOrImageArray>& input, Core::OutputChannel& output) override;  
     };
 }
-#endif //IMAGEARRAYSPLIT_H
