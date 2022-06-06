@@ -17,13 +17,11 @@ namespace Gadgetron {
     /**
     Default implementation of GadgetMessageReader for IsmrmrdAcquisition messages
     */
-class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageReader : public Core::Reader {
+class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageReader final : public Core::Reader {
 
     public:
 
         Core::Message read(std::istream& stream) final;
-
-
         uint16_t slot() final;
         ~GadgetIsmrmrdAcquisitionMessageReader() final = default;
     };
@@ -33,7 +31,7 @@ class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageReader : public Core::
 
 
 
-class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageReader : public Core::Reader {
+class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageReader final : public Core::Reader {
 
     public:
 

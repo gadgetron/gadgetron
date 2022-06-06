@@ -25,7 +25,7 @@ protected:
 
 typedef Types<float, double> realImplementations;
 
-TYPED_TEST_CASE(hoNDArray_linalg_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_linalg_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_linalg_TestReal, linFitTest)
 {

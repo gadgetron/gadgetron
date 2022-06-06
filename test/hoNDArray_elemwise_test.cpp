@@ -78,7 +78,7 @@ typedef Types<std::complex<float>, std::complex<double>, float_complext, double_
 typedef Types<std::complex<float>, std::complex<double> > stdCplxImplementations;
 typedef Types<float_complext, double_complext> cplxtImplementations;
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestReal,fillTest){
   fill(&this->Array,TypeParam(1.1));
@@ -223,7 +223,7 @@ TYPED_TEST(hoNDArray_elemwise_TestReal,conjTest){
   EXPECT_FLOAT_EQ(TypeParam(0.0),imag(&this->Array)->at(125));
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx,fillTest){
   fill(&this->Array,TypeParam(1.1,2.2));
@@ -363,7 +363,7 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx,axpyTest){
 
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx4, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx4, cplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx4,shrinkdTest){
   fill(&this->Array,TypeParam(1.2,1.4));
@@ -376,7 +376,7 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx4,shrinkdTest){
   EXPECT_FLOAT_EQ(0.0,imag(&this->Array)->get_data_ptr()[23125]);
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx2, stdCplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx2, stdCplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx2,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
@@ -394,7 +394,7 @@ EXPECT_FLOAT_EQ(11,real(this->Array[33425]));
 EXPECT_FLOAT_EQ(-3,imag(this->Array[33425]));
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx3, cplxtImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx3, cplxtImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx3,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
@@ -435,7 +435,7 @@ protected:
 typedef Types<float, double> realImplementations;
 typedef Types<std::complex<float>, std::complex<double>, float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_operators_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_operators_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest1){
   TypeParam v1 = TypeParam(46865.35435);
@@ -515,7 +515,7 @@ TYPED_TEST(hoNDArray_operators_TestReal,equalsDivideTest2){
   EXPECT_FLOAT_EQ(v1/v2,this->Array.get_data_ptr()[idx]);
 }
 
-TYPED_TEST_CASE(hoNDArray_operators_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_operators_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest1){
   TypeParam v1 = TypeParam(46865.35435, 534544.534523);

@@ -17,6 +17,7 @@ pr:
 
 jobs:
 - job: BuildAndTest
+  timeoutInMinutes: 120
   displayName: "Build, Unit and Integration tests"
   strategy:
     matrix:

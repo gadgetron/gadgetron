@@ -6,7 +6,7 @@
 #pragma once
 
 #include "gadgetron_cmr_export.h"
-#include "GenericReconBase.h"
+#include "generic_recon_gadgets/GenericReconBase.h"
 #include "hoMRImage.h"
 #include "hoNDImageContainer2D.h"
 #include "python_toolbox.h"
