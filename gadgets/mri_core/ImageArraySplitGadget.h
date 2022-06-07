@@ -1,7 +1,5 @@
 /**
     \brief  Splits an ImageArray and outputs separate images
-    \author Original: David Christoffer Hansen
-    \author ChannelGadget Conversion: Andrew Dupuis
     \test   simple_gre_3d.cfg, distributed_simple_gre.cfg, and others
 */
 
