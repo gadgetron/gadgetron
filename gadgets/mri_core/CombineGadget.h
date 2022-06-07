@@ -11,8 +11,8 @@
 
 namespace Gadgetron{
     class CombineGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
-    public:
-      using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
+        public:
+        using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
         Core::AnyImage process_function(Core::AnyImage image) const override;
     };
 }
