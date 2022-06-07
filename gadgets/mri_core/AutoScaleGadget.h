@@ -8,6 +8,7 @@
 #include "PureGadget.h"
 #include "Types.h"
 #include "hoNDArray_math.h"
+#include <algorithm>
 
 namespace Gadgetron{
     class AutoScaleGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
