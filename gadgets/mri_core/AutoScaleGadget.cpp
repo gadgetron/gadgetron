@@ -12,13 +12,8 @@ namespace {
 		if (header.image_type == ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE) { //Only scale magnitude images for now
 			auto max = *std::max_element(data.begin(), data.end());
 			auto current_scale_ = 1.0;
-			auto histogram_ = std::vector<size_t>(histogram_bins);
-			if (histogram_.size() != histogram_bins) {
-				histogram_ = std::vector<size_t>(histogram_bins);
-			}
-			for (size_t i = 0; i < histogram_bins; i++) {
-				histogram_[i] = 0;
-			}
+			auto histogram_ = std::vector<size_t>(histogram_bins);    
+			std::fill(histogram_.begin(), histogram_.end(), 0);
 			for (auto& d : data) {
 				size_t bin = static_cast<size_t>(std::floor((d/max)*histogram_bins));
 				if (bin >= histogram_bins) {
