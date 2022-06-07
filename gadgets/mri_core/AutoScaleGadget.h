@@ -1,7 +1,5 @@
 /**
     \brief  Autoscales real-type images based on a given max value and the 99th percentile of the data
-    \author Original: David Christoffer Hansen
-    \author PureGadget Conversion: Andrew Dupuis
     \test   Tested by: epi_2d.cfg and others
 */
 
@@ -14,7 +12,7 @@
 namespace Gadgetron{
     class AutoScaleGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
     public:
-      using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
+        using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
         Core::AnyImage process_function(Core::AnyImage image) const override;
     protected:
         NODE_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
