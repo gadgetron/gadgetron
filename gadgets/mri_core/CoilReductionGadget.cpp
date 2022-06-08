@@ -11,11 +11,11 @@ CoilReductionGadget::CoilReductionGadget(const Core::Context& context, const Cor
 
     if (coil_mask_int.compare(std::string("")) == 0) {
         if (coils_out <= 0) {
-            GDEBUG("Invalid number of output coils %d\n", coils_out);
-            // TODO: How to throw Gadget failures?
+            GERROR("Invalid number of output coils %d\n", coils_out);
         }
         coil_mask_ = std::vector<unsigned short>(coils_out, 1);
-    } else {
+    } 
+    else {
         std::vector<std::string> chm;
         boost::split(chm, coil_mask_int, boost::is_any_of(" "));
         for (size_t i = 0; i < chm.size(); i++) {
@@ -38,8 +38,7 @@ CoilReductionGadget::CoilReductionGadget(const Core::Context& context, const Cor
         coil_mask_.pop_back();
 
     if (coil_mask_.size() != coils_in_) {
-        GDEBUG("Error configuring coils for coil reduction\n");
-        // TODO: How to throw Gadget failures?
+        GERROR("Error configuring coils for coil reduction\n");
     }
 
     coils_out_ = 0;
@@ -57,15 +56,15 @@ void CoilReductionGadget::process(Core::InputChannel<Core::Acquisition>& in, Cor
         dims_out[0] = header.number_of_samples;
         dims_out[1] = coils_out_;
 
-        hoNDArray<std::complex<float>> m3 = hoNDArray<std::complex<float>>();
+        hoNDArray<std::complex<float>> reducedAcq = hoNDArray<std::complex<float>>();
         try {
-            m3.create(dims_out);
+            reducedAcq.create(dims_out);
         } catch (std::runtime_error& err) {
             GEXCEPTION(err, "Unable to create storage for reduced dataset size\n");
         }
 
         std::complex<float>* s = acq.get_data_ptr();
-        std::complex<float>* d = m3.get_data_ptr();
+        std::complex<float>* d = reducedAcq.get_data_ptr();
         size_t samples = header.number_of_samples;
         size_t coils_copied = 0;
         for (int c = 0; c < header.active_channels; c++) {
@@ -79,7 +78,7 @@ void CoilReductionGadget::process(Core::InputChannel<Core::Acquisition>& in, Cor
         }
         header.active_channels = coils_out_;
         
-        out.push(Core::Acquisition{std::move(header), std::move(m3), std::move(traj)});
+        out.push(Core::Acquisition{std::move(header), std::move(reducedAcq), std::move(traj)});
     }
 }
 GADGETRON_GADGET_EXPORT(CoilReductionGadget)
