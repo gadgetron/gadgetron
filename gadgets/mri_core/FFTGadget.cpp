@@ -18,23 +18,21 @@ namespace Gadgetron{
         uint16_t S = dbuff.data_.get_size(5);
         uint16_t LOC = dbuff.data_.get_size(6);
 
-        //Each image will be [E0,E1,E2,CHA] big
+        //Each image will have size [E0,E1,E2,CHA]
         std::vector<size_t> img_dims(4);
         img_dims[0] = E0;
         img_dims[1] = E1;
         img_dims[2] = E2;
         img_dims[3] = CHA;
 
-         //Set some information into the image header
-        //Use the middle header for some info
-        //[E1, E2, N, S, LOC]
-        ISMRMRD::AcquisitionHeader & acqhdr = dbuff.headers_(dbuff.sampling_.sampling_limits_[1].center_,
-                                                                dbuff.sampling_.sampling_limits_[2].center_,
-                                                                n, s, loc);
+        //Set some information into the image header, and use the middle header for some info [E1, E2, N, S, LOC]
+        ISMRMRD::AcquisitionHeader & acqhdr = dbuff.headers_(dbuff.sampling_.sampling_limits_[1].center_, 
+                                                             dbuff.sampling_.sampling_limits_[2].center_,
+                                                             n, s, loc);
 
         auto imageHeader = ISMRMRD::ImageHeader();
         auto imageData = hoNDArray<std::complex<float>>(img_dims);
-        auto imageMetaContainer = std::optional<ISMRMRD::MetaContainer>(); // TODO: Should this be empty? Seems like it should be populated somehow
+        auto imageMetaContainer = std::optional<ISMRMRD::MetaContainer>(); // Currently, no MetaContainer is created for the resulting images. 
 
         imageHeader.matrix_size[0]     = img_dims[0];
         imageHeader.matrix_size[1]     = img_dims[1];
