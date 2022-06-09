@@ -38,7 +38,6 @@ dependencies:
   - libxslt=1.1.33                # dev
   - make=4.3                      # dev
   - matplotlib=3.4.3              # dev
-  - memkind=1.10.1
   - mkl=2022.0.1
   - mkl-include=2022.0.1          # dev
   - mrd-storage-server=0.0.8

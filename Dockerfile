@@ -25,21 +25,37 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # The version of conda to use
 ARG CONDA_VERSION=4.11.0
 
+RUN wget https://ocio.nih.gov/Smartcard/Documents/Certificates/NIH-DPKI-ROOT-1A-base64.cer -O /usr/local/share/ca-certificates/NIH-DPKI-ROOT-1A.crt
+RUN update-ca-certificates
+
+ENV PIP_CERT /usr/local/share/ca-certificates/NIH-DPKI-ROOT-1A.crt
+
 # Based on https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile.
 # We also install conda-lock.
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh \
-    && mkdir -p /opt \
-    && sh miniconda.sh -b -p /opt/conda \
-    && ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh \
-    && find /opt/conda/ -follow -type f -name '*.a' -delete \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
-    && [ -z "$CONDA_VERSION" ] || /opt/conda/bin/conda install -n base conda=$CONDA_VERSION \
-    && /opt/conda/bin/conda install -c conda-forge -n base conda-lock \
-    && /opt/conda/bin/conda clean -afy \
+#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+RUN wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh -O mambainstall.sh
+
+
+#RUN mkdir -p /opt \
+#    && sh miniconda.sh -b -p /opt/conda \
+#    && ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh \
+#    && find /opt/conda/ -follow -type f -name '*.a' -delete \
+#    && find /opt/conda/ -follow -type f -name '*.js.map' -delete 
+RUN mkdir -p /opt \
+    && sh mambainstall.sh -b -p /opt/mamba\
+    && ln -s /opt/mamba/etc/profile.d/mamba.sh /etc/profile.d/mamba.sh \
+    && find /opt/mamba/ -follow -type f -name '*.a' -delete \
+    && find /opt/mamba/ -follow -type f -name '*.js.map' -delete
+
+RUN /opt/mamba/bin/conda config --set ssl_verify /usr/local/share/ca-certificates/NIH-DPKI-ROOT-1A.crt
+RUN [ -z "$CONDA_VERSION" ] || /opt/mamba/bin/mamba install -n base conda=$CONDA_VERSION 
+#    && /opt/conda/bin/conda config --set ssl_verify /etc/ssl/certs/NIH-DPKI-ROOT-1A.pem.pem 
+RUN /opt/mamba/bin/mamba install -y -c conda-forge -n base conda-lock \
+    && /opt/mamba/bin/mamba clean -afy \
     && groupadd -r conda --gid 900 \
     && usermod -aG conda ${USERNAME} \
-    && chown -R :conda /opt/conda \
-    && chmod -R g+w /opt/conda \
+    && chown -R :conda /opt/mamba \
+    && chmod -R g+w /opt/mamba \
     && find /opt -type d | xargs -n 1 chmod g+s 
 
 # Copy environment, which will be filtered for later staged
@@ -54,27 +70,34 @@ VOLUME /test
 # opted to use their own dotfiles repo. The dotfiles repo is cloned after the postCreateCommand
 # in the devcontainer.json file is executed.
 RUN echo "\n\
-if ! grep -q \"^source /opt/conda/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then\n\
-	echo \"source /opt/conda/etc/profile.d/conda.sh\" >> ${HOME}/.bashrc\n\
-	echo \"conda activate $(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')\" >> ${HOME}/.bashrc\n\
+if ! grep -q \"^source /opt/mamba/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then\n\
+	echo \"source /opt/mamba/etc/profile.d/conda.sh\" >> ${HOME}/.bashrc\n\
+	echo \"mamba activate $(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')\" >> ${HOME}/.bashrc\n\
 fi\n" >> /etc/bash.bashrc
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
+ENV PIP_CERT /usr/local/share/ca-certificates/NIH-DPKI-ROOT-1A.crt
 FROM gadgetron_baseimage AS gadgetron_dev_cuda
 ARG USER_UID
 USER ${USER_UID}
+ENV PIP_CERT /usr/local/share/ca-certificates/NIH-DPKI-ROOT-1A.crt
+#RUN chown -R ${USER_UID}:conda /home/vscode/.conda
+RUN sudo chown ${USER_UID}:${USER_GID} -R ${HOME}/.conda
 RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002
+RUN /opt/mamba/bin/pip install numpy
+RUN /opt/mamba/bin/mamba env create -f /tmp/build/filtered_environment.yml 
+RUN /opt/mamba/bin/mamba clean -afy && sudo chown -R :conda /opt/mamba 
 USER root
 
 FROM gadgetron_baseimage AS gadgetron_dev_nocuda
 ARG USER_UID
 USER ${USER_UID}
 RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/mamba/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/mamba/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 USER root
 
 FROM gadgetron_dev_cuda AS gadgetron_cudabuild
@@ -84,7 +107,7 @@ WORKDIR /opt
 RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
 COPY --chown=$USER_UID:conda . /opt/code/gadgetron/
 SHELL ["/bin/bash", "-c"]
-RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
+RUN . /opt/mamba/etc/profile.d/conda.sh && umask 0002 && mamba activate gadgetron && sh -x && \
     cd /opt/code/gadgetron && \
     mkdir build && \
     cd build && \
