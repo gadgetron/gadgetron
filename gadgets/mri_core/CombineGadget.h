@@ -1,27 +1,18 @@
-#ifndef COMBINEGADGET_H
-#define COMBINEGADGET_H
+/**
+    \brief  Combines coils and outputs magnitude images
+    \test   EPI_2d.cfg
+*/
 
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "hoArmadillo.h"
-#include "gadgetron_mricore_export.h"
+#pragma once
 
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "PureGadget.h"
+#include "Types.h"
+#include "hoNDArray_math.h"
 
 namespace Gadgetron{
-  
-  class  EXPORTGADGETSMRICORE CombineGadget : 
-  public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
-    {
-    public:
-      CombineGadget();
-      virtual ~CombineGadget();
-      
-    protected:
-      virtual int process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);     
+    class CombineGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
+        public:
+        using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
+        Core::AnyImage process_function(Core::AnyImage image) const override;
     };
 }
-
-#endif //COMBINEGADGET_H

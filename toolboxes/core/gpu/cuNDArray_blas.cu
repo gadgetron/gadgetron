@@ -138,175 +138,298 @@ namespace Gadgetron{
     return cublasIzamax(hndl,n, (const cuDoubleComplex* ) x,incx,result);
   }
 
-  template<class T> typename realType<T>::Type nrm2( cuNDArray<T> *arr )
+  template <class T> typename realType<T>::Type nrm2(cuNDArray<T>* arr , size_t batchSize ) 
   {
     if( arr == 0x0 )
-      throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");
+        throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     typedef typename realType<T>::Type REAL;
-    REAL ret;
+    REAL ret = 0;
 
-    CUBLAS_CALL(cublas_nrm2<T>( cudaDeviceManager::Instance()->lockHandle(device), 
-                                (int)arr->get_number_of_elements(), arr->get_data_ptr(), 1, &ret));
+    // If number of elements in the array is greater than batchSize break it up and perform calculations this is done to
+    // support large data arrays
+
+    int num_splits = arr->get_number_of_elements() / batchSize + 1;
+    int remainder = arr->get_number_of_elements() - batchSize * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
+
+    for (int ii = 0; ii < num_splits; ii++) {
+
+        REAL val;
+
+        CUBLAS_CALL(cublas_nrm2<T>(handle,
+                                   (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
+                                   arr->get_data_ptr() + batchSize * ii, 1, &val));
+
+
+        if (ii == 0)
+            ret = val;
+        else
+            ret = sqrt(pow(ret, 2) + pow(val, 2));
+    }
 
     cudaDeviceManager::Instance()->unlockHandle(device);
 
     return ret;
   }
 
-  template<class T> T dot( cuNDArray<T> *arr1, cuNDArray<T> *arr2, bool cc )
+  template <class T> T dot(cuNDArray<T>* arr1, cuNDArray<T>* arr2, size_t batchSize , bool cc) 
   {
-    if( arr1 == 0x0 || arr2 == 0x0 )
-      throw std::runtime_error("Gadgetron::dot(): Invalid input array");
-    
-    if( arr1->get_number_of_elements() != arr2->get_number_of_elements() )
-      throw std::runtime_error("Gadgetron::dot(): Array sizes mismatch");
+    if (arr1 == 0x0 || arr2 == 0x0)
+        throw std::runtime_error("Gadgetron::dot(): Invalid input array");
+
+    if (arr1->get_number_of_elements() != arr2->get_number_of_elements())
+        throw std::runtime_error("Gadgetron::dot(): Array sizes mismatch");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-    T ret;
+    T ret = 0;
 
-    CUBLAS_CALL(cublas_dot( cudaDeviceManager::Instance()->lockHandle(device), 
-                            (int)arr1->get_number_of_elements(), arr1->get_data_ptr(), 1, arr2->get_data_ptr(), 1, &ret, cc ));
+    // If number of elements in the array is greater than batchSize break it up and perform calculations this is done to
+    // support large data arrays
 
+    int num_splits = arr1->get_number_of_elements() / batchSize + 1;
+    int remainder = arr1->get_number_of_elements() - batchSize * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
+
+    for (int ii = 0; ii < num_splits; ii++) {
+
+        T val;
+        CUBLAS_CALL(cublas_dot(handle,
+                               (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
+                               arr1->get_data_ptr() + batchSize * ii, 1, arr2->get_data_ptr() + batchSize * ii, 1, &val,
+                               cc));
+
+        if (ii == 0)
+            ret = val;
+        else
+            ret += val;
+    }
+    
     cudaDeviceManager::Instance()->unlockHandle(device);
 
     return ret;
   }
 
-  template<class T> void axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
+  template <class T> void axpy(T a, cuNDArray<T>* x, cuNDArray<T>* y, size_t batchSize ) 
   {
-    if( x == 0x0 || y == 0x0 )
-      throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
-    
-    if( x->get_number_of_elements() != y->get_number_of_elements() )
-      throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
+    if (x == 0x0 || y == 0x0)
+        throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
+
+    if (x->get_number_of_elements() != y->get_number_of_elements())
+        throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
 
-    CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->lockHandle(device), 
-                            (int)x->get_number_of_elements(), &a, x->get_data_ptr(), 1, y->get_data_ptr(), 1));
+    // If number of elements in the array is greater than batchSize break it up and perform calculations this is done to
+    // support large data arrays
+    int num_splits = x->get_number_of_elements() / batchSize + 1;
+    int remainder = x->get_number_of_elements() - batchSize * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
 
+    for (int ii = 0; ii < num_splits; ii++) {
+
+        CUBLAS_CALL(cublas_axpy(handle,
+                                (ii == num_splits - 1) ? remainder : batchSize, &a, x->get_data_ptr() + batchSize * ii, 1,
+                                y->get_data_ptr() + batchSize * ii, 1));
+
+    }
     cudaDeviceManager::Instance()->unlockHandle(device);
+
   }
 
-  template<class T> void axpy( T a,  cuNDArray< complext<T> > *x, cuNDArray< complext<T> > *y )
-  {
-    axpy( complext<T>(a), x, y );
-  }
+  template <class T> void axpy(T a, cuNDArray<complext<T>>* x, cuNDArray<complext<T>>* y, size_t batchSize ) { axpy(complext<T>(a), x, y, batchSize); }
 
-  template<class T> typename realType<T>::Type asum(cuNDArray<T>* x)
+  template <class T> typename realType<T>::Type asum(cuNDArray<T>* x, size_t batchSize ) 
   {
-    if( x == 0x0 )
-      throw std::runtime_error("Gadgetron::asum(): Invalid input array");
-    
+    if (x == 0x0)
+        throw std::runtime_error("Gadgetron::asum(): Invalid input array");
+
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-    typename realType<T>::Type result;
+    typename realType<T>::Type result = 0;
+    
+    // If number of elements in the array is greater than batchSize break it up and perform calculations this is done to
+    // support large data arrays
 
-    CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->lockHandle(device),
-                            (int)x->get_number_of_elements(), x->get_data_ptr(), 1, &result));
+    int num_splits = x->get_number_of_elements() / batchSize + 1;
+    int remainder = x->get_number_of_elements() - batchSize * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
 
+    for (int ii = 0; ii < num_splits; ii++) {
+        typename realType<T>::Type interim_result;
+
+        CUBLAS_CALL(cublas_asum(handle,
+                                (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
+                                x->get_data_ptr() + batchSize * ii, 1, &interim_result));
+
+
+        if (ii == 0)
+            result = interim_result;
+        else
+            result += interim_result;
+    }
     cudaDeviceManager::Instance()->unlockHandle(device);
 
     return result;
   }
-  
-  template<class T> size_t amin( cuNDArray<T>* x )
+
+  template <class T> size_t amin(cuNDArray<T>* x, size_t batchSize ) 
   {
-    if( x == 0x0 )
-      throw std::runtime_error("Gadgetron::amin(): Invalid input array");
+    if (x == 0x0)
+        throw std::runtime_error("Gadgetron::amin(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-    int result;
+    size_t result = x->get_number_of_elements() + 1;
 
-    CUBLAS_CALL(cublas_amin(cudaDeviceManager::Instance()->lockHandle(device),
-                            (int)x->get_number_of_elements(), x->get_data_ptr(), 1, &result));
+    // If number of elements in the array is greater than batchSize break it up and perform calculations this is done to
+    // support large data arrays
 
-    cudaDeviceManager::Instance()->unlockHandle(device);
+    int num_splits = x->get_number_of_elements() / batchSize + 1;
+    int remainder = x->get_number_of_elements() - batchSize * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
+    T saved_value = T(0);
     
-    if( result > x->get_number_of_elements() ){
-      throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
+    // Since operators cannot be overloaded inside functions - this lambda function should do the comparison and mimic cublas comparisons
+    auto lessThan = [](auto c1, auto c2)
+    {
+        if constexpr (std::is_same_v<decltype(c1),float> || std::is_same_v<decltype(c1),double>)
+            return (abs(c1) < abs(c2));
+        else if constexpr (std::is_same_v<decltype(c1),complext<float>> || std::is_same_v<decltype(c1),complext<double>>)
+            return (abs(c1.real()) + abs(c1.imag())) < (abs(c2.real()) + abs(c2.imag()));
+    };
+
+    for (int ii = 0; ii < num_splits; ii++) {
+
+        int interim_result;
+
+        CUBLAS_CALL(cublas_amin(handle,
+                                (ii == num_splits - 1) ? remainder : batchSize, // n number of elements
+                                x->get_data_ptr() + batchSize * ii, 1, &interim_result));
+
+        auto interim_value = (*x)[batchSize * ii + (size_t)interim_result - 1];
+
+        if (ii == 0)
+            result = (size_t)interim_result - 1;
+        else if (lessThan((interim_value), (saved_value)))
+            result = batchSize * ii + (size_t)interim_result - 1;
+        
+        saved_value = (*x)[result];
+
     }
-    
-    return (size_t)result-1;
+    cudaDeviceManager::Instance()->unlockHandle(device);
+    if (result > x->get_number_of_elements()) {
+        throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
+    }
+
+    return result; // result - 1;
   }
-  
-  template<class T> size_t amax(cuNDArray<T> *x )
+
+  template <class T> size_t amax(cuNDArray<T>* x, size_t batchSize ) 
   {
-    if( x == 0x0 )
-      throw std::runtime_error("Gadgetron::amax(): Invalid input array");
+    if (x == 0x0)
+        throw std::runtime_error("Gadgetron::amax(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-    int result;
+    size_t result = x->get_number_of_elements() + 1;
 
-    CUBLAS_CALL(cublas_amax(cudaDeviceManager::Instance()->lockHandle(device),
-                            (int)x->get_number_of_elements(), x->get_data_ptr(), 1, &result));
+    // If number of elements in the array is greater than batchSize break it up and perform calculations this is done to
+    // support large data arrays
 
-    cudaDeviceManager::Instance()->unlockHandle(device);
-    
-    if( result > x->get_number_of_elements() ){
-      throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
+    int num_splits = x->get_number_of_elements() / batchSize + 1;
+    int remainder = x->get_number_of_elements() - batchSize * (num_splits - 1);
+    auto handle = cudaDeviceManager::Instance()->lockHandle(device);
+    T saved_value = T(0);
+
+    // Since operators cannot be overloaded inside functions - this lambda function should do the comparison and mimic cublas comparisons
+    auto greaterThan = [](auto c1, auto c2)
+    {
+        if constexpr (std::is_same_v<decltype(c1),float> || std::is_same_v<decltype(c1),double>)
+            return (abs(c1) > abs(c2));
+        else if constexpr (std::is_same_v<decltype(c1),complext<float>> || std::is_same_v<decltype(c1),complext<double>>)
+            return (abs(c1.real()) + abs(c1.imag())) > (abs(c2.real()) + abs(c2.imag()));
+    };
+
+    for (int ii = 0; ii < num_splits; ii++) {
+
+        int interim_result;
+        CUBLAS_CALL(cublas_amax(
+            handle,
+            (ii == num_splits - 1) ? remainder : batchSize, // n number of elements (int)x->get_number_of_elements(),
+            x->get_data_ptr() + batchSize * ii, 1, &interim_result));
+       
+         auto interim_value = (*x)[batchSize * ii + (size_t)interim_result - 1];
+
+        if (ii == 0)
+            result = (size_t)interim_result - 1;
+        else if (greaterThan((interim_value), (saved_value)))
+            result = batchSize * ii + (size_t)interim_result - 1;
+        
+        saved_value = (*x)[result];
+
     }
-    
-    return (size_t)result-1;
+            cudaDeviceManager::Instance()->unlockHandle(device);
+    if (result > x->get_number_of_elements()) {
+        throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
+    }
+
+    return result; //(size_t)result - 1;
   }
-  
-  std::string gadgetron_getCublasErrorString(cublasStatus_t err)
+
+  std::string gadgetron_getCublasErrorString(cublasStatus_t err) 
   {
-    switch (err){
+    switch (err) {
     case CUBLAS_STATUS_NOT_INITIALIZED:
-      return "NOT INITIALIZED";
+        return "NOT INITIALIZED";
     case CUBLAS_STATUS_ALLOC_FAILED:
-      return "ALLOC FAILED";
+        return "ALLOC FAILED";
     case CUBLAS_STATUS_INVALID_VALUE:
-      return "INVALID VALUE";
+        return "INVALID VALUE";
     case CUBLAS_STATUS_ARCH_MISMATCH:
-      return "ARCH MISMATCH";
+        return "ARCH MISMATCH";
     case CUBLAS_STATUS_MAPPING_ERROR:
-      return "MAPPING ERROR";
+        return "MAPPING ERROR";
     case CUBLAS_STATUS_EXECUTION_FAILED:
-      return "EXECUTION FAILED";
+        return "EXECUTION FAILED";
     case CUBLAS_STATUS_INTERNAL_ERROR:
-      return "INTERNAL ERROR";      
+        return "INTERNAL ERROR";
     case CUBLAS_STATUS_SUCCESS:
-      return "SUCCES";
+        return "SUCCES";
     default:
-      return "UNKNOWN CUBLAS ERROR";
+        return "UNKNOWN CUBLAS ERROR";
     }
   }
 
-  
   //
   // Instantiation
   //
-  
-  template float dot(cuNDArray<float>*,cuNDArray<float>*,bool);
-  template float nrm2(cuNDArray<float>*);
-  template void axpy(float,cuNDArray<float>*,cuNDArray<float>*);
-  template size_t amin(cuNDArray<float>*);
-  template size_t amax(cuNDArray<float>*);
-  template float asum(cuNDArray<float>*);
 
-  template double dot(cuNDArray<double>*,cuNDArray<double>*,bool);
-  template double nrm2(cuNDArray<double>*);
-  template void axpy(double,cuNDArray<double>*,cuNDArray<double>*);
-  template size_t amin(cuNDArray<double>*);
-  template size_t amax(cuNDArray<double>*);
-  template double asum(cuNDArray<double>*);
+  template float dot(cuNDArray<float>*, cuNDArray<float>*, size_t, bool);
+  template float nrm2(cuNDArray<float>*, size_t);
+  template void axpy(float, cuNDArray<float>*, cuNDArray<float>*, size_t);
+  template size_t amin(cuNDArray<float>*, size_t);
+  template size_t amax(cuNDArray<float>*, size_t);
+  template float asum(cuNDArray<float>*, size_t);
 
-  template float_complext dot(cuNDArray<float_complext>*,cuNDArray<float_complext>*,bool);
-  template float nrm2(cuNDArray<float_complext>*);
-  template void axpy(float_complext,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
-  template void axpy(float,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
-  template size_t amin(cuNDArray<float_complext>*);
-  template size_t amax(cuNDArray<float_complext>*);
-  template float asum(cuNDArray<float_complext>*);
+  template double dot(cuNDArray<double>*, cuNDArray<double>*, size_t, bool);
+  template double nrm2(cuNDArray<double>*, size_t);
+  template void axpy(double, cuNDArray<double>*, cuNDArray<double>*, size_t);
+  template size_t amin(cuNDArray<double>*, size_t);
+  template size_t amax(cuNDArray<double>*, size_t);
+  template double asum(cuNDArray<double>*, size_t);
 
-  template double_complext dot(cuNDArray<double_complext>*,cuNDArray<double_complext>*,bool);
-  template double nrm2(cuNDArray<double_complext>*);
-  template void axpy(double_complext,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
-  template void axpy(double,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
-  template size_t amin(cuNDArray<double_complext>*);
-  template size_t amax(cuNDArray<double_complext>*);
-  template double asum(cuNDArray<double_complext>*);
-}
+  template float_complext dot(cuNDArray<float_complext>*, cuNDArray<float_complext>*, size_t, bool);
+  template float nrm2(cuNDArray<float_complext>*, size_t);
+  template void axpy(float_complext, cuNDArray<float_complext>*, cuNDArray<float_complext>*, size_t);
+  template void axpy(float, cuNDArray<float_complext>*, cuNDArray<float_complext>*, size_t);
+  template size_t amin(cuNDArray<float_complext>*, size_t);
+  template size_t amax(cuNDArray<float_complext>*, size_t);
+  template float asum(cuNDArray<float_complext>*, size_t);
+
+  template double_complext dot(cuNDArray<double_complext>*, cuNDArray<double_complext>*, size_t, bool);
+  template double nrm2(cuNDArray<double_complext>*, size_t);
+  template void axpy(double_complext, cuNDArray<double_complext>*, cuNDArray<double_complext>*, size_t);
+  template void axpy(double, cuNDArray<double_complext>*, cuNDArray<double_complext>*, size_t);
+  template size_t amin(cuNDArray<double_complext>*, size_t);
+  template size_t amax(cuNDArray<double_complext>*, size_t);
+  template double asum(cuNDArray<double_complext>*, size_t);
+} // namespace Gadgetron
