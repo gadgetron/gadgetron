@@ -49,7 +49,7 @@ namespace Gadgetron{
     return (a<b)?b:a;
   }
 
-    //
+  //
   // In-place operations
   //
 
