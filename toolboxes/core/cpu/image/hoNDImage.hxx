@@ -3,8 +3,6 @@
     \author     Hui Xue
 */
 
-#include "hoNDImage.h"
-
 namespace Gadgetron
 {
     template <typename T, unsigned int D> 
