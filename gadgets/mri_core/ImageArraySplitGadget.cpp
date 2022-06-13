@@ -5,12 +5,11 @@ using namespace Gadgetron::Core;
 
 namespace {
 
-void doProcessing(AnyImage image, Core::OutputChannel& out) {
+void splitInputData(AnyImage image, Core::OutputChannel& out) {
     out.push(image);
 }
 
-void doProcessing(IsmrmrdImageArray imagearr, Core::OutputChannel& out) {
-    
+void splitInputData(IsmrmrdImageArray imagearr, Core::OutputChannel& out) {
     // 7D, fixed order [X, Y, Z, CHA, N, S, LOC]
     uint16_t X = imagearr.data_.get_size(0);
     uint16_t Y = imagearr.data_.get_size(1);
@@ -35,14 +34,12 @@ void doProcessing(IsmrmrdImageArray imagearr, Core::OutputChannel& out) {
                 auto imageHeader = ISMRMRD::ImageHeader();
                 memcpy(&imageHeader, &imagearr.headers_(n, s, loc), sizeof(ISMRMRD::ImageHeader));
 
-                // Create a new image image
-                //  and the 4D data block [X,Y,Z,CHA] for this n, s and loc
+                // Create a new image image and the 4D data block [X,Y,Z,CHA] for this n, s and loc
                 auto imageData = hoNDArray<std::complex<float>>(img_dims);
-                memcpy(imageData.get_data_ptr(), &imagearr.data_(0, 0, 0, 0, n, s, loc),
-                       X * Y * Z * CHA * sizeof(std::complex<float>));
+                memcpy(imageData.get_data_ptr(), &imagearr.data_(0, 0, 0, 0, n, s, loc), X * Y * Z * CHA * sizeof(std::complex<float>));
 
                 // Create a new meta container if needed and copy
-                auto imageMetaContainer = std::optional<ISMRMRD::MetaContainer>(); // TODO: Should this be empty? Seems like it should be populated somehow
+                auto imageMetaContainer = std::optional<ISMRMRD::MetaContainer>();
                 if (imagearr.meta_.size() > 0) {
                     size_t mindex = loc * N * S + s * N + n;
                     imageMetaContainer = imagearr.meta_[mindex];
@@ -54,18 +51,14 @@ void doProcessing(IsmrmrdImageArray imagearr, Core::OutputChannel& out) {
         }
     }
 }
-
 } // namespace
 
 namespace Gadgetron {
 
 void ImageArraySplitGadget::process(Core::InputChannel<ImageOrImageArray>& in, Core::OutputChannel& out) {
-
-    // Lambda, adds image and correct index to vector of ImageEntries 
     auto lambda = [&](auto message){ 
-        doProcessing(message, out);
+        splitInputData(message, out);
     };
-
     for (auto msg : in) {
         visit(lambda, msg);
     }
