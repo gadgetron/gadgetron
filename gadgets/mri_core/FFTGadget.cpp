@@ -61,7 +61,7 @@ namespace Gadgetron{
         memcpy(imageData.get_data_ptr(), &dbuff.data_(0,0,0,0,n,s,loc), E0*E1*E2*CHA*sizeof(std::complex<float>));
         hoNDFFT<float>::instance()->ifft3c(imageData);
 
-        return Core::Image<std::complex<float>>(std::move(imageHeader), std::move(imageData), std::nullopt));
+        return Core::Image<std::complex<float>>(std::move(imageHeader), std::move(imageData), std::nullopt);
 
     }
 
