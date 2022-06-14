@@ -56,11 +56,8 @@ void splitInputData(IsmrmrdImageArray imagearr, Core::OutputChannel& out) {
 namespace Gadgetron {
 
 void ImageArraySplitGadget::process(Core::InputChannel<ImageOrImageArray>& in, Core::OutputChannel& out) {
-    auto lambda = [&](auto message){ 
-        splitInputData(message, out);
-    };
     for (auto msg : in) {
-        visit(lambda, msg);
+        visit([&](auto message){splitInputData(message, out);}, msg);
     }
 }
 
