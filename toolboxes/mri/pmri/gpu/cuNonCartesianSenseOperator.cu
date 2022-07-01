@@ -64,7 +64,6 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
 template<class REAL, unsigned int D> void
 cuNonCartesianSenseOperator<REAL,D>::setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W )
 {
-    if (plan_) return plan_->reconfigure(matrix_size,matrix_size_os,W);
     plan_ = NFFT<cuNDArray,REAL,D>::make_plan( matrix_size, matrix_size_os, W,convolutionType );
     is_preprocessed_ = false;
 }
