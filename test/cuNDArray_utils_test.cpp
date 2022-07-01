@@ -2,21 +2,12 @@
 #include "cuNDArray_reductions.h"
 #include "cuNDArray_blas.h"
 #include "cuNDArray_elemwise.h"
-#include "NFFTOperator.h"
-#include "cuNFFT.h"
 #include "complext.h"
 
 #include <gtest/gtest.h>
 #include <complex>
 #include <vector>
 #include "vector_td_utilities.h"
-
-// Std includes
-#include <iostream>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#include "GadgetronTimer.h"
-#include "hoArmadillo.h"
 
 using namespace Gadgetron;
 using testing::Types;
@@ -41,12 +32,10 @@ protected:
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
-   
   }
   std::vector<size_t> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
-  
 };
 
 typedef Types<float, double> realImplementations;
@@ -232,6 +221,7 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
   EXPECT_NEAR(real(mean(&out))*scale,real(mean(&this->Array)), 0.001);
   EXPECT_NEAR(imag(mean(&out))*scale,imag(mean(&this->Array)), 0.001);
 }
+
 
 TEST(padTest,largeSize){
 // So, this test is mainly here because pad apparently fails for large sized arrays.
