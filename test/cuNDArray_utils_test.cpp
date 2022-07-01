@@ -280,34 +280,6 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
   EXPECT_NEAR(imag(mean(&out))*scale,imag(mean(&this->Array)), 0.001);
 }
 
-TYPED_TEST(cuNDArray_utils_TestCplx,cuNFFT_ATOMIC){
-        
-    std::vector<size_t> flat_dims = {this->fake_traj.get_number_of_elements()};
-    cuNDArray<floatd2> flat_traj(flat_dims, this->fake_traj.get_data_ptr());
-    this->nfft_plan_ = NFFT<cuNDArray, float, 2>::make_plan(from_std_vector<size_t, 2>(this->image_dims_), this->image_dims_os_, this->kernel_width_, ConvolutionType::ATOMIC);
-    this->nfft_plan_->preprocess(flat_traj, NFFT_prep_mode::NC2C);
-
-    auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
-
-    this->nfft_plan_->compute(&this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
-
-}
-
-TYPED_TEST(cuNDArray_utils_TestCplx,cuNFFT_STANDARD){
-  
-    std::vector<size_t> flat_dims = {this->fake_traj.get_number_of_elements()};
-    cuNDArray<floatd2> flat_traj(flat_dims, this->fake_traj.get_data_ptr());
-    this->nfft_plan_ = NFFT<cuNDArray, float, 2>::make_plan(from_std_vector<size_t, 2>(this->image_dims_), this->image_dims_os_, this->kernel_width_, ConvolutionType::STANDARD);
-    this->nfft_plan_->preprocess(flat_traj, NFFT_prep_mode::NC2C);
-
-    
-    auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
-
-    this->nfft_plan_->compute(&this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
-
-}
-
-
 TEST(padTest,largeSize){
 // So, this test is mainly here because pad apparently fails for large sized arrays.
 	size_t vdims[] = {192,192,50};
