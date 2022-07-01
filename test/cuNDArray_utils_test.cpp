@@ -63,7 +63,7 @@ protected:
     init_val[1]= 0.1f;
     fake_traj_ho.fill(init_val);
 
-    cuNDArray<floatd2> fake_traj = cuNDArray<floatd2>(fake_traj_ho);
+    fake_traj = cuNDArray<floatd2>(fake_traj_ho);
     fill(&fake_dcw,1.0f);
     fill(&fake_data,complext(1.0f,0.0f));
 
@@ -78,8 +78,7 @@ protected:
 
     recon_dims = {this->image_dims_[0], this->image_dims_[1], CHA};
 
-     std::vector<size_t> flat_dims = {fake_traj.get_number_of_elements()};
-     flat_traj=cuNDArray<floatd2>(flat_dims, fake_traj.get_data_ptr());
+   
   }
   std::vector<size_t> dims;
   cuNDArray<T> Array;
@@ -87,7 +86,7 @@ protected:
   
   cuNDArray<float_complext> fake_data;
   cuNDArray<float>   fake_dcw;
-  cuNDArray<floatd2> flat_traj;
+  cuNDArray<floatd2> fake_traj;
   size_t RO, INT, Kz, CHA, xsize_, ysize_; 
   float kernel_width_, oversampling_factor_;
   uint64d2 image_dims_os_;
@@ -282,9 +281,10 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
 }
 
 TYPED_TEST(cuNDArray_utils_TestCplx,cuNFFT_ATOMIC){
-
+        std::vector<size_t> flat_dims = {this->fake_traj.get_number_of_elements()};
+     cuNDArray<floatd2> flat_traj(flat_dims, this->fake_traj.get_data_ptr());
     this->nfft_plan_ = NFFT<cuNDArray, float, 2>::make_plan(from_std_vector<size_t, 2>(this->image_dims_), this->image_dims_os_, this->kernel_width_, ConvolutionType::ATOMIC);
-    this->nfft_plan_->preprocess(this->flat_traj, NFFT_prep_mode::NC2C);
+    this->nfft_plan_->preprocess(flat_traj, NFFT_prep_mode::NC2C);
 
      auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
 
@@ -294,9 +294,10 @@ TYPED_TEST(cuNDArray_utils_TestCplx,cuNFFT_ATOMIC){
 
 TYPED_TEST(cuNDArray_utils_TestCplx,cuNFFT_STANDARD){
   
-
+    std::vector<size_t> flat_dims = {this->fake_traj.get_number_of_elements()};
+     cuNDArray<floatd2> flat_traj(flat_dims, this->fake_traj.get_data_ptr());
      this->nfft_plan_ = NFFT<cuNDArray, float, 2>::make_plan(from_std_vector<size_t, 2>(this->image_dims_), this->image_dims_os_, this->kernel_width_, ConvolutionType::STANDARD);
-     this->nfft_plan_->preprocess(this->flat_traj, NFFT_prep_mode::NC2C);
+     this->nfft_plan_->preprocess(flat_traj, NFFT_prep_mode::NC2C);
 
      
      auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
