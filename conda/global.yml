@@ -1,0 +1,8 @@
+channels:
+  - nvidia
+  - gadgetron
+  - conda-forge
+  - bioconda
+  - defaults
+  - intel
+  - cefca

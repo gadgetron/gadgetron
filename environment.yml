@@ -8,9 +8,12 @@ channels:
   - intel
   - cefca
 dependencies:
+  - anaconda-client=1.8.0
   - armadillo=9.900.5             # dev
   - boost=1.76.0
   - breathe=4.32.0                # dev
+  - conda-build=3.21.9
+  - conda-verify
   - cmake=3.21.3                  # dev
   - cpr=1.7.2
   - cuda-libraries-dev=11.6.1     # cuda, dev
@@ -61,5 +64,6 @@ dependencies:
   - sysroot_linux-64=2.17
   - valgrind=3.17.0               # dev
   - xsdata=22.2
+  - yq=2.12.0
   - pip:
     - junitparser==2.2.0
