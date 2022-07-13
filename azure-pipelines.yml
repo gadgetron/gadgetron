@@ -56,11 +56,11 @@ jobs:
       testResultsFiles: 'junit.xml'
       failTaskOnFailedTests: true
       buildPlatform: "$(imageBaseName)_rt_$(flavor)"
- - script: |
-     set -e
-     echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
-     ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber) --push
-     ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag latest --push
+  - script: |
+      set -e
+      echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
+      ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber) --push
+      ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag latest --push
    displayName: 'Push images'
    condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: Package
