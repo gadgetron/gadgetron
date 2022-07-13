@@ -46,7 +46,7 @@ jobs:
   - script: |
         set -e
         ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber)
-        cd test/integration && python3 get_data.py && cd ../../ 
+        cd test/integration && python3 get_data.py && cd ../../
         fullImageName="$(imageBaseName)_rt_$(flavor):$(build.BuildNumber)"
         ./docker/integration-test-image.sh --image ${fullImageName} --ignore-requirements $(requirements) --gpus all --cases cases/*
     displayName: "Run integration tests"
@@ -61,8 +61,8 @@ jobs:
       echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
       ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber) --push
       ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag latest --push
-   displayName: 'Push images'
-   condition: and(succeeded(), eq(variables.isCI, 'true'))
+    displayName: 'Push images'
+    condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: Package
   timeoutInMinutes: 120
   displayName: "Create Conda Package"
