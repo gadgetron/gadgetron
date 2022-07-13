@@ -13,7 +13,7 @@ dependencies:
   - boost=1.76.0
   - breathe=4.32.0                # dev
   - conda-build=3.21.9
-  - conda-verify
+  - conda-verify=3.3.0
   - cmake=3.21.3                  # dev
   - cpr=1.7.2
   - cuda-libraries-dev=11.6.1     # cuda, dev
@@ -35,6 +35,7 @@ dependencies:
   - ismrmrd=1.7.1
   - ismrmrd-python=1.9.8
   - jupyter=1.0.0                 # dev
+  - jq=1.6
   - libblas=*=*mkl
   - libcurl=7.79.1                # dev
   - libxml2=2.9.12                # dev
@@ -42,13 +43,15 @@ dependencies:
   - make=4.3                      # dev
   - matplotlib=3.4.3              # dev
   - memkind=1.10.1
-  - mkl=2022.0.1
-  - mkl-include=2022.0.1          # dev
+  - mkl=2022.0.0
+  - mkl-include=2022.0.0          # dev
   - mrd-storage-server=0.0.8
   - ninja=1.10.2                  # dev
   - nlohmann_json=3.10.4          # dev
   - numpy=1.22.1
   - onnxruntime=1.10.0
+  - packaging=21.3
+  - pyyaml>=6.0
   - pip=21.2.4
   - plplot=5.11.2
   - pugixml=1.11.4                # dev

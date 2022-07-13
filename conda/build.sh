@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+cd conda && python3 validate_versions.py
+
 PKG_DIR="${SRC_DIR}/build_pkg"
 mkdir -p "${PKG_DIR}"
 cd "${PKG_DIR}" || exit 1
@@ -10,4 +12,4 @@ ninja && ninja install
 
 TEST_DIR="${PREFIX}/share/gadgetron/test/"
 mkdir -p "${TEST_DIR}"
-cp -r "${SRC_DIR}/test/integration" "${TEST_DIR}"
+rsync -a --exclude 'data' "${SRC_DIR}/test/integration" "${TEST_DIR}"
