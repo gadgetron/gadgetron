@@ -27,7 +27,7 @@ template <typename T> class cuNFFT_test : public ::testing::Test {
         // Prep for NUFFT_TEST
         RO = 2500;
         INT = 1100;
-        CHA = 1;
+        CHA = 8;
         xsize_ = 256;
         ysize_ = 256;
         kernel_width_ = 3;
