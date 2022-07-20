@@ -14,8 +14,17 @@ EOF
 output_path="$(dirname "$0")/build_pkg"
 
 # Build up channel directives
-global_channels=$(cat "$(dirname "$0")"/global.yml | yq '.channels | join(" -c ")' | tr -d '"')
-channel_directive="-c $global_channels"
+channels=(
+  nvidia
+  gadgetron
+  conda-forge
+  bioconda
+  defaults
+  intel
+  cefca
+)
+
+channel_directives=$(printf -- "-c %s " "${channels[@]}")
 
 mkdir -p "$output_path"
-bash -c "conda build --no-anaconda-upload --output-folder $output_path $channel_directive $(dirname "$0")"
+bash -c "conda build --no-anaconda-upload --output-folder $output_path $channel_directives $(dirname "$0")"
