@@ -11,7 +11,7 @@ ARG USER_GID
 ARG HOME=/home/$USERNAME
 
 RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget git-core rsync curl net-tools libxml2 \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget git-core rsync curl net-tools libxml2 libglib2.0-dev default-jdk \
     && apt-get clean
 
 # Create the user
@@ -58,6 +58,10 @@ if ! grep -q \"^source /opt/conda/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then
 	echo \"source /opt/conda/etc/profile.d/conda.sh\" >> ${HOME}/.bashrc\n\
 	echo \"conda activate $(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')\" >> ${HOME}/.bashrc\n\
 fi\n" >> /etc/bash.bashrc
+
+RUN echo "" >> ${HOME}/.bashrc
+RUN echo "MATLABROOT=/usr/local/MATLAB" >> ${HOME}/.bashrc
+RUN echo "PATH=${MATLABROOT}/bin:$PATH" >> ${HOME}/.bashrc
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
