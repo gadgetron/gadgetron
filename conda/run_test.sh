@@ -6,4 +6,4 @@ export LANG=C
 cd "${PREFIX}/share/gadgetron/test/integration" || exit 1
 
 python get_data.py
-python run_tests.py cases/*
+python run_tests.py --ignore-requirements python,cuda cases/*
