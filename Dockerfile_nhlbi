@@ -23,7 +23,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # The version of conda to use
-ARG CONDA_VERSION=4.11.0
+ARG CONDA_VERSION=4.13.0
 
 # Based on https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile.
 # We also install conda-lock.
@@ -49,6 +49,13 @@ COPY --chown=$USER_UID:conda gadgetron/environment.yml /tmp/build/
 RUN mkdir -p /test && chown ${USER_UID}:${USER_GID} /test
 VOLUME /test
 
+RUN echo "" >> ${HOME}/.bashrc
+RUN echo "MATLABROOT=/usr/local/MATLAB" >> ${HOME}/.bashrc
+RUN echo "PATH=/usr/local/MATLAB/bin:/opt/package/bin:$PATH" >> ${HOME}/.bashrc
+#RUN echo "MATLABPATH=/opt/code/MATLAB/:/opt/code/MATLAB/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/+nhlbi/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/+socket/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/java/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/+examples/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/+external/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/+lib/:/opt/code/MATLAB/gadgetron-matlab-nhlbi/+gadgetron/+types/" >> ${HOME}/.bashrc
+#RUN echo "MATLABPATH=\"$(find RECURSIVEFOLDER -type d -printf %p:)$MATLABPATH\""
+#RUN echo "MATLABPATH=/opt/code/MATLAB" >> ${HOME}/.bashrc
+RUN echo "MATLAB_USE_USERWORK=1" >> ${HOME}/.bashrc
 # Add a section to /etc/bash.bashrc that ensures that a section is present at the end of ~/.bashrc.
 # We can't just write to .bashrc from here because it will be overwritten if the vscode user has
 # opted to use their own dotfiles repo. The dotfiles repo is cloned after the postCreateCommand
@@ -59,9 +66,7 @@ if ! grep -q \"^source /opt/conda/etc/profile.d/conda.sh\" ${HOME}/.bashrc; then
 	echo \"conda activate $(grep 'name:' /tmp/build/environment.yml | awk '{print $2}')\" >> ${HOME}/.bashrc\n\
 fi\n" >> /etc/bash.bashrc
 
-RUN echo "" >> ${HOME}/.bashrc
-RUN echo "MATLABROOT=/usr/local/MATLAB" >> ${HOME}/.bashrc
-RUN echo "PATH=${MATLABROOT}/bin:$PATH" >> ${HOME}/.bashrc
+
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
@@ -88,7 +93,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetro
     cd /opt/code/gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package && \
+    cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package -DUSE_MKL=ON && \
     ninja && \
     ninja install
     
@@ -108,6 +113,13 @@ RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetro
      cmake ../ -GNinja -DUSE_MKL=ON  -DCMAKE_INSTALL_PREFIX=/opt/package -DCMAKE_PREFIX_PATH=/opt/package && \
     ninja && \
     ninja install
+RUN mkdir -p /opt/code/MATLAB/
+RUN mkdir -p /home/vscode/Documents/MATLAB/
+RUN mkdir -p /home/vscode/.matlab/R2021a/
+COPY --chown=$USER_UID:conda gadgetron-matlab-nhlbi/ /home/vscode/Documents/MATLAB/
+COPY --chown=$USER_UID:conda gadgetron-matlab-nhlbi/pathdef.m /opt/code/MATLAB/
+RUN echo "/home/vscode/Documents/MATLAB/gadgetron.external.SocketWrapper.jar" >> ${HOME}/.matlab/R2021a/javaclasspath.txt
+RUN echo "/home/vscode/Documents/MATLAB/java" >> ${HOME}/.matlab/R2021a/javaclasspath.txt
 
 FROM gadgetron_baseimage AS gadgetron_nhlbi_rt_cuda
 ARG USER_UID
@@ -119,4 +131,11 @@ COPY --from=gadgetron_nhlbicudabuild --chown=$USER_UID:conda /opt/code/gadgetron
 RUN chmod +x /opt/entrypoint.sh
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
+RUN mkdir -p /opt/code/MATLAB/
+RUN mkdir -p /home/vscode/Documents/MATLAB/
+RUN mkdir -p /home/vscode/.matlab/R2021a/
+COPY --chown=$USER_UID:conda gadgetron-matlab-nhlbi/ /home/vscode/Documents/MATLAB/
+COPY --chown=$USER_UID:conda gadgetron-matlab-nhlbi/pathdef.m /opt/code/MATLAB/
+RUN echo "/home/vscode/Documents/MATLAB/gadgetron.external.SocketWrapper.jar" >> ${HOME}/.matlab/R2021a/javaclasspath.txt
+RUN echo "/home/vscode/Documents/MATLAB/java" >> ${HOME}/.matlab/R2021a/javaclasspath.txt
 ENTRYPOINT [ "/tini", "--", "/opt/entrypoint.sh" ]
