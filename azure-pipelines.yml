@@ -85,7 +85,7 @@ jobs:
     artifact: drop
 - job: Publish
   displayName: "Publish Conda Package"
-  condition: and(succeeded(), eq(variables.IS_CI, 'true'))
+  condition: and(succeeded(), eq(variables.isCI, 'true'))
   dependsOn:
   - BuildAndTest
   - Package
