@@ -4,6 +4,7 @@ variables:
   DOCKER_BUILDKIT: 1
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   isCI: $[or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI'))]
+  jobTimeout: 120
 
 pool: gadgetron-gpu-nodes
 
@@ -17,7 +18,7 @@ pr:
 
 jobs:
 - job: BuildAndTest
-  timeoutInMinutes: 120
+  timeoutInMinutes: $(jobTimeout)
   displayName: "Build, Unit and Integration tests"
   strategy:
     matrix:
@@ -64,7 +65,7 @@ jobs:
     displayName: 'Push images'
     condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: Package
-  timeoutInMinutes: 120
+  timeoutInMinutes: $(jobTimeout)
   displayName: "Create Conda Package"
   steps:
   - bash: echo "##vso[task.prependpath]/anaconda/bin"
@@ -84,6 +85,7 @@ jobs:
     displayName: 'Publish package'
     artifact: drop
 - job: Publish
+  timeoutInMinutes: $(jobTimeout)
   displayName: "Publish Conda Package"
   condition: and(succeeded(), eq(variables.isCI, 'true'))
   dependsOn:
