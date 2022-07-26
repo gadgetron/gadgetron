@@ -84,6 +84,7 @@ jobs:
     displayName: 'Publish package'
     artifact: drop
 - job: Publish
+  timeoutInMinutes: 120
   displayName: "Publish Conda Package"
   condition: and(succeeded(), eq(variables.isCI, 'true'))
   dependsOn:

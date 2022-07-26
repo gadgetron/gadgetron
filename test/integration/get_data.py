@@ -3,12 +3,13 @@
 import os
 import os.path
 
-import sys
-import time
-import json
-import hashlib
 import argparse
 import functools
+import hashlib
+import json
+import socket
+import sys
+import time
 
 import urllib.error
 import urllib.request
@@ -34,12 +35,12 @@ def urlretrieve(url, filename, retries=5):
     if retries <= 0:
         raise RuntimeError("Download from {} failed".format(url))
     try:
-        with urllib.request.urlopen(url, timeout=120) as connection:
+        with urllib.request.urlopen(url, timeout=60) as connection:
             with open(filename,'wb') as f:
                 for chunk in iter(lambda : connection.read(1024*1024), b''):
                     f.write(chunk)
-    except (urllib.error.URLError, ConnectionResetError):
-        print("Retrying connection for file {}".format(filename))
+    except (urllib.error.URLError, ConnectionResetError, socket.Timeout) as exc:
+        print("Retrying connection for file {}, reason: {}".format(filename, str(exc)))
         urlretrieve(url, filename, retries=retries-1)
 
 def main():
