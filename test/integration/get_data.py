@@ -39,7 +39,7 @@ def urlretrieve(url, filename, retries=5):
             with open(filename,'wb') as f:
                 for chunk in iter(lambda : connection.read(1024*1024), b''):
                     f.write(chunk)
-    except (urllib.error.URLError, ConnectionResetError, socket.Timeout) as exc:
+    except (urllib.error.URLError, ConnectionResetError, socket.timeout) as exc:
         print("Retrying connection for file {}, reason: {}".format(filename, str(exc)))
         urlretrieve(url, filename, retries=retries-1)
 
