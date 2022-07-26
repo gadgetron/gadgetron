@@ -103,7 +103,7 @@ jobs:
     artifact: drop
   - script: |
       eval "$(conda shell.bash hook)"
-      conda create --name conda-push anaconda-client=1.8.0
+      conda create --name conda-push anaconda-client=1.8.0 -y
       conda activate conda-push
       set -euo pipefail
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
