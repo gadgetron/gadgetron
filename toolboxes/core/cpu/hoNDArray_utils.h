@@ -795,7 +795,7 @@ namespace Gadgetron {
     for( int64_t idx=0; idx < num_elements*num_batches; idx++ ){
 
       const size_t frame_offset = idx/num_elements;
-      const uint64d co_out = idx_to_co<uint64_t,D>( idx-frame_offset*num_elements, matrix_size_out );
+      const uint64d co_out = idx_to_co<size_t,D>( idx-frame_offset*num_elements, matrix_size_out );
       const uint64d co_in = co_out << 1;
       const uint64d twos(2);
       const size_t num_adds = 1 << D;
