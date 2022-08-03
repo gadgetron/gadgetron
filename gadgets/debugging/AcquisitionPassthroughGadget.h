@@ -1,24 +1,23 @@
-#ifndef ACQUISITIONPASSTHROUGHGADGET_H
-#define ACQUISITIONPASSTHROUGHGADGET_H
+4 lines (21 sloc) 740 Bytes
+/**
+    \brief  Passes through an acquisition to the next gadget in the pipeline
+    \test   Tested by: simple_gre_acquisition_passthrough.cfg
+*/
+
+#pragma once
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_debugging_export.h"
-
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+#include "GadgetMRIHeaders.h"
+#include "Node.h"
+#include "Types.h"
 
 namespace Gadgetron{
-
-  class EXPORTGADGETSDEBUGGING AcquisitionPassthroughGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  class AcquisitionPassthroughGadget : public Core::ChannelGadget<Core::Acquisition> 
     {
-    public:
-      GADGET_DECLARE(AcquisitionPassthroughGadget);
-      
-    protected:
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+      public:
+        using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
+        ~AcquisitionPassthroughGadget() override = default;
+        void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
     };
 }
-#endif //ACQUISITIONPASSTHROUGHGADGET_H
