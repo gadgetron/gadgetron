@@ -89,7 +89,7 @@ include(GoogleTest)
             gadgetron_toolbox_pr
             gadgetron_toolbox_cpusdc
             ${GTEST_LIBRARIES}
-            gmock
+            GTest::gmock
             )
 
     if (PYTHONLIBS_FOUND)
