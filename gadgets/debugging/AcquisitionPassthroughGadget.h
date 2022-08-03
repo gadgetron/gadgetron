@@ -1,4 +1,3 @@
-4 lines (21 sloc) 740 Bytes
 /**
     \brief  Passes through an acquisition to the next gadget in the pipeline
     \test   Tested by: simple_gre_acquisition_passthrough.cfg
@@ -11,6 +10,8 @@
 #include "GadgetMRIHeaders.h"
 #include "Node.h"
 #include "Types.h"
+#include "gadgetron_debugging_export.h"
+
 
 namespace Gadgetron{
   class AcquisitionPassthroughGadget : public Core::ChannelGadget<Core::Acquisition> 
