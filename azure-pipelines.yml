@@ -36,6 +36,7 @@ jobs:
         set -e
         uname -a
     displayName: "ID base machine"
+    condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: build-and-test-macOS
   pool: macOS-latest
   timeoutInMinutes: 120
@@ -56,3 +57,4 @@ jobs:
         which curl
         which wget
     displayName: "Check for basic utilities"
+    condition: and(succeeded(), eq(variables.isCI, 'true'))
