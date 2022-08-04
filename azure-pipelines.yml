@@ -90,7 +90,7 @@ jobs:
     artifact: drop
 - job: Publish
   pool:
-    pool: gadgetron-gpu-nodes
+    name: gadgetron-gpu-nodes
     vmImage:
   timeoutInMinutes: 120
   displayName: "Publish Conda Package"
@@ -115,11 +115,11 @@ jobs:
       conda activate conda-push
       set -euo pipefail
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
-- job: BuildAndTestMacOS
+- job: buildAndTestMacOS
   pool:
-    pool: gadgetron-gpu-nodes
+    vmIamge: macOS-latest
   timeoutInMinutes: 10
-  displayName: "Build, Unit and Integration tests"
+  displayName: "Testing on macOS"
   steps:
   - task: AzureKeyVault@2
     inputs:
