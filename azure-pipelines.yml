@@ -117,9 +117,9 @@ jobs:
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
 - job: buildAndTestMacOS
   pool:
-    vmIamge: macOS-12
+    name: gadgetron-gpu-nodes
   timeoutInMinutes: 10
-  displayName: "Testing on macOS"
+  displayName: "Testing for macOS"
   steps:
   - task: AzureKeyVault@2
     inputs:
