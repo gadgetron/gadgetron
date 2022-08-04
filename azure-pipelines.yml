@@ -115,7 +115,7 @@ jobs:
       conda activate conda-push
       set -euo pipefail
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
-- job: build-and-test-macOS
+- job: BuildAndTestMacOS
   pool:
     pool: gadgetron-gpu-nodes
   timeoutInMinutes: 10
