@@ -117,7 +117,7 @@ jobs:
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
 - job: buildAndTestMacOS
   pool:
-    name:
+    name: Azure Pipelines
     vmImage: macOS-latest
   timeoutInMinutes: 10
   displayName: "Testing for macOS"
