@@ -16,7 +16,8 @@ pr:
 
 jobs:
 - job: BuildAndTest
-  pool: gadgetron-gpu-nodes
+  pool:
+    vmImage: gadgetron-gpu-nodes
   timeoutInMinutes: 120
   displayName: "Build, Unit and Integration tests"
   strategy:
@@ -64,7 +65,8 @@ jobs:
     displayName: 'Push images'
     condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: Package
-  pool: gadgetron-gpu-nodes
+  pool:
+    vmImage: gadgetron-gpu-nodes
   timeoutInMinutes: 120
   displayName: "Create Conda Package"
   steps:
@@ -85,7 +87,8 @@ jobs:
     displayName: 'Publish package'
     artifact: drop
 - job: Publish
-  pool: gadgetron-gpu-nodes
+  pool:
+    vmImage: gadgetron-gpu-nodes
   timeoutInMinutes: 120
   displayName: "Publish Conda Package"
   condition: and(succeeded(), eq(variables.isCI, 'true'))
@@ -110,7 +113,8 @@ jobs:
       set -euo pipefail
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
 - job: build-and-test-macOS
-  pool: macOS-latest
+  pool:
+    vmImage: macOS-latest
   timeoutInMinutes: 120
   displayName: "Build, Unit and Integration tests"
   strategy:
