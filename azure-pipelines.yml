@@ -131,4 +131,5 @@ jobs:
         uname -a
         which curl
         which wget
+        which conda
     displayName: "Check for basic utilities"
