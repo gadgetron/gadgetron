@@ -115,3 +115,19 @@ jobs:
       conda activate conda-push
       set -euo pipefail
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
+- job: build-and-test-macOS
+  pool:
+    vmImage: macOS-latest
+  timeoutInMinutes: 10
+  displayName: "Build, Unit and Integration tests"
+  steps:
+  - task: AzureKeyVault@1
+    inputs:
+      azureSubscription: $(AzureConnection)
+      keyVaultName: gadgetron-build-secrets
+  - script: |
+        set -e
+        uname -a
+        which curl
+        which wget
+    displayName: "Check for basic utilities"
