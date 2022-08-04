@@ -121,7 +121,7 @@ jobs:
   timeoutInMinutes: 10
   displayName: "Build, Unit and Integration tests"
   steps:
-  - task: AzureKeyVault@1
+  - task: AzureKeyVault@2
     inputs:
       azureSubscription: $(AzureConnection)
       keyVaultName: gadgetron-build-secrets
