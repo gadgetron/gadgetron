@@ -34,6 +34,7 @@ dependencies:
   - howardhinnant_date=3.0.1      # dev
   - ismrmrd=1.7.1
   - ismrmrd-python=1.9.8
+  - junitparser==2.7.0
   - jupyter=1.0.0                 # dev
   - jq=1.6
   - libblas=*=*mkl
@@ -67,5 +68,3 @@ dependencies:
   - valgrind=3.17.0               # dev
   - xsdata=22.2
   - yq=2.13.0                     # dev
-  - pip:
-    - junitparser==2.2.0
