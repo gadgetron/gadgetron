@@ -17,7 +17,8 @@ pr:
 jobs:
 - job: BuildAndTest
   pool:
-    vmImage: gadgetron-gpu-nodes
+    name: gadgetron-gpu-nodes
+    vmImage:
   timeoutInMinutes: 120
   displayName: "Build, Unit and Integration tests"
   strategy:
@@ -66,7 +67,8 @@ jobs:
     condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: Package
   pool:
-    vmImage: gadgetron-gpu-nodes
+    name: gadgetron-gpu-nodes
+    vmImage:
   timeoutInMinutes: 120
   displayName: "Create Conda Package"
   steps:
@@ -88,7 +90,8 @@ jobs:
     artifact: drop
 - job: Publish
   pool:
-    vmImage: gadgetron-gpu-nodes
+    pool: gadgetron-gpu-nodes
+    vmImage:
   timeoutInMinutes: 120
   displayName: "Publish Conda Package"
   condition: and(succeeded(), eq(variables.isCI, 'true'))
