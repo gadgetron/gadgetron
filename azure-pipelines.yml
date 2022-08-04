@@ -117,7 +117,7 @@ jobs:
       cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
 - job: build-and-test-macOS
   pool:
-    vmImage: macOS-latest
+    pool: gadgetron-gpu-nodes
   timeoutInMinutes: 10
   displayName: "Build, Unit and Integration tests"
   steps:
