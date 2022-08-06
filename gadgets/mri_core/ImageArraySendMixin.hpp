@@ -89,6 +89,14 @@ template<class Derived> void Gadgetron::ImageArraySendMixin<Derived>::prep_image
             res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "RETRO");
             res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RETRO);
         }
+        else if (data_role == GADGETRON_IMAGE_PERF_ASL)
+        {
+            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
+
+            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "ASL");
+            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "ASL");
+            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_REGULAR);
+        }
 
 }
 

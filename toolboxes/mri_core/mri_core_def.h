@@ -50,6 +50,8 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP "PS_Map"
     #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "Gd"
     #define GADGETRON_IMAGE_PERF_AHA_SEGMENT_MODEL         "AHA"
+    #define GADGETRON_IMAGE_PERF_ASL                       "ASL"
+
 
     // other images than the regular reconstruction results
     #define GADGETRON_IMAGE_OTHER                          "Image_Other"
