@@ -189,7 +189,7 @@
                     <property name="kspace_binning_linear_iter_max" value="90"/>
                     <property name="kspace_binning_linear_iter_thres" value="0.0015"/>
 
-                    <property name="kspace_binning_nonlinear_iter_max" value="25"/>
+                    <property name="kspace_binning_nonlinear_iter_max" value="15"/>
                     <property name="kspace_binning_nonlinear_iter_thres" value="0.004"/>
                     <property name="kspace_binning_nonlinear_data_fidelity_lamda" value="1.0"/>
                     <property name="kspace_binning_nonlinear_image_reg_lamda" value="0.00015"/>
