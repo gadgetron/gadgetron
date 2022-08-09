@@ -123,7 +123,7 @@ CmrKSpaceBinning<T>::CmrKSpaceBinning()
     kspace_binning_linear_iter_max_ = 90;
     kspace_binning_linear_iter_thres_ = 0.0015;
 
-    kspace_binning_nonlinear_iter_max_ = 25;
+    kspace_binning_nonlinear_iter_max_ = 15;
     kspace_binning_nonlinear_iter_thres_ = 0.002;
     kspace_binning_nonlinear_data_fidelity_lamda_ = 1.0;
     kspace_binning_nonlinear_image_reg_lamda_ = 0.00015;

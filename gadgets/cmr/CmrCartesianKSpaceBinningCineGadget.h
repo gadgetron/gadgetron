@@ -84,7 +84,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(kspace_binning_linear_iter_max, size_t, "Binned kspace recon, maximal number of iterations, linear recon", 90);
         GADGET_PROPERTY(kspace_binning_linear_iter_thres, double, "Binned kspace recon, iteration threshold, linear recon", 0.0015);
         /// Non-linear recon step
-        GADGET_PROPERTY(kspace_binning_nonlinear_iter_max, size_t, "Binned kspace recon, maximal number of iterations, non-linear recon", 25);
+        GADGET_PROPERTY(kspace_binning_nonlinear_iter_max, size_t, "Binned kspace recon, maximal number of iterations, non-linear recon", 15);
         GADGET_PROPERTY(kspace_binning_nonlinear_iter_thres, double, "Binned kspace recon, iteration threshold, non-linear recon", 0.004);
         GADGET_PROPERTY(kspace_binning_nonlinear_data_fidelity_lamda, double, "Binned kspace recon, strength of data fidelity term, non-linear recon", 1.0);
         GADGET_PROPERTY(kspace_binning_nonlinear_image_reg_lamda, double, "Binned kspace recon, strength of image term, non-linear recon", 0.00015);
