@@ -54,7 +54,7 @@ requirements:
     - dcmtk=3.6.1
     - fftw=3.3.9
     - gadgetron::gadgetron-python>=1.3.6
-    - ismrmrd::ismrmrd=1.12.1
+    - ismrmrd::ismrmrd=1.11.1
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
     - libblas=*=*mkl
