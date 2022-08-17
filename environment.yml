@@ -34,7 +34,7 @@ dependencies:
   - hdf5=1.10.6
   - howardhinnant_date=3.0.1              # dev
   - ismrmrd::ismrmrd=1.11.1
-  - ismrmrd::ismrmrd-python=1.12.3
+  - ismrmrd::ismrmrd-python>=1.9.8
   - junitparser==2.7.0
   - jupyter=1.0.0                         # dev
   - jq=1.6
@@ -46,7 +46,7 @@ dependencies:
   - memkind=1.10.1
   - mkl>=2022.0.0
   - mkl-include>=2022.0.0                 # dev
-  - ismrmrd:mrd-storage-server=0.0.12
+  - ismrmrd::mrd-storage-server=0.0.12
   - ninja=1.10.2                          # dev
   - nlohmann_json=3.10.4                  # dev
   - numpy=1.22.1
