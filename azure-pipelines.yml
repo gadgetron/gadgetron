@@ -15,121 +15,21 @@ pr:
 - master
 
 jobs:
-- job: BuildAndTest
-  pool:
-    name: gadgetron-gpu-nodes
-    vmImage:
-  timeoutInMinutes: 120
-  displayName: "Build, Unit and Integration tests"
-  strategy:
-    matrix:
-      cuda:
-        flavor: cuda
-        requirements: python,cuda
-      nocuda:
-        flavor: nocuda
-        requirements: python
-  steps:
-  - task: AzureKeyVault@1
-    inputs:
-      azureSubscription: $(AzureConnection)
-      keyVaultName: gadgetron-build-secrets
-  - script: |
-        set -e
-        # First build a dev image and run unit tests
-        stage_name="gadgetron_$(flavor)build"
-        docker build --target ${stage_name} -t ${stage_name} .
-        test_command=". /opt/conda/etc/profile.d/conda.sh \
-            && conda activate gadgetron \
-            && /opt/code/gadgetron/build/test/test_all \
-            && /opt/code/gadgetron/build/apps/gadgetron/test/server_tests"
-        docker run --gpus=all ${stage_name} /bin/bash -c "$test_command"
-    displayName: "Run unit tests"
-  - script: |
-        set -e
-        ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber)
-        cd test/integration && python3 get_data.py && cd ../../
-        fullImageName="$(imageBaseName)_rt_$(flavor):$(build.BuildNumber)"
-        ./docker/integration-test-image.sh --image ${fullImageName} --ignore-requirements $(requirements) --gpus all --cases cases/*
-    displayName: "Run integration tests"
-  - task: PublishTestResults@2
-    inputs:
-      testRunner: JUnit
-      testResultsFiles: 'junit.xml'
-      failTaskOnFailedTests: true
-      buildPlatform: "$(imageBaseName)_rt_$(flavor)"
-  - script: |
-      set -e
-      echo "$(ghcr-pat)" | docker login ghcr.io -u $(ghcr-user) --password-stdin
-      ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber) --push
-      ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag latest --push
-    displayName: 'Push images'
-    condition: and(succeeded(), eq(variables.isCI, 'true'))
-- job: Package
-  pool:
-    name: gadgetron-gpu-nodes
-    vmImage:
-  timeoutInMinutes: 120
-  displayName: "Create Conda Package"
-  steps:
-  - bash: echo "##vso[task.prependpath]/anaconda/bin"
-    displayName: Add conda to PATH
-  - script: |
-      eval "$(conda shell.bash hook)"
-      conda env create -f environment.yml
-      conda activate gadgetron
-      set -euo pipefail
-      cd conda && ./package.sh
-  - task: CopyFiles@2
-    displayName: 'Copy Package'
-    inputs:
-      contents: 'conda/build_pkg/**'
-      targetFolder: '$(Build.ArtifactStagingDirectory)'
-  - publish: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Publish package'
-    artifact: drop
-- job: Publish
-  pool:
-    name: gadgetron-gpu-nodes
-    vmImage:
-  timeoutInMinutes: 120
-  displayName: "Publish Conda Package"
-  condition: and(succeeded(), eq(variables.isCI, 'true'))
-  dependsOn:
-  - BuildAndTest
-  - Package
-  steps:
-  - task: AzureKeyVault@1
-    inputs:
-      azureSubscription: $(AzureConnection)
-      KeyVaultName: 'gadgetron-build-secrets'
-      SecretsFilter: 'gadgetron-token, gadgetron-user'
-      RunAsPreJob: true
-  - bash: echo "##vso[task.prependpath]/anaconda/bin"
-    displayName: Add conda to PATH
-  - download: current
-    artifact: drop
-  - script: |
-      eval "$(conda shell.bash hook)"
-      conda create --name conda-push anaconda-client=1.8.0 -y
-      conda activate conda-push
-      set -euo pipefail
-      cd conda && ./publish_package.sh -u $(gadgetron-user) -t $(gadgetron-token) -p `find $(Pipeline.Workspace)/drop/ -name gadgetron*.tar.bz2`
 - job: buildAndTestMacOS
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
   timeoutInMinutes: 10
-  displayName: "Testing for macOS"
+  displayName: "Building on macOS (not testing yet)"
   steps:
   - task: AzureKeyVault@2
     inputs:
       azureSubscription: $(AzureConnection)
       keyVaultName: gadgetron-build-secrets
   - script: |
-        set -e
-        uname -a
-        which curl
-        which wget
-        which conda
-    displayName: "Check for basic utilities"
+      eval "$(conda shell.bash hook)"
+      conda env create -f environment.yml
+      conda activate gadgetron
+      set -euo pipefail
+      cd conda && ./package.sh
+    displayName: "Building Gadgetron on macOS"
