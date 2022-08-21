@@ -29,9 +29,9 @@ jobs:
   - script: |
       eval "$(conda shell.bash hook)"
       wget https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh \
-         && mkdir -p /opt \
-         && bash ~/miniconda.sh -b -p /opt/conda \
-         && source /opt/conda/bin/activate \
+         && mkdir -p ~/conda \
+         && bash ~/miniconda.sh -b -p ~/conda \
+         && source ~/conda/bin/activate \
          && conda init zsh
       conda env create -f environment-macos.yml
       conda activate gadgetron
