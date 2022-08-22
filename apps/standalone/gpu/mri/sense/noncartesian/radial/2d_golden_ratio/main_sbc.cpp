@@ -61,11 +61,11 @@ int main(int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running reconstruction with the following parameters: " << endl;
+    GINFO_STREAM(" Running reconstruction with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   delete timer;
    
   if( !(host_data->get_number_of_dimensions() == 3) ){
-    cout << endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!\n" << endl;
+    GINFO_STREAM(endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!\n" << endl);
     return 1;
   }
 
@@ -114,13 +114,13 @@ int main(int argc, char** argv)
   unsigned int samples_per_frame = profiles_per_frame*samples_per_profile;
   unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
 
-  cout << endl << "#samples/profile: " << samples_per_profile;
-  cout << endl << "#profiles/frame: " << profiles_per_frame;
-  cout << endl << "#profiles: " << num_profiles;
-  cout << endl << "#coils: " << num_coils;
-  cout << endl << "#frames/reconstruction " << frames_per_reconstruction;
-  cout << endl << "#profiles/reconstruction " << profiles_per_reconstruction;
-  cout << endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl;
+  GINFO_STREAM(endl << "#samples/profile: " << samples_per_profile);
+  GINFO_STREAM(endl << "#profiles/frame: " << profiles_per_frame);
+  GINFO_STREAM(endl << "#profiles: " << num_profiles);
+  GINFO_STREAM(endl << "#coils: " << num_coils);
+  GINFO_STREAM(endl << "#frames/reconstruction " << frames_per_reconstruction);
+  GINFO_STREAM(endl << "#profiles/reconstruction " << profiles_per_reconstruction);
+  GINFO_STREAM(endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl);
 
   // Density compensation weights are constant throughout all reconstrutions
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d

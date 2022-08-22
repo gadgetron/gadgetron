@@ -1,9 +1,11 @@
+import sys
+
+import ismrmrd
+import ismrmrd.xsd
 from numpy import *
 
 from gadgetron import Gadget
 
-import ismrmrd
-import ismrmrd.xsd
 
 
 def calcPseudoreplica(original, pseudoreplicas):
@@ -22,13 +24,13 @@ class PseudoreplicaGather(Gadget):
     def process_config(self, conf):
         #self.header = ismrmrd.xsd.CreateFromDocument(conf)
         #self.enc = self.header.encoding[0]
-        print(self.params)
+        print(self.params, file=sys.stderr)
         self.repetitions = int(self.params["repetitions"])
 
     def process(self, header, img,*args):
         if self.imageBuffer is None:
             s = shape(img)
-            s2 = s + (self.repetitions,)
+            s2 = s + (self.repetitions,) 
             self.imageBuffer = zeros(s2,dtype=complex64)
 
         if self.counter == 0: #First image is without added noise.
@@ -36,7 +38,7 @@ class PseudoreplicaGather(Gadget):
         else:
             self.imageBuffer[...,self.counter - 1] = img
 
-        print("Counter: ", self.counter, self.repetitions)
+        print(f"Counter: {self.counter} Repetitions: {self.repetitions}")
         if (self.counter == self.repetitions):
             img_head = header
             img_head.data_type = ismrmrd.DATATYPE_FLOAT
@@ -45,11 +47,10 @@ class PseudoreplicaGather(Gadget):
             self.counter = 0
             self.imageBuffer = None
             self.original = None
-            print("Putting image on stream")
+            print(f"Putting image on stream", file=sys.stderr)
             self.put_next(img_head,pseudoreplica.astype('float32'),*args)
         else:
             self.counter += 1
    
         #print "Returning to Gadgetron"
         return 0 #Everything OK
-

@@ -1,25 +1,18 @@
 from __future__ import print_function
 
+import os
+import time
+import sys
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as T
+
 from torchvision.utils import *
-import numpy as np
-import scipy
-import time
-import imp
-import os
-import sys
-import math
-import copy
-import random
-import shutil
-import scipy.misc
 from scipy.io import loadmat, savemat
-from glob import glob
-import logging
 
 def complex_2_real(a):
     a_r = np.real(a)
@@ -59,9 +52,9 @@ class GrappaAI(nn.Module):
         self.input_layer_i = torch.nn.Linear(int(Din/2), int(Dout/2), bias=self.with_bias)
 
         if self.verbose:
-            print("    GrappaAI : input size (%d), output size (%d), with bias %s" % (Din, Dout, self.with_bias))
+            print("    GrappaAI : input size (%d), output size (%d), with bias %s" % (Din, Dout, self.with_bias), file=sys.stderr)
 
-        print("---> Set grappa weights")
+        print("---> Set grappa weights", file=sys.stderr)
         self.input_layer_r.weight.data = self.grappa_weights_r
         self.input_layer_i.weight.data = self.grappa_weights_i
                 
@@ -99,8 +92,8 @@ def create_grappa_ai_model(gt_ker):
     model = None
 
     try:
-        print("Grappa ai", file=sys.stderr)
-        print("----------------------------------------", file=sys.stderr)
+        print("Grappa ai", file=sys.stderr, file=sys.stderr)
+        print("----------------------------------------", file=sys.stderr, file=sys.stderr)
 
         try:
             kRO, kNE1, srcCHA, dstCHA, oE1 = gt_ker.shape
@@ -121,14 +114,14 @@ def create_grappa_ai_model(gt_ker):
         params['grappa_weights_i'] = torch.from_numpy(np.transpose(gt_ker_2D_i, (1,0))).to(torch.float32)
 
         model = GrappaAI(Din, Dout, params)
-        print(model)
-        print("----------------------------------------", file=sys.stderr)
+        print(model, file=sys.stderr)
+        print("----------------------------------------", file=sys.stderr, file=sys.stderr)
 
         sys.stderr.flush()
 
     except Exception as e:
-        print("Error happened in create_grappa_ai_model", file=sys.stderr)
-        print(e)
+        print("Error happened in create_grappa_ai_model", file=sys.stderr, file=sys.stderr)
+        print(e, file=sys.stderr)
 
     return model
 
@@ -158,8 +151,8 @@ def apply_grappa_ai_model(gt_dataA, model, device = torch.device('cpu')):
         recon = recon.detach().cpu().numpy().astype(np.float32)
         recon_kspace = real_2_complex(recon)
     except Exception as e:
-        print("Error happened in apply_grappa_ai_model", file=sys.stderr)
-        print(e)
+        print("Error happened in apply_grappa_ai_model", file=sys.stderr, file=sys.stderr)
+        print(e, file=sys.stderr)
 
     return recon_kspace
 
@@ -168,10 +161,10 @@ if __name__ == "__main__":
 
     GT_HOME = os.environ['GADGETRON_HOME']
     model_dir = os.path.join(GT_HOME, 'share/gadgetron/python')
-    print("GT_HOME is", GT_HOME)
+    print("GT_HOME is", GT_HOME, file=sys.stderr)
 
     GT_CMR_ML_UT_HOME = os.environ['GT_CMR_ML_UNITTEST_DIRECTORY']
-    print("GT_CMR_ML_UT_HOME is", GT_CMR_ML_UT_HOME)
+    print("GT_CMR_ML_UT_HOME is", GT_CMR_ML_UT_HOME, file=sys.stderr)
 
     gt_py_home = os.path.join(GT_HOME, 'share/gadgetron/python')
     sys.path.insert(0, gt_py_home)
@@ -179,7 +172,7 @@ if __name__ == "__main__":
     import gadgetron_toolbox_mri_core_python as gt
 
     data_name = os.path.join(GT_CMR_ML_UT_HOME, 'data/AI_recon/meas_MID00348_FID09272_SNR_R2/Grappa_test_data.mat')
-    print(data_name)
+    print(data_name, file=sys.stderr)
 
     D = loadmat(data_name)
 
@@ -187,9 +180,9 @@ if __name__ == "__main__":
     ref_dst = D['ref_dst']
     data = D['data']
 
-    print('ref_src = ', ref_src.shape, np.linalg.norm(ref_src))
-    print('ref_dst = ', ref_dst.shape, np.linalg.norm(ref_dst))
-    print('data = ', data.shape, np.linalg.norm(data))
+    print('ref_src = ', ref_src.shape, np.linalg.norm(ref_src), file=sys.stderr)
+    print('ref_dst = ', ref_dst.shape, np.linalg.norm(ref_dst), file=sys.stderr)
+    print('data = ', data.shape, np.linalg.norm(data), file=sys.stderr)
 
     RO, E1, srcCHA = data.shape
 
@@ -235,11 +228,11 @@ if __name__ == "__main__":
     except:
         gt_ker_2D = gt_ker
 
-    print('gt_A = ', gt_A.shape, np.linalg.norm(gt_A))
-    print('gt_B = ', gt_B.shape, np.linalg.norm(gt_B))
-    print('gt_ker = ', gt_ker.shape, np.linalg.norm(gt_ker))
-    print('gt_dataA = ', gt_dataA.shape, np.linalg.norm(gt_dataA))
-    print('gt_dataAInd = ', gt_dataAInd.shape, np.linalg.norm(gt_dataAInd))
+    print('gt_A = ', gt_A.shape, np.linalg.norm(gt_A), file=sys.stderr)
+    print('gt_B = ', gt_B.shape, np.linalg.norm(gt_B), file=sys.stderr)
+    print('gt_ker = ', gt_ker.shape, np.linalg.norm(gt_ker), file=sys.stderr)
+    print('gt_dataA = ', gt_dataA.shape, np.linalg.norm(gt_dataA), file=sys.stderr)
+    print('gt_dataAInd = ', gt_dataAInd.shape, np.linalg.norm(gt_dataAInd), file=sys.stderr)
 
     # ------------------------------------------------------
 
@@ -248,10 +241,10 @@ if __name__ == "__main__":
     else:
         device = torch.device('cpu')
 
-    print('using device:', device)
+    print('using device:', device, file=sys.stderr)
 
     if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        print("Let's use", torch.cuda.device_count(), "GPUs!", file=sys.stderr)
 
     model = create_grappa_ai_model(gt_ker)
     recon = apply_grappa_ai_model(gt_dataA, model, device=device)
@@ -265,5 +258,5 @@ if __name__ == "__main__":
     os.makedirs(res_dir, exist_ok=True)
 
     res_file = os.path.join(res_dir, 'grappa_ai_res.mat')
-    print('save :', res_file)
+    print('save :', res_file, file=sys.stderr)
     savemat(res_file,output)

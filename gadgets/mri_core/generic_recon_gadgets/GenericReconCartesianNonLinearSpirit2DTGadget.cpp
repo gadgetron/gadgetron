@@ -483,7 +483,9 @@ namespace Gadgetron {
                     if (this->verbose.value())
                     {
                         GDEBUG_STREAM("SPIRIT Non linear, computes eigen values for all 2D kspaces ... ");
-                        eigenValues.print(std::cout);
+                        std::stringstream stream; 
+                        eigenValues.print(stream);
+                        GDEBUG(stream.str().c_str());
 
                         for (size_t i = 0; i<eigenValues.get_size(0); i++)
                         {

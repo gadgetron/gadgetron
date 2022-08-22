@@ -110,7 +110,8 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
     subprocess.run(command,
                    env=environment,
                    stdout=log,
-                   stderr=log)
+                   stderr=log,
+                   timeout=240)
 
 
 def wait_for_storage_server(port, proc, retries=20):
@@ -152,11 +153,11 @@ def start_storage_server(*, log, port, storage_folder):
                 raise
 
 
-def start_gadgetron_instance(*, log, port, storage_address, env=environment):
+def start_gadgetron_instance(*, log_stdout, log_stderr, port, storage_address, env=environment):
     print("Starting Gadgetron instance on port", port)
     proc = subprocess.Popen(["gadgetron", "-p", port, "-E", storage_address],
-                            stdout=log,
-                            stderr=log,
+                            stdout=log_stdout,
+                            stderr=log_stderr,
                             env=env)
     return proc
 
@@ -380,12 +381,13 @@ def start_additional_nodes(args, config):
         return cont(**state)
 
     def start_additional_worker_action(port, cont, *, storage, worker_list=[], **state):
-        with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=port, storage_address=storage.address) as instance:
-                try:
-                    return cont(worker_list=worker_list + ['localhost:' + port], storage=storage, **state)
-                finally:
-                    instance.kill()
+        with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log.out'), 'w') as log_stdout:
+            with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log.err'), 'w') as log_stderr:
+                with start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage.address) as instance:
+                    try:
+                        return cont(worker_list=worker_list + ['localhost:' + port], storage=storage, **state)
+                    finally:
+                        instance.kill()
 
     yield functools.partial(create_worker_ports_action, range(number_of_nodes))
 
@@ -403,14 +405,15 @@ def ensure_gadgetron_instance(args, config):
 
     gadgetron = Gadgetron(host=str(args.host), port=str(args.port))
 
-    def start_gadgetron_action(cont, *, storage, env=environment, **state):
-        with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
-            with start_gadgetron_instance(log=log, port=gadgetron.port, storage_address=storage.address,
-                                          env=env) as instance:
-                try:
-                    return cont(gadgetron=gadgetron, storage=storage, **state)
-                finally:
-                    instance.kill()
+    def start_gadgetron_action(cont, *, storage, env=environment, **state):            
+        with open(os.path.join(args.test_folder, 'gadgetron.log.out'), 'w') as log_stdout:
+            with open(os.path.join(args.test_folder, 'gadgetron.log.err'), 'w') as log_stderr:
+                with start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=gadgetron.port, storage_address=storage.address,
+                                            env=env) as instance:
+                    try:
+                        return cont(gadgetron=gadgetron, storage=storage, **state)
+                    finally:
+                        instance.kill()
 
     def use_external_gadgetron_action(cont, **state):
         return cont(gadgetron=gadgetron, **state)
@@ -531,7 +534,20 @@ def run_gadgetron_client(args, config, section):
 
     yield send_data_action
 
+def stdout_compliance(args, config): 
+    def stdout_compliance_action(cont, **state):
+        files = glob.glob(os.path.join(args.test_folder, 'gadgetron_worker*.log.out'))
+        files.append(os.path.join(args.test_folder, 'gadgetron.log.out'))
 
+        for file in files: 
+            if os.stat(file).st_size != 0:
+                raise RuntimeError(f"stdout is not empty as indicated by {file}")
+        
+        return cont(**state)
+
+    yield stdout_compliance_action
+
+            
 def validate_client_output(args, config, section):
     reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
 
@@ -569,7 +585,6 @@ def validate_client_output(args, config, section):
 
     if not enabled(config[section]['disable_image_header_test']):
         yield functools.partial(validate_meta, validate_image_header)
-
 
 def validate_dataset_output(args, config, section):
     def find_dataset_action(cont, status=Passed, **state):
@@ -662,6 +677,7 @@ def build_actions(args, config):
     yield from ensure_gadgetron_instance(args, config)
     yield from prepare_sequence_actions(args, config)
     yield from output_stats(args, config)
+    yield from stdout_compliance(args, config)
 
 
 def chain_actions(actions):

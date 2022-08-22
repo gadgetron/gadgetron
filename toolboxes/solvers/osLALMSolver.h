@@ -85,13 +85,13 @@ public:
 			precon_image = boost::make_shared<ARRAY_TYPE>(image_dims.get());
 			fill(precon_image.get(),ELEMENT_TYPE(1));
 			this->encoding_operator_->mult_M(precon_image.get(),&tmp_projection,false);
-			std::cout << "Tmp proj norm " << asum(&tmp_projection) <<  std::endl;
+			GINFO(std::string("Tmp proj norm " + std::to_string(asum(&tmp_projection)) + "\n").c_str());
 			this->encoding_operator_->mult_MH(&tmp_projection,precon_image.get(),false);
-			std::cout << "Precon Image norm " << asum(precon_image.get()) <<  std::endl;
+			GINFO(std::string("Precon Image norm " + std::to_string(asum(precon_image.get())) + "\n").c_str());
 			clamp_min(precon_image.get(),REAL(1e-6));
-			std::cout << "Precon Image norm " << asum(precon_image.get()) <<  std::endl;
+			GINFO(std::string("Precon Image norm " + std::to_string(asum(precon_image.get())) + "\n").c_str());
 			reciprocal_inplace(precon_image.get());
-			std::cout << "Precon Image norm " << asum(precon_image.get()) <<  std::endl;
+			GINFO(std::string("Precon Image norm " + std::to_string(asum(precon_image.get())) + "\n").c_str());
 			//ones_image *= (ELEMENT_TYPE) this->encoding_operator_->get_number_of_subsets();
 		}
 		ARRAY_TYPE s(image_dims.get());
@@ -100,7 +100,7 @@ public:
 
 
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-			std::cout << "osLALM setup done, starting iterations:" << std::endl;
+			GINFO("osLALM setup done, starting iterations:\n");
 		}
 
 		REAL rho = 1;
@@ -143,7 +143,8 @@ public:
 				this->encoding_operator_->mult_M(x,tmp_projections[subset].get(),subset,false);
 				*tmp_projections[subset] -= *subsets[subset];
 				if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-					std::cout << "Iteration " <<i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl;
+					GINFO(std::string(
+						"Iteration " + std::to_string(i) + " Subset " + std::to_string(subset) + " Update norm: " + std::to_string(nrm2(tmp_projections[subset].get())) + "\n").c_str());
 				}
 				this->encoding_operator_->mult_MH(tmp_projections[subset].get(),&s,subset,false);
 				s*= REAL(this->encoding_operator_->get_number_of_subsets());
@@ -224,7 +225,7 @@ protected:
 					datas[i] *= sigma*reg_group[i]->get_weight()/avg_lambda;
 				}
 
-				std::cout << "Reg val: " << reg_val << " Scaling " << scaling*avg_lambda  << std::endl;
+				GINFO(std::string("Reg val: " + std::to_string(reg_val) + " Scaling " + std::to_string(scaling*avg_lambda) + "\n").c_str());
 				//updateFgroup is the resolvent operators on the group
 				updateFgroup(datas,alpha,sigma);
 
@@ -268,13 +269,16 @@ protected:
 			num++;
 		}
 
+		std::stringstream stream; 
 		for (auto & group : regularization_groups)
 			for (auto op : group){
 				auto w = op->get_weight();
-				std::cout << "Weight " << w << std::endl;
+				stream << "Weight " << w << "\n";
 				result += w;
 				num++;
 			}
+			
+		GINFO(stream.str().c_str());
 
 		result /= num;
 

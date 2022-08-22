@@ -77,14 +77,14 @@ public:
 
 		ARRAY_TYPE * x = new ARRAY_TYPE(*z);
 		ARRAY_TYPE * xold = new ARRAY_TYPE(*z);
-		std::cout <<"DEBUG DINGO 1" << std::endl;
+		GINFO("DEBUG DINGO 1\n");
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > subsets = this->encoding_operator_->projection_subsets(in);
 
-		std::cout <<"DEBUG DINGO 2" << std::endl;
+		GINFO("DEBUG DINGO 2\n");
 		ARRAY_TYPE tmp_projection(in->get_dimensions());
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > tmp_projections = this->encoding_operator_->projection_subsets(&tmp_projection);
 
-		std::cout <<"DEBUG DINGO 3" << std::endl;
+		GINFO("DEBUG DINGO 3\n");
 		boost::shared_ptr<ARRAY_TYPE> precon_image;
 		if (preconditioning_image_)
 			precon_image = preconditioning_image_;
@@ -100,11 +100,11 @@ public:
 		ARRAY_TYPE tmp_image(image_dims.get());
 
 
-		std::cout <<"DEBUG DINGO 4" << std::endl;
+		GINFO("DEBUG DINGO 4\n");
 		REAL t = 1;
 		REAL told = 1;
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-			std::cout << "osMOM setup done, starting iterations:" << std::endl;
+			GINFO( "osMOM setup done, starting iterations:\n");
 		}
 
 		std::vector<int> isubsets(boost::counting_iterator<int>(0), boost::counting_iterator<int>(this->encoding_operator_->get_number_of_subsets()));
@@ -119,7 +119,7 @@ public:
 				*tmp_projections[subset] -= *subsets[subset];
 				*tmp_projections[subset] *= ELEMENT_TYPE(-1);
 				if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-					std::cout << "Iteration " <<i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl;
+					GINFO_STREAM("Iteration %d Subset %d " <<i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl);
 				}
 
 				this->encoding_operator_->mult_MH(tmp_projections[subset].get(),&tmp_image,subset,false);
@@ -139,11 +139,11 @@ public:
 					 */
 
 
-					std::cout << "Reg: " << op->magnitude(x) << std::endl;
+					GINFO("Reg: %d\n", op->magnitude(x));
 
 									tmp_image /= nrm2(&tmp_image);
 									auto reg_val = op->magnitude(x);
-									std::cout << "Reg val: " << reg_val << std::endl;
+									GINFO("Reg val: %f\n", reg_val);
 									ARRAY_TYPE y = *x;
 									axpy(-kappa_int,&tmp_image,&y);
 
@@ -152,7 +152,7 @@ public:
 
 										kappa_int /= 2;
 										axpy(kappa_int,&tmp_image,&y);
-										std::cout << "Kappa: " << kappa_int << std::endl;
+										GINFO("Kappa: %d\n", kappa_int);
 									}
 
 									reg_val = op->magnitude(&y);

@@ -65,12 +65,14 @@ int main(int argc, char *argv[]) {
         set_locale();
 
         if (args.count("help")) {
-            std::cout << desc << std::endl;
+            GINFO_STREAM(desc);
             return 0;
         }
 
         if (args.count("info")) {
-            Info::print_system_information(std::cout);
+            std::stringstream str;
+            Info::print_system_information(str);
+            GINFO(str.str().c_str());
             return 0;
         }
 
