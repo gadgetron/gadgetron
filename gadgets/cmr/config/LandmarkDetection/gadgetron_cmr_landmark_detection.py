@@ -3,6 +3,7 @@
 
 import os
 import time
+import sys
 
 import numpy as np
 from scipy import interpolate
@@ -31,13 +32,13 @@ def load_model_onnx(model_dir, model_file):
         else:
             model_full_file = model_file
 
-        print("gadgetron_cmr_landmark_detection, load model : %s" % model_full_file)
+        print("gadgetron_cmr_landmark_detection, load model : %s" % model_full_file, file=sys.stderr)
         t0 = time.time()       
         m = ort.InferenceSession(model_full_file, providers=['CPUExecutionProvider'])
         t1 = time.time()
-        print(f"gadgetron_cmr_landmark_detection, model loading took {t1-t0:.2f} seconds ")
+        print(f"gadgetron_cmr_landmark_detection, model loading took {t1-t0:.2f} seconds ", file=sys.stderr)
     except Exception as e:
-        print("Error happened in load_model_onnx for %s" % model_file)
+        print("Error happened in load_model_onnx for %s" % model_file, file=sys.stderr)
         raise e
 
     return m
@@ -58,10 +59,10 @@ def find_landmark_from_prob_maps(probs, p_thres=0.1, mode='mean'):
     N_pts = C
 
     pts = np.zeros((N_pts,2,N))-1.0
-    print(f"N_pt is {N_pts}")
+    print(f"N_pt is {N_pts}", file=sys.stderr)
 
     for n in range(N):
-        print(f"find_landmark_from_prob_maps, compute landmark for image {n}")
+        print(f"find_landmark_from_prob_maps, compute landmark for image {n}", file=sys.stderr)
 
         for p in range(N_pts):
             prob = probs[:,:,p,n]
@@ -71,7 +72,7 @@ def find_landmark_from_prob_maps(probs, p_thres=0.1, mode='mean'):
                 pts[p, 1, n] = pt[1]
 
     pts = pts.astype(np.float32)
-    print(f"find_landmark_from_prob_maps, pts at final is {pts}")
+    print(f"find_landmark_from_prob_maps, pts at final is {pts}", file=sys.stderr)
 
     return pts
 
@@ -93,7 +94,7 @@ def fill_missing_pts(pts, smoothing=1, s=-1):
 
     try:
         if(pts.ndim<3):
-            print(f"fill_missing_pts, wrong input pts shape {pts.shape}")
+            print(f"fill_missing_pts, wrong input pts shape {pts.shape}", file=sys.stderr)
             return pts
 
         if(pts.ndim==3):
@@ -137,10 +138,10 @@ def fill_missing_pts(pts, smoothing=1, s=-1):
                         y[missing_ind] = ynew[missing_ind]
                         pts_filled[p, 1, :, slc] = y
     except Exception as e:
-        print("Error happened in fill_missing_pts ... ")
+        print("Error happened in fill_missing_pts ... ", file=sys.stderr)
         pts_filled = pts
         pts_pts_smoothed = pts
-        print(e)
+        print(e, file=sys.stderr)
 
     return pts_filled.astype(np.float32), pts_smoothed.astype(np.float32)
 
@@ -160,14 +161,14 @@ def prepare_image_for_inference(im_used):
     for n in range(N):
         im_used[:,:,n] = im_used[:,:,n] / np.max(im_used[:,:,n])
 
-    print(f"cmr_landmark_detection_onnx, prepare_image_for_inference,  im_used is {np.linalg.norm(im_used)}")
+    print(f"cmr_landmark_detection_onnx, prepare_image_for_inference,  im_used is {np.linalg.norm(im_used)}", file=sys.stderr)
 
     im_ready = np.transpose(im_used, (2,0,1))
     im_ready = np.expand_dims(im_ready, axis=1).astype(np.float32)
-    print(f"cmr_landmark_detection_onnx, prepare_image_for_inference,  images for model is {im_ready.shape}")
+    print(f"cmr_landmark_detection_onnx, prepare_image_for_inference,  images for model is {im_ready.shape}", file=sys.stderr)
 
     t1 = time.time()
-    print(f"cmr_landmark_detection_onnx, prepare_image_for_inference,  prepare input data in {t1-t0} seconds ")
+    print(f"cmr_landmark_detection_onnx, prepare_image_for_inference,  prepare input data in {t1-t0} seconds ", file=sys.stderr)
 
     return im_ready
 
@@ -183,7 +184,7 @@ def call_model_inference(im_used, model):
         probs, [oper_RO, oper_E1, C, B]: detected probabilties
     """
 
-    print(f"call_model_inference, perform inference on onnx model ... ")
+    print(f"call_model_inference, perform inference on onnx model ... ", file=sys.stderr)
 
     t0 = time.time()
     input_name = model.get_inputs()[0].name
@@ -191,7 +192,7 @@ def call_model_inference(im_used, model):
     y_pred = model.run([output_name], {input_name: im_used})[0]
     probs = softmax(y_pred, axis=1)
     t1 = time.time()
-    print(f"Onnx model runs in {t1 - t0} seconds ")
+    print(f"Onnx model runs in {t1 - t0} seconds ", file=sys.stderr)
 
     probs = probs.astype(np.float32)
     probs = np.transpose(probs, (2,3,1,0))
@@ -210,11 +211,11 @@ def get_pts_from_probs(probs, p_thresh=0.75):
     N_pts = C-1
 
     pts = np.zeros((N_pts,2,N))-1.0
-    print(f"N_pt is {N_pts}")
+    print(f"N_pt is {N_pts}", file=sys.stderr)
 
     t0 = time.time()
     for n in range(N):
-        print(f"get_pts_from_probs, compute landmark for image {n}")
+        print(f"get_pts_from_probs, compute landmark for image {n}", file=sys.stderr)
 
         for p in range(N_pts):
             prob = probs[:,:,p+1,n]
@@ -224,7 +225,7 @@ def get_pts_from_probs(probs, p_thresh=0.75):
                 pts[p, 1, n] = pt[1]
 
     t1 = time.time()
-    print(f"get_pts_from_probs, compute landmark from prob in {t1-t0} seconds ")
+    print(f"get_pts_from_probs, compute landmark from prob in {t1-t0} seconds ", file=sys.stderr)
 
     return pts.astype(np.float32)
 
@@ -255,16 +256,16 @@ def perform_cmr_landmark_detection(im, model, p_thresh=0.1, oper_RO=320, oper_E1
         im = np.expand_dims(im, axis=2)
         RO, E1, N = im.shape
 
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  input is {im.shape}")
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  p_thresh is {p_thresh}")
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  oper_RO is {oper_RO}")
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  oper_E1 is {oper_E1}")
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  input is {im.shape}", file=sys.stderr)
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  p_thresh is {p_thresh}", file=sys.stderr)
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  oper_RO is {oper_RO}", file=sys.stderr)
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  oper_E1 is {oper_E1}", file=sys.stderr)
 
     im_used, _, _ = cpad_2d(im.copy(), oper_RO, oper_E1)
 
     im_used = prepare_image_for_inference(im_used)
     probs = call_model_inference(im_used, model)
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs in numpy is {probs.shape}")
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs in numpy is {probs.shape}", file=sys.stderr)
 
     C = probs.shape[2]
     N_pts = C-1
@@ -273,7 +274,7 @@ def perform_cmr_landmark_detection(im, model, p_thresh=0.1, oper_RO=320, oper_E1
     probs_used, _, _ = cpad_2d(probs_used, RO, E1)
     probs = np.reshape(probs_used, (probs_used.shape[0], probs_used.shape[1], C, N))
 
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs after cpad is {probs.shape}")
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs after cpad is {probs.shape}", file=sys.stderr)
 
     pts = get_pts_from_probs(probs, p_thresh=p_thresh)
 
@@ -287,10 +288,10 @@ def perform_cmr_landmark_detection(im, model, p_thresh=0.1, oper_RO=320, oper_E1
     if(im_used.ndim==3):
         im_used = np.transpose(im_used, [1, 2, 0])
 
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  pts at final is {pts}")
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs at final is {np.linalg.norm(probs)}")
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs at final is {probs.shape}")
-    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  im_used at final is {im_used.shape}")
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  pts at final is {pts}", file=sys.stderr)
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs at final is {np.linalg.norm(probs)}", file=sys.stderr)
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  probs at final is {probs.shape}", file=sys.stderr)
+    print(f"gadgetron_cmr_landmark_detection, perform_cmr_landmark_detection,  im_used at final is {im_used.shape}", file=sys.stderr)
 
     return pts.astype(np.float32), probs.astype(np.float32), im_used.astype(np.float32)
 

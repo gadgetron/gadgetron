@@ -70,7 +70,7 @@ def query_capabilities_from_executable():
 
     command = ["gadgetron", "--info"]
 
-    return subprocess.check_output(command, universal_newlines=True)
+    return subprocess.check_output(command, stderr=subprocess.STDOUT, universal_newlines=True)
 
 
 def query_capabilities_from_instance(host, port):
@@ -80,7 +80,7 @@ def query_capabilities_from_instance(host, port):
                "-p", str(port),
                "-q", "-Q", "gadgetron::info"]
 
-    return subprocess.check_output(command, universal_newlines=True)
+    return subprocess.check_output(command, stderr=subprocess.STDOUT, universal_newlines=True)
 
 
 def ignore_gadgetron_capabilities(args):

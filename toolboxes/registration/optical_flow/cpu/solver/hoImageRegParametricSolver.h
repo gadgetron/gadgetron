@@ -210,7 +210,7 @@ namespace Gadgetron {
                         break;
                     }
                 }
-                if ( verbose_ ) { transform_->printTransform(std::cout); }
+                if ( verbose_ ) { transform_->printTransform(std::cerr); }
 
                 totalIterNum += iter_num_;
 

@@ -90,7 +90,7 @@ public:
 		ARRAY_TYPE tmp_image(image_dims.get());
 
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-			std::cout << "osSPS setup done, starting iterations:" << std::endl;
+			GINFO_STREAM("osSPS setup done, starting iterations:" << std::endl);
 		}
 
 		std::vector<int> isubsets(boost::counting_iterator<int>(0), boost::counting_iterator<int>(this->encoding_operator_->get_number_of_subsets()));
@@ -103,7 +103,7 @@ public:
 				*tmp_projections[subset] -= *subsets[subset];
 				*tmp_projections[subset] *= ELEMENT_TYPE(-1);
 				if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-					std::cout << "Iteration " <<i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl;
+					GINFO_STREAM("Iteration " <<i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl);
 				}
 
 				this->encoding_operator_->mult_MH(tmp_projections[subset].get(),&tmp_image,subset,false);
@@ -153,7 +153,7 @@ public:
 
 			//calc_regMultM(x,regEnc);
 			//REAL f = functionValue(&tmp_proj,regEnc,x);
-			std::cout << "Function value: " << dot(&tmp_proj,&tmp_proj) << std::endl;
+			GINFO_STREAM("Function value: " << dot(&tmp_proj,&tmp_proj) << std::endl);
 			 */
 		}
 

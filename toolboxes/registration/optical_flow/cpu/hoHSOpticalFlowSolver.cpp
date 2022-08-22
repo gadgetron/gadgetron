@@ -101,7 +101,7 @@ namespace Gadgetron{
     while(true){
     
       if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-	GDEBUG_STREAM("."; std::cout.flush());
+	GDEBUG_STREAM("."; std::cerr.flush());
       }
     
       // Continuation flag used for early Jacobi termination      
