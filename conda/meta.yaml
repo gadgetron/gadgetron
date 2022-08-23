@@ -46,7 +46,7 @@ requirements:
     - pyyaml>=6.0
     - python>=3.9.7
     - range-v3>=0.11.0
-    - sysroot_linux-64=2.17          # [osx]
+    - sysroot_linux-64=2.17          # [linux64]
   run:
     - armadillo>=9.900.5
     - boost=1.76.0
@@ -71,7 +71,7 @@ requirements:
     - pyfftw>=0.12.0
     - python>=3.9.7
     - scipy=1.7.1
-    - sysroot_linux-64=2.17
+    - sysroot_linux-64=2.17          # [linux64]
 
 test:
   requires:
