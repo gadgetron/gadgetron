@@ -59,6 +59,5 @@ dependencies:
   - shellcheck=0.7.2              # dev
   - sphinx=4.4.0                  # dev
   - sphinx_rtd_theme=0.4.3        # dev
-  - sysroot_linux-64=2.17
   - xsdata=22.2
   - yq=2.13.0                     # dev
