@@ -28,6 +28,7 @@ jobs:
       keyVaultName: gadgetron-build-secrets
   - script: |
       eval "$(conda shell.bash hook)"
+      conda update -n base -c defaults conda
       conda env create -f environment-macos.yml
       conda activate gadgetron
       set -euo pipefail
