@@ -19,7 +19,7 @@ jobs:
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
-  timeoutInMinutes: 180
+  timeoutInMinutes: 120
   displayName: "Building on macOS (not testing yet)"
   steps:
   - task: AzureKeyVault@2
@@ -28,7 +28,7 @@ jobs:
       keyVaultName: gadgetron-build-secrets
   - script: |
       eval "$(conda shell.bash hook)"
-      conda update -n base -c defaults conda
+      conda install -c conda-forge conda-build
       conda env create -f environment-macos.yml
       conda activate gadgetron
       set -euo pipefail
