@@ -1,5 +1,10 @@
 #!/bin/bash
-set -euo pipefail
+
+if [[ $(uname) =~ Darwin ]]; then
+   set -uo pipefail  # to avoid pipeline failing on code-signing
+else
+   set -euo pipefail
+fi
 
 usage()
 {
