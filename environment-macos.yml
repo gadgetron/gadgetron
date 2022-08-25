@@ -22,7 +22,6 @@ dependencies:
   - doxygen=1.9.2                 # dev
   - fftw=3.3.9
   - gadgetron-python=1.3.6
-  - gdb=11.1                      # dev
   - gmock=1.10.0                  # dev
   - gtest=1.10.0                  # dev
   - h5py=3.2.1
