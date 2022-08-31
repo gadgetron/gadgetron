@@ -22,6 +22,7 @@ dependencies:
   - cuda-runtime=11.6.1                   # cuda
   - cuda-nvcc=11.6.112                    # cuda, dev
   - dcmtk=3.6.1
+  - deepdiff=5.8.1
   - doxygen=1.9.2                         # dev
   - fftw=3.3.9
   - gadgetron::gadgetron-python=1.4.0
