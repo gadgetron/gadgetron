@@ -9,3 +9,12 @@ Documentation for the project is available at [https://gadgetron.readthedocs.io]
 ## License
 
 The Gadgetron is available under a modified MIT license. Please read [LICENSE](LICENSE) file for licensing details.
+
+### Test building with Clang
+
+In order to build with Clang (which still does not work, but is being hashed out), use the following cmake configure command:
+
+```bash
+   cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_MKL=ON -DCMAKE_C_COMPILER=${CONDA_PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${CONDA_PREFIX}/bin/clang++ -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} ../
+```
+
