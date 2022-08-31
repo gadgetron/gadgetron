@@ -27,10 +27,10 @@
 		},
 		"indentRainbow.includedLanguages": [ "yaml", "python" ]
 	},
-	"runArgs": ["--init", "--network=host"],
+	// "runArgs": ["--init", "--network=host"],
 
 	// To enable your local GPUs in container if they are on enabled by default devcontainer will fail to start on hosts without GPU
-	// "runArgs": ["--init", "--network=host", "--gpus=all"],
+	"runArgs": ["--init", "--network=host", "--gpus=all"],
 
 	"mounts": [
 	],
