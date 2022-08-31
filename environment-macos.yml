@@ -16,7 +16,7 @@ dependencies:
   - clang=13.0.1
   - clangxx=13.0.1
   - cmake=3.21.3                  # dev
-  - roopchansinghv:cpr=1.7.2
+  - roopchansinghv::cpr=1.7.2
   - conda-build=3.21.9            # dev
   - conda-verify=3.4.2            # dev
   - dcmtk=3.6.1
