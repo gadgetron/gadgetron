@@ -25,7 +25,7 @@ dependencies:
   - deepdiff=5.8.1
   - doxygen=1.9.2                         # dev
   - fftw=3.3.9
-  - gadgetron::gadgetron-python=1.4.0
+  - gadgetron::gadgetron-python=1.4.1
   - gcc_linux-64=9.4.0                    # dev
   - gdb=11.1                              # dev
   - gmock=1.10.0                          # dev
