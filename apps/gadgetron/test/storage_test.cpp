@@ -40,7 +40,7 @@ class StorageTest : public ::testing::Test {
         auto [address, process] = Server::ensure_storage_server(args);
 
         ISMRMRD::IsmrmrdHeader header;
-        header.subjectInformation = ISMRMRD::SubjectInformation{{}, {}, std::string("mypatient"), {}, {}};
+        header.subjectInformation = ISMRMRD::SubjectInformation{{}, {}, {}, std::string("mypatient"), {}, {}};
         header.studyInformation = ISMRMRD::StudyInformation{{}, {}, std::string("mystudy")};
 
         storage_address = address;
