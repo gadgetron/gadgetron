@@ -72,6 +72,8 @@ add_executable(gadgetron
 
 target_link_libraries(gadgetron
         gadgetron_core
+        gadgetron_core_writers
+        gadgetron_core_readers
         gadgetron_toolbox_log
         Boost::system
         Boost::filesystem
@@ -104,6 +106,3 @@ if (GPERFTOOLS_PROFILER)
 endif ()
 
 install(TARGETS gadgetron DESTINATION bin COMPONENT main)
-
-
-
