@@ -7,28 +7,27 @@ import os
 # crimes of h5py.
 environment = dict(os.environ)
 
-import sys
-import glob
-import shutil
-
 import argparse
 import configparser
-
-import re
-import time
 import functools
-
-import json
-import h5py
-import numpy
-import string
-import ismrmrd
-import pathlib
-import tempfile
+import glob
 import itertools
+import json
+import pathlib
+import re
+import shlex
+import shutil
+import string
 import subprocess
-import urllib.request
+import sys
+import tempfile
+import time
 import urllib.error
+import urllib.request
+
+import h5py
+import ismrmrd
+import numpy
 
 default_config_values = {
     "DEFAULT": {
@@ -113,6 +112,23 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    stderr=log,
                    timeout=240)
 
+def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, configurations, input_adapter, output_adapter, output_group, log_stdout, log_stderr):
+    stream_command = f"{input_adapter} -i {input}"
+
+    commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration}' for configuration in configurations]
+    for command in commands:
+        stream_command += f" | {command}"
+
+    stream_command += f" | {output_adapter} -o {output} -g {output_group}"
+
+    split_cmd = ['bash', '-c', stream_command]
+    echo_handler(split_cmd)
+    subprocess.run(split_cmd,
+                   env=environment,
+                   stdout=log_stdout,
+                   stderr=log_stderr,
+                   timeout=240)
+
 
 def wait_for_storage_server(port, proc, retries=20):
     for i in range(retries):
@@ -130,7 +146,7 @@ def start_storage_server(*, log, port, storage_folder):
     storage_server_environment["MRD_STORAGE_SERVER_PORT"] = port
     storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
     storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
-    
+
     retries = 5
     for i in range(retries):
         print("Starting MRD Storage Server on port", port)
@@ -138,12 +154,12 @@ def start_storage_server(*, log, port, storage_folder):
                                 stdout=log,
                                 stderr=log,
                                 env=storage_server_environment)
-        
+
         try:
             wait_for_storage_server(port, proc)
             return proc
         except:
-            # If the process has exited, it might be because the 
+            # If the process has exited, it might be because the
             # port was in use. This can be because the previous storage server
             # instance was just killed. So we try again.
             if proc.poll() is not None and i < retries:
@@ -405,7 +421,7 @@ def ensure_gadgetron_instance(args, config):
 
     gadgetron = Gadgetron(host=str(args.host), port=str(args.port))
 
-    def start_gadgetron_action(cont, *, storage, env=environment, **state):            
+    def start_gadgetron_action(cont, *, storage, env=environment, **state):
         with open(os.path.join(args.test_folder, 'gadgetron.log.out'), 'w') as log_stdout:
             with open(os.path.join(args.test_folder, 'gadgetron.log.err'), 'w') as log_stderr:
                 with start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=gadgetron.port, storage_address=storage.address,
@@ -534,20 +550,77 @@ def run_gadgetron_client(args, config, section):
 
     yield send_data_action
 
-def stdout_compliance(args, config): 
+def prepare_stream_configurations(args, config, section):
+    def prepare_configurations_action(cont, **state):
+        if state.get('configurations'):
+            configurations=state['configurations']
+            configurations.append(config[section]['configuration'])
+            state.update(configurations=configurations,
+            )
+        else:
+            state.update(configurations=[config[section]['configuration']])
+
+        return cont(**state)
+
+    yield prepare_configurations_action
+
+def stream_gadgetron_data(args, config, section):
+    output_file = os.path.join(args.test_folder, section + '.output.mrd')
+
+    def prepare_adapter_config(cont, **state):
+        state.update(
+            input_adapter=config[section]['input_adapter'],
+            output_adapter=config[section]['output_adapter'],
+            output_group=config[section]['output_group']
+        )
+        return cont(**state)
+
+    def stream_data_action(cont, *, client_input, configurations, input_adapter, output_adapter, output_group, processing_time=0, **state):
+        with open(os.path.join(args.test_folder, 'gadgetron.log.out'), 'w') as log_stdout:
+            with open(os.path.join(args.test_folder, 'gadgetron.log.err'), 'w') as log_stderr:
+                start_time = time.time()
+
+                stream_data_to_gadgetron(args.echo_handler,
+                                    storage_address="http://localhost:" + str(args.storage_port),
+                                    input=client_input,
+                                    output=output_file,
+                                    configurations=configurations,
+                                    input_adapter=input_adapter,
+                                    output_adapter=output_adapter,
+                                    output_group=output_group,
+                                    log_stdout=log_stdout,
+                                    log_stderr=log_stderr)
+
+                end_time = time.time()
+                duration = end_time - start_time
+                print("Gadgetron processing time: {:.2f} s".format(duration))
+
+                state.update(
+                    client_input=client_input,
+                    client_output=output_file,
+                    processing_time=processing_time + duration,
+                )
+
+                return cont(**state)
+
+    yield prepare_adapter_config
+    yield stream_data_action
+
+
+def stdout_compliance(args, config):
     def stdout_compliance_action(cont, **state):
         files = glob.glob(os.path.join(args.test_folder, 'gadgetron_worker*.log.out'))
         files.append(os.path.join(args.test_folder, 'gadgetron.log.out'))
 
-        for file in files: 
+        for file in files:
             if os.stat(file).st_size != 0:
                 raise RuntimeError(f"stdout is not empty as indicated by {file}")
-        
+
         return cont(**state)
 
     yield stdout_compliance_action
 
-            
+
 def validate_client_output(args, config, section):
     reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
 
@@ -585,6 +658,7 @@ def validate_client_output(args, config, section):
 
     if not enabled(config[section]['disable_image_header_test']):
         yield functools.partial(validate_meta, validate_image_header)
+
 
 def validate_dataset_output(args, config, section):
     def find_dataset_action(cont, status=Passed, **state):
@@ -638,11 +712,13 @@ def prepare_sequence_actions(args, config):
         'copy': lambda section: copy_input_data(args, config, section),
         'siemens': lambda section: convert_siemens_data(args, config, section),
         'client': lambda section: run_gadgetron_client(args, config, section),
+        'stream': lambda section: prepare_stream_configurations(args, config, section),
+        'adapter': lambda section: stream_gadgetron_data(args, config, section),
         'equals': lambda section: validate_dataset_output(args, config, section),
         'test': lambda section: validate_client_output(args, config, section),
     }
 
-    pattern = re.compile(r"(?P<sequence_key>\w+)\.(?P<action_key>(copy)|(siemens)|(client)|(equals)|(test))(\.\w+)*")
+    pattern = re.compile(r"(?P<sequence_key>\w+)\.(?P<action_key>(copy)|(siemens)|(client)|(stream)|(adapter)|(equals)|(test))(\.\w+)*")
 
     def prepare_sequence_action(section):
         m = re.match(pattern, section)

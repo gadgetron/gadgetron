@@ -307,11 +307,12 @@ def main():
         print(args.color_handler("\nTest {} of {}: {}\n".format(i, len(tests), test.get('file')), 'bold'))
 
         disable_color = ['--disable-colors'] if args.color_handler == _colors_disabled else []
+
         command = [sys.executable, str(subscript),
                    '-a', str(args.host),
                    '-d', str(args.data_folder),
                    '-t', str(args.test_folder),
-                   '-p', str(args.port)] + args.external + disable_color + [test.get('file')]
+                   '-p', str(args.port)] + args.external + disable_color  + [test.get('file')]
 
         with subprocess.Popen(command) as proc:
             try:
