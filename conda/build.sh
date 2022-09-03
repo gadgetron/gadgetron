@@ -9,6 +9,7 @@ cd "${PKG_DIR}" || exit 1
 
 if [[ $(uname) =~ Darwin ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
+    export PATH=$CONDA_PREFIX/bin:$PATH   # So that conda's python shows up before system python
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${CONDA_PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${CONDA_PREFIX}/bin/clang++ -DUSE_MKL=ON -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 else
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCUDA_COMPUTE_CAPABILITY=ALL -DUSE_MKL=ON -DUSE_CUDA=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
