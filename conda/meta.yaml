@@ -11,13 +11,11 @@ source:
 
 requirements:
   build:
-    - armadillo=9.900.5
+    - armadillo>=9.900.5
     - boost=1.76.0
     - clang=13.0.1                        # [osx]
     - clangxx=13.0.1                      # [osx]
     - cmake>=3.21.3
-    - conda-build=3.21.9
-    - conda-verify=3.4.2
     - gadgetron::cpr=1.7.2                # [linux64]
     - roopchansinghv::cpr=1.7.2           # [osx]
     - cuda-libraries-dev=11.6.1           # [linux64]
@@ -51,7 +49,7 @@ requirements:
     - gadgetron::range-v3>=0.11.0
     - sysroot_linux-64=2.17               # [linux64]
   run:
-    - armadillo=9.900.5
+    - armadillo>=9.900.5
     - boost=1.76.0
     - gadgetron::cpr=1.7.2                # [linux64]
     - roopchansinghv::cpr=1.7.2           # [osx]
