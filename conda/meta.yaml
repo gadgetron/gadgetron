@@ -40,12 +40,12 @@ requirements:
     - ismrmrd::mrd-storage-server=0.0.12
     - ninja=1.10.2
     - nlohmann_json=3.10.4
-    - numpy>=1.22.1
+    - numpy=1.22.1
     - packaging=21.3
     - pugixml=1.11.4
     - pyfftw>=0.12.0
     - pyyaml>=6.0
-    - python>=3.9.7
+    - python=3.9.7
     - gadgetron::range-v3>=0.11.0
     - sysroot_linux-64=2.17               # [linux64]
   run:
@@ -67,11 +67,11 @@ requirements:
     - memkind>=1.10.1                     # [linux64]
     - mkl>=2022.0.0
     - ismrmrd::mrd-storage-server=0.0.12
-    - numpy>=1.22.1
+    - numpy=1.22.1
     - onnxruntime=1.10.0
     - pugixml=1.11.4
     - pyfftw>=0.12.0
-    - python>=3.9.7
+    - python=3.9.7
     - scipy=1.7.1
     - sysroot_linux-64=2.17               # [linux64]
 
