@@ -13,7 +13,6 @@ requirements:
   build:
     - armadillo=9.900.5
     - boost=1.76.0
-<<<<<<< HEAD
     - clang=13.0.1                   # [osx]
     - clangxx=13.0.1                 # [osx]
     - cmake=3.21.3
@@ -32,7 +31,7 @@ requirements:
     - gtest=1.10.0
     - howardhinnant_date=3.0.1
     - ismrmrd::ismrmrd=1.11.1
-    - ismrmrd::ismrmrd-python=1.9.8
+    - ismrmrd::ismrmrd-python>=1.9.8
     - libblas=*=*mkl
     - libcurl=7.79.1
     - libxml2=2.9.12
@@ -58,9 +57,9 @@ requirements:
     - cuda-runtime=11.6.1            # [linux64]
     - dcmtk=3.6.1
     - fftw=3.3.9
-    - gadgetron::gadgetron-python=1.4.1
+    - gadgetron::gadgetron-python>=1.4.1
     - ismrmrd::ismrmrd=1.11.1
-    - ismrmrd::ismrmrd-python=1.9.8
+    - ismrmrd::ismrmrd-python>=1.9.8
     - jq=1.6
     - libblas=*=*mkl
     - libcurl=7.79.1

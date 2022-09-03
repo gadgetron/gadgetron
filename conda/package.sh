@@ -18,6 +18,7 @@ output_path="$(dirname "$0")/build_pkg"
 channels=(
   nvidia
   ismrmrd
+  roopchansinghv
   gadgetron
   conda-forge
   bioconda
