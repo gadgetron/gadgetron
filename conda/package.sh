@@ -24,7 +24,6 @@ channels=(
   bioconda
   defaults
   intel
-  cefca
 )
 
 channel_directives=$(printf -- "-c %s " "${channels[@]}")
