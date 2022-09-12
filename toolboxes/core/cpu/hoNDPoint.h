@@ -12,6 +12,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
+#include <cstring>
+#include <limits>
 
 #include "float.h"
 #include "log.h"
@@ -30,7 +32,7 @@ namespace Gadgetron
         hoNDPoint();
         hoNDPoint(const Self& p);
 
-        ~hoNDPoint();
+        virtual ~hoNDPoint();
 
         Self& operator=(const Self& p);
 

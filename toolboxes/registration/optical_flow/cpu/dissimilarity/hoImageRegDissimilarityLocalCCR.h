@@ -7,7 +7,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITÂ´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             This derivative computation code is based on the listed source code at page 183 - 185 in ref [2].
@@ -15,24 +15,28 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDissimilarityLocalCCR_H_
+#define hoImageRegDissimilarityLocalCCR_H_
+
 #pragma once
 
 #include <limits>
 #include "hoImageRegDissimilarity.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilarityLocalCCR : public hoImageRegDissimilarity<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilarityLocalCCR : public hoImageRegDissimilarity<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilarityLocalCCR<ValueType, D> Self;
-        typedef hoImageRegDissimilarity<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilarityLocalCCR<ImageType> Self;
+        typedef hoImageRegDissimilarity<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -93,8 +97,8 @@ namespace Gadgetron
         computing_value_type eps_;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityLocalCCR<ValueType, D>::hoImageRegDissimilarityLocalCCR(computing_value_type betaArg) 
+    template<typename ImageType> 
+    hoImageRegDissimilarityLocalCCR<ImageType>::hoImageRegDissimilarityLocalCCR(computing_value_type betaArg) 
         : BaseClass(), betaArg_(betaArg)
     {
         unsigned int ii;
@@ -104,8 +108,8 @@ namespace Gadgetron
         }
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityLocalCCR<ValueType, D>::hoImageRegDissimilarityLocalCCR(ValueType sigmaArg[D], computing_value_type betaArg) 
+    template<typename ImageType> 
+    hoImageRegDissimilarityLocalCCR<ImageType>::hoImageRegDissimilarityLocalCCR(ValueType sigmaArg[D], computing_value_type betaArg) 
         : BaseClass(), betaArg_(betaArg)
     {
         unsigned int ii;
@@ -115,13 +119,13 @@ namespace Gadgetron
         }
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityLocalCCR<ValueType, D>::~hoImageRegDissimilarityLocalCCR()
+    template<typename ImageType> 
+    hoImageRegDissimilarityLocalCCR<ImageType>::~hoImageRegDissimilarityLocalCCR()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarityLocalCCR<ValueType, D>::initialize(ImageType& t)
+    template<typename ImageType> 
+    void hoImageRegDissimilarityLocalCCR<ImageType>::initialize(ImageType& t)
     {
         BaseClass::initialize(t);
 
@@ -146,8 +150,8 @@ namespace Gadgetron
         eps_ = std::numeric_limits<computing_value_type>::epsilon();
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilarityLocalCCR<ImageType>::ValueType hoImageRegDissimilarityLocalCCR<ImageType>::evaluate(ImageType& w)
     {
         try
         {
@@ -321,14 +325,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluate(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityLocalCCR<ImageType>::evaluate(w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    bool hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluateDeriv(ImageType& w)
+    template<typename ImageType> 
+    bool hoImageRegDissimilarityLocalCCR<ImageType>::evaluateDeriv(ImageType& w)
     {
         try
         {
@@ -385,15 +389,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluateDeriv(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityLocalCCR<ImageType>::evaluateDeriv(w) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarityLocalCCR<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilarityLocalCCR<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image dissimilarity LocalCCR measure -------------" << endl;
@@ -403,3 +407,4 @@ namespace Gadgetron
         os << "Transformation data type is : " << elemTypeName << endl << ends;
     }
 }
+#endif // hoImageRegDissimilarityLocalCCR_H_

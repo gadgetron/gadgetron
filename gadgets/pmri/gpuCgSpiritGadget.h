@@ -7,7 +7,8 @@
 #include "GenericReconJob.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
-#include "cuNFFTOperator.h"
+#include "cuNFFT.h"
+#include "../../toolboxes/nfft/NFFTOperator.h"
 #include "cuSpiritOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuNFFT.h"
@@ -47,7 +48,7 @@ namespace Gadgetron{
     cuCgSolver<float_complext> cg_;
 
     // Define Spirit encoding operator (NFFT)
-    boost::shared_ptr< cuNFFTOperator<float,2> > E_;
+    boost::shared_ptr< NFFTOperator<cuNDArray,float,2> > E_;
 
     // Define Spirit regularization operator (convolution consistency)
     boost::shared_ptr< cuSpirit2DOperator<float> > S_;

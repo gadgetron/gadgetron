@@ -71,6 +71,7 @@ public:
     using BaseClass::max_fun_eval_;
     using BaseClass::thres_fun_;
     using BaseClass::max_map_value_;
+    using BaseClass::min_map_value_;
 
     using BaseClass::verbose_;
     using BaseClass::debug_folder_;

@@ -25,11 +25,11 @@ dwt_kernel( vector_td<int,D> dims,  const T  * __restrict__ in, T * __restrict__
 		vector_td<int,D> dims2 = dims;
 		dims2[dir] /= 2;
 		vector_td<T,WD> data;
-		typename intd<D>::Type co = idx_to_co<D>(idx, dims2);
+		typename intd<D>::Type co = idx_to_co(idx, dims2);
 		//co[dir] *= 2; //We're doing the decimated wavelet
 		co[dir] = (co[dir]+shift+dims[dir])%dims[dir]; //Wrap around
 		for (int i = 0; i < WD; i++){
-			data[i] = in[co_to_idx<D>(co, dims)];
+			data[i] = in[co_to_idx(co, dims)];
 			co[dir] = (co[dir]+1+dims[dir])%dims[dir]; //Wrap around
 		}
 		T s = dot(data,wavelet); //Getting the scaling element is easy
@@ -43,8 +43,8 @@ dwt_kernel( vector_td<int,D> dims,  const T  * __restrict__ in, T * __restrict__
 			sign *= -1;
 		}
 
-		//co = idx_to_co<D>(idx,dims2);
-		//size_t out_index = co_to_idx<D>(co,dims2);
+		//co = idx_to_co(idx,dims2);
+		//size_t out_index = co_to_idx(co,dims2);
 		out[idx] = s;
 		out[idx+prod(dims)/2] =d;
 	}
@@ -57,14 +57,14 @@ idwt_kernel( vector_td<int,D> dims,  const T  * __restrict__ in, T * __restrict_
 	if( idx < prod(dims)/2){
 		vector_td<int,D> dims2 = dims;
 		dims2[dim] /= 2;
-		typename intd<D>::Type co = idx_to_co<D>(idx, dims2);
+		typename intd<D>::Type co = idx_to_co(idx, dims2);
 
 
 		T res1 = 0;
 		T res2 = 0;
 		co[dim] = (co[dim]+dims2[dim]+WD-1)%dims2[dim];
 		for (int i = 0; i < WD/2; i++){
-			T s = in[co_to_idx<D>(co,dims2)];
+			T s = in[co_to_idx(co,dims2)];
 			res1 += wavelet[2*i]*s;
 			res2 += wavelet[2*i+1]*s;
 			co[dim] = (co[dim]-1+dims2[dim])%dims2[dim];
@@ -80,25 +80,25 @@ idwt_kernel( vector_td<int,D> dims,  const T  * __restrict__ in, T * __restrict_
 			}
 		}
 
-		co = idx_to_co<D>(idx, dims2);
+		co = idx_to_co(idx, dims2);
 		//co[dim] += dims2[dim];
 		//co[dim] = (co[dim]+dims[dim]+WD-1)%dims[dim];
 
 		co[dim] = (co[dim]+dims2[dim]+WD-1)%dims2[dim];
 		//co[dim] += dims2[dim];
 		for (int i = 0; i < WD/2; i++){
-			T d = in[co_to_idx<D>(co,dims2)+prod(dims)/2];
+			T d = in[co_to_idx(co,dims2)+prod(dims)/2];
 			res1 += diff[2*i]*d;
 			res2 += diff[2*i+1]*d;
 			co[dim] = (co[dim]-1+dims2[dim])%dims2[dim];
 		}
 
-		co = idx_to_co<D>(idx, dims2);
+		co = idx_to_co(idx, dims2);
 		co[dim] *= 2;
 		co[dim] = (co[dim]+dims[dim]+shift+2*WD-2)%dims[dim];
-		out[co_to_idx<D>(co,dims)] = res1;
+		out[co_to_idx(co,dims)] = res1;
 		co[dim] = (co[dim]+dims[dim]+1)%dims[dim];
-		out[co_to_idx<D>(co,dims)] = res2;
+		out[co_to_idx(co,dims)] = res2;
 	}
 }
 static inline bool isPowerOfTwo (size_t x)

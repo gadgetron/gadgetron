@@ -115,7 +115,7 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(ISMRMRD::AcquisitionHead
 {
   if (!operatorComputed_) {
     // Compute the reconstruction operator
-    int Km = floor(encodeNx_ / 2.0);
+    int Km = std::floor(encodeNx_ / 2.0);
     int Ne = 2*Km + 1;
     int p,q; // counters
 

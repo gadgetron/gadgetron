@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "hoNDArray.h"
 #include "cuNDArray.h"
+#include "hoNDArray.h"
 #include "check_CUDA.h"
 
 namespace Gadgetron{
@@ -18,61 +18,61 @@ namespace Gadgetron{
   {
   public:
 
-    hoCuNDArray() : hoNDArray<T>::hoNDArray() {}
+    hoCuNDArray() : Gadgetron::hoNDArray<T>::hoNDArray() {}
 
 
 #if __cplusplus > 199711L
-    hoCuNDArray(hoCuNDArray<T>&& other) : hoNDArray<T>::hoNDArray(){
-    	this->data_ = other.data_;
-    	this->dimensions_ = other.dimensions_;
-    	this->elements_ = other.elements_;
-    	other.dimensions_.reset();
-    	other.data_ = nullptr;
+    hoCuNDArray(hoCuNDArray<T>&& other) : Gadgetron::hoNDArray<T>::hoNDArray(){
+        this->data_ = other.data_;
+        this->dimensions_ = other.dimensions_;
+        this->elements_ = other.elements_;
+        this->offsetFactors_ = std::move(other.offsetFactors_);
+        other.data_ = nullptr;
     }
 #endif
 
-    hoCuNDArray(std::vector<size_t> *dimensions) : hoNDArray<T>::hoNDArray() {
+    hoCuNDArray(std::vector<size_t> *dimensions) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions);
     }
 
-    hoCuNDArray(std::vector<size_t> &dimensions) : hoNDArray<T>::hoNDArray() {
+    hoCuNDArray(std::vector<size_t> &dimensions) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions);
     }
   
-    hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions) : hoNDArray<T>::hoNDArray() {
+    hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions);
     }
   
-    hoCuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false) : hoNDArray<T>::hoNDArray() {
+    hoCuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions, data, delete_data_on_destruct);
     }
 
-    hoCuNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false) : hoNDArray<T>::hoNDArray() {
+    hoCuNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions, data, delete_data_on_destruct);
     }
   
-    hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false) : hoNDArray<T>::hoNDArray() {
+    hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions.get(), data, delete_data_on_destruct);
     }
 
     // Copy constructors
-    hoCuNDArray(const hoNDArray<T> &a): hoNDArray<T>(){
+    hoCuNDArray(const hoNDArray<T> &a): Gadgetron::hoNDArray<T>::hoNDArray(){
       this->create(a.get_dimensions());
       memcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T));
     }
 
-    hoCuNDArray(const hoNDArray<T> *a): hoNDArray<T>(){
+    hoCuNDArray(const hoNDArray<T> *a): Gadgetron::hoNDArray<T>::hoNDArray(){
       if(!a) throw std::runtime_error("hoCuNDArray::hoCuNDArray(): 0x0 pointer provided.");
       this->create(a->get_dimensions());
       memcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T));
     }
 
-    hoCuNDArray(const hoCuNDArray<T> &a): hoNDArray<T>(){
+    hoCuNDArray(const hoCuNDArray<T> &a): Gadgetron::hoNDArray<T>::hoNDArray(){
       this->create(a.get_dimensions());
       memcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T));
     }
 
-    hoCuNDArray(const hoCuNDArray<T> *a): hoNDArray<T>(){
+    hoCuNDArray(const hoCuNDArray<T> *a): Gadgetron::hoNDArray<T>::hoNDArray(){
       if(!a) throw std::runtime_error("hoCuNDArray::hoCuNDArray(): 0x0 pointer provided.");
       this->create(a->get_dimensions());
       memcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T));
@@ -114,8 +114,8 @@ namespace Gadgetron{
         else{
             deallocate_memory();
             this->data_ = 0;
-            *(this->dimensions_) = *(rhs.dimensions_);
-            *(this->offsetFactors_) = *(rhs.offsetFactors_);
+            this->dimensions_ = rhs.dimensions_;
+            this->offsetFactors_ = rhs.offsetFactors_;
             this->allocate_memory();
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
@@ -133,7 +133,7 @@ namespace Gadgetron{
 
         // Are the dimensions the same? Then we can just memcpy
         if (!this->dimensions_equal(&rhs)){
-        	this->create(rhs.get_dimensions());
+            this->create(rhs.get_dimensions());
         }
 
           cudaMemcpy(this->data_, rhs.get_data_ptr(), this->elements_*sizeof(T),cudaMemcpyDeviceToHost);
@@ -148,8 +148,6 @@ namespace Gadgetron{
         this->dimensions_ = rhs.dimensions_;
         this->offsetFactors_ = rhs.offsetFactors_;
         this->elements_ = rhs.elements_;
-        rhs.dimensions_.reset();
-        rhs.offsetFactors_.reset();
         this->data_ = rhs.data_;
         rhs.data_ = nullptr;
         return *this;
@@ -161,10 +159,10 @@ namespace Gadgetron{
     {
       this->deallocate_memory();
       this->elements_ = 1;
-      if (this->dimensions_->empty())
+      if (this->dimensions_.empty())
         throw std::runtime_error("hoCuNDArray::allocate_memory() : dimensions is empty.");
-      for (size_t i = 0; i < this->dimensions_->size(); i++) {
-        this->elements_ *= (*this->dimensions_)[i];
+      for (size_t i = 0; i < this->dimensions_.size(); i++) {
+        this->elements_ *= this->dimensions_[i];
       }
 
       size_t size = this->elements_ * sizeof(T);

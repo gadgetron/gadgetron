@@ -28,7 +28,7 @@
                                                                         \
       const unsigned int batch_no = idx/num_elements;                   \
       const unsigned int idx_in_batch = idx-batch_no*num_elements;      \
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size ); \
+      const typename uintd<D>::Type co = idx_to_co( idx_in_batch, matrix_size ); \
                                                                         \
       typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co); \
       for( unsigned int dim=0; dim<D; dim++ )                           \
@@ -55,7 +55,7 @@
       const unsigned int batch_no = idx/num_elements_mat;               \
       const unsigned int idx_in_batch = idx-batch_no*num_elements_mat;	\
                                                                         \
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size ); \
+      const typename uintd<D>::Type co = idx_to_co( idx_in_batch, matrix_size ); \
                                                                         \
       typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co); \
       for( unsigned int dim=0; dim<D; dim++ )                           \

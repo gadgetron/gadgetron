@@ -3,6 +3,9 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegWarper_H_
+#define hoImageRegWarper_H_
+
 #pragma once
 
 #include "hoNDArray.h"
@@ -17,26 +20,30 @@
 #include "hoImageRegTransformation.h"
 #include "hoImageRegDeformationField.h"
 
+#include "GadgetronTimer.h"
+#include "ImageIOAnalyze.h"
+
 #ifdef USE_OMP
     #include <omp.h>
 #endif // USE_OMP
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// warp the source image to the grid of target image under a transformation
     /// both image domain warpping and world coordinate warpping is implemented
     /// for the image domain warpping, the pixels are in the coordinate of image grid
     /// input and output can have different dimensions
     /// input has DIn dimension and output has DOut dimension
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
+    template<typename TargetType, typename SourceType, typename CoordType> 
     class hoImageRegWarper
     {
     public:
 
-        typedef hoImageRegWarper<ValueType, CoordType, DIn, DOut> Self;
+        typedef hoImageRegWarper<TargetType, SourceType, CoordType> Self;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -104,39 +111,39 @@ namespace Gadgetron
         ValueType bg_value_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegWarper<ValueType, CoordType, DIn, DOut>::hoImageRegWarper(ValueType bg_value) : transform_(NULL), interp_(NULL), performTiming_(false), bg_value_(bg_value)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegWarper<TargetType, SourceType, CoordType>::hoImageRegWarper(ValueType bg_value) : transform_(NULL), interp_(NULL), performTiming_(false), bg_value_(bg_value)
     {
         gt_timer1_.set_timing_in_destruction(false);
         gt_timer2_.set_timing_in_destruction(false);
         gt_timer3_.set_timing_in_destruction(false);
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegWarper<ValueType, CoordType, DIn, DOut>::~hoImageRegWarper()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegWarper<TargetType, SourceType, CoordType>::~hoImageRegWarper()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    inline void hoImageRegWarper<ValueType, CoordType, DIn, DOut>::setTransformation(TransformationType& transform)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    inline void hoImageRegWarper<TargetType, SourceType, CoordType>::setTransformation(TransformationType& transform)
     {
         transform_ = &transform;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    inline void hoImageRegWarper<ValueType, CoordType, DIn, DOut>::setInterpolator(InterpolatorType& interp)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    inline void hoImageRegWarper<TargetType, SourceType, CoordType>::setInterpolator(InterpolatorType& interp)
     {
         interp_ = &interp;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    inline void hoImageRegWarper<ValueType, CoordType, DIn, DOut>::setBackgroundValue(ValueType bg_value)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    inline void hoImageRegWarper<TargetType, SourceType, CoordType>::setBackgroundValue(ValueType bg_value)
     {
         bg_value_ = bg_value;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegWarper<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegWarper<TargetType, SourceType, CoordType>::
     warp(const TargetType& target, const SourceType& source, bool useWorldCoordinate, TargetType& warped)
     {
         try
@@ -169,7 +176,7 @@ namespace Gadgetron
                 {
                     // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                     {
-                        coord_type px, py, px_source, py_source, ix_source, iy_source;
+                        typename TargetType::coord_type px, py, px_source, py_source, ix_source, iy_source;
 
                         // #pragma omp for 
                         for ( y=0; y<(long long)sy; y++ )
@@ -200,7 +207,7 @@ namespace Gadgetron
                 {
                     // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                     {
-                        coord_type ix_source, iy_source;
+                        typename TargetType::coord_type ix_source, iy_source;
 
                         // #pragma omp for 
                         for ( y=0; y<(long long)sy; y++ )
@@ -234,7 +241,7 @@ namespace Gadgetron
                 {
                     #pragma omp parallel private(z) shared(sx, sy, sz, target, source, warped)
                     {
-                        coord_type px, py, pz, px_source, py_source, pz_source, ix_source, iy_source, iz_source;
+                        typename TargetType::coord_type px, py, pz, px_source, py_source, pz_source, ix_source, iy_source, iz_source;
 
                         #pragma omp for 
                         for ( z=0; z<(long long)sz; z++ )
@@ -268,7 +275,7 @@ namespace Gadgetron
                 {
                     #pragma omp parallel private(z) shared(sx, sy, sz, target, source, warped)
                     {
-                        coord_type ix_source, iy_source, iz_source;
+                        typename TargetType::coord_type ix_source, iy_source, iz_source;
 
                         #pragma omp for 
                         for ( z=0; z<(long long)sz; z++ )
@@ -304,9 +311,9 @@ namespace Gadgetron
                     #pragma omp parallel private(n) shared(numOfPixels, target, source, warped)
                     {
                         size_t ind_target[DIn];
-                        coord_type pt_target[DIn];
-                        coord_type pt_source[DOut];
-                        coord_type ind_source[DOut];
+                        typename TargetType::coord_type pt_target[DIn];
+                        typename TargetType::coord_type pt_source[DOut];
+                        typename TargetType::coord_type ind_source[DOut];
 
                         #pragma omp for 
                         for ( n=0; n<(long long)numOfPixels; n++ )
@@ -334,8 +341,8 @@ namespace Gadgetron
                 {
                     #pragma omp parallel private(n) shared(numOfPixels, target, source, warped)
                     {
-                        coord_type pt_target[DIn];
-                        coord_type pt_source[DOut];
+                        typename TargetType::coord_type pt_target[DIn];
+                        typename TargetType::coord_type pt_source[DOut];
 
                         #pragma omp for 
                         for ( n=0; n<(long long)numOfPixels; n++ )
@@ -357,7 +364,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
+            GERROR_STREAM("Errors happened in hoImageRegWarper<TargetType, SourceType, CoordType>::\
                                     warp(const TargetType& target, const SourceType& source, bool useWorldCoordinate, TargetType& warped) ... ");
             return false;
         }
@@ -365,8 +372,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegWarper<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegWarper<TargetType, SourceType, CoordType>::
     warpWithDeformationFieldWorldCoordinate(const TargetType& target, const SourceType& source, TargetType& warped)
     {
         try
@@ -503,7 +510,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
+            GERROR_STREAM("Errors happened in hoImageRegWarper<TargetType, SourceType, CoordType>::\
                                     warpWithDeformationFieldWorldCoordinate(const TargetType& target, const SourceType& source, TargetType& warped) ... ");
             return false;
         }
@@ -511,8 +518,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegWarper<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegWarper<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image warper -------------" << endl;
@@ -526,3 +533,4 @@ namespace Gadgetron
         os << "Transformation coordinate data type is : " << elemTypeName << std::endl;
     }
 }
+#endif // hoImageRegWarper_H_

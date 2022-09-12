@@ -3,6 +3,9 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegTransformation_H_
+#define hoImageRegTransformation_H_
+
 #pragma once
 
 #include "hoNDArray.h"
@@ -14,7 +17,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-
 #include "GadgetronTimer.h"
 #include "ImageIOAnalyze.h"
 
@@ -22,8 +24,8 @@
     #include <omp.h>
 #endif // USE_OMP
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     enum GT_IMAGE_REG_TRANSFORMATION
     {
         GT_IMAGE_REG_TRANSFORMATION_RIGID,
@@ -407,3 +409,4 @@ namespace Gadgetron
         return true;
     }
 }
+#endif // hoImageRegTransformation_H_

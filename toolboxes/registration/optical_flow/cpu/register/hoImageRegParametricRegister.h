@@ -4,22 +4,26 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegParametricRegister_H_
+#define hoImageRegParametricRegister_H_
+
 #pragma once
 
 #include "hoImageRegRegister.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    class hoImageRegParametricRegister : public hoImageRegRegister<ValueType, CoordType, DIn, DOut>
+namespace Gadgetron {
+
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegParametricRegister : public hoImageRegRegister<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut> Self;
-        typedef hoImageRegRegister<ValueType, CoordType, DIn, DOut> BaseClass;
+        typedef hoImageRegParametricRegister<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegRegister<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef typename BaseClass::TargetType TargetType;
-        typedef typename BaseClass::SourceType SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef typename BaseClass::Target2DType Target2DType;
         typedef typename BaseClass::Source2DType Source2DType;
@@ -70,7 +74,7 @@ namespace Gadgetron
         typedef typename TransformationType::jacobian_position_type jacobian_position_type;
 
         /// solver type
-        typedef hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut> SolverType;
+        typedef hoImageRegParametricSolver<TargetType, SourceType, CoordType> SolverType;
 
         hoImageRegParametricRegister(unsigned int resolution_pyramid_levels=3, bool use_world_coordinates=true, ValueType bg_value=ValueType(0));
         virtual ~hoImageRegParametricRegister();
@@ -172,30 +176,30 @@ namespace Gadgetron
         bool preset_transform_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricRegister<TargetType, SourceType, CoordType>::
     hoImageRegParametricRegister(unsigned int resolution_pyramid_levels, bool use_world_coordinates, ValueType bg_value) : BaseClass(resolution_pyramid_levels, bg_value), verbose_(false), preset_transform_(false)
     {
         GADGET_CHECK_THROW(this->setDefaultParameters(resolution_pyramid_levels, use_world_coordinates));
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::~hoImageRegParametricRegister()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricRegister<TargetType, SourceType, CoordType>::~hoImageRegParametricRegister()
     {
 
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegParametricRegister<TargetType, SourceType, CoordType>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
     {
         use_world_coordinates_ = use_world_coordinates;
         resolution_pyramid_levels_ = resolution_pyramid_levels;
 
         resolution_pyramid_downsample_ratio_.clear();
-        resolution_pyramid_downsample_ratio_.resize(resolution_pyramid_levels_-1, std::vector<float>(std::max(DIn, DOut), 2.0) );
+        resolution_pyramid_downsample_ratio_.resize(resolution_pyramid_levels_-1, std::vector<float>(std::max( (int)DIn, (int)DOut), 2.0) );
 
         resolution_pyramid_blurring_sigma_.clear();
-        resolution_pyramid_blurring_sigma_.resize(resolution_pyramid_levels_, std::vector<float>(std::max(DIn, DOut), 0.0) );
+        resolution_pyramid_blurring_sigma_.resize(resolution_pyramid_levels_, std::vector<float>(std::max( (int)DIn, (int)DOut), 0.0) );
 
         boundary_handler_type_warper_.clear();
         boundary_handler_type_warper_.resize(resolution_pyramid_levels_, GT_BOUNDARY_CONDITION_FIXEDVALUE);
@@ -249,8 +253,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegParametricRegister<TargetType, SourceType, CoordType>::initialize()
     {
         try
         {
@@ -293,8 +297,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::performRegistration()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegParametricRegister<TargetType, SourceType, CoordType>::performRegistration()
     {
         try
         {
@@ -334,14 +338,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::performRegistration() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegParametricRegister<TargetType, SourceType, CoordType>::performRegistration() ... ");
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>* hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::createParametricSolver(GT_IMAGE_REG_SOLVER v, unsigned int level)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricSolver<TargetType, SourceType, CoordType>* hoImageRegParametricRegister<TargetType, SourceType, CoordType>::createParametricSolver(GT_IMAGE_REG_SOLVER v, unsigned int level)
     {
         SolverType* res = NULL;
 
@@ -350,11 +354,11 @@ namespace Gadgetron
         switch (v)
         {
             case GT_IMAGE_REG_SOLVER_DOWNHILL:
-                res = new hoImageRegParametricDownHillSolver<ValueType, CoordType, DIn, DOut>();
+                res = new hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType>();
                 break;
 
             case GT_IMAGE_REG_SOLVER_GRADIENT_DESCENT:
-                res = new hoImageRegParametricGradientDescentSolver<ValueType, CoordType, DIn, DOut>();
+                res = new hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType>();
                 break;
 
             default:
@@ -371,8 +375,8 @@ namespace Gadgetron
         return res;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegParametricRegister<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron parametric image register -------------" << endl;
@@ -406,3 +410,4 @@ namespace Gadgetron
         os << "--------------------------------------------------------------------" << endl << ends;
     }
 }
+#endif // hoImageRegParametricRegister_H_

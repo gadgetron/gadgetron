@@ -77,7 +77,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::gradient(ARRAY_TYPE* x, ARRA
 
         if (!moco_im_Norm_approx_.dimensions_equal(&moco_im_Norm_))
         {
-            moco_im_Norm_approx_.create(moco_im_Norm_.get_dimensions());
+            moco_im_Norm_approx_.create(moco_im_Norm_.dimensions());
         }
 
         const value_type* pCoeffNorm = moco_im_Norm_.begin();
@@ -177,7 +177,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::warp_image(const hoNDArray<T
 
             hoNDInterpolatorBSpline<ImageType, 2> interpBSpline(5);
 
-            hoImageRegWarper<ValueType, CoordType, 2, 2> warper;
+            hoImageRegWarper<ImageType, ImageType, CoordType> warper;
             warper.setBackgroundValue(bgValue);
             warper.setTransformation(deformTransform);
             warper.setInterpolator(interpBSpline);
@@ -230,7 +230,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::warp_image(const hoNDArray<T
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<float>, float >;
-template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<double>, float >;
+template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<float>, double >;
+template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<double>, double >;
 
 }

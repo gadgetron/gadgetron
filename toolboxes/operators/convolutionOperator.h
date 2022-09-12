@@ -64,7 +64,7 @@ namespace Gadgetron{
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<size_t> > osdims = kernel_->get_dimensions();
 	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	pad<ELEMENT_TYPE,D>( in, tmp_out );
+	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
 	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
@@ -120,7 +120,7 @@ namespace Gadgetron{
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<size_t> > osdims = kernel_->get_dimensions();
 	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	pad<ELEMENT_TYPE,D>( in, tmp_out );
+	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
 	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
@@ -174,7 +174,7 @@ namespace Gadgetron{
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<size_t> > osdims = adjoint_kernel_->get_dimensions();
 	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	pad<ELEMENT_TYPE,D>( in, tmp_out );
+	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
 	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
@@ -210,7 +210,8 @@ namespace Gadgetron{
 
     virtual void operator_crop( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out ){
       typename uint64d<D>::Type offset = from_std_vector<size_t,D>(*(in->get_dimensions().get()))>>2;
-      crop<ELEMENT_TYPE,D>( offset, in, out );
+       typename uint64d<D>::Type size = from_std_vector<size_t,D>(*(out->get_dimensions().get()))>>2;
+      crop<ELEMENT_TYPE,D>( offset,size, *in, *out );
     }
     
   private:

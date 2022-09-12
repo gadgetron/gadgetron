@@ -147,7 +147,7 @@ namespace Gadgetron
         if ( ix>=0 && ix<sx_-1 && iy>=0 && iy<sy_-1 )
         {
             size_t offset = ix + iy*sx_;
-            T* data = array_->begin();
+            const T* data = array_->begin();
 
             //return (    ( data_[offset]   *   dx_prime     *dy_prime 
             //        +   data_[offset+1]   *   dx           *dy_prime)

@@ -185,13 +185,13 @@ namespace Gadgetron{
       // Create result array and clear
       //
 
-      boost::shared_ptr<ARRAY_TYPE> result = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(image_dims.get()));
+      boost::shared_ptr<ARRAY_TYPE> result = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(*image_dims));
       clear(result.get());
     
       // Create temporary array
       //
 
-      ARRAY_TYPE tmp(image_dims.get() );
+      ARRAY_TYPE tmp( *image_dims );
 
       // Compute operator adjoint
       //
@@ -228,7 +228,7 @@ namespace Gadgetron{
       // Result, x
       //
 
-      x_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(rhs->get_dimensions()) );
+      x_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(rhs->dimensions()) );
     
     
       // Initialize r,p,x
@@ -259,7 +259,7 @@ namespace Gadgetron{
 	
         *x_ = *(this->get_x0());
         
-        ARRAY_TYPE mhmX( rhs->get_dimensions());
+        ARRAY_TYPE mhmX(rhs->dimensions());
 
         if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
           GDEBUG_STREAM("Preparing guess..." << std::endl);
@@ -302,7 +302,7 @@ namespace Gadgetron{
 
     virtual void iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate )
     {
-      ARRAY_TYPE q = ARRAY_TYPE(x_->get_dimensions());
+      ARRAY_TYPE q = ARRAY_TYPE(x_->dimensions());
 
       // Perform one iteration of the solver
       //
@@ -368,7 +368,7 @@ namespace Gadgetron{
       // Intermediate storage
       //
 
-      ARRAY_TYPE q = ARRAY_TYPE(in->get_dimensions());
+      ARRAY_TYPE q = ARRAY_TYPE(in->dimensions());
 
       // Start by clearing the output
       //
@@ -378,14 +378,14 @@ namespace Gadgetron{
       //
 
       this->encoding_operator_->mult_MH_M( in, &q, false );
-      axpy( this->encoding_operator_->get_weight(), &q, out );
+      axpy( ELEMENT_TYPE (this->encoding_operator_->get_weight()), &q, out );
 
       // Iterate over regularization operators
       //
 
       for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){      
         this->regularization_operators_[i]->mult_MH_M( in, &q, false );
-        axpy( this->regularization_operators_[i]->get_weight(), &q, out );
+        axpy( ELEMENT_TYPE(this->regularization_operators_[i]->get_weight()), &q, out );
       }      
     }
     

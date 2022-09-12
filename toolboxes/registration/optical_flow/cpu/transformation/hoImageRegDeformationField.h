@@ -3,18 +3,21 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDeformationField_H_
+#define hoImageRegDeformationField_H_
+
 #pragma once
 
 #include "hoImageRegNonParametricTransformation.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// deformation field is defined as hoNDImage
     /// the deformation field can be accessed on image pixels
     /// if the non-integer image pixels are used to access deformaiton field, an image interpolator is used
     /// linear interpolator is used for deformation field
     /// the unit of stored deformation field is in pixel, not in world coordinates
-    template<typename ValueType, unsigned int D> 
+    template<typename ValueType, unsigned int D>
     class  hoImageRegDeformationField: public hoImageRegNonParametricTransformation<ValueType, D, D>
     {
     public:
@@ -149,7 +152,7 @@ namespace Gadgetron
         DefaultBoundHanlderType* bh_default_[D];
     };
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     hoImageRegDeformationField<ValueType, D>::hoImageRegDeformationField() : BaseClass()
     {
         unsigned int ii;
@@ -161,7 +164,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     hoImageRegDeformationField<ValueType, D>::
     hoImageRegDeformationField(const std::vector<size_t>& dimensions) : BaseClass()
     {
@@ -178,7 +181,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     hoImageRegDeformationField<ValueType, D>::
     hoImageRegDeformationField(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis) : BaseClass()
     {
@@ -195,7 +198,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     hoImageRegDeformationField<ValueType, D>::hoImageRegDeformationField(const hoNDImage<ValueType, D>& im) : BaseClass()
     {
         std::vector<size_t> dim;
@@ -223,7 +226,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     hoImageRegDeformationField<ValueType, D>::
     ~hoImageRegDeformationField()
     {
@@ -235,14 +238,14 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::invertTransformation()
     {
-        /// to be implemented ... 
+        /// to be implemented ...
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::setIdentity()
     {
         try
@@ -262,7 +265,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::update()
     {
         try
@@ -283,7 +286,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const T* pt_in, T* pt_out) const
     {
         try
@@ -311,7 +314,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const T& xi, const T& yi, T& xo, T& yo) const
     {
         try
@@ -328,7 +331,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const T& xi, const T& yi, const T& zi, T& xo, T& yo, T& zo) const
     {
         try
@@ -346,7 +349,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const size_t* pt_in, T* pt_out) const
     {
         try
@@ -366,7 +369,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const size_t* pt_in, size_t N, T* pt_out) const
     {
         try
@@ -387,7 +390,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const size_t& xi, const size_t& yi, T& xo, T& yo) const
     {
         try
@@ -404,7 +407,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const size_t* xi, const size_t* yi, size_t N, T* xo, T* yo) const
     {
         try
@@ -425,7 +428,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const size_t& xi, const size_t& yi, const size_t& zi, T& xo, T& yo, T& zo) const
     {
         try
@@ -443,7 +446,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::transform(const size_t* xi, const size_t* yi, const size_t* zi, size_t N, T* xo, T* yo, T* zo) const
     {
         try
@@ -464,7 +467,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::jacobianPosition(const input_point_type& pos, jacobian_position_type& jac)
     {
         try
@@ -475,6 +478,9 @@ namespace Gadgetron
             T deltaReciprocal = T(1.0)/(T(2.0)*delta);
 
             std::vector<coord_type> pixelSize(D);
+
+            coord_type pos_positive_vec[D];
+            coord_type pos_negative_vec[D];
 
             deform_field_[0].get_pixel_size(pixelSize);
 
@@ -489,8 +495,14 @@ namespace Gadgetron
                     pos_positive[din] += delta;
                     pos_negative[din] -= delta;
 
-                    T v_positive = (*interp_default_[dout])(pos_positive.begin());
-                    T v_negative = (*interp_default_[dout])(pos_negative.begin());
+                    for (size_t dd = 0; dd < D; dd++)
+                    {
+                        pos_positive_vec[dd] = (coord_type)pos_positive[dd];
+                        pos_negative_vec[dd] = (coord_type)pos_negative[dd];
+                    }
+
+                    T v_positive = (*interp_default_[dout])(pos_positive_vec);
+                    T v_negative = (*interp_default_[dout])(pos_negative_vec);
 
                     jac(dout, din) = (v_positive-v_negative)*deltaReciprocal;
 
@@ -511,7 +523,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::jacobianPosition(hoNDArray<T>& jac, unsigned int borderWidth)
     {
         DeformationFieldType* deform_field[D];
@@ -525,7 +537,7 @@ namespace Gadgetron
         return this->jacobianPosition(jac, deform_field, borderWidth);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::jacobianPosition(hoNDArray<T>& jac, DeformationFieldType* deform_field[D], unsigned int borderWidth)
     {
         try
@@ -536,7 +548,7 @@ namespace Gadgetron
             std::vector<size_t> dimJac(D+2, D);
             memcpy(&dimJac[0]+2, &dim[0], sizeof(size_t)*D);
 
-            jac.create(&dimJac);
+            jac.create(dimJac);
             Gadgetron::clear(&jac);
 
             std::vector<size_t> offset(D);
@@ -559,7 +571,7 @@ namespace Gadgetron
 
                 hoNDArray<T> jacCurr(D, D);
 
-                #pragma omp for 
+                #pragma omp for
                 for ( n=0; n<(long long)N; n++ )
                 {
                     ind = deform_field[0]->calculate_index( n );
@@ -613,7 +625,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline bool hoImageRegDeformationField<ValueType, D>::
     analyzeJacobianAndDeformation(const hoNDArray<T>& jac, T& meanDeform, T& maxDeform, T& meanLogJac, T& maxLogJac, unsigned int borderWidth)
     {
@@ -628,7 +640,7 @@ namespace Gadgetron
         return this->analyzeJacobianAndDeformation(jac, deform_field, meanDeform, maxDeform, meanLogJac, maxLogJac, borderWidth);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     bool hoImageRegDeformationField<ValueType, D>::
     analyzeJacobianAndDeformation(const hoNDArray<T>& jac, DeformationFieldType* deform_field[D], T& meanDeform, T& maxDeform, T& meanLogJac, T& maxLogJac, unsigned int borderWidth)
     {
@@ -660,7 +672,7 @@ namespace Gadgetron
                 hoMatrix<T> jacCurr(D, D);
                 unsigned int ii;
 
-                #pragma omp for 
+                #pragma omp for
                 for ( n=0; n<(long long)N; n++ )
                 {
                     ind = deform_field[0]->calculate_index( n );
@@ -700,16 +712,18 @@ namespace Gadgetron
                         }
                         else if ( D == 3 )
                         {
-                            det = jacCurr(0, 0)*jacCurr(1, 1)*jacCurr(2, 2) 
+                            det = jacCurr(0, 0)*jacCurr(1, 1)*jacCurr(2, 2)
                                 + jacCurr(0, 1)*jacCurr(1, 2)*jacCurr(2, 0)
                                 + jacCurr(0, 2)*jacCurr(2, 1)*jacCurr(1, 0)
-                                - jacCurr(0, 2)*jacCurr(1, 1)*jacCurr(2, 0) 
-                                - jacCurr(0, 1)*jacCurr(1, 0)*jacCurr(2, 2) 
+                                - jacCurr(0, 2)*jacCurr(1, 1)*jacCurr(2, 0)
+                                - jacCurr(0, 1)*jacCurr(1, 0)*jacCurr(2, 2)
                                 - jacCurr(0, 0)*jacCurr(2, 1)*jacCurr(1, 2);
                         }
 
-                        if ( std::abs(det) < FLT_EPSILON ) det = FLT_EPSILON;
+                        // if ( std::abs(det) < FLT_EPSILON ) det = FLT_EPSILON;
+                        if ( det < FLT_EPSILON ) det = FLT_EPSILON;
                         logJac(n) = std::log(det);
+                        if( std::isnan(logJac(n)) ) logJac(n) = 0;
                     }
                 }
             }
@@ -718,11 +732,23 @@ namespace Gadgetron
             Gadgetron::maxAbsolute(deformNorm, maxDeform, ind);
             Gadgetron::maxAbsolute(logJac, maxLogJac, ind);
 
-            Gadgetron::norm1(deformNorm, meanDeform);
-            meanDeform /= N;
+            double totalDeform = 0;
+            for ( n=0; n<(long long)N; n++ )
+            {
+                totalDeform += deformNorm(n);
+            }
 
-            Gadgetron::norm1(logJac, meanLogJac);
-            meanLogJac /= N;
+            // Gadgetron::norm1(deformNorm, meanDeform);
+            meanDeform = (T)(totalDeform/N);
+
+            double totalLogJac = 0;
+            for ( n=0; n<(long long)N; n++ )
+            {
+                totalLogJac += std::abs(logJac(n));
+            }
+
+            // Gadgetron::norm1(logJac, meanLogJac);
+            meanLogJac = (T)(totalLogJac/N);
         }
         catch(...)
         {
@@ -733,21 +759,21 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline ValueType& hoImageRegDeformationField<ValueType, D>::operator()( size_t idx[D], size_t outDim )
     {
         GADGET_DEBUG_CHECK_THROW(outDim<=D);
         return this->deform_field_[outDim](idx);
     }
 
-    template <typename ValueType, unsigned int D> 
-    inline const ValueType& hoImageRegDeformationField<ValueType, D>::operator()( size_t idx[D], size_t outDim ) const 
+    template <typename ValueType, unsigned int D>
+    inline const ValueType& hoImageRegDeformationField<ValueType, D>::operator()( size_t idx[D], size_t outDim ) const
     {
         GADGET_DEBUG_CHECK_THROW(outDim<=D);
         return this->deform_field_[outDim](idx);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::get(size_t idx[D], T deform[D])
     {
         size_t offset = this->deform_field_[0].calculate_offset(idx);
@@ -759,7 +785,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::get(size_t x, size_t y, T& dx, T& dy)
     {
         size_t offset = this->deform_field_[0].calculate_offset(x, y);
@@ -767,7 +793,7 @@ namespace Gadgetron
         dy = this->deform_field_[1](offset);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::get(size_t x, size_t y, size_t z, T& dx, T& dy, T& dz)
     {
         size_t offset = this->deform_field_[0].calculate_offset(x, y, z);
@@ -776,7 +802,7 @@ namespace Gadgetron
         dz = this->deform_field_[2](offset);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::set(size_t idx[D], T deform[D])
     {
         size_t offset = this->deform_field_[0].calculate_offset(idx);
@@ -788,7 +814,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::set(size_t x, size_t y, T dx, T dy)
     {
         size_t offset = this->deform_field_[0].calculate_offset(x, y);
@@ -796,7 +822,7 @@ namespace Gadgetron
         this->deform_field_[1](offset) = dy;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::set(size_t x, size_t y, size_t z, T dx, T dy, T dz)
     {
         size_t offset = this->deform_field_[0].calculate_offset(x, y, z);
@@ -805,14 +831,14 @@ namespace Gadgetron
         this->deform_field_[2](offset) = dz;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline ValueType hoImageRegDeformationField<ValueType, D>::operator()( coord_type pos[D], size_t outDim )
     {
         GADGET_DEBUG_CHECK_THROW(outDim<=D);
         return (*interp_default_[outDim])(pos);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::get(coord_type pos[D], T deform[D])
     {
         unsigned int ii;
@@ -822,14 +848,14 @@ namespace Gadgetron
         }
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::get(coord_type px, coord_type py, T& dx, T& dy)
     {
         dx = (*interp_default_[0])(px, py);
         dy = (*interp_default_[1])(px, py);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::get(coord_type px, coord_type py, coord_type pz, T& dx, T& dy, T& dz)
     {
         dx = (*interp_default_[0])(px, py, pz);
@@ -837,14 +863,14 @@ namespace Gadgetron
         dz = (*interp_default_[2])(px, py, pz);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::  getDeformationField(DeformationFieldType*& deform, size_t outDim)
     {
         GADGET_DEBUG_CHECK_THROW(outDim<=D);
         deform = &(this->deform_field_[outDim]);
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     inline void hoImageRegDeformationField<ValueType, D>::setDeformationField(const DeformationFieldType& deform, size_t outDim)
     {
         GADGET_DEBUG_CHECK_THROW(outDim<=D);
@@ -852,8 +878,8 @@ namespace Gadgetron
         this->update();
     }
 
-    template <typename ValueType, unsigned int D> 
-    bool hoImageRegDeformationField<ValueType, D>::serialize(char*& buf, size_t& len) const 
+    template <typename ValueType, unsigned int D>
+    bool hoImageRegDeformationField<ValueType, D>::serialize(char*& buf, size_t& len) const
     {
         try
         {
@@ -908,7 +934,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     bool hoImageRegDeformationField<ValueType, D>::deserialize(char* buf, size_t& len)
     {
         try
@@ -946,7 +972,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     void hoImageRegDeformationField<ValueType, D>::print(std::ostream& os) const
     {
         using namespace std;
@@ -957,9 +983,10 @@ namespace Gadgetron
         os << "Transformation data type is : " << elemTypeName << std::endl;
     }
 
-    template <typename ValueType, unsigned int D> 
+    template <typename ValueType, unsigned int D>
     std::string hoImageRegDeformationField<ValueType, D>::transformationName() const
     {
-        return std::string("hoImageRegDeformationField"); 
+        return std::string("hoImageRegDeformationField");
     }
 }
+#endif // hoImageRegDeformationField_H_

@@ -6,13 +6,13 @@
 #include "cuNDArray_elemwise.h"
 #include "CUBLASContextProvider.h"
 #include "hoNDArray_fileio.h"
-#include "hoNDArray_utils.h"
 
 #include <cublas_v2.h>
 //#include <cula_lapack_device.h>
 #include <iostream>
 
 namespace Gadgetron {
+
 
   static int2 vec_to_int2(std::vector<unsigned int> vec)
   {
@@ -110,7 +110,7 @@ namespace Gadgetron {
       if ((coil == coilg) && (kx == 0) && (ky == 0) && (set == 0)) {
         kernel[coilg*source_coils*(kernel_size.y*acceleration_factor)*kernel_size.x +
                coil*(kernel_size.y*acceleration_factor)*kernel_size.x +
-               ((kernel_size.y>>1)*acceleration_factor)*kernel_size.x + (kernel_size.x>>1) ].vec[0] = 1;
+               ((kernel_size.y>>1)*acceleration_factor)*kernel_size.x + (kernel_size.x>>1) ]._real = 1;
 
       }
     }
@@ -249,12 +249,14 @@ namespace Gadgetron {
       std::list<unsigned int>::iterator it;
       gridDim = dim3((unsigned int) std::ceil((1.0f*(elements_per_coil))/blockDim.x), 1, 1 );
       int uncombined_channel_no = 0;
-      for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
-        uncombined_channel_no++;
-        //TODO: Adjust pointers to reflect that number of target/source may not be qual
-        single_channel_coeffs<<< gridDim, blockDim >>>( out_mixing_coeff->get_data_ptr() + uncombined_channel_no*source_coils*elements_per_coil,
-                                                        *it,
-                                                        (elements_per_coil));
+      if (uncombined_channels) {
+        for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
+          uncombined_channel_no++;
+          //TODO: Adjust pointers to reflect that number of target/source may not be qual
+          single_channel_coeffs<<< gridDim, blockDim >>>( out_mixing_coeff->get_data_ptr() + uncombined_channel_no*source_coils*elements_per_coil,
+                                                          *it,
+                                                          (elements_per_coil));
+        }
       }
       return 0;
     }
@@ -500,61 +502,16 @@ namespace Gadgetron {
         }
 
 
-    /*
-    {
-      //This is the OLD GPU code using CULA
-      GPUTimer gpu_invert_time("GPU Inversion time");
-      culaStatus s;
-      s = culaDeviceCgels( 'N', n, n, target_coils,
-                             (culaDeviceFloatComplex*)AHA.get_data_ptr(), n,
-                             (culaDeviceFloatComplex*)AHrhs.get_data_ptr(), n);
-
-
-      if (s != culaNoError) {
-        GDEBUG_STREAM("htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl);
-        return -1;
-      }
-    }
-    */
 
 
     {
       //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
       //GPUTimer cpu_invert_time("CPU Inversion time");
-      boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
-      boost::shared_ptr< hoNDArray<T> > AHrhs_h = AHrhs.to_host();
 
-      std::vector<size_t> perm_dim;
-      perm_dim.push_back(1);
-      perm_dim.push_back(0);
 
-      permute(AHA_h.get(),&perm_dim);
-      permute(AHrhs_h.get(),&perm_dim);
+      ht_grappa_solve_spd_system(AHA, AHrhs);
 
-      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());
-
-      permute(AHrhs_h.get(),&perm_dim);
-      AHrhs = cuNDArray<T>(*AHrhs_h);
     }
-
-#if 0
-        size_t free = 0, total = 0;
-        cudaMemGetInfo(&free, &total);
-        GDEBUG_STREAM("CUDA Memory: " << free << " (" << total << ")" << std::endl);
-#endif
-        //culaShutdown();
-
-        /*
-          if (cposv_wrapper(&AHA, &AHrhs) < 0) {
-          std::cerr << "htgrappa_calculate_grappa_unmixing: Error calling cgels" << std::endl;
-          return -1;
-          }
-        */
-
-        //  {
-        //      std::string filename = debugFolder+appendix+"AHrhs_solution.cplx";
-            //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
-        //  }
 
         gridDim = dim3((unsigned int) std::ceil((1.0f*n*source_coils)/blockDim.x), 1, 1 );
 
@@ -790,20 +747,9 @@ namespace Gadgetron {
     {
       //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
       //GPUTimer cpu_invert_time("CPU Inversion time");
-      boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
-      boost::shared_ptr< hoNDArray<T> > AHrhs_h = coeff->to_host();
 
-      std::vector<size_t> perm_dim;
-      perm_dim.push_back(1);
-      perm_dim.push_back(0);
+      ht_grappa_solve_spd_system(AHA, *coeff);
 
-      permute(AHA_h.get(),&perm_dim);
-      permute(AHrhs_h.get(),&perm_dim);
-
-      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());
-
-      permute(AHrhs_h.get(),&perm_dim);
-      *coeff = cuNDArray<T>(*AHrhs_h);
     }
 
 

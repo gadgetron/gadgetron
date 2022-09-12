@@ -4,13 +4,16 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegRigid2DTransformation_H_
+#define hoImageRegRigid2DTransformation_H_
+
 #pragma once
 
 #include "hoImageRegHomogenousTransformation.h"
 #include <cmath>
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// Homogenous transformation
     template<typename ValueType> 
     class hoImageRegRigid2DTransformation : public hoImageRegHomogenousTransformation<ValueType, 2>
@@ -153,7 +156,7 @@ namespace Gadgetron
     template <typename ValueType> 
     inline bool hoImageRegRigid2DTransformation<ValueType>::invertTransformation()
     {
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::getri(matrix_) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::invert(matrix_) );
         GADGET_CHECK_RETURN_FALSE( this->extractParametersFromTransformationMatrix(matrix_, tx_, ty_, rz_) );
         return true;
     }
@@ -378,3 +381,4 @@ namespace Gadgetron
         os << " ]" << endl;
     }
 }
+#endif // hoImageRegRigid2DTransformation_H_

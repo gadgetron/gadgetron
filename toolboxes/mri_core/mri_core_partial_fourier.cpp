@@ -240,15 +240,15 @@ namespace Gadgetron
     /// transit_band_RO/E1/E2: transition band width in pixel for RO/E1/E2
     /// iter: number of maximal iterations for POCS
     /// thres: iteration threshold
-    template <typename T> 
+    template <typename T>
     void partial_fourier_POCS(const hoNDArray<T>& kspace,
-                            size_t startRO, size_t endRO, 
-                            size_t startE1, size_t endE1, 
+                            size_t startRO, size_t endRO,
+                            size_t startE1, size_t endE1,
                             size_t startE2, size_t endE2,
-                            size_t transit_band_RO, 
-                            size_t transit_band_E1, 
+                            size_t transit_band_RO,
+                            size_t transit_band_E1,
                             size_t transit_band_E2,
-                            size_t iter, double thres, 
+                            size_t iter, double thres,
                             hoNDArray<T>& res)
     {
         try
@@ -312,8 +312,8 @@ namespace Gadgetron
 
             hoNDArray<T> kspaceIter(kspace);
             // magnitude of complex images
-            hoNDArray<typename realType<T>::Type> mag(kspace.get_dimensions());
-            hoNDArray<T> magComplex(kspace.get_dimensions());
+            hoNDArray<typename realType<T>::Type> mag(kspace.dimensions());
+            hoNDArray<T> magComplex(kspace.dimensions());
 
             // kspace filter
             hoNDArray<T> buffer_partial_fourier(kspaceIter), buffer(kspaceIter);
@@ -392,11 +392,10 @@ namespace Gadgetron
 
                 // compute threshold to stop the iteration
                 Gadgetron::subtract(complexImPOCS, complexIm, buffer_partial_fourier);
-                typename realType<T>::Type diff, prev;
-                Gadgetron::norm2(complexIm, prev);
-                Gadgetron::norm2(buffer_partial_fourier, diff);
+                auto prev = Gadgetron::nrm2(complexIm);
+                auto diff = Gadgetron::nrm2(buffer_partial_fourier);
 
-                typename realType<T>::Type t = diff / prev;
+                auto t = diff / prev;
 
                 if (t < thres)
                 {
@@ -423,8 +422,8 @@ namespace Gadgetron
     }
 
     template EXPORTMRICORE void partial_fourier_POCS(const hoNDArray< std::complex<float> >& kspace,
-        size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, 
-        size_t transit_band_RO, size_t transit_band_E1, size_t transit_band_E2, 
+        size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2,
+        size_t transit_band_RO, size_t transit_band_E1, size_t transit_band_E2,
         size_t iter, double thres, hoNDArray< std::complex<float> >& res);
 
     template EXPORTMRICORE void partial_fourier_POCS(const hoNDArray< std::complex<double> >& kspace,
@@ -453,13 +452,13 @@ namespace Gadgetron
                 {
                     hoNDArray<T> fil(len_end);
                     Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_end*filter_pf_width), filter_pf_density_comp);
-                    Gadgetron::pad(len, &fil, &filter_pf);
+                    Gadgetron::pad(len, fil, filter_pf);
                 }
                 else
                 {
                     hoNDArray<T> fil(len_start);
                     Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_start*filter_pf_width), filter_pf_density_comp);
-                    Gadgetron::pad(len, &fil, &filter_pf);
+                    Gadgetron::pad(len, fil, filter_pf);
                 }
             }
         }
@@ -471,119 +470,113 @@ namespace Gadgetron
 
     template <typename T>
     void partial_fourier_filter(const hoNDArray<T>& kspace,
-                                size_t startRO, size_t endRO, 
-                                size_t startE1, size_t endE1, 
+                                size_t startRO, size_t endRO,
+                                size_t startE1, size_t endE1,
                                 size_t startE2, size_t endE2,
-                                double filter_pf_width_RO, 
-                                double filter_pf_width_E1, 
+                                double filter_pf_width_RO,
+                                double filter_pf_width_E1,
                                 double filter_pf_width_E2,
                                 bool filter_pf_density_comp,
-                                hoNDArray<T>& filter_pf_RO, 
-                                hoNDArray<T>& filter_pf_E1, 
-                                hoNDArray<T>& filter_pf_E2, 
+                                hoNDArray<T>& filter_pf_RO,
+                                hoNDArray<T>& filter_pf_E1,
+                                hoNDArray<T>& filter_pf_E2,
                                 hoNDArray<T>& res)
     {
-        try
+        size_t RO = kspace.get_size(0);
+        size_t E1 = kspace.get_size(1);
+        size_t E2 = kspace.get_size(2);
+
+        size_t lenRO = endRO - startRO + 1;
+        if (filter_pf_RO.get_size(0) != RO && lenRO<RO)
         {
-            size_t RO = kspace.get_size(0);
-            size_t E1 = kspace.get_size(1);
-            size_t E2 = kspace.get_size(2);
+            Gadgetron::compute_partial_fourier_filter(RO, startRO, endRO, filter_pf_width_RO, filter_pf_density_comp, filter_pf_RO);
+        }
 
-            size_t lenRO = endRO - startRO + 1;
-            if (filter_pf_RO.get_size(0) != RO && lenRO<RO)
+        size_t lenE1 = endE1 - startE1 + 1;
+        if (filter_pf_E1.get_size(0) != E1 && lenE1<E1)
+        {
+            Gadgetron::compute_partial_fourier_filter(E1, startE1, endE1, filter_pf_width_E1, filter_pf_density_comp, filter_pf_E1);
+        }
+
+        res = kspace;
+
+        size_t lenE2 = endE2 - startE2 + 1;
+
+        if (E2 > 1)
+        {
+            if (filter_pf_E2.get_size(0) != E2 && lenE2 < E2)
             {
-                Gadgetron::compute_partial_fourier_filter(RO, startRO, endRO, filter_pf_width_RO, filter_pf_density_comp, filter_pf_RO);
+                Gadgetron::compute_partial_fourier_filter(E2, startE2, endE2, filter_pf_width_E2, filter_pf_density_comp, filter_pf_E2);
             }
 
-            size_t lenE1 = endE1 - startE1 + 1;
-            if (filter_pf_E1.get_size(0) != E1 && lenE1<E1)
+            if ((filter_pf_RO.get_number_of_elements() == RO) && (filter_pf_E1.get_number_of_elements() == E1) && (filter_pf_E2.get_number_of_elements() == E2))
             {
-                Gadgetron::compute_partial_fourier_filter(E1, startE1, endE1, filter_pf_width_E1, filter_pf_density_comp, filter_pf_E1);
-            }
-
-            res = kspace;
-
-            size_t lenE2 = endE2 - startE2 + 1;
-
-            if (E2 > 1)
-            {
-                if (filter_pf_E2.get_size(0) != E2 && lenE2 < E2)
-                {
-                    Gadgetron::compute_partial_fourier_filter(E2, startE2, endE2, filter_pf_width_E2, filter_pf_density_comp, filter_pf_E2);
-                }
-
-                if ((filter_pf_RO.get_number_of_elements() == RO) && (filter_pf_E1.get_number_of_elements() == E1) && (filter_pf_E2.get_number_of_elements() == E2))
-                {
-                    Gadgetron::apply_kspace_filter_ROE1E2(kspace, filter_pf_RO, filter_pf_E1, filter_pf_E2, res);
-                }
-                else
-                {
-                    if ((filter_pf_RO.get_number_of_elements() == RO)
-                        || (filter_pf_E1.get_number_of_elements() == E1)
-                        || (filter_pf_E2.get_number_of_elements() == E2))
-                    {
-                        hoNDArray<T> kspace_copy(kspace);
-
-                        hoNDArray<T>* pSrc = const_cast<hoNDArray<T>*>(&kspace_copy);
-                        hoNDArray<T>* pDst = &res;
-
-                        bool filterPerformed = false;
-
-                        if (filter_pf_RO.get_number_of_elements() == RO)
-                        {
-                            Gadgetron::apply_kspace_filter_RO(*pSrc, filter_pf_RO, *pDst);
-                            std::swap(pSrc, pDst);
-                            filterPerformed = true;
-                        }
-
-                        if (filter_pf_E1.get_number_of_elements() == E1)
-                        {
-                            Gadgetron::apply_kspace_filter_E1(*pSrc, filter_pf_E1, *pDst);
-                            std::swap(pSrc, pDst);
-                            filterPerformed = true;
-                        }
-
-                        if (filter_pf_E2.get_number_of_elements() == E2)
-                        {
-                            Gadgetron::apply_kspace_filter_E2(*pSrc, filter_pf_E2, *pDst);
-                            std::swap(pSrc, pDst);
-                            filterPerformed = true;
-                        }
-
-                        if (filterPerformed && pDst != &res)
-                        {
-                            res = *pDst;
-                        }
-                    }
-                }
+                Gadgetron::apply_kspace_filter_ROE1E2(kspace, filter_pf_RO, filter_pf_E1, filter_pf_E2, res);
             }
             else
             {
-                if ((filter_pf_RO.get_number_of_elements() == RO) && (filter_pf_E1.get_number_of_elements() == E1))
+                if ((filter_pf_RO.get_number_of_elements() == RO)
+                    || (filter_pf_E1.get_number_of_elements() == E1)
+                    || (filter_pf_E2.get_number_of_elements() == E2))
                 {
-                    Gadgetron::apply_kspace_filter_ROE1(kspace, filter_pf_RO, filter_pf_E1, res);
-                }
-                else
-                {
-                    if (filter_pf_RO.get_number_of_elements() == RO && filter_pf_E1.get_number_of_elements() != E1)
+                    hoNDArray<T> kspace_copy(kspace);
+
+                    hoNDArray<T>* pSrc = &kspace_copy;
+                    hoNDArray<T>* pDst = &res;
+
+                    bool filterPerformed = false;
+
+                    if (filter_pf_RO.get_number_of_elements() == RO)
                     {
-                        Gadgetron::apply_kspace_filter_RO(kspace, filter_pf_RO, res);
+                        Gadgetron::apply_kspace_filter_RO(*pSrc, filter_pf_RO, *pDst);
+                        std::swap(pSrc, pDst);
+                        filterPerformed = true;
                     }
-                    else if (filter_pf_RO.get_number_of_elements() != RO && filter_pf_E1.get_number_of_elements() == E1)
+
+                    if (filter_pf_E1.get_number_of_elements() == E1)
                     {
-                        Gadgetron::apply_kspace_filter_E1(kspace, filter_pf_E1, res);
+                        Gadgetron::apply_kspace_filter_E1(*pSrc, filter_pf_E1, *pDst);
+                        std::swap(pSrc, pDst);
+                        filterPerformed = true;
+                    }
+
+                    if (filter_pf_E2.get_number_of_elements() == E2)
+                    {
+                        Gadgetron::apply_kspace_filter_E2(*pSrc, filter_pf_E2, *pDst);
+                        std::swap(pSrc, pDst);
+                        filterPerformed = true;
+                    }
+
+                    if (filterPerformed && pDst != &res)
+                    {
+                        res = *pDst;
                     }
                 }
             }
         }
-        catch (...)
+        else
         {
-            GADGET_THROW("Errors happened in partialFourierCartesianFilterHandler<T>::partial_fourier(...) ... ");
+            if ((filter_pf_RO.get_number_of_elements() == RO) && (filter_pf_E1.get_number_of_elements() == E1))
+            {
+                Gadgetron::apply_kspace_filter_ROE1(kspace, filter_pf_RO, filter_pf_E1, res);
+            }
+            else
+            {
+                if (filter_pf_RO.get_number_of_elements() == RO && filter_pf_E1.get_number_of_elements() != E1)
+                {
+                    Gadgetron::apply_kspace_filter_RO(kspace, filter_pf_RO, res);
+                }
+                else if (filter_pf_RO.get_number_of_elements() != RO && filter_pf_E1.get_number_of_elements() == E1)
+                {
+                    Gadgetron::apply_kspace_filter_E1(kspace, filter_pf_E1, res);
+                }
+            }
         }
+
     }
 
     template EXPORTMRICORE void partial_fourier_filter(const hoNDArray< std::complex<float> >& kspace,
-        size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, 
+        size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2,
         double filter_pf_width_RO, double filter_pf_width_E1, double filter_pf_width_E2, bool filter_pf_density_comp,
         hoNDArray< std::complex<float> >& filter_pf_RO, hoNDArray< std::complex<float> >& filter_pf_E1, hoNDArray< std::complex<float> >& filter_pf_E2,
         hoNDArray< std::complex<float> >& res);

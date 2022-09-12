@@ -9,33 +9,31 @@
     will be stored and read from this directory. If it is not set, the default
     directory will be used ('/tmp/gadgetron' in linux and 'c:/temp/gadgetron' in windows).
     -->
+    <xs:complexType name="Readers">
+        <xs:sequence>
+            <xs:element name="reader" type="Reader"/>
+        </xs:sequence>
+    </xs:complexType>
 
-    <xs:element name="gadgetronConfiguration">
+    <xs:complexType name="Writers">
+        <xs:sequence>
+            <xs:element name="reader" type="Reader"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="configuration">
         <xs:complexType>
-            <xs:sequence>
-                <xs:element name="port" type="xs:string"/>
+            <xs:all>
+            <xs:element name="version" type="xs:string"/>
+                <xs:element name="readers" type="Readers"/>
+                <xs:element name="writers" type="Writers"/>
+                <xs:element name="stream" type="Stream" />
 
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="globalGadgetParameter">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element maxOccurs="1" minOccurs="1" name="name" type="xs:string"/>
-                            <xs:element maxOccurs="1" minOccurs="1" name="value" type="xs:string"/>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-
-		<xs:element maxOccurs="1" minOccurs="0" name="cloudBus">
-		  <xs:complexType>
-		    <xs:sequence>
-		      <xs:element maxOccurs="1" minOccurs="1" name="relayAddress" type="xs:string"/>
-		      <xs:element maxOccurs="1" minOccurs="1" name="port" type="xs:unsignedInt"/>
-		    </xs:sequence>
-		  </xs:complexType>
-		</xs:element>
-
-            </xs:sequence>
+            </xs:all>
         </xs:complexType>
+
     </xs:element>
+
+
 
   <xs:element name="gadgetronStreamConfiguration">
     <xs:complexType>

@@ -90,7 +90,7 @@ namespace Gadgetron
         // enum { D = ArrayType::D }
 
         hoNDBoundaryHandler() { array_ = NULL; }
-        hoNDBoundaryHandler(ArrayType& a) { array_ = &a; }
+        hoNDBoundaryHandler(const ArrayType& a) { array_ = &a; }
         virtual ~hoNDBoundaryHandler() { array_ = NULL ; }
 
         /// access the pixel value
@@ -105,7 +105,7 @@ namespace Gadgetron
         virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q ) = 0;
         virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u ) = 0;
 
-        void setArray(ArrayType& a) { array_ = &a; };
+        void setArray(const ArrayType& a) { array_ = &a; };
 
         /// return a%b
         inline long long mod(long long a, long long b)
@@ -122,7 +122,7 @@ namespace Gadgetron
 
     protected:
 
-        ArrayType* array_;
+        const ArrayType* array_;
     };
 
     template <typename ArrayType>
@@ -135,7 +135,7 @@ namespace Gadgetron
         typedef typename BaseClass::T T;
 
         hoNDBoundaryHandlerFixedValue(T v=0) : BaseClass(), value_(v) {}
-        hoNDBoundaryHandlerFixedValue(ArrayType& a, T v=T(0)) : BaseClass(a), value_(v) {}
+        hoNDBoundaryHandlerFixedValue(const ArrayType& a, T v=T(0)) : BaseClass(a), value_(v) {}
         virtual ~hoNDBoundaryHandlerFixedValue() {}
 
         /// access the pixel value
@@ -165,7 +165,7 @@ namespace Gadgetron
         typedef typename BaseClass::T T;
 
         hoNDBoundaryHandlerBorderValue() : BaseClass() {}
-        hoNDBoundaryHandlerBorderValue(ArrayType& a) : BaseClass(a) {}
+        hoNDBoundaryHandlerBorderValue(const ArrayType& a) : BaseClass(a) {}
         virtual ~hoNDBoundaryHandlerBorderValue() {}
 
         /// access the pixel value
@@ -194,7 +194,7 @@ namespace Gadgetron
         typedef typename BaseClass::T T;
 
         hoNDBoundaryHandlerPeriodic() : BaseClass() {}
-        hoNDBoundaryHandlerPeriodic(ArrayType& a) : BaseClass(a) {}
+        hoNDBoundaryHandlerPeriodic(const ArrayType& a) : BaseClass(a) {}
         virtual ~hoNDBoundaryHandlerPeriodic() {}
 
         /// access the pixel value
@@ -223,7 +223,7 @@ namespace Gadgetron
         typedef typename BaseClass::T T;
 
         hoNDBoundaryHandlerMirror() : BaseClass() {}
-        hoNDBoundaryHandlerMirror(ArrayType& a) : BaseClass(a) {}
+        hoNDBoundaryHandlerMirror(const ArrayType& a) : BaseClass(a) {}
         virtual ~hoNDBoundaryHandlerMirror() {}
 
         /// access the pixel value

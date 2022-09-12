@@ -43,7 +43,7 @@ using namespace Gadgetron;
 typedef float _real; 
 typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
-typedef cuNFFT_plan<_real,2> plan_type;
+typedef cuNFFT_impl<_real,2> plan_type;
 
 int main( int argc, char** argv) 
 {
@@ -121,12 +121,12 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  plan.preprocess( traj.get(), plan_type::NFFT_PREP_C2NC );
+  plan.preprocess( traj.get(), NFFT_prep_mode::C2NC );
   delete timer;
 
   // Gridder
   timer = new GPUTimer("Computing nfft");
-  plan.compute( image.get(), &samples, 0, plan_type::NFFT_FORWARDS_C2NC );
+  plan.compute( *image, samples, 0, NFFT_comp_mode::BACKWARDS_NC2C );
   delete timer;
 
   //

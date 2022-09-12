@@ -8,53 +8,88 @@
 #include <stdlib.h>
 #include <sstream>
 
-namespace Gadgetron{
+ std::string Gadgetron::gadgetron_getCusparseErrorString(cusparseStatus_t err)
+  {
+    switch (err)
+    {
+    case CUSPARSE_STATUS_NOT_INITIALIZED:
+      return "NOT INITIALIZED";
+    case CUSPARSE_STATUS_ALLOC_FAILED:
+      return "ALLOC FAILED";
+    case CUSPARSE_STATUS_INVALID_VALUE:
+      return "INVALID VALUE";
+    case CUSPARSE_STATUS_ARCH_MISMATCH:
+      return "ARCH MISMATCH";
+    case CUSPARSE_STATUS_MAPPING_ERROR:
+      return "MAPPING ERROR";
+    case CUSPARSE_STATUS_EXECUTION_FAILED:
+      return "EXECUTION FAILED";
+    case CUSPARSE_STATUS_INTERNAL_ERROR:
+      return "INTERNAL ERROR";
+    case CUSPARSE_STATUS_SUCCESS:
+      return "SUCCES";
+    case CUSPARSE_STATUS_MATRIX_TYPE_NOT_SUPPORTED:
+      return "MATRIX TYPE NOT SUPPORTED";
+    default:
+      return "UNKNOWN CUSPARSE ERROR";
+    }
+  }
+namespace Gadgetron
+{
+
+ 
 
   static boost::shared_array<boost::mutex> _mutex;
   static boost::shared_array<boost::mutex> _sparseMutex;
 
-  cudaDeviceManager* cudaDeviceManager::_instance = 0;
+  cudaDeviceManager *cudaDeviceManager::_instance = 0;
 
-  cudaDeviceManager::cudaDeviceManager() {
+  cudaDeviceManager::cudaDeviceManager()
+  {
 
     // This constructor is executed only once for a singleton
     //
 
     atexit(&CleanUp);
 
-    if( cudaGetDeviceCount( &_num_devices ) != cudaSuccess) {
+    if (auto res = cudaGetDeviceCount(&_num_devices); res != cudaSuccess)
+    {
       _num_devices = 0;
-      throw cuda_error( "Error: no Cuda devices present.");
+      throw cuda_error(res);
     }
 
     _mutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
     _sparseMutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
 
     int old_device;
-    if( cudaGetDevice(&old_device) != cudaSuccess ) {
-      throw std::runtime_error( "Error: unable to get device no");
+    if (auto res = cudaGetDevice(&old_device); res != cudaSuccess)
+    {
+      throw cuda_error(res);
     }
 
-    _total_global_mem = std::vector<size_t>(_num_devices,0);
-    _shared_mem_per_block = std::vector<size_t>(_num_devices,0);
-    _warp_size = std::vector<int>(_num_devices,0);
-    _max_blockdim = std::vector<int>(_num_devices,0);
-    _max_griddim = std::vector<int>(_num_devices,0);
-    _major = std::vector<int>(_num_devices,0);
-    _minor = std::vector<int>(_num_devices,0);
-    _handle = std::vector<cublasHandle_t>(_num_devices, (cublasContext*)0x0);
+    _total_global_mem = std::vector<size_t>(_num_devices, 0);
+    _shared_mem_per_block = std::vector<size_t>(_num_devices, 0);
+    _warp_size = std::vector<int>(_num_devices, 0);
+    _max_blockdim = std::vector<int>(_num_devices, 0);
+    _max_griddim = std::vector<int>(_num_devices, 0);
+    _major = std::vector<int>(_num_devices, 0);
+    _minor = std::vector<int>(_num_devices, 0);
+    _handle = std::vector<cublasHandle_t>(_num_devices, (cublasContext *)0x0);
     _sparse_handle = std::vector<cusparseHandle_t>(_num_devices, (cusparseHandle_t)0x0);
 
-    for( int device=0; device<_num_devices; device++ ){
+    for (int device = 0; device < _num_devices; device++)
+    {
 
-      if( cudaSetDevice(device) != cudaSuccess ) {
-        throw cuda_error( "Error: unable to set device no");
+      if (auto res = cudaSetDevice(device); res != cudaSuccess)
+      {
+        throw cuda_error(res);
       }
 
       cudaDeviceProp deviceProp;
 
-      if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-        throw cuda_error("Error: unable to determine device properties.");
+      if (auto res = cudaGetDeviceProperties(&deviceProp, device); res != cudaSuccess)
+      {
+        throw cuda_error(res);
       }
 
       _total_global_mem[device] = deviceProp.totalGlobalMem;
@@ -66,19 +101,21 @@ namespace Gadgetron{
       _minor[device] = deviceProp.minor;
     }
 
-    if( cudaSetDevice(old_device) != cudaSuccess ) {
-      throw cuda_error( "Error: unable to restore device no");
+    if (auto res = cudaSetDevice(old_device); res != cudaSuccess)
+    {
+      throw cuda_error(res);
     }
   }
 
-  cudaDeviceManager::~cudaDeviceManager() 
+  cudaDeviceManager::~cudaDeviceManager()
   {
 
-    for (int device = 0; device < _num_devices; device++){
+    for (int device = 0; device < _num_devices; device++)
+    {
       if (_handle[device] != NULL)
         cublasDestroy(_handle[device]);
       if (_sparse_handle[device] != NULL)
-      	cusparseDestroy(_sparse_handle[device]);
+        cusparseDestroy(_sparse_handle[device]);
     }
   }
 
@@ -133,15 +170,15 @@ namespace Gadgetron{
 
   size_t cudaDeviceManager::getFreeMemory()
   {
-    size_t free,total;
-    CUDA_CALL(cudaMemGetInfo(&free,&total));
+    size_t free, total;
+    CUDA_CALL(cudaMemGetInfo(&free, &total));
     return free;
   }
 
   size_t cudaDeviceManager::getTotalMemory()
   {
-    size_t free,total;
-    CUDA_CALL(cudaMemGetInfo(&free,&total));
+    size_t free, total;
+    CUDA_CALL(cudaMemGetInfo(&free, &total));
     return total;
   }
 
@@ -165,9 +202,10 @@ namespace Gadgetron{
     return ret;
   }
 
-  cudaDeviceManager* cudaDeviceManager::Instance()
+  cudaDeviceManager *cudaDeviceManager::Instance()
   {
-    if (_instance == 0 ) _instance = new cudaDeviceManager;
+    if (_instance == 0)
+      _instance = new cudaDeviceManager;
     return _instance;
   }
 
@@ -181,15 +219,17 @@ namespace Gadgetron{
   cublasHandle_t cudaDeviceManager::lockHandle(int device)
   {
     _mutex[device].lock();
-    if (_handle[device] == NULL){
+    if (_handle[device] == NULL)
+    {
       cublasStatus_t ret = cublasCreate(&_handle[device]);
-      if (ret != CUBLAS_STATUS_SUCCESS) {
-      	std::stringstream ss;
-      	ss << "Error: unable to create cublas handle for device " << device << " : ";
+      if (ret != CUBLAS_STATUS_SUCCESS)
+      {
+        std::stringstream ss;
+        ss << "Error: unable to create cublas handle for device " << device << " : ";
         ss << gadgetron_getCublasErrorString(ret) << std::endl;
-      	throw cuda_error(ss.str());
+        throw cuda_error(ss.str());
       }
-      cublasSetPointerMode( _handle[device], CUBLAS_POINTER_MODE_HOST );
+      cublasSetPointerMode(_handle[device], CUBLAS_POINTER_MODE_HOST);
     }
     return _handle[device];
   }
@@ -216,15 +256,17 @@ namespace Gadgetron{
   cusparseHandle_t cudaDeviceManager::lockSparseHandle(int device)
   {
     _sparseMutex[device].lock();
-    if (_sparse_handle[device] == NULL){
+    if (_sparse_handle[device] == NULL)
+    {
       cusparseStatus_t ret = cusparseCreate(&_sparse_handle[device]);
-      if (ret != CUSPARSE_STATUS_SUCCESS) {
-      	std::stringstream ss;
-      	ss << "Error: unable to create cusparse handle for device " << device << " : ";
+      if (ret != CUSPARSE_STATUS_SUCCESS)
+      {
+        std::stringstream ss;
+        ss << "Error: unable to create cusparse handle for device " << device << " : ";
         ss << gadgetron_getCusparseErrorString(ret) << std::endl;
-      	throw cuda_error(ss.str());
+        throw cuda_error(ss.str());
       }
-      cusparseSetPointerMode(_sparse_handle[device],CUSPARSE_POINTER_MODE_HOST);
+      cusparseSetPointerMode(_sparse_handle[device], CUSPARSE_POINTER_MODE_HOST);
       //cublasSetPointerMode( _handle[device], CUBLAS_POINTER_MODE_HOST );
     }
     return _sparse_handle[device];
@@ -242,7 +284,6 @@ namespace Gadgetron{
     _sparseMutex[device].unlock();
   }
 
-
   int cudaDeviceManager::getCurrentDevice()
   {
     int device;
@@ -259,6 +300,7 @@ namespace Gadgetron{
 
   void cudaDeviceManager::CleanUp()
   {
-    delete _instance; _instance = 0;
+    delete _instance;
+    _instance = 0;
   }
-}
+} // namespace Gadgetron

@@ -13,7 +13,6 @@
 #include "CUBLASContextProvider.h"
 #include "GPUTimer.h"
 #include "hoNDArray_fileio.h"
-#include "hoNDArray_utils.h"
 #include "htgrappa.h"
 
 #include <cublas_v2.h>
@@ -157,11 +156,10 @@ namespace Gadgetron {
     //dims[0]=36;
     //dims[1]=36;
     //cuNDArray<float_complext> kspace(_kspace);
-    cuNDArray<float_complext> kspace(dims);
 
     vector_td<size_t,2> offset((old_dims[0]-dims[0])/2,(old_dims[1]-dims[1])/2);
-    crop<float_complext,2>(offset,_kspace,&kspace);
-    float sum = nrm2(&kspace);    
+    cuNDArray<float_complext> kspace = crop<float_complext,2>(offset,from_std_vector<size_t,2>(dims),*_kspace);
+    float sum = nrm2(&kspace);
     float_complext in_max = kspace[amax(&kspace)];
     kspace /= (float(kspace.get_number_of_elements())/sum);
     unsigned int num_coils = kspace.get_size(kspace.get_number_of_dimensions()-1);
@@ -292,20 +290,7 @@ namespace Gadgetron {
     {
       //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
       //GPUTimer cpu_invert_time("CPU Inversion time");
-      boost::shared_ptr< hoNDArray<float_complext> > AHA_h = AHA.to_host();
-      boost::shared_ptr< hoNDArray<float_complext> > AHrhs_h = rhs.to_host();
-      
-      std::vector<size_t> perm_dim;
-      perm_dim.push_back(1);
-      perm_dim.push_back(0);
-      
-      permute(AHA_h.get(),&perm_dim);
-      permute(AHrhs_h.get(),&perm_dim);
-      
-      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
-
-      permute(AHrhs_h.get(),&perm_dim);
-      rhs = cuNDArray<float_complext>(*AHrhs_h);
+      ht_grappa_solve_spd_system(AHA, rhs);
     }
 
 

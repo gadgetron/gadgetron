@@ -1,6 +1,4 @@
-#ifndef FloatToFixPointGadget_H_
-#define FloatToFixPointGadget_H_
-
+#pragma once
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/meta.h"
@@ -21,64 +19,58 @@ namespace Gadgetron
     *
     */
 
-    template <typename T> 
-    class EXPORTGADGETSMRICORE FloatToFixPointGadget:public Gadget2<ISMRMRD::ImageHeader, hoNDArray< float > >
+    template <typename T, typename Base >
+    class EXPORTGADGETSMRICORE FloatToFixPointGadget: public Core::ChannelGadget<Core::Image<float>>
     {
     public:
 
-        GADGET_DECLARE(FloatToFixPointGadget);
+        using Core::ChannelGadget<Core::Image<float>>::ChannelGadget;
 
-        FloatToFixPointGadget();
-        virtual ~FloatToFixPointGadget();
+        ~FloatToFixPointGadget() override = default ;
 
-    protected:
-        GADGET_PROPERTY(max_intensity, T, "Maximum intensity value", std::numeric_limits<T>::max() );
-        GADGET_PROPERTY(min_intensity, T, "Minimal intensity value", std::numeric_limits<T>::min());
-        GADGET_PROPERTY(intensity_offset, T, "Intensity offset", 0);
-
-        T max_intensity_value_;
-        T min_intensity_value_;
-        T intensity_offset_value_;
-
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2);
+        void process(Core::InputChannel<Core::Image<float>>& input, Core::OutputChannel& output) override;
     };
 
-    class EXPORTGADGETSMRICORE FloatToShortGadget :public FloatToFixPointGadget < short > 
+    class EXPORTGADGETSMRICORE FloatToShortGadget :public FloatToFixPointGadget < short,FloatToShortGadget >
     {
     public:
-        GADGET_DECLARE(FloatToShortGadget);
-
-        FloatToShortGadget();
-        virtual ~FloatToShortGadget();
+        using FloatToFixPointGadget<short,FloatToShortGadget>::FloatToFixPointGadget;
+        NODE_PROPERTY(max_intensity, short, "Maximum intensity value", std::numeric_limits<short >::max() );
+        NODE_PROPERTY(min_intensity, short , "Minimal intensity value", std::numeric_limits<short >::min());
+        NODE_PROPERTY(intensity_offset, short , "Intensity offset", 0);
+        ~FloatToShortGadget() override = default;
     };
-
-    class EXPORTGADGETSMRICORE FloatToUShortGadget :public FloatToFixPointGadget < unsigned short >
+    class EXPORTGADGETSMRICORE FloatToUShortGadget :public FloatToFixPointGadget < unsigned short,FloatToUShortGadget >
     {
     public:
-        GADGET_DECLARE(FloatToUShortGadget);
-
-        FloatToUShortGadget();
-        virtual ~FloatToUShortGadget();
+        using FloatToFixPointGadget<unsigned short,FloatToUShortGadget>::FloatToFixPointGadget;
+        NODE_PROPERTY(max_intensity, short, "Maximum intensity value", 4095 );
+        NODE_PROPERTY(min_intensity, short , "Minimal intensity value", 0);
+        NODE_PROPERTY(intensity_offset, short , "Intensity offset", 2048);
+        ~FloatToUShortGadget() override = default;
     };
-
-    class EXPORTGADGETSMRICORE FloatToIntGadget :public FloatToFixPointGadget < int >
+    class EXPORTGADGETSMRICORE FloatToUIntGadget :public FloatToFixPointGadget < unsigned int,FloatToUIntGadget >
     {
     public:
-        GADGET_DECLARE(FloatToIntGadget);
-
-        FloatToIntGadget();
-        virtual ~FloatToIntGadget();
+        using FloatToFixPointGadget<unsigned int,FloatToUIntGadget>::FloatToFixPointGadget;
+        NODE_PROPERTY(max_intensity, int, "Maximum intensity value", 4095 );
+        NODE_PROPERTY(min_intensity, int , "Minimal intensity value", 0);
+        NODE_PROPERTY(intensity_offset, int , "Intensity offset", 2048);
+        ~FloatToUIntGadget() override = default;
     };
-
-    class EXPORTGADGETSMRICORE FloatToUIntGadget :public FloatToFixPointGadget < unsigned int >
+    class EXPORTGADGETSMRICORE FloatToIntGadget :public FloatToFixPointGadget < int,FloatToIntGadget >
     {
     public:
-        GADGET_DECLARE(FloatToUIntGadget);
-
-        FloatToUIntGadget();
-        virtual ~FloatToUIntGadget();
+        using FloatToFixPointGadget<int,FloatToIntGadget>::FloatToFixPointGadget;
+        NODE_PROPERTY(max_intensity, int, "Maximum intensity value", 4095 );
+        NODE_PROPERTY(min_intensity, int , "Minimal intensity value", 0);
+        NODE_PROPERTY(intensity_offset, int , "Intensity offset", 2048);
+        ~FloatToIntGadget() override = default;
     };
+
+
+
+
+
 }
 
-#endif /* FloatToFixPointGadget_H_ */

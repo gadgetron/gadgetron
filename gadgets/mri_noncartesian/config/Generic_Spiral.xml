@@ -5,12 +5,26 @@
 
     <!-- reader -->
     <reader><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageReader</classname></reader>
+    <reader><slot>1026</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdWaveformMessageReader</classname></reader>
 
     <!-- writer -->
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
 
     <!-- Noise prewhitening -->
     <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
+
+  <gadget>
+    <name>PCA</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>PCACoilGadget</classname>
+  </gadget>
+
+  <gadget>
+    <name>CoilReduction</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>CoilReductionGadget</classname>
+    <property><name>coils_out</name><value>16</value></property>
+  </gadget>
 
     <!-- Calculate spiral trajectory and attach -->
     <gadget>
@@ -94,16 +108,16 @@
         <classname>ComplexToFloatGadget</classname>
     </gadget>
 
-    <gadget>
-        <name>FloatToShortAttrib</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>FloatToUShortGadget</classname>
+    <!--<gadget>-->
+        <!--<name>FloatToShortAttrib</name>-->
+        <!--<dll>gadgetron_mricore</dll>-->
+        <!--<classname>FloatToUShortGadget</classname>-->
 
-        <property><name>max_intensity</name><value>32767</value></property>
-        <property><name>min_intensity</name><value>0</value></property>
-        <property><name>intensity_offset</name><value>0</value></property>
-    </gadget>
-    
+        <!--<property><name>max_intensity</name><value>32767</value></property>-->
+        <!--<property><name>min_intensity</name><value>0</value></property>-->
+        <!--<property><name>intensity_offset</name><value>0</value></property>-->
+    <!--</gadget>-->
+    <!---->
     <gadget>
         <name>ImageFinish</name>
         <dll>gadgetron_mricore</dll>

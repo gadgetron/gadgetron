@@ -9,7 +9,7 @@
 namespace Gadgetron
 {
     template <typename ArrayType, unsigned int D> 
-    hoNDInterpolatorBSpline<ArrayType, D>::hoNDInterpolatorBSpline(ArrayType& a, BoundHanlderType& bh, unsigned int order) : BaseClass(a, bh), order_(order)
+    hoNDInterpolatorBSpline<ArrayType, D>::hoNDInterpolatorBSpline(const ArrayType& a, BoundHanlderType& bh, unsigned int order) : BaseClass(a, bh), order_(order)
     {
         bspline_.computeBSplineCoefficients(a, order_, this->coeff_);
 
@@ -30,7 +30,7 @@ namespace Gadgetron
     }
 
     template <typename ArrayType, unsigned int D> 
-    void hoNDInterpolatorBSpline<ArrayType, D>::setArray(ArrayType& a)
+    void hoNDInterpolatorBSpline<ArrayType, D>::setArray(const ArrayType& a)
     {
         this->array_ = &a;
 

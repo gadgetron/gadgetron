@@ -9,6 +9,9 @@
 #include "mri_core_export.h"
 #include "hoNDArray.h"
 #include "mri_core_data.h"
+#include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/xml.h"
+#include "ismrmrd/meta.h"
 #include "hoNDKLT.h"
 
 namespace Gadgetron
@@ -35,6 +38,9 @@ namespace Gadgetron
     /// if count_sampling_freq == true, number of times where a line is sampled along N is counted, instread of an uniformed averaging
     template <typename T> EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray<T>& res);
 
+    /// select specific N and/or S
+    template <typename T> EXPORTMRICORE void select_data_N_S(const hoNDArray<T>& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray<T>& res);
+
     /// compute KL coefficients from the data
     /// the KLT has the size [N S SLC]
     /// if average_N==true or average_S==true, data will first be averaged along N or S
@@ -49,4 +55,52 @@ namespace Gadgetron
     /// get the path of debug folder
     // environmental variable GADGETRON_DEBUG_FOLDER is used 
     EXPORTMRICORE void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath);
+
+    // find the calibration mode from protocol
+    void EXPORTMRICORE find_calib_mode(ISMRMRD::IsmrmrdHeader& h, Gadgetron::ismrmrdCALIBMODE& CalibMode, Gadgetron::IsmrmrdDIM& InterleaveDim, double& acceFactorE1, double& acceFactorE2, bool verbose = false);
+
+    // find the encoding limits from protocol
+    void EXPORTMRICORE find_encoding_limits(ISMRMRD::IsmrmrdHeader& h, ISMRMRD::EncodingCounters& meas_max_idx, bool verbose = false);
+
+    // find encoding matrix size and FOV
+    void EXPORTMRICORE find_matrix_size_encoding(ISMRMRD::IsmrmrdHeader& h, size_t matrix_size_encoding[3]);
+    void EXPORTMRICORE find_FOV_encoding(ISMRMRD::IsmrmrdHeader& h, float field_of_view_encoding[3]);
+
+    // find recon matrix size and FOV
+    void EXPORTMRICORE find_matrix_size_recon(ISMRMRD::IsmrmrdHeader& h, size_t matrix_size_recon[3]);
+    void EXPORTMRICORE find_FOV_recon(ISMRMRD::IsmrmrdHeader& h, float field_of_view_recon[3]);
+
+    // return the current moment as a string
+    void EXPORTMRICORE get_current_moment(std::string& procTime);
+
+    // get a vector of values from ismrmrd meta
+    void EXPORTMRICORE get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v);
+    void EXPORTMRICORE get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v);
+    void EXPORTMRICORE get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v);
+
+    template <typename T> EXPORTMRICORE void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v);
+    void EXPORTMRICORE set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v);
+
+    template <typename T> EXPORTMRICORE void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v);
+    void EXPORTMRICORE append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v);
+
+    // perform the patient to device coordinate transformation
+    void EXPORTMRICORE PatientCoordinateSystem_to_DeviceCoordinateSystem(double& x, double& y, double& z, const std::string& position);
+    void EXPORTMRICORE DeviceCoordinateSystem_to_PatientCoordinateSystem(double& x, double& y, double& z, const std::string& position);
+
+    // whether to images have identical slice prescription
+    // if so, return true; otherwise, return false;
+    bool EXPORTMRICORE check_idential_slice_prescription(ISMRMRD::ISMRMRD_ImageHeader a, ISMRMRD::ISMRMRD_ImageHeader b);
+
+    // get ismrmd dim name
+    std::string EXPORTMRICORE get_ismrmrd_dim_name(const IsmrmrdDIM& dim);
+    // given the name, get the ismrmrd dim
+    IsmrmrdDIM EXPORTMRICORE get_ismrmrd_dim_from_name(const std::string& name);
+
+    EXPORTMRICORE std::map<std::string,long> to_map(const std::vector<ISMRMRD::UserParameterLong>&);
+    EXPORTMRICORE std::map<std::string,double> to_map(const std::vector<ISMRMRD::UserParameterDouble>&);
+    EXPORTMRICORE std::map<std::string,std::string> to_map(const std::vector<ISMRMRD::UserParameterString>&);
+
+
+    ISMRMRD::ImageHeader image_header_from_acquisition(const ISMRMRD::AcquisitionHeader& acq_header,const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data );
 }

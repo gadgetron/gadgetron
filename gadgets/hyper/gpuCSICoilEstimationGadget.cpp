@@ -12,7 +12,7 @@
 #include "cuNFFT.h"
 #include "b1_map.h"
 #include "vector_td_utilities.h"
-#include "cuNFFTOperator.h"
+#include "../../toolboxes/nfft/NFFTOperator.h"
 #include "cuCgSolver.h"
 #include "cuNDArray_fileio.h"
 #include "trajectory_utils.h"
@@ -59,18 +59,18 @@ int gpuCSICoilEstimationGadget::process(
 	{
 
 		hoNDArray<std::complex<float>> * ho_data = &bucket->rbit_.front().data_.data_;
-		hoNDArray<float>* ho_traj = bucket->rbit_.front().data_.trajectory_.get_ptr();
+		hoNDArray<float>* ho_traj = &bucket->rbit_.front().data_.trajectory_.value();
 
 
 		if (skip_lines_ > 0){
 
 
 
-			auto seperated = split_calibration_lines<std::complex<float>>(*ho_data,skip_lines_,1);
+			auto separated = split_calibration_lines<std::complex<float>>(*ho_data,skip_lines_,1);
 
-			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<0>(seperated).get());
+			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<0>(separated).get());
 			senseData->freq_calibration->squeeze();
-			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<1>(seperated).get());
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<1>(separated).get());
 		} else {
 
 			senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
@@ -109,7 +109,7 @@ int gpuCSICoilEstimationGadget::process(
 		auto & ref = *bucket->rbit_.front().ref_;
 
 		hoNDArray<std::complex<float>> * ho_data = &ref.data_;
-		hoNDArray<float>* ho_traj = ref.trajectory_.get_ptr();
+		hoNDArray<float>* ho_traj = &ref.trajectory_.value();
 
 		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
 		if (ho_traj->get_size(0) > 2){
@@ -153,24 +153,24 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 	cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr());
 	if (dcw) { //We have density compensation, so we can get away with gridding
 
-		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
+		cuNFFT_impl<float,2> plan(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
 		cuNDArray<float_complext> tmp(csm_dims);
 		GDEBUG("Coils %i \n\n",tmp.get_size(2));
 
 		cuNDArray<float> spiral_dcw(spiral_traj_dims,dcw->get_data_ptr());
 
 		GDEBUG("Preprocessing\n\n");
-		plan.preprocess(&spiral_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
+		plan.preprocess(spiral_traj,NFFT_prep_mode::NC2C);
 		GDEBUG("Computing\n\n");
-		plan.compute(&second_spiral,&tmp,&spiral_dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
+
 		auto tmp_abs = abs(&tmp);
 
-		return estimate_b1_map<float,2>(&tmp);
+		return boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>(tmp));
 
 	} else { //No density compensation, we have to do iterative reconstruction.
 
 
-		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
+		auto E = boost::make_shared<NFFTOperator<cuNDArray,float,2>>();
 
 		E->setup(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
 
@@ -187,11 +187,11 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 
 
 
-		auto res = estimate_b1_map<float,2>(tmp.get());
+		auto res = estimate_b1_map<float,2>(*tmp);
 		//fill(res.get(),float_complext(1,0));
 		//auto res= boost::make_shared<cuNDArray<float_complext>>(csm_dims);
 		//fill(res.get(),float_complext(1,0));
-		return res;
+		return boost::make_shared<cuNDArray<float_complext>>(res);
 
 	}
 

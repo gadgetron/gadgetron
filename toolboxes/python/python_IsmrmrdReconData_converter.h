@@ -14,8 +14,10 @@ namespace Gadgetron {
 class IsmrmrdReconData_to_python_object {
 public:
   static PyObject* convert(const IsmrmrdReconData & reconData) {
-
+//      initialize_python();
+      GILLock lock;
     bp::object pygadgetron = bp::import("gadgetron");
+
     auto pyReconData = bp::list();
     for (auto & reconBit : reconData.rbit_ ){
       auto data = DataBufferedToPython(reconBit.data_);
@@ -31,14 +33,19 @@ public:
 
 private:
   static bp::object DataBufferedToPython( const IsmrmrdDataBuffered & dataBuffer){
-
     bp::object pygadgetron = bp::import("gadgetron");
     auto data = bp::object(dataBuffer.data_);
-       auto headers = boost::python::object(dataBuffer.headers_);
+    auto headers = boost::python::object(dataBuffer.headers_);
     auto trajectory = dataBuffer.trajectory_ ? bp::object(*dataBuffer.trajectory_) : bp::object();
     auto sampling = SamplingDescriptionToPython(dataBuffer.sampling_);
     auto buffer = pygadgetron.attr("IsmrmrdDataBuffered")(data,headers,sampling,trajectory);
-        return buffer;
+
+    bp::incref(data.ptr());
+    bp::incref(headers.ptr());
+    bp::incref(trajectory.ptr());
+    bp::incref(sampling.ptr());
+
+    return buffer;
   }
 
   static bp::object SamplingDescriptionToPython(const SamplingDescription & sD){
@@ -50,7 +57,7 @@ private:
     result.attr("encoded_FOV") = bp::make_tuple(sD.encoded_FOV_[0],sD.encoded_FOV_[1],sD.encoded_FOV_[2]);
     result.attr("encoded_matrix") = bp::make_tuple(sD.encoded_matrix_[0],sD.encoded_matrix_[1],sD.encoded_matrix_[2]);
     result.attr("recon_FOV") = bp::make_tuple(sD.recon_FOV_[0],sD.recon_FOV_[1],sD.recon_FOV_[2]);
-    result.attr("recon_matrix") = bp::make_tuple(sD .recon_matrix_[0],sD.recon_matrix_[1],sD.recon_matrix_[2]);
+    result.attr("recon_matrix") = bp::make_tuple(sD.recon_matrix_[0],sD.recon_matrix_[1],sD.recon_matrix_[2]);
  } catch (bp::error_already_set const &){
         std::string err = pyerr_to_string();
         GERROR(err.c_str());
@@ -88,7 +95,6 @@ struct IsmrmrdReconData_from_python_object {
 
   /// Construct an hoNDArray in-place
   static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data) {
-
     void* storage = ((bp::converter::rvalue_from_python_storage<IsmrmrdReconData >*)data)->storage.bytes;
     IsmrmrdReconData* reconData = new (storage) IsmrmrdReconData;
     data->convertible = storage;
@@ -139,12 +145,12 @@ struct IsmrmrdReconData_from_python_object {
       sampling.sampling_limits_[i].center_ = bp::extract<uint16_t>(pySL.attr("center"));
       sampling.sampling_limits_[i].max_ = bp::extract<uint16_t>(pySL.attr("max"));
     }
+    result.sampling_ = sampling;
     return result;
   }
 
 
 };
-
 
 
 /// Partial specialization of `python_converter` for hoNDArray

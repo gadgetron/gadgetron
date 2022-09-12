@@ -156,7 +156,9 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         size_t N = kspace.get_size(3);
         size_t S = kspace.get_size(4);
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace, debug_folder_ + "binning_kspace");
+        GDEBUG_STREAM("Processing suffix is " << suffix_)
+
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace, debug_folder_ + "binning_kspace" + suffix_);
 
         // -----------------------------------------------------
         // perform the raw data recon
@@ -167,9 +169,9 @@ void CmrKSpaceBinning<T>::process_binning_recon()
 
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(binning_obj_.full_kspace_raw_, debug_folder_ + "full_kspace_raw");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(binning_obj_.complex_image_raw_, debug_folder_ + "complex_image_raw");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(binning_obj_.coil_map_raw_, debug_folder_ + "coil_map_raw");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(binning_obj_.full_kspace_raw_, debug_folder_ + "full_kspace_raw" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(binning_obj_.complex_image_raw_, debug_folder_ + "complex_image_raw" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(binning_obj_.coil_map_raw_, debug_folder_ + "coil_map_raw" + suffix_);
 
         // -----------------------------------------------------
         // estimate acquisition time stamp and cardiac phase time ratio for all acuqired kspace lines
@@ -184,10 +186,10 @@ void CmrKSpaceBinning<T>::process_binning_recon()
 
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.time_stamp_, debug_folder_ + "time_stamp");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.cpt_time_stamp_, debug_folder_ + "cpt_time_stamp");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.phs_time_stamp_, debug_folder_ + "phs_time_stamp");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.phs_cpt_time_stamp_, debug_folder_ + "phs_cpt_time_stamp");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.time_stamp_, debug_folder_ + "time_stamp" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.cpt_time_stamp_, debug_folder_ + "cpt_time_stamp" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.phs_time_stamp_, debug_folder_ + "phs_time_stamp" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.phs_cpt_time_stamp_, debug_folder_ + "phs_cpt_time_stamp" + suffix_);
 
         // -----------------------------------------------------
         // estimate respiratory nativagor signal
@@ -209,7 +211,7 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         }
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.navigator_, debug_folder_ + "respiratory_navigator");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.navigator_, debug_folder_ + "respiratory_navigator" + suffix_);
 
         // -----------------------------------------------------
         // find the best heart beat from the respiratory navigator
@@ -259,7 +261,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         }
 
         ArrayType& data = this->binning_obj_.data_;
-        // if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(data, debug_folder_ + "raw_data_recon_data");
+        // if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(data, debug_folder_ + "raw_data_recon_data" + suffix_);
 
         ArrayType& full_kspace = this->binning_obj_.full_kspace_raw_;
         ArrayType& complex_image = this->binning_obj_.complex_image_raw_;
@@ -286,7 +288,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
 
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref, debug_folder_ + "raw_data_recon_ref");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref, debug_folder_ + "raw_data_recon_ref" + suffix_);
 
         // ------------------------------------------------
         // determine the channel compression modes
@@ -307,7 +309,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
             for (cha = 0; cha < (long long)CHA; cha++)
             {
                 dataCha.create(RO, E1, pRef + cha*RO*E1);
-                T v = Gadgetron::norm2(dataCha);
+                T v = Gadgetron::nrm2(dataCha);
                 E[cha] = v*v;
             }
 
@@ -327,8 +329,8 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         ArrayType ref_src(RO, E1, CHA, ref.begin());
         ArrayType ref_dst(RO, E1, dstCHA, ref.begin());
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref_src, debug_folder_ + "raw_data_recon_ref_src");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref_dst, debug_folder_ + "raw_data_recon_ref_dst");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref_src, debug_folder_ + "raw_data_recon_ref_src" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref_dst, debug_folder_ + "raw_data_recon_ref_dst" + suffix_);
 
         // ------------------------------------------------
         // estimate coil map
@@ -356,18 +358,18 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         ArrayType filter_E1_ref_coi_map;
         Gadgetron::generate_symmetric_filter_ref(ref.get_size(1), start_E1, end_E1, filter_E1_ref_coi_map);
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(filter_RO_ref_coi_map, debug_folder_ + "raw_data_recon_filter_RO_ref_coi_map");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(filter_E1_ref_coi_map, debug_folder_ + "raw_data_recon_filter_E1_ref_coi_map");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(filter_RO_ref_coi_map, debug_folder_ + "raw_data_recon_filter_RO_ref_coi_map" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(filter_E1_ref_coi_map, debug_folder_ + "raw_data_recon_filter_E1_ref_coi_map" + suffix_);
 
         // apply ref coil map filter
         ArrayType ref_coil_map_dst;
         Gadgetron::apply_kspace_filter_ROE1(ref_dst, filter_RO_ref_coi_map, filter_E1_ref_coi_map, ref_coil_map_dst);
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref_coil_map_dst, debug_folder_ + "raw_data_recon_ref_coil_map_dst");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(ref_coil_map_dst, debug_folder_ + "raw_data_recon_ref_coil_map_dst" + suffix_);
 
         // compute coil map
         ArrayType complex_im_coil_map;
         Gadgetron::hoNDFFT<T>::instance()->ifft2c(ref_coil_map_dst, complex_im_coil_map);
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(complex_im_coil_map, debug_folder_ + "raw_data_recon_complex_im_coil_map");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(complex_im_coil_map, debug_folder_ + "raw_data_recon_complex_im_coil_map" + suffix_);
 
         size_t ks = 7;
         size_t power = 3;
@@ -378,7 +380,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
 
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(coil_map, debug_folder_ + "raw_data_recon_Result_coil_map");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(coil_map, debug_folder_ + "raw_data_recon_Result_coil_map" + suffix_);
 
         // ------------------------------------------------
         // estimate grappa kernel
@@ -401,16 +403,16 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kernelIm);
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(convKer, debug_folder_ + "raw_data_recon_convKer");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kernelIm, debug_folder_ + "raw_data_recon_kernelIm");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(convKer, debug_folder_ + "raw_data_recon_convKer" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kernelIm, debug_folder_ + "raw_data_recon_kernelIm" + suffix_);
 
         // compute unmixing coefficient
         ArrayType unmixing_coeff;
         hoNDArray<T> gFactor;
         Gadgetron::grappa2d_unmixing_coeff(kernelIm, coil_map, (size_t)binning_obj_.accel_factor_E1_, unmixing_coeff, gFactor);
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(unmixing_coeff, debug_folder_ + "raw_data_recon_unmixing_coeff");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(gFactor, debug_folder_ + "raw_data_recon_gFactor");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(unmixing_coeff, debug_folder_ + "raw_data_recon_unmixing_coeff" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(gFactor, debug_folder_ + "raw_data_recon_gFactor" + suffix_);
 
         // ------------------------------------------------
         // perform reconstruction
@@ -419,7 +421,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         // compute aliased images
         ArrayType aliased_im(data);
         Gadgetron::hoNDFFT<T>::instance()->ifft2c(data, aliased_im);
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(aliased_im, debug_folder_ + "raw_data_recon_aliased_im");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(aliased_im, debug_folder_ + "raw_data_recon_aliased_im" + suffix_);
 
         // snr scaling
         float ROScalingFactor = (float)RO / (float)lenRO;
@@ -449,8 +451,8 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
 
         if ( this->perform_timing_ ) { gt_timer_.stop(); }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(complex_image, debug_folder_ + "raw_data_recon_Result_complex_image");
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(full_kspace, debug_folder_ + "raw_data_recon_Result_full_kspace");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(complex_image, debug_folder_ + "raw_data_recon_Result_complex_image" + suffix_);
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(full_kspace, debug_folder_ + "raw_data_recon_Result_full_kspace" + suffix_);
     }
     catch(...)
     {
@@ -508,7 +510,7 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
             }
         }
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.time_stamp_, debug_folder_+"binning_obj_time_stamp");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.time_stamp_, debug_folder_+"binning_obj_time_stamp" + suffix_);
 
         binning_obj_.cpt_time_ratio_.create(E1, N, S);
         Gadgetron::fill(binning_obj_.cpt_time_ratio_, (float)-1);
@@ -557,14 +559,14 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
                 }
             }
 
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str() + suffix_);
 
             float meanRR(0);
 
             if ( !hasDescending )
             {
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str() + suffix_);
 
                 this->process_time_stamps(time_stamp, cpt_time_stamp, 
                                 cpt_time_ratio, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio, 
@@ -574,7 +576,7 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
             {
                 GDEBUG_STREAM("CmrKSpaceBinning -- Alternating sampling strategy detected ... ");
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp_flipped, debug_folder_+"cpt_time_stamp_flipped" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp_flipped, debug_folder_+"cpt_time_stamp_flipped" + os.str() + suffix_);
 
                 hoNDArray<float> cpt_time_ratio_tmp(E1, N);
 
@@ -582,7 +584,7 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
                                 cpt_time_ratio_tmp, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio, 
                                 ind_heart_beat, startingHB, endingHB, meanRR);
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio_tmp, debug_folder_+"cpt_time_ratio_tmp" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio_tmp, debug_folder_+"cpt_time_ratio_tmp" + os.str() + suffix_);
 
                 cpt_time_stamp = cpt_time_stamp_flipped;
                 cpt_time_ratio = cpt_time_ratio_tmp;
@@ -599,12 +601,12 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
                 }
             }
 
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp_after_processing" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp_after_processing" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio, debug_folder_+"cpt_time_ratio" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_time_stamp, debug_folder_+"phs_time_stamp" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_cpt_time_stamp, debug_folder_+"phs_cpt_time_stamp" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_cpt_time_ratio, debug_folder_+"phs_cpt_time_ratio" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp_after_processing" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp_after_processing" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio, debug_folder_+"cpt_time_ratio" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_time_stamp, debug_folder_+"phs_time_stamp" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_cpt_time_stamp, debug_folder_+"phs_cpt_time_stamp" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_cpt_time_ratio, debug_folder_+"phs_cpt_time_ratio" + os.str() + suffix_);
 
             binning_obj_.starting_heart_beat_[s] = startingHB;
             binning_obj_.ending_heart_beat_[s] = endingHB;
@@ -721,7 +723,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
         NavigatorRoiType roi;
         roi.resize(S);
 
-        Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double> reg;
 
         size_t s, n, e1;
         for (s=0; s<S; s++)
@@ -736,7 +738,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             hoNDArray<T> mag;
             Gadgetron::abs(im, mag);
 
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_+"navigator_mag" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_+"navigator_mag" + os.str() + suffix_);
 
             // detect key frame
             size_t key_frame;
@@ -751,18 +753,18 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             Gadgetron:: perform_moco_fixed_key_frame_2DT(mag, key_frame, respiratory_navigator_moco_reg_strength_, respiratory_navigator_moco_iters_, bidirectional_moco, warp_images, reg);
 
             // get the moco results
-            hoNDArray<float> dx, dy;
+            hoNDArray<double> dx, dy;
             reg.deformation_field_[0].to_NDArray(0, dx);
             reg.deformation_field_[1].to_NDArray(0, dy);
 
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(dx, debug_folder_+"navigator_mag_moco_dx" + os.str());
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(dy, debug_folder_+"navigator_mag_moco_dy" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(dx, debug_folder_+"navigator_mag_moco_dx" + os.str() + suffix_);
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(dy, debug_folder_+"navigator_mag_moco_dy" + os.str() + suffix_);
 
             if ( !debug_folder_.empty() )
             {
                 hoNDArray<T> magMoCo(mag);
                 reg.warped_container_.to_NDArray(0, magMoCo);
-                gt_exporter_.export_array(magMoCo, debug_folder_+"navigator_mag_moco" + os.str());
+                gt_exporter_.export_array(magMoCo, debug_folder_+"navigator_mag_moco" + os.str() + suffix_);
             }
 
             // select the best region and get the navigator signal
@@ -796,7 +798,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             // compute the mean deformation within the region
             hoNDArray<float> mean_deform_RO(num_RO, num_E1, N);
             hoNDArray<float> mean_deform_E1(num_RO, num_E1, N);
-            hoNDArray<float> deform_patch(patch_size_RO, patch_size_E1);
+            hoNDArray<double> deform_patch(patch_size_RO, patch_size_E1);
 
             size_t l, c;
             for ( n=0; n<N; n++ )
@@ -812,7 +814,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                         for ( pl=0; pl<patch_size_E1; pl++ )
                         {
                             long long offset = dx.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
-                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(float)*patch_size_RO);
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(double)*patch_size_RO);
                         }
 
                         // compute the mean deformation
@@ -829,7 +831,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                         for ( pl=0; pl<patch_size_E1; pl++ )
                         {
                             long long offset = dy.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
-                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(float)*patch_size_RO);
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(double)*patch_size_RO);
                         }
 
                         // compute the mean deformation
@@ -904,7 +906,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
                 GDEBUG_CONDITION_STREAM(verbose_, "Respirator navigator - n " << n << ", s " << s << " : " << deformValue);
             }
 
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array(navigator_s, debug_folder_ + "navigator"  + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(navigator_s, debug_folder_ + "navigator"  + os.str() + suffix_);
         }
     }
     catch(...)
@@ -1153,7 +1155,7 @@ void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoND
 
         Gadgetron::correct_time_stamp_with_fitting(time_stamp, startE1, endE1);
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp_after_fitting");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp_after_fitting" + suffix_);
 
         // --------------------------------------------------------
         // cpt time stamps
@@ -1383,7 +1385,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
         hoNDArray<T> mag;
         Gadgetron::abs(complex_image_raw, mag);
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "complex_image_raw_mag");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "complex_image_raw_mag" + suffix_);
 
         size_t dstN = binning_obj_.output_N_;
         binning_obj_.kspace_binning_.create(RO, E1, CHA, binning_obj_.output_N_, S);
@@ -1454,7 +1456,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                 size_t num_images_bestHB = endN - startN + 1;
                 hoNDArray<T> mag_bestHB(RO, E1, num_images_bestHB, mag.begin()+s*RO*E1*N+startN*RO*E1);
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag_bestHB, debug_folder_ + "mag_bestHB" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag_bestHB, debug_folder_ + "mag_bestHB" + os.str() + suffix_);
 
                 // ----------------------------------------
                 // get the respiratory location of the best HB
@@ -1480,7 +1482,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                 hoNDArray<T> mag_bestHB_at_desired_cpt;
                 this->interpolate_best_HB_images(cpt_time_ratio_bestHB, mag_bestHB, binning_obj_.desired_cpt_, mag_bestHB_at_desired_cpt);
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag_bestHB_at_desired_cpt, debug_folder_ + "mag_bestHB_at_desired_cpt" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag_bestHB_at_desired_cpt, debug_folder_ + "mag_bestHB_at_desired_cpt" + os.str() + suffix_);
 
                 // ----------------------------------------
                 // compute acceptance range
@@ -1584,7 +1586,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                         std::stringstream os_local;
                         os_local << "_N_" << n << "_S_" << s;
 
-                        gt_exporter_.export_array_complex(warpped_complex_images_wider[n], debug_folder_ + "warpped_complex_images" + os_local.str());
+                        gt_exporter_.export_array_complex(warpped_complex_images_wider[n], debug_folder_ + "warpped_complex_images" + os_local.str() + suffix_);
                     }
                 }
 
@@ -1620,7 +1622,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                 hoNDArray< float > kspace_binning_hit_count(E1, dstN, binning_obj_.kspace_binning_hit_count_.begin()+s*E1*dstN);
 
                 ArrayType coil_map(RO, E1, CHA, coil_map_raw.begin());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(coil_map, debug_folder_ + "coil_map" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(coil_map, debug_folder_ + "coil_map" + os.str() + suffix_);
 
                 ArrayType complexIm(RO, E1, CHA);
 
@@ -1667,7 +1669,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                         std::stringstream os_local;
                         os_local << "_N_" << n << "_S_" << s;
 
-                        gt_exporter_.export_array_complex(warpped_complex_images_multi_channel_wider, debug_folder_ + "warpped_complex_images_multi_channel" + os_local.str());
+                        gt_exporter_.export_array_complex(warpped_complex_images_multi_channel_wider, debug_folder_ + "warpped_complex_images_multi_channel" + os_local.str() + suffix_);
                     }
 
                     // average across all N
@@ -1679,7 +1681,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                         std::stringstream os_local;
                         os_local << "_N_" << n << "_S_" << s;
 
-                        gt_exporter_.export_array_complex(warpped_complex_images_multi_channel_image_domain_average_wider, debug_folder_ + "warpped_complex_images_multi_channel_image_domain_average" + os_local.str());
+                        gt_exporter_.export_array_complex(warpped_complex_images_multi_channel_image_domain_average_wider, debug_folder_ + "warpped_complex_images_multi_channel_image_domain_average" + os_local.str() + suffix_);
                     }
 
                     // go back to kspace
@@ -1718,14 +1720,14 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                     GDEBUG_CONDITION_STREAM(this->verbose_, "==================================================================");
                 }
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_image_domain_average, debug_folder_ + "kspace_binning_image_domain_average_IMAGE" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_image_domain_average, debug_folder_ + "kspace_binning_image_domain_average_IMAGE" + os.str() + suffix_);
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(kspace_binning_image_domain_average);
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning, debug_folder_ + "kspace_binning" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_wider, debug_folder_ + "kspace_binning_wider" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_image_domain_average, debug_folder_ + "kspace_binning_image_domain_average" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array(kspace_binning_hit_count, debug_folder_ + "kspace_binning_hit_count" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning, debug_folder_ + "kspace_binning" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_wider, debug_folder_ + "kspace_binning_wider" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_image_domain_average, debug_folder_ + "kspace_binning_image_domain_average" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(kspace_binning_hit_count, debug_folder_ + "kspace_binning_hit_count" + os.str() + suffix_);
             }
         }
         else
@@ -1777,12 +1779,11 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
         std::vector<float> cpt(N+2);
 
         memcpy(mag.begin()+RO*E1, mag_bestHB.begin(), mag_bestHB.get_number_of_bytes());
-        memcpy(&cpt[0]+1, &cpt_time_ratio_bestHB_checked[0], sizeof(float)*N);
+        std::copy(cpt_time_ratio_bestHB_checked.begin(), cpt_time_ratio_bestHB_checked.end(), cpt.begin() + 1);
 
         size_t n;
 
         // first phase
-        // memcpy(mag.begin(), mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
         memcpy(mag.begin(), mag_bestHB.begin(), sizeof(T)*RO*E1);
         cpt[0] = (float)( -(1.0 - cpt_time_ratio_bestHB_checked[N-1]) );
 
@@ -1791,7 +1792,7 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
         memcpy(mag.begin()+(N+1)*RO*E1, mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
         cpt[N+1] = (float)( 1.0 + cpt_time_ratio_bestHB_checked[0] );
 
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "mag_bestHB_periodic_condition");
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "mag_bestHB_periodic_condition" + suffix_);
 
         GDEBUG_CONDITION_STREAM(this->verbose_, "Cpt time ratio used for interpolating best heart beat : ");
         for ( n=0; n<N+2; n++ )
@@ -1991,13 +1992,13 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
 
                 hoNDArray<T> tmp;
                 input.to_NDArray(n, tmp);
-                gt_exporter_.export_array(tmp, debug_folder_+fileNameUsed);
+                gt_exporter_.export_array(tmp, debug_folder_+fileNameUsed + suffix_);
             }
         }
 
         std::vector<unsigned int> key_frame(dstN, 0);
 
-        Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<hoNDImage<float, 2>, hoNDImage<float, 2>, double> reg;
 
         GDEBUG_STREAM("Perform moco against best heart beat : " << this->kspace_binning_moco_reg_strength_);
         GDEBUG_STREAM("MOCO iterations : ");
@@ -2027,7 +2028,7 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
                     ostr << "Picked_images_after_moco_n" << n;
                     std::string fileNameUsed = ostr.str();
 
-                    gt_exporter_.export_array(im, debug_folder_+fileNameUsed);
+                    gt_exporter_.export_array(im, debug_folder_+fileNameUsed + suffix_);
                 }
             }
         }
@@ -2081,7 +2082,7 @@ void CmrKSpaceBinning<T>::perform_moco_warp_on_selected_images( const std::vecto
         ComplexImageContinerType output;
         output.copyFrom(input);
 
-        Gadgetron::hoImageRegContainer2DRegistration< T, float, 2, 2> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, double> reg;
         reg.warpContainer2D(input, input, deform, output);
 
         warpped_complex_images.resize(dstN);
@@ -2390,7 +2391,7 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>&
                 }
             }
 
-            if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning, debug_folder_ + "kspace_binning_before_fft_recon");
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning, debug_folder_ + "kspace_binning_before_fft_recon" + suffix_);
 
             // perform fft recon
             ArrayType reconFFT(kspace_binning);
@@ -2424,10 +2425,10 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>&
                 ArrayType kspaceRef(RO, E1, CHA, N, 1, kspace_binning_image_domain_average.begin()+s*RO*E1*CHA*N);
                 ArrayType coilMap(RO, E1, CHA, coil_map.begin());
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace, debug_folder_ + "kspace_binning_linear_recon_kspace" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_wider, debug_folder_ + "kspace_binning_linear_recon_kspace_wider" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspaceRef, debug_folder_ + "kspace_binning_linear_recon_kspaceRef" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(coilMap, debug_folder_ + "kspace_binning_linear_recon_coilMap" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace, debug_folder_ + "kspace_binning_linear_recon_kspace" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_wider, debug_folder_ + "kspace_binning_linear_recon_kspace_wider" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspaceRef, debug_folder_ + "kspace_binning_linear_recon_kspaceRef" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(coilMap, debug_folder_ + "kspace_binning_linear_recon_coilMap" + os.str() + suffix_);
 
                 // perform linear recon
                 ArrayType resKSpace, resIm, kernel, kernelIm;
@@ -2444,10 +2445,10 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>&
                 }
                 if ( this->perform_timing_ ) { gt_timer_local_.stop(); }
 
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resKSpace, debug_folder_ + "kspace_binning_linear_recon_resKSpace" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resIm, debug_folder_ + "kspace_binning_linear_recon_resIm" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kernel, debug_folder_ + "kspace_binning_linear_recon_kernel" + os.str());
-                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kernelIm, debug_folder_ + "kspace_binning_linear_recon_kernelIm" + os.str());
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resKSpace, debug_folder_ + "kspace_binning_linear_recon_resKSpace" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resIm, debug_folder_ + "kspace_binning_linear_recon_resIm" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kernel, debug_folder_ + "kspace_binning_linear_recon_kernel" + os.str() + suffix_);
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kernelIm, debug_folder_ + "kspace_binning_linear_recon_kernelIm" + os.str() + suffix_);
 
                 // perform nonlinear recon
                 if(this->use_nonlinear_binning_recon_)
@@ -2458,8 +2459,8 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>&
                     this->perform_non_linear_recon_on_kspace_binning(kspace, resKSpace, coilMap, kernel, kernelIm, resKSpaceNonLinear, resImNonLinear);
                     if ( this->perform_timing_ ) { gt_timer_local_.stop(); }
 
-                    if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resKSpaceNonLinear, debug_folder_ + "kspace_binning_linear_recon_resKSpaceNonLinear" + os.str());
-                    if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resImNonLinear, debug_folder_ + "kspace_binning_linear_recon_resImNonLinear" + os.str());
+                    if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resKSpaceNonLinear, debug_folder_ + "kspace_binning_linear_recon_resKSpaceNonLinear" + os.str() + suffix_);
+                    if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(resImNonLinear, debug_folder_ + "kspace_binning_linear_recon_resImNonLinear" + os.str() + suffix_);
 
                     memcpy(complex_image_binning.begin()+s*RO*E1*N, resImNonLinear.begin(), resImNonLinear.get_number_of_bytes());
                 }

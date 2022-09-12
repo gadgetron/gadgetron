@@ -10,7 +10,7 @@
 
 namespace Gadgetron{
   
-  template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuBuffer
+  template<class REAL, unsigned int D> class EXPORTGPUPMRI cuBuffer
   {
   public:
     
@@ -53,9 +53,8 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<_complext> > cyc_buffer_;
     boost::shared_ptr< cuNDArray<_complext> > acc_image_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
-    boost::shared_ptr< cuNFFT_plan<REAL,D,ATOMICS> > nfft_plan_;
+    boost::shared_ptr< cuNFFT_plan<REAL,D> > nfft_plan_;
   };
 
   // To prevent the use of atomics with doubles.
-  template<unsigned int D> class EXPORTGPUPMRI cuBuffer<double,D,true>{};  
 }

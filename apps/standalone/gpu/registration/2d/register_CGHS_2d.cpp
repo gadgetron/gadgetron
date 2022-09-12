@@ -73,12 +73,12 @@ int main(int argc, char** argv)
   }
   
   if( num_fixed_dims < num_moving_dims  ){
-    host_fixed = expand( host_fixed.get(), host_moving->get_size(2) );
+    *host_fixed = expand( *host_fixed, host_moving->get_size(2) );
     num_fixed_dims = host_fixed->get_number_of_dimensions();
   }
 
   if( num_moving_dims < num_moving_dims  ){
-    host_moving = expand( host_moving.get(), host_fixed->get_size(2) );
+    *host_moving = expand( *host_moving, host_fixed->get_size(2) );
     num_moving_dims = host_moving->get_number_of_dimensions();
   }
 

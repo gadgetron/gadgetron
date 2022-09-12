@@ -285,7 +285,7 @@ namespace Gadgetron{
 
     {
       cuNDArray<float_complext> tmp(*j->reg_host_);
-      *reg_image_ = *expand( &tmp, frames );
+      *reg_image_ = expand( tmp, frames );
     }
 
     // Define preconditioning weights
@@ -348,7 +348,7 @@ namespace Gadgetron{
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
-      sbresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, sbresult.get() );
+      *sbresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, *sbresult );
         
     // Now pass on the reconstructed images
     //

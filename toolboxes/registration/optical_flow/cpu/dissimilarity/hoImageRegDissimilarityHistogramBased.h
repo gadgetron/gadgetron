@@ -3,25 +3,29 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDissimilarityHistogramBased_H_
+#define hoImageRegDissimilarityHistogramBased_H_
+
 #pragma once
 
 #include <limits>
 #include "hoMatrix.h"
 #include "hoImageRegDissimilarity.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilarityHistogramBased : public hoImageRegDissimilarity<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilarityHistogramBased : public hoImageRegDissimilarity<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilarityHistogramBased<ValueType, D> Self;
-        typedef hoImageRegDissimilarity<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilarityHistogramBased<ImageType> Self;
+        typedef hoImageRegDissimilarity<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -81,20 +85,20 @@ namespace Gadgetron
         size_t num_samples_in_hist_;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityHistogramBased<ValueType, D>::
+    template<typename ImageType> 
+    hoImageRegDissimilarityHistogramBased<ImageType>::
     hoImageRegDissimilarityHistogramBased(unsigned int num_bin_target, unsigned int num_bin_warpped, ValueType bg_value) 
         : BaseClass(bg_value), num_bin_target_(num_bin_target), num_bin_warpped_(num_bin_warpped), pv_interpolation_(false), step_size_ignore_pixel_(1)
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityHistogramBased<ValueType, D>::~hoImageRegDissimilarityHistogramBased()
+    template<typename ImageType> 
+    hoImageRegDissimilarityHistogramBased<ImageType>::~hoImageRegDissimilarityHistogramBased()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilarityHistogramBased<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilarityHistogramBased<ImageType>::ValueType hoImageRegDissimilarityHistogramBased<ImageType>::evaluate(ImageType& w)
     {
         try
         {
@@ -202,14 +206,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityHistogramBased<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityHistogramBased<ImageType>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarityHistogramBased<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilarityHistogramBased<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image dissimilarity with histogram -------------" << endl;
@@ -224,3 +228,4 @@ namespace Gadgetron
         os << "Step size to ignore pixels when creating histogram is : " << step_size_ignore_pixel_ << endl << ends;
     }
 }
+#endif // hoImageRegDissimilarityHistogramBased_H_

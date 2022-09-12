@@ -249,7 +249,7 @@ void hoSPIRIT2DTOperator<T>::compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_T
     {
         if (no_null_space_)
         {
-            b.create(x.get_dimensions());
+            b.create(x.dimensions());
             Gadgetron::clear(b);
         }
         else
@@ -394,8 +394,7 @@ typename hoSPIRIT2DTOperator<T>::REAL hoSPIRIT2DTOperator<T>::magnitude(ARRAY_TY
         this->apply_forward_kernel(complexIm_);
 
         // L2 norm
-        T obj(0);
-        Gadgetron::dotc(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, obj);
+        T obj = Gadgetron::dot(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_);
 
         return std::abs(obj);
     }
@@ -429,7 +428,7 @@ void hoSPIRIT2DTOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& i
             }
             else
             {
-                fft_im_buffer_.create(x.get_dimensions());
+                fft_im_buffer_.create(x.dimensions());
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, fft_im_buffer_);
             }
         }
@@ -464,7 +463,7 @@ void hoSPIRIT2DTOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE&
             }
             else
             {
-                fft_kspace_buffer_.create(x.get_dimensions());
+                fft_kspace_buffer_.create(x.dimensions());
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, fft_kspace_buffer_);
             }
         }

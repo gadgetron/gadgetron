@@ -1,11 +1,13 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
 #include "complext.h"
 #include "GadgetronTimer.h"
 
 #include <gtest/gtest.h>
 #include <complex>
 #include <vector>
+#include <range/v3/view.hpp>
 
 using namespace Gadgetron;
 using testing::Types;
@@ -15,7 +17,7 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -26,7 +28,7 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -35,7 +37,7 @@ protected:
 typedef Types<float, double> realImplementations;
 typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_utils_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_utils_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_utils_TestReal, fillTest)
 {
@@ -87,23 +89,23 @@ TYPED_TEST(hoNDArray_utils_TestReal,permuteTest){
 
   this->Array.get_data_ptr()[37] = TypeParam(2);
 
-  EXPECT_FLOAT_EQ(1, permute(&this->Array,&order)->at(0));
-  EXPECT_FLOAT_EQ(2, permute(&this->Array,&order)->at(37));
+  EXPECT_FLOAT_EQ(1, permute(this->Array,order)[0]);
+  EXPECT_FLOAT_EQ(2, permute(this->Array,order)[37]);
 
   order.clear();
   order.push_back(1); order.push_back(0); order.push_back(2); order.push_back(3);
 
-  EXPECT_FLOAT_EQ(2, permute(&this->Array,&order)->at(1));
+  EXPECT_FLOAT_EQ(2, permute(this->Array,order)[1]);
 
   order.clear();
   order.push_back(3); order.push_back(1); order.push_back(2); order.push_back(0);
 
-  EXPECT_FLOAT_EQ(2, permute(&this->Array,&order)->at(19));
+  EXPECT_FLOAT_EQ(2, permute(this->Array,order)[19]);
 
   order.clear();
   order.push_back(2); order.push_back(0); order.push_back(1); order.push_back(3);
 
-  EXPECT_FLOAT_EQ(2, permute(&this->Array,&order)->at(851));
+  EXPECT_FLOAT_EQ(2, permute(this->Array,order)[851]);
 }
 
 TYPED_TEST(hoNDArray_utils_TestReal,shiftDimTest){
@@ -111,13 +113,13 @@ TYPED_TEST(hoNDArray_utils_TestReal,shiftDimTest){
   fill(&this->Array,TypeParam(1));
   this->Array.get_data_ptr()[37] = 2;
 
-  EXPECT_FLOAT_EQ(1, shift_dim(&this->Array,0)->at(0));
-  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,0)->at(37));
-  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,1)->at(1));
-  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,-1)->at(37*19));
-  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,2)->at(23*37*19));
-  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,3)->at(37*19));
-  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,4)->at(37));
+  EXPECT_FLOAT_EQ(1, shift_dim(this->Array,0)[0]);
+  EXPECT_FLOAT_EQ(2, shift_dim(this->Array,0)[37]);
+  EXPECT_FLOAT_EQ(2, shift_dim(this->Array,1)[1]);
+  EXPECT_FLOAT_EQ(2, shift_dim(this->Array,-1)[37*19]);
+  EXPECT_FLOAT_EQ(2, shift_dim(this->Array,2)[23*37*19]);
+  EXPECT_FLOAT_EQ(2, shift_dim(this->Array,3)[37*19]);
+  EXPECT_FLOAT_EQ(2, shift_dim(this->Array,4)[37]);
 }
 
 TYPED_TEST(hoNDArray_utils_TestReal,sumTest){
@@ -125,16 +127,16 @@ TYPED_TEST(hoNDArray_utils_TestReal,sumTest){
   unsigned int idx = 0;
 
   fill(&this->Array,v1);
-  EXPECT_FLOAT_EQ(49*v1,sum(&this->Array,1)->get_data_ptr()[idx]);
+  EXPECT_FLOAT_EQ(49*v1,sum(this->Array,1)[idx]);
 
   fill(&this->Array,v1);
-  EXPECT_FLOAT_EQ(23*v1,sum(&this->Array,2)->get_data_ptr()[idx]);
+  EXPECT_FLOAT_EQ(23*v1,sum(this->Array,2)[idx]);
 
   fill(&this->Array,v1);
-  EXPECT_FLOAT_EQ(19*v1,sum(&this->Array,3)->get_data_ptr()[idx]);
+  EXPECT_FLOAT_EQ(19*v1,sum(this->Array,3)[idx]);
 }
 
-TYPED_TEST_CASE(hoNDArray_utils_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_utils_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
 
@@ -145,41 +147,41 @@ TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
   
   this->Array.get_data_ptr()[37] = TypeParam(2,3);
 
-  EXPECT_FLOAT_EQ(1, real(permute(&this->Array,&order)->at(0)));
-  EXPECT_FLOAT_EQ(1, imag(permute(&this->Array,&order)->at(0)));
+  EXPECT_FLOAT_EQ(1, real(permute(this->Array,order)[0]));
+  EXPECT_FLOAT_EQ(1, imag(permute(this->Array,order)[0]));
 
-  EXPECT_FLOAT_EQ(2, real(permute(&this->Array,&order)->at(37)));
-  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(37)));
+  EXPECT_FLOAT_EQ(2, real(permute(this->Array,order)[37]));
+  EXPECT_FLOAT_EQ(3, imag(permute(this->Array,order)[37]));
 
   order.clear();
   order.push_back(1); order.push_back(0); order.push_back(2); order.push_back(3);
 
-  EXPECT_FLOAT_EQ(2, real(permute(&this->Array,&order)->at(1)));
-  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(1)));
+  EXPECT_FLOAT_EQ(2, real(permute(this->Array,order)[1]));
+  EXPECT_FLOAT_EQ(3, imag(permute(this->Array,order)[1]));
 
   order.clear();
   order.push_back(3); order.push_back(1); order.push_back(2); order.push_back(0);
 
-  EXPECT_FLOAT_EQ(2, real(permute(&this->Array,&order)->at(19)));
-  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(19)));
+  EXPECT_FLOAT_EQ(2, real(permute(this->Array,order)[19]));
+  EXPECT_FLOAT_EQ(3, imag(permute(this->Array,order)[19]));
 
   order.clear();
   order.push_back(2); order.push_back(0); order.push_back(1); order.push_back(3);
 
-  EXPECT_FLOAT_EQ(2, real(permute(&this->Array,&order)->at(851)));
-  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(851)));
+  EXPECT_FLOAT_EQ(2, real(permute(this->Array,order)[851]));
+  EXPECT_FLOAT_EQ(3, imag(permute(this->Array,order)[851]));
 
   order.clear();
   order.push_back(0); order.push_back(1); order.push_back(3); order.push_back(2);
 
-  EXPECT_FLOAT_EQ(2, real(permute(&this->Array, &order)->at(37)));
-  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array, &order)->at(37)));
+  EXPECT_FLOAT_EQ(2, real(permute(this->Array, order)[37]));
+  EXPECT_FLOAT_EQ(3, imag(permute(this->Array, order)[37]));
 
   order.clear();
   order.push_back(0); order.push_back(2); order.push_back(3); order.push_back(1);
 
-  EXPECT_FLOAT_EQ(2, real(permute(&this->Array, &order)->at(37*23*19)));
-  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array, &order)->at(37*23*19)));
+  EXPECT_FLOAT_EQ(2, real(permute(this->Array, order)[37*23*19]));
+  EXPECT_FLOAT_EQ(3, imag(permute(this->Array, order)[37*23*19]));
 }
 
 TYPED_TEST(hoNDArray_utils_TestCplx,shiftDimTest){
@@ -187,26 +189,26 @@ TYPED_TEST(hoNDArray_utils_TestCplx,shiftDimTest){
   fill(&this->Array,TypeParam(1,1));
   this->Array.get_data_ptr()[37]=TypeParam(2,3);
 
-  EXPECT_FLOAT_EQ(1, real(shift_dim(&this->Array,0)->at(0)));
-  EXPECT_FLOAT_EQ(1, imag(shift_dim(&this->Array,0)->at(0)));
+  EXPECT_FLOAT_EQ(1, real(shift_dim(this->Array,0)[0]));
+  EXPECT_FLOAT_EQ(1, imag(shift_dim(this->Array,0)[0]));
 
-  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,0)->at(37)));
-  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,0)->at(37)));
+  EXPECT_FLOAT_EQ(2, real(shift_dim(this->Array,0)[37]));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(this->Array,0)[37]));
 
-  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,1)->at(1)));
-  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,1)->at(1)));
+  EXPECT_FLOAT_EQ(2, real(shift_dim(this->Array,1)[1]));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(this->Array,1)[1]));
 
-  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,-1)->at(37*19)));
-  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,-1)->at(37*19)));
+  EXPECT_FLOAT_EQ(2, real(shift_dim(this->Array,-1)[37*19]));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(this->Array,-1)[37*19]));
 
-  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,2)->at(23*37*19)));
-  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,2)->at(23*37*19)));
+  EXPECT_FLOAT_EQ(2, real(shift_dim(this->Array,2)[23*37*19]));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(this->Array,2)[23*37*19]));
 
-  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,3)->at(37*19)));
-  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,3)->at(37*19)));
+  EXPECT_FLOAT_EQ(2, real(shift_dim(this->Array,3)[37*19]));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(this->Array,3)[37*19]));
 
-  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,4)->at(37)));
-  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,4)->at(37)));
+  EXPECT_FLOAT_EQ(2, real(shift_dim(this->Array,4)[37]));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(this->Array,4)[37]));
 }
 
 TYPED_TEST(hoNDArray_utils_TestCplx,sumTest){
@@ -214,14 +216,112 @@ TYPED_TEST(hoNDArray_utils_TestCplx,sumTest){
   unsigned int idx = 0;
 
   fill(&this->Array,v1);
-  EXPECT_FLOAT_EQ(real(TypeParam(49)*v1),real(sum(&this->Array,1)->get_data_ptr()[idx]));
-  EXPECT_FLOAT_EQ(imag(TypeParam(49)*v1),imag(sum(&this->Array,1)->get_data_ptr()[idx]));
+  EXPECT_FLOAT_EQ(real(TypeParam(49)*v1),real(sum(this->Array,1)[idx]));
+  EXPECT_FLOAT_EQ(imag(TypeParam(49)*v1),imag(sum(this->Array,1)[idx]));
 
   fill(&this->Array,v1);
-  EXPECT_FLOAT_EQ(real(TypeParam(23)*v1),real(sum(&this->Array,2)->get_data_ptr()[idx]));
-  EXPECT_FLOAT_EQ(imag(TypeParam(23)*v1),imag(sum(&this->Array,2)->get_data_ptr()[idx]));
+  EXPECT_FLOAT_EQ(real(TypeParam(23)*v1),real(sum(this->Array,2)[idx]));
+  EXPECT_FLOAT_EQ(imag(TypeParam(23)*v1),imag(sum(this->Array,2)[idx]));
 
   fill(&this->Array,v1);
-  EXPECT_FLOAT_EQ(real(TypeParam(19)*v1),real(sum(&this->Array,3)->get_data_ptr()[idx]));
-  EXPECT_FLOAT_EQ(imag(TypeParam(19)*v1),imag(sum(&this->Array,3)->get_data_ptr()[idx]));
+  EXPECT_FLOAT_EQ(real(TypeParam(19)*v1),real(sum(this->Array,3)[idx]));
+  EXPECT_FLOAT_EQ(imag(TypeParam(19)*v1),imag(sum(this->Array,3)[idx]));
+}
+
+TYPED_TEST(hoNDArray_utils_TestReal,repeatTest){
+
+    fill(&this->Array,TypeParam(2));
+
+    unsigned int repeats = 5;
+    auto repeated = repeat(this->Array,repeats);
+
+    auto expected_dims = this->Array.dimensions();
+    expected_dims.push_back(repeats);
+
+    EXPECT_EQ(expected_dims,repeated.dimensions());
+
+    EXPECT_FLOAT_EQ(sum(this->Array)*repeats,sum(repeated));
+
+
+}
+
+
+TEST(hoNDArray_utils_Test,concat_test){
+    hoNDArray<float> arr1(19,7);
+    arr1.fill(1);
+    auto arr2 = arr1;
+    arr2.fill(2);
+    auto arr3 = arr1;
+    arr3.fill(3);
+
+    using namespace ranges;
+
+    auto concatenated = concat( arr1,arr2,arr3);
+
+    EXPECT_EQ(concatenated(12,3,0),1.0f);
+    EXPECT_EQ(concatenated(12,3,1),2.0f);
+    EXPECT_EQ(concatenated(12,3,2),3.0f);
+
+}
+
+
+TEST(hoNDArray_utils_Test,concat_test_vector){
+    hoNDArray<float> arr1(19,7);
+    arr1.fill(1);
+    auto arr2 = arr1;
+    arr2.fill(2);
+    auto arr3 = arr1;
+    arr3.fill(3);
+
+
+    auto concatenated = concat( std::vector{arr1,arr2,arr3});
+
+    EXPECT_EQ(concatenated(12,3,0),1.0f);
+    EXPECT_EQ(concatenated(12,3,1),2.0f);
+    EXPECT_EQ(concatenated(12,3,2),3.0f);
+
+}
+
+TEST(hoNDArray_utils_Test,concat_along_test){
+    hoNDArray<float> arr1(19,7,3);
+    arr1.fill(1);
+
+    hoNDArray<float> arr2(19,7,1);
+    arr2.fill(2);
+
+    hoNDArray<float> arr3(19,7,5);
+    arr3.fill(3);
+
+    auto concatenated = concat_along_dimension( std::vector{arr1,arr2,arr3},2);
+
+    std::vector<size_t> expected_dims = {19,7,9};
+
+    EXPECT_EQ(expected_dims,concatenated.dimensions());
+
+    EXPECT_EQ(concatenated(12,3,0),1.0f);
+    EXPECT_EQ(concatenated(12,3,3),2.0f);
+    EXPECT_EQ(concatenated(12,3,6),3.0f);
+
+}
+
+TEST(hoNDArray_utils_Test,concat_along_test_non_contigious){
+    hoNDArray<float> arr1(19,3,7);
+    arr1.fill(1);
+
+    hoNDArray<float> arr2(19,1,7);
+    arr2.fill(2);
+
+    hoNDArray<float> arr3(19,5,7);
+    arr3.fill(3);
+
+    auto concatenated = concat_along_dimension( std::vector{arr1,arr2,arr3},1);
+
+    std::vector<size_t> expected_dims = {19,9,7};
+
+    EXPECT_EQ(expected_dims,concatenated.dimensions());
+
+    EXPECT_EQ(concatenated(12,0,3),1.0f);
+    EXPECT_EQ(concatenated(1,3,6),2.0f);
+    EXPECT_EQ(concatenated(7,6,0),3.0f);
+
 }

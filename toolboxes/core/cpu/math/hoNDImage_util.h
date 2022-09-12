@@ -11,7 +11,6 @@
 #include "ho6DArray.h"
 #include "ho7DArray.h"
 #include "hoNDImage.h"
-#include "cpucore_math_export.h"
 
 #include <complex>
 

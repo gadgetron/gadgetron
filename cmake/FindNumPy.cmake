@@ -40,16 +40,18 @@
 #============================================================================
 
 # Finding NumPy involves calling the Python interpreter
-if(NumPy_FIND_REQUIRED)
-    find_package(PythonInterp REQUIRED)
-else()
-    find_package(PythonInterp)
-endif()
 
-if(NOT PYTHONINTERP_FOUND)
-    set(NUMPY_FOUND FALSE)
-    return()
-endif()
+    message("Find numpy after python3")
+    if(NumPy_FIND_REQUIRED)
+        find_package(Python3_compat REQUIRED)
+    else()
+        find_package(Python3_compat)
+    endif()
+
+    if(NOT PYTHONLIBS_FOUND)
+        set(NUMPY_FOUND FALSE)
+        return()
+    endif()
 
 execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
     "import numpy as n; print(n.__version__); print(n.get_include());"
@@ -60,6 +62,8 @@ execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
 
 if(NOT _NUMPY_SEARCH_SUCCESS MATCHES 0)
     if(NumPy_FIND_REQUIRED)
+		
+		message("Output was ${_NUMPY_VALUES_OUTPUT} SUCCESS WAS ${_NUMPY_SEARCH_SUCCESS}")
         message(FATAL_ERROR
             "NumPy import failure:\n${_NUMPY_ERROR_VALUE}")
     endif()
@@ -99,4 +103,4 @@ find_package_message(NUMPY
     "${NUMPY_INCLUDE_DIRS}${NUMPY_VERSION}")
 
 set(NUMPY_FOUND TRUE)
-
+message("Find numpy ${NUMPY_VERSION} at ${NUMPY_INCLUDE_DIRS}")

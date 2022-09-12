@@ -39,11 +39,12 @@ public:
 			delete tmp_out;
 		}
 	}
-	void set_frequencies(std::vector<float> & freq) { freqs=thrust::device_vector<float>(freq.begin(),freq.end());
-	}
+        void set_frequencies(std::vector<float>& freq) {
+            freqs = cuNDArray<float>(freq.size());
+            cudaMemcpy(freqs.data(), freq.data(), freqs.get_number_of_bytes(), cudaMemcpyKind::cudaMemcpyHostToDevice);
+		}
 
-
-	thrust::device_vector<float> freqs;
+	cuNDArray<float> freqs;
 	float dtt,dte;
 };
 }

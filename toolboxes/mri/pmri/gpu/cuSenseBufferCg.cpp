@@ -6,12 +6,12 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D, bool ATOMICS>
-  void cuSenseBufferCg<REAL,D,ATOMICS>::
+  template<class REAL, unsigned int D>
+  void cuSenseBufferCg<REAL,D>::
   setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
 	 unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
   {      
-    cuSenseBuffer<REAL,D,ATOMICS>::setup( matrix_size, matrix_size_os, W, num_coils, num_cycles, num_sub_cycles );
+    cuSenseBuffer<REAL,D>::setup( matrix_size, matrix_size_os, W, num_coils, num_cycles, num_sub_cycles );
     
     D_ = boost::shared_ptr< cuCgPreconditioner<_complext> >( new cuCgPreconditioner<_complext>() );
     
@@ -22,16 +22,16 @@ namespace Gadgetron{
     cg_.set_output_mode( cuCgSolver<_complext>::OUTPUT_SILENT);    
   }
   
-  template<class REAL, unsigned int D, bool ATOMICS>
-  void cuSenseBufferCg<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj ) {
+  template<class REAL, unsigned int D>
+  void cuSenseBufferCg<REAL,D>::preprocess( cuNDArray<_reald> *traj ) {
     this->E_->preprocess(traj);
     std::vector<size_t> dims = *traj->get_dimensions();
     dims.push_back(this->num_coils_);
     this->E_->set_codomain_dimensions(&dims);
   }
 
-  template<class REAL, unsigned int D, bool ATOMICS>
-  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBufferCg<REAL,D,ATOMICS>::get_combined_coil_image()
+  template<class REAL, unsigned int D>
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBufferCg<REAL,D>::get_combined_coil_image()
   {
     // Some validity checks
     //
@@ -47,7 +47,7 @@ namespace Gadgetron{
     // Compute (and scale) rhs
     //
 
-    boost::shared_ptr< cuNDArray<_complext> > rhs = cuSenseBuffer<REAL,D,ATOMICS>::get_combined_coil_image();
+    boost::shared_ptr< cuNDArray<_complext> > rhs = cuSenseBuffer<REAL,D>::get_combined_coil_image();
 
     if( rhs.get() == 0x0 ){
       throw std::runtime_error("cuSenseBufferCg::get_combined_coil_image: failed to compute rhs");
@@ -74,16 +74,11 @@ namespace Gadgetron{
   // Instantiations
   //
 
-  template class EXPORTGPUPMRI cuSenseBufferCg<float,2,true>;
-  template class EXPORTGPUPMRI cuSenseBufferCg<float,2,false>;
+  template class EXPORTGPUPMRI cuSenseBufferCg<float,2>;
+  template class EXPORTGPUPMRI cuSenseBufferCg<float,3>;
+  template class EXPORTGPUPMRI cuSenseBufferCg<float,4>;
 
-  template class EXPORTGPUPMRI cuSenseBufferCg<float,3,true>;
-  template class EXPORTGPUPMRI cuSenseBufferCg<float,3,false>;
-
-  template class EXPORTGPUPMRI cuSenseBufferCg<float,4,true>;
-  template class EXPORTGPUPMRI cuSenseBufferCg<float,4,false>;
-
-  template class EXPORTGPUPMRI cuSenseBufferCg<double,2,false>;
-  template class EXPORTGPUPMRI cuSenseBufferCg<double,3,false>;
-  template class EXPORTGPUPMRI cuSenseBufferCg<double,4,false>;
+  template class EXPORTGPUPMRI cuSenseBufferCg<double,2>;
+  template class EXPORTGPUPMRI cuSenseBufferCg<double,3>;
+  template class EXPORTGPUPMRI cuSenseBufferCg<double,4>;
 }

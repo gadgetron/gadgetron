@@ -8,8 +8,9 @@
 #include "gpuBufferSensePrepGadget.h"
 #include <ismrmrd/xml.h>
 #include "GenericReconJob.h"
-#include "cuNFFTOperator.h"
 #include "cuNFFT.h"
+#include "NFFTOperator.h"
+#include "cuNDArray_math.h"
 #include "vector_td_utilities.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -78,7 +79,7 @@ int gpuBufferSensePrepGadget::process(
 	//Use reference data if available.
 	if (reconbit.ref_){
 		GDEBUG("Using Reference data for CSM estimation\n");
-		buffer = reconbit.ref_.get_ptr();
+		buffer = &reconbit.ref_.value();
 	}
 
 	size_t ncoils = buffer->headers_[0].active_channels;
@@ -109,8 +110,8 @@ int gpuBufferSensePrepGadget::process(
 		for (auto dim : tmpdim)
 			std::cout << dim << " ";
 		std::cout << std::endl;
-		auto permuted = permute((hoNDArray<float_complext>*)&buffer->data_,&new_order);
-		cuNDArray<float_complext> data(*permuted);
+		auto permuted = permute(*(hoNDArray<float_complext>*)&buffer->data_,new_order);
+		cuNDArray<float_complext> data(permuted);
 		if (dcw){
 			float scale_factor = float(prod(image_dims_recon_os_))/asum(dcw.get());
 			*dcw *= scale_factor;
@@ -120,12 +121,12 @@ int gpuBufferSensePrepGadget::process(
 		//reg_images->squeeze();
 
 		auto csm = estimate_b1_map<float,2>(reg_images.get());
-		*reg_images *= *csm;
+		*reg_images *= csm;
 		auto combined = sum(reg_images.get(),reg_images->get_number_of_dimensions()-1);
 
 		auto tmp_combined = abs(reg_images.get());
-		auto tmpcsm = abs(csm.get());
-		job.csm_host_ = csm->to_host();
+		auto tmpcsm = abs(&csm);
+		job.csm_host_ = csm.to_host();
 		job.reg_host_ = combined->to_host();
 	}
 
@@ -133,7 +134,7 @@ int gpuBufferSensePrepGadget::process(
 	IsmrmrdDataBuffered* mainbuffer = &reconbit.data_;
 
 	//Permute as Sensegadgets expect last dimension to be coils. *Sigh*
-	job.dat_host_ =permute((hoNDArray<float_complext>*)&mainbuffer->data_,&new_order);
+	job.dat_host_ = boost::make_shared<hoNDArray<complext<float>>>(permute(*(hoNDArray<float_complext>*)&mainbuffer->data_,new_order));
 
 	if (mainbuffer->trajectory_){
 		auto & trajectory = *mainbuffer->trajectory_;
@@ -212,7 +213,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 	if (dcw) { //We have density compensation, so we can get away with gridding
 
-		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width_);
+		cuNFFT_impl<float,2> plan(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width_);
 		std::vector<size_t> csm_dims = image_dims_recon_;
 		csm_dims.push_back(ncoils);
 		auto result = new cuNDArray<float_complext>(csm_dims);
@@ -222,9 +223,9 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 		GDEBUG("traj: %i data %i\n",traj->get_number_of_elements(),data->get_number_of_elements());
 		GDEBUG("Preprocessing\n\n");
-		plan.preprocess(&flat_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
+		plan.preprocess(&flat_traj,NFFT_prep_mode::NC2C);
 		GDEBUG("Computing\n\n");
-		plan.compute(data,result,dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
+		plan.compute(data,*result,dcw,NFFT_comp_mode::BACKWARDS_NC2C);
 
 		return boost::shared_ptr<cuNDArray<float_complext>>(result);
 
@@ -232,7 +233,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		std::vector<size_t> csm_dims = image_dims_recon_;
 		csm_dims.push_back(ncoils);
 
-		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
+		auto E = boost::make_shared<NFFTOperator<cuNDArray,float,2>>();
 
 		E->setup(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width_);
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};

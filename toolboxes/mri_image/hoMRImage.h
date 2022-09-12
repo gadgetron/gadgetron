@@ -13,6 +13,7 @@
 #include "hoNDImage.h"
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/meta.h"
+#include "io/primitives.h"
 
 namespace Gadgetron
 {
@@ -162,14 +163,10 @@ namespace Gadgetron
         void get_sub_image(const std::vector<size_t>& start, std::vector<size_t>& size, Self& out);
 
         /// ismrmrd image header structure
-        ISMRMRD::ISMRMRD_ImageHeader header_;
+        ISMRMRD::ImageHeader header_;
 
         /// meta attributes
         ISMRMRD::MetaContainer attrib_;
-
-        /// serialize/deserialize image content and meta attributes
-        virtual bool serialize(char*& buf, size_t& len) const;
-        virtual bool deserialize(char* buf, size_t& len);
 
         /// print out the image information
         virtual void printContent(std::ostream& os) const;
@@ -190,6 +187,22 @@ namespace Gadgetron
         using BaseClass::image_position_patient_;
         using BaseClass::image_orientation_patient_;
     };
+}
+
+namespace Gadgetron::Core::IO {
+
+    template<class T, unsigned int D>
+    void read(std::istream &stream, Gadgetron::hoMRImage<T, D> &image);
+
+    template<class T, unsigned int D>
+    void read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image);
+
+    template<class T, unsigned int D>
+    void write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &image);
+
+    template<class T, unsigned int D>
+    void write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image);
+
 }
 
 #include "hoMRImage.hxx"

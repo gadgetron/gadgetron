@@ -8,7 +8,11 @@
     <dll>gadgetron_mricore</dll>
     <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
   </reader>
-  
+    <reader>
+        <slot>1026</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
+    </reader>
   <writer>
     <slot>1022</slot>
     <dll>gadgetron_mricore</dll>
@@ -20,13 +24,13 @@
     <dll>gadgetron_mricore</dll>
     <classname>NoiseAdjustGadget</classname>
   </gadget>
-  
+
   <gadget>
     <name>PCA</name>
     <dll>gadgetron_mricore</dll>
     <classname>PCACoilGadget</classname>
   </gadget>
-  
+
   <gadget>
     <name>CoilReduction</name>
     <dll>gadgetron_mricore</dll>

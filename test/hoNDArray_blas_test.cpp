@@ -1,6 +1,8 @@
-#include "hoNDArray_math.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_math.h"
+#include <cpu/math/hoNDArray_linalg.h>
 #include <gtest/gtest.h>
+#include <random>
 #include <vector>
 
 using namespace Gadgetron;
@@ -11,8 +13,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -21,7 +23,7 @@ protected:
 
 typedef Types<float, double> realImplementations;
 
-TYPED_TEST_CASE(hoNDArray_blas_Real, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_blas_Real, realImplementations);
 
 TYPED_TEST(hoNDArray_blas_Real,dotTest){
   fill(&this->Array,TypeParam(1));
@@ -43,6 +45,12 @@ TYPED_TEST(hoNDArray_blas_Real,nrm2Test){
   EXPECT_FLOAT_EQ(std::sqrt((double)this->Array.get_number_of_elements()),nrm2(&this->Array));
   fill(&this->Array,TypeParam(3));
   EXPECT_FLOAT_EQ(std::sqrt(3.0*3.0*this->Array.get_number_of_elements()),nrm2(&this->Array));
+}
+
+TYPED_TEST(hoNDArray_blas_Real,scal){
+    fill(&this->Array,TypeParam(33));
+    scal(2,this->Array);
+    EXPECT_FLOAT_EQ(66,real(this->Array[2]));
 }
 
 TYPED_TEST(hoNDArray_blas_Real,asumTest){
@@ -74,8 +82,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -84,7 +92,7 @@ protected:
 
 typedef Types<std::complex<float>, std::complex<double>, float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_blas_Cplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_blas_Cplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_blas_Cplx,dotTest){
   fill(&this->Array,TypeParam(1,1));
@@ -127,8 +135,12 @@ TYPED_TEST(hoNDArray_blas_Cplx,aminTest){
   fill(&this->Array,TypeParam(100,101));
   this->Array.get_data_ptr()[23]=TypeParam(-50,-51);
   EXPECT_EQ(23,amin(&this->Array));
+
+  fill(&this->Array, TypeParam(100, 101));
   this->Array.get_data_ptr()[48]=TypeParam(2,100);
-  EXPECT_EQ(23,amin(&this->Array));
+  EXPECT_EQ(48,amin(&this->Array));
+
+  fill(&this->Array, TypeParam(100, 101));
   this->Array.get_data_ptr()[1000]=TypeParam(-2,-76);
   EXPECT_EQ(1000,amin(&this->Array));
 }
@@ -141,4 +153,26 @@ TYPED_TEST(hoNDArray_blas_Cplx,amaxTest){
   EXPECT_EQ(768,amax(&this->Array));
   this->Array.get_data_ptr()[999]=TypeParam(-3,-6);
   EXPECT_EQ(999,amax(&this->Array));
+}
+
+TEST(BLASLevel3,gemm_squared){
+
+    hoNDArray<std::complex<float>> A(127,113);
+    std::uniform_real_distribution<float> dist;
+    std::mt19937_64 engine{};
+
+    for (auto& d : A) d = {dist(engine),dist(engine)};
+
+    auto B = A;
+
+    auto C = A;
+    auto C2 = A;
+
+    gemm(C,A,true,B,false);
+    gemm(C2,A,true,A,false);
+
+    ASSERT_EQ(C,C2);
+
+
+
 }

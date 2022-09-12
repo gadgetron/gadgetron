@@ -10,15 +10,11 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
 	${CMAKE_SOURCE_DIR}/toolboxes/solvers
 	${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-	${CUDA_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIR} 
+	${Boost_INCLUDE_DIR}
 	${ISMRMRD_INCLUDE_DIR} 
 	)
 
 add_subdirectory(mri)
-if (NOT(WIN32))
-	add_subdirectory(ct)
-endif()
 add_subdirectory(denoising)
 add_subdirectory(deblurring)
 add_subdirectory(registration)

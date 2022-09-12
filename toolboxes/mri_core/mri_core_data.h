@@ -2,16 +2,19 @@
 #define MRI_CORE_DATA_H
 
 #include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/waveform.h"
 #include "ismrmrd/meta.h"
 #include <vector>
 #include <set>
 #include "hoNDArray.h"
-#include <boost/optional.hpp>
+#include "Types.h"
+#include <io/adapt_struct.h>
+
 
 namespace Gadgetron 
 {
 
-    /** 
+    /**
       This is a list of lables of the coordinates described in the ISMRMRD acquisition header.
 
       It is useful for accumulators and triggers and for labeling the storage used in
@@ -36,8 +39,32 @@ namespace Gadgetron
 	USER_5,
 	USER_6,
 	USER_7,
+    N_ACQUISITIONS,
 	NONE
       };
+
+
+
+    // define the dimensions of ISMRMRD
+    enum IsmrmrdDIM
+    {
+        DIM_ReadOut = 32,
+        DIM_Encoding1,
+        DIM_Channel,
+        DIM_Slice,
+        DIM_Encoding2,
+        DIM_Contrast,
+        DIM_Phase,
+        DIM_Repetition,
+        DIM_Set,
+        DIM_Segment,
+        DIM_Average,
+        DIM_other1,
+        DIM_other2,
+        DIM_other3,
+        DIM_NONE
+    };
+
 
     // --------------------------------------------------------------------------
     /// define the calibration mode of ISMRMRD
@@ -52,55 +79,26 @@ namespace Gadgetron
         ISMRMRD_noacceleration
     };
 
-  class SamplingLimit
+  struct SamplingLimit
   {
-  public:
-    uint16_t min_;
-    uint16_t center_;
-    uint16_t max_;
-
-    SamplingLimit()
-    {
-        min_ = 0;
-        center_ = 0;
-        max_ = 0;
-    }
+    uint16_t min_ = 0;
+    uint16_t center_ = 0;
+    uint16_t max_ = 0;
   };
   
-  class SamplingDescription
+  struct SamplingDescription
   {
-  public:
     // encoding FOV
-    float encoded_FOV_[3];
+    std::array<float,3> encoded_FOV_ = {0,0,0};
     // recon FOV
-    float recon_FOV_[3];
+    std::array<float,3> recon_FOV_ ={0,0,0};
     
-    uint16_t encoded_matrix_[3];
-    uint16_t recon_matrix_[3];
+    std::array<uint16_t ,3> encoded_matrix_ = {0,0,0};
+    std::array<uint16_t ,3> recon_matrix_ = {0,0,0};
     
     // sampled range along RO, E1, E2 (for asymmetric echo and partial fourier)
     // min, max and center
-    SamplingLimit sampling_limits_[3];
-
-    SamplingDescription()
-    {
-        encoded_FOV_[0] = 0;
-        encoded_FOV_[1] = 0;
-        encoded_FOV_[2] = 0;
-
-        recon_FOV_[0] = 0;
-        recon_FOV_[1] = 0;
-        recon_FOV_[2] = 0;
-
-        encoded_matrix_[0] = 0;
-        encoded_matrix_[1] = 0;
-        encoded_matrix_[2] = 0;
-
-        recon_matrix_[0] = 0;
-        recon_matrix_[1] = 0;
-        recon_matrix_[2] = 0;
-    }
-
+    std::array<SamplingLimit,3> sampling_limits_;
   };
   
   struct IsmrmrdDataBuffered
@@ -110,14 +108,27 @@ namespace Gadgetron
     hoNDArray< std::complex<float> > data_;
     
     //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
-    boost::optional<hoNDArray<float>> trajectory_;
-    
+    Core::optional<hoNDArray<float>> trajectory_;
+
+    // 6D, density weights [E0, E1, E2, N, S, LOC]
+    Core::optional<hoNDArray<float> > density_;
+
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
-    
+
     SamplingDescription sampling_;
 
-    // function to check if it's empty
+    [[deprecated]]
+    void clear()
+    {
+        if (this->data_.delete_data_on_destruct()) this->data_.clear();
+        if (this->trajectory_)
+        {
+            if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
+        }
+
+        if (this->headers_.delete_data_on_destruct()) headers_.clear();
+    }
   };
   
 
@@ -128,7 +139,9 @@ namespace Gadgetron
   {
   public:
     IsmrmrdDataBuffered data_;
-    boost::optional<IsmrmrdDataBuffered> ref_;
+    Core::optional<IsmrmrdDataBuffered> ref_;
+
+
   };
 
   /**
@@ -144,9 +157,8 @@ namespace Gadgetron
   /**
      This class is used to store an array of reconstructed data. 
    */
-  class IsmrmrdImageArray
+  struct IsmrmrdImageArray
   {
-  public:
     //7D, fixed order [X, Y, Z, CHA, N, S, LOC]
     hoNDArray< std::complex<float> > data_;
     
@@ -156,8 +168,23 @@ namespace Gadgetron
     //3D, fixed order [N, S, LOC]
     //This element is optional (length is 0 if not present)
     std::vector< ISMRMRD::MetaContainer > meta_;
-    
+
+    // wave form
+    Core::optional<std::vector< ISMRMRD::Waveform>> waveform_;
+
+    // acquisition header, [Y, Z, N, S, LOC]
+    Core::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
+
   };
 
+
+  using ReconData = IsmrmrdReconData;
+  using ImageArray = IsmrmrdImageArray;
+  using DataBuffered = IsmrmrdDataBuffered;
+
+
+
 }
+
+GADGETRON_ADAPT_STRUCT(Gadgetron::ImageArray, GADGETRON_ACCESS_ELEMENT(data_), GADGETRON_ACCESS_ELEMENT(headers_), GADGETRON_ACCESS_ELEMENT(meta_), GADGETRON_ACCESS_ELEMENT(waveform_), GADGETRON_ACCESS_ELEMENT(acq_headers_))
 #endif //MRI_CORE_DATA_H

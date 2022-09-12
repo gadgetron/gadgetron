@@ -8,6 +8,8 @@
 #include <boost/shared_array.hpp>
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
+#include <queue>
+#include <map>
 
 namespace Gadgetron {
 
@@ -36,9 +38,16 @@ namespace Gadgetron {
     int slices_;
     int sets_;
     int channels_;
-    boost::shared_array<bool> fit_calculated_;
-    boost::shared_array<double> polyfit_;
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > profiles_queue_;
+
+    using AcquisitionMessage = GadgetContainerMessage<ISMRMRD::AcquisitionHeader>;
+
+    std::vector<bool> fit_calculated;
+    std::vector<double> polyfit;
+    std::map<unsigned int, std::queue<std::unique_ptr<AcquisitionMessage>>> profiles_queue;
+
+//    boost::shared_array<bool> fit_calculated_;
+//    boost::shared_array<double> polyfit_;
+//    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > profiles_queue_;
 
   private:
     double get_projection_angle( unsigned int profile_idx );

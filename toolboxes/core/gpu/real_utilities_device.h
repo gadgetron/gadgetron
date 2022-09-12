@@ -1,7 +1,7 @@
 #pragma once
 
 #include <math_constants.h>
-#include <math_functions.h>
+#include <cuda_runtime.h>
 
 //
 // Math prototypes

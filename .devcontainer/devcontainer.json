@@ -1,0 +1,70 @@
+{
+	"name": "Gadgetron",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"target": "gadgetron_dev_cuda",
+		"context": "../",
+		"cacheFrom": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest",
+	},
+	"containerEnv": {
+		"DOCKER_BUILDKIT": "1",
+		"HOST_WORKSPACE_DIR": "${localWorkspaceFolder}", // The host's path to the repo's folder
+	},
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.inheritEnv": true, // this is so that the "code" executable is available from the integrated terminal
+		"cmake.configureOnOpen": true,
+		"cmake.preferredGenerators": [
+			"Ninja",
+			"Unix Makefiles"
+		],
+		"cmake.cmakePath": "/opt/conda/envs/gadgetron/bin/cmake",
+		"cmake.configureSettings": {
+			"USE_CUDA": "ON",
+			"USE_MKL": "ON",
+			"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron",
+			"BUILD_DOCUMENTATION": "ON"
+		},
+		"indentRainbow.includedLanguages": [ "yaml", "python" ]
+	},
+	"runArgs": ["--init", "--network=host"],
+
+	// To enable your local GPUs in container if they are on enabled by default devcontainer will fail to start on hosts without GPU
+	// "runArgs": ["--init", "--network=host", "--gpus=all"],
+
+	"mounts": [
+	],
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		9002
+	],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"ms-vscode.cpptools",
+		"ms-vscode.cmake-tools",
+		"ms-vscode.live-server",
+		"eamodio.gitlens",
+		"esbenp.prettier-vscode",
+		"matepek.vscode-catch2-test-adapter",
+		"mhutchie.git-graph",
+		"ms-azuretools.vscode-docker",
+		"ms-python.python",
+		"oderwat.indent-rainbow",
+		"timonwong.shellcheck"
+	],
+	// Use the non-root user
+	"remoteUser": "vscode",
+	"features": {
+		"common": {
+			"username": "automatic"
+		},
+		"docker-from-docker": {
+			"version": "latest",
+			"moby": "false"
+		},
+		"git": "os-provided"
+	},
+	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
+}

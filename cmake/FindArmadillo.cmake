@@ -37,6 +37,7 @@ find_library(ARMADILLO_LIBRARY
   PATHS "$ENV{ProgramFiles}/Armadillo/lib"  "$ENV{ProgramFiles}/Armadillo/lib64" "$ENV{ProgramFiles}/Armadillo"
   PATH_SUFFIXES "lib"
   )
+
 find_path(ARMADILLO_INCLUDE_DIR
   NAMES armadillo
   HINTS $ENV{ARMA_HOME}
@@ -82,7 +83,7 @@ endif ()
 # Checks 'REQUIRED', 'QUIET' and versions.
 include("FindPackageHandleStandardArgs")
 find_package_handle_standard_args(Armadillo
-  REQUIRED_VARS ARMADILLO_LIBRARY ARMADILLO_INCLUDE_DIR
+  REQUIRED_VARS ARMADILLO_INCLUDE_DIR
   VERSION_VAR ARMADILLO_VERSION_STRING)
 # version_var fails with cmake < 2.8.4.
 

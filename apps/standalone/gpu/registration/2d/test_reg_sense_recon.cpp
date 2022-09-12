@@ -450,7 +450,7 @@ int main(int argc, char** argv)
   CK->set_limit(0.01f);
   
   // 
-  // Peform "averaging by registration" type reconstruction
+  // Perform "averaging by registration" type reconstruction
   //
 
   timer = new GPUTimer("\nReconstruction by optical flow averaging");
@@ -481,7 +481,7 @@ int main(int argc, char** argv)
   delete timer;
 
   //
-  // Peform "registration in cost function" type reconstruction
+  // Perform "registration in cost function" type reconstruction
   //
 
   timer = new GPUTimer("\nRunning registration recon");

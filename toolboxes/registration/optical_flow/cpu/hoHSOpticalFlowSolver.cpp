@@ -64,14 +64,14 @@ namespace Gadgetron{
     boost::shared_ptr< std::vector<size_t> > disp_dims = _gradient_image->get_dimensions();
     disp_dims->pop_back(); disp_dims->push_back(D);
 
-    boost::shared_ptr< hoNDArray<T> > displacements_ping(new hoNDArray<T>(disp_dims.get()));
-    boost::shared_ptr< hoNDArray<T> > displacements_pong(new hoNDArray<T>(disp_dims.get()));
+    boost::shared_ptr< hoNDArray<T> > displacements_ping(new hoNDArray<T>(*disp_dims));
+    boost::shared_ptr< hoNDArray<T> > displacements_pong(new hoNDArray<T>(*disp_dims));
   
     clear(displacements_ping.get());
     clear(displacements_pong.get());
 
     // We use "shared memory" to hold the averaged displacements
-    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(disp_dims.get()));
+    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(*disp_dims));
     T *shared_mem = _shared_mem->get_data_ptr();
     clear( _shared_mem.get());
    
@@ -141,7 +141,7 @@ namespace Gadgetron{
 	    continue;
 
 	  // Local co to the image
-	  const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );	  
+	  const typename uint64d<D>::Type co = idx_to_co( idx_in_batch, matrix_size );
 	  const typename int64d<D>::Type zeros(0);
 	  const typename int64d<D>::Type ones(1);
 	  const typename int64d<D>::Type threes(3);
@@ -152,7 +152,7 @@ namespace Gadgetron{
 	  for( long long i=0; i<num_neighbors; i++ ){
 	    
 	    // Find the stride of the neighbor {-1, 0, 1}^D
-	    const typename int64d<D>::Type stride = idx_to_co<D>( i, threes ) - ones;
+	    const typename int64d<D>::Type stride = idx_to_co( i, threes ) - ones;
 	    
 	    // Verify that the neighbor is not out of bounds (and not the thread itself)
 	    if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){
@@ -161,7 +161,7 @@ namespace Gadgetron{
 	      //
 	      
 	      const size_t base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
-	      const size_t neighbor_idx = (size_t) co_to_idx<D>( vector_td<long long,D>(co)+stride, vector_td<long long,D>(matrix_size)) + base_offset;
+	      const size_t neighbor_idx = (size_t) co_to_idx( vector_td<long long,D>(co)+stride, vector_td<long long,D>(matrix_size)) + base_offset;
 	  
 	      shared_mem[shared_idx] += in_disp[neighbor_idx];
 	      num_contribs += T(1);

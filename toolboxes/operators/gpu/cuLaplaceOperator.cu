@@ -32,7 +32,7 @@ namespace Gadgetron{
   public:
   	static __device__ __inline__ void apply(T& val,const T* __restrict__ in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
   		typename intd<D>::Type coN = (co+dims+stride)%dims;
-  		val -= in[co_to_idx<D>(coN,dims)];
+  		val -= in[co_to_idx(coN,dims)];
   	}
   };
 
@@ -43,15 +43,12 @@ namespace Gadgetron{
     if( idx < prod(dims) ){
     
       T val = T(0);
-      typename intd<D>::Type coN;
 
-      typename intd<D>::Type co = idx_to_co<D>(idx, dims);
-
+      typename intd<D>::Type co = idx_to_co(idx, dims);
       typename intd<D>::Type stride(0);
 
-
       inner_laplace_functor<T,D,D-1>::apply(val,in,dims,co,stride);
-      out[idx] = val+in[co_to_idx<D>(co, dims)]*((REAL) Pow<3,D>::Value);
+      out[idx] = val+in[co_to_idx(co, dims)]*((REAL) Pow<3,D>::Value);
     }
   }
 

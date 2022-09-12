@@ -1,5 +1,4 @@
 #include "CMRT3DGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
 #include "hoNDArray_fileio.h"
@@ -80,7 +79,7 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 	// Setup radial NFFT encoding operator
 	//
 
-	E_ = boost::shared_ptr< cuNFFTOperator<float,2> >( new cuNFFTOperator<float,2>() );
+	E_ = boost::make_shared< NFFTOperator<cuNDArray,float,2> >();
 
 	E_->set_dcw( dcw );
 

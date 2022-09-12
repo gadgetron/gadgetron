@@ -70,7 +70,7 @@ namespace Gadgetron{
       const size_t idx_in_batch = idx_in_pdev_moving-batch_idx_moving*num_elements_per_batch;
 
       // Local co to the image
-      const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uint64d<D>::Type co = idx_to_co( idx_in_batch, matrix_size );
  
       T res;
       size_t count = 0;
@@ -87,7 +87,7 @@ namespace Gadgetron{
      
       // Neighbor "plus stride" side
       if( !is_border_pixel_in_stride_dim_after<D>( stride_dim, co, matrix_size )){
-        stride_base_idx = co_to_idx<D>(co+stride, matrix_size);
+        stride_base_idx = co_to_idx(co+stride, matrix_size);
         count++;
       }
       else{
@@ -101,11 +101,11 @@ namespace Gadgetron{
 
       // Neighbor "minus stride" side
       if( !is_border_pixel_in_stride_dim_before<D>( stride_dim, co, matrix_size )){
-        stride_base_idx = co_to_idx<D>(co-stride, matrix_size);
+        stride_base_idx = co_to_idx(co-stride, matrix_size);
         count++;
       }
       else{
-        stride_base_idx = co_to_idx<D>(co, matrix_size);
+        stride_base_idx = co_to_idx(co, matrix_size);
       }
     
       fixed_idx = stride_base_idx+base_idx_fixed;

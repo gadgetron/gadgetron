@@ -3,22 +3,26 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegParametricDownHillSolver_H_
+#define hoImageRegParametricDownHillSolver_H_
+
 #pragma once
 
 #include "hoImageRegParametricSolver.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    class hoImageRegParametricDownHillSolver : public hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>
+namespace Gadgetron {
+
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegParametricDownHillSolver : public hoImageRegParametricSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegParametricDownHillSolver<ValueType, CoordType, DIn, DOut> Self;
-        typedef hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut> BaseClass;
+        typedef hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegParametricSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -88,18 +92,18 @@ namespace Gadgetron
         using BaseClass::use_world_coordinate_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricDownHillSolver<ValueType, CoordType, DIn, DOut>::hoImageRegParametricDownHillSolver() : BaseClass()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType>::hoImageRegParametricDownHillSolver() : BaseClass()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricDownHillSolver<ValueType, CoordType, DIn, DOut>::~hoImageRegParametricDownHillSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType>::~hoImageRegParametricDownHillSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    ValueType hoImageRegParametricDownHillSolver<ValueType, CoordType, DIn, DOut>::solver_once(ValueType curr_dissimilarity)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    typename hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType>::ValueType hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType>::solver_once(ValueType curr_dissimilarity)
     {
         ValueType prevValue = curr_dissimilarity;
         ValueType currValue;
@@ -156,11 +160,12 @@ namespace Gadgetron
         return curr_dissimilarity;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegParametricDownHillSolver<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegParametricDownHillSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "-------------- Gagdgetron DownHill image registration solver -------------" << endl;
         BaseClass::print(os);
     }
 }
+#endif // hoImageRegParametricDownHillSolver_H_

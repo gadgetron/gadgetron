@@ -15,8 +15,8 @@ sample_array_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * __
   unsigned int idx_in = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx_in < samples) {
     for (unsigned int i = 0; i < coils; i++) {
-      out[idx_in + i*samples].vec[0] += in[idx[idx_in] + i*image_elements].vec[0];
-      out[idx_in + i*samples].vec[1] += in[idx[idx_in] + i*image_elements].vec[1];
+      out[idx_in + i*samples]._real += in[idx[idx_in] + i*image_elements]._real;
+      out[idx_in + i*samples]._imag += in[idx[idx_in] + i*image_elements]._imag;
     }
   }
 }
@@ -31,8 +31,8 @@ insert_samples_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * 
   unsigned int idx_in = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx_in < samples) {
     for (unsigned int i = 0; i < coils; i++) {
-      out[idx[idx_in] + i*image_elements].vec[0] += in[idx_in + i*samples].vec[0];
-      out[idx[idx_in] + i*image_elements].vec[1] += in[idx_in + i*samples].vec[1];
+      out[idx[idx_in] + i*image_elements]._real += in[idx_in + i*samples]._real;
+      out[idx[idx_in] + i*image_elements]._imag += in[idx_in + i*samples]._imag;
     }
   }
 }
@@ -50,13 +50,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
 
   this->mult_csm(in,&tmp);
 
-
-  std::vector<size_t> ft_dims;
-  for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
-    ft_dims.push_back(i);
-  }
-
-  cuNDFFT<REAL>::instance()->fft(&tmp, &ft_dims);
+  fft_plan.fftc(tmp,this->get_domain_dimensions()->size());
 
   if (!accumulate) 
     clear(out);
@@ -109,7 +103,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
     ft_dims.push_back(i);
   }
 
-  cuNDFFT<REAL>::instance()->ifft(&tmp, &ft_dims);
+  fft_plan.ifftc(tmp,this->get_domain_dimensions()->size());
 
   if (!accumulate) 
     clear(out);

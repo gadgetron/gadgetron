@@ -353,7 +353,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
 
         if ( !residual.dimensions_equal(&value) )
         {
-            residual.create(value.get_dimensions());
+            residual.create(value.dimensions());
             Gadgetron::clear(residual);
         }
 
@@ -444,8 +444,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
         {
             hoNDArray<T> dx2D(sx, sy, dx.begin()+d*sx*sy*sizeof(T));
 
-            std::vector<size_t> dim;
-            this->ctrl_pt_[d].get_dimensions(dim);
+            auto dim = this->ctrl_pt_[d].dimensions();
             hoNDArray<T> tmpCtrlPt(dim, this->ctrl_pt_[d].begin(), false);
 
             vector_td<size_t, 2> crop_offset;
@@ -456,7 +455,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
             crop_size[0] = size[0];
             crop_size[1] = size[1];
 
-            Gadgetron::crop(crop_offset, crop_size, &tmpCtrlPt, &ctrlPtWithoutPadding);
+            Gadgetron::crop(crop_offset, crop_size, tmpCtrlPt, ctrlPtWithoutPadding);
             Gadgetron::add(ctrlPtWithoutPadding, dx2D, ctrlPtWithoutPadding);
             Gadgetron::fill(ctrlPtWithoutPadding, crop_offset, tmpCtrlPt);
         }
@@ -479,7 +478,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
         totalResidual = 0;
         GADGET_CHECK_RETURN_FALSE(this->evaluateFFDArray(pos, approxValue));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::norm2(residual, totalResidual));
+        totalResidual = Gadgetron::nrm2(residual);
         totalResidual = totalResidual / (real_value_type)N;
     }
     catch(...)

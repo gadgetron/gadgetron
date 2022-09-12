@@ -1,10 +1,13 @@
 #pragma once
-#define ARMA_64BIT_WORD
+#ifdef NDEBUG
+#define ARMA_NO_DEBUG
+#endif
+
+
 #include "hoNDArray.h"
 
-#ifdef USE_ARMADILLO
 
-#include <armadillo>
+#include "armadillo"
 
 /** \file hoArmadillo.h
 \brief Utilities to create an Armadillo matrix or column vector from an hoNDArray.
@@ -26,11 +29,11 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return An Armadillo array mapped to the data pointer of the hoNDArray.
    */
-  template<class T> arma::Mat<typename stdType<T>::Type> as_arma_matrix( hoNDArray<T> *x )
+  template<class T> arma::Mat<typename stdType<T>::Type> as_arma_matrix( hoNDArray<T>& x )
   {
-    if( x->get_number_of_dimensions() != 2 )
+    if( x.get_number_of_dimensions() != 2 )
       throw std::runtime_error("Wrong number of dimensions. Cannot convert hoNDArray to matrix");
-    return arma::Mat<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_size(0), x->get_size(1), false, true );
+    return arma::Mat<typename stdType<T>::Type>( (typename stdType<T>::Type*) x.get_data_ptr(), x.get_size(0), x.get_size(1), false, true );
   }
 
   /**
@@ -38,11 +41,11 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return An Armadillo array mapped to the data pointer of the hoNDArray.
    */
-  template<class T> const arma::Mat<typename stdType<T>::Type> as_arma_matrix( const hoNDArray<T> *x )
+  template<class T> const arma::Mat<typename stdType<T>::Type> as_arma_matrix( const hoNDArray<T>& x )
   {
-    if( x->get_number_of_dimensions() != 2 )
+    if( x.get_number_of_dimensions() != 2 )
       throw std::runtime_error("Wrong number of dimensions. Cannot convert hoNDArray to matrix");
-    return arma::Mat<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_size(0), x->get_size(1), false, true );
+    return arma::Mat<typename stdType<T>::Type>( (typename stdType<T>::Type*) x.get_data_ptr(), x.get_size(0), x.get_size(1), false, true );
   }
   
   /**
@@ -50,9 +53,9 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return An Armadillo array mapped to the data pointer of the hoNDArray.
    */
-  template<class T> arma::Col<typename stdType<T>::Type > as_arma_col( hoNDArray<T> *x )
+  template<class T> arma::Col<typename stdType<T>::Type > as_arma_col( hoNDArray<T>& x )
   {
-    return arma::Col<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
+    return arma::Col<typename stdType<T>::Type>( (typename stdType<T>::Type*) x.get_data_ptr(), x.get_number_of_elements(), false, true );
   }
 
   /**
@@ -60,9 +63,9 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return An Armadillo array mapped to the data pointer of the hoNDArray.
    */
-  template<class T> const arma::Col<typename stdType<T>::Type > as_arma_col( const hoNDArray<T> *x )
+  template<class T> const arma::Col<typename stdType<T>::Type > as_arma_col( const hoNDArray<T>& x )
   {
-    return arma::Col<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
+    return arma::Col<typename stdType<T>::Type>( (typename stdType<T>::Type*) x.get_data_ptr(), x.get_number_of_elements(), false, true );
   }
 
   /**
@@ -70,9 +73,9 @@ namespace Gadgetron{
      * @param[in] x Input array.
      * @return An Armadillo array mapped to the data pointer of the hoNDArray.
      */
-    template<class T> arma::Row<typename stdType<T>::Type > as_arma_row( hoNDArray<T> *x )
+    template<class T> arma::Row<typename stdType<T>::Type > as_arma_row( hoNDArray<T>& x )
     {
-      return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
+      return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x.get_data_ptr(), x.get_number_of_elements(), false, true );
     }
 
     /**
@@ -80,10 +83,10 @@ namespace Gadgetron{
      * @param[in] x Input array.
      * @return An Armadillo array mapped to the data pointer of the hoNDArray.
      */
-    template<class T> const arma::Row<typename stdType<T>::Type > as_arma_row( const hoNDArray<T> *x )
+    template<class T> const arma::Row<typename stdType<T>::Type > as_arma_row( const hoNDArray<T>& x )
     {
-      return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
+      return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x.get_data_ptr(), x.get_number_of_elements(), false, true );
     }
 }
 
-#endif // USE_ARMADILLO
+

@@ -1,64 +1,35 @@
-#ifndef EXTRACTGADGET_H_
-#define EXTRACTGADGET_H_
-
+#pragma once
 #include "Gadget.h"
-#include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "gadgetron_mricore_export.h"
+#include "hoNDArray.h"
 
-#include <ismrmrd/ismrmrd.h>
+#include <bitset>
 #include <complex>
+#include <ismrmrd/ismrmrd.h>
 
-#define MAX_UNSIGNED_SHORT_IMAGE_VALUE
+namespace Gadgetron {
 
-//Extract flags
-#define GADGET_EXTRACT_NONE                   (0)      //0
-#define GADGET_EXTRACT_MAGNITUDE              (1 << 0) //1
-#define GADGET_EXTRACT_REAL                   (1 << 1) //2
-#define GADGET_EXTRACT_IMAG                   (1 << 2) //4
-#define GADGET_EXTRACT_PHASE                  (1 << 3) //8
-#define GADGET_EXTRACT_MAX                    (1 << 4) //16
+    class ExtractGadget : public Core::ChannelGadget<Core::Image<std::complex<float>>>
 
-namespace Gadgetron{
-
-  class EXPORTGADGETSMRICORE ExtractGadget:
-  public Gadget2<ISMRMRD::ImageHeader,hoNDArray< std::complex<float> > >
     {
 
     public:
-      GADGET_DECLARE(ExtractGadget);
-
-      ExtractGadget();
-      virtual ~ExtractGadget();
-
-      void set_extract_mask(unsigned short mask) {
-	extract_mask_ = mask;
-      }
-
-      bool extract_magnitude() {
-	return (extract_mask_ & GADGET_EXTRACT_MAGNITUDE);
-      }
-
-      bool extract_real() {
-	return (extract_mask_ & GADGET_EXTRACT_REAL);
-      }
-
-      bool extract_imag() {
-	return (extract_mask_ & GADGET_EXTRACT_IMAG);
-      }
-
-      bool extract_phase() {
-	return (extract_mask_ & GADGET_EXTRACT_PHASE);
-      }
+        ExtractGadget(const Core::Context& context, const Core::GadgetProperties& props);
 
     protected:
-      GADGET_PROPERTY(extract_mask, int, "Extract mask, bitmask MAG=1, REAL=2, IMAG=4, PHASE=8", 1);
+        NODE_PROPERTY(
+            extract_mask, std::bitset<4>, "(DEPRECATED) Extract mask, bitmask MAG=1, REAL=2, IMAG=4, PHASE=8", 0);
+        NODE_PROPERTY(extract_magnitude, bool, "Extract absolute value", true);
+        NODE_PROPERTY(extract_real, bool, "Extract real components", false);
+        NODE_PROPERTY(extract_imag, bool, "Extract imaginary component", false);
+        NODE_PROPERTY(extract_phase, bool, "Extract phase", false);
+        NODE_PROPERTY(real_imag_offset, float, "Offset to add to real and imag images", 0.0f);
 
-      virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+    public:
+        void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
 
-      unsigned short extract_mask_;
+    protected:
+        std::set<ISMRMRD::ISMRMRD_ImageTypes> image_types;
     };
 }
-
-#endif /* EXTRACTGADGET_H_ */

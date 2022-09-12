@@ -1,9 +1,4 @@
-include_directories(
-  ${Boost_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  )
+
 
 install(FILES 
   solver.h
@@ -24,10 +19,16 @@ install(FILES
   osMOMSolver.h
   osSPSSolver.h
   osLALMSolver.h
+        
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+add_library(gadgetron_toolbox_solvers INTERFACE)
+target_include_directories(gadgetron_toolbox_solvers
+        INTERFACE
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+install(TARGETS gadgetron_toolbox_solvers EXPORT gadgetron-export)
 
 add_subdirectory(cpu)
 
-if( CUDA_FOUND)
-  add_subdirectory(gpu)
-endif ()
+set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

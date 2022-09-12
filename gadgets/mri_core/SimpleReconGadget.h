@@ -1,23 +1,31 @@
-#ifndef SIMPLERECONGADGET_H
-#define SIMPLERECONGADGET_H
+/**
+    \brief  Performs basic FFT reconstruction on IsmrmrdReconData and passes along as IsmrmrdReconData
+    \test   Tested by: simple_gre.cfg, simple_gre_python_image_array_recon.cfg, and others
+*/
 
-#include "Gadget.h"
+#pragma once
+#include "Node.h"
 #include "gadgetron_mricore_export.h"
+#include "hoNDArray.h"
 
+#include "mri_core_acquisition_bucket.h"
 #include "mri_core_data.h"
+#include <complex>
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/xml.h>
+#include "hoNDArray_math.h"
+#include "hoNDFFT.h"
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE SimpleReconGadget : 
-  public Gadget1<IsmrmrdReconData>
-    {
+    class SimpleReconGadget : public Core::ChannelGadget<IsmrmrdReconData> {
     public:
-      GADGET_DECLARE(SimpleReconGadget)
-      SimpleReconGadget();
-	
+        SimpleReconGadget(const Core::Context& context, const Core::GadgetProperties& props);
+        void process(Core::InputChannel<IsmrmrdReconData>& input, Core::OutputChannel& out) override;
+
     protected:
-      virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
-      long long image_counter_;
+        ISMRMRD::IsmrmrdHeader header;
+        long long image_counter_;      
+
     };
 }
-#endif //SIMPLERECONGADGET_H

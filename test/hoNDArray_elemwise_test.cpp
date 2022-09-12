@@ -13,8 +13,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -26,8 +26,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -39,8 +39,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -52,8 +52,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -65,8 +65,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<typename realType<T>::Type>(&dims);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<typename realType<T>::Type>(dims);
   }
   std::vector<size_t> dims;
   hoNDArray<T> Array;
@@ -78,7 +78,7 @@ typedef Types<std::complex<float>, std::complex<double>, float_complext, double_
 typedef Types<std::complex<float>, std::complex<double> > stdCplxImplementations;
 typedef Types<float_complext, double_complext> cplxtImplementations;
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestReal,fillTest){
   fill(&this->Array,TypeParam(1.1));
@@ -223,7 +223,7 @@ TYPED_TEST(hoNDArray_elemwise_TestReal,conjTest){
   EXPECT_FLOAT_EQ(TypeParam(0.0),imag(&this->Array)->at(125));
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx,fillTest){
   fill(&this->Array,TypeParam(1.1,2.2));
@@ -349,7 +349,21 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx,shrink1Test){
   EXPECT_FLOAT_EQ(0.0,imag(&this->Array)->get_data_ptr()[23125]);
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx4, cplxImplementations);
+
+TYPED_TEST(hoNDArray_elemwise_TestCplx,axpyTest){
+    fill(&this->Array,TypeParam(3,4));
+    fill(&this->Array2,TypeParam(2,5));
+    axpy(TypeParam(2),this->Array2,this->Array);
+
+
+    EXPECT_FLOAT_EQ(14,imag(&this->Array)->get_data_ptr()[23125]);
+    EXPECT_FLOAT_EQ(7,real(&this->Array)->get_data_ptr()[23123]);
+
+
+
+}
+
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx4, cplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx4,shrinkdTest){
   fill(&this->Array,TypeParam(1.2,1.4));
@@ -362,7 +376,7 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx4,shrinkdTest){
   EXPECT_FLOAT_EQ(0.0,imag(&this->Array)->get_data_ptr()[23125]);
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx2, stdCplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx2, stdCplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx2,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
@@ -370,7 +384,17 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx2,realToCplxTest){
   EXPECT_FLOAT_EQ(0.0,imag(real_to_complex<TypeParam>(real(&this->Array).get())->get_data_ptr()[33425]));
 }
 
-TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx3, cplxtImplementations);
+TYPED_TEST(hoNDArray_elemwise_TestCplx2,multiplyConj){
+fill(&this->Array,TypeParam(3,1));
+fill(&this->Array2,TypeParam(3,2));
+
+multiplyConj(this->Array,this->Array2,this->Array);
+
+EXPECT_FLOAT_EQ(11,real(this->Array[33425]));
+EXPECT_FLOAT_EQ(-3,imag(this->Array[33425]));
+}
+
+TYPED_TEST_SUITE(hoNDArray_elemwise_TestCplx3, cplxtImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx3,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
@@ -385,8 +409,8 @@ protected:
     size_t vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     dims2 = std::vector<size_t>(vdims2,vdims2+sizeof(vdims2)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims2);
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims2);
   }
   std::vector<size_t> dims;
   std::vector<size_t> dims2;
@@ -397,12 +421,10 @@ protected:
 template <typename T> class hoNDArray_operators_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    size_t vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
-    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    dims2 = std::vector<size_t>(vdims2,vdims2+sizeof(vdims2)/sizeof(size_t));
-    Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims2);
+    dims = {37, 49, 23, 19};
+    dims2 = {37,49};
+    Array = hoNDArray<T>(dims);
+    Array2 = hoNDArray<T>(dims2);
   }
   std::vector<size_t> dims;
   std::vector<size_t> dims2;
@@ -413,7 +435,7 @@ protected:
 typedef Types<float, double> realImplementations;
 typedef Types<std::complex<float>, std::complex<double>, float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_operators_TestReal, realImplementations);
+TYPED_TEST_SUITE(hoNDArray_operators_TestReal, realImplementations);
 
 TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest1){
   TypeParam v1 = TypeParam(46865.35435);
@@ -422,7 +444,9 @@ TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest1){
   fill(&this->Array,v1);
   fill(&this->Array2,v2);
   this->Array += this->Array2;
-  EXPECT_FLOAT_EQ(v1+v2,this->Array.get_data_ptr()[idx]);
+  auto val = this->Array[idx];
+  EXPECT_FLOAT_EQ(v1+v2,this->Array[0]);
+  EXPECT_FLOAT_EQ(v1+v2,this->Array[idx]);
 }
 
 TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest2){
@@ -491,7 +515,7 @@ TYPED_TEST(hoNDArray_operators_TestReal,equalsDivideTest2){
   EXPECT_FLOAT_EQ(v1/v2,this->Array.get_data_ptr()[idx]);
 }
 
-TYPED_TEST_CASE(hoNDArray_operators_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(hoNDArray_operators_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest1){
   TypeParam v1 = TypeParam(46865.35435, 534544.534523);
@@ -615,4 +639,89 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsDivideTest3){
   this->Array /= real(v2);
   EXPECT_FLOAT_EQ(real(v1/v2),real(this->Array.get_data_ptr()[idx]));
   EXPECT_FLOAT_EQ(imag(v1/v2),imag(this->Array.get_data_ptr()[idx]));
+}
+
+TYPED_TEST(hoNDArray_operators_TestCplx,add){
+    auto copy = this->Array;
+    fill(&this->Array,TypeParam(3,4));
+    fill(&this->Array2,TypeParam(2,7));
+    add(this->Array,this->Array2,copy);
+
+    EXPECT_FLOAT_EQ(5,real(copy[122]));
+    EXPECT_FLOAT_EQ(11,imag(copy[122]));
+}
+TYPED_TEST(hoNDArray_operators_TestCplx,subtract){
+    auto copy = this->Array;
+    fill(&this->Array,TypeParam(3,4));
+    fill(&this->Array2,TypeParam(2,7));
+    subtract(this->Array,this->Array2,copy);
+
+    EXPECT_FLOAT_EQ(1,real(copy[122]));
+    EXPECT_FLOAT_EQ(-3,imag(copy[122]));
+}
+TYPED_TEST(hoNDArray_operators_TestCplx,multiply){
+    auto copy = this->Array;
+    fill(&this->Array,TypeParam(3,4));
+    fill(&this->Array2,TypeParam(2,7));
+    multiply(this->Array,this->Array2,copy);
+
+    EXPECT_FLOAT_EQ(-22,real(copy[122]));
+    EXPECT_FLOAT_EQ(29,imag(copy[122]));
+}
+TYPED_TEST(hoNDArray_operators_TestCplx,divide){
+    auto copy = this->Array;
+    fill(&this->Array,TypeParam(3,4));
+    fill(&this->Array2,TypeParam(2,7));
+    divide(this->Array,this->Array2,copy);
+
+    EXPECT_FLOAT_EQ(0.6415094339622641,real(copy[122]));
+    EXPECT_FLOAT_EQ(-0.24528301886792456,imag(copy[122]));
+}
+TYPED_TEST(hoNDArray_operators_TestCplx,conjugate){
+    auto copy = this->Array;
+    fill(&this->Array,TypeParam(3,4));
+    conjugate(this->Array,copy);
+
+    EXPECT_FLOAT_EQ(3,real(copy[122]));
+    EXPECT_FLOAT_EQ(-4,imag(copy[122]));
+}
+
+TYPED_TEST(hoNDArray_operators_TestCplx, inv) {
+    auto copy = this->Array;
+    fill(&this->Array, TypeParam(3, 4));
+    inv(this->Array, copy);
+
+    EXPECT_FLOAT_EQ(0.12, real(copy[122]));
+    EXPECT_FLOAT_EQ(-0.16, imag(copy[122]));
+}
+
+TYPED_TEST(hoNDArray_operators_TestCplx, sum_over_dimension) {
+    fill(&this->Array,TypeParam(1,2));
+    sum_over_dimension(this->Array,this->Array2,2);
+
+    auto dims2 = this->Array2.dimensions();
+    EXPECT_EQ(this->Array2.get_number_of_dimensions(),this->Array.get_number_of_dimensions());
+    EXPECT_EQ(dims2[2],1);
+
+    EXPECT_EQ(dims2[0],this->dims[0]);
+    EXPECT_EQ(dims2[1],this->dims[1]);
+    EXPECT_EQ(dims2[3],this->dims[3]);
+
+    EXPECT_FLOAT_EQ(1*this->dims[2], real(this->Array2[122]));
+    EXPECT_FLOAT_EQ(2*this->dims[2], imag(this->Array2[122]));
+}
+TYPED_TEST(hoNDArray_operators_TestCplx, nrm2) {
+    fill(&this->Array,TypeParam(1,2));
+    sum_over_dimension(this->Array,this->Array2,2);
+
+    auto dims2 = this->Array2.dimensions();
+    EXPECT_EQ(this->Array2.get_number_of_dimensions(),this->Array.get_number_of_dimensions());
+    EXPECT_EQ(dims2[2],1);
+
+    EXPECT_EQ(dims2[0],this->dims[0]);
+    EXPECT_EQ(dims2[1],this->dims[1]);
+    EXPECT_EQ(dims2[3],this->dims[3]);
+
+    EXPECT_FLOAT_EQ(1*this->dims[2], real(this->Array2[122]));
+    EXPECT_FLOAT_EQ(2*this->dims[2], imag(this->Array2[122]));
 }

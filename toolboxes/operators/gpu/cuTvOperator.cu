@@ -13,10 +13,10 @@ using namespace Gadgetron;
 template<class REAL, class T, unsigned int D> static inline  __device__ REAL gradient(const T* __restrict__ in, const vector_td<int,D>& dims, vector_td<int,D>& co)
 {
 	REAL grad = REAL(0);
-	T xi = in[co_to_idx<D>((co+dims)%dims,dims)];
+	T xi = in[co_to_idx((co+dims)%dims,dims)];
 	for (int i = 0; i < D; i++){
 		co[i]+=1;
-		T dt = in[co_to_idx<D>((co+dims)%dims,dims)];
+		T dt = in[co_to_idx((co+dims)%dims,dims)];
 		grad += norm(xi-dt);
 		co[i]-=1;
 	}
@@ -31,7 +31,7 @@ template<class REAL, class T, unsigned int D> static __global__ void tvGradient_
 		T xi = in[idx];
 		T result=T(0);
 
-		vector_td<int,D> co = idx_to_co<D>(idx, dims);
+		vector_td<int,D> co = idx_to_co(idx, dims);
 
 		REAL grad = ::max(gradient<REAL,T,D>(in,dims,co),limit);
 
@@ -39,7 +39,7 @@ template<class REAL, class T, unsigned int D> static __global__ void tvGradient_
 			//result += REAL(D)*xi/grad;
 			for (int i = 0; i < D; i++){
 				co[i]+=1;
-				result += (xi-in[co_to_idx<D>((co+dims)%dims,dims)])/grad;
+				result += (xi-in[co_to_idx((co+dims)%dims,dims)])/grad;
 				co[i]-=1;
 			}
 		}
@@ -49,7 +49,7 @@ template<class REAL, class T, unsigned int D> static __global__ void tvGradient_
 			grad = ::max(gradient<REAL,T,D>(in,dims,co),limit);
 
 			if (grad > limit) {
-				result +=(xi-in[co_to_idx<D>((co+dims)%dims,dims)])/grad;
+				result +=(xi-in[co_to_idx((co+dims)%dims,dims)])/grad;
 			}
 			co[i]+=1;
 		}
@@ -91,7 +91,7 @@ template<class REAL, class T, unsigned int D> static __global__ void tvMagnitude
 {
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
 	if( idx < prod(dims) ){
-		vector_td<int,D> co = idx_to_co<D>(idx, dims);
+		vector_td<int,D> co = idx_to_co(idx, dims);
 		REAL grad = gradient<REAL,T,D>(in,dims,co);
 		//out[idx] =  (grad > limit) ? grad*weight : REAL(0);
 		out[idx] = grad*weight;

@@ -6,15 +6,13 @@
 #include "hoNDArray.h"
 #include "complext.h"
 #include "PhysioInterpolationGadget.h"
-#include "GadgetStreamInterface.h"
 #include "GadgetronTimer.h"
 #include "gadgetron_moco_export.h"
 #include "hoNDArray_fileio.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
+#include <queue>
 
 namespace Gadgetron{  
 
@@ -30,7 +28,7 @@ namespace Gadgetron{
     //
     // We use hoNDArray to interface the gadget chain, even if ARRAY_TYPE is a cuNDArray
     // Instead of hard coding the interface to use single precision (float), 
-    // "typename ARRAY_TYPE::element_type" could in principle denote a double precison type (double) as well.
+    // "typename ARRAY_TYPE::element_type" could in principle denote a double precision type (double) as well.
     // Registration of complex images is however not supported currently.
     //
     
@@ -52,6 +50,7 @@ namespace Gadgetron{
     GADGET_PROPERTY(num_multiresolution_levels, int, "Number of multiresolution levels", 3);
     GADGET_PROPERTY(max_iterations_per_level, int, "Maximum number of iterations per level", 500);
     GADGET_PROPERTY(output_convergence, bool, "Output convergence", false);
+    GADGET_PROPERTY(phases, unsigned short, "Number of cardiac phases", 30);
 
     virtual int process_config(ACE_Message_Block *mb)
     {
@@ -62,26 +61,7 @@ namespace Gadgetron{
       this->num_multires_levels_ = num_multiresolution_levels.value();
       this->max_iterations_per_level_ = max_iterations_per_level.value();
       
-      // Fow now we require the existence of a gadget named "PhysioInterpolationGadget" upstream,
-      // to determine the number of incoming phases.
-      //
-      
-      GadgetStreamInterface *controller = this->get_controller();
-    
-      if( controller == 0x0 ){
-        GDEBUG("Failed to get controller\n");
-        return GADGET_FAIL;
-      }
-      
-      PhysioInterpolationGadget *physio = 
-        dynamic_cast<PhysioInterpolationGadget*>( controller->find_gadget(std::string("PhysioInterpolationGadget")) );
-      
-      if( physio == 0x0 ){
-        GDEBUG("Could not find (or cast) PhysioInterpolationGadget in gadget stream\n");
-        return GADGET_FAIL;
-      }
-      
-      this->number_of_phases_ = physio->get_number_of_phases();      
+      this->number_of_phases_ = phases.value();
       
       GDEBUG("Configured for %d phases\n", this->number_of_phases_); 
       return GADGET_OK;
@@ -104,18 +84,11 @@ namespace Gadgetron{
       // At first pass allocate the image buffer array.
       //
       
-      if( this->phase_images_.get() == 0x0 ){
+      if( this->image_dimensions_.empty() ){
       
         this->image_dimensions_ = *m2->getObjectPtr()->get_dimensions();
-        this->phase_images_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >
-          (new ACE_Message_Queue<ACE_MT_SYNCH>[this->number_of_phases_]);      
-        
-        size_t bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*this->number_of_phases_;
-        
-        for( unsigned int i=0; i<this->number_of_phases_; i++ ){
-          this->phase_images_[i].high_water_mark(bsize);
-          this->phase_images_[i].low_water_mark(bsize);      
-        }
+        this->phase_images_ = decltype(this->phase_images_){};
+
         
         // Setup the optical flow solver
         //
@@ -131,11 +104,7 @@ namespace Gadgetron{
       // 
       
       unsigned int phase = m1->getObjectPtr()->phase;
-      
-      if( this->phase_images_[phase].enqueue_tail(m1) < 0 ) {
-        GDEBUG("Failed to add image to buffer\n");
-        return GADGET_FAIL;
-      }
+      this->phase_images_[phase].emplace(m1);
       
       return GADGET_OK;
     }
@@ -144,7 +113,7 @@ namespace Gadgetron{
     //
     virtual int close(unsigned long flags)
     {
-      if( this->phase_images_.get() ){
+      if( !this->phase_images_.empty() ){
       
         GDEBUG("RegistrationScatteringGadget::close (performing registration and scattering images)\n");
       
@@ -152,13 +121,13 @@ namespace Gadgetron{
         // (It doesn't really matter, but if not the case something probably went wrong upstream)
         //
 
-        unsigned int num_images = this->phase_images_[0].message_count();
+        unsigned int num_images = this->phase_images_[0].size();
 
         GDEBUG("Number of images for phase 0: %d", num_images );
 
         for( unsigned int phase = 0; phase< this->number_of_phases_; phase++ ){
 
-          unsigned int num_images_phase = this->phase_images_[phase].message_count();
+          unsigned int num_images_phase = this->phase_images_[phase].size();
           GDEBUG("Number of images for phase %d: %d", phase, num_images_phase );
 
           if( num_images != num_images_phase ){
@@ -196,21 +165,11 @@ namespace Gadgetron{
 	
           for( unsigned int image=0; image<num_images; image++ ){
 	  
-            ACE_Message_Block *mbq;
+
+            auto m1 = this->phase_images_[phase].front().release();
+            this->phase_images_[phase].pop();
 	  
-            if( this->phase_images_[phase].dequeue_head(mbq) < 0 ) {
-              GDEBUG("Image header dequeue failed\n");
-              return Gadget::close(flags);
-            }
-	  
-            GadgetContainerMessage<ISMRMRD::ImageHeader> *m1 = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
-	  
-            if( m1 == 0x0 ) {
-              GDEBUG("Unexpected image type on queue\n");
-              return Gadget::close(flags);
-            }
-	  
-            GadgetContainerMessage< hoNDArray<typename ARRAY_TYPE::element_type> > *m2 = 
+            GadgetContainerMessage< hoNDArray<typename ARRAY_TYPE::element_type> > *m2 =
               AsContainerMessage< hoNDArray<typename ARRAY_TYPE::element_type> >(m1->cont());
 	  
             if( m2 == 0x0 ) {
@@ -346,7 +305,9 @@ namespace Gadgetron{
         order.push_back(3);
         
         GDEBUG("Writing out displacement field with dimensions: %d %d %d %d %d\n", order[0], order[1], order[2], order[3], order[4]);
-        write_displacement_field( permute(&reg_field, &order).get() );
+        auto displacement_field = permute(reg_field,order);
+        write_displacement_field( &displacement_field );
+
       }
       
       return Gadget::close(flags);
@@ -366,7 +327,7 @@ namespace Gadgetron{
     unsigned int max_iterations_per_level_;
     
   private:
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > phase_images_;
+    std::map<int,std::queue<std::unique_ptr<GadgetContainerMessage<ISMRMRD::ImageHeader>>>> phase_images_;
     std::vector<size_t> image_dimensions_;
     unsigned short number_of_phases_;    
   };

@@ -18,6 +18,7 @@
 
     <!-- reader -->
     <reader><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageReader</classname></reader>
+    <reader><slot>1026</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdWaveformMessageReader</classname></reader>
 
     <!-- writer -->
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
@@ -50,7 +51,7 @@
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
-    <!-- Prep ref -->
+	<!-- Prep ref -->
     <gadget>
         <name>PrepRef</name>
         <dll>gadgetron_mricore</dll>
@@ -68,19 +69,89 @@
         <!-- whether always to prepare ref if no acceleration is used -->
         <property><name>prepare_ref_always</name><value>true</value></property>
     </gadget>
+    
+    <!-- This is where we insert our new Gadget -->
+    <gadget>
+      <name>bartgadget</name>
+      <dll>gadgetron_bart</dll>
+      <classname>BartGadget</classname>
+      <property><name>isVerboseON</name><value>true</value></property>
+      <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon.sh</value></property>
+      <!--Enable and provide the absolute path to the bart working directory different from the default path-->
+      <!--property><name>BartWorkingDirectory_path</name><value></value></property-->
+      <property><name>isBartFileBeingStored</name><value>false</value></property>
+      <property><name>image_series</name><value>0</value></property>
+      <!-- Controls the behaviour of BART with regards to files 
+	   Possible values are: 
+	   - BART_ALL_IN_MEM: store everything in memory (beware of large datasets!)
+	   - BART_ALL_ON_DISK: store everything on-disk (might not be available if BartGadget was compiled with -DMEMONLY_CFL)
+	   - BART_MIX_DISK_MEM: mixed on-disk/in-memory storage
+                                user can control whether a file is stored in-memory by appending
+                                the ".mem" extension to any BART output as well as using
+				the BartStoreIncomingInMemory property.
+	   NB: if BartGadget is compiled with -DMEMONLY_CFL, this setting has no effect -->
+      <property><name>BartFileBehaviour</name><value>BART_MIX_DISK_MEM</value></property>
+      <!-- This is ignored if BartFileBehaviour is not BART_MIX_DISK_MEM -->
+      <property><name>BartStoreGadgetronInputInMemory</name><value>false</value></property>
+    </gadget>
+    
+    <!-- Partial fourier handling -->
+    <gadget>
+        <name>PartialFourierHandling</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconPartialFourierHandlingPOCSGadget</classname>
+        
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
+        
+        <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
+        
+        <property><name>partial_fourier_POCS_iters</name><value>6</value></property>
+        <property><name>partial_fourier_POCS_thres</name><value>0.01</value></property>
+        <property><name>partial_fourier_POCS_transitBand</name><value>24</value></property>
+        <property><name>partial_fourier_POCS_transitBand_E2</name><value>16</value></property>
+    </gadget>
 
-	<!-- This is where we insert our new Gadget -->
-	<gadget>
-	  <name>bartgadget</name>
-	  <dll>gadgetron_bart</dll>
-	  <classname>BartGadget</classname>
-	  <!-- The "AbsoluteBartCommandScript_path" can be provided by the user to overwrite the default value-->
-	  <!--
-	  <property><name>AbsoluteBartCommandScript_path</name><value></value></property>
-	  -->
-	  <property><name>BartCommandScript_name</name><value>Sample_GRAPPA_Recon.txt</value></property>
-	</gadget>
+    <!-- Kspace filtering -->
+    <gadget>
+        <name>KSpaceFilter</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconKSpaceFilteringGadget</classname>
 
+        
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>false</value></property>
+        <property><name>verbose</name><value>false</value></property>
+
+       
+        <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
+
+       
+        <property><name>filterRO</name><value>Gaussian</value></property>
+        <property><name>filterRO_sigma</name><value>1.0</value></property>
+        <property><name>filterRO_width</name><value>0.15</value></property>
+
+        <property><name>filterE1</name><value>Gaussian</value></property>
+        <property><name>filterE1_sigma</name><value>1.0</value></property>
+        <property><name>filterE1_width</name><value>0.15</value></property>
+
+        <property><name>filterE2</name><value>Gaussian</value></property>
+        <property><name>filterE2_sigma</name><value>1.0</value></property>
+        <property><name>filterE2_width</name><value>0.15</value></property>
+    </gadget>
+
+    <!-- FOV Adjustment -->
+    <gadget>
+        <name>FOVAdjustment</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
+
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>false</value></property>
+        <property><name>verbose</name><value>false</value></property>
+    </gadget>
+	
     <!-- ImageArray to images -->
     <gadget>
         <name>ImageArraySplit</name>

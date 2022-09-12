@@ -8,6 +8,7 @@
 #include "registrationSolver.h"
 #include "vector_td_utilities.h"
 #include "vector_td_operators.h"
+#include <boost/make_shared.hpp>
 
 namespace Gadgetron{
 
@@ -91,8 +92,8 @@ namespace Gadgetron{
       }
       else{
         if( use_padding ){
-          garbage_collector_fixed = pad<REAL,D>(round_pow2(fixed_dims), fixed_image);
-          garbage_collector_moving = pad<REAL,D>(round_pow2(moving_dims), moving_image);
+          garbage_collector_fixed = boost::make_shared<ARRAY_TYPE_REAL>(pad<REAL,D>(round_pow2(fixed_dims), *fixed_image));
+          garbage_collector_moving = boost::make_shared<ARRAY_TYPE_REAL>(pad<REAL,D>(round_pow2(moving_dims), *moving_image));
           normalized_fixed = garbage_collector_fixed.get();
           normalized_moving = garbage_collector_moving.get();
         }
@@ -118,7 +119,7 @@ namespace Gadgetron{
         solveMultiRes( num_multires_levels_, normalized_fixed, normalized_moving, this->stencil_.get() );
 
       if( use_padding ){
-        result = crop<REAL,D>( (round_pow2(fixed_dims)-fixed_dims)>>2, fixed_dims, result.get());
+        result = boost::make_shared<ARRAY_TYPE_REAL>(crop<REAL,D>( (round_pow2(fixed_dims)-fixed_dims)>>2, fixed_dims, *result));
       }
 
       return result;
@@ -152,10 +153,10 @@ namespace Gadgetron{
         // Downsample input images (and stencil if provided)
         //
 
-        boost::shared_ptr<ARRAY_TYPE_REAL> fixed_image_lowres = downsample<REAL,D>(fixed_image);
-        boost::shared_ptr<ARRAY_TYPE_REAL> moving_image_lowres = downsample<REAL,D>(moving_image);
+        boost::shared_ptr<ARRAY_TYPE_REAL> fixed_image_lowres = boost::make_shared<ARRAY_TYPE_REAL>(downsample<REAL,D>(*fixed_image));
+        boost::shared_ptr<ARRAY_TYPE_REAL> moving_image_lowres = boost::make_shared<ARRAY_TYPE_REAL>(downsample<REAL,D>(*moving_image));
         boost::shared_ptr<ARRAY_TYPE_REAL> stencil_image_lowres =
-          ((stencil_image) ? downsample<REAL,D>(stencil_image) : boost::shared_ptr<ARRAY_TYPE_REAL>());
+          ((stencil_image) ? boost::make_shared<ARRAY_TYPE_REAL>(downsample<REAL,D>(*stencil_image)) : boost::shared_ptr<ARRAY_TYPE_REAL>());
 
         // Compute displacement field at the downsampled resolution
         //
@@ -173,7 +174,7 @@ namespace Gadgetron{
         // Upsample lowres results to current resolution
         //
 
-        result = upsample<REAL,D>(result_lowres.get());
+        result = boost::make_shared<ARRAY_TYPE_REAL>(upsample<REAL,D>(*result_lowres));
         *result *= REAL(2); // To adjust the flow vectors to the fact that the resolution is now twice as high
 
         // Clean up low resolution result

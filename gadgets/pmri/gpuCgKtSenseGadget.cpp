@@ -52,7 +52,6 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    pass_on_undesired_data_ = pass_on_undesired_data.value();
     set_number_ = setno.value();
     slice_number_ = sliceno.value();
     number_of_iterations_ = number_of_iterations.value();
@@ -194,14 +193,15 @@ namespace Gadgetron{
 
     // Define preconditioning weights
     boost::shared_ptr< cuNDArray<float> > __precon_weights = sum(abs_square(csm.get()).get(), 2);
-    boost::shared_ptr< cuNDArray<float> > _precon_weights = expand<float>( __precon_weights.get(), frames );
+    auto _precon_weights = expand<float>( *__precon_weights, frames );
     boost::shared_ptr<cuNDArray<float> > R_diag = R_->get();
     *R_diag *= float(kappa_);
-    *_precon_weights += *R_diag;
+    _precon_weights += *R_diag;
     R_diag.reset();
-    reciprocal_sqrt_inplace(_precon_weights.get());	
-    boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
-    __precon_weights.reset(); _precon_weights.reset();
+    reciprocal_sqrt_inplace(&_precon_weights);
+
+    boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( &_precon_weights );
+    __precon_weights.reset();
     D_->set_weights( precon_weights );
 
     *device_samples *= *dcw;
@@ -232,7 +232,7 @@ namespace Gadgetron{
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
-      cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, cgresult.get() );    
+      *cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, *cgresult );
     
     // Now pass on the reconstructed images
     //
@@ -265,7 +265,7 @@ namespace Gadgetron{
       img_dims[0] = matrix_size_seq_[0];
       img_dims[1] = matrix_size_seq_[1];
 
-      cm->getObjectPtr()->create(&img_dims);
+      cm->getObjectPtr()->create(img_dims);
 
       size_t data_length = prod(matrix_size_seq_);
 
@@ -322,8 +322,8 @@ namespace Gadgetron{
   
     // Convolve to Cartesian k-space
     //
-
-    E_->get_plan()->convolve( &data, &image_os, &dcw, cuNFFT_plan<float,2>::NFFT_CONV_NC2C );
+    data *= dcw;
+    E_->get_plan()->convolve( data, image_os,  NFFT_conv_mode::NC2C );
 
     // Apply shutter
     //
@@ -336,9 +336,9 @@ namespace Gadgetron{
       GDEBUG("Estimated training data shutter radius: %f\n", shutter_radius_);
     }
 
-    fill_border<float_complext,2>( shutter_radius_, &image_os );
-    E_->get_plan()->fft( &image_os, cuNFFT_plan<float,2>::NFFT_BACKWARDS );
-    E_->get_plan()->deapodize( &image_os );
+    fill_border<float_complext,2>( shutter_radius_, image_os );
+    E_->get_plan()->fft( image_os, NFFT_fft_mode::BACKWARDS );
+    E_->get_plan()->deapodize( image_os );
 
     // Remove oversampling
     //
@@ -347,7 +347,7 @@ namespace Gadgetron{
     dims.push_back(frames_per_reconstruction); 
     dims.push_back(num_coils);
     cuNDArray<float_complext> image(&dims);
-    crop<float_complext,2>( (matrix_size_os_-matrix_size_)>>1, &image_os, &image );
+    crop<float_complext,2>( (matrix_size_os_-matrix_size_)>>1, matrix_size_, image_os, image );
 
     // Compute regularization image
     //

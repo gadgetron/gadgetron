@@ -5,113 +5,85 @@
  *      Author: Michael S. Hansen
  */
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ExtractGadget.h"
+#include <bitset>
+#include <cpu/math/hoNDArray_math.h>
+#include <unordered_map>
 
+#include <boost/math/constants/constants.hpp>
 
-namespace Gadgetron{
-ExtractGadget::ExtractGadget()
-: extract_mask_(GADGET_EXTRACT_MAGNITUDE)
-{
+#include "hoNDArray_fileio.h"
 
-}
+namespace Gadgetron {
 
-ExtractGadget::~ExtractGadget()
-{
+    namespace {
+        using IMTYPE = ISMRMRD::ISMRMRD_ImageTypes;
 
-}
+        const std::map<IMTYPE, size_t> series_offset{ { IMTYPE::ISMRMRD_IMTYPE_MAGNITUDE, 0 },
+            { IMTYPE::ISMRMRD_IMTYPE_REAL, 1000 }, { IMTYPE::ISMRMRD_IMTYPE_IMAG, 2000 },
+            { IMTYPE::ISMRMRD_IMTYPE_PHASE, 3000 } };
 
-int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
-{
-        int em = extract_mask.value();
-	if (em > 0) {
-		if (em < GADGET_EXTRACT_MAX ) {
-			extract_mask_ = static_cast<unsigned short>(em);
-		}
-	}
+        const std::map<int, IMTYPE> mask_to_imtype{ { 0, IMTYPE::ISMRMRD_IMTYPE_MAGNITUDE },
+            { 1, IMTYPE::ISMRMRD_IMTYPE_REAL }, { 2, IMTYPE::ISMRMRD_IMTYPE_IMAG },
+            { 3, IMTYPE::ISMRMRD_IMTYPE_PHASE } };
 
-	static int counter = 0;
-	for (size_t m = GADGET_EXTRACT_MAGNITUDE; m < GADGET_EXTRACT_MAX; m = m<<1) {
-		if (extract_mask_ & m) {
-			GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
-					new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+        template <class FUNCTION>
+        hoNDArray<float> extract(const hoNDArray<std::complex<float>>& data, FUNCTION&& extractor) {
+            hoNDArray<float> output(data.dimensions());
+            std::transform(data.begin(), data.end(), output.begin(), extractor);
+            return output;
+        }
 
-			//Copy the header
-			*cm1->getObjectPtr() = *m1->getObjectPtr();
+        hoNDArray<float> extract_image(const hoNDArray<std::complex<float>>& data, IMTYPE imtype, float offset) {
+            switch (imtype) {
+            case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE: return extract(data, [](auto& val) { return std::abs(val); });
+            case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
+                return extract(data, [](auto& val) { return std::arg(val) + boost::math::constants::pi<float>(); });
+            case ISMRMRD::ISMRMRD_IMTYPE_REAL: return extract(data, [&](auto& val) { return std::real(val) + offset; });
+            case ISMRMRD::ISMRMRD_IMTYPE_IMAG: return extract(data, [&](auto& val) { return std::imag(val) + offset; });
+            default: throw std::runtime_error("Illegal image type encountered in extract_image");
+            }
+        }
 
-			GadgetContainerMessage<hoNDArray< float > > *cm2 =
-					new GadgetContainerMessage<hoNDArray< float > >();
+    }
 
-			boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->get_dimensions();
+    void ExtractGadget::process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) {
+        for (auto image : in) {
+            const auto& head = std::get<ISMRMRD::ImageHeader>(image);
+            const auto& data = std::get<hoNDArray<std::complex<float>>>(image);
+            const auto& meta = std::get<2>(image);
 
-			try{cm2->getObjectPtr()->create(dims.get());}
-			catch (std::runtime_error &err){
-				GEXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
-				return GADGET_FAIL;
-			}
+            for (auto imtype : image_types) {
+                auto data_copy       = extract_image(data, imtype, real_imag_offset);
+                auto head_copy       = head;
+                head_copy.data_type  = ISMRMRD::ISMRMRD_FLOAT;
+                head_copy.image_type = imtype;
+                head_copy.image_series_index += series_offset.at(imtype);
+                out.push(head_copy, std::move(data_copy), meta);
+            }
+        }
+    }
 
-			std::complex<float>* src = m2->getObjectPtr()->get_data_ptr();
-			float* dst = cm2->getObjectPtr()->get_data_ptr();
+    ExtractGadget::ExtractGadget(const Core::Context& context, const Core::GadgetProperties& props)
+        : Core::ChannelGadget<Core::Image<std::complex<float>>>(context, props) {
 
-			float pix_val;
-			for (unsigned long i = 0; i < cm2->getObjectPtr()->get_number_of_elements(); i++) {
-				switch (m) {
-				case GADGET_EXTRACT_MAGNITUDE:
-					pix_val = abs(src[i]);
-					break;
-				case GADGET_EXTRACT_REAL:
-					pix_val = real(src[i]);
-					break;
-				case GADGET_EXTRACT_IMAG:
-					pix_val = imag(src[i]);
-					break;
-				case GADGET_EXTRACT_PHASE:
-					pix_val = arg(src[i]);
-					break;
-				default:
-					GDEBUG("Unexpected extract mask %d, bailing out\n", m);
-					return GADGET_FAIL;
-				}
-				dst[i] = pix_val;
-			}
+        for (int i = 0; i < extract_mask.size(); i++) {
+            if (extract_mask[i])
+                image_types.insert(mask_to_imtype.at(i));
+        }
+        if (extract_magnitude)
+            image_types.insert(IMTYPE::ISMRMRD_IMTYPE_MAGNITUDE);
+        if (extract_real)
+            image_types.insert(IMTYPE::ISMRMRD_IMTYPE_REAL);
+        if (extract_imag)
+            image_types.insert(IMTYPE::ISMRMRD_IMTYPE_IMAG);
+        if (extract_phase)
+            image_types.insert(IMTYPE::ISMRMRD_IMTYPE_PHASE);
 
-			cm1->cont(cm2);
-			cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;//GADGET_IMAGE_REAL_FLOAT;
+        if (image_types.empty())
+            throw std::runtime_error("ExctractGadget: No valid extract functions specified");
+    }
 
-			switch (m) {
-			case GADGET_EXTRACT_MAGNITUDE:
-				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;//GADGET_IMAGE_MAGNITUDE;
-				break;
-			case GADGET_EXTRACT_REAL:
-				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
-				cm1->getObjectPtr()->image_series_index += 1000; //Ensure that this will go in a different series
-				break;
-			case GADGET_EXTRACT_IMAG:
-				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_IMAG;
-				cm1->getObjectPtr()->image_series_index += 2000; //Ensure that this will go in a different series
-				break;
-			case GADGET_EXTRACT_PHASE:
-				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_PHASE;
-				cm1->getObjectPtr()->image_series_index += 3000; //Ensure that this will go in a different series
-				break;
-			default:
-				GDEBUG("Unexpected extract mask %d, bailing out\n", m);
-				break;
-			}
+    GADGETRON_GADGET_EXPORT(ExtractGadget)
 
-
-			if (this->next()->putq(cm1) == -1) {
-				m1->release();
-				GDEBUG("Unable to put extracted images on next gadgets queue");
-				return GADGET_FAIL;
-			}
-		}
-	}
-
-	m1->release(); //We have copied all the data in this case
-	return GADGET_OK;
-}
-
-
-GADGET_FACTORY_DECLARE(ExtractGadget)
 }

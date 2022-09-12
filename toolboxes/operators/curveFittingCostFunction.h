@@ -23,6 +23,7 @@ namespace Gadgetron {
 
         // evaluates cost function, given observed (y) and estimated (y_est) data
         virtual REAL eval(const ARRAY &y, const ARRAY& y_est) = 0;
+        virtual ~curveFittingCostFunction() = default;
     };
 
     // simple LSE

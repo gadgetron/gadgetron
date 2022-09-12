@@ -3,24 +3,28 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegNonParametricSolver_H_
+#define hoImageRegNonParametricSolver_H_
+
 #pragma once
 
 #include "hoImageRegSolver.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// ValueType: image pixel value type
     /// CoordType: transformation data type
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    class hoImageRegNonParametricSolver : public hoImageRegSolver<ValueType, CoordType, DIn, DOut>
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegNonParametricSolver : public hoImageRegSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut> Self;
-        typedef hoImageRegSolver<ValueType, CoordType, DIn, DOut> BaseClass;
+        typedef hoImageRegNonParametricSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -99,19 +103,19 @@ namespace Gadgetron
         using BaseClass::use_world_coordinate_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::hoImageRegNonParametricSolver() 
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegNonParametricSolver<TargetType, SourceType, CoordType>::hoImageRegNonParametricSolver() 
         : BaseClass(), dissimilarity_thres_(0), parameter_thres_( (ValueType)1e-8 ), div_num_(3), step_size_para_( (ValueType)0.8 ), step_size_div_para_( (ValueType)0.5 )
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::~hoImageRegNonParametricSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegNonParametricSolver<TargetType, SourceType, CoordType>::~hoImageRegNonParametricSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegNonParametricSolver<TargetType, SourceType, CoordType>::initialize()
     {
         try
         {
@@ -135,15 +139,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegNonParametricSolver<TargetType, SourceType, CoordType>::initialize() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegNonParametricSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image registration non-parametric solver -------------" << endl;
@@ -160,3 +164,4 @@ namespace Gadgetron
         os << "Step size division ratio is : " << step_size_div_para_ << std::endl;
     }
 }
+#endif // hoImageRegNonParametricSolver_H_

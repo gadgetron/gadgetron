@@ -21,7 +21,7 @@ protected:
 
 typedef Types<float, double> realImplementations;
 
-TYPED_TEST_CASE(hoCuNDArray_blas_Real, realImplementations);
+TYPED_TEST_SUITE(hoCuNDArray_blas_Real, realImplementations);
 
 TYPED_TEST(hoCuNDArray_blas_Real,dotTest){
   fill(&this->Array,TypeParam(1));
@@ -84,7 +84,7 @@ protected:
 
 typedef Types<float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoCuNDArray_blas_Cplx, cplxImplementations);
+TYPED_TEST_SUITE(hoCuNDArray_blas_Cplx, cplxImplementations);
 
 TYPED_TEST(hoCuNDArray_blas_Cplx,dotTest){
   fill(&this->Array,TypeParam(1,1));

@@ -1,47 +1,59 @@
-#ifndef ISMRMRDDUMPGADGET_H
-#define ISMRMRDDUMPGADGET_H
-
-#include "Gadget.h"
+#pragma once 
+#include "Node.h"
+#include "Types.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#include "io/from_string.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/dataset.h>
 #include <ismrmrd/xml.h>
+#include <ismrmrd/waveform.h>
+#include <set>
 
 #include <complex>
 
-namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE IsmrmrdDumpGadget : 
-  public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+
+namespace Gadgetron {
+       class IsmrmrdDumpGadget : public Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>>
     {
     public:
-      GADGET_DECLARE(IsmrmrdDumpGadget);
-
-      IsmrmrdDumpGadget();
-      virtual ~IsmrmrdDumpGadget();
+      
+        IsmrmrdDumpGadget(const Core::Context& context, const Core::GadgetProperties& props ); 
+        virtual ~IsmrmrdDumpGadget() = default;
 
     protected:
-      GADGET_PROPERTY(folder,               std::string,    "Folder  for dump file", ".");
-      GADGET_PROPERTY(file_prefix,          std::string,    "Prefix for dump file", "ISMRMRD_DUMP");
-      GADGET_PROPERTY(append_id,            bool,           "ISMRMRD measurement ID to file name prefix (if available)", true);
-      GADGET_PROPERTY(append_timestamp,     bool,           "Append timestamp to file name prefix", true);
-      GADGET_PROPERTY(use_data_timestamp,   bool,           "Use the time stamp of incoming data set as file name", false);
-      GADGET_PROPERTY(timestamp_tick,       double,         "Tick per unit of time stamp in ms", 2.5);
 
-      virtual int process_config(ACE_Message_Block* mb);
+#ifndef WIN32
+        NODE_PROPERTY(folder, boost::filesystem::path, "Folder for save dump file", "/tmp/gadgetron_data");
+#else
+        NODE_PROPERTY(folder, boost::filesystem::path, "Folder for save dump file", "c:/temp/gadgetron_data");
+#endif // WIN32
 
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-                GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+        NODE_PROPERTY(file_prefix, std::string, "Prefix for dump file", "ISMRMRD_DUMP");
+
+        // In some cases, data cannot be saved to a gadgetron server
+        // if gadgetron ip equals to these preset ips, do not save data
+        NODE_PROPERTY(ip_no_data_saving, std::set<std::string>, "If gadgetrion IP equals to this ip, do not save data",std::set<std::string>({ "192.168.2.2", "192.168.56.2" }));
+        // if true, only save the xml header
+        NODE_PROPERTY(save_xml_header_only, bool, "If true, only save the xml header", false);
+
+        // since the support to waveform is not fully implemented, this option is added for not passing waveform downstream
+        // TODO: remove this option
+        NODE_PROPERTY(pass_waveform_downstream, bool, "If true, waveform data is passed downstream", false);
+
+
+        void process(Core::InputChannel<Core::variant<Core::Acquisition,Core::Waveform>>& input, Core::OutputChannel& output) override;
+
 
     private:
-      bool first_call_;
-      ISMRMRD::IsmrmrdHeader ismrmrd_header_;
-      std::string ismrmrd_xml_;
-      boost::shared_ptr<ISMRMRD::Dataset>  ismrmrd_dataset_;
 
-      int create_ismrmrd_dataset(ISMRMRD::AcquisitionHeader* acq = NULL);
+        const bool save_ismrmrd_data_;
+
+        ISMRMRD::Dataset create_ismrmrd_dataset() const;
+        bool  is_ip_on_blacklist() const ; 
     };
+
+
+
 }
-#endif //ISMRMRDDUMPGADGET_H

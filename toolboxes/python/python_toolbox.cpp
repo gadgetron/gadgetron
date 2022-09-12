@@ -1,15 +1,13 @@
 #include "python_toolbox.h"
 
-#include "Gadget.h"             // for GADGET_OK/FAIL
-#include "gadgetron_paths.h"    // for get_gadgetron_home()
-#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
-
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/numpyconfig.h>
 #include <numpy/arrayobject.h>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/algorithm/string.hpp>
+
+// #include "Gadget.h"             // for GADGET_OK/FAIL
 
 
 namespace Gadgetron
@@ -20,43 +18,30 @@ static bool numpy_initialized = false;
 static boost::mutex python_initialize_mtx;
 static boost::mutex numpy_initialize_mtx;
 
-int initialize_python(void)
+void initialize_python(void)
 {
-    // lock here so only one thread can initialize Python
+    // lock here so only one thread can initialize/finalize Python
     boost::mutex::scoped_lock lock(python_initialize_mtx);
 
     if (!python_initialized) {
         Py_Initialize();
         initialize_numpy();
 
-        PyEval_InitThreads();
-
         //Swap out and return current thread state and release the GIL
         //Must be done, otherwise subsequent calls to PyGILState_Ensure()
         //will not be guaranteed to acquire lock
-        PyThreadState* tstate = PyEval_SaveThread();
+//        PyThreadState* tstate = PyEval_SaveThread();
+        PyThreadState* tstate = PyThreadState_Get();
         if (!tstate) {
-            GDEBUG("Error occurred returning lock to Python\n");
-            return GADGET_FAIL;
+            throw std::runtime_error("Error occurred returning lock to Python\n");
         }
 
+        PyEval_ReleaseThread(tstate);
         python_initialized = true; // interpreter successfully initialized
-
-        //Let's first get the path set for the library folder
-        std::string gadgetron_home = get_gadgetron_home();
-        std::string path_name = gadgetron_home + std::string("/") + std::string(GADGETRON_PYTHON_PATH);
-
-        if (gadgetron_home.size() != 0) {
-            if (add_python_path(path_name) == GADGET_FAIL) {
-                GDEBUG("python_toolbox failed to add path %s\n", path_name.c_str());
-                return GADGET_FAIL;
-            }
-        }
     }
-    return GADGET_OK;
 }
 
-int initialize_numpy(void)
+void  initialize_numpy(void)
 {
     // lock here so only one thread can initialize NumPy
     boost::mutex::scoped_lock lock(numpy_initialize_mtx);
@@ -65,10 +50,20 @@ int initialize_numpy(void)
         _import_array();    // import NumPy
         numpy_initialized = true; // numpy successfully initialized
     }
-    return GADGET_OK;
 }
 
-int add_python_path(const std::string& path)
+void finalize_python(void)
+{
+    // lock here so only one thread can initialize/finalize Python
+    boost::mutex::scoped_lock lock(python_initialize_mtx);
+
+    if (python_initialized) {
+        Py_Finalize();
+        python_initialized = false;
+    }
+}
+
+void add_python_path(const std::string& path)
 {
     GILLock lock;   // Lock the GIL
 
@@ -80,13 +75,11 @@ int add_python_path(const std::string& path)
             add_path_cmd = std::string("import sys;\nif sys.path.count(\"") +
                     paths[i] + std::string("\") == 0:\n\tsys.path.insert(0, \"") +
                     paths[i] + std::string("\")\n");
-            //GDEBUG("Executing path command:\n%s\n", path_cmd.c_str());
             boost::python::exec(add_path_cmd.c_str(),
                     boost::python::import("__main__").attr("__dict__"));
         }
     }
 
-    return GADGET_OK;
 }
 
 /// Adapted from http://stackoverflow.com/a/6576177/1689220
@@ -106,7 +99,7 @@ std::string pyerr_to_string(void)
         bp::object format_exception(traceback.attr("format_exception"));
         formatted_list = format_exception(hexc, hval, htb);
     }
-    formatted = bp::str("\n").join(formatted_list);
+    formatted = bp::str("").join(formatted_list);
     return bp::extract<std::string>(formatted);
 }
 
@@ -160,4 +153,8 @@ PyObject* NumPyArray_EMPTY(int nd, npy_intp* dims, int typenum, int fortran)
     return PyArray_EMPTY(nd, dims, typenum,fortran);
 }
 
+}
+
+bool boost::python::hasattr(object o, const char* name) {
+    return PyObject_HasAttrString(o.ptr(), name);
 }

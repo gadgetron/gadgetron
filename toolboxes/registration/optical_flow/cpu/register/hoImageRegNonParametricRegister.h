@@ -3,22 +3,26 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegNonParametricRegister_H_
+#define hoImageRegNonParametricRegister_H_
+
 #pragma once
 
 #include "hoImageRegRegister.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    class hoImageRegNonParametricRegister : public hoImageRegRegister<ValueType, CoordType, DIn, DOut>
+namespace Gadgetron {
+
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegNonParametricRegister : public hoImageRegRegister<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegNonParametricRegister<ValueType, CoordType, DIn, DOut> Self;
-        typedef hoImageRegRegister<ValueType, CoordType, DIn, DOut> BaseClass;
+        typedef hoImageRegNonParametricRegister<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegRegister<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef typename BaseClass::TargetType TargetType;
-        typedef typename BaseClass::SourceType SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef typename BaseClass::Target2DType Target2DType;
         typedef typename BaseClass::Source2DType Source2DType;
@@ -124,21 +128,21 @@ namespace Gadgetron
         using BaseClass::dissimilarity_pyramid_inverse_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegNonParametricRegister<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegNonParametricRegister<TargetType, SourceType, CoordType>::
     hoImageRegNonParametricRegister(unsigned int resolution_pyramid_levels, ValueType bg_value) : BaseClass(resolution_pyramid_levels, bg_value)
     {
 
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegNonParametricRegister<ValueType, CoordType, DIn, DOut>::~hoImageRegNonParametricRegister()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegNonParametricRegister<TargetType, SourceType, CoordType>::~hoImageRegNonParametricRegister()
     {
 
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegNonParametricRegister<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegNonParametricRegister<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron non-parametric image register -------------" << endl;
@@ -146,3 +150,4 @@ namespace Gadgetron
         os << "--------------------------------------------------------------------" << endl << ends;
     }
 }
+#endif // hoImageRegNonParametricRegister_H_

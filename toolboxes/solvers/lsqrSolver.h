@@ -78,7 +78,7 @@ public:
             REAL s = 0;
             REAL phibar = beta;
 
-            ARRAY_TYPE v(x);
+            ARRAY_TYPE v(*x);
             this->encoding_operator_->mult_MH(&u, &v);
 
             REAL alpha = Gadgetron::nrm2(&v);
@@ -87,7 +87,7 @@ public:
                 Gadgetron::scal(REAL(1.0) / alpha, v);
             }
 
-            ARRAY_TYPE d(x);
+            ARRAY_TYPE d(*x);
             Gadgetron::clear(d);
 
             REAL normar;

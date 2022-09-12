@@ -1,22 +1,22 @@
-#ifndef IMAGEFINISHGADGET_H
-#define IMAGEFINISHGADGET_H
+#pragma once
 
 #include "Gadget.h"
-#include "hoNDArray.h"
-#include "GadgetMRIHeaders.h"
-#include "GadgetStreamController.h"
+#include "Node.h"
 #include "gadgetron_mricore_export.h"
 
-#include <ismrmrd/ismrmrd.h>
-#include <complex>
+namespace Gadgetron {
 
-namespace Gadgetron{
+    class EXPORTGADGETSMRICORE ImageFinishGadget : public Core::GenericChannelGadget {
+    public:
+        ImageFinishGadget(
+                const Core::Context &context,
+                const Core::GadgetProperties &properties
+        ) : GenericChannelGadget(context,properties) {};
 
-    class EXPORTGADGETSMRICORE ImageFinishGadget : public Gadget1 < ISMRMRD::ImageHeader >
-    {
     protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
+        void process(Core::GenericInputChannel& in,
+                    Core::OutputChannel& out) override;
+
     };
 }
 
-#endif //IMAGEFINISHGADGET_H

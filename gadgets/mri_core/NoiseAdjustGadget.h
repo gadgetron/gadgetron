@@ -1,74 +1,87 @@
 #pragma once
 
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
 #include "GadgetronTimer.h"
+#include "Node.h"
+#include "Types.h"
+#include "gadgetron_mricore_export.h"
+#include "hoNDArray.h"
 
+#include <boost/filesystem/path.hpp>
+#include <complex>
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
-#include <complex>
 
 namespace Gadgetron {
 
-  class EXPORTGADGETSMRICORE NoiseAdjustGadget :
-    public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
-    {
+        struct NoiseCovariance {
+            ISMRMRD::IsmrmrdHeader header;
+            float noise_dwell_time_us;
+            hoNDArray<std::complex<float>> noise_covariance_matrix;
+        };
+
+
+        struct NoiseGatherer {
+            hoNDArray<std::complex<float>> tmp_covariance;
+            size_t number_of_samples = 0;
+            float noise_dwell_time_us=0;
+        };
+
+        struct Prewhitener {
+            hoNDArray<std::complex<float>> prewhitening_matrix;
+        };
+
+        struct LoadedNoise {
+            hoNDArray<std::complex<float>> covariance;
+            float noise_dwell_time_us;
+        };
+
+        struct IgnoringNoise {};
+    class NoiseAdjustGadget : public Core::ChannelGadget<Core::Acquisition> {
     public:
-      GADGET_DECLARE(NoiseAdjustGadget);
+        NoiseAdjustGadget(const Core::Context& context, const Core::GadgetProperties& props);
 
-      typedef Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > > BaseClass;
+        void process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) override;
 
-      NoiseAdjustGadget();
-      virtual ~NoiseAdjustGadget();
 
-      virtual int close(unsigned long flags);
+        using NoiseHandler = Core::variant<NoiseGatherer, LoadedNoise, Prewhitener, IgnoringNoise>;
 
     protected:
-      GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix of noise depencency file", "GadgetronNoiseCovarianceMatrix");
-      GADGET_PROPERTY(perform_noise_adjust, bool, "Whether to actually perform the noise adjust", true);
-      GADGET_PROPERTY(pass_nonconformant_data, bool, "Whether to pass data that does not conform", false);
-      GADGET_PROPERTY(noise_dwell_time_us_preset, float, "Preset dwell time for noise measurement", 0.0);
-      GADGET_PROPERTY(scale_only_channels_by_name, std::string, "List of named channels that should only be scaled", "");
+        NODE_PROPERTY(
+            noise_dependency_prefix, std::string, "Prefix of noise dependency file", "GadgetronNoiseCovarianceMatrix");
+        NODE_PROPERTY(perform_noise_adjust, bool, "Whether to actually perform the noise adjust", true);
+        NODE_PROPERTY(pass_nonconformant_data, bool, "Whether to pass data that does not conform", true);
+        NODE_PROPERTY(noise_dwell_time_us_preset, float, "Preset dwell time for noise measurement", 0.0);
+        NODE_PROPERTY(
+            scale_only_channels_by_name, std::string, "List of named channels that should only be scaled", "");
+        NODE_PROPERTY(noise_dependency_folder, boost::filesystem::path, "Path to the working directory",
+            boost::filesystem::temp_directory_path() / "gadgetron");
 
-      bool noise_decorrelation_calculated_;
-      hoNDArray< std::complex<float> > noise_covariance_matrixf_;
-      hoNDArray< std::complex<float> > noise_prewhitener_matrixf_;
-      hoNDArray< std::complex<float> > noise_covariance_matrixf_once_;
-      std::vector<unsigned int> scale_only_channels_;
+        const float receiver_noise_bandwidth;
 
-      unsigned long long number_of_noise_samples_;
-      unsigned long long number_of_noise_samples_per_acquisition_;
-      float noise_dwell_time_us_;
-      float noise_dwell_time_us_preset_;
-      float acquisition_dwell_time_us_;
-      float noise_bw_scale_factor_;
-      float receiver_noise_bandwidth_;
-      bool noiseCovarianceLoaded_;
-      bool perform_noise_adjust_;
-      bool pass_nonconformant_data_;
-      bool saved_;
+        const std::string measurement_id;
+        std::vector<size_t> scale_only_channels;
 
-      std::string noise_dependency_folder_;
-      std::string noise_dependency_prefix_;
-      std::string measurement_id_;
-      std::string measurement_id_of_noise_dependency_;
-      std::string full_name_stored_noise_dependency_;
+        // We will store/load a copy of the noise scans XML header to enable us to check which coil layout, etc.
+        const ISMRMRD::IsmrmrdHeader current_ismrmrd_header;
 
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
-      std::string generateNoiseDependencyFilename(const std::string& measurement_id);
-      std::string generateMeasurementIdOfNoiseDependency(const std::string& noise_id);
+        NoiseHandler noisehandler = IgnoringNoise{};
 
-      bool loadNoiseCovariance();
-      bool saveNoiseCovariance();
-      void computeNoisePrewhitener();
+        template<class NOISEHANDLER>
+        void add_noise(NOISEHANDLER& nh, const Core::Acquisition&) const ;
 
-      //We will store/load a copy of the noise scans XML header to enable us to check which coil layout, etc.
-      ISMRMRD::IsmrmrdHeader current_ismrmrd_header_;
-      ISMRMRD::IsmrmrdHeader noise_ismrmrd_header_;
+        template<class NOISEHANDLER>
+        NoiseHandler handle_acquisition(NOISEHANDLER nh, Core::Acquisition&);
 
+
+        Core::optional<NoiseCovariance> load_noisedata(const std::string& measurement_id) const;
+
+        template<class NOISEHANDLER>
+        void save_noisedata(NOISEHANDLER& nh);
+
+
+        NoiseHandler load_or_gather() const;
+        std::shared_ptr<MeasurementSpace> measurement_storage;
     };
 }
+BOOST_HANA_ADAPT_STRUCT(Gadgetron::NoiseCovariance,header,noise_dwell_time_us,noise_covariance_matrix);

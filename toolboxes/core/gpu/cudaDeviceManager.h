@@ -1,14 +1,17 @@
 #pragma once
 
-#include "gpucore_export.h"
+
 
 #include <vector>
 #include <cublas_v2.h>
-#include "cuSparseMatrix.h"
+#include <cusparse.h>
+
+#include <library_types.h>
+#include "complext.h"
 
 namespace Gadgetron{
 
-  class EXPORTGPUCORE cudaDeviceManager 
+  class cudaDeviceManager 
   {
   public:
 
@@ -86,4 +89,40 @@ namespace Gadgetron{
     std::vector<cusparseHandle_t> _sparse_handle;
     static cudaDeviceManager * _instance;
   };
+
+  template<class T>
+  struct cudaDataType {
+  };
+
+  template<>
+  struct cudaDataType<float>{
+    static constexpr cudaDataType_t value = CUDA_R_32F;
+  };
+
+  template<>
+  struct cudaDataType<double>{
+    static constexpr cudaDataType_t value = CUDA_R_64F;
+  };
+
+  template<>
+  struct cudaDataType<complext<float>>{
+    static constexpr cudaDataType_t value = CUDA_C_32F;
+  };
+
+  template<>
+  struct cudaDataType<complext<double>>{
+    static constexpr cudaDataType_t value = CUDA_C_64F;
+  };
+
+
+  template<class T>
+  constexpr cudaDataType_t cuda_datatype(){return cudaDataType<T>::value;}
+
+	std::string gadgetron_getCusparseErrorString(cusparseStatus_t err);
+
+
+
 }
+
+
+

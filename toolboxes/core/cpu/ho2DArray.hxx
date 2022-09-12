@@ -11,11 +11,7 @@ template <typename T>
 ho2DArray<T>::ho2DArray(size_t sx, size_t sy)
 : accesser_(NULL)
 {
-    std::vector<size_t> dim(2);
-    dim[0] = sx;
-    dim[1] = sy;
-
-    this->create(&dim);
+    this->create(sx,sy);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -29,7 +25,7 @@ ho2DArray<T>::ho2DArray(std::vector<size_t> *dimensions)
 
 template <typename T> 
 ho2DArray<T>::ho2DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
+: BaseClass(*dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
     GADGET_CHECK_THROW(dimensions->size()==2);
     GADGET_CHECK_THROW(init_accesser());
@@ -111,14 +107,14 @@ void ho2DArray<T>::create(std::vector<size_t>& dimensions)
 template <typename T> 
 void ho2DArray<T>::create(std::vector<size_t> *dimensions)
 {
-    BaseClass::create(dimensions);
+    BaseClass::create(*dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
 void ho2DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
 {
-    BaseClass::create(dimensions, data, delete_data_on_destruct);
+    BaseClass::create(*dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -174,14 +170,14 @@ bool ho2DArray<T>::createArray(size_t sx, size_t sy, T* data, bool delete_data_o
 template <typename T> 
 inline T& ho2DArray<T>::operator()(size_t x , size_t y)
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1]);
+    GADGET_DEBUG_CHECK_THROW(x<dimensions_[0] && y<dimensions_[1]);
     return accesser_[y][x];
 }
 
 template <typename T> 
 inline const T& ho2DArray<T>::operator()(size_t x , size_t y) const
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1]);
+    GADGET_DEBUG_CHECK_THROW(x<dimensions_[0] && y<dimensions_[1]);
     return accesser_[y][x];
 }
 
@@ -194,8 +190,8 @@ bool ho2DArray<T>::init_accesser()
 
         if ( elements_ > 0 )
         {
-            size_t sx = (*dimensions_)[0];
-            size_t sy = (*dimensions_)[1];
+            size_t sx = dimensions_[0];
+            size_t sy = dimensions_[1];
 
             accesser_ = new T*[sy];
             if( accesser_ == NULL) return false;
@@ -246,10 +242,10 @@ void ho2DArray<T>::print(std::ostream& os) const
     BaseClass::print(os);
     size_t x, y;
     os << "-------------------------------------------" << std::endl;
-    for (y=0; y<(*dimensions_)[1]; y++) 
+    for (y=0; y<dimensions_[1]; y++) 
     {
         os << "y " << y << "\t";
-        for (x=0; x<(*dimensions_)[0]; x++)
+        for (x=0; x<dimensions_[0]; x++)
         {
             os << (*this)(x,y) << "\t";
         }

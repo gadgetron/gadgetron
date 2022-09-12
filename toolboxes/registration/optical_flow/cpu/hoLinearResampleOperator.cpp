@@ -19,8 +19,8 @@ namespace Gadgetron{
       throw std::runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." );
     }
   
-    arma::Row<typename stdType<T>::Type > in_vec = as_arma_row(in);
-    arma::Row<typename stdType<T>::Type > out_vec = as_arma_row(out);
+    arma::Row<typename stdType<T>::Type > in_vec = as_arma_row(*in);
+    arma::Row<typename stdType<T>::Type > out_vec = as_arma_row(*out);
     out_vec = in_vec*R_T_;
   }
 
@@ -35,8 +35,8 @@ namespace Gadgetron{
       throw std::runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." );
     }
 
-    arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
-    arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
+    arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(*in);
+    arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(*out);
     out_vec = R_T_ * in_vec;
   }
   
@@ -85,7 +85,7 @@ namespace Gadgetron{
       const size_t batch_no = idx/num_elements_mat;
       const size_t idx_in_batch = idx-batch_no*num_elements_mat;
     
-      const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uint64d<D>::Type co = idx_to_co( idx_in_batch, matrix_size );
       typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co);
       for( unsigned int dim=0; dim<D; dim++ ){
         REAL tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
@@ -114,8 +114,8 @@ namespace Gadgetron{
         // Determine image coordinate of current neighbor
         //
         
-        const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
-        
+        const typename uint64d<D>::Type stride = idx_to_co<size_t,D>( i, twos );
+
         if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
         
         typename reald<REAL,D>::Type co_stride;
@@ -147,7 +147,7 @@ namespace Gadgetron{
           }
         }
 	
-        mat_i = co_to_idx<D>(co_stride_uint64d, matrix_size)+batch_no*num_elements_mat;
+        mat_i = co_to_idx(co_stride_uint64d, matrix_size)+batch_no*num_elements_mat;
       
         // Determine weight
         //

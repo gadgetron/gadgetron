@@ -1,90 +1,44 @@
 /*
-*       ComplexToFloatGadget.cpp
-*       Author: Hui Xue
-*/
+ *       ComplexToFloatGadget.cpp
+ *       Author: Hui Xue
+ */
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "ComplexToFloatGadget.h"
 #include "hoNDArray_elemwise.h"
 
-namespace Gadgetron
-{
-    ComplexToFloatGadget::ComplexToFloatGadget()
-    {
+#include "log.h"
+
+Gadgetron::ComplexToFloatGadget::ComplexToFloatGadget(
+    const Gadgetron::Core::Context& context, const Gadgetron::Core::GadgetProperties& props)
+    : PureGadget(context,props) {
+
+    converters = { { ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE, [](const auto& image) { return abs(image); } },
+                   { ISMRMRD::ISMRMRD_IMTYPE_PHASE,     [](const auto& image) { return argument(image); } },
+                   { ISMRMRD::ISMRMRD_IMTYPE_REAL,      [](const auto& image) { return real(image); } },
+                   { ISMRMRD::ISMRMRD_IMTYPE_IMAG,      [](const auto& image) { return imag(image); } }};
+};
+
+Gadgetron::Core::Image<float> Gadgetron::ComplexToFloatGadget::process_function(
+    Gadgetron::Core::Image<std::complex<float>> input_image) const {
+
+    auto& header     = std::get<ISMRMRD::ImageHeader>(input_image);
+    auto& meta       = std::get<2>(input_image);
+    auto& input_data = std::get<hoNDArray<std::complex<float>>>(input_image);
+
+    hoNDArray<float> output_data;
+
+    if (converters.count(header.image_type)) {
+        output_data = converters.at(header.image_type)(input_data);
+    }
+    else {
+        GDEBUG_STREAM("Image type not set; defaulting to magnitude image.");
+        output_data = converters.at(ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE)(input_data);
+        header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
     }
 
-    ComplexToFloatGadget::~ComplexToFloatGadget()
-    {
-    }
+    return { header, output_data, meta };
+}
 
-    int ComplexToFloatGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2)
-    {
-        GadgetContainerMessage<hoNDArray< float > > *cm2 = new GadgetContainerMessage<hoNDArray< float > >();
-
-        boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->get_dimensions();
-
-        try
-        {
-            cm2->getObjectPtr()->create(dims);
-        }
-        catch (std::runtime_error &err)
-        {
-            GEXCEPTION(err,"Unable to create float storage in ComplexToFloatGadget");
-            return GADGET_FAIL;
-        }
-
-        switch (m1->getObjectPtr()->image_type)
-        {
-            case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
-            {
-                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::abs(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
-            }
-            break;
-
-            case ISMRMRD::ISMRMRD_IMTYPE_REAL:
-            {
-                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::complex_to_real(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
-            }
-            break;
-
-            case ISMRMRD::ISMRMRD_IMTYPE_IMAG:
-            {
-                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::complex_to_imag(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
-            }
-            break;
-
-            case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
-            {
-                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::argument(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
-            }
-            break;
-
-            default:
-                GDEBUG("Unknown image type %d, bailing out\n",m1->getObjectPtr()->image_type);
-                m1->release();
-                cm2->release();
-                return GADGET_FAIL;
-        }
-
-        GadgetContainerMessage<ISMRMRD::MetaContainer>* m3 = AsContainerMessage<ISMRMRD::MetaContainer>(m2->cont());
-
-        m1->cont(cm2);
-        if(m3) cm2->cont(m3);
-
-        m2->cont(NULL);
-        m2->release();
-
-        m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;
-
-        if (this->next()->putq(m1) == -1)
-        {
-            m1->release();
-            GDEBUG("Unable to put unsigned short magnitude image on next gadgets queue");
-            return GADGET_FAIL;
-        }
-
-        return GADGET_OK;
-    }
-
-    GADGET_FACTORY_DECLARE(ComplexToFloatGadget)
+namespace Gadgetron{
+    GADGETRON_GADGET_EXPORT(ComplexToFloatGadget)
 }

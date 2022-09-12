@@ -180,14 +180,14 @@ bool ho4DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss, T* da
 template <typename T> 
 inline T& ho4DArray<T>::operator()(size_t x, size_t y, size_t z, size_t s)
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1] && z<(*dimensions_)[2] && s<(*dimensions_)[3]);
+    GADGET_DEBUG_CHECK_THROW(x<dimensions_[0] && y<dimensions_[1] && z<dimensions_[2] && s<dimensions_[3]);
     return accesser_[s][z][y][x];
 }
 
 template <typename T> 
 inline const T& ho4DArray<T>::operator()(size_t x, size_t y, size_t z, size_t s) const
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1] && z<(*dimensions_)[2] && s<(*dimensions_)[3]);
+    GADGET_DEBUG_CHECK_THROW(x<dimensions_[0] && y<dimensions_[1] && z<dimensions_[2] && s<dimensions_[3]);
     return accesser_[s][z][y][x];
 }
 
@@ -200,10 +200,10 @@ bool ho4DArray<T>::init_accesser()
 
         if ( elements_ > 0 )
         {
-            size_t sx = (*dimensions_)[0];
-            size_t sy = (*dimensions_)[1];
-            size_t sz = (*dimensions_)[2];
-            size_t ss = (*dimensions_)[3];
+            size_t sx = dimensions_[0];
+            size_t sy = dimensions_[1];
+            size_t sz = dimensions_[2];
+            size_t ss = dimensions_[3];
 
             size_t y, z, s;
 
@@ -291,15 +291,15 @@ void ho4DArray<T>::print(std::ostream& os) const
     BaseClass::print(os);
     size_t x, y, z, s;
     os << "-------------------------------------------" << std::endl;
-    for (s=0; s<(*dimensions_)[3]; s++) 
+    for (s=0; s<dimensions_[3]; s++) 
     {
-        for (z=0; z<(*dimensions_)[2]; z++) 
+        for (z=0; z<dimensions_[2]; z++) 
         {
             os << "ho4DArray (:, :, " << z << ", " << s << ") = " << std::endl;
-            for (y=0; y<(*dimensions_)[1]; y++) 
+            for (y=0; y<dimensions_[1]; y++) 
             {
                 os << "y " << y << "\t";
-                for (x=0; x<(*dimensions_)[0]; x++)
+                for (x=0; x<dimensions_[0]; x++)
                 {
                     os << (*this)(x,y,z,s) << "\t";
                 }

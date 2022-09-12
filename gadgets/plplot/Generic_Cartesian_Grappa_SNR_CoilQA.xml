@@ -10,13 +10,14 @@
         Recon N is contrast and S is set
 
         Author: Hui Xue
-        Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
+        National Heart, Lung and Blood Institute, National Institutes of Health
         10 Center Drive, Bethesda, MD 20814, USA
         Email: hui.xue@nih.gov
     -->
 
     <!-- reader -->
     <reader><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageReader</classname></reader>
+    <reader><slot>1026</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdWaveformMessageReader</classname></reader>
 
     <!-- writer -->
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
@@ -69,6 +70,26 @@
         <property><name>prepare_ref_always</name><value>true</value></property>
     </gadget>
 
+    <!-- Coil compression -->
+    <gadget>
+        <name>CoilCompression</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconEigenChannelGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
+
+        <property><name>average_all_ref_N</name><value>true</value></property>
+        <property><name>average_all_ref_S</name><value>true</value></property>
+
+        <!-- Up stream coil compression -->
+        <property><name>upstream_coil_compression</name><value>true</value></property>
+        <property><name>upstream_coil_compression_thres</name><value>0.002</value></property>
+        <property><name>upstream_coil_compression_num_modesKept</name><value>0</value></property>
+    </gadget>
+
     <!-- Recon -->
     <gadget>
         <name>Recon</name>
@@ -80,6 +101,11 @@
 
         <!-- Coil map estimation, Inati or Inati_Iter -->
         <property><name>coil_map_algorithm</name><value>Inati</value></property>
+
+        <!-- Down stream coil compression -->
+        <property><name>downstream_coil_compression</name><value>true</value></property>
+        <property><name>downstream_coil_compression_thres</name><value>0.01</value></property>
+        <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>

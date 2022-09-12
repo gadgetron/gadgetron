@@ -171,19 +171,19 @@ namespace Gadgetron{
     virtual void mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
     {
       for (size_t i=0; i<operators_.size(); i++){
-	ARRAY_TYPE tmp_data(operators_[i]->get_codomain_dimensions(),out->get_data_ptr()+offsets_[i]);
+	ARRAY_TYPE tmp_data(*operators_[i]->get_codomain_dimensions(),out->get_data_ptr()+offsets_[i]);
 	operators_[i]->mult_M( in, &tmp_data, accumulate );
       }
     }
 
     virtual void mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
     {
-      ARRAY_TYPE tmp_image(get_domain_dimensions());
+      ARRAY_TYPE tmp_image(*get_domain_dimensions());
         
       for (size_t i=0; i<operators_.size(); i++){
       
 	boost::shared_ptr< linearOperator<ARRAY_TYPE> > op = operators_[i];
-	ARRAY_TYPE tmp_data(op->get_codomain_dimensions(),in->get_data_ptr()+offsets_[i]);
+	ARRAY_TYPE tmp_data(*op->get_codomain_dimensions(),in->get_data_ptr()+offsets_[i]);
       
 	// This operator is special in that it needs to apply the "internal" operator weights
 	//
@@ -203,7 +203,7 @@ namespace Gadgetron{
     virtual void mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
     {
 
-      ARRAY_TYPE tmp_image(get_domain_dimensions());
+      ARRAY_TYPE tmp_image(*get_domain_dimensions());
     
       for (size_t i=0; i<operators_.size(); i++){
       

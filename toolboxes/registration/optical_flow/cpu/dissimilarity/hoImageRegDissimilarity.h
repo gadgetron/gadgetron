@@ -16,7 +16,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITÂ´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             The derivative computation code is based on the listed source code at page 179 - 185 in ref [2] and extended.
@@ -29,6 +29,9 @@
 
     \author Hui Xue
 */
+
+#ifndef hoImageRegDissimilarity_H_
+#define hoImageRegDissimilarity_H_
 
 #pragma once
 
@@ -45,8 +48,8 @@
     #include <omp.h>
 #endif // USE_OMP
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     // define the image dissimilarity type
     enum GT_IMAGE_DISSIMILARITY
     {
@@ -115,16 +118,16 @@ namespace Gadgetron
 
     /// compute the image dissimilarity measures
     /// if possible, compute the analytical derivatives
-    template<typename ValueType, unsigned int D> 
+    template<typename ImageType> 
     class hoImageRegDissimilarity
     {
     public:
 
-        typedef hoImageRegDissimilarity<ValueType, D> Self;
-
-        typedef hoNDImage<ValueType, D> ImageType;
-
+        typedef hoImageRegDissimilarity<ImageType> Self;
         typedef hoNDInterpolator<ImageType> InterpolatorType;
+
+        typedef typename ImageType::value_type ValueType;
+        enum { D = ImageType::NDIM };
 
         typedef ValueType T;
         typedef ValueType element_type;
@@ -189,8 +192,8 @@ namespace Gadgetron
         hoNDArray<ValueType> deriv;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarity<ValueType, D>::hoImageRegDissimilarity(ValueType bg_value) 
+    template<typename ImageType> 
+    hoImageRegDissimilarity<ImageType>::hoImageRegDissimilarity(ValueType bg_value) 
         : target_(NULL), warpped_(NULL), bg_value_(bg_value), dissimilarity_(0), performTiming_(false)
     {
         gt_timer1_.set_timing_in_destruction(false);
@@ -198,13 +201,13 @@ namespace Gadgetron
         gt_timer3_.set_timing_in_destruction(false);
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarity<ValueType, D>::~hoImageRegDissimilarity()
+    template<typename ImageType> 
+    hoImageRegDissimilarity<ImageType>::~hoImageRegDissimilarity()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarity<ValueType, D>::initialize(ImageType& t)
+    template<typename ImageType> 
+    void hoImageRegDissimilarity<ImageType>::initialize(ImageType& t)
     {
         target_ = &t;
 
@@ -221,8 +224,8 @@ namespace Gadgetron
         deriv.create(image_dim_, deriv_.begin(), false);
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilarity<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilarity<ImageType>::ValueType hoImageRegDissimilarity<ImageType>::evaluate(ImageType& w)
     {
         if ( warpped_ != &w )
         {
@@ -236,8 +239,8 @@ namespace Gadgetron
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarity<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilarity<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image dissimilarity measure -------------" << endl;
@@ -247,3 +250,4 @@ namespace Gadgetron
         os << "Transformation data type is : " << elemTypeName << endl << ends;
     }
 }
+#endif // hoImageRegDissimilarity_H_

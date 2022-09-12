@@ -158,7 +158,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
 {
   if (!operatorComputed_) {
     // Compute the reconstruction operator
-    int Km = floor(encodeNx_ / 2.0);
+    int Km = std::floor(encodeNx_ / 2.0);
     int Ne = 2*Km + 1;
     int p,q; // counters
 
@@ -213,7 +213,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
     arma::Col<typename realType<T>::Type> my_keven = arma::linspace< arma::Col<typename realType<T>::Type> >(0, numSamples_ -1, numSamples_);
     // find the offset:
     // PV: maybe find not just exactly 0, but a very small number?
-    arma::Col<typename realType<T>::Type> trajectoryPosArma = as_arma_col(&trajectoryPos_);
+    arma::Col<typename realType<T>::Type> trajectoryPosArma = as_arma_col(trajectoryPos_);
     arma::uvec n = find( trajectoryPosArma==0, 1, "first");
     my_keven -= arma::as_scalar(n);
     // Scale it:
@@ -225,7 +225,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
     arma::Col<T> myExponent = arma::zeros< arma::Col<T> >(numSamples_);
     myExponent.set_imag( 2*M_PI*roOffCenterDistance/encodeFOV_*(trajectoryPosArma-my_keven) );
     arma::Col<T> offCenterCorrN = arma::exp( myExponent );
-    myExponent.set_imag( 2*M_PI*roOffCenterDistance/encodeFOV_*(as_arma_col(&trajectoryNeg_)+my_keven) );
+    myExponent.set_imag( 2*M_PI*roOffCenterDistance/encodeFOV_*(as_arma_col(trajectoryNeg_)+my_keven) );
     arma::Col<T> offCenterCorrP = arma::exp( myExponent );
 
     //    GDEBUG_STREAM("roOffCenterDistance_: " << roOffCenterDistance_ << ";       encodeFOV_: " << encodeFOV_);

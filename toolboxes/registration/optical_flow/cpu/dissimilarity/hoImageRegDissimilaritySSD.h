@@ -7,7 +7,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITï¿½E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             The derivative computation code is modified from the listed source code at page 179 - 185 in ref [2].
@@ -15,23 +15,27 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDissimilaritySSD_H_
+#define hoImageRegDissimilaritySSD_H_
+
 #pragma once
 
 #include "hoImageRegDissimilarity.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilaritySSD : public hoImageRegDissimilarity<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilaritySSD : public hoImageRegDissimilarity<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilaritySSD<ValueType, D> Self;
-        typedef hoImageRegDissimilarity<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilaritySSD<ImageType> Self;
+        typedef hoImageRegDissimilarity<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -65,38 +69,38 @@ namespace Gadgetron
         using BaseClass::deriv;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilaritySSD<ValueType, D>::hoImageRegDissimilaritySSD() : BaseClass()
+    template<typename ImageType> 
+    hoImageRegDissimilaritySSD<ImageType>::hoImageRegDissimilaritySSD() : BaseClass()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilaritySSD<ValueType, D>::~hoImageRegDissimilaritySSD()
+    template<typename ImageType> 
+    hoImageRegDissimilaritySSD<ImageType>::~hoImageRegDissimilaritySSD()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilaritySSD<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilaritySSD<ImageType>::ValueType hoImageRegDissimilaritySSD<ImageType>::evaluate(ImageType& w)
     {
         try
         {
             BaseClass::evaluate(w);
 
             Gadgetron::subtract(target, warped, deriv);
-            Gadgetron::norm2(deriv, dissimilarity_);
+            dissimilarity_ = Gadgetron::nrm2(deriv);
 
             dissimilarity_ = (dissimilarity_*dissimilarity_) / (ValueType)(target.get_number_of_elements());
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilaritySSD<ValueType, D>::evaluate(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilaritySSD<ImageType>::evaluate(w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilaritySSD<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilaritySSD<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image dissimilarity SSD measure -------------" << endl;
@@ -106,3 +110,4 @@ namespace Gadgetron
         os << "Transformation data type is : " << elemTypeName << std::endl;
     }
 }
+#endif // hoImageRegDissimilaritySSD_H_

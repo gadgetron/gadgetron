@@ -6,6 +6,7 @@
 #include <vector> //For mask fields
 
 #include <sstream> //For deprecated macros
+#include <mutex>
 
 #define GADGETRON_LOG_MASK_ENVIRONMENT "GADGETRON_LOG_MASK"
 #define GADGETRON_LOG_FILE_ENVIRONMENT "GADGETRON_LOG_FILE"
@@ -46,7 +47,7 @@ namespace Gadgetron
      Logging/Debug messages should be done with the convenience macros:
 
      GDEBUG
-     GDINFO
+     GINFO
      GWARN
      GERROR
      GVERBOSE
@@ -112,6 +113,7 @@ namespace Gadgetron
     static GadgetronLogger* instance_;
     std::vector<bool> level_mask_;
     std::vector<bool> print_mask_;
+    std::mutex m;
   };
 }
 
@@ -130,19 +132,28 @@ namespace Gadgetron
  }
 
 //Stream syntax log level functions
-#define GDEBUG_STREAM(message)				\
-  {							\
-    std::stringstream gadget_msg_dep_str;		\
-    gadget_msg_dep_str  << message << std::endl;	\
-    GDEBUG(gadget_msg_dep_str.str().c_str());		\
-  }
-
 #define GINFO_STREAM(message)				\
   {							\
     std::stringstream gadget_msg_dep_str;		\
     gadget_msg_dep_str  << message << std::endl;	\
     GINFO(gadget_msg_dep_str.str().c_str());		\
   }
+
+#define GVERBOSE_STREAM(message)					\
+  {								\
+    std::stringstream gadget_msg_dep_str;			\
+    gadget_msg_dep_str  << message << std::endl;		\
+    GVERBOSE(gadget_msg_dep_str.str().c_str());			\
+  }
+
+#ifndef MATLAB_MEX_COMPILE
+
+#define GDEBUG_STREAM(message)				\
+{							\
+    std::stringstream gadget_msg_dep_str;		\
+    gadget_msg_dep_str  << message << std::endl;	\
+    GDEBUG(gadget_msg_dep_str.str().c_str());		\
+}
 
 #define GWARN_STREAM(message)					\
   {								\
@@ -158,13 +169,23 @@ namespace Gadgetron
     GERROR(gadget_msg_dep_str.str().c_str());			\
   }
 
-#define GVERBOSE_STREAM(message)					\
-  {								\
-    std::stringstream gadget_msg_dep_str;			\
-    gadget_msg_dep_str  << message << std::endl;		\
-    GVERBOSE(gadget_msg_dep_str.str().c_str());			\
-  }
-     
+#else
+    #pragma message ("Use matlab definition for GDEBUG stream ... ")
+
+    #ifdef _DEBUG
+        #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+    #else
+        #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+    #endif // _DEBUG
+
+    #ifdef _DEBUG
+        #define GWARN_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+    #else
+        #define GWARN_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+    #endif // _DEBUG
+
+    #define GERROR_STREAM(message) GDEBUG_STREAM(message) 
+#endif // MATLAB_MEX_COMPILE
 
 //Older debugging macros
 //TODO: Review and check that they are up to date
@@ -191,6 +212,8 @@ namespace Gadgetron
 #define GADGET_DEBUG_CHECK_RETURN(con, value) 
 #define GADGET_DEBUG_CHECK_RETURN_FALSE(con) 
 #endif // GADGET_DEBUG_MODE
+
+
 
 
 #endif //GADGETRON_LOG_H

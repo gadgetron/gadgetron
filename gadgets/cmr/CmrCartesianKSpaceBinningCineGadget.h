@@ -7,13 +7,13 @@
                 High spatial and temporal resolution retrospective cine cardiovascular magnetic resonance from shortened free breathing real-time acquisitions.
                 Journal of Cardiovascular Magnetic Resonance 2013; 15:102.
 
-            [2] Peter Kellman, Christophe Chefd’hotel, Christine H. Lorenz, Christine Mancini, Andrew E. Arai, Elliot R. McVeigh. 
+            [2] Peter Kellman, Christophe Chefdâ€™hotel, Christine H. Lorenz, Christine Mancini, Andrew E. Arai, Elliot R. McVeigh. 
                 High spatial and temporal resolution cardiac cine MRI from retrospective reconstruction of data acquired in real time using motion correction and resorting. 
-                Magn Reson Med. 2009; 62:1557–64.
+                Magn Reson Med. 2009; 62:1557â€“64.
 
-            [3] Michael S. Hansen, Thomas S. Sørensen, Andrew E. Arai, and Peter Kellman. 
+            [3] Michael S. Hansen, Thomas S. SÃ¸rensen, Andrew E. Arai, and Peter Kellman. 
                 Retrospective reconstruction of high temporal resolution cine images from real-time MRI using iterative motion correction. 
-                Magn Reson Med. 2012; 68:741–50.
+                Magn Reson Med. 2012; 68:741â€“50.
 
     \author Hui Xue
 */
@@ -21,7 +21,7 @@
 #pragma once
 
 #include "gadgetron_cmr_export.h"
-#include "GenericReconGadget.h"
+#include "generic_recon_gadgets/GenericReconGadget.h"
 #include "cmr_kspace_binning.h"
 
 namespace Gadgetron {
@@ -42,7 +42,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(number_of_output_phases, int, "Number of output phases after binning", 30);
 
         GADGET_PROPERTY(send_out_raw, bool, "Whether to set out raw images", false);
-        GADGET_PROPERTY(send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple seires", false);
+        GADGET_PROPERTY(send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple series", false);
 
         /// parameters for raw image reconstruction
         GADGET_PROPERTY(arrhythmia_rejector_factor, float, "If a heart beat RR is not in the range of [ (1-arrhythmiaRejectorFactor)*meanRR (1+arrhythmiaRejectorFactor)*meanRR], it will be rejected", 0.25);
@@ -126,6 +126,9 @@ namespace Gadgetron {
         // [binned_N S SLC]
         hoNDArray< float > acq_time_binning_;
         hoNDArray< float > cpt_time_binning_;
+
+        // if true, every slice will be sent out as separate series
+        bool send_out_multiple_series_by_slice_;
 
         // --------------------------------------------------
         // gadget functions

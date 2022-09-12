@@ -9,13 +9,11 @@
 #define CUBLASCONTEXTPROVIDER_H_
 #pragma once
 
-#include "gpucore_export.h"
-
 #include <cublas_v2.h>
 #include <map>
 #include <iostream>
 
-class EXPORTGPUCORE CUBLASContextProvider
+class CUBLASContextProvider
 {
 
 public:

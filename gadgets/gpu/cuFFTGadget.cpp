@@ -1,26 +1,27 @@
-#include "GadgetIsmrmrdReadWrite.h"
+
 #include "cuFFTGadget.h"
 #include "cuNDFFT.h"
+#include "cuFFTCachedPlan.h"
 namespace Gadgetron{
 
-  int cuFFTGadget::process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-  	{
-	  hoNDArray<complext<float>> * tmp = (hoNDArray<complext<float>>*) m2->getObjectPtr();
-	  cuNDArray< complext<float> > cu_data(*tmp);
-	  cu_data.squeeze();
-	  std::cout << "PENGUIN: ";
-	  for (int i = 0; i < cu_data.get_number_of_dimensions(); i++) std::cout << cu_data.get_size(i) <<  " ";
-	  std::cout << std::endl;
-	  cuNDFFT<float>::instance()->ifft(&cu_data);
-	  cu_data.to_host(tmp);
+  void cuFFTGadget::process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) {
 
-    if (this->next()->putq(m1) < 0) {
-      return GADGET_FAIL;
-    }
+      auto plan = cuFFTCachedPlan<complext<float>>{};
+      for (auto [header, data, meta] : in){
+          auto * tmp = (hoNDArray<complext<float>>*) &data;
+          cuNDArray< complext<float> > cu_data(*tmp);
 
-    return GADGET_OK;
+          cu_data.squeeze();
+          plan.ifft3c(cu_data);
+          cu_data.to_host(tmp);
+
+
+          out.push(header, std::move(data),std::move(meta));
+      }
+
   }
 
-  GADGET_FACTORY_DECLARE(cuFFTGadget)
-}
+GADGETRON_GADGET_EXPORT(cuFFTGadget);
+
+  }
+

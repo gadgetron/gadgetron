@@ -229,13 +229,13 @@ solve(const Array_Type& b, Array_Type& x)
 
                 if (!proximal_WATb.dimensions_equal(&WATb))
                 {
-                    proximal_WATb.create(WATb.get_dimensions());
+                    proximal_WATb.create(WATb.dimensions());
                     Gadgetron::clear(proximal_WATb);
                 }
 
                 if (!proximal_WTATb.dimensions_equal(&WATb))
                 {
-                    proximal_WTATb.create(WATb.get_dimensions());
+                    proximal_WTATb.create(WATb.dimensions());
                     Gadgetron::clear(proximal_WTATb);
                 }
 
@@ -269,8 +269,7 @@ solve(const Array_Type& b, Array_Type& x)
                     Gadgetron::subtract(WATb, proximal_res, WATb);
                     Gadgetron::add(proximal_WATb, WATb, proximal_WATb);
 
-                    value_type n1;
-                    Gadgetron::norm2(WATb, n1);
+                    value_type n1 = Gadgetron::nrm2(WATb);
 
                     if (oper_reg_->unitary())
                     {
@@ -286,8 +285,7 @@ solve(const Array_Type& b, Array_Type& x)
                     Gadgetron::subtract(proximal_res, WATb, r);
                     Gadgetron::add(proximal_WTATb, r, proximal_WTATb);
 
-                    value_type nx;
-                    Gadgetron::norm2(WATb, nx);
+                    value_type nx = Gadgetron::nrm2(WATb);
 
                     if (n1 < nx*1e-4) break;
                 }
@@ -300,10 +298,10 @@ solve(const Array_Type& b, Array_Type& x)
 
                 Gadgetron::subtract(Ax, bufAx2, bufAx);
 
-                Gadgetron::norm2(diffx, diffX_norm);
+                diffX_norm = Gadgetron::nrm2(diffx);
                 diffX_norm = diffX_norm*diffX_norm;
 
-                Gadgetron::norm2(bufAx, diffA_norm);
+                diffA_norm = Gadgetron::nrm2(bufAx);
                 diffA_norm = diffA_norm*diffA_norm;
 
                 if (diffX_norm <= FLT_EPSILON) break;
@@ -327,11 +325,11 @@ solve(const Array_Type& b, Array_Type& x)
 
             oper_reg_->mult_M(&x, &WATb);
 
-            value_type error_data_fidelity = Gadgetron::norm2(bufAx2);
+            value_type error_data_fidelity = Gadgetron::nrm2(bufAx2);
             error_data_fidelity = error_data_fidelity*error_data_fidelity;
             error_data_fidelity *= 0.5;
 
-            value_type error_image_reg = Gadgetron::norm1(WATb);
+            value_type error_image_reg = Gadgetron::asum(WATb);
             func_value_.push_back(error_data_fidelity + proximal_strength*error_image_reg);
 
             if (this->output_mode_ >= Self::OUTPUT_VERBOSE)

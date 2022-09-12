@@ -74,7 +74,7 @@ namespace Gadgetron {
             dim[1] = E1;
             dim[2] = CHA;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, startE1, endE1, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, startE1, endE1, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1)
             {
                 boost::shared_ptr< hoSPIRIT2DOperator< T > > oper(new hoSPIRIT2DOperator< T >(&dim));
                 hoSPIRIT2DOperator< T >& spirit = *oper;
@@ -96,7 +96,7 @@ namespace Gadgetron {
                 hoNDArray< T > b(RO, E1, CHA);
                 hoNDArray< T > unwarppedKSpace(RO, E1, CHA);
 
-#pragma omp for 
+#pragma omp for
                 for (ii = 0; ii < num; ii++)
                 {
                     size_t s = ii / N;

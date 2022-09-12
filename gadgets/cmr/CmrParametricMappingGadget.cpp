@@ -45,6 +45,26 @@ namespace Gadgetron {
         float field_strength_T_ = h.acquisitionSystemInformation.get().systemFieldStrength_T();
         GDEBUG_CONDITION_STREAM(verbose.value(), "field_strength_T_ is read from protocol : " << field_strength_T_);
 
+        if (h.encoding.size() != 1)
+        {
+            GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+        }
+
+        size_t e = 0;
+        ISMRMRD::EncodingSpace e_space = h.encoding[e].encodedSpace;
+        ISMRMRD::EncodingSpace r_space = h.encoding[e].reconSpace;
+        ISMRMRD::EncodingLimits e_limits = h.encoding[e].encodingLimits;
+
+        meas_max_idx_.kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
+        meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
+        meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
+        meas_max_idx_.kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
+        meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
+        meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
+        meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
+        meas_max_idx_.average = e_limits.average ? e_limits.average->maximum : 0;
+        meas_max_idx_.segment = 0;
+
         return GADGET_OK;
     }
 
@@ -325,52 +345,47 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    bool CmrParametricMappingGadget::compute_mask_for_mapping(const hoNDArray<float>& mag, hoNDArray<float>& mask, float scale_factor)
+    void CmrParametricMappingGadget::compute_mask_for_mapping(const hoNDArray<float> &mag, hoNDArray<float> &mask,
+                                                              float scale_factor)
     {
-        try
+        size_t RO = mag.get_size(0);
+        size_t E1 = mag.get_size(1);
+        size_t SLC = mag.get_size(2);
+
+        hoNDArray<float> mask_initial;
+        mask_initial.create(RO, E1, SLC);
+        Gadgetron::fill(mask_initial, (float)1);
+
+        double std_thres = std_thres_masking.value();
+
+        size_t n;
+        for (n = 0; n < RO*E1*SLC; n++)
         {
-            size_t RO = mag.get_size(0);
-            size_t E1 = mag.get_size(1);
-            size_t SLC = mag.get_size(2);
-
-            hoNDArray<float> mask_initial;
-            mask_initial.create(RO, E1, SLC);
-            Gadgetron::fill(mask_initial, (float)1);
-
-            double std_thres = std_thres_masking.value();
-
-            size_t n;
-            for (n = 0; n < RO*E1*SLC; n++)
+            if (mag(n) < scale_factor*std_thres)
             {
-                if (mag(n) < scale_factor*std_thres)
-                {
-                    mask_initial(n) = 0;
-                }
-            }
-
-            mask = mask_initial;
-
-            size_t obj_thres = 20;
-            size_t bg_thres = 20;
-            bool is_8_connected = true;
-
-            size_t slc;
-            for (slc = 0; slc < SLC; slc++)
-            {
-                hoNDArray<float> mask2D;
-                mask2D.create(RO, E1, &mask_initial(0, 0, slc));
-
-                hoNDArray<float> mask2D_clean;
-                mask2D_clean.create(RO, E1, &mask(0, 0, slc));
-
-                Gadgetron::bwlabel_clean_fore_and_background(mask2D, (float)1, (float)0, obj_thres, bg_thres, is_8_connected, mask2D_clean);
+                mask_initial(n) = 0;
             }
         }
-        catch (...)
+
+        mask = mask_initial;
+
+        size_t obj_thres = 20;
+        size_t bg_thres = 20;
+        bool is_8_connected = true;
+
+        size_t slc;
+        for (slc = 0; slc < SLC; slc++)
         {
-            GERROR_STREAM("Exceptions happened in CmrParametricMappingGadget::compute_mask_for_mapping(...) ... ");
-            return false;
+            hoNDArray<float> mask2D;
+            mask2D.create(RO, E1, &mask_initial(0, 0, slc));
+
+            hoNDArray<float> mask2D_clean;
+            mask2D_clean.create(RO, E1, &mask(0, 0, slc));
+
+            Gadgetron::bwlabel_clean_fore_and_background(mask2D, (float)1, (float)0, obj_thres, bg_thres, is_8_connected, mask2D_clean);
         }
+
+
     }
 
     // ----------------------------------------------------------------------------------------

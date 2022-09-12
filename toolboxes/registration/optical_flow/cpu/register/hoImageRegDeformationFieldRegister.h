@@ -3,28 +3,35 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDeformationFieldRegister_H_
+#define hoImageRegDeformationFieldRegister_H_
+
 #pragma once
 
 #include "hoImageRegNonParametricRegister.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    class hoImageRegDeformationFieldRegister : public hoImageRegNonParametricRegister<ValueType, CoordType, D, D>
+namespace Gadgetron {
+
+    template<typename TargetType, typename CoordType> 
+    class hoImageRegDeformationFieldRegister : public hoImageRegNonParametricRegister<TargetType, TargetType, CoordType>
     {
     public:
 
-        typedef hoImageRegDeformationFieldRegister<ValueType, CoordType, D> Self;
-        typedef hoImageRegNonParametricRegister<ValueType, CoordType, D, D> BaseClass;
+        typedef hoImageRegDeformationFieldRegister<TargetType, CoordType> Self;
+        typedef hoImageRegNonParametricRegister<TargetType, TargetType, CoordType> BaseClass;
 
-        typedef typename BaseClass::TargetType TargetType;
-        typedef typename BaseClass::SourceType SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { D = TargetType::NDIM };
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = TargetType::NDIM };
 
         typedef typename BaseClass::Target2DType Target2DType;
         typedef typename BaseClass::Source2DType Source2DType;
 
         typedef typename BaseClass::Target3DType Target3DType;
         typedef typename BaseClass::Source3DType Source3DType;
+
+        typedef hoNDImage<CoordType, D> DeformFieldType;
 
         typedef ValueType T;
         typedef ValueType element_type;
@@ -54,6 +61,18 @@ namespace Gadgetron
         typedef typename BaseClass::InterpSourceNearestNeighborType InterpSourceNearestNeighborType;
         typedef typename BaseClass::InterpSourceBSplineType InterpSourceBSplineType;
 
+        /// boundary handler and interpolator for deformation fields
+        typedef hoNDBoundaryHandler<DeformFieldType> BoundaryHandlerDeformFieldType;
+        typedef hoNDBoundaryHandlerFixedValue<DeformFieldType> BoundaryHandlerDeformFieldFixedValueType;
+        typedef hoNDBoundaryHandlerBorderValue<DeformFieldType> BoundaryHandlerDeformFieldBorderValueType;
+        typedef hoNDBoundaryHandlerPeriodic<DeformFieldType> BoundaryHandlerDeformFieldPeriodicType;
+        typedef hoNDBoundaryHandlerMirror<DeformFieldType> BoundaryHandlerDeformFieldMirrorType;
+
+        typedef hoNDInterpolator<DeformFieldType> InterpDeformFieldType;
+        typedef hoNDInterpolatorLinear<DeformFieldType> InterpDeformFieldLinearType;
+        typedef hoNDInterpolatorNearestNeighbor<DeformFieldType> InterpDeformFieldNearestNeighborType;
+        typedef hoNDInterpolatorBSpline<DeformFieldType, D> InterpDeformFieldBSplineType;
+
         /// warper type
         typedef typename BaseClass::WarperType WarperType;
 
@@ -69,7 +88,7 @@ namespace Gadgetron
         typedef typename TransformationType::coord_type coord_type;
 
         /// solver type
-        typedef hoImageRegDeformationFieldSolver<ValueType, CoordType, D> SolverType;
+        typedef hoImageRegDeformationFieldSolver<TargetType, TargetType, CoordType> SolverType;
 
         hoImageRegDeformationFieldRegister(unsigned int resolution_pyramid_levels=3, bool use_world_coordinates=false, ValueType bg_value=ValueType(0));
         virtual ~hoImageRegDeformationFieldRegister();
@@ -124,6 +143,9 @@ namespace Gadgetron
         /// in-FOV constraint
         bool apply_in_FOV_constraint_;
 
+        /// divergence free constraint
+        bool apply_divergence_free_constraint_;
+
         /// verbose mode
         bool verbose_;
 
@@ -135,6 +157,10 @@ namespace Gadgetron
 
         /// solver
         std::vector<SolverType> solver_pyramid_;
+
+        /// boundary handler for deformation fields
+        BoundaryHandlerDeformFieldType* deform_field_bh_;
+        InterpDeformFieldType* deform_field_interp_;
 
     protected:
 
@@ -161,26 +187,38 @@ namespace Gadgetron
         bool preset_transform_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::
+    template<typename TargetType, typename CoordType> 
+    hoImageRegDeformationFieldRegister<TargetType, CoordType>::
     hoImageRegDeformationFieldRegister(unsigned int resolution_pyramid_levels, bool use_world_coordinates, ValueType bg_value) 
-    : transform_(NULL), regularization_hilbert_strength_world_coordinate_(false), verbose_(false), preset_transform_(false), BaseClass(resolution_pyramid_levels, bg_value)
+    : transform_(NULL), regularization_hilbert_strength_world_coordinate_(false), verbose_(false), deform_field_bh_(NULL), deform_field_interp_(NULL), preset_transform_(false), BaseClass(resolution_pyramid_levels, bg_value)
     {
         this->setDefaultParameters(resolution_pyramid_levels, use_world_coordinates);
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::~hoImageRegDeformationFieldRegister()
+    template<typename TargetType, typename CoordType> 
+    hoImageRegDeformationFieldRegister<TargetType, CoordType>::~hoImageRegDeformationFieldRegister()
     {
         if ( !preset_transform_ )
         {
             delete transform_;
             transform_ = NULL;
         }
+
+        if(deform_field_bh_!=NULL)
+        {
+            delete deform_field_bh_;
+            deform_field_bh_ = NULL;
+        }
+
+        if (deform_field_interp_ != NULL)
+        {
+            delete deform_field_interp_;
+            deform_field_interp_ = NULL;
+        }
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
+    template<typename TargetType, typename CoordType> 
+    bool hoImageRegDeformationFieldRegister<TargetType, CoordType>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
     {
         use_world_coordinates_ = use_world_coordinates;
         resolution_pyramid_levels_ = resolution_pyramid_levels;
@@ -234,14 +272,15 @@ namespace Gadgetron
         }
 
         apply_in_FOV_constraint_ = false;
+        apply_divergence_free_constraint_ = false;
 
         verbose_ = false;
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::initialize()
+    template<typename TargetType, typename CoordType> 
+    bool hoImageRegDeformationFieldRegister<TargetType, CoordType>::initialize()
     {
         try
         {
@@ -249,7 +288,9 @@ namespace Gadgetron
 
             if ( transform_ == NULL )
             {
-                transform_ = new TransformationType(*target_);
+                std::vector<size_t> dim;
+                target_->get_dimensions(dim);
+                transform_ = new TransformationType(dim);
                 preset_transform_ = false;
             }
 
@@ -302,6 +343,7 @@ namespace Gadgetron
                 solver_pyramid_[ii].setUseWorldCoordinate(use_world_coordinates_);
 
                 solver_pyramid_[ii].apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
+                solver_pyramid_[ii].apply_divergence_free_constraint_ = apply_divergence_free_constraint_;
             }
 
             // downsample the deformation field if necessary
@@ -333,17 +375,30 @@ namespace Gadgetron
                     }
                 }
             }
+
+            // create bh and interp for deformation fields
+            if (deform_field_bh_ == NULL)
+            {
+                deform_field_bh_ = createBoundaryHandler<DeformationFieldType>(this->boundary_handler_type_pyramid_construction_);
+            }
+
+            if (deform_field_interp_ == NULL)
+            {
+                deform_field_interp_ = createInterpolator<DeformationFieldType, D>(this->interp_type_pyramid_construction_);
+            }
+
+            deform_field_interp_->setBoundaryHandler(*deform_field_bh_);
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldRegister<TargetType, CoordType>::initialize() ... ");
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::performRegistration()
+    template<typename TargetType, typename CoordType> 
+    bool hoImageRegDeformationFieldRegister<TargetType, CoordType>::performRegistration()
     {
         try
         {
@@ -396,11 +451,11 @@ namespace Gadgetron
                         for ( jj=0; jj<D; jj++ )
                         {
                             DeformationFieldType& deform = transform_->getDeformationField(jj);
-                            Gadgetron::expandImageBy2(deform, *target_bh_pyramid_construction_, deformExpanded);
+                            Gadgetron::expandImageBy2(deform, *deform_field_bh_, deformExpanded);
 
                             if ( !use_world_coordinates_ )
                             {
-                                Gadgetron::scal(ValueType(2.0), deformExpanded); // the deformation vector should be doubled in length
+                                Gadgetron::scal(CoordType(2.0), deformExpanded); // the deformation vector should be doubled in length
                             }
 
                             deform = deformExpanded;
@@ -411,11 +466,11 @@ namespace Gadgetron
                         for ( jj=0; jj<D; jj++ )
                         {
                             DeformationFieldType& deform = transform_->getDeformationField(jj);
-                            Gadgetron::upsampleImage(deform, *target_interp_pyramid_construction_, deformExpanded, &ratio[0]);
+                            Gadgetron::upsampleImage(deform, *deform_field_interp_, deformExpanded, &ratio[0]);
 
                             if ( !use_world_coordinates_ )
                             {
-                                Gadgetron::scal(ValueType(ratio[jj]), deformExpanded);
+                                Gadgetron::scal(CoordType(ratio[jj]), deformExpanded);
                             }
 
                             deform = deformExpanded;
@@ -437,14 +492,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::performRegistration() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldRegister<TargetType, CoordType>::performRegistration() ... ");
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::printContent(std::ostream& os) const
+    template<typename TargetType, typename CoordType> 
+    void hoImageRegDeformationFieldRegister<TargetType, CoordType>::printContent(std::ostream& os) const
     {
         using namespace std;
         BaseClass::printContent(os);
@@ -511,13 +566,16 @@ namespace Gadgetron
             } 
             os << " ] " << std::endl;
         }
+        os << "------------" << std::endl;
+        os << "Apply in FOV constraint is : " << apply_in_FOV_constraint_ << std::endl;
+        os << "Apply divergence free constraint is : " << apply_divergence_free_constraint_ << std::endl;
 
         os << "------------" << std::endl;
         os << "Verbose mode is : " << verbose_ << std::endl;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::print(std::ostream& os) const
+    template<typename TargetType, typename CoordType> 
+    void hoImageRegDeformationFieldRegister<TargetType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron non-parametric deformation field image register -------------" << endl;
@@ -525,3 +583,4 @@ namespace Gadgetron
         os << "--------------------------------------------------------------------" << endl << ends;
     }
 }
+#endif // hoImageRegDeformationFieldRegister_H_

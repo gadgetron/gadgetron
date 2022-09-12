@@ -29,7 +29,7 @@ protected:
 };
 
 typedef Types<float> realImplementations;
-TYPED_TEST_CASE(curveFitting_test, realImplementations);
+TYPED_TEST_SUITE(curveFitting_test, realImplementations);
 
 TYPED_TEST(curveFitting_test, T2SE)
 {
@@ -121,8 +121,8 @@ TYPED_TEST(curveFitting_test, T1SR)
 
     solver.solve(b, guess);
 
-    EXPECT_NEAR(b[0], 471.062894, 0.001);
-    EXPECT_NEAR(b[1], 1122.36963, 0.001);
+    EXPECT_NEAR(b[0], 471.062894, 0.003);
+    EXPECT_NEAR(b[1], 1122.36963, 0.003);
 }
 
 TYPED_TEST(curveFitting_test, T1SRMapping)
@@ -220,13 +220,13 @@ TYPED_TEST(curveFitting_test, T1SRMapping)
     t1_sr.map_.print(std::cout);
     t1_sr.para_.print(std::cout);
 
-    EXPECT_NEAR(t1_sr.para_(0, 0, 0, 0, 0), 471.062894, 0.001);
-    EXPECT_NEAR(t1_sr.para_(RO / 2, E1 / 2, 0, 0, 0), 471.062894, 0.001);
+    EXPECT_NEAR(t1_sr.para_(0, 0, 0, 0, 0), 471.062894, 0.003);
+    EXPECT_NEAR(t1_sr.para_(RO / 2, E1 / 2, 0, 0, 0), 471.062894, 0.003);
 
-    EXPECT_NEAR(t1_sr.map_(0, 0, 0, 0), 1122.36963, 0.001);
-    EXPECT_NEAR(t1_sr.map_(RO/2, E1/2, 0, 0), 1122.36963, 0.001);
-    EXPECT_NEAR(t1_sr.map_(RO-1, E1-1, 0, 0), 1122.36963, 0.001);
-    EXPECT_NEAR(t1_sr.map_(37, 86, 0, 0), 1122.36963, 0.001);
+    EXPECT_NEAR(t1_sr.map_(0, 0, 0, 0), 1122.36963, 0.003);
+    EXPECT_NEAR(t1_sr.map_(RO/2, E1/2, 0, 0), 1122.36963, 0.003);
+    EXPECT_NEAR(t1_sr.map_(RO-1, E1-1, 0, 0), 1122.36963, 0.003);
+    EXPECT_NEAR(t1_sr.map_(37, 86, 0, 0), 1122.36963, 0.003);
 
     // test hole filling
     EXPECT_NEAR(t1_sr.map_(12, 23, 0, 0), 1122.36963, 1.0);

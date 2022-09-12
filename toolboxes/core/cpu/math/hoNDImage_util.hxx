@@ -53,7 +53,6 @@ namespace Gadgetron
     template<typename ImageType, typename InterpolatorType> 
     bool downsampleImage(const ImageType& in, InterpolatorType& interp, ImageType& out, float ratio[])
     {
-        typedef typename ImageType::value_type T;
         unsigned int D = ImageType::NDIM;
 
         try
@@ -83,7 +82,6 @@ namespace Gadgetron
     template<typename ImageType, typename InterpolatorType> 
     bool upsampleImage(const ImageType& in, InterpolatorType& interp, ImageType& out, float ratio[])
     {
-        typedef typename ImageType::value_type T;
         unsigned int D = ImageType::NDIM;
 
         try
@@ -113,7 +111,6 @@ namespace Gadgetron
     template<typename ImageType, typename InterpolatorType> 
     bool resampleImage(const ImageType& in, InterpolatorType& interp, const std::vector<size_t>& dim_out, ImageType& out)
     {
-        typedef typename ImageType::value_type T;
         unsigned int D = ImageType::NDIM;
 
         try
@@ -1726,8 +1723,8 @@ namespace Gadgetron
             {
                 std::vector<long long> dim(D);
 
-                unsigned int ii;
-                for ( ii=0; ii<D; ii++ )
+
+                for (auto ii=0; ii<D; ii++ )
                 {
                     dim[ii] = (long long)img.get_size(ii);
                 }
@@ -1740,7 +1737,7 @@ namespace Gadgetron
                 img.get_offset_factor(offsetFactor);
 
                 // filter along every dimension
-                for ( ii=0; ii<D; ii++ )
+                for (auto ii=0; ii<D; ii++ )
                 {
                     if ( sigma[ii] > 0 )
                     {

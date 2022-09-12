@@ -48,6 +48,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_PERF_Gd_Extraction_MAP         "Gd_Extraction_Map"
     #define GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP "PS_Map"
     #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "Gd"
+    #define GADGETRON_IMAGE_PERF_AHA_SEGMENT_MODEL         "AHA"
 
     // other images than the regular reconstruction results
     #define GADGETRON_IMAGE_OTHER                          "Image_Other"
@@ -67,9 +68,11 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_T2STARAMAP                     "T2STARAMAP"
     #define GADGETRON_IMAGE_T2STARTRUNCMAP                 "T2STARTRUNCMAP"
     #define GADGETRON_IMAGE_R2STARMAP                      "R2STAR"
+    #define GADGETRON_IMAGE_T1RHOMAP                       "T1RHO"
 
     #define GADGETRON_IMAGE_FAT                            "FAT"
     #define GADGETRON_IMAGE_WATER                          "WATER"
+    #define GADGETRON_IMAGE_FAT_FRACTION                   "FATFRACTION"
     #define GADGETRON_IMAGE_FREQMAP                        "FREQMAP"
     #define GADGETRON_IMAGE_B1MAP                          "B1MAP"
     #define GADGETRON_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
@@ -80,6 +83,21 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_VASCULARVOLUMEMAP              "VASCULARVOLUME"
     #define GADGETRON_IMAGE_GD_EXTRACTIONMAP               "EXTRACTIONMAP"
     #define GADGETRON_IMAGE_PERMEABILITY_SURFACE_AREAMAP   "PSMAP"
+    #define GADGETRON_IMAGE_RADIAL_STRAINMAP               "RADIAL_STRAINMAP"
+    #define GADGETRON_IMAGE_CIRCUM_STRAINMAP               "CIRCUM_STRAINMAP"
+    #define GADGETRON_IMAGE_MAX_STRAINMAP                  "MAX_STRAINMAP"
+    #define GADGETRON_IMAGE_ACTIVATIONTIME_STRAINMAP       "TA_STRAINMAP"
+
+    /// image annotation tags
+    #define GADGETRON_CMR_2D_ENDO_CONTOUR                   "ENDO"
+    #define GADGETRON_CMR_2D_EPI_CONTOUR                    "EPI"
+
+    /// 2D closed region of interest contour
+    /// stored as 2*N_pts + 4 array
+    /// first three values: ROI color in tuple
+    /// the forth value: line thickness
+    /// then [px1 py1 px2 py2 ...] for N_Pts points
+    #define GADGETRON_2D_ROI                                "GT_ROI"
 
     //MSH: Interventional MRI (Interactive Real Time, IRT)
     #define GADGETRON_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
@@ -96,8 +114,27 @@ namespace Gadgetron
     /// figures created during reconstruction
     #define GADGETRON_IMAGE_RECON_FIGURE                    "FIG"
 
+    /// calculation comments
+    #define GADGETRON_SUBTRACTION                           "SUB"
+    #define GADGETRON_AI                                    "AI"
+
     /// control flags for image recon and other processing
     /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
     #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
     #define GADGETRON_USE_DEDICATED_SCALING_FACTOR          "Use_dedicated_scaling_factor"
+
+    /// if set, auto correct image orientation by MR convention
+    #define GADGETRON_CORRECT_IMAGE_ORIENTATION             "Correct_image_orientation"
+
+    /// instruct the client to keep image geometry
+    #define GADGETRON_KEEP_IMAGE_GEOMETRY                   "Keep_image_geometry"
+
+    /// instruct the client to send images to database without further processing
+    #define GADGETRON_DIRECT_IMAGE_SEND                     "Gadgetron_ImageDirectSend"
+
+    /// data flow tag
+    /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
+    /// if this flag is 0, this image is a stored image by the accummulator
+    /// whether to pass a stored image to the next gadget is determined by the processing gadget itself
+    #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
 }

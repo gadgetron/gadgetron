@@ -17,32 +17,36 @@ template<class T> cuNDFFT<T>* cuNDFFT<T>::instance()
 	return __instance;
   				}
 
-template<class T> cuNDFFT<T>* cuNDFFT<T>::__instance = NULL;
+template<class T> cuNDFFT<T>* cuNDFFT<T>::__instance = nullptr;
+namespace {
+template <class T> cufftType_t get_transform_type();
+template <> cufftType_t get_transform_type<float>() { return CUFFT_C2C; }
+template <> cufftType_t get_transform_type<double>() { return CUFFT_Z2Z; }
 
-template<class T> cufftType_t get_transform_type();
-template<> cufftType_t get_transform_type<float>() { return CUFFT_C2C; }
-template<> cufftType_t get_transform_type<double>() { return CUFFT_Z2Z; }
+template <class T> cufftResult_t cuNDA_FFT_execute(cufftHandle plan, cuNDArray<complext<T>>* in_out, int direction);
 
-template<class T> cufftResult_t cuNDA_FFT_execute( cufftHandle plan, cuNDArray< complext<T> > *in_out, int direction );
+template <> cufftResult_t cuNDA_FFT_execute<float>(cufftHandle plan, cuNDArray<float_complext>* in_out, int direction) {
+    return cufftExecC2C(plan, (cuFloatComplex*)in_out->get_data_ptr(), (cuFloatComplex*)in_out->get_data_ptr(),
+                        direction);
+}
 
-template<> cufftResult_t cuNDA_FFT_execute<float>( cufftHandle plan, cuNDArray<float_complext> *in_out, int direction ){
-	return cufftExecC2C(plan, (cuFloatComplex*)in_out->get_data_ptr(), (cuFloatComplex*)in_out->get_data_ptr(), direction); }
-
-template<> cufftResult_t cuNDA_FFT_execute<double>( cufftHandle plan, cuNDArray<double_complext> *in_out, int direction ){
-	return cufftExecZ2Z(plan, (cuDoubleComplex*)in_out->get_data_ptr(), (cuDoubleComplex*)in_out->get_data_ptr(), direction); }
-
+template <>
+cufftResult_t cuNDA_FFT_execute<double>(cufftHandle plan, cuNDArray<double_complext>* in_out, int direction) {
+    return cufftExecZ2Z(plan, (cuDoubleComplex*)in_out->get_data_ptr(), (cuDoubleComplex*)in_out->get_data_ptr(),
+                        direction);
+}
+}
 template<class T> void
 cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_to_transform, int direction, bool do_scale )
 {
 	std::vector<size_t> new_dim_order;
 	std::vector<size_t> reverse_dim_order;
-	std::vector<size_t> dims;
 	std::vector<size_t> dim_count(input->get_number_of_dimensions(),0);
 
 	size_t array_ndim = input->get_number_of_dimensions();
 	boost::shared_ptr< std::vector<size_t> > array_dims = input->get_dimensions();
 
-	dims = std::vector<size_t>(dims_to_transform->size(),0);
+	std::vector<size_t> dims = std::vector<size_t>(dims_to_transform->size(),0);
 	for (size_t i = 0; i < dims_to_transform->size(); i++) {
 		if ((*dims_to_transform)[i] >= array_ndim) {
 			std::stringstream ss;
@@ -118,9 +122,9 @@ cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_
 
 
 	if (must_permute)
-		*input = *permute(input,&new_dim_order);
+		*input = permute(*input,new_dim_order);
 
-	if (direction == CUFFT_INVERSE)
+
 		for (size_t i =0; i < dims_to_transform->size(); i++)
 			timeswitch(input,dims_to_transform->at(i));
 
@@ -134,7 +138,7 @@ cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_
 		ss << "cuNDFFT FFT plan destroy failed: " << ftres;
 		throw std::runtime_error(ss.str());;
 	}
-	if (direction == CUFFT_FORWARD)
+
 		for (size_t i =0; i < dims_to_transform->size(); i++)
 			timeswitch(input,dims_to_transform->at(i));
 
@@ -143,7 +147,7 @@ cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_
 	}
 
 	if (must_permute)
-		*input = *permute(input,&reverse_dim_order);
+		*input = permute(*input,reverse_dim_order);
 }
 
 template<class T> void
@@ -160,7 +164,7 @@ cuNDFFT<T>::fft1_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 		ss << "cuNDFFT FFT plan failed: " << ftres;
 		throw std::runtime_error(ss.str());;
 	}
-	if (direction == CUFFT_INVERSE)
+
 		timeswitch1D(input);
 
 	if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
@@ -174,7 +178,7 @@ cuNDFFT<T>::fft1_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 		throw std::runtime_error(ss.str());;
 	}
 
-	if (direction == CUFFT_FORWARD)
+
 		timeswitch1D(input);
 	if (do_scale) {
 		*input *= 1/std::sqrt(T(elements_in_ft));
@@ -187,16 +191,16 @@ cuNDFFT<T>::fft2_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 	cufftHandle plan;
 	cufftResult ftres;
 
-	std::vector<int> int_dims {int(input->get_size(0)),int(input->get_size(1))};
-	int elements_in_ft = input->get_size(0)*input->get_size(1);
-	int batches = input->get_number_of_elements()/elements_in_ft;
-	ftres = cufftPlanMany(&plan,2,&int_dims[0], &int_dims[0], 1, elements_in_ft, &int_dims[0], 1, elements_in_ft, get_transform_type<T>(), batches);
+	std::vector<int> int_dims {int(input->get_size(1)),int(input->get_size(0))};
+	size_t elements_in_ft = input->get_size(0)*input->get_size(1);
+	size_t batches = input->get_number_of_elements()/elements_in_ft;
+	ftres = cufftPlanMany(&plan,2,int_dims.data(), int_dims.data(), 1, elements_in_ft, int_dims.data(), 1, elements_in_ft, get_transform_type<T>(), batches);
 	if (ftres != CUFFT_SUCCESS) {
 		std::stringstream ss;
 		ss << "cuNDFFT FFT plan failed: " << ftres;
 		throw std::runtime_error(ss.str());;
 	}
-	if (direction == CUFFT_INVERSE)
+
 		timeswitch2D(input);
 
 	if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
@@ -210,7 +214,7 @@ cuNDFFT<T>::fft2_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 		throw std::runtime_error(ss.str());;
 	}
 
-	if (direction == CUFFT_FORWARD)
+
 		timeswitch2D(input);
 	if (do_scale) {
 		*input *= 1/std::sqrt(T(elements_in_ft));
@@ -221,7 +225,7 @@ cuNDFFT<T>::fft3_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 	cufftHandle plan;
 	cufftResult ftres;
 
-	std::vector<int> int_dims {int(input->get_size(0)),int(input->get_size(1)),int(input->get_size(2))};
+	std::vector<int> int_dims {int(input->get_size(2)),int(input->get_size(1)),int(input->get_size(0))};
 	int elements_in_ft = input->get_size(0)*input->get_size(1)*input->get_size(2);
 	int batches = input->get_number_of_elements()/elements_in_ft;
 	ftres = cufftPlanMany(&plan,3,&int_dims[0], &int_dims[0], 1, elements_in_ft, &int_dims[0], 1, elements_in_ft, get_transform_type<T>(), batches);
@@ -230,7 +234,7 @@ cuNDFFT<T>::fft3_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 		ss << "cuNDFFT FFT plan failed: " << ftres;
 		throw std::runtime_error(ss.str());;
 	}
-	if (direction == CUFFT_INVERSE)
+
 		timeswitch3D(input);
 
 	if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
@@ -244,7 +248,7 @@ cuNDFFT<T>::fft3_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 		throw std::runtime_error(ss.str());;
 	}
 
-	if (direction == CUFFT_FORWARD)
+
 		timeswitch3D(input);
 
 	if (do_scale) {

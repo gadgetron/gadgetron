@@ -10,6 +10,7 @@
 #include "vector_td_utilities.h"
 #include "hoNDArray_math.h"
 #include "cuNDArray_math.h"
+#include "cudaDeviceManager.h"
 namespace Gadgetron {
 
 gpuSenseGadget::gpuSenseGadget() 
@@ -27,11 +28,7 @@ gpuSenseGadget::~gpuSenseGadget() {
 int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
   device_number_ = deviceno.value();
 
-  int number_of_devices = 0;
-  if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-    GDEBUG( "Error: unable to query number of CUDA devices.\n" );
-    return GADGET_FAIL;
-  }
+  int number_of_devices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
 
   if (number_of_devices == 0) {
     GDEBUG( "Error: No available CUDA devices.\n" );
@@ -48,7 +45,6 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
     return GADGET_FAIL;
   }
 
-  pass_on_undesired_data_ = pass_on_undesired_data.value();
   set_number_ = setno.value();
   slice_number_ = sliceno.value();
   oversampling_factor_ = oversampling_factor.value();
@@ -62,7 +58,7 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
     return GADGET_FAIL;
   }
   save_individual_frames_ = save_individual_frames.value();
-
+  return GADGET_OK;
 }
 
 int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult,int channels) {
@@ -93,7 +89,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 
 			std::vector<size_t> img_dims {cgresult->get_size(0),cgresult->get_size(1)};
 
-			cm->getObjectPtr()->create(&img_dims);
+			cm->getObjectPtr()->create(img_dims);
 
 			size_t data_length = cm->getObjectPtr()->get_number_of_bytes();
 
@@ -146,6 +142,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 		}
 
 	}
+	return GADGET_OK;
 
 }
 

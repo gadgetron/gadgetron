@@ -3,14 +3,17 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegHomogenousTransformation_H_
+#define hoImageRegHomogenousTransformation_H_
+
 #pragma once
 
 #include "hoImageRegParametricTransformation.h"
 #include "hoMatrix.h"
 #include "hoNDArray_linalg.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// Homogenous transformation
     template<typename ValueType, unsigned int D> 
     class hoImageRegHomogenousTransformation : public hoImageRegParametricTransformation<ValueType, D, D>
@@ -119,7 +122,7 @@ namespace Gadgetron
     template <typename ValueType, unsigned int D> 
     bool hoImageRegHomogenousTransformation<ValueType, D>::invertTransformation()
     {
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::getri(matrix_) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::invert(matrix_) );
         return true;
     }
 
@@ -474,3 +477,4 @@ namespace Gadgetron
         os << " ]" << endl;
     }
 }
+#endif // hoImageRegHomogenousTransformation_H_

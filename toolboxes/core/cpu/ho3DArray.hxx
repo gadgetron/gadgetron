@@ -112,14 +112,14 @@ void ho3DArray<T>::create(std::vector<size_t>& dimensions)
 template <typename T> 
 void ho3DArray<T>::create(std::vector<size_t> *dimensions)
 {
-    BaseClass::create(dimensions);
+    BaseClass::create(*dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
 void ho3DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
 {
-    BaseClass::create(dimensions, data, delete_data_on_destruct);
+    BaseClass::create(*dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -177,14 +177,14 @@ bool ho3DArray<T>::createArray(size_t sx, size_t sy, size_t sz, T* data, bool de
 template <typename T> 
 inline T& ho3DArray<T>::operator()(size_t x , size_t y, size_t z)
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1] && z<(*dimensions_)[2]);
+    GADGET_DEBUG_CHECK_THROW(x<dimensions_[0] && y<dimensions_[1] && z<dimensions_[2]);
     return accesser_[z][y][x];
 }
 
 template <typename T> 
 inline const T& ho3DArray<T>::operator()(size_t x , size_t y, size_t z) const
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1] && z<(*dimensions_)[2]);
+    GADGET_DEBUG_CHECK_THROW(x<dimensions_[0] && y<dimensions_[1] && z<dimensions_[2]);
     return accesser_[z][y][x];
 }
 
@@ -197,9 +197,9 @@ bool ho3DArray<T>::init_accesser()
 
         if ( elements_ > 0 )
         {
-            size_t sx = (*dimensions_)[0];
-            size_t sy = (*dimensions_)[1];
-            size_t sz = (*dimensions_)[2];
+            size_t sx = dimensions_[0];
+            size_t sy = dimensions_[1];
+            size_t sz = dimensions_[2];
 
             size_t y, z;
 
@@ -268,13 +268,13 @@ void ho3DArray<T>::print(std::ostream& os) const
     BaseClass::print(os);
     size_t x, y, z;
     os << "-------------------------------------------" << std::endl;
-    for (z=0; z<(*dimensions_)[2]; z++) 
+    for (z=0; z<dimensions_[2]; z++) 
     {
         os << "Array3D (:, :, " << z << ") = " << std::endl;
-        for (y=0; y<(*dimensions_)[1]; y++) 
+        for (y=0; y<dimensions_[1]; y++) 
         {
             os << "y " << y << "\t";
-            for (x=0; x<(*dimensions_)[0]; x++)
+            for (x=0; x<dimensions_[0]; x++)
             {
                 os << (*this)(x,y,z) << "\t";
             }

@@ -3,12 +3,15 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegNonParametricTransformation_H_
+#define hoImageRegNonParametricTransformation_H_
+
 #pragma once
 
 #include "hoImageRegTransformation.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// non-parametric transformation, e.g. deformation field
     template<typename ValueType, unsigned int DIn, unsigned int DOut> 
     class hoImageRegNonParametricTransformation : public hoImageRegTransformation<ValueType, DIn, DOut>
@@ -80,3 +83,4 @@ namespace Gadgetron
     protected:
     };
 }
+#endif // hoImageRegNonParametricTransformation_H_

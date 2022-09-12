@@ -3,23 +3,28 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDeformationFieldBidirectionalRegister_H_
+#define hoImageRegDeformationFieldBidirectionalRegister_H_
+
 #pragma once
 
 #include "hoImageRegDeformationFieldRegister.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    class hoImageRegDeformationFieldBidirectionalRegister : public hoImageRegDeformationFieldRegister<ValueType, CoordType, D>
+namespace Gadgetron {
+
+    template<typename TargetType, typename CoordType> 
+    class hoImageRegDeformationFieldBidirectionalRegister : public hoImageRegDeformationFieldRegister<TargetType, CoordType>
     {
     public:
 
-        typedef hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D> Self;
-        typedef hoImageRegDeformationFieldRegister<ValueType, CoordType, D> BaseClass;
-        typedef hoImageRegNonParametricRegister<ValueType, CoordType, D, D> NonParametricRegisterClass;
+        typedef hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType> Self;
+        typedef hoImageRegDeformationFieldRegister<TargetType, CoordType> BaseClass;
+        typedef hoImageRegNonParametricRegister<TargetType, TargetType, CoordType> NonParametricRegisterClass;
 
-        typedef typename BaseClass::TargetType TargetType;
-        typedef typename BaseClass::SourceType SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { D = TargetType::NDIM };
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = TargetType::NDIM };
 
         typedef typename BaseClass::Target2DType Target2DType;
         typedef typename BaseClass::Source2DType Source2DType;
@@ -70,7 +75,7 @@ namespace Gadgetron
         typedef typename TransformationType::coord_type coord_type;
 
         /// solver type
-        typedef hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D> SolverType;
+        typedef hoImageRegDeformationFieldBidirectionalSolver<TargetType, TargetType, CoordType> SolverType;
 
         hoImageRegDeformationFieldBidirectionalRegister(unsigned int resolution_pyramid_levels=3, bool use_world_coordinates=false, ValueType bg_value=ValueType(0));
         virtual ~hoImageRegDeformationFieldBidirectionalRegister();
@@ -98,7 +103,10 @@ namespace Gadgetron
         using BaseClass::interp_type_pyramid_construction_;
         using BaseClass::dissimilarity_type_;
         using BaseClass::apply_in_FOV_constraint_;
+        using BaseClass::apply_divergence_free_constraint_;
         using BaseClass::solver_type_;
+        using BaseClass::deform_field_bh_;
+        using BaseClass::deform_field_interp_;
 
         using BaseClass::gt_timer1_;
         using BaseClass::gt_timer2_;
@@ -154,10 +162,10 @@ namespace Gadgetron
         using BaseClass::preset_transform_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::
+    template<typename TargetType, typename CoordType> 
+    hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::
     hoImageRegDeformationFieldBidirectionalRegister(unsigned int resolution_pyramid_levels, bool use_world_coordinates, ValueType bg_value) 
-    : BaseClass(resolution_pyramid_levels, bg_value)
+    : BaseClass(resolution_pyramid_levels, use_world_coordinates, bg_value)
     {
         inverse_deform_enforce_iter_pyramid_level_.clear();
         inverse_deform_enforce_iter_pyramid_level_.resize(resolution_pyramid_levels, 10);
@@ -166,8 +174,8 @@ namespace Gadgetron
         inverse_deform_enforce_weight_pyramid_level_.resize(resolution_pyramid_levels, 0.5);
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::~hoImageRegDeformationFieldBidirectionalRegister()
+    template<typename TargetType, typename CoordType> 
+    hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::~hoImageRegDeformationFieldBidirectionalRegister()
     {
         if ( !preset_transform_ )
         {
@@ -177,8 +185,8 @@ namespace Gadgetron
         }
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
+    template<typename TargetType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
     {
         BaseClass::setDefaultParameters(resolution_pyramid_levels, use_world_coordinates);
 
@@ -191,8 +199,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::initialize()
+    template<typename TargetType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::initialize()
     {
         try
         {
@@ -200,8 +208,13 @@ namespace Gadgetron
 
             if ( transform_ == NULL )
             {
-                transform_ = new TransformationType(*target_);
-                transform_inverse_ = new TransformationType(*source_);
+                std::vector<size_t> dim;
+
+                target_->get_dimensions(dim);
+                transform_ = new TransformationType(dim);
+
+                source_->get_dimensions(dim);
+                transform_inverse_ = new TransformationType(dim);
 
                 preset_transform_ = false;
             }
@@ -272,6 +285,7 @@ namespace Gadgetron
                 solver_pyramid_inverse_[ii].inverse_deform_enforce_weight_ = inverse_deform_enforce_weight_pyramid_level_[ii];
 
                 solver_pyramid_inverse_[ii].apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
+                solver_pyramid_inverse_[ii].apply_divergence_free_constraint_ = apply_divergence_free_constraint_;
             }
 
             // downsample the deformation field if necessary
@@ -321,17 +335,30 @@ namespace Gadgetron
                     }
                 }
             }
+
+            // create bh and interp for deformation fields
+            if (deform_field_bh_ == NULL)
+            {
+                deform_field_bh_ = createBoundaryHandler<DeformationFieldType>(this->boundary_handler_type_pyramid_construction_);
+            }
+
+            if (deform_field_interp_ == NULL)
+            {
+                deform_field_interp_ = createInterpolator<DeformationFieldType, D>(this->interp_type_pyramid_construction_);
+            }
+
+            deform_field_interp_->setBoundaryHandler(*deform_field_bh_);
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::initialize() ... ");
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::performRegistration()
+    template<typename TargetType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::performRegistration()
     {
         try
         {
@@ -392,21 +419,21 @@ namespace Gadgetron
                         for ( jj=0; jj<D; jj++ )
                         {
                             DeformationFieldType& deform = transform_->getDeformationField(jj);
-                            Gadgetron::expandImageBy2(deform, *target_bh_pyramid_construction_, deformExpanded);
+                            Gadgetron::expandImageBy2(deform, *deform_field_bh_, deformExpanded);
 
                             if ( !use_world_coordinates_ )
                             {
-                                Gadgetron::scal(ValueType(2.0), deformExpanded); // the deformation vector should be doubled in length
+                                Gadgetron::scal(CoordType(2.0), deformExpanded); // the deformation vector should be doubled in length
                             }
 
                             deform = deformExpanded;
 
                             DeformationFieldType& deformInv = transform_inverse_->getDeformationField(jj);
-                            Gadgetron::expandImageBy2(deformInv, *source_bh_pyramid_construction_, deformInverseExpanded);
+                            Gadgetron::expandImageBy2(deformInv, *deform_field_bh_, deformInverseExpanded);
 
                             if ( !use_world_coordinates_ )
                             {
-                                Gadgetron::scal(ValueType(2.0), deformInverseExpanded); // the deformation vector should be doubled in length
+                                Gadgetron::scal(CoordType(2.0), deformInverseExpanded); // the deformation vector should be doubled in length
                             }
 
                             deformInv = deformInverseExpanded;
@@ -417,21 +444,21 @@ namespace Gadgetron
                         for ( jj=0; jj<D; jj++ )
                         {
                             DeformationFieldType& deform = transform_->getDeformationField(jj);
-                            Gadgetron::upsampleImage(deform, *target_interp_pyramid_construction_, deformExpanded, &ratio[0]);
+                            Gadgetron::upsampleImage(deform, *deform_field_interp_, deformExpanded, &ratio[0]);
 
                             if ( !use_world_coordinates_ )
                             {
-                                Gadgetron::scal(ValueType(ratio[jj]), deformExpanded);
+                                Gadgetron::scal(CoordType(ratio[jj]), deformExpanded);
                             }
 
                             deform = deformExpanded;
 
                             DeformationFieldType& deformInv = transform_inverse_->getDeformationField(jj);
-                            Gadgetron::upsampleImage(deformInv, *source_interp_pyramid_construction_, deformInverseExpanded, &ratio[0]);
+                            Gadgetron::upsampleImage(deformInv, *deform_field_interp_, deformInverseExpanded, &ratio[0]);
 
                             if ( !use_world_coordinates_ )
                             {
-                                Gadgetron::scal(ValueType(ratio[jj]), deformInverseExpanded);
+                                Gadgetron::scal(CoordType(ratio[jj]), deformInverseExpanded);
                             }
 
                             deformInv = deformInverseExpanded;
@@ -459,14 +486,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::performRegistration() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::performRegistration() ... ");
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::printContent(std::ostream& os) const
+    template<typename TargetType, typename CoordType> 
+    void hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::printContent(std::ostream& os) const
     {
         using namespace std;
         BaseClass::printContent(os);
@@ -490,8 +517,8 @@ namespace Gadgetron
         }
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::print(std::ostream& os) const
+    template<typename TargetType, typename CoordType> 
+    void hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron non-parametric bi-directional deformation field image register -------------" << endl;
@@ -499,3 +526,4 @@ namespace Gadgetron
         os << "--------------------------------------------------------------------" << endl << ends;
     }
 }
+#endif // hoImageRegDeformationFieldBidirectionalRegister_H_

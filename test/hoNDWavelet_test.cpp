@@ -27,7 +27,7 @@ protected:
 };
 
 typedef Types<float, double> realImplementations;
-TYPED_TEST_CASE(hoNDWavelet_test, realImplementations);
+TYPED_TEST_SUITE(hoNDWavelet_test, realImplementations);
 
 TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest1D)
 {
@@ -43,8 +43,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest1D)
 
     Gadgetron::subtract(this->Array, rr, diff);
 
-    TypeParam v(0);
-    Gadgetron::norm2(diff, v);
+    TypeParam v =  Gadgetron::nrm2(diff);
 
     EXPECT_NEAR(v, 0, 0.001);
 }
@@ -63,8 +62,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest2D)
 
     Gadgetron::subtract(this->Array, rr, diff);
 
-    TypeParam v(0);
-    Gadgetron::norm2(diff, v);
+    TypeParam v = Gadgetron::nrm2(diff);
 
     EXPECT_NEAR(v, 0, 0.001);
 }
@@ -83,8 +81,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest3D)
 
     Gadgetron::subtract(this->Array, rr, diff);
 
-    TypeParam v(0);
-    Gadgetron::norm2(diff, v);
+    TypeParam v = Gadgetron::nrm2(diff);
 
     EXPECT_NEAR(v, 0, 0.001);
 }
@@ -104,8 +101,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDRedundantWaveletTest1D)
 
     Gadgetron::subtract(this->Array, rr, diff);
 
-    TypeParam v(0);
-    Gadgetron::norm2(diff, v);
+    TypeParam v = Gadgetron::nrm2(diff);
 
     EXPECT_NEAR(v, 0, 0.001);
 }
@@ -125,8 +121,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDRedundantWaveletTest2D)
 
     Gadgetron::subtract(this->Array, rr, diff);
 
-    TypeParam v(0);
-    Gadgetron::norm2(diff, v);
+    TypeParam v = Gadgetron::nrm2(diff);
 
     EXPECT_NEAR(v, 0, 0.001);
 }
@@ -146,8 +141,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDRedundantWaveletTest3D)
 
     Gadgetron::subtract(this->Array, rr, diff);
 
-    TypeParam v(0);
-    Gadgetron::norm2(diff, v);
+    TypeParam v = Gadgetron::nrm2(diff);
 
     EXPECT_NEAR(v, 0, 0.001);
 }

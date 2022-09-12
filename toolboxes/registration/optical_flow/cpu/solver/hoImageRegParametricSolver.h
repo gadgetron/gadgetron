@@ -3,24 +3,28 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegParametricSolver_H_
+#define hoImageRegParametricSolver_H_
+
 #pragma once
 
 #include "hoImageRegSolver.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// ValueType: image pixel value type
     /// CoordType: transformation data type
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    class hoImageRegParametricSolver : public hoImageRegSolver<ValueType, CoordType, DIn, DOut>
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegParametricSolver : public hoImageRegSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut> Self;
-        typedef hoImageRegSolver<ValueType, CoordType, DIn, DOut> BaseClass;
+        typedef hoImageRegParametricSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -116,19 +120,19 @@ namespace Gadgetron
         using BaseClass::use_world_coordinate_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::hoImageRegParametricSolver() 
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricSolver<TargetType, SourceType, CoordType>::hoImageRegParametricSolver() 
         : BaseClass(), dissimilarity_thres_(1e-8), parameter_thres_(1e-8)
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::~hoImageRegParametricSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricSolver<TargetType, SourceType, CoordType>::~hoImageRegParametricSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegParametricSolver<TargetType, SourceType, CoordType>::initialize()
     {
         try
         {
@@ -164,15 +168,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegParametricSolver<TargetType, SourceType, CoordType>::initialize() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::solve()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegParametricSolver<TargetType, SourceType, CoordType>::solve()
     {
         try
         {
@@ -222,15 +226,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegParametricSolver<TargetType, SourceType, CoordType>::solve() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegParametricSolver<TargetType, SourceType, CoordType>::
     evaluateDeriv(TransformationType* transform, ImageRegDissimilarityType* dissimilarity, const std::vector<ValueType>& deriv_step_size, std::vector<ValueType>& deriv)
     {
         try
@@ -293,8 +297,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegParametricSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron parametric image registration solver -------------" << endl;
@@ -324,3 +328,4 @@ namespace Gadgetron
         os << " ] " << endl;
     }
 }
+#endif // hoImageRegParametricSolver_H_

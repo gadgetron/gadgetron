@@ -4,65 +4,39 @@
 #include "cuNDArray_math.h"
 using namespace Gadgetron;
 
+template<class T>
+static auto create_DnVec( cuNDArray<T>& vec){
 
-static cusparseStatus_t  sparseCSRMV(cusparseHandle_t handle, cusparseOperation_t transA,int m, int n, int nnz,
-		const float * alpha, const cusparseMatDescr_t descrA, const float * csrValA,
-		const int * csrRowPtrA, const int * csrColndA, const float *x, const float* beta, float* y){
+	cusparseDnVecDescr_t dnvec;	
+	cusparseCreateDnVec(&dnvec,vec.size(),vec.data(),cuda_datatype<T>());
+	auto deleter = [](cusparseDnVecDescr_t val){cusparseDestroyDnVec(val);};
 
-	return cusparseScsrmv( handle, transA,m, n, nnz,  alpha, descrA,  csrValA,  csrRowPtrA,  csrColndA, x,  beta, y);
+	return std::unique_ptr<std::decay_t<decltype(*dnvec)>,decltype(deleter)>(dnvec,deleter);
 }
 
 
-static cusparseStatus_t  sparseCSRMV(cusparseHandle_t handle, cusparseOperation_t transA,int m, int n, int nnz,
-		const double * alpha, const cusparseMatDescr_t descrA, const double * csrValA,
-		const int * csrRowPtrA, const int * csrColndA, const double *x, const double* beta, double* y){
 
-	return cusparseDcsrmv( handle, transA,m, n, nnz,  alpha, descrA,  csrValA,  csrRowPtrA,  csrColndA, x,  beta, y);
-}
+template<class T> void Gadgetron::sparseMV(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & vec_in, cuNDArray<T>& vec_out, bool adjoint){
 
-
-static cusparseStatus_t  sparseCSRMV(cusparseHandle_t handle, cusparseOperation_t transA,int m, int n, int nnz,
-		const complext<float> * alpha, const cusparseMatDescr_t descrA, const complext<float> * csrValA,
-		const int * csrRowPtrA, const int * csrColndA, const complext<float> *x, const complext<float>* beta, complext<float>* y){
-
-	thrust::device_ptr<const int> csrRow(csrRowPtrA);
-
-	thrust::device_ptr<const int> csrCol(csrColndA);
-
-	thrust::device_ptr<const complext<float> >  csrVal(csrValA);
-
-	thrust::device_ptr<const complext<float> > xptr(x);
-	thrust::device_ptr<complext<float> > yptr(y);
-
-
-	if (transA == CUSPARSE_OPERATION_NON_TRANSPOSE){
-		std::cout << "In sum " << thrust::reduce(xptr,xptr+n) << " out sum " << thrust::reduce(yptr,yptr+m) << std::endl;
-	} else {
-		std::cout << "T In sum " << thrust::reduce(xptr,xptr+m) << " out sum " << thrust::reduce(yptr,yptr+n) << std::endl;
-	}
-
-
-
-	return cusparseCcsrmv( handle, transA,m, n, nnz,  (cuComplex*) alpha, descrA,  (cuComplex*) csrValA,  csrRowPtrA,  csrColndA, (cuComplex*) x,  (cuComplex*) beta,  (cuComplex*)y);
-}
-
-
-static cusparseStatus_t  sparseCSRMV(cusparseHandle_t handle, cusparseOperation_t transA,int m, int n, int nnz,
-		const complext<double> * alpha, const cusparseMatDescr_t descrA, const complext<double> * csrValA,
-		const int * csrRowPtrA, const int * csrColndA, const complext<double> *x, const complext<double>* beta, complext<double>* y){
-	return cusparseZcsrmv( handle, transA,m, n, nnz,  (cuDoubleComplex*) alpha, descrA,  (cuDoubleComplex*) csrValA,  csrRowPtrA,  csrColndA, (cuDoubleComplex*) x,  (cuDoubleComplex*) beta,  (cuDoubleComplex*)y);
-}
-
-template<class T> EXPORTGPUCORE void Gadgetron::sparseMV(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & vec_in, cuNDArray<T>& vec_out, bool adjoint){
-
-	if (vec_in.get_number_of_elements() != (adjoint ? mat.m : mat.n))
+	if (vec_in.get_number_of_elements() != (adjoint ? mat.rows : mat.cols))
 		throw std::runtime_error("Matrix and input vector have mismatching dimensions");
-	if (vec_out.get_number_of_elements() != (adjoint ? mat.n : mat.m))
+	if (vec_out.get_number_of_elements() != (adjoint ? mat.rows : mat.cols))
 		throw std::runtime_error("Matrix and output vector have mismatching dimensions");
 
 	cusparseOperation_t trans = adjoint ?  CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE;
-	cusparseStatus_t status = sparseCSRMV(cudaDeviceManager::Instance()->lockSparseHandle(),trans,mat.m,mat.n,mat.nnz,&alpha, mat.descr,
-			thrust::raw_pointer_cast(&mat.data[0]),thrust::raw_pointer_cast(&mat.csrRow[0]),thrust::raw_pointer_cast(&mat.csrColdnd[0]),vec_in.get_data_ptr(),&beta,vec_out.get_data_ptr());
+	//cusparseStatus_t status = sparseCSRMV(cudaDeviceManager::Instance()->lockSparseHandle(),trans,mat.m,mat.n,mat.nnz,&alpha, mat.descr,
+	//		thrust::raw_pointer_cast(&mat.data[0]),thrust::raw_pointer_cast(&mat.csrRow[0]),thrust::raw_pointer_cast(&mat.csrColdnd[0]),vec_in.get_data_ptr(),&beta,vec_out.get_data_ptr());
+
+
+	auto dnvec_in = create_DnVec(const_cast<cuNDArray<T>&>(vec_in));
+	auto dnvec_out = create_DnVec(vec_out);
+
+	size_t bufferSize;
+	auto handle =  cudaDeviceManager::Instance()->lockSparseHandle();
+	cusparseSpMV(handle, trans, &alpha,mat.descr,dnvec_in.get(),&beta,dnvec_out.get(),cuda_datatype<T>(),CUSPARSE_CSRMV_ALG2,&bufferSize);
+	cuNDArray<char> buffer(bufferSize);
+
+	cusparseStatus_t status = cusparseSpMV(handle, trans, &alpha,mat.descr,dnvec_in.get(),&beta,dnvec_out.get(),cuda_datatype<T>(),CUSPARSE_CSRMV_ALG2, buffer.data());
 
 	cudaDeviceManager::Instance()->unlockSparseHandle();
 	if (status != CUSPARSE_STATUS_SUCCESS){
@@ -75,39 +49,45 @@ template<class T> EXPORTGPUCORE void Gadgetron::sparseMV(T alpha,T beta, const c
 
 
 }
+template<class T>
+static auto create_DnMat( cuNDArray<T>& mat){
 
-
-
-
-EXPORTGPUCORE std::string Gadgetron::gadgetron_getCusparseErrorString(cusparseStatus_t err)
-{
-  switch (err){
-  case CUSPARSE_STATUS_NOT_INITIALIZED:
-    return "NOT INITIALIZED";
-  case CUSPARSE_STATUS_ALLOC_FAILED:
-    return "ALLOC FAILED";
-  case CUSPARSE_STATUS_INVALID_VALUE:
-    return "INVALID VALUE";
-  case CUSPARSE_STATUS_ARCH_MISMATCH:
-    return "ARCH MISMATCH";
-  case CUSPARSE_STATUS_MAPPING_ERROR:
-    return "MAPPING ERROR";
-  case CUSPARSE_STATUS_EXECUTION_FAILED:
-    return "EXECUTION FAILED";
-  case CUSPARSE_STATUS_INTERNAL_ERROR:
-    return "INTERNAL ERROR";
-  case CUSPARSE_STATUS_SUCCESS:
-    return "SUCCES";
-  case CUSPARSE_STATUS_MATRIX_TYPE_NOT_SUPPORTED:
-  	return "MATRIX TYPE NOT SUPPORTED";
-  default:
-    return "UNKNOWN CUSPARSE ERROR";
-  }
+	cusparseDnMatDescr_t dnmat;	
+	cusparseCreateDnMat(&dnmat,mat.get_size(0),mat.get_size(1),mat.get_size(0),mat.data(),cuda_datatype<T>(), CUSPARSE_ORDER_COL);
+	auto deleter = [](cusparseDnMatDescr_t val){cusparseDestroyDnMat(val);};
+	return std::unique_ptr<std::decay_t<decltype(*dnmat)>,decltype(deleter)>(dnmat,deleter);
+	//return std::unique_ptr<std::decay_t<decltype(*dnmat)>,decltype(&cusparseDestroyDnMat)>(dnmat);
 }
 
 
 
-template EXPORTGPUCORE void Gadgetron::sparseMV<float>(float alpha,float beta, const cuCsrMatrix<float> & mat, const cuNDArray<float> & vec_in, cuNDArray<float>& vec_out, bool adjoint);
-template EXPORTGPUCORE void Gadgetron::sparseMV<double>(double alpha,double beta, const cuCsrMatrix<double> & mat, const cuNDArray<double> & vec_in, cuNDArray<double>& vec_out, bool adjoint);
-template EXPORTGPUCORE void Gadgetron::sparseMV<complext<float> >(complext<float> alpha,complext<float> beta, const cuCsrMatrix<complext<float> > & mat, const cuNDArray<complext<float> > & vec_in, cuNDArray<complext<float> >& vec_out, bool adjoint);
-template EXPORTGPUCORE void Gadgetron::sparseMV<complext<double> >(complext<double> alpha,complext<double> beta, const cuCsrMatrix<complext<double> > & mat, const cuNDArray<complext<double> > & vec_in, cuNDArray<complext<double> >& vec_out, bool adjoint);
+template<class T> void Gadgetron::sparseMM(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & mat_in, cuNDArray<T>& mat_out, bool adjoint) {
+
+	if (mat_in.get_size(1) != mat_out.get_size(1)) throw std::runtime_error("In and out dense matrix must have same second dimension");
+	if (mat_in.get_size(0) != mat.rows) throw std::runtime_error("Input matrix and sparse matrix have mismatched dimensions");
+	if (mat_out.get_size(0) != mat.cols) throw std::runtime_error("Output matrix and sparse matrix have mismatched dimensions");
+
+	cusparseOperation_t trans = adjoint ?  CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE;
+	auto handle = cudaDeviceManager::Instance()->lockSparseHandle();
+
+	auto dnmat_in = create_DnMat(const_cast<cuNDArray<T>&>(mat_in));
+	auto dnmat_out = create_DnMat(mat_out);
+	size_t bufferSize;
+	CUSPARSE_CALL(cusparseSpMM_bufferSize(handle, trans, CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, mat.descr, dnmat_in.get(), &beta, dnmat_out.get(), cuda_datatype<T>(),CUSPARSE_CSRMM_ALG1, &bufferSize));
+	cuNDArray<char> buffer(bufferSize);
+
+	CUSPARSE_CALL(cusparseSpMM(handle, trans, CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, mat.descr, dnmat_in.get(), &beta, dnmat_out.get(), cuda_datatype<T>(),CUSPARSE_CSRMM_ALG1, buffer.data()));
+	cudaDeviceManager::Instance()->unlockSparseHandle();
+
+}
+
+
+template void Gadgetron::sparseMV<float>(float alpha,float beta, const cuCsrMatrix<float> & mat, const cuNDArray<float> & vec_in, cuNDArray<float>& vec_out, bool adjoint);
+template void Gadgetron::sparseMV<double>(double alpha,double beta, const cuCsrMatrix<double> & mat, const cuNDArray<double> & vec_in, cuNDArray<double>& vec_out, bool adjoint);
+template void Gadgetron::sparseMV<complext<float> >(complext<float> alpha,complext<float> beta, const cuCsrMatrix<complext<float> > & mat, const cuNDArray<complext<float> > & vec_in, cuNDArray<complext<float> >& vec_out, bool adjoint);
+template void Gadgetron::sparseMV<complext<double> >(complext<double> alpha,complext<double> beta, const cuCsrMatrix<complext<double> > & mat, const cuNDArray<complext<double> > & vec_in, cuNDArray<complext<double> >& vec_out, bool adjoint);
+
+template void Gadgetron::sparseMM<float>(float alpha,float beta, const cuCsrMatrix<float> & mat, const cuNDArray<float> & vec_in, cuNDArray<float>& vec_out, bool adjoint);
+template void Gadgetron::sparseMM<double>(double alpha,double beta, const cuCsrMatrix<double> & mat, const cuNDArray<double> & vec_in, cuNDArray<double>& vec_out, bool adjoint);
+template void Gadgetron::sparseMM<complext<float> >(complext<float> alpha,complext<float> beta, const cuCsrMatrix<complext<float> > & mat, const cuNDArray<complext<float> > & vec_in, cuNDArray<complext<float> >& vec_out, bool adjoint);
+template void Gadgetron::sparseMM<complext<double> >(complext<double> alpha,complext<double> beta, const cuCsrMatrix<complext<double> > & mat, const cuNDArray<complext<double> > & vec_in, cuNDArray<complext<double> >& vec_out, bool adjoint);

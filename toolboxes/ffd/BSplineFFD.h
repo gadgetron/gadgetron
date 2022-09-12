@@ -38,20 +38,6 @@ public:
 
     BSplineFFD();
     virtual ~BSplineFFD();
-
-    /// evaluate the FFD at a grid location
-    virtual bool evaluateFFD(const CoordType pt[D], T r[DOut]) const = 0;
-
-    /// evaluate the 1st order derivative of FFD at a grid location
-    virtual bool evaluateFFDDerivative(const CoordType pt[D], T deriv[D][DOut]) const = 0;
-
-    /// evaluate the 2nd order derivative of FFD at a grid location
-    /// dderiv : D*D vector, stores dxx dxy dxz ...; dyx dyy dyz ...; dzx dzy dzz ...
-    virtual bool evaluateFFDSecondOrderDerivative(const CoordType pt[D], T dderiv[D*D][DOut]) const = 0;
-
-    /// compute the FFD approximation once
-    virtual bool ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N) = 0;
-
     /// although BSpline grid has the padding, every index is defined on the unpadded grid
 
     /// get the size of control point arrays
@@ -71,31 +57,31 @@ public:
     }
 
     /// get the spacing of of control point arrays
-    virtual coord_type get_spacing(size_t dimension) const { return ctrl_pt_[0].get_pixel_size(dimension); }
-    virtual void get_spacing(std::vector<coord_type>& spacing) const { ctrl_pt_[0].get_pixel_size(spacing); }
+    coord_type get_spacing(size_t dimension) const override { return ctrl_pt_[0].get_pixel_size(dimension); }
+    void get_spacing(std::vector<coord_type>& spacing) const override { ctrl_pt_[0].get_pixel_size(spacing); }
 
     /// get/set a control point value
-    virtual T get(size_t x, size_t y, size_t d) const { return ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE); }
-    virtual void set(size_t x, size_t y, size_t d, T v) { ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE) = v; }
+    T get(size_t x, size_t y, size_t d) const override { return ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE); }
+    void set(size_t x, size_t y, size_t d, T v) override { ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE) = v; }
 
-    virtual T get(size_t x, size_t y, size_t z, size_t d) const { return ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE); }
-    virtual void set(size_t x, size_t y, size_t z, size_t d, T v) { ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE) = v; }
+    T get(size_t x, size_t y, size_t z, size_t d) const override { return ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE); }
+    void set(size_t x, size_t y, size_t z, size_t d, T v) override { ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE) = v; }
 
-    virtual T get(size_t x, size_t y, size_t z, size_t s, size_t d) const { return ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE); }
-    virtual void set(size_t x, size_t y, size_t z, size_t s, size_t d, T v) { ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE) = v; }
+    T get(size_t x, size_t y, size_t z, size_t s, size_t d) const override { return ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE); }
+    void set(size_t x, size_t y, size_t z, size_t s, size_t d, T v) override { ctrl_pt_[d](x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE) = v; }
 
     /// offset to/from indexes for control points
-    virtual size_t calculate_offset(size_t x, size_t y) const { return ctrl_pt_[0].calculate_offset(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE); }
+    size_t calculate_offset(size_t x, size_t y) const override  { return ctrl_pt_[0].calculate_offset(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE); }
 
-    virtual void calculate_index( size_t offset, size_t& x, size_t& y ) const
+    void calculate_index( size_t offset, size_t& x, size_t& y ) const override
     {
         ctrl_pt_[0].calculate_index(offset, x, y);
         x -= BSPLINEPADDINGSIZE;
         y -= BSPLINEPADDINGSIZE;
     }
 
-    virtual size_t calculate_offset(size_t x, size_t y, size_t z) const { return ctrl_pt_[0].calculate_offset(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE); }
-    virtual void calculate_index( size_t offset, size_t& x, size_t& y, size_t& z ) const
+    size_t calculate_offset(size_t x, size_t y, size_t z) const override { return ctrl_pt_[0].calculate_offset(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE); }
+    void calculate_index( size_t offset, size_t& x, size_t& y, size_t& z ) const override
     {
         ctrl_pt_[0].calculate_index(offset, x, y, z);
         x -= BSPLINEPADDINGSIZE;
@@ -103,8 +89,8 @@ public:
         z -= BSPLINEPADDINGSIZE;
     }
 
-    virtual size_t calculate_offset(size_t x, size_t y, size_t z, size_t s) const { return ctrl_pt_[0].calculate_offset(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE); }
-    virtual void calculate_index( size_t offset, size_t& x, size_t& y, size_t& z, size_t& s ) const
+    size_t calculate_offset(size_t x, size_t y, size_t z, size_t s) const override { return ctrl_pt_[0].calculate_offset(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE); }
+    void calculate_index( size_t offset, size_t& x, size_t& y, size_t& z, size_t& s ) const override
     {
         ctrl_pt_[0].calculate_index(offset, x, y, z, s);
         x -= BSPLINEPADDINGSIZE;
@@ -114,23 +100,23 @@ public:
     }
 
     /// compute the control point location in world coordinates
-    virtual void get_location(size_t x, size_t y, CoordType& sx, CoordType& sy) const { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, sx, sy); }
-    virtual void get_location(size_t x, size_t y, size_t z, CoordType& sx, CoordType& sy, CoordType& sz) const { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, sx, sy, sz); }
-    virtual void get_location(size_t x, size_t y, size_t z, size_t s, CoordType& sx, CoordType& sy, CoordType& sz, CoordType& ss) const { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE, sx, sy, sz, ss); }
+    void get_location(size_t x, size_t y, CoordType& sx, CoordType& sy) const override { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, sx, sy); }
+    void get_location(size_t x, size_t y, size_t z, CoordType& sx, CoordType& sy, CoordType& sz) const override { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, sx, sy, sz); }
+    void get_location(size_t x, size_t y, size_t z, size_t s, CoordType& sx, CoordType& sy, CoordType& sz, CoordType& ss) const { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE, sx, sy, sz, ss); }
 
     /// convert a world coordinate point to FFD grid location
-    virtual bool world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const;
-    virtual bool world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const;
-    virtual bool world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const;
-    virtual bool world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const;
+    bool world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const override;
+    bool world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const override;
+    bool world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const override;
+    bool world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const override;
 
-    virtual bool grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const;
-    virtual bool grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const;
-    virtual bool grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const;
+    bool grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const override;
+    bool grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const override;
+    bool grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const override;
     virtual bool grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType ps_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w, CoordType& ps_w) const;
 
     /// print info
-    virtual void print(std::ostream& os) const;
+    void print(std::ostream& os) const override;
 
     /// compute four BSpline basis functions
     static bspline_float_type BSpline0(bspline_float_type t)
@@ -165,9 +151,10 @@ public:
             return BSpline2(t);
         case 3:
             return BSpline3(t);
+        default:
+            throw std::invalid_argument("Index must be smaller than 3");
         }
 
-        return 0;
     }
 
     /// compute 1st order derivatives of four BSpline basis functions

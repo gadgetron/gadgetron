@@ -9,7 +9,7 @@
 #define HOSTUTILS_EXPORT_H_
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_HOSTUTILS__) || defined (hostutils_EXPORTS)
+#if defined (__BUILD_GADGETRON_HOSTUTILS__) || defined (gadgetron_toolbox_hostutils_EXPORTS)
 #define EXPORTHOSTUTILS __declspec(dllexport)
 #else
 #define EXPORTHOSTUTILS __declspec(dllimport)

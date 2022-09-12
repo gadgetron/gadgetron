@@ -57,8 +57,8 @@ namespace Gadgetron{
 	channels_ = 1;
       }
       // Allocate Spirit operators
-      E_ = boost::shared_ptr< cuNFFTOperator<float,2> >( new cuNFFTOperator<float,2>() );
-      S_ = boost::shared_ptr< cuSpirit2DOperator<float> >( new cuSpirit2DOperator<float>() );
+      E_ = boost::make_shared< NFFTOperator<cuNDArray,float,2> >();
+      S_ = boost::make_shared< cuSpirit2DOperator<float> >();
       S_->set_weight( kappa_ );
 
       // Allocate preconditioner
@@ -229,7 +229,7 @@ namespace Gadgetron{
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
-      cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, cgresult.get() );    
+      *cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, *cgresult );
     
     // Combine coil images
     //

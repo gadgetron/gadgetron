@@ -32,12 +32,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
         device_number_ = deviceno.value();
 
-	int number_of_devices = 0;
-	if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-		GDEBUG( "Error: unable to query number of CUDA devices.\n" );
-		return GADGET_FAIL;
-	}
-
+	int number_of_devices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
 	if (number_of_devices == 0) {
 		GDEBUG( "Error: No available CUDA devices.\n" );
 		return GADGET_FAIL;
@@ -83,7 +78,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
 	img_dims_ = {r_space.matrixSize.x,r_space.matrixSize.y,r_space.matrixSize.z};
 
-	matrix_size_ = {r_space.matrixSize.x,r_space.matrixSize.y};
+	matrix_size_ = vector_td<uint64_t,2>{r_space.matrixSize.x,r_space.matrixSize.y};
 
 	unsigned int warp_size = cudaDeviceManager::Instance()->warp_size(device_number_);
 

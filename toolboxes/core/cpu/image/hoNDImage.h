@@ -28,7 +28,7 @@ namespace Gadgetron
 
         typedef T element_type;
         typedef T value_type;
-        typedef float coord_type;
+        typedef double coord_type;
 
         typedef hoNDPoint<coord_type, D> a_axis_type;
         typedef std::vector<a_axis_type> axis_type;
@@ -235,7 +235,7 @@ namespace Gadgetron
         template<class S> 
         bool axis_equal(const hoNDImage<S, D>& im) const
         {
-            unsigned int ii, jj;
+            unsigned int ii;
             for ( ii=0; ii<D; ii++ )
             {
                 if ( this->axis_[ii] != im.axis_[ii] ) return false;

@@ -92,7 +92,7 @@ void hoNDWavelet<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t
             }
         }
 
-        out.create(&dimOut);
+        out.create(dimOut);
 
         if (level == 0)
         {
@@ -157,11 +157,11 @@ void hoNDWavelet<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUDWT hoNDWavelet<float>;
-template class EXPORTCPUDWT hoNDWavelet<double>;
-template class EXPORTCPUDWT hoNDWavelet< std::complex<float> >;
-template class EXPORTCPUDWT hoNDWavelet< std::complex<double> >;
-template class EXPORTCPUDWT hoNDWavelet< complext<float> >;
-template class EXPORTCPUDWT hoNDWavelet< complext<double> >;
+template class hoNDWavelet<float>;
+template class hoNDWavelet<double>;
+template class hoNDWavelet< std::complex<float> >;
+template class hoNDWavelet< std::complex<double> >;
+template class hoNDWavelet< complext<float> >;
+template class hoNDWavelet< complext<double> >;
 
 }

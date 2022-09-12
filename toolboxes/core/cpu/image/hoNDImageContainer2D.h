@@ -48,6 +48,9 @@ namespace Gadgetron
         bool create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin);
         bool create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis);
 
+        /// create a container with every row being its own image size
+        bool create(const std::vector<size_t>& col, const std::vector< std::vector<size_t> >& dimensions);
+
         /// create a container from a chunk of memory
         /// the dim.size() = ImageType.get_number_of_dimensions()+1
         /// e.g., a 3D memory chunk [RO E1 N] is used to allocate N [RO E1] images
@@ -362,6 +365,38 @@ namespace Gadgetron
         catch(...)
         {
             GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename ImageType>
+    inline bool hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector< std::vector<size_t> >& dimensions)
+    {
+        try
+        {
+            GADGET_CHECK_RETURN_FALSE(col.size()==dimensions.size());
+            GADGET_CHECK_RETURN_FALSE(this->clear());
+            this->delete_data_on_destruct(true);
+
+            size_t row = col.size();
+            image_container_.resize(row);
+
+            unsigned int r, c;
+            for (r = 0; r<row; r++)
+            {
+                image_container_[r].resize(col[r], NULL);
+
+                for (c = 0; c<col[r]; c++)
+                {
+                    image_container_[r][c] = new ImageType(dimensions[r]);
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector< std::vector<size_t> >& dimensions ... ");
             return false;
         }
 

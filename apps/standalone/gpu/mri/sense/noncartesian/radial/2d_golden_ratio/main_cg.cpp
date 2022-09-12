@@ -119,8 +119,8 @@ int main(int argc, char** argv)
       _real(1)/((_real)samples_per_profile/(_real)max(matrix_size[0],matrix_size[1])) );
 
   // Define encoding matrix for non-Cartesian SENSE
-  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2,use_atomics> > E
-    ( new cuNonCartesianSenseOperator<_real,2,use_atomics>() );  
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E
+    ( new cuNonCartesianSenseOperator<_real,2>() );
 
   E->setup( matrix_size, matrix_size_os, kernel_width );
 
@@ -129,8 +129,8 @@ int main(int argc, char** argv)
   // Define rhs buffer
   //
 
-  boost::shared_ptr< cuSenseBuffer<_real,2,use_atomics> > rhs_buffer
-    ( new cuSenseBuffer<_real,2,use_atomics>() );
+  boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer
+    ( new cuSenseBuffer<_real,2>() );
 
   rhs_buffer->setup( matrix_size, matrix_size_os, kernel_width, num_coils, 8, 16 );
   rhs_buffer->set_dcw(dcw);
@@ -164,7 +164,7 @@ int main(int argc, char** argv)
   timer = new GPUTimer("Estimating csm");
 
   boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
-  boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );  
+  boost::shared_ptr< cuNDArray<_complext> > csm = boost::make_shared<cuNDArray<_complext>>(estimate_b1_map<_real,2>( *acc_images.get() ));
   E->set_csm(csm);
 
   delete timer;

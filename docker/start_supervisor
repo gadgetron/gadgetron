@@ -1,8 +1,0 @@
-#!/bin/bash
-
-#Make sure environment variables are set
-export GADGETRON_SUPERVISOR_NODAEMON=${GADGETRON_SUPERVISOR_NODAEMON:-"true"}
-export GADGETRON_RELAY_HOST=${GADGETRON_RELAY_HOST:-"127.0.0.1"}
-export GADGETRON_LOG_FILENAME=${GADGETRON_LOG_FILENAME:-"/tmp/gadgetron.log"}
-
-/usr/bin/supervisord -c /opt/supervisord.conf 

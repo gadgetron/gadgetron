@@ -767,7 +767,7 @@ void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO,
         // pad the kernel and go to image domain
         hoNDArray<T> kImRO(RO, kE1, kE2, srcCHA, dstCHA);
         Gadgetron::clear(kImRO);
-        Gadgetron::pad(RO, kE1, kE2, const_cast< hoNDArray<T>* >(&convKer), &kImRO, false);
+        Gadgetron::pad(RO, kE1, kE2, convKer, kImRO, false);
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImRO);
 
@@ -779,7 +779,7 @@ void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO,
         dim_order[3] = 4;
         dim_order[4] = 0;
 
-        Gadgetron::permute(&kImRO, &kIm, &dim_order);
+        Gadgetron::permute(kImRO, kIm, dim_order);
     }
     catch (...)
     {
@@ -806,12 +806,12 @@ void spirit3d_image_domain_kernel(const hoNDArray<T>& kImRO, size_t E1, size_t E
         dimR[0] = E1;
         dimR[1] = E2;
 
-        kIm.create(&dimR);
+        kIm.create(dimR);
         Gadgetron::clear(kIm);
 
         hoNDArray<T> kImROScaled(kImRO);
         Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(E1*E2))), kImROScaled);
-        Gadgetron::pad(E1, E2, dimR[2], &kImROScaled, &kIm, false);
+        Gadgetron::pad(E1, E2, dimR[2], kImROScaled, kIm, false);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
     }
     catch (...)
@@ -855,7 +855,7 @@ void spirit_image_domain_adjoint_kernel(const hoNDArray<T>& kIm, hoNDArray<T>& a
         dimOrder[NDim - 2] = NDim - 1;
         dimOrder[NDim - 1] = NDim - 2;
 
-        Gadgetron::permute(const_cast< hoNDArray<T>* >(&kIm), &adjkIm, &dimOrder);
+        Gadgetron::permute(kIm, adjkIm, dimOrder);
         Gadgetron::conjugate(adjkIm, adjkIm);
     }
     catch (...)
@@ -890,7 +890,7 @@ void spirit_adjoint_forward_kernel(const hoNDArray<T>& kImS2D, const hoNDArray<T
         std::vector<size_t> dimRes(dimS2D);
         dimRes[NDim - 2] = dstCHA;
 
-        kIm.create(&dimRes);
+        kIm.create(dimRes);
         Gadgetron::clear(&kIm);
 
         size_t N = kImS2D.get_number_of_elements() / srcCHA / dstCHA;
@@ -909,12 +909,12 @@ void spirit_adjoint_forward_kernel(const hoNDArray<T>& kImS2D, const hoNDArray<T
             {
                 for (long long dprime = 0; dprime<dstCHA; dprime++)
                 {
-                    dKer.create(&dim, kIm.begin() + d*N + dprime*N*dstCHA);
+                    dKer.create(dim, kIm.begin() + d*N + dprime*N*dstCHA);
 
                     for (long long s = 0; s<srcCHA; s++)
                     {
-                        kerS2D.create(&dim, const_cast<T*>(kImS2D.begin()) + s*N + dprime*N*srcCHA);
-                        kerD2S.create(&dim, const_cast<T*>(kImD2S.begin()) + d*N + s*N*dstCHA);
+                        kerS2D.create(dim, const_cast<T*>(kImS2D.begin()) + s*N + dprime*N*srcCHA);
+                        kerD2S.create(dim, const_cast<T*>(kImD2S.begin()) + d*N + s*N*dstCHA);
 
                         Gadgetron::multiply(kerS2D, kerD2S, ker);
                         Gadgetron::add(dKer, ker, dKer);

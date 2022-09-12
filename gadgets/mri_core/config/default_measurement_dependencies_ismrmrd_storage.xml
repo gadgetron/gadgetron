@@ -8,6 +8,11 @@
         <dll>gadgetron_mricore</dll>
         <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
+    <reader>
+        <slot>1026</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
+    </reader>
 
     <!-- store the incoming noise data -->
     <gadget>
@@ -15,10 +20,6 @@
         <dll>gadgetron_mricore</dll>
         <classname>IsmrmrdDumpGadget</classname>
         <property><name>file_prefix</name><value>ISMRMRD_Noise_dependency</value></property>
-        <property><name>folder</name><value>/tmp/gadgetron_data</value></property>
-        <property><name>append_id</name><value>true</value></property>
-        <property><name>append_timestamp</name><value>true</value></property>
-        <property><name>use_data_timestamp</name><value>true</value></property>
     </gadget>
 
     <!-- SNR unit noise adjust gadget -->
@@ -30,7 +31,7 @@
         <!-- File prefix for stored noise prewhitener matrix -->
         <property><name>noise_dependency_prefix</name><value>GadgetronNoiseCovarianceMatrix</value></property>
 
-        <!-- Whether to pass the nonconformant data without applyting the prewhitening -->
+        <!-- Whether to pass the nonconformant data without applying the prewhitening -->
         <property><name>pass_nonconformant_data</name><value>true</value></property>
     </gadget>
 

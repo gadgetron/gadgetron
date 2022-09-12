@@ -682,7 +682,7 @@ bool BSplineFFD4D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
             crop_size[2] = size[2];
             crop_size[3] = size[3];
 
-            Gadgetron::crop(crop_offset, crop_size, &tmpCtrlPt, &ctrlPtWithoutPadding);
+            Gadgetron::crop(crop_offset, crop_size, tmpCtrlPt, ctrlPtWithoutPadding);
             Gadgetron::add(ctrlPtWithoutPadding, dx4D, ctrlPtWithoutPadding);
             Gadgetron::fill(ctrlPtWithoutPadding, crop_offset, tmpCtrlPt);
         }
@@ -691,7 +691,7 @@ bool BSplineFFD4D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
         totalResidual = 0;
         GADGET_CHECK_RETURN_FALSE(this->evaluateFFDArray(pos, approxValue));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::norm2(residual, totalResidual));
+        totalResidual = Gadgetron::nrm2(residual);
         totalResidual = totalResidual / (real_value_type)N;
     }
     catch(...)

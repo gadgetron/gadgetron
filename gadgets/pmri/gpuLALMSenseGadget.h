@@ -2,9 +2,6 @@
 #define gpuSbSenseGadget_H
 #pragma once
 
-#include <ace/Synch.h>
-#include <ace/Mutex.h>
-
 #include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
@@ -19,7 +16,7 @@
 #include "cuTvOperator.h"
 #include "cuTvPicsOperator.h"
 #include "osSenseOperator.h"
-#include "cuNFFTOperator.h"
+#include "../../toolboxes/nfft/NFFTOperator.h"
 #include "osLALMSolver.h"
 #include "gpuSenseGadget.h"
 
@@ -76,7 +73,7 @@ namespace Gadgetron{
     osLALMSolver<cuNDArray<float_complext>> solver_;
 
     // Define non-Cartesian Sense Encoding operator
-    boost::shared_ptr< osSenseOperator<cuNDArray<float_complext>,2,cuNFFTOperator<float,2>>> E_;
+    boost::shared_ptr< osSenseOperator<cuNDArray<float_complext>,2,NFFTOperator<cuNDArray,float,2>>> E_;
 
     // Average image for regularization
 

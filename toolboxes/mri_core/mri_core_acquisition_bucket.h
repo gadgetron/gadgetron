@@ -12,9 +12,8 @@ namespace Gadgetron
       the @IsmrmrdAcquisitionData objects.
 
    */
-  class IsmrmrdAcquisitionBucketStats
-  {
-    public:
+  struct AcquisitionBucketStats {
+
       // Set of labels found in the data or ref part of a bucket
       //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
       std::set<uint16_t> kspace_encode_step_1;
@@ -26,122 +25,18 @@ namespace Gadgetron
       std::set<uint16_t> set;
       std::set<uint16_t> segment;
       std::set<uint16_t> average;
-  };
-
-  /** 
-      This class functions as a storage unit for GadgetContainerMessage pointers
-      that point to acquisiton headers, data and trajectories.
-
-      It is the storage used in the @IsmrmrdAcquisitionBucket structure. 
-
-   */
-  class IsmrmrdAcquisitionData
-  {
-  public:
-    /**
-       Default Constructor
-    */
-    IsmrmrdAcquisitionData()
-      : head_(0)
-      , data_(0)
-      , traj_(0)
-      {
-
-      }
-    
-    /**
-       Constructor
-    */
-    IsmrmrdAcquisitionData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* head,
-                           GadgetContainerMessage< hoNDArray< std::complex<float> > >* data,
-                           GadgetContainerMessage< hoNDArray< float > >* traj = 0)
-    {
-      if (head) {
-	head_ = head->duplicate();
-      } else {
-	head_ = 0;
+      void add_stats( const ISMRMRD::AcquisitionHeader& header) {
+          average.insert(header.idx.average);
+          kspace_encode_step_1.insert(header.idx.kspace_encode_step_1);
+          kspace_encode_step_2.insert(header.idx.kspace_encode_step_2);
+          slice.insert(header.idx.slice);
+          contrast.insert(header.idx.contrast);
+          phase.insert(header.idx.phase);
+          repetition.insert(header.idx.repetition);
+          set.insert(header.idx.set);
+          segment.insert(header.idx.segment);
       }
 
-      if (data) {
-	data_ = data->duplicate();
-      } else {
-	data_ = 0;
-      }
-
-      if (traj) {
-	traj_ = traj->duplicate();
-      } else {
-	traj_ = 0;
-      }
-    }
-
-    /** 
-	Assignment operator
-     */
-    IsmrmrdAcquisitionData& operator=(const IsmrmrdAcquisitionData& d)
-      {
-	if (this != &d) { 
-	  if (d.head_) {
-	    if (head_) head_->release();
-	    head_ = d.head_->duplicate();
-	  } else {
-	    head_ = 0;
-	  }
-	  
-	  if (d.data_) {
-	    if (data_) data_->release();
-	    data_ = d.data_->duplicate();
-	  } else {
-	    data_ = 0;
-	  }
-	  
-	  if (d.traj_) {
-	    if (traj_) traj_->release();
-	    traj_ = d.traj_->duplicate();
-	  } else {
-	    traj_ = 0;
-	  }
-	}
-	return *this;
-      }
-
-    /**
-       Copy constructor
-     */
-    IsmrmrdAcquisitionData(const IsmrmrdAcquisitionData& d)
-      : head_(0)
-      , data_(0)
-      , traj_(0)
-      {
-	*this = d;
-      }
-
-
-    /**
-       Destructor. The memory in the GadgetContainer Messages will be deleted
-       when the object is destroyed. 
-     */
-    ~IsmrmrdAcquisitionData() {
-      if (head_) {
-	head_->release();
-	head_ = 0;
-      }
-
-      if (data_) {
-	data_->release();
-	data_ = 0;
-      }
-
-      if (traj_) {
-	traj_->release();
-	traj_ = 0;
-      }
-    }
-
-
-    GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* head_;
-    GadgetContainerMessage< hoNDArray< std::complex<float> > >* data_;
-    GadgetContainerMessage< hoNDArray< float > > * traj_;
   };
 
 
@@ -155,13 +50,36 @@ namespace Gadgetron
      destroyed. 
 
    */ 
-  class IsmrmrdAcquisitionBucket
-  {
-  public:
-    std::vector< IsmrmrdAcquisitionData > data_;
-    std::vector< IsmrmrdAcquisitionData > ref_;
-    std::vector< IsmrmrdAcquisitionBucketStats > datastats_;
-    std::vector< IsmrmrdAcquisitionBucketStats > refstats_;
+  struct AcquisitionBucket {
+    std::vector< Core::Acquisition > data_;
+    std::vector< Core::Acquisition > ref_;
+    std::vector<AcquisitionBucketStats> datastats_;
+    std::vector<AcquisitionBucketStats> refstats_;
+    std::vector< Core::Waveform > waveform_;
+
+
+      void add_acquisition(Core::Acquisition acq) {
+          auto& head  = std::get<ISMRMRD::AcquisitionHeader>(acq);
+          auto espace = size_t{head.encoding_space_ref};
+
+          if (ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(head.flags)
+              || ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(head.flags)) {
+              ref_.push_back(acq);
+              if (refstats_.size() < (espace + 1)) {
+                  refstats_.resize(espace + 1);
+              }
+              refstats_[espace].add_stats(head);
+          }
+          if (!(ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(head.flags)
+              || ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA).isSet(head.flags))) {
+              if (datastats_.size() < (espace + 1)) {
+                  datastats_.resize(espace + 1);
+              }
+              datastats_[espace].add_stats(head);
+              data_.emplace_back(std::move(acq));
+          }
+      }
+
   };
   
 }

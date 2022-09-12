@@ -9,7 +9,8 @@
 #include "linearOperator.h"
 #include "cuNDArray.h"
 #include "radial_utilities.h"
-#include "cuNFFTOperator.h"
+#include "cuNFFT.h"
+#include "../../nfft/NFFTOperator.h"
 #include "cuNDFFT.h"
 #include "vector_td_operators.h"
 
@@ -34,7 +35,7 @@ public:
 		permute_dims.push_back(2);
 		permute_dims.push_back(1);
 		permute_dims.push_back(3);
-		projections = *permute(&projections,&permute_dims);
+		projections = permute(projections, permute_dims);
 		cuNDFFT<REAL>::instance()->fft(&projections,0u);
 
 		COMPLEX* proj_ptr = projections.get_data_ptr();
@@ -69,12 +70,8 @@ public:
 
 
 		cuNDFFT<REAL>::instance()->ifft(&projections,0u);
-		std::vector<size_t> permute_dims;
-		permute_dims.push_back(0);
-		permute_dims.push_back(2);
-		permute_dims.push_back(1);
-		permute_dims.push_back(3);
-		projections = *permute(&projections,&permute_dims);
+		std::vector<size_t> permute_dims = {0,2,1,3};
+		projections = permute(projections,permute_dims);
 
 
 		E_.mult_M(&projections,out,accumulate);
@@ -105,7 +102,7 @@ public:
 		size_t time_offset =offset;
 		backprojections.clear();
 		for (size_t t = 0; t < ntimeframes; t++){
-			auto backprojection = boost::make_shared<cuNFFTOperator<REAL,2>>();
+			auto backprojection = boost::make_shared<NFFTOperator<cuNDArray,REAL,2>>();
 			backprojection->setup( uint64d2(dims[0], dims[1]),
 					uint64d2(dims[0], dims[1])*size_t(2), // !! <-- alpha_
 					W_ );
@@ -133,8 +130,8 @@ public:
 
 protected:
 
-	cuNFFTOperator<REAL,2> E_; //cuNFFTOperator reconstructing the 2d projections
-	std::vector< boost::shared_ptr< cuNFFTOperator<REAL,2>>> backprojections; //cuNFFTOperator doing the equivalent of backprojection
+	NFFTOperator<cuNDArray,REAL,2> E_; //cuNFFTOperator reconstructing the 2d projections
+	std::vector< boost::shared_ptr< NFFTOperator<cuNDArray,REAL,2>>> backprojections; //cuNFFTOperator doing the equivalent of backprojection
 
 	std::vector<size_t> projection_dims;
 	std::vector<size_t> projection_dims_permuted;

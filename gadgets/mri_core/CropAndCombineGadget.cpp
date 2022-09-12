@@ -1,4 +1,3 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "CropAndCombineGadget.h"
 
 namespace Gadgetron{
@@ -16,7 +15,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
   new_dimensions[1] = m2->getObjectPtr()->get_size(1);
   new_dimensions[2] = m2->getObjectPtr()->get_size(2);
 
-  try{m3->getObjectPtr()->create(&new_dimensions);}
+  try{m3->getObjectPtr()->create(new_dimensions);}
   catch (std::runtime_error &err){
   	GEXCEPTION(err,"CropAndCombineGadget, failed to allocate new array\n");
     return -1;

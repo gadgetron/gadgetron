@@ -373,110 +373,70 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    bool hoMRImage<T, D>::serialize(char*& buf, size_t& len) const 
-    {
-        char* bufImage = NULL;
-        char* bufAttrib = NULL;
-
-        try
-        {
-            size_t lenImage(0);
-            GADGET_CHECK_THROW(BaseClass::serialize(bufImage, lenImage));
-
-            unsigned long long lenAttrib(0);
-
-            std::stringstream str;
-            ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(attrib_), str);
-            std::string attribContent = str.str();
-            lenAttrib = attribContent.length()+1;
-
-            bufAttrib = new char[lenAttrib];
-            GADGET_CHECK_THROW(bufAttrib != NULL);
-
-            memset(bufAttrib, '\0', sizeof(char)*lenAttrib);
-            memcpy(bufAttrib, attribContent.c_str(), lenAttrib-1);
-
-            size_t lenheader = sizeof(ISMRMRD::ISMRMRD_ImageHeader);
-
-            len = sizeof(unsigned long long) + lenImage + sizeof(unsigned long long) + lenAttrib + lenheader;
-
-            if ( buf != NULL )
-            {
-                delete [] buf;
-                buf = NULL;
-            }
-
-            buf = new char[len];
-            GADGET_CHECK_THROW(buf != NULL);
-
-            size_t offset = 0;
-            memcpy(buf, &lenImage, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            memcpy(buf+offset, bufImage, lenImage);
-            offset += lenImage;
-
-            memcpy(buf+offset, &lenAttrib, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            memcpy(buf+offset, bufAttrib, lenAttrib);
-            offset += lenAttrib;
-
-            memcpy(buf+offset, &header_, lenheader);
-            offset += lenheader;
-
-            if ( bufImage != NULL ) delete [] bufImage;
-            if ( bufAttrib != NULL ) delete [] bufAttrib;
-        }
-        catch(...)
-        {
-            if ( bufImage != NULL ) delete [] bufImage;
-            if ( bufAttrib != NULL ) delete [] bufAttrib;
-
-            GERROR_STREAM("Errors happened in hoMRImage<T, D>::serialize(char*& buf, size_t& len) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool hoMRImage<T, D>::deserialize(char* buf, size_t& len)
-    {
-        try
-        {
-            size_t lenImage(0);
-            unsigned long long lenAttrib(0);
-
-            size_t offset = 0;
-            memcpy(&lenImage, buf, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            GADGET_CHECK_RETURN_FALSE(BaseClass::deserialize(buf+offset, lenImage));
-            offset += lenImage;
-
-            memcpy(&lenAttrib, buf+offset, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            ISMRMRD::deserialize(buf+offset, attrib_);
-            offset += lenAttrib;
-
-            memcpy(&header_, buf+offset, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
-        }
-        catch(...)
-        {
-            GERROR_STREAM("Errors happened in hoMRImage<T, D>::deserialize(char* buf, size_t& len) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
     inline void hoMRImage<T, D>::printContent(std::ostream& os) const
     {
         using namespace std;
         BaseClass::printContent(os);
         ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(this->attrib_), os);
+    }
+}
+
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoMRImage<T, D> &image)
+{
+    // read in the hoNDImage part
+    Gadgetron::Core::IO::read(stream, dynamic_cast< Gadgetron::hoNDImage<T, D>& >(image));
+
+    // read in header
+    stream.read(reinterpret_cast<char *>(&image.header_), sizeof(ISMRMRD::ImageHeader));
+
+    // read in attributes
+    std::string attrib_content = Gadgetron::Core::IO::read_string_from_stream(stream);    
+    ISMRMRD::deserialize(attrib_content.data(), image.attrib_);
+}
+
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image)
+{
+    std::vector<size_t> dimensions;
+    Gadgetron::Core::IO::read(stream, dimensions);
+
+    image.create(dimensions);
+
+    size_t N = image.get_number_of_elements();
+    for (size_t i = 0; i < N; i++)
+    {
+        Gadgetron::Core::IO::read(stream, image[i]);
+    }
+}
+
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &image)
+{
+    // write the hoNDImage part
+    Gadgetron::Core::IO::write(stream, dynamic_cast< const Gadgetron::hoNDImage<T, D>& >(image) );
+
+    // write header
+    stream.write(reinterpret_cast<const char *>(&image.header_), sizeof(ISMRMRD::ImageHeader));
+
+    // write the attributes
+    std::stringstream str;
+    ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(image.attrib_), str);
+    std::string attribContent = str.str();
+    Gadgetron::Core::IO::write_string_to_stream(stream, attribContent);
+}
+
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image)
+{
+    std::vector<size_t> dimensions;
+    image.get_dimensions(dimensions);
+
+    Gadgetron::Core::IO::write(stream, dimensions);
+
+    size_t N = image.get_number_of_elements();
+    for (size_t i = 0; i < N; i++)
+    {
+        Gadgetron::Core::IO::write(stream, image[i]);
     }
 }

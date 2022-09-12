@@ -1,454 +1,735 @@
-import subprocess
-import time
+#!/usr/bin/python3
+
+import os
+
+# Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
+# child processes, they won't load properly. We're saving our environment here to spare our children from the
+# crimes of h5py.
+environment = dict(os.environ)
+
 import sys
+import glob
+import shutil
+
+import argparse
+import configparser
+
+import re
+import time
+import functools
+
+import json
 import h5py
 import numpy
-import ConfigParser
-import os
-import shutil
-import platform
-import re
+import string
+import ismrmrd
+import pathlib
+import tempfile
+import itertools
+import subprocess
+import urllib.request
+import urllib.error
+
+default_config_values = {
+    "DEFAULT": {
+        'parameter_xml': 'IsmrmrdParameterMap_Siemens.xml',
+        'parameter_xsl': 'IsmrmrdParameterMap_Siemens.xsl',
+        'value_comparison_threshold': '0.01',
+        'scale_comparison_threshold': '0.01',
+        'node_port_base': '9050',
+        'dataset_group': 'dataset',
+        'reference_group': 'dataset',
+        'disable_image_header_test': 'false',
+        'disable_image_meta_test': 'false',
+    }
+}
+
+Passed = "Passed", 0
+Failure = "Failure", 1
+
+_codes = {
+    'red': '\033[91m',
+    'green': '\033[92m',
+    'cyan': '\033[96m',
+    'end': '\033[0m',
+}
 
 
-def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
-    print("Running test case: " + testcase_cfg_file)
+def _colors_disabled(text, color):
+    return text
 
-    pwd = os.getcwd()
-    config = ConfigParser.RawConfigParser()
-    config.read(testcase_cfg_file)
 
-    data_folder = 'data'
-    out_folder = 'test'
-    ismrmrd_result = os.path.join(pwd, out_folder, config.get('FILES', 'ismrmrd'))
-    ismrmrd_existing = os.path.join(pwd, data_folder, config.get('FILES', 'ismrmrd'))
-    result_h5 = os.path.join(pwd, out_folder, config.get('FILES', 'result_h5'))
-    reference_h5 = os.path.join(pwd, data_folder, config.get('FILES', 'reference_h5'))
-    need_siemens_conversion = True
-    siemens_dat = ""
-    try:
-        siemens_dat = os.path.join(pwd, data_folder, config.get('FILES', 'siemens_dat'))
-        siemens_parameter_xml = config.get('FILES', 'siemens_parameter_xml')
-        siemens_parameter_xsl = config.get('FILES', 'siemens_parameter_xsl')
-        siemens_dependency_measurement1 = config.getint('FILES', 'siemens_dependency_measurement1')
-        siemens_dependency_measurement2 = config.getint('FILES', 'siemens_dependency_measurement2')
-        siemens_dependency_measurement3 = config.getint('FILES', 'siemens_dependency_measurement3')
-        siemens_dependency_parameter_xml = config.get('FILES', 'siemens_dependency_parameter_xml')
-        siemens_dependency_parameter_xsl = config.get('FILES', 'siemens_dependency_parameter_xsl')
-        siemens_data_measurement = config.getint('FILES', 'siemens_data_measurement')
-    except ConfigParser.NoOptionError:
-        print("Missing siemens configuration parameter(s), assuming no conversion to ISMRMRD needed")
-        need_siemens_conversion = False
+def _colors_enabled(text, color):
+    return "{begin}{text}{end}".format(
+        begin=_codes.get(color),
+        text=text,
+        end=_codes.get('end'),
+    )
 
-    need_siemens_conversion_flag = True
-    try:
-        siemens_data_conversion_flag = config.get('FILES', 'siemens_data_conversion_flag')
-    except ConfigParser.NoOptionError:
-        need_siemens_conversion_flag = False
 
-    # if siemens_dat config parameter found but empty, assume no conversion to ISMRMRD intended
-    if not siemens_dat:
-        need_siemens_conversion = False
+def enabled(option):
+    return option.lower() in ['true', 'yes', '1', 'enabled']
 
-    gadgetron_log_filename = os.path.join(pwd, out_folder, "gadgetron.log")
-    client_log_filename = os.path.join(pwd, out_folder, "client.log")
 
-    gadgetron_configuration = config.get('TEST', 'gadgetron_configuration')
-    reference_dataset = config.get('TEST', 'reference_dataset')
-    result_dataset = config.get('TEST', 'result_dataset')
-    compare_dimensions = config.getboolean('TEST', 'compare_dimensions')
-    compare_values = config.getboolean('TEST', 'compare_values')
-    compare_scales = config.getboolean('TEST', 'compare_scales')
-    comparison_threshold_values = config.getfloat('TEST', 'comparison_threshold_values')
-    comparison_threshold_scales = config.getfloat('TEST', 'comparison_threshold_scales')
+def report_test(*, color_handler, section, result, reason):
+    print("{section:<26} [{status}] ({reason})".format(
+        section=section,
+        status=color_handler("FAILURE", 'red') if result else color_handler("OK", 'green'),
+        reason=reason,
+    ))
 
-    dependency_1 = os.path.join(pwd, out_folder, "dependency_1.h5")
-    dependency_2 = os.path.join(pwd, out_folder, "dependency_2.h5")
-    dependency_3 = os.path.join(pwd, out_folder, "dependency_3.h5")
 
-    if config.has_option('REQUIREMENTS', 'python_support'):
-        need_python_support = config.getboolean('REQUIREMENTS', 'python_support')
-    else:
-        need_python_support = False
+def siemens_to_ismrmrd(echo_handler, *, input, output, parameters, schema, measurement, flag=None):
+    command = ["siemens_to_ismrmrd", "-X",
+               "-f", input,
+               "-m", parameters,
+               "-x", schema,
+               "-o", output,
+               "-z", measurement] + ([flag] if flag else [])
 
-    if config.has_option('REQUIREMENTS', 'matlab_support'):
-        need_matlab_support = config.getboolean('REQUIREMENTS', 'matlab_support')
-    else:
-        need_matlab_support = False
+    echo_handler(command)
+    subprocess.run(command,
+                   stdout=subprocess.PIPE,
+                   stderr=subprocess.PIPE)
 
-    if config.has_option('REQUIREMENTS', 'gpu_support'):
-        need_gpu_support = config.getboolean('REQUIREMENTS', 'gpu_support')
-    else:
-        need_gpu_support = False
 
-    if config.has_option('REQUIREMENTS', 'gpu_memory'):
-        need_gpu_memory = config.getfloat('REQUIREMENTS', 'gpu_memory')
-    else:
-        need_gpu_memory = 256
+def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configuration, group, log, additional_arguments):
+    print("Passing data to Gadgetron: {} -> {}".format(input, output))
 
-    if config.has_option('REQUIREMENTS', 'system_memory'):
-        need_system_memory = config.getfloat('REQUIREMENTS', 'system_memory')
-    else:
-        need_system_memory = 1024
+    command = ["gadgetron_ismrmrd_client",
+               "-a", gadgetron.host,
+               "-p", gadgetron.port,
+               "-f", input,
+               "-o", output,
+               "-G", group] + configuration
 
-    if config.has_option('REQUIREMENTS', 'nodes'):
-        nodes = config.getint('REQUIREMENTS', 'nodes')
-    else:
-        nodes = 0
+    if additional_arguments:
+        command = command + additional_arguments.split()
 
-    if need_siemens_conversion:
-        if not os.path.isfile(siemens_dat):
-            print("Can't find Siemens file %s" % siemens_dat)
-            return False
-    else:
-        if not os.path.isfile(ismrmrd_existing):
-            print("Can't find ISMRMRD file %s" % ismrmrd_existing)
-            return False
+    echo_handler(command)
+    subprocess.run(command,
+                   env=environment,
+                   stdout=log,
+                   stderr=log)
 
-    if not os.path.isfile(reference_h5):
-        print("Can't find reference HDF5 file %s" % reference_h5)
-        return False
 
-    if os.path.exists(out_folder):
-        shutil.rmtree(out_folder)
+def wait_for_storage_server(port, proc, retries=20):
+    for i in range(retries):
+        try:
+            urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
+            return
+        except (urllib.error.URLError, urllib.error.HTTPError) as e:
+            if i == retries - 1 or proc.poll() is not None:
+                raise RuntimeError("Unable to get a successful response from storage server.") from e
+            time.sleep(0.2)
 
-    os.makedirs(out_folder)
 
-    #Start the Gadgetron if needed
-    if start_gadgetron:
-        with open(gadgetron_log_filename, "w") as gf:
-            gp = subprocess.Popen(["gadgetron", "-p", port, "-R", "19080", "-l", "8004"], env=environment, stdout=gf, stderr=gf)
-
-            node_p = list()
-            if nodes > 0:
-                #start the cloudbus relay
-                relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
-                with open(relay_log_filename, "w") as lgf:
-                    p_relay = subprocess.Popen(["gadgetron_cloudbus_relay", "8004", "18004"], env=environment, stdout=lgf, stderr=lgf)
-
-                base_rest_port = 19080
-                for pi in range(nodes):
-                    node_log_filename = "gadgetron_node_" + str(pi) + ".log"
-                    node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
-
-                    with open(node_log_filename, "w") as ngf:
-                        pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1), "-R", str(base_rest_port+pi+1), "-l", "8004"], env=environment, stdout=ngf, stderr=ngf)
-                        node_p.append(pn)
-
-            time.sleep(2)
-
-    #Let's figure out if we should run this test or not
-    info = subprocess.check_output(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-q", "-c", "gadgetron_info.xml"], env=environment);
-
-    has_python_support = False
-    has_cuda_support = False
-    has_matlab_support = False
-    system_memory = 1024  # MB
-    number_of_gpus = 0
-    gpu_memory = 256  # MB
-
-    p = re.compile('^[ \w]+-- Python Support     : ([A-Z]+)', re.MULTILINE)
-    m = p.search(info)
-    if m:
-        if m.group(1) == 'YES':
-            has_python_support = True
-
-    p = re.compile('^[ \w]+-- Matlab Support     : ([A-Z]+)', re.MULTILINE)
-    m = p.search(info)
-    if m:
-        if m.group(1) == 'YES':
-            has_matlab_support = True
-
-    p = re.compile('^[ \w]+-- CUDA Support[ ]+: ([A-Z]+)', re.MULTILINE)
-    m = p.search(info)
-    if m:
-        if m.group(1) == 'YES':
-            has_cuda_support = True
-
-    p = re.compile('^[ \w]+\* Number of CUDA capable devices: ([0-9]+)', re.MULTILINE)
-    m = p.search(info)
-    if m:
-        number_of_gpus = m.group(1)
-
-    p = re.compile('^[ \w]+-- System Memory size : ([0-9\.]+) MB', re.MULTILINE)
-    m = p.search(info)
-    if m:
-        system_memory = float(m.group(1))
-
-    p = re.compile('^[ \w]+\+ Total amount of global GPU memory: ([0-9\.]+) MB', re.MULTILINE)
-    m = p.search(info)
-    if m:
-        gpu_memory = float(m.group(1))
-    else:
-        gpu_memory = 0
-        has_cuda_support = False
-        number_of_gpus = 0
-
-    skipping_test = False
-
-    if (need_system_memory > system_memory):
-        print("Test skipped because needed system memory (" + str(need_system_memory) + " MB) is larger than available system memory (" + str(system_memory) + " MB)")
-        skipping_test = True
-
-    if (need_gpu_support and ((not has_cuda_support) or (number_of_gpus == 0) or (need_gpu_memory > gpu_memory))):
-        print("Test skipped because system does not meet gpu requirements")
-        skipping_test = True  # It is not a failed test, just skipping
-
-    if (need_python_support and (not has_python_support)):
-        print("Test skipped because Python is not available")
-        skipping_test = True
-    if (need_matlab_support and (not has_matlab_support)):
-        print("Test skipped because Matlab is not available")
-        skipping_test = True
-
-    if skipping_test:
-        print("System Requirements: Actual/Required")
-        print("System Memory: " + str(system_memory) + "/" + str(need_system_memory))
-        print("Python Support: " + str(has_python_support) + "/" + str(need_python_support))
-        print("Matlab Support: " + str(has_matlab_support) + "/" + str(need_matlab_support))
-        print("CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support))
-        print("GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory))
-
-        f = open(gadgetron_log_filename, "w")
-        f.write("Test skipped because requirements not met\n")
-        f.close()
-
-        f = open(client_log_filename, "w")
-        f.write("Test skipped because requirements not met\n")
-        f.close()
-
-        if start_gadgetron:
-            gp.terminate()
-            if nodes > 0:
-                p_relay.terminate()
-                for pi in node_p:
-                    pi.terminate()
-
-        return True
-
-    success = True
-
-    with open(client_log_filename, "w") as cf:
-        if need_siemens_conversion:
-
-            def convert_siemens_dependency(dependency, measurement, descr):
-                """Helper function for converting and reconstruction Siemens dependency measurements."""
-                success = True
-                print("Converting Siemens .dat file to ISMRMRD for the first dependency measurement.")
-                r = subprocess.call(["siemens_to_ismrmrd", "-X","-f", siemens_dat, "-m",
-                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                     dependency, "-z", str(measurement + 1)],
-                                    env=environment, stdout=cf, stderr=cf)
-                if r != 0:
-                    print("Failed to run siemens_to_ismrmrd for the %s dependency measurement!" % descr)
-                    success = False
-
-                print("Running Gadgetron recon on the %s dependency measurement" % descr)
-                r = 0
-                r = subprocess.call(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-f", dependency, "-c",
-                                     "default_measurement_dependencies.xml"],
-                                    env=environment, stdout=cf, stderr=cf)
-                if r != 0:
-                    print("Failed to run gadgetron_ismrmrd_client on the %s dependency measurement!" % descr)
-                    success = False
-                return success
-
-            # if there are dependencies
-            if siemens_data_measurement > 0:
-                if siemens_dependency_measurement1 >= 0:
-                    success = convert_siemens_dependency(dependency_1, siemens_dependency_measurement1, "first")
-                if siemens_dependency_measurement2 >= 0:
-                    success = convert_siemens_dependency(dependency_2, siemens_dependency_measurement2, "second")
-                if siemens_dependency_measurement3 >= 0:
-                    success = convert_siemens_dependency(dependency_3, siemens_dependency_measurement3, "third")
-
-            # conversion of primary Siemens .dat file
-            print("Converting Siemens .dat file to ISMRMRD for data measurement.")
-            if need_siemens_conversion_flag:
-                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                       siemens_parameter_xml, "-x", siemens_parameter_xsl,
-                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1), " ", siemens_data_conversion_flag]
+def start_storage_server(*, log, port, storage_folder):
+    storage_server_environment = environment.copy()
+    storage_server_environment["MRD_STORAGE_SERVER_PORT"] = port
+    storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
+    storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
+    
+    retries = 5
+    for i in range(retries):
+        print("Starting MRD Storage Server on port", port)
+        proc = subprocess.Popen(["mrd-storage-server", "--require-parent-pid", str(os.getpid())],
+                                stdout=log,
+                                stderr=log,
+                                env=storage_server_environment)
+        
+        try:
+            wait_for_storage_server(port, proc)
+            return proc
+        except:
+            # If the process has exited, it might be because the 
+            # port was in use. This can be because the previous storage server
+            # instance was just killed. So we try again.
+            if proc.poll() is not None and i < retries:
+                time.sleep(1)
             else:
-                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                       siemens_parameter_xml, "-x", siemens_parameter_xsl,
-                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
+                proc.kill()
+                raise
 
-            r = subprocess.call(cmd, env=environment, stdout=cf, stderr=cf)
-            if r != 0:
-                print("Failed to run siemens_to_ismrmrd!")
-                success = False
+
+def start_gadgetron_instance(*, log, port, storage_address, env=environment):
+    print("Starting Gadgetron instance on port", port)
+    proc = subprocess.Popen(["gadgetron", "-p", port, "-E", storage_address],
+                            stdout=log,
+                            stderr=log,
+                            env=env)
+    return proc
+
+
+def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_group):
+    try:
+        dataset_file = ismrmrd.File(dataset_file, 'r')
+    except OSError as e:
+        return Failure, "Failed to read dataset file '{}'".format(dataset_file)
+
+    try:
+        reference_file = ismrmrd.File(reference_file, 'r')
+    except OSError as e:
+        return Failure, "Failed to read reference file '{}'".format(reference_file)
+
+    header = dataset_file[dataset_group].header
+    ref_header = reference_file[reference_group].header
+    if not dataset_file[dataset_group].header == reference_file[reference_group].header:
+        import deepdiff
+        diff = deepdiff.diff.DeepDiff(header, ref_header)
+        print(diff.pretty())
+        return Failure, "Dataset header did not match reference header"
+
+    for attribute in ['acquisitions', 'waveforms', 'images']:
+
+        dataset = getattr(dataset_file[dataset_group], attribute) or []
+        reference = getattr(reference_file[reference_group], attribute) or []
+
+        if not list(dataset) == list(reference):
+            return Failure, "Dataset {attr} did not match reference {attr}".format(attr=attribute)
+
+    return None, "Dataset matched reference"
+
+
+def validate_output(*, output_file, reference_file, output_group, reference_group, value_threshold, scale_threshold):
+    try:
+        # The errors produced by h5py are not entirely excellent. We spend some code here to clear them up a bit.
+        def get_group_data(file, group):
+            with h5py.File(file, mode='r') as f:
+                try:
+                    group = group + '/data'
+                    return numpy.squeeze(f[group])
+                except KeyError:
+                    raise RuntimeError("Did not find group '{}' in file {}".format(group, file))
+
+        output_data = get_group_data(output_file, output_group)
+        reference_data = get_group_data(reference_file, reference_group)
+    except OSError as e:
+        return Failure, str(e)
+    except RuntimeError as e:
+        return Failure, str(e)
+
+    output = output_data[...].flatten().astype('float32')
+    reference = reference_data[...].flatten().astype('float32')
+
+    norm_diff = numpy.linalg.norm(output - reference) / numpy.linalg.norm(reference)
+    scale = numpy.dot(output, output) / numpy.dot(output, reference)
+
+    if value_threshold < norm_diff:
+        return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
+
+    if value_threshold < abs(1 - scale):
+        return Failure, "Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale),
+                                                                                        scale_threshold)
+
+    return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
+                                                               scale_threshold)
+
+
+def validate_image_header(*, output_file, reference_file, output_group, reference_group):
+    def equals():
+        return lambda out, ref: out == ref
+
+    def approx(threshold=1e-6):
+        return lambda out, ref: abs(out - ref) <= threshold
+
+    def ignore():
+        return lambda out, ref: True
+
+    def each(rule):
+        return lambda out, ref: all(rule(out, ref) for out, ref in itertools.zip_longest(out, ref))
+
+    header_rules = {
+        'version': equals(),
+        'data_type': equals(),
+        'flags': equals(),
+        'measurement_uid': equals(),
+        'matrix_size': each(equals()),
+        'field_of_view': each(approx()),
+        'channels': equals(),
+        'position': each(approx()),
+        'read_dir': each(approx()),
+        'phase_dir': each(approx()),
+        'slice_dir': each(approx()),
+        'patient_table_position': each(approx()),
+        'average': equals(),
+        'slice': equals(),
+        'contrast': equals(),
+        'phase': equals(),
+        'repetition': equals(),
+        'set': equals(),
+        'acquisition_time_stamp': ignore(),
+        'physiology_time_stamp': each(ignore()),
+        'image_type': equals(),
+        'image_index': equals(),
+        'image_series_index': ignore(),
+        'user_int': each(equals()),
+        'user_float': each(approx()),
+        'attribute_string_len': ignore()
+    }
+
+    def check_image_header(output, reference):
+
+        if not output:
+            raise RuntimeError("Missing output")
+
+        if not reference:
+            raise RuntimeError("Missing reference")
+
+        output = output.getHead()
+        reference = reference.getHead()
+
+        for attribute, rule in header_rules.items():
+            if not rule(getattr(output, attribute), getattr(reference, attribute)):
+                print(output)
+                print(reference)
+
+                raise RuntimeError(
+                    "Image header '{}' does not match reference. [index {}, series {}]".format(
+                        attribute,
+                        output.image_index,
+                        output.image_series_index
+                    )
+                )
+
+    try:
+        with ismrmrd.File(output_file, 'r') as output_file:
+            with ismrmrd.File(reference_file, 'r') as reference_file:
+                output_images = output_file[output_group].images or []
+                reference_images = reference_file[reference_group].images or []
+
+                for output_image, reference_image in itertools.zip_longest(output_images, reference_images):
+                    check_image_header(output_image, reference_image)
+
+    except OSError as e:
+        return Failure, str(e)
+    except RuntimeError as e:
+        return Failure, str(e)
+
+    return None, "Output headers matched reference"
+
+
+def error_handlers(args, config):
+    def handle_subprocess_errors(cont, **state):
+        try:
+            return cont(**state)
+        except subprocess.CalledProcessError as e:
+            print("An error occurred in a subprocess with the following command:")
+            print(' '.join(e.cmd))
+
+            return Failure
+
+    yield handle_subprocess_errors
+
+
+def clear_test_folder(args, config):
+    def clear_test_folder_action(cont, **state):
+        if os.path.exists(args.test_folder):
+            shutil.rmtree(args.test_folder)
+        os.makedirs(args.test_folder, exist_ok=True)
+
+        return cont(**state)
+
+    yield clear_test_folder_action
+
+
+def ensure_storage_server(args, config):
+    class Storage:
+        def __init__(self, address):
+            self.address = address
+    if args.external:
+        return
+
+    def start_storage_server_action(cont, **state):
+        with open(os.path.join(args.test_folder, 'storage.log'), 'w') as log:
+            with tempfile.TemporaryDirectory() as storage_folder:
+                with start_storage_server(
+                        log=log,
+                        port=str(args.storage_port),
+                        storage_folder=storage_folder
+                ) as proc:
+                    try:
+                        return cont(storage=Storage("http://localhost:" + str(args.storage_port)), **state)
+                    finally:
+                        proc.kill()
+
+    yield start_storage_server_action
+
+
+def start_additional_nodes(args, config):
+    if args.external:
+        return
+
+    if not config.has_section('distributed'):
+        return
+
+    def set_distributed_environment_action(cont, *, worker_list=[], env=dict(environment), **state):
+        if sys.platform.startswith('win32'):
+            env['GADGETRON_REMOTE_WORKER_COMMAND'] = 'cmd /k echo ' + json.dumps(worker_list) + ' & exit'
         else:
-            # copy existing ISMRMRD dataset to 'out_folder'
-            # this guarantees that the test dataset can't be modified by a test
-            dirname = os.path.dirname(ismrmrd_result)
-            if not os.path.isdir(dirname):
-                os.makedirs(dirname)
-            shutil.copyfile(ismrmrd_existing, ismrmrd_result)
+            env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
 
-        print("Running Gadgetron recon on data measurement")
-        r = 0
-        start_time = time.time()
-        r = subprocess.call(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-f" , ismrmrd_result, "-c",
-                             gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
-                            env=environment, stdout=cf, stderr=cf)
-        print("Elapsed time: " + str(time.time()-start_time))
-        if r != 0:
-            print("Failed to run gadgetron_ismrmrd_client!")
-            success = False
+        print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
+        return cont(env=env, **state)
 
-    if start_gadgetron:
-        gp.terminate()
-        if nodes > 0:
-            p_relay.terminate()
-            for pi in node_p:
-                pi.terminate()
+    base_port = int(config['distributed']['node_port_base'])
+    number_of_nodes = int(config['distributed']['nodes'])
 
-    if not success:
-        return False
+    def create_worker_ports_action(ids, cont, **state):
+        print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
+        return cont(**state)
 
-    print("Comparing results")
+    def start_additional_worker_action(port, cont, *, storage, worker_list=[], **state):
+        with open(os.path.join(args.test_folder, 'gadgetron_worker' + port + '.log'), 'w') as log:
+            with start_gadgetron_instance(log=log, port=port, storage_address=storage.address) as instance:
+                try:
+                    return cont(worker_list=worker_list + ['localhost:' + port], storage=storage, **state)
+                finally:
+                    instance.kill()
 
-    f1 = h5py.File(result_h5)
-    f2 = h5py.File(reference_h5)
-    d1 = f1[result_dataset]
-    d2 = f2[reference_dataset]
+    yield functools.partial(create_worker_ports_action, range(number_of_nodes))
 
-    # The shape stored by the 1.0 API is always N x Nchan x Nz x Ny x Nx
-    # Prior to 1.0, if a dimension was a singleton, it could be missing
-    # h5py returns a fixed tuple for an array shape
-    # this bit turns it into a list and removes the singletons
-    # TODO: fix the shapes in the reference data
-    # shapes_match = (d1.shape == d2.shape)
-    a1 = numpy.asarray(d1.shape)
-    a1 = a1.tolist()
-    while a1.count(1) > 0:
-        a1.remove(1)
-    a2 = numpy.asarray(d2.shape)
-    a2 = a2.tolist()
-    while a2.count(1) > 0:
-        a2.remove(1)
-    print " Shape 1: " + str(d1.shape) + "  numpy: " + str(a1)
-    print " Shape 2: " + str(d2.shape) + "  numpy: " + str(a2)
-    print " Compare dimensions: " + str(compare_dimensions)
-    shapes_match = (a1 == a2)
+    yield from (functools.partial(start_additional_worker_action, str(base_port + idx))
+                for idx in range(number_of_nodes))
 
-    # If the types in the hdf5 are unsigned short numpy produces norms, dot products etc. in unsigned short. And that _will_ overflow...
-    norm_diff = (numpy.linalg.norm(d1[...].flatten().astype('float32') -
-                 d2[...].flatten().astype('float32')) /
-                 numpy.linalg.norm(d2[...].flatten().astype('float32')))
+    yield set_distributed_environment_action
 
-    scale = (float(numpy.dot(d1[...].flatten().astype('float32'),
-             d1[...].flatten().astype('float32'))) /
-             float(numpy.dot(d1[...].flatten().astype('float32'),
-             d2[...].flatten().astype('float32'))))
 
-    result = True
+def ensure_gadgetron_instance(args, config):
+    class Gadgetron:
+        def __init__(self, *, host, port):
+            self.host = host
+            self.port = port
 
-    if compare_dimensions:
-        print("   --Comparing dimensions: " + str(shapes_match))
-        result = result and shapes_match
+    gadgetron = Gadgetron(host=str(args.host), port=str(args.port))
 
-    if compare_values:
-        print("   --Comparing values, norm diff : %s (threshold: %s)" %
-              (str(norm_diff), str(comparison_threshold_values)))
-        result = result and (norm_diff < comparison_threshold_values)
+    def start_gadgetron_action(cont, *, storage, env=environment, **state):
+        with open(os.path.join(args.test_folder, 'gadgetron.log'), 'w') as log:
+            with start_gadgetron_instance(log=log, port=gadgetron.port, storage_address=storage.address,
+                                          env=env) as instance:
+                try:
+                    return cont(gadgetron=gadgetron, storage=storage, **state)
+                finally:
+                    instance.kill()
 
-    if compare_scales:
-        print("   --Comparing image scales, ratio : %s (%s) (threshold: %s)" %
-              (str(scale), str(abs(1-scale)), str(comparison_threshold_scales)))
-        result = result and (abs(1-scale) < comparison_threshold_scales)
+    def use_external_gadgetron_action(cont, **state):
+        return cont(gadgetron=gadgetron, **state)
 
-    return result
+    if args.external:
+        yield use_external_gadgetron_action
+    else:
+        yield start_gadgetron_action
+
+
+def copy_input_data(args, config, section):
+    destination_file = os.path.join(args.test_folder, section + '.copied.mrd')
+
+    def copy_input_action(cont, **state):
+        source_file = os.path.join(args.data_folder, config[section]['source'])
+
+        print("Copying prepared ISMRMRD data: {} -> {}".format(source_file, destination_file))
+        shutil.copyfile(source_file, destination_file)
+
+        state.update(client_input=destination_file)
+        return cont(**state)
+
+    yield copy_input_action
+
+
+def convert_siemens_data(args, config, section):
+    destination_file = os.path.join(args.test_folder, section + '.converted.mrd')
+
+    def convert_siemens_data_action(cont, **state):
+        source_file = os.path.join(args.data_folder, config[section]['data_file'])
+
+        print("Converting Siemens data: {} (measurement {}) -> {}".format(source_file, config[section]['measurement'],
+                                                                          destination_file))
+
+        siemens_to_ismrmrd(args.echo_handler,
+                           input=source_file,
+                           output=destination_file,
+                           parameters=config[section]['parameter_xml'],
+                           schema=config[section]['parameter_xsl'],
+                           measurement=config[section]['measurement'],
+                           flag=config[section].get('data_conversion_flag', None))
+
+        state.update(client_input=destination_file)
+        return cont(**state)
+
+    yield convert_siemens_data_action
+
+
+def run_gadgetron_client(args, config, section):
+    output_file = os.path.join(args.test_folder, section + '.output.mrd')
+
+    def prepare_config_action(cont, **state):
+        state.update(
+            group=config[section]['configuration'],
+            configuration=['-c', config[section]['configuration']],
+        )
+        return cont(**state)
+
+    def prepare_template_action(cont, **state):
+
+        template_file = os.path.join(args.template_folder, config[section]['template'])
+        configuration_file = os.path.join(args.test_folder, section + '.config.xml')
+
+        with open(template_file, 'r') as input:
+            with open(configuration_file, 'w') as output:
+                output.write(
+                    string.Template(input.read()).substitute(
+                        test_folder=os.path.abspath(args.test_folder),
+                        # Expand substitution list as needed.
+                    )
+                )
+
+        state.update(
+            group=section,
+            configuration=['-C', configuration_file],
+        )
+        return cont(**state)
+
+    def send_data_action(cont, *, gadgetron, client_input, configuration, group, processing_time=0, **state):
+
+        with open(os.path.join(args.test_folder, section + '.client.log'), 'w') as log:
+
+            start_time = time.time()
+
+            try:
+                additional_args = config[section]['additional_arguments']
+            except KeyError:
+                additional_args = None
+
+            send_data_to_gadgetron(args.echo_handler,
+                                   gadgetron,
+                                   input=client_input,
+                                   output=output_file,
+                                   configuration=configuration,
+                                   group=group,
+                                   log=log,
+                                   additional_arguments=additional_args)
+
+            end_time = time.time()
+
+            duration = end_time - start_time
+
+            print("Gadgetron processing time: {:.2f} s".format(duration))
+
+            state.update(
+                gadgetron=gadgetron,
+                client_input=client_input,
+                client_output=output_file,
+                configuration=configuration,
+                group=group,
+                processing_time=processing_time + duration
+            )
+            return cont(**state)
+
+    yield from (action for key, action in [('configuration', prepare_config_action),
+                                           ('template', prepare_template_action)]
+                if key in config[section])
+
+    yield send_data_action
+
+
+def validate_client_output(args, config, section):
+    reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
+
+    def validate_output_action(cont, *, client_output, status=Passed, **state):
+        result, reason = validate_output(output_file=client_output,
+                                         reference_file=reference_file,
+                                         output_group=config[section]['output_images'],
+                                         reference_group=config[section]['reference_images'],
+                                         value_threshold=float(config[section]['value_comparison_threshold']),
+                                         scale_threshold=float(config[section]['scale_comparison_threshold']))
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            client_output=client_output,
+            status=status if result is None else Failure,
+            **state
+        )
+
+    def validate_meta(validator, cont, *, client_output, status=Passed, **state):
+        result, reason = validator(output_file=client_output,
+                                   reference_file=reference_file,
+                                   output_group=config[section]['output_images'],
+                                   reference_group=config[section]['reference_images'])
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            client_output=client_output,
+            status=status if result is None else Failure,
+            **state
+        )
+
+    yield validate_output_action
+
+    if not enabled(config[section]['disable_image_header_test']):
+        yield functools.partial(validate_meta, validate_image_header)
+
+
+def validate_dataset_output(args, config, section):
+    def find_dataset_action(cont, status=Passed, **state):
+
+        dataset_prefix = os.path.join(args.test_folder, config[section]['dataset_prefix'])
+        dataset_files = glob.glob(dataset_prefix + "*")
+
+        rules = [(lambda files: len(files) == 0, "Found no dataset with prefix: {}".format(dataset_prefix)),
+                 (lambda files: len(files) > 1, "Too many datasets with prefix: {}".format(dataset_prefix))]
+
+        def check_rules():
+            for test, reason in rules:
+                if test(dataset_files):
+                    return Failure, reason, None
+            return None, "Found appropriate dataset", dataset_files[0]
+
+        result, reason, dataset_file = check_rules()
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            dataset_file=dataset_file if dataset_files else None,
+            status=status if result is None else Failure,
+            **state
+        )
+
+    def validate_dataset_action(cont, *, dataset_file, status=Passed, **state):
+
+        if not dataset_file:
+            return cont(status=status, **state)
+
+        reference_file = os.path.join(args.data_folder, config[section]['reference_file'])
+        result, reason = validate_dataset(dataset_file=dataset_file,
+                                          dataset_group=config[section]['dataset_group'],
+                                          reference_file=reference_file,
+                                          reference_group=config[section]['reference_group'])
+
+        report_test(color_handler=args.color_handler, section=section, result=result, reason=reason)
+
+        return cont(
+            status=status if result is None else Failure,
+            **state
+        )
+
+    yield find_dataset_action
+    yield validate_dataset_action
+
+
+def prepare_sequence_actions(args, config):
+    action_factories = {
+        'copy': lambda section: copy_input_data(args, config, section),
+        'siemens': lambda section: convert_siemens_data(args, config, section),
+        'client': lambda section: run_gadgetron_client(args, config, section),
+        'equals': lambda section: validate_dataset_output(args, config, section),
+        'test': lambda section: validate_client_output(args, config, section),
+    }
+
+    pattern = re.compile(r"(?P<sequence_key>\w+)\.(?P<action_key>(copy)|(siemens)|(client)|(equals)|(test))(\.\w+)*")
+
+    def prepare_sequence_action(section):
+        m = re.match(pattern, section)
+        return action_factories.get(m['action_key'])(section)
+
+    for section in config.sections():
+        if re.match(pattern, section):
+            yield from prepare_sequence_action(section)
+
+
+def output_stats(args, config):
+    def output_stats_action(cont, **state):
+        stats = {
+            'test': state.get('name'),
+            'processing_time': state.get('processing_time'),
+            'status': state.get('status')[0]
+        }
+
+        with open(os.path.join(args.test_folder, 'stats.json'), 'w') as f:
+            json.dump(stats, f)
+
+        return cont(**state)
+
+    yield output_stats_action
+
+
+def build_actions(args, config):
+    yield from error_handlers(args, config)
+    yield from clear_test_folder(args, config)
+    yield from ensure_storage_server(args, config)
+    yield from start_additional_nodes(args, config)
+    yield from ensure_gadgetron_instance(args, config)
+    yield from prepare_sequence_actions(args, config)
+    yield from output_stats(args, config)
+
+
+def chain_actions(actions):
+    try:
+        action = next(actions)
+        return lambda **state: action(chain_actions(actions), **state)
+    except StopIteration:
+        return lambda **state: state.get('status')
 
 
 def main():
-    import argparse
     parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-G', '--gadgetron_home', default=os.environ.get('GADGETRON_HOME'), help="Gadgetron installation home")
-    parser.add_argument('-I', '--ismrmrd_home', default=os.environ.get('ISMRMRD_HOME'), help="ISMRMRD installation home")
-    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of gadgetron instance")
-    parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
-    parser.add_argument('-a', '--address', default="localhost", help="Address of gadgetron host (external)")
-    parser.add_argument('case_file', help="Test case file")
+
+    parser.add_argument('-G', '--gadgetron-home',
+                        default=os.environ.get('GADGETRON_HOME'),
+                        help="Gadgetron installation home")
+    parser.add_argument('-I', '--ismrmrd-home',
+                        default=os.environ.get('ISMRMRD_HOME'),
+                        help="ISMRMRD installation home")
+
+    parser.add_argument('-p', '--port', type=int, default=9003, help="Port used by Gadgetron")
+    parser.add_argument('-a', '--host', type=str, default="localhost", help="Address of (external) Gadgetron host")
+    parser.add_argument('-s', '--storage_port', type=int, default=9113, help="Port used by Gadgetron Storage Server")
+
+    parser.add_argument('-e', '--external', action='store_true', default=False,
+                        help="External, do not start Gadgetron")
+
+    parser.add_argument('-c', '--template-folder',
+                        type=str, default='config',
+                        help="Look for test configuration templates in the specified folder")
+    parser.add_argument('-d', '--data-folder',
+                        type=str, default='data',
+                        help="Look for test data in the specified folder")
+    parser.add_argument('-t', '--test-folder',
+                        type=str, default='test',
+                        help="Save Gadgetron output and client logs to specified folder")
+
+    parser.add_argument('--force', action='store_true', default=False,
+                        help="Do not query Gadgetron capabilities; just run the test.")
+
+    parser.add_argument('--disable-color', dest='color_handler', action='store_const',
+                        const=_colors_disabled, default=_colors_enabled,
+                        help="Disable colors in the test script output.")
+
+    parser.add_argument('--echo-commands', dest='echo_handler', action='store_const',
+                        const=lambda cmd: print(' '.join(cmd)), default=lambda *_: None,
+                        help="Echo the commands issued while running the test.")
+
+    parser.add_argument('test', help="Test case file", type=pathlib.Path)
+
     args = parser.parse_args()
 
-    port = str(args.port)
-    myenv = dict()
-    host = str(args.address)
+    print("Running Gadgetron test {} with:".format(args.test))
+    print("  -- ISMRMRD_HOME    : {}".format(args.ismrmrd_home))
+    print("  -- GADGETRON_HOME  : {}".format(args.gadgetron_home))
+    print("  -- TEST CASE       : {}".format(args.test))
 
-    myenv["ISMRMRD_HOME"] = os.path.realpath(args.ismrmrd_home)
-    myenv["GADGETRON_HOME"] = os.path.realpath(args.gadgetron_home)
-    myenv["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
-    test_case = args.case_file
+    config_parser = configparser.ConfigParser()
+    config_parser.read_dict(default_config_values)
+    config_parser.read(args.test)
 
-    libpath = "LD_LIBRARY_PATH"
-    if platform.system() == "Darwin":
-        libpath = "DYLD_FALLBACK_LIBRARY_PATH"
+    action_chain = chain_actions(build_actions(args, config_parser))
+    result, return_code = action_chain(test=args.test, name=args.test.stem)
 
-    if platform.system() == "Windows":
-        myenv["SystemRoot"] = os.environ.get('SystemRoot', "")
-        myenv["PATH"] = os.environ.get('Path', "")
-        myenv["PATH"] += myenv["ISMRMRD_HOME"] + "/lib;"
-        myenv["PATH"] += myenv["ISMRMRD_HOME"] + "/bin;"
-        myenv["PATH"] += myenv["GADGETRON_HOME"] + "/lib;"
-        myenv["PATH"] += myenv["GADGETRON_HOME"] + "/bin;"
-        myenv[libpath] = ""
-    else:
-        myenv[libpath] = myenv["ISMRMRD_HOME"] + "/lib:"
-        myenv[libpath] += myenv["GADGETRON_HOME"] + "/lib:"
-        myenv[libpath] += myenv["GADGETRON_HOME"] + "/../arma/lib:"
+    print("Test status: {}".format(args.color_handler(result, 'red' if return_code else 'green')))
+    return return_code
 
-        # add Matlab library path if $MATLAB_HOME is set
-        if os.environ.get("MATLAB_HOME"):
-            if platform.system() == "Darwin":
-                myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/maci64:"
-            #else:
-                #myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/glnxa64:"
-
-        myenv[libpath] += "/usr/local/cuda/lib64:"
-        myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
-        myenv[libpath] += "/opt/intel/lib/intel64:"
-        myenv[libpath] += "/usr/local/lib:"
-
-        if os.environ.get(libpath):
-            myenv[libpath] += os.environ[libpath]
-
-        if os.environ.get("USER"):
-            myenv["USER"] = os.environ["USER"]
-
-        if os.environ.get("HOME"):
-            myenv["HOME"] = os.environ["HOME"]
-
-        myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin:"
-        myenv["PATH"] += myenv["GADGETRON_HOME"] + "/bin:"
-        if os.environ.get("MATLAB_HOME"):
-            myenv["PATH"] += os.environ["MATLAB_HOME"] + "/bin:"
-        myenv["PATH"] += "/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
-
-    myenv["ACE_DEBUG"] = "1"
-    #myenv["GADGETRON_LOG_MASK"] = "ALL"
-
-    if platform.system() == "Windows":
-        os.putenv('PATH', myenv['PATH'])
-
-    print("Running Gadgetron test with: ")
-    print("  -- ISMRMRD_HOME  : " + myenv["ISMRMRD_HOME"])
-    print("  -- GADGETRON_HOME  : " + myenv["GADGETRON_HOME"])
-    print("  -- PATH            : " + myenv["PATH"])
-    print("  -- " + libpath + " : " + myenv[libpath])
-    print("  -- TEST CASE       : " + test_case)
-
-    if (args.external):
-        test_result = run_test(myenv, test_case, host, port, start_gadgetron=False)
-    else:
-        test_result = run_test(myenv, test_case, host, port, start_gadgetron=True)
-
-    if test_result:
-        print("TEST: " + test_case + " SUCCESS")
-        return 0
-    else:
-        print("TEST: " + test_case + " FAILED")
-        return -100
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -6,8 +6,8 @@
 
 namespace Gadgetron{
   
-  template<class REAL, unsigned int D, bool ATOMICS = false> 
-  class EXPORTGPUPMRI cuSenseBufferCg : public cuSenseBuffer<REAL,D,ATOMICS> 
+  template<class REAL, unsigned int D>
+  class EXPORTGPUPMRI cuSenseBufferCg : public cuSenseBuffer<REAL,D>
   {
   public:
     
@@ -15,7 +15,7 @@ namespace Gadgetron{
     typedef typename uint64d<D>::Type _uint64d;
     typedef typename reald<REAL,D>::Type _reald;
 
-    cuSenseBufferCg() : cuSenseBuffer<REAL,D,ATOMICS>() {}
+    cuSenseBufferCg() : cuSenseBuffer<REAL,D>() {}
     virtual ~cuSenseBufferCg() {}
 
     inline void set_dcw_for_rhs( boost::shared_ptr< cuNDArray<REAL> > dcw ){
@@ -34,6 +34,4 @@ namespace Gadgetron{
     boost::shared_ptr< cuCgPreconditioner<_complext> > D_;
   };
   
-  // To prevent the use of atomics with doubles.
-  template<unsigned int D> class EXPORTGPUPMRI cuSenseBufferCg<double,D,true>{};
 }

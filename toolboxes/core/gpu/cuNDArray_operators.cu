@@ -8,8 +8,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <complex>
 
-namespace Gadgetron{
-
+using namespace Gadgetron;
   // Private utility to verify array dimensions. 
   // It "replaces" NDArray::dimensions_equal() to support batch mode.
   // There is an identical function for all array instances (currently hoNDArray, cuNDArray, hoCuNDAraay)
@@ -34,7 +33,7 @@ namespace Gadgetron{
   // This transform support batch mode when the number of elements in x is a multiple of the number of elements in y
   //
   template<class T,class S,class F>  
-  static void equals_transform(cuNDArray<T> &x, cuNDArray<S> &y){
+  static void equals_transform(cuNDArray<T> &x, const cuNDArray<S> &y){
     if (x.dimensions_equal(&y)){
       thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), F());
     } else if (compatible_dimensions(x,y))
@@ -51,7 +50,7 @@ namespace Gadgetron{
         }
 
       } else {
-      throw std::runtime_error("The provided cuNDArrays have incompatible dimensions for operator {+=,-=,*=,/=}");
+      throw std::runtime_error("The provided cuNDArrays have incompatible dimensions for Gadgetron::operator {+=,-=,*=,/=}");
     }
   }
 
@@ -83,101 +82,101 @@ namespace Gadgetron{
     __device__ complext<T> operator()(const complext<T> &x, const T &y) const {return x/y;}
   };
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type > & operator+= (cuNDArray<T> &x, cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator<T>()>> cuNDArray<T> & Gadgetron::operator+= (cuNDArray<T> &x, const  cuNDArray<T> &y){
     equals_transform< T,T,thrust::plus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type > & operator+= (cuNDArray<T> &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T > & Gadgetron::operator+= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::plus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator+= (cuNDArray< complext<T> > &x , cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator+= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_plus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator+= (cuNDArray<complext<T> > &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator+= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_plus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator-= (cuNDArray<T> & x , cuNDArray<T> & y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T >& Gadgetron::operator-= (cuNDArray<T> & x , const cuNDArray<T> & y){
     equals_transform< T,T,thrust::minus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator-= (cuNDArray<T> &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T >& Gadgetron::operator-= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::minus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator-= (cuNDArray< complext<T> > &x , cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator-= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_minus<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator-= (cuNDArray<complext<T> > &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator-= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_minus<T>());
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator*= (cuNDArray<T> &x , cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T >& Gadgetron::operator*= (cuNDArray<T> &x , const cuNDArray<T> &y){
     equals_transform< T,T,thrust::multiplies<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator*= (cuNDArray<T> &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator<T>()>> cuNDArray<T>& Gadgetron::operator*= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::multiplies<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator*= (cuNDArray< complext<T> > &x , cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator*= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_multiply<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator*= (cuNDArray<complext<T> > &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator*= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_multiply<T>());
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator/= (cuNDArray<T> &x , cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T >& Gadgetron::operator/= (cuNDArray<T> &x , const cuNDArray<T> &y){
     equals_transform< T,T,thrust::divides<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<typename boost::enable_if<enable_operators<T>, T >::type >& operator/= (cuNDArray<T> &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<T >& Gadgetron::operator/= (cuNDArray<T> &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::divides<T>());
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator/= (cuNDArray< complext<T> > &x , cuNDArray<T> &y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator/= (cuNDArray< complext<T> > &x , const cuNDArray<T> &y){
     equals_transform< complext<T>,T,cuNDA_divide<T> >(x,y);
     return x;
   }
 
-  template<class T> cuNDArray<complext<typename boost::enable_if<enable_operators<T>, T >::type > >& operator/= (cuNDArray<complext<T> > &x , T y){
+  template<class T, class = std::enable_if_t<enable_operator_v<T>>> cuNDArray<complext<T > >& Gadgetron::operator/= (cuNDArray<complext<T> > &x , T y){
     thrust::constant_iterator<T> iter(y);
     thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_divide<T>());
     return x;
   }
 
 
-  cuNDArray<bool>& operator&= (cuNDArray<bool> &x , cuNDArray<bool> &y){
+  cuNDArray<bool>& Gadgetron::operator&= (cuNDArray<bool> &x , cuNDArray<bool> &y){
 
     equals_transform< bool,bool,thrust::logical_and<bool> >(x,y);
     return x;
   }
-  cuNDArray<bool>& operator|= (cuNDArray<bool> &x , cuNDArray<bool> &y){
+  cuNDArray<bool>& Gadgetron::operator|= (cuNDArray<bool> &x , cuNDArray<bool> &y){
 
     equals_transform< bool,bool,thrust::logical_or<bool> >(x,y);
     return x;
@@ -186,76 +185,61 @@ namespace Gadgetron{
   //
   // Instantiation
   //
+  template cuNDArray<float>& Gadgetron::operator+=<float>(cuNDArray<float>& x, const cuNDArray<float>& y);
+  template cuNDArray<float>& Gadgetron::operator+=<float>(cuNDArray<float>& x, float y);
+  template cuNDArray<complext<float>>& Gadgetron::operator+=<float>(cuNDArray<complext<float>>& x, const cuNDArray<float>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator+=<float>(cuNDArray<complext<float>>& x, float y);
+  template cuNDArray<float>& Gadgetron::operator-=(cuNDArray<float>& x, const cuNDArray<float>& y);
+  template cuNDArray<float>& Gadgetron::operator-=(cuNDArray<float>& x, float y);
+  template cuNDArray<complext<float>>& Gadgetron::operator-=<float>(cuNDArray<complext<float>>& x, const cuNDArray<float>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator-=<float>(cuNDArray<complext<float>>& x, float y);
+  template cuNDArray<float>& Gadgetron::operator*=<float>(cuNDArray<float>& x, const cuNDArray<float>& y);
+  template cuNDArray<float>& Gadgetron::operator*=<float>(cuNDArray<float>& x, float y);
+  template cuNDArray<complext<float>>& Gadgetron::operator*=<float>(cuNDArray<complext<float>>& x, const cuNDArray<float>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator*=<float>(cuNDArray<complext<float>>& x, float y);
+  template cuNDArray<float>& Gadgetron::operator/=<float>(cuNDArray<float>& x, const cuNDArray<float>& y);
+  template cuNDArray<float>& Gadgetron::operator/=<float>(cuNDArray<float>& x, float y);
+  template cuNDArray<complext<float>>& Gadgetron::operator/=<float>(cuNDArray<complext<float>>& x,const cuNDArray<float>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator/=<float>(cuNDArray<complext<float>>& x, float y);
 
-  template EXPORTGPUCORE cuNDArray<float>& operator+=<float>(cuNDArray<float>&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray<float>& operator+=<float>(cuNDArray<float>&, float);
-  template EXPORTGPUCORE cuNDArray<float>& operator-=<float>(cuNDArray<float>&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray<float>& operator-=<float>(cuNDArray<float>&, float);
-  template EXPORTGPUCORE cuNDArray<float>& operator*=<float>(cuNDArray<float>&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray<float>& operator*=<float>(cuNDArray<float>&, float);
-  template EXPORTGPUCORE cuNDArray<float>& operator/=<float>(cuNDArray<float>&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray<float>& operator/=<float>(cuNDArray<float>&, float);
+  template cuNDArray<double>& Gadgetron::operator+=<double>(cuNDArray<double>& x, const cuNDArray<double>& y);
+  template cuNDArray<double>& Gadgetron::operator+=<double>(cuNDArray<double>& x, double y);
+  template cuNDArray<complext<double>>& Gadgetron::operator+=<double>(cuNDArray<complext<double>>& x, const cuNDArray<double>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator+=<double>(cuNDArray<complext<double>>& x, double y);
+  template cuNDArray<double>& Gadgetron::operator-=(cuNDArray<double>& x, const cuNDArray<double>& y);
+  template cuNDArray<double>& Gadgetron::operator-=(cuNDArray<double>& x, double y);
+  template cuNDArray<complext<double>>& Gadgetron::operator-=<double>(cuNDArray<complext<double>>& x, const cuNDArray<double>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator-=<double>(cuNDArray<complext<double>>& x, double y);
+  template cuNDArray<double>& Gadgetron::operator*=<double>(cuNDArray<double>& x, const cuNDArray<double>& y);
+  template cuNDArray<double>& Gadgetron::operator*=<double>(cuNDArray<double>& x, double y);
+  template cuNDArray<complext<double>>& Gadgetron::operator*=<double>(cuNDArray<complext<double>>& x, const cuNDArray<double>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator*=<double>(cuNDArray<complext<double>>& x, double y);
+  template cuNDArray<double>& Gadgetron::operator/=<double>(cuNDArray<double>& x, const cuNDArray<double>& y);
+  template cuNDArray<double>& Gadgetron::operator/=<double>(cuNDArray<double>& x, double y);
+  template cuNDArray<complext<double>>& Gadgetron::operator/=<double>(cuNDArray<complext<double>>& x,const cuNDArray<double>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator/=<double>(cuNDArray<complext<double>>& x, double y);
 
-  template EXPORTGPUCORE cuNDArray<double>& operator+=<double>(cuNDArray<double>&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray<double>& operator+=<double>(cuNDArray<double>&, double);
-  template EXPORTGPUCORE cuNDArray<double>& operator-=<double>(cuNDArray<double>&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray<double>& operator-=<double>(cuNDArray<double>&, double);
-  template EXPORTGPUCORE cuNDArray<double>& operator*=<double>(cuNDArray<double>&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray<double>& operator*=<double>(cuNDArray<double>&, double);
-  template EXPORTGPUCORE cuNDArray<double>& operator/=<double>(cuNDArray<double>&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray<double>& operator/=<double>(cuNDArray<double>&, double);
 
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator+=< complext<float> > 
-  (cuNDArray< complext<float> >&, cuNDArray< complext<float> >&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator+=< complext<float> > 
-  (cuNDArray< complext<float> >&, complext<float>);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator-=< complext<float> > 
-  (cuNDArray< complext<float> >&, cuNDArray< complext<float> >&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator-=< complext<float> > 
-  (cuNDArray< complext<float> >&, complext<float>);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator*=< complext<float> >
-  (cuNDArray< complext<float> >&, cuNDArray< complext<float> >&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator*=< complext<float> >
-  (cuNDArray< complext<float> >&, complext<float>);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator/=< complext<float> > 
-  (cuNDArray< complext<float> >&, cuNDArray< complext<float> >&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator/=< complext<float> > 
-  (cuNDArray< complext<float> >&, complext<float>);
+  template cuNDArray<complext<float>>& Gadgetron::operator+=<complext<float>>(cuNDArray<complext<float>>& x, const cuNDArray<complext<float>>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator+=<complext<float>>(cuNDArray<complext<float>>& x, complext<float> y);
+  template cuNDArray<complext<float>>& Gadgetron::operator-=(cuNDArray<complext<float>>& x, const cuNDArray<complext<float>>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator-=(cuNDArray<complext<float>>& x, complext<float> y);
+  template cuNDArray<complext<float>>& Gadgetron::operator*=<complext<float>>(cuNDArray<complext<float>>& x, const cuNDArray<complext<float>>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator*=<complext<float>>(cuNDArray<complext<float>>& x, complext<float> y);
+  template cuNDArray<complext<float>>& Gadgetron::operator/=<complext<float>>(cuNDArray<complext<float>>& x, const cuNDArray<complext<float>>& y);
+  template cuNDArray<complext<float>>& Gadgetron::operator/=<complext<float>>(cuNDArray<complext<float>>& x, complext<float> y);
 
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator+=<float>(cuNDArray< complext<float> >&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator-=<float>(cuNDArray< complext<float> >&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator*=<float>(cuNDArray< complext<float> >&, cuNDArray<float>&);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator/=<float>(cuNDArray< complext<float> >&, cuNDArray<float>&);
+template cuNDArray<complext<double>>& Gadgetron::operator+=<complext<double>>(cuNDArray<complext<double>>& x, const cuNDArray<complext<double>>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator+=<complext<double>>(cuNDArray<complext<double>>& x, complext<double> y);
+  template cuNDArray<complext<double>>& Gadgetron::operator-=(cuNDArray<complext<double>>& x, const cuNDArray<complext<double>>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator-=(cuNDArray<complext<double>>& x, complext<double> y);
+  template cuNDArray<complext<double>>& Gadgetron::operator*=<complext<double>>(cuNDArray<complext<double>>& x, const cuNDArray<complext<double>>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator*=<complext<double>>(cuNDArray<complext<double>>& x, complext<double> y);
+  template cuNDArray<complext<double>>& Gadgetron::operator/=<complext<double>>(cuNDArray<complext<double>>& x, const cuNDArray<complext<double>>& y);
+  template cuNDArray<complext<double>>& Gadgetron::operator/=<complext<double>>(cuNDArray<complext<double>>& x, complext<double> y);
 
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator+=<float>(cuNDArray< complext<float> >&, float);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator-=<float>(cuNDArray< complext<float> >&, float);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator*=<float>(cuNDArray< complext<float> >&, float);
-  template EXPORTGPUCORE cuNDArray< complext<float> >& operator/=<float>(cuNDArray< complext<float> >&, float);
 
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator+=< complext<double> > 
-  (cuNDArray< complext<double> >&, cuNDArray< complext<double> >&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator+=< complext<double> > 
-  (cuNDArray< complext<double> >&, complext<double>);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator-=< complext<double> > 
-  (cuNDArray< complext<double> >&, cuNDArray< complext<double> >&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator-=< complext<double> > 
-  (cuNDArray< complext<double> >&, complext<double>);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator*=< complext<double> >
-  (cuNDArray< complext<double> >&, cuNDArray< complext<double> >&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator*=< complext<double> >
-  (cuNDArray< complext<double> >&, complext<double>);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator/=< complext<double> > 
-  (cuNDArray< complext<double> >&, cuNDArray< complext<double> >&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator/=< complext<double> > 
-  (cuNDArray< complext<double> >&, complext<double>);
 
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator+=<double>(cuNDArray< complext<double> >&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator-=<double>(cuNDArray< complext<double> >&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator*=<double>(cuNDArray< complext<double> >&, cuNDArray<double>&);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator/=<double>(cuNDArray< complext<double> >&, cuNDArray<double>&);
-
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator+=<double>(cuNDArray< complext<double> >&, double);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator-=<double>(cuNDArray< complext<double> >&, double);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator*=<double>(cuNDArray< complext<double> >&, double);
-  template EXPORTGPUCORE cuNDArray< complext<double> >& operator/=<double>(cuNDArray< complext<double> >&, double);
-}
+  cuNDArray<bool>& Gadgetron::operator&=(cuNDArray<bool>& x, cuNDArray<bool>& y);
+  cuNDArray<bool>& Gadgetron::operator|=(cuNDArray<bool>& x, cuNDArray<bool>& y);
+  

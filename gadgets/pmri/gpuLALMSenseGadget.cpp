@@ -67,7 +67,7 @@ int gpuLALMSenseGadget::process_config( ACE_Message_Block* mb )
 		}
 
 		// Allocate encoding operator for non-Cartesian Sense
-		E_ = boost::make_shared<osSenseOperator<cuNDArray<float_complext>,2,cuNFFTOperator<float,2>>>();
+		E_ = boost::make_shared<osSenseOperator<cuNDArray<float_complext>,2,NFFTOperator<cuNDArray,float,2>>>();
 		E_->set_coils_per_subset(coils_per_subset_);
 
 
@@ -255,7 +255,7 @@ int gpuLALMSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1
 
 	// If the recon matrix size exceeds the sequence matrix size then crop
 	if( matrix_size_seq_ != matrix_size_ )
-		result = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, result.get() );
+		*result = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, *result );
 
 
 	// Now pass on the reconstructed images

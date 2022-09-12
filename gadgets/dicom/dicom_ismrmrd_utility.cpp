@@ -4,6 +4,7 @@
 */
 
 #include "dicom_ismrmrd_utility.h"
+#include <stdio.h>
 #include "boost/date_time/gregorian/gregorian.hpp"
 
 namespace Gadgetron
@@ -18,7 +19,7 @@ namespace Gadgetron
         }
     }
 
-    void fill_dicom_image_from_ismrmrd_header(ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile)
+    void fill_dicom_image_from_ismrmrd_header(const ISMRMRD::IsmrmrdHeader& h, DcmFileFormat& dcmFile)
     {
         try
         {
@@ -51,7 +52,7 @@ namespace Gadgetron
                 patient_info.patientID.set("XXXXXXXX");
 
             if(!h.subjectInformation.is_present() || !h.subjectInformation.get().patientBirthdate.is_present())
-                patient_info.patientBirthdate.set("19000101");
+                patient_info.patientBirthdate.set("1900-01-01");
 
             if(!h.subjectInformation.is_present() || !h.subjectInformation.get().patientGender.is_present())
                 patient_info.patientGender.set("o");
@@ -61,10 +62,10 @@ namespace Gadgetron
             ISMRMRD::StudyInformation study_info = *h.studyInformation;
 
             if(!h.studyInformation.is_present() || !h.studyInformation.get().studyDate.is_present())
-                study_info.studyDate.set("19000101");
+                study_info.studyDate.set("1900-01-01");
 
             if(!h.studyInformation.is_present() || !h.studyInformation.get().studyTime.is_present())
-                study_info.studyTime.set("121212");
+                study_info.studyTime.set("12:12:12");
 
             if(!h.studyInformation.is_present() || !h.studyInformation.get().studyID.is_present())
                 study_info.studyID.set("XXXXXXXX");
@@ -84,26 +85,26 @@ namespace Gadgetron
             // -------------------------------------------------
 
             if (!h.measurementInformation) {
-                GADGET_THROW("Header missing MeasurementInformation parameters");
+                GWARN("Header missing MeasurementInformation parameters");
             }
 
-            ISMRMRD::MeasurementInformation meas_info = *h.measurementInformation;
+            auto meas_info = h.measurementInformation;
 
             // -------------------------------------------------
 
             if (!h.acquisitionSystemInformation) {
-                GADGET_THROW("Header missing AcquisitionSystemInformation parameters");
+                GWARN("Header missing AcquisitionSystemInformation parameters");
             }
 
-            ISMRMRD::AcquisitionSystemInformation sys_info = *h.acquisitionSystemInformation;
+            auto sys_info = h.acquisitionSystemInformation;
 
             if (!h.sequenceParameters) {
-                GADGET_THROW("Header missing SequenceTiming parameters");
+                GWARN("Header missing SequenceTiming parameters");
             }
 
             // -------------------------------------------------
 
-            ISMRMRD::SequenceParameters seq_info = *h.sequenceParameters;
+            auto seq_info = h.sequenceParameters;
 
             if (h.encoding.size() == 0) {
                 GDEBUG_STREAM("Number of encoding spaces: " << h.encoding.size());
@@ -123,9 +124,9 @@ namespace Gadgetron
 
             // Set the Application Entity Title in the DICOM Meta Info section
             // The rest of the Meta Info will be automatically populated by DCMTK
-            if (sys_info.stationName) {
+            if (sys_info && sys_info->stationName) {
                 status = metainfo->putAndInsertString(DcmTagKey(0x0002, 0x0016),
-                    sys_info.stationName->c_str());
+                    sys_info.get().stationName->c_str());
                 if (!status.good()) {
                     GADGET_THROW("Failed to set AET in MetaInfo");
                 }
@@ -146,7 +147,7 @@ namespace Gadgetron
 
             // Specific Character Set
             key.set(0x0008, 0x0005);
-            write_dcm_string(dataset, key, "ISO_IR 100");
+            write_dcm_string(dataset, key, "ISO_IR 192");
 
             // Image Type
             // ORIGINAL or DERIVED describes origin of pixel data
@@ -168,9 +169,9 @@ namespace Gadgetron
             }
 
             // Series, Acquisition, Content Date
-            if (meas_info.seriesDate) {
+            if (meas_info && meas_info->seriesDate) {
                 key.set(0x0008, 0x0021);
-                std::string d(meas_info.seriesDate.get());
+                std::string d(meas_info.get().seriesDate.get());
                 d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
                 write_dcm_string(dataset, key, d.c_str());
 
@@ -190,9 +191,9 @@ namespace Gadgetron
             }
 
             // Series, Acquisition, Content Time
-            if (meas_info.seriesTime) {
+            if (meas_info->seriesTime) {
                 key.set(0x0008, 0x0031);
-                std::string t(meas_info.seriesTime.get());
+                std::string t(meas_info.get().seriesTime.get());
                 t.erase(std::remove(t.begin(), t.end(), ':'), t.end());
                 write_dcm_string(dataset, key, t.c_str());
 
@@ -206,7 +207,7 @@ namespace Gadgetron
             // Accession Number
             key.set(0x0008, 0x0050);
             if (study_info.accessionNumber) {
-                ACE_OS::snprintf(buf, BUFSIZE, "%ld", *study_info.accessionNumber);
+                snprintf(buf, BUFSIZE, "%ld", *study_info.accessionNumber);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -221,8 +222,8 @@ namespace Gadgetron
 
             // Manufacturer
             key.set(0x0008, 0x0070);
-            if (sys_info.systemVendor) {
-                write_dcm_string(dataset, key, sys_info.systemVendor->c_str());
+            if (sys_info && sys_info->systemVendor) {
+                write_dcm_string(dataset, key, sys_info.get().systemVendor->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "UNKNOWN");
@@ -230,8 +231,8 @@ namespace Gadgetron
 
             // Institution Name
             key.set(0x0008, 0x0080);
-            if (sys_info.institutionName) {
-                write_dcm_string(dataset, key, sys_info.institutionName->c_str());
+            if (sys_info && sys_info->institutionName) {
+                write_dcm_string(dataset, key, sys_info.get().institutionName->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "UNKNOWN");
@@ -248,8 +249,8 @@ namespace Gadgetron
 
             // Station Name
             key.set(0x0008, 0x1010);
-            if (sys_info.stationName) {
-                write_dcm_string(dataset, key, sys_info.stationName->c_str());
+            if (sys_info && sys_info->stationName) {
+                write_dcm_string(dataset, key, sys_info.get().stationName->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
@@ -266,8 +267,8 @@ namespace Gadgetron
 
             // Series Description
             key.set(0x0008, 0x103E);
-            if (meas_info.seriesDescription) {
-                write_dcm_string(dataset, key, meas_info.seriesDescription->c_str());
+            if (meas_info->seriesDescription) {
+                write_dcm_string(dataset, key, meas_info.get().seriesDescription->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
@@ -275,15 +276,15 @@ namespace Gadgetron
 
             // Manufacturer's Model Name
             key.set(0x0008, 0x1090);
-            if (sys_info.systemModel) {
-                write_dcm_string(dataset, key, sys_info.systemModel->c_str());
+            if (sys_info && sys_info->systemModel) {
+                write_dcm_string(dataset, key, sys_info.get().systemModel->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
             }
 
             // Referenced SOP Instance UIDs
-            std::vector<ISMRMRD::ReferencedImageSequence> refs(meas_info.referencedImageSequence);
+            std::vector<ISMRMRD::ReferencedImageSequence> refs(meas_info->referencedImageSequence);
             if (refs.size() > 0) {
                 DcmItem *ref_sequence;
                 std::vector<ISMRMRD::ReferencedImageSequence>::iterator it;
@@ -341,11 +342,14 @@ namespace Gadgetron
             // Patient Sex
             key.set(0x0010, 0x0040);
             if (patient_info.patientGender) {
-                if (*patient_info.patientGender == "O") {
-                    status = dataset->insertEmptyElement(key);
+                std::string patientGenderUppercase = patient_info.patientGender.get();
+                std::transform(patientGenderUppercase.begin(), patientGenderUppercase.end(), patientGenderUppercase.begin(), ::toupper);
+
+                if (patientGenderUppercase == "M" || patientGenderUppercase == "F" || patientGenderUppercase == "O") {
+                    write_dcm_string(dataset, key, patientGenderUppercase.c_str());
                 }
                 else {
-                    write_dcm_string(dataset, key, patient_info.patientGender->c_str());
+                    write_dcm_string(dataset, key, "");
                 }
             }
             else {
@@ -354,15 +358,15 @@ namespace Gadgetron
 
             // Patient Age
             key.set(0x0010, 0x1010);
-            if (patient_info.patientBirthdate && meas_info.seriesDate) {
+            if (patient_info.patientBirthdate && meas_info->seriesDate) {
                 boost::gregorian::date bday(boost::gregorian::from_simple_string(patient_info.patientBirthdate.get()));
-                boost::gregorian::date seriesDate(boost::gregorian::from_simple_string(meas_info.seriesDate.get()));
+                boost::gregorian::date seriesDate(boost::gregorian::from_simple_string(meas_info.get().seriesDate.get()));
 
                 boost::gregorian::days age = seriesDate - bday;
 
                 long age_in_years = age.days() / 365;
 
-                ACE_OS::snprintf(buf, BUFSIZE, "%03ldY", age_in_years);
+                snprintf(buf, BUFSIZE, "%03ldY", age_in_years);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -372,7 +376,7 @@ namespace Gadgetron
             // Patient Weight
             key.set(0x0010, 0x1030);
             if (patient_info.patientWeight_kg) {
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", *patient_info.patientWeight_kg);
+                snprintf(buf, BUFSIZE, "%f", *patient_info.patientWeight_kg);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -428,56 +432,57 @@ namespace Gadgetron
             // Slice Thickness
             // This will need updated if the "reconSpace.fieldOfView_mm.z" field
             // is changed in the ISMRMRD populating code (client)
+            if (r_space.matrixSize.z == 0) r_space.matrixSize.z = 1;
             key.set(0x0018, 0x0050);
-            ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z / std::max(r_space.matrixSize.z, (unsigned short)1));
+            snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z / r_space.matrixSize.z);
             write_dcm_string(dataset, key, buf);
 
             // Spacing Between Slices
             key.set(0x0018, 0x0088);
-            ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
+            snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
             write_dcm_string(dataset, key, buf);
 
             // Repetition Time
-            if (seq_info.TR.is_present() && seq_info.TR.get().size() > 0)
+            if (seq_info && seq_info.get().TR.is_present() && seq_info.get().TR.get().size() > 0)
             {
                 key.set(0x0018, 0x0080);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR.get().front());
+                snprintf(buf, BUFSIZE, "%f", seq_info.get().TR.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Echo Time
-            if (seq_info.TE.is_present() && seq_info.TE.get().size() > 0)
+            if (seq_info && seq_info.get().TE.is_present() && seq_info.get().TE.get().size() > 0)
             {
                 key.set(0x0018, 0x0081);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE.get().front());
+                snprintf(buf, BUFSIZE, "%f", seq_info.get().TE.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Inversion Time
-            if (seq_info.TI.is_present() && seq_info.TI.get().size()>0)
+            if (seq_info && seq_info.get().TI.is_present() && seq_info.get().TI.get().size()>0)
             {
                 key.set(0x0018, 0x0082);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.get().front());
+                snprintf(buf, BUFSIZE, "%f", seq_info.get().TI.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Flip Angle
-            if (seq_info.flipAngle_deg.is_present() && seq_info.flipAngle_deg.get().size()>0)
+            if (seq_info && seq_info.get().flipAngle_deg.is_present() && seq_info.get().flipAngle_deg.get().size()>0)
             {
                 key.set(0x0018, 0x1314);
-                ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.get().front());
+                snprintf(buf, BUFSIZE, "%ld", (long)seq_info.get().flipAngle_deg.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Imaging Frequency in tenths of MHz ???
             key.set(0x0018, 0x0084);
-            ACE_OS::snprintf(buf, BUFSIZE, "%f", (float)exp_cond.H1resonanceFrequency_Hz / 10000000.);
+            snprintf(buf, BUFSIZE, "%f", (float)exp_cond.H1resonanceFrequency_Hz / 10000000.);
             write_dcm_string(dataset, key, buf);
 
             // Magnetic Field Strength (T)
             key.set(0x0018, 0x0087);
-            if (sys_info.systemFieldStrength_T) {
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", *sys_info.systemFieldStrength_T);
+            if (sys_info && sys_info->systemFieldStrength_T) {
+                snprintf(buf, BUFSIZE, "%f", *sys_info->systemFieldStrength_T);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -487,7 +492,7 @@ namespace Gadgetron
             key.set(0x0018, 0x0091);
             // Echo Train Length
             if (h.encoding[0].echoTrainLength) {
-                ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)*h.encoding[0].echoTrainLength);
+                snprintf(buf, BUFSIZE, "%ld", (long)*h.encoding[0].echoTrainLength);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -505,9 +510,9 @@ namespace Gadgetron
             write_dcm_string(dataset, key, "100");
 
             // Protocol Name
-            if (meas_info.protocolName) {
+            if (meas_info && meas_info->protocolName) {
                 key.set(0x0018, 0x1030);
-                write_dcm_string(dataset, key, meas_info.protocolName.get().c_str());
+                write_dcm_string(dataset, key, meas_info.get().protocolName.get().c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
@@ -524,10 +529,11 @@ namespace Gadgetron
             key.set(0x0018, 0x1312);
             write_dcm_string(dataset, key, "ROW");
 
-            // Patient Position
-            key.set(0x0018, 0x5100);
-            write_dcm_string(dataset, key, meas_info.patientPosition.c_str());
-
+            if (meas_info) {
+                // Patient Position
+                key.set(0x0018, 0x5100);
+                write_dcm_string(dataset, key, meas_info.get().patientPosition.c_str());
+            }
             /****************************************/
             // Group Length
             key.set(0x0020, 0x0000);
@@ -552,9 +558,9 @@ namespace Gadgetron
             }
 
             // Frame of Reference UID
-            if (meas_info.frameOfReferenceUID) {
+            if (meas_info && meas_info->frameOfReferenceUID) {
                 key.set(0x0020, 0x0052);
-                write_dcm_string(dataset, key, meas_info.frameOfReferenceUID->c_str());
+                write_dcm_string(dataset, key, meas_info.get().frameOfReferenceUID->c_str());
             }
 
             /****************************************/
@@ -579,7 +585,7 @@ namespace Gadgetron
             key.set(0x0028, 0x0030);
             float pixel_spacing_X = r_space.fieldOfView_mm.x / r_space.matrixSize.x;
             float pixel_spacing_Y = r_space.fieldOfView_mm.y / r_space.matrixSize.y;
-            ACE_OS::snprintf(buf, BUFSIZE, "%.3f\\%.3f", pixel_spacing_X, pixel_spacing_Y);
+            snprintf(buf, BUFSIZE, "%.3f\\%.3f", pixel_spacing_X, pixel_spacing_Y);
             write_dcm_string(dataset, key, buf);
 
             // Bits Allocated
@@ -602,16 +608,14 @@ namespace Gadgetron
     }
 
     template<typename T> 
-    void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile)
+    void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile)
     {
         try
         {
-            hoNDArray< ACE_INT16 > data;
-            boost::shared_ptr< std::vector<size_t> > dims = m2.get_dimensions();
-            data.create(dims.get());
+            hoNDArray< int16_t > data(m2.dimensions());
 
-            T *src = m2.get_data_ptr();
-            ACE_INT16 *dst = data.get_data_ptr();
+            const T *src = m2.get_data_ptr();
+            auto dst = data.get_data_ptr();
 
             T min_pix_val, max_pix_val, sum_pix_val = 0;
             if (m2.get_number_of_elements() > 0)
@@ -628,13 +632,9 @@ namespace Gadgetron
                 if (pix_val > max_pix_val) max_pix_val = pix_val;
                 sum_pix_val += pix_val / 4; // scale by 25% to avoid overflow
 
-                dst[i] = static_cast<ACE_INT16>(pix_val);
+                dst[i] = static_cast<int16_t>(pix_val);
             }
             T mean_pix_val = (T)((sum_pix_val * 4) / (T)data.get_number_of_elements());
-
-            /* update the image data_type.
-            * There is currently no SIGNED SHORT type so this will have to suffice */
-            m1.data_type = ISMRMRD::ISMRMRD_USHORT;
 
             unsigned int BUFSIZE = 1024;
             std::vector<char> bufVec(BUFSIZE);
@@ -648,14 +648,14 @@ namespace Gadgetron
             // TODO: it is often the case the img->contrast is not properly set
             // likely due to the allocated ISMRMRD::ImageHeader being uninitialized
             key.set(0x0018, 0x0086);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", m1.contrast);
+            snprintf(buf, BUFSIZE, "%d", m1.contrast);
             write_dcm_string(dataset, key, buf);
 
             // Acquisition Matrix ... Image Dimensions
             // Defined as: [frequency rows, frequency columns, phase rows, phase columns]
             // But at this point in the gadget I don't know the frequency encode direction
             key.set(0x0018, 0x1310);
-            ACE_UINT16 im_dim[4] = { 0, 0, 0, 0 };
+            uint16_t im_dim[4] = { 0, 0, 0, 0 };
             im_dim[1] = m1.matrix_size[0];
             im_dim[2] = m1.matrix_size[1];
 
@@ -668,12 +668,12 @@ namespace Gadgetron
             // Series Number
             // Only write a number if the image_series_index is positive and non-zero
             key.set(0x0020, 0x0011);
-            ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long int)m1.image_series_index);
+            snprintf(buf, BUFSIZE, "%ld", (long int)m1.image_series_index);
             write_dcm_string(dataset, key, buf);
 
             // Image Number
             key.set(0x0020, 0x0013);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", m1.image_index + 1);
+            snprintf(buf, BUFSIZE, "%d", m1.image_index + 1);
             write_dcm_string(dataset, key, buf);
 
             // Image Position (Patient)
@@ -690,37 +690,37 @@ namespace Gadgetron
                 (m1.field_of_view[1] / 2.0f) * m1.phase_dir[2];
 
             key.set(0x0020, 0x0032);
-            ACE_OS::snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f", corner[0], corner[1], corner[2]);
+            snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f", corner[0], corner[1], corner[2]);
             write_dcm_string(dataset, key, buf);
 
             // Image Orientation
             // read_dir, phase_dir, and slice_dir were calculated in
             // a DICOM/patient coordinate system, so just plug them in
             key.set(0x0020, 0x0037);
-            ACE_OS::snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f\\%.4f\\%.4f\\%.4f",
+            snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f\\%.4f\\%.4f\\%.4f",
                 m1.read_dir[0], m1.read_dir[1], m1.read_dir[2],
                 m1.phase_dir[0], m1.phase_dir[1], m1.phase_dir[2]);
             write_dcm_string(dataset, key, buf);
 
             // Slice Location
             key.set(0x0020, 0x1041);
-            ACE_OS::snprintf(buf, BUFSIZE, "%f", m1.position[2]);
+            snprintf(buf, BUFSIZE, "%f", m1.position[2]);
             write_dcm_string(dataset, key, buf);
 
             // Columns
             key.set(0x0028, 0x0010);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", m1.matrix_size[1]);
+            snprintf(buf, BUFSIZE, "%d", m1.matrix_size[1]);
             write_dcm_string(dataset, key, buf);
 
             // Rows
             key.set(0x0028, 0x0011);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", m1.matrix_size[0]);
+            snprintf(buf, BUFSIZE, "%d", m1.matrix_size[0]);
             write_dcm_string(dataset, key, buf);
 
             //Number of frames
             if (m1.matrix_size[2] > 1){ //Only write if we have more than 1 frame
                 key.set(0x0028,0x0008);
-                ACE_OS::snprintf(buf,BUFSIZE,"%d",m1.matrix_size[2]);
+                snprintf(buf,BUFSIZE,"%d",m1.matrix_size[2]);
                 write_dcm_string(dataset, key,buf);
             }
 
@@ -734,12 +734,12 @@ namespace Gadgetron
 
             // Window Center
             key.set(0x0028, 0x1050);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", window_center);
+            snprintf(buf, BUFSIZE, "%d", window_center);
             write_dcm_string(dataset, key, buf);
 
             // Window Width
             key.set(0x0028, 0x1051);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", window_width);
+            snprintf(buf, BUFSIZE, "%d", window_width);
             write_dcm_string(dataset, key, buf);
 
             // ACR_NEMA_2C_VariablePixelDataGroupLength
@@ -778,15 +778,15 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<float>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<double>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<float>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<double>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
 
     template<typename T> 
-    void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile)
+    void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile)
     {
         try
         {
@@ -823,7 +823,7 @@ namespace Gadgetron
             }
 
             // ----------------------------------
-            // sequence discription
+            // sequence description
             // ----------------------------------
             N = attrib.length(GADGETRON_SEQUENCEDESCRIPTION);
             if(N>0)
@@ -849,7 +849,7 @@ namespace Gadgetron
                     float v = h.sequenceParameters.get().TR.get()[0];
 
                     key.set(0x0018, 0x0080);
-                    ACE_OS::snprintf(buf, BUFSIZE, "%f", v);
+                    snprintf(buf, BUFSIZE, "%f", v);
                     write_dcm_string(dataset, key, buf);
                 }
             }
@@ -862,7 +862,7 @@ namespace Gadgetron
                 double v = attrib.as_double(GADGETRON_IMAGE_ECHOTIME, 0);
 
                 key.set(0x0018, 0x0081);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", v);
+                snprintf(buf, BUFSIZE, "%f", v);
                 write_dcm_string(dataset, key, buf);
             }
             else
@@ -874,7 +874,7 @@ namespace Gadgetron
                         float v = h.sequenceParameters.get().TE.get()[0];
 
                         key.set(0x0018, 0x0081);
-                        ACE_OS::snprintf(buf, BUFSIZE, "%f", v);
+                        snprintf(buf, BUFSIZE, "%f", v);
                         write_dcm_string(dataset, key, buf);
                     }
                 }
@@ -888,7 +888,7 @@ namespace Gadgetron
             if ( millisec > 0 && millisec<60000 )
             {
                 key.set(0x0018, 0x1060);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", millisec);
+                snprintf(buf, BUFSIZE, "%f", millisec);
                 write_dcm_string(dataset, key, buf);
             }
 
@@ -900,7 +900,7 @@ namespace Gadgetron
                 double v = attrib.as_double(GADGETRON_IMAGE_INVERSIONTIME, 0);
 
                 key.set(0x0018, 0x0082);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", v);
+                snprintf(buf, BUFSIZE, "%f", v);
                 write_dcm_string(dataset, key, buf);
             }
             else
@@ -912,7 +912,7 @@ namespace Gadgetron
                         float v = h.sequenceParameters.get().TI.get()[0];
 
                         key.set(0x0018, 0x0082);
-                        ACE_OS::snprintf(buf, BUFSIZE, "%f", v);
+                        snprintf(buf, BUFSIZE, "%f", v);
                         write_dcm_string(dataset, key, buf);
                     }
                 }
@@ -926,7 +926,7 @@ namespace Gadgetron
                 double v = attrib.as_double(GADGETRON_IMAGE_WINDOWCENTER, 0);
 
                 key.set(0x0028, 0x1050);
-                ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)v);
+                snprintf(buf, BUFSIZE, "%d", (int)v);
                 write_dcm_string(dataset, key, buf);
             }
 
@@ -935,7 +935,7 @@ namespace Gadgetron
                 double v = attrib.as_double(GADGETRON_IMAGE_WINDOWWIDTH, 0);
 
                 key.set(0x0028, 0x1051);
-                ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)v);
+                snprintf(buf, BUFSIZE, "%d", (int)v);
                 write_dcm_string(dataset, key, buf);
             }
         }
@@ -945,10 +945,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<float>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<double>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<float>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<double>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
 }

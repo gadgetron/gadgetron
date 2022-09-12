@@ -7,7 +7,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITÂ´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             [3] Christophe Chefd'Hotel, Gerardo Hermosillo, Olivier D. Faugeras: Flows of diffeomorphisms for multimodal image registration. ISBI 2002: 753-756.
@@ -22,6 +22,9 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDeformationFieldBidirectionalSolver_H_
+#define hoImageRegDeformationFieldBidirectionalSolver_H_
+
 #pragma once
 
 #include "hoImageRegDeformationFieldSolver.h"
@@ -34,20 +37,22 @@
 #undef min
 #endif // min
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// ValueType: image pixel value type
     /// CoordType: transformation data type
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    class hoImageRegDeformationFieldBidirectionalSolver : public hoImageRegDeformationFieldSolver<ValueType, CoordType, D>
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegDeformationFieldBidirectionalSolver : public hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D> Self;
-        typedef hoImageRegDeformationFieldSolver<ValueType, CoordType, D> BaseClass;
+        typedef hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, D> TargetType;
-        typedef hoNDImage<ValueType, D> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { D = TargetType::NDIM };
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -98,6 +103,7 @@ namespace Gadgetron
 
         using BaseClass::regularization_hilbert_strength_;
         using BaseClass::apply_in_FOV_constraint_;
+        using BaseClass::apply_divergence_free_constraint_;
         using BaseClass::iter_num_;
         using BaseClass::max_iter_num_;
         using BaseClass::dissimilarity_thres_;
@@ -162,19 +168,19 @@ namespace Gadgetron
         coord_type deform_delta_scale_factor_inverse_[D];
     };
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::
     hoImageRegDeformationFieldBidirectionalSolver() : BaseClass(), inverse_deform_enforce_iter_(10), inverse_deform_enforce_weight_(0.5)
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::~hoImageRegDeformationFieldBidirectionalSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::~hoImageRegDeformationFieldBidirectionalSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::initialize()
     {
         GADGET_CHECK_RETURN_FALSE(interp_inverse_!=NULL);
         GADGET_CHECK_RETURN_FALSE(warper_inverse_!=NULL);
@@ -224,8 +230,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::solve()
     {
         try
         {
@@ -282,15 +288,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::solve() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::
     enforceInverseTransform(TransformationType* transform, TransformationType* transform_inverse, DeformationFieldType* deform_delta, unsigned int iter_num)
     {
         try
@@ -573,15 +579,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::enforceInverseTransform(...) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::enforceInverseTransform(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image registration non-parametric solver for pixel-wise bidirectional deformation field -------------" << endl;
@@ -600,3 +606,4 @@ namespace Gadgetron
         os << "Weight to update the estimation of the inverse transform is : " << inverse_deform_enforce_weight_ << std::endl;
     }
 }
+#endif // hoImageRegDeformationFieldBidirectionalSolver_H_

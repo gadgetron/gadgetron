@@ -57,29 +57,29 @@ bool hoMatrix<T>::createMatrix(size_t rows, size_t cols, T* data, bool delete_da
 template <typename T> 
 inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 {
-    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<(*dimensions_)[0] && c<(*dimensions_)[1]);
+    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<dimensions_[0] && c<dimensions_[1]);
     return accesser_[c][r];
 }
 
 template <typename T> 
 inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
-    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<(*dimensions_)[0] && c<(*dimensions_)[1]);
+    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<dimensions_[0] && c<dimensions_[1]);
     return accesser_[c][r];
 }
 
 template <typename T> 
 inline size_t hoMatrix<T>::rows() const
 {
-    if ( dimensions_->empty() ) return 0;
-    return (*dimensions_)[0];
+    if ( dimensions_.empty() ) return 0;
+    return dimensions_[0];
 }
 
 template <typename T> 
 inline size_t hoMatrix<T>::cols() const
 {
-    if ( dimensions_->empty() ) return 0;
-    return (*dimensions_)[1];
+    if ( dimensions_.empty() ) return 0;
+    return dimensions_[1];
 }
 
 template <typename T> 
@@ -88,9 +88,9 @@ bool hoMatrix<T>::upperTri(const T& v)
     try
     {
         size_t r, c;
-        for (r=0; r<(*dimensions_)[0]; r++)
+        for (r=0; r<dimensions_[0]; r++)
         {
-            for (c=r+1; c<(*dimensions_)[1]; c++)
+            for (c=r+1; c<dimensions_[1]; c++)
             {
                 (*this)(r, c) = v;
             }
@@ -110,9 +110,9 @@ bool hoMatrix<T>::lowerTri(const T& v)
     try
     {
         size_t r, c;
-        for (c=0; c<(*dimensions_)[1]; c++)
+        for (c=0; c<dimensions_[1]; c++)
         {
-            for (r=c+1; r<(*dimensions_)[0]; r++)
+            for (r=c+1; r<dimensions_[0]; r++)
             {
                 (*this)(r, c) = v;
             }
@@ -131,12 +131,12 @@ bool hoMatrix<T>::copyUpperTriToLower()
 {
     try
     {
-        GADGET_CHECK_RETURN_FALSE((*dimensions_)[0]==(*dimensions_)[1]);
+        GADGET_CHECK_RETURN_FALSE(dimensions_[0]==dimensions_[1]);
 
         size_t r, c;
-        for (r=0; r<(*dimensions_)[0]; r++)
+        for (r=0; r<dimensions_[0]; r++)
         {
-            for (c=r+1; c<(*dimensions_)[1]; c++)
+            for (c=r+1; c<dimensions_[1]; c++)
             {
                 (*this)(c, r)= (*this)(r, c);
             }
@@ -155,12 +155,12 @@ bool hoMatrix<T>::copyLowerTriToUpper()
 {
     try
     {
-        GADGET_CHECK_RETURN_FALSE((*dimensions_)[0]==(*dimensions_)[1]);
+        GADGET_CHECK_RETURN_FALSE(dimensions_[0]==dimensions_[1]);
 
         size_t r, c;
-        for (c=0; c<(*dimensions_)[1]; c++)
+        for (c=0; c<dimensions_[1]; c++)
         {
-            for (r=c+1; r<(*dimensions_)[0]; r++)
+            for (r=c+1; r<dimensions_[0]; r++)
             {
                 (*this)(c, r)= (*this)(r, c);
             }
@@ -324,7 +324,7 @@ bool hoMatrix<T>::setIdentity()
         size_t ROW = this->rows();
         size_t COL = this->cols();
 
-        size_t N = std::min(ROW, COL);
+        size_t N = ((ROW<COL) ? ROW : COL);
 
         this->fill(T(0));
 
@@ -404,10 +404,10 @@ void hoMatrix<T>::print(std::ostream& os) const
 
     os << "hoMatrix (row X col): " << this->rows() << " X " << this->cols() << " : " << std::string(typeid(T).name()) << endl;
     size_t r, c;
-    for (r=0; r<(*dimensions_)[0]; r++) 
+    for (r=0; r<dimensions_[0]; r++) 
     {
         os << "r " << r << ":\t";
-        for (c=0; c<(*dimensions_)[1]; c++)
+        for (c=0; c<dimensions_[1]; c++)
         {
             os << setprecision(10) << (*this)(r,c) << "\t";
         }
@@ -508,7 +508,6 @@ bool copyL2U(hoMatrix<T>& A)
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
         size_t R = A.rows();
-        size_t C = A.cols();
 
         size_t row, col;
         for(row=0; row<R; row++) 

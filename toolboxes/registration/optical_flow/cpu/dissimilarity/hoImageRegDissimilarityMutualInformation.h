@@ -7,7 +7,7 @@
             International Journal of Computer Vision. December 2002, Volume 50, Issue 3, pp 329-343.
             http://link.springer.com/article/10.1023%2FA%3A1020830525823
 
-            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSIT´E DE NICE - SOPHIA ANTIPOLIS. May 2002.
+            [2] Gerardo Hermosillo. Variational Methods for Multimodal Image Matching. PhD Thesis, UNIVERSITï¿½E DE NICE - SOPHIA ANTIPOLIS. May 2002.
             http://webdocs.cs.ualberta.ca/~dana/readingMedIm/papers/hermosilloPhD.pdf
 
             This derivative computation code is based on the listed source code at page 172 - 174 in ref [2].
@@ -15,23 +15,27 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDissimilarityMutualInformation_H_
+#define hoImageRegDissimilarityMutualInformation_H_
+
 #pragma once
 
 #include "hoImageRegDissimilarityHistogramBased.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilarityMutualInformation : public hoImageRegDissimilarityHistogramBased<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilarityMutualInformation : public hoImageRegDissimilarityHistogramBased<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilarityMutualInformation<ValueType, D> Self;
-        typedef hoImageRegDissimilarityHistogramBased<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilarityMutualInformation<ImageType> Self;
+        typedef hoImageRegDissimilarityHistogramBased<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -93,8 +97,8 @@ namespace Gadgetron
         ho2DArray<hist_value_type> Dist;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityMutualInformation<ValueType, D>::
+    template<typename ImageType> 
+    hoImageRegDissimilarityMutualInformation<ImageType>::
     hoImageRegDissimilarityMutualInformation(ValueType betaArg, unsigned int num_bin_target, unsigned int num_bin_warpped, ValueType bg_value) 
         : BaseClass(num_bin_target, num_bin_warpped, bg_value) 
     {
@@ -102,13 +106,13 @@ namespace Gadgetron
         betaArg_[1] = betaArg;
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityMutualInformation<ValueType, D>::~hoImageRegDissimilarityMutualInformation()
+    template<typename ImageType> 
+    hoImageRegDissimilarityMutualInformation<ImageType>::~hoImageRegDissimilarityMutualInformation()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilarityMutualInformation<ImageType>::ValueType hoImageRegDissimilarityMutualInformation<ImageType>::evaluate(ImageType& w)
     {
         try
         {
@@ -127,7 +131,7 @@ namespace Gadgetron
             }
 
             hist_value_type histSum=0;
-            Gadgetron::norm1(hist_, histSum);
+            histSum = Gadgetron::asum(hist_);
             Gadgetron::scal( hist_value_type(1.0/histSum), hist_);
 
             hist_.sumOverRow(hist_target_);
@@ -157,14 +161,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ImageType>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    bool hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluateDeriv(ImageType& w)
+    template<typename ImageType> 
+    bool hoImageRegDissimilarityMutualInformation<ImageType>::evaluateDeriv(ImageType& w)
     {
         try
         {
@@ -263,15 +267,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ImageType>::evaluate() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarityMutualInformation<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilarityMutualInformation<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron mutual information image dissimilarity meausre -------------" << endl;
@@ -287,3 +291,4 @@ namespace Gadgetron
         os << "Kernel size for probability density estimation is : " << betaArg_[0] << " x " << betaArg_[1] << endl;
     }
 }
+#endif // hoImageRegDissimilarityMutualInformation_H_

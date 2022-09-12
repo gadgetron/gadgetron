@@ -1,7 +1,6 @@
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
-#include "FileInfo.h"
 
 #include <ace/SOCK_Acceptor.h>
 #include <ace/Addr.h>
@@ -25,7 +24,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	std::string port("9002");
 
 	ACE_TCHAR hostname[1024];
-	//We will do a little trick to figure out what the hostname would be accoring to ACE
+	//We will do a little trick to figure out what the hostname would be according to ACE
 	ACE_SOCK_Acceptor listener (ACE_Addr::sap_any);
 	ACE_INET_Addr addr;
 	listener.get_local_addr (addr);
