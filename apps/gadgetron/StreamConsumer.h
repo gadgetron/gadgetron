@@ -22,6 +22,9 @@
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server;
 
+namespace
+{
+
 class ErrorThrower : public Connection::ErrorReporter
 {
   public:
@@ -30,8 +33,6 @@ class ErrorThrower : public Connection::ErrorReporter
     }
 };
 
-
-namespace {
 std::filesystem::path find_config_path(const std::string& home_dir, const std::string& config_xml)
 {
     std::filesystem::path path;
@@ -45,6 +46,7 @@ std::filesystem::path find_config_path(const std::string& home_dir, const std::s
 
     return config_path;
 }
+
 } // namespace
 
 class StreamConsumer
