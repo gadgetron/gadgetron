@@ -38,7 +38,6 @@ public:
         im.setHead(h);
 
         typedef unsigned long long size_t_type;
-        typedef unsigned long long size_t_type;
 
         //Read meta attributes
         size_t_type meta_attrib_length;
