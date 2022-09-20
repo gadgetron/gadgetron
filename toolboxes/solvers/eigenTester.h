@@ -112,7 +112,7 @@ public:
 	 }
 
 	  boost::shared_ptr<ARRAY_TYPE> get_dominant_eigenvector(){
-		  GINFO(std::string("Starting dominant eigenvector calculations " + std::to_string(tolerance) + "\n").c_str());
+		  GINFO_STREAM("Starting dominant eigenvector calculations " << tolerance << std::endl);
 		  ELEMENT_TYPE norm = ELEMENT_TYPE(1);
 		  ELEMENT_TYPE norm_old = ELEMENT_TYPE(2);
 
@@ -129,7 +129,7 @@ public:
 		  while (abs(norm-norm_old)/abs(norm)> tolerance){
 			  norm_old=norm;
 			  mult_MH_M(in,out);
-			  GINFO(std::string(dot(in,out) + "\n").c_str());
+			  GINFO_STREAM(dot(in,out) << std::endl);
 
 			  norm = nrm2(out);
 

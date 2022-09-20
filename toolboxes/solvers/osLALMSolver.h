@@ -87,11 +87,11 @@ public:
 			this->encoding_operator_->mult_M(precon_image.get(),&tmp_projection,false);
 			GINFO(std::string("Tmp proj norm " + std::to_string(asum(&tmp_projection)) + "\n").c_str());
 			this->encoding_operator_->mult_MH(&tmp_projection,precon_image.get(),false);
-			GINFO(std::string("Precon Image norm " + std::to_string(asum(precon_image.get())) + "\n").c_str());
+			GINFO_STREAM("Precon Image norm " << asum(precon_image.get()) << std::endl);
 			clamp_min(precon_image.get(),REAL(1e-6));
-			GINFO(std::string("Precon Image norm " + std::to_string(asum(precon_image.get())) + "\n").c_str());
+			GINFO_STREAM("Precon Image norm " << asum(precon_image.get()) << std::endl);
 			reciprocal_inplace(precon_image.get());
-			GINFO(std::string("Precon Image norm " + std::to_string(asum(precon_image.get())) + "\n").c_str());
+			GINFO_STREAM("Precon Image norm " << asum(precon_image.get()) << std::endl);
 			//ones_image *= (ELEMENT_TYPE) this->encoding_operator_->get_number_of_subsets();
 		}
 		ARRAY_TYPE s(image_dims.get());
@@ -143,8 +143,7 @@ public:
 				this->encoding_operator_->mult_M(x,tmp_projections[subset].get(),subset,false);
 				*tmp_projections[subset] -= *subsets[subset];
 				if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-					GINFO(std::string(
-						"Iteration " + std::to_string(i) + " Subset " + std::to_string(subset) + " Update norm: " + std::to_string(nrm2(tmp_projections[subset].get())) + "\n").c_str());
+					GINFO_STREAM("Iteration " << i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl);
 				}
 				this->encoding_operator_->mult_MH(tmp_projections[subset].get(),&s,subset,false);
 				s*= REAL(this->encoding_operator_->get_number_of_subsets());
@@ -269,7 +268,7 @@ protected:
 			num++;
 		}
 
-		std::stringstream stream; 
+		std::stringstream stream;
 		for (auto & group : regularization_groups)
 			for (auto op : group){
 				auto w = op->get_weight();
@@ -277,7 +276,7 @@ protected:
 				result += w;
 				num++;
 			}
-			
+
 		GINFO(stream.str().c_str());
 
 		result /= num;
