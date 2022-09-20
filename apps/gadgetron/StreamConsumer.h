@@ -20,8 +20,9 @@
 #include "Reader.h"
 
 using namespace Gadgetron::Core;
+using namespace Gadgetron::Server;
 
-class ErrorThrower : public ::Gadgetron::Server::Connection::ErrorReporter
+class ErrorThrower : public Connection::ErrorReporter
 {
   public:
     void operator()(const std::string& location, const std::string& message) override {
@@ -60,10 +61,10 @@ public:
             args_["dir"].as<boost::filesystem::path>().string()};
 
         ISMRMRD::IsmrmrdHeader hdr = consume_ismrmrd_header(input_stream, output_stream);
-        auto storage_spaces = ::Gadgetron::Server::setup_storage_spaces(storage_address_, hdr);
+        auto storage_spaces = setup_storage_spaces(storage_address_, hdr);
 
         auto context = StreamContext(hdr, paths, args_, storage_address_, storage_spaces);
-        auto loader = ::Gadgetron::Server::Connection::Loader(context);
+        auto loader = Connection::Loader(context);
         auto config_path = find_config_path(args_["home"].as<boost::filesystem::path>().string(), config_xml_name);
 
         std::ifstream file(config_path, std::ios::in | std::ios::binary);
@@ -71,7 +72,7 @@ public:
             throw std::runtime_error("Failed to open file at path: " + config_path.string());
         }
 
-        auto config = ::Gadgetron::Server::Connection::parse_config(file);
+        auto config = Connection::parse_config(file);
         file.close();
 
         auto stream = loader.load(config.stream);
@@ -83,7 +84,7 @@ public:
             try
             {
                 ErrorThrower error_thrower;
-                ::Gadgetron::Server::Connection::ErrorHandler error_handler(error_thrower, std::string(__FILE__));
+                Connection::ErrorHandler error_handler(error_thrower, std::string(__FILE__));
                 stream->process(std::move(input_channel.input), std::move(output_channel.output), error_handler);
                 processing = false;
             }
