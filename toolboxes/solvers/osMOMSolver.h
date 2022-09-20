@@ -119,7 +119,7 @@ public:
 				*tmp_projections[subset] -= *subsets[subset];
 				*tmp_projections[subset] *= ELEMENT_TYPE(-1);
 				if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-					GINFO_STREAM("Iteration %d Subset %d " <<i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl);
+					GINFO_STREAM("Iteration %d Subset %d " << i << " Subset " << subset << " Update norm: " << nrm2(tmp_projections[subset].get()) << std::endl);
 				}
 
 				this->encoding_operator_->mult_MH(tmp_projections[subset].get(),&tmp_image,subset,false);
