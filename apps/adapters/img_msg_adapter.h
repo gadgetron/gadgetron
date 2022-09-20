@@ -73,7 +73,6 @@ public:
 
     void read(std::istream& stream)
     {
-        //Read the image headerfrom the socket
         ISMRMRD::ImageHeader h;
         stream.read(reinterpret_cast<char*>(&h),sizeof(ISMRMRD::ImageHeader));
 
