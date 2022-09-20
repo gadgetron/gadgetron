@@ -17,8 +17,7 @@
 class IsmrmrdMsgAdapter
 {
 public:
-    IsmrmrdMsgAdapter(){}
-    ~IsmrmrdMsgAdapter(){}
+    explicit IsmrmrdMsgAdapter() = default;
 
     void convert(
         std::ostream& stream,

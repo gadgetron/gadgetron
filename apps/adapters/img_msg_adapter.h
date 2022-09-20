@@ -136,8 +136,7 @@ protected:
 class ImgMsgAdapter
 {
 public:
-    ImgMsgAdapter(){}
-    ~ImgMsgAdapter(){}
+    explicit ImgMsgAdapter() = default;
 
     void convert(
         std::istream& input_stream,
@@ -146,6 +145,13 @@ public:
     {
         input_stream.exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
 
+        read_ismrmrd_header(input_stream);
+        read_images(input_stream, ismrmrd_filepath, output_group);
+    }
+
+private:
+    void read_ismrmrd_header(std::istream& input_stream)
+    {
         ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::ERROR;
         input_stream.read(reinterpret_cast<char*>(&id), sizeof(::Gadgetron::Core::MessageID));
 
@@ -175,7 +181,10 @@ public:
                 throw std::runtime_error("Unexpected message ID: " + std::to_string(id));
             }
         }
+    }
 
+    void read_images(std::istream& input_stream, const std::string& ismrmrd_filepath, const std::string& output_group)
+    {
         bool closed = false;
         while (!input_stream.eof() && !closed)
         {
@@ -203,8 +212,4 @@ public:
             }
         }
     }
-
-private:
-
-
 };
