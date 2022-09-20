@@ -126,7 +126,7 @@ public:
     ISMRMRD::IsmrmrdHeader consume_ismrmrd_header(std::istream& input_stream, std::ostream& output_stream)
     {
         ISMRMRD::IsmrmrdHeader hdr;
-        MessageID id = MessageID::ERROR;
+        MessageID id = MessageID::CLOSE;
         input_stream.read(reinterpret_cast<char*>(&id), sizeof(MessageID));
         output_stream.write(reinterpret_cast<char*>(&id), sizeof(MessageID));
 
@@ -155,7 +155,7 @@ public:
             }
             default:
             {
-                throw std::runtime_error("Expected HEADER enumeration: " + std::to_string(id));
+                throw std::runtime_error("Expected HEADER enumeration, got: " + std::to_string(id));
             }
         }
 
@@ -194,6 +194,9 @@ public:
                     break;
                 }
                 case MessageID::ERROR:
+                {
+                    throw std::runtime_error("Got error while processing input stream");
+                }
                 case MessageID::CLOSE:
                 {
                     auto destruct_me = std::move(input_channel.output);

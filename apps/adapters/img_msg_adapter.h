@@ -150,7 +150,7 @@ public:
 private:
     void read_ismrmrd_header(std::istream& input_stream)
     {
-        ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::ERROR;
+        ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::CLOSE;
         input_stream.read(reinterpret_cast<char*>(&id), sizeof(::Gadgetron::Core::MessageID));
 
         ISMRMRD::IsmrmrdHeader hdr;
@@ -186,7 +186,7 @@ private:
         bool closed = false;
         while (!input_stream.eof() && !closed)
         {
-            ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::ERROR;
+            ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::CLOSE;
             input_stream.read(reinterpret_cast<char*>(&id), sizeof(::Gadgetron::Core::MessageID));
             auto output = GadgetronClientImageMessageReader(ismrmrd_filepath, output_group);
 
@@ -198,10 +198,13 @@ private:
                     break;
                 }
                 case ::Gadgetron::Core::MessageID::CLOSE:
-                case ::Gadgetron::Core::MessageID::ERROR:
                 {
                     closed = true;
                     break;
+                }
+                case ::Gadgetron::Core::MessageID::ERROR:
+                {
+                    throw std::runtime_error("Got error while processing input stream");
                 }
                 default:
                 {
