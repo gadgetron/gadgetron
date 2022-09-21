@@ -17,12 +17,12 @@ output_path="$(dirname "$0")/build_pkg"
 channels=(
   nvidia
   ismrmrd
+  roopchansinghv
   gadgetron
   conda-forge
   bioconda
   defaults
   intel
-  cefca
 )
 
 channel_directives=$(printf -- "-c %s " "${channels[@]}")
