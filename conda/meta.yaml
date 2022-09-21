@@ -13,8 +13,11 @@ requirements:
   build:
     - armadillo>=9.900.5
     - boost=1.76.0
+    - clang=13.0.1                        # [osx]
+    - clangxx=13.0.1                      # [osx]
     - cmake>=3.21.3
-    - gadgetron::cpr=1.7.2
+    - gadgetron::cpr=1.7.2                # [linux64]
+    - roopchansinghv::cpr=1.7.2           # [osx]
     - cuda-libraries-dev=11.6.1           # [linux64]
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
@@ -44,11 +47,12 @@ requirements:
     - pyyaml>=6.0
     - python>=3.9.7
     - gadgetron::range-v3>=0.11.0
-    - sysroot_linux-64=2.17
+    - sysroot_linux-64=2.17               # [linux64]
   run:
     - armadillo>=9.900.5
     - boost=1.76.0
-    - gadgetron::cpr=1.7.2
+    - gadgetron::cpr=1.7.2                # [linux64]
+    - roopchansinghv::cpr=1.7.2           # [osx]
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
     - dcmtk=3.6.1
@@ -60,7 +64,7 @@ requirements:
     - libblas=*=*mkl
     - libcurl=7.79.1
     - libxml2=2.9.12
-    - memkind>=1.10.1
+    - memkind>=1.10.1                     # [linux64]
     - mkl>=2022.0.0
     - ismrmrd::mrd-storage-server=0.0.12
     - numpy>=1.22.1
