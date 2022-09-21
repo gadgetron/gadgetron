@@ -1,0 +1,33 @@
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build-macos-conda-packages:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: gadgetron
+          environment-file: environment-macos.yml
+          python-version: 3.9.7
+          auto-activate-base: false
+      - name: Build macos conda packages
+        shell: bash -l {0}
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          ./conda/package.sh
+      # - name: Build and push macos conda packages
+        # shell: bash -l {0}
+        # if: ${{ github.event_name == 'push' }}
+        # env:
+          # ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        # run: |
+          # ./build.sh --include-user-channel --token "$ANACONDA_TOKEN" --push -p gadgetron
+

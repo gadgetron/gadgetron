@@ -129,7 +129,11 @@ jobs:
   - script: |
         set -e
         uname -a
-        which curl
-        which wget
-        which conda
     displayName: "Check for basic utilities"
+    # To be enabled (and replace above lines) when Azure macOS conda build issues are resolved.
+      # eval "$(conda shell.bash hook)"
+      # conda env create -f environment.yml
+      # conda activate gadgetron
+      # set -euo pipefail
+      # cd conda && ./package.sh
+    # displayName: "Building Gadgetron on macOS"
