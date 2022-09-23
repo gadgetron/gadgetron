@@ -109,8 +109,7 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
     subprocess.run(command,
                    env=environment,
                    stdout=log,
-                   stderr=log,
-                   timeout=240)
+                   stderr=log)
 
 def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, configurations, input_adapter, output_adapter, output_group, log_stdout, log_stderr):
     stream_command = f"{input_adapter} -i {input}"
@@ -126,8 +125,7 @@ def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, co
     subprocess.run(split_cmd,
                    env=environment,
                    stdout=log_stdout,
-                   stderr=log_stderr,
-                   timeout=240)
+                   stderr=log_stderr)
 
 
 def wait_for_storage_server(port, proc, retries=20):
