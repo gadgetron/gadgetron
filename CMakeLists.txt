@@ -340,10 +340,10 @@ endif()
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
-    find_package(Python3 COMPONENTS Development NumPy REQUIRED)
+    find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
     find_package(Boost COMPONENTS python3${Python3_VERSION_MINOR} REQUIRED)
 
-    message("Found numpy : ${Python3_Numpy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
+    message("Found numpy : ${Python3_NumPy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
 
     if (Python3_VERSION_MINOR LESS 7)
         message(FATAL_ERROR "Gadgetron Python support requires Python 3.7 or newer. Found: ${Python3_VERSION}")
