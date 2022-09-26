@@ -3,18 +3,21 @@
 In the following walkthrough we demonstrate how to send raw data through the Gadgetron and obtain images.
 
 
-The walkthrough assumes that you have installed or built the Gadgetron. You can also use the Gadgetron docker images that are distributed from the GitHub container registries. Specifically, a command like:
+The walkthrough assumes that you have installed or built the Gadgetron. You can also use the Gadgetron docker images
+that are distributed from the GitHub container registries. Specifically, a command like:
 
 ```bash
 docker run --net=host -it --rm --gpus=all ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_rt_cuda:latest /bin/bash
 ```
 
-should open a terminal where you can type the commands in this walkthrough. You may need more than one terminal to have both a client and server window. 
+should open a terminal where you can type the commands in this walkthrough. You may require more than one terminal to
+have simultaneous client and server sessions while using the Gadgetron in server mode.
 
 
 ## Validate installation
 
-First, validate that the Gadgetron is installed and working. The command `gadgetron --info` should give you information about your installed version of the Gadgetron and it would look something like this:
+First, validate that the Gadgetron is installed and working. The command `gadgetron --info` should give you information
+about your installed version of the Gadgetron and it would look something like this:
 
 ```
 $ gadgetron --info
@@ -36,9 +39,35 @@ Gadgetron Version Info
 
 The output may vary on your specific setup, but you will see error messages if the Gadgetron is not installed or not installed correctly.
 
-## Sending data
 
-Open up two terminal windows. We will use one for the Gadgetron server and one for the Gadgetron client. In the server window you should be able to simply type `gadgetron` and see the following output:
+## Performing Reconstructions
+
+The Gadgetron can be run in two ways to perform reconstructions. One is a server mode in which the Gadgetron listens for
+active connections on a desired TCP port and performs reconstructions with data received over the network.
+The second is a stream mode in which the Gadgetron is provided serialized data from the local machine, either from an
+input file or through an [Anonymous pipe](https://en.wikipedia.org/wiki/Anonymous_pipe).
+
+
+### Generating test data
+
+The ISMRMRD library has an application that allows you to generate a simple dataset for testing purposes. If you have
+your own dataset this step is not neccesary. However note that the input file used in the following examples will
+reference the data as 'testdata.h5'.
+
+To generate test data type the following command in a terminal:
+
+```bash
+ismrmrd_generate_cartesian_shepp_logan -r 10
+```
+
+This generates a dataset in the current working directory (./testdata.h5) with 8 coils and 10 repetitions. You can
+then use this data to perform reconstructions with the gadgetron in either server or stream mode.
+
+
+### Server Mode
+
+Open up two terminals. We will use one for the Gadgetron server and one for the Gadgetron client. In the server
+terminal you should be able to simply type `gadgetron` and see the following output:
 
 ```
 $ gadgetron
@@ -54,22 +83,9 @@ $ gadgetron
 Configuring services, Running on port 9002
 ```
 
-This means that your Gadgtron server is ready to receive data. 
+This means that your Gadgetron server is running and ready to receive data.
 
-Next (in the client terminal) we generate some data and send it in. The ISMRMRD library has an application that allows you to generate a simple dataset for testing purposes. On the comand line type
-
-```bash
-ismrmrd_generate_cartesian_shepp_logan -r 10
-```
-
-which generates a dataset with 8 coils and 10 repetitions. 
-Send it to the Gadgetron server using the following command:
-
-```bash
-gadgetron_ismrmrd_client -f testdata.h5 
-```
-
-You should see something similar to the following in the client window:
+The next step is to utilize the gadgetron_ismrmrd_client to send the data to the gadgetron over the network:
 
 ```
 $ gadgetron_ismrmrd_client -f testdata.h5
@@ -84,7 +100,7 @@ Gadgetron ISMRMRD client
   -- hdf5 group out  :      2022-03-08 00:35:04
 ```
 
-In the server window, you should see something like this:
+This should begin a reconstruction and you should see output like this in the server terminal:
 
 ```
 03-08 00:35:04.947 INFO [Server.cpp:38] Accepted connection from: ::ffff:127.0.0.1
@@ -137,9 +153,50 @@ In the server window, you should see something like this:
 03-08 00:35:05.852 INFO [Core.cpp:77] Connection state: [FINISHED]
 ```
 
-The images are saved in the folder in which you started the `gadgetron_ismrmrd_client`. The client appends the result to an HDF5 file called `out.h5` (if no other file name is specified). A group is created with the current time and date and the images are stored in that group. If you run multiple reconstructions one after another, the results will be added to the same file with a new group is created for each run. This makes it easy to compare results from different reconstructions.
+By default the output images are saved in the folder in which you started the `gadgetron_ismrmrd_client`.
+The client appends the result to an HDF5 file called `out.h5` (if no other file name is specified).
+A group is created with the current time and date and the images are stored in that group. If you run multiple
+reconstructions one after another, the results will be added to the same file with a new group is created for each run.
+This makes it easy to compare results from different reconstructions.
 
-To view the images from the first group, you can do something like this in a Jupyter notebook:
+### Stream Mode
+
+Open up a single terminal. We begin by converting 'testdata.h5' generated above to an intermediary streaming format:
+
+    mrd_to_stream -i testdata.h5 -o test_out.dat
+
+This produces a file which can be consumed by the gadgetron in stream mode as follows:
+
+    gadgetron --from_stream -c default.xml -i test_out.dat -o img_out.dat
+
+The output of this command generates a file that contains images in an intermediary format, which must be converted back
+
+    stream_to_mrd -i img_out.dat -o out.h5
+
+
+
+More simply, this entire chain can be performed in a single shell command by using anonymous pipes:
+
+    mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c default.xml | stream_to_mrd -o out.h5
+
+Also, A more complicated reconstruction can be formulated by chaining compatible reconstruction configurations, for
+instance a chain which produces complex images can be converted to floats images, and then to short images later.
+
+    mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out.h5
+
+A chain like this can be broken up with the intermediary data being processed in different ways enabling post processing:
+
+    mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml -o tmp.dat
+
+And consumed in different ways:
+
+    gadgetron --from_stream -c stream_complex_to_float.xml -i tmp.dat | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out1.h5
+    cat out.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out2.h5
+
+### Viewing output
+
+IF you have followed either the server or stream based reconstruction above you should have an output file out.h5.
+The images can be viewed in a Jupyter Notebook using the following code snippet:
 
 ```python
 import h5py
@@ -147,7 +204,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 %matplotlib inline
 
-f = h5py.File('/workspaces/gadgetron/temp/out.h5')
+f = h5py.File('/workspaces/gadgetron/out.h5')
 image_series = list(f.keys())
 data = np.array(f[image_series[0]]['image_0']['data']).squeeze()
 plt.imshow(data[0,:,:])
@@ -163,4 +220,7 @@ Gadgetron uses a [storage server](https://github.com/ismrmrd/mrd-storage-server)
 gadgetron --storage-address https://my-storage-server:3333
 ```
 
-For convenience during development, Gadgetron will start a storage server if no address is specified. However, for production scenarios, we stongly recommend setting up the storage server ahead of time and passing in its URL to Gadgetron.
+For convenience during development, Gadgetron will start a storage server if no address is specified. However, for
+production scenarios, we stongly recommend setting up the storage server ahead of time and passing in its URL to
+Gadgetron. This is especially true while running in stream mode, as it is likely that there is a desire for the storage
+to persist beyond the lifetime of a single instance of the Gadgetron consuming streamed data.
