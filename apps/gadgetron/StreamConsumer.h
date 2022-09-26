@@ -13,11 +13,15 @@
 #include "connection/Loader.h"
 
 #include "MessageID.h"
-#include "writers/ImageWriter.h"
-#include "readers/AcquisitionReader.h"
-#include "readers/WaveformReader.h"
-#include "readers/ImageReader.h"
 #include "Reader.h"
+#include "readers/AcquisitionBucketReader.h"
+#include "readers/AcquisitionReader.h"
+#include "readers/ImageReader.h"
+#include "readers/IsmrmrdImageArrayReader.h"
+#include "readers/WaveformReader.h"
+#include "writers/AcquisitionBucketWriter.h"
+#include "writers/ImageWriter.h"
+#include "writers/IsmrmrdImageArrayWriter.h"
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server;
@@ -172,6 +176,8 @@ public:
         auto acq_reader = Readers::AcquisitionReader();
         auto wav_reader = Readers::WaveformReader();
         auto img_reader = Readers::ImageReader();
+        auto img_array_reader = Readers::IsmrmrdImageArrayReader();
+        auto acq_bucket_reader = Readers::AcquisitionBucketReader();
         bool closed = false;
 
         while (!input_stream.eof() && !closed)
@@ -196,6 +202,16 @@ public:
                     input_channel.output.push_message(img_reader.read(input_stream));
                     break;
                 }
+                case MessageID::GADGET_MESSAGE_ISMRMRD_IMAGE_ARRAY:
+                {
+                    input_channel.output.push_message(img_array_reader.read(input_stream));
+                    break;
+                }
+                case MessageID::GADGET_MESSAGE_BUCKET:
+                {
+                    input_channel.output.push_message(acq_bucket_reader.read(input_stream));
+                    break;
+                }
                 case MessageID::ERROR:
                 {
                     throw std::runtime_error("Got error while processing input stream");
@@ -217,13 +233,27 @@ public:
     void process_output_messages(ChannelPair& output_channel, std::ostream& output_stream)
     {
         auto writer = Writers::ImageWriter();
+        auto img_array_writer = Writers::IsmrmrdImageArrayWriter();
+        auto acq_bucket_writer = Writers::AcquisitionBucketWriter();
 
         while (true)
         {
             try
             {
                 auto message = output_channel.input.pop();
-                writer.write(output_stream, std::move(message));
+
+                if (convertible_to<Gadgetron::AcquisitionBucket>(message) )
+                {
+                    acq_bucket_writer.write(output_stream, std::move(message));
+                }
+                else if (convertible_to<Gadgetron::IsmrmrdImageArray>(message) )
+                {
+                    img_array_writer.write(output_stream, std::move(message));
+                }
+                else
+                {
+                    writer.write(output_stream, std::move(message));
+                }
             }
             catch (const ChannelClosed& exc)
             {
