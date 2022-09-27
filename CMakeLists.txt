@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17...3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10...3.12 FATAL_ERROR)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -340,7 +340,7 @@ endif()
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
-    find_package(Python3 COMPONENTS Development NumPy REQUIRED)
+    find_package(Python3 3.9.7 EXACT COMPONENTS Interpreter Development NumPy REQUIRED)
     find_package(Boost COMPONENTS python3${Python3_VERSION_MINOR} REQUIRED)
 
     message("Found numpy : ${Python3_NumPy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
