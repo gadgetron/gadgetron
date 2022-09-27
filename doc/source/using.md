@@ -191,7 +191,7 @@ A chain like this can be broken up with the intermediary data being processed in
 And consumed in different ways:
 
     gadgetron --from_stream -c stream_complex_to_float.xml -i tmp.dat | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out1.h5
-    cat out.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out2.h5
+    cat tmp.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out2.h5
 
 ### Viewing output
 
