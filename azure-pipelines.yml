@@ -129,7 +129,10 @@ jobs:
   - script: |
         set -e
         uname -a
-    displayName: "Check for basic utilities"
+        system_profiler SPHardwareDataType
+        system_profiler SPMemoryDataType
+        sysctl hw.memsize
+    displayName: "Check for basic utilities and available hardware and RAM on macOS"
     # To be enabled (and replace above lines) when Azure macOS conda build issues are resolved.
       # eval "$(conda shell.bash hook)"
       # conda env create -f environment.yml
