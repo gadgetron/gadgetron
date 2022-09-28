@@ -173,8 +173,6 @@ The output of this command generates a file that contains images in an intermedi
 
     stream_to_mrd -i img_out.dat -o out.h5
 
-
-
 More simply, this entire chain can be performed in a single shell command by using anonymous pipes:
 
     mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c default.xml | stream_to_mrd -o out.h5
@@ -192,6 +190,11 @@ And consumed in different ways:
 
     gadgetron --from_stream -c stream_complex_to_float.xml -i tmp.dat | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out1.h5
     cat tmp.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out2.h5
+
+Additionally, the gadgetron docker container can be leveraged to invoke a reconstruction without requiring gadgetron to
+be installed locally.
+
+    mrd_to_stream -i testdata.h5 | docker run -i --gpus=all ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_rt_cuda:latest --from_stream -c default.xml | stream_to_mrd -o out.h5
 
 ### Viewing output
 
