@@ -158,6 +158,7 @@ set(gadgetron_mricore_config_files
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_Complex.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI_AVE.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_ImageArray.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_SNR.xml
