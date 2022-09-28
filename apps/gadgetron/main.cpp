@@ -88,7 +88,6 @@ int main(int argc, char *argv[]) {
         }
 
         GINFO("Gadgetron %s [%s]\n", GADGETRON_VERSION_STRING, GADGETRON_GIT_SHA1_HASH);
-        GINFO("Running on port %d\n", args["port"].as<unsigned short>());
 
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
@@ -97,6 +96,7 @@ int main(int argc, char *argv[]) {
 
         if(!args.count("from_stream"))
         {
+            GINFO("Running on port %d\n", args["port"].as<unsigned short>());
             Server server(args, storage_address);
             server.serve();
         }
