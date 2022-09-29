@@ -143,55 +143,41 @@ public:
     {
         input_stream.exceptions(std::istream::failbit | std::istream::badbit | std::istream::eofbit);
 
-        read_ismrmrd_header(input_stream);
-        read_images(input_stream, ismrmrd_filepath, output_group);
+        read_messages(input_stream, ismrmrd_filepath, output_group);
     }
 
 private:
     void read_ismrmrd_header(std::istream& input_stream)
     {
-        ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::CLOSE;
-        input_stream.read(reinterpret_cast<char*>(&id), sizeof(::Gadgetron::Core::MessageID));
-
         ISMRMRD::IsmrmrdHeader hdr;
 
-        switch(id)
+        uint32_t hdr_size = 0;
+        input_stream.read(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
+        if(hdr_size > 0)
         {
-            case ::Gadgetron::Core::MessageID::HEADER:
-            {
-                uint32_t hdr_size = 0;
-                input_stream.read(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
-                if(hdr_size > 0)
-                {
-                    std::vector<char> data(hdr_size);
-                    input_stream.read(data.data(), hdr_size);
-                    ISMRMRD::deserialize(std::string(data.data(), data.size()).c_str(), hdr);
-                }
-                else
-                {
-                    throw std::runtime_error("Expected size > 0, got: " + std::to_string(hdr_size));
-                }
-
-                break;
-            }
-            default:
-            {
-                throw std::runtime_error("Unexpected message ID: " + std::to_string(id));
-            }
+            std::vector<char> data(hdr_size);
+            input_stream.read(data.data(), hdr_size);
+            ISMRMRD::deserialize(std::string(data.data(), data.size()).c_str(), hdr);
         }
     }
 
-    void read_images(std::istream& input_stream, const std::string& ismrmrd_filepath, const std::string& output_group)
+    void read_messages(std::istream& input_stream, const std::string& ismrmrd_filepath, const std::string& output_group)
     {
+        auto output = GadgetronClientImageMessageReader(ismrmrd_filepath, output_group);
         bool closed = false;
+
         while (!input_stream.eof() && !closed)
         {
             ::Gadgetron::Core::MessageID id = ::Gadgetron::Core::MessageID::CLOSE;
             input_stream.read(reinterpret_cast<char*>(&id), sizeof(::Gadgetron::Core::MessageID));
-            auto output = GadgetronClientImageMessageReader(ismrmrd_filepath, output_group);
 
             switch(id)
             {
+                case ::Gadgetron::Core::MessageID::HEADER:
+                {
+                    read_ismrmrd_header(input_stream);
+                    break;
+                }
                 case ::Gadgetron::Core::MessageID::GADGET_MESSAGE_ISMRMRD_IMAGE:
                 {
                     output.read(input_stream);
