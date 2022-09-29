@@ -157,7 +157,6 @@ private:
         {
             std::vector<char> data(hdr_size);
             input_stream.read(data.data(), hdr_size);
-            ISMRMRD::deserialize(std::string(data.data(), data.size()).c_str(), hdr);
         }
     }
 
