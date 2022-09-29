@@ -149,8 +149,6 @@ public:
 private:
     void read_ismrmrd_header(std::istream& input_stream)
     {
-        ISMRMRD::IsmrmrdHeader hdr;
-
         uint32_t hdr_size = 0;
         input_stream.read(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
         if(hdr_size > 0)
