@@ -169,7 +169,7 @@ This produces a file which can be consumed by the gadgetron in stream mode as fo
 
     gadgetron --from_stream -c default.xml -i test_out.dat -o img_out.dat
 
-The output of this command generates a file that contains images in an intermediary format, which must be converted back
+The output of this command generates a file that contains images in an intermediary format, which must be converted back:
 
     stream_to_mrd -i img_out.dat -o out.h5
 
@@ -177,8 +177,8 @@ More simply, this entire chain can be performed in a single shell command by usi
 
     mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c default.xml | stream_to_mrd -o out.h5
 
-Also, A more complicated reconstruction can be formulated by chaining compatible reconstruction configurations, for
-instance a chain which produces complex images can be converted to floats images, and then to short images later.
+Also, a more complicated reconstruction can be formulated by chaining compatible reconstruction configurations, for
+instance a chain which produces complex images can be converted to floats images, and then to short images later:
 
     mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out.h5
 
@@ -192,13 +192,13 @@ And consumed in different ways:
     cat tmp.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out2.h5
 
 Additionally, the gadgetron docker container can be leveraged to invoke a reconstruction without requiring gadgetron to
-be installed locally.
+be installed locally:
 
     mrd_to_stream -i testdata.h5 | docker run -i --gpus=all ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_rt_cuda:latest --from_stream -c default.xml | stream_to_mrd -o out.h5
 
 ### Viewing output
 
-IF you have followed either the server or stream based reconstruction above you should have an output file out.h5.
+If you have followed either the server or stream based reconstruction above you should have an output file out.h5.
 The images can be viewed in a Jupyter Notebook using the following code snippet:
 
 ```python
