@@ -1,8 +1,7 @@
+#include <iostream>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-
-#include <iostream>
 
 #include "log.h"
 #include "gadgetron_paths.h"
@@ -13,16 +12,17 @@
 #include "gadgetron_config.h"
 
 #include "Server.h"
+#include "StreamConsumer.h"
+
 
 using namespace boost::filesystem;
 using namespace boost::program_options;
 using namespace Gadgetron::Server;
 
 int main(int argc, char *argv[]) {
-
     options_description gadgetron_options("Allowed options:");
     gadgetron_options.add_options()
-            ("help", "Prints this help message.")
+            ("help,h", "Prints this help message.")
             ("info", "Prints build info about the Gadgetron.")
             ("dir,W",
                 value<path>()->default_value(default_working_folder()),
@@ -32,7 +32,18 @@ int main(int argc, char *argv[]) {
                 "Set the Gadgetron home directory.")
             ("port,p",
                 value<unsigned short>()->default_value(9002),
-                "Listen for incoming connections on this port.");
+                "Listen for incoming connections on this port.")
+            ("from_stream, s",
+                "Perform reconstruction from a local data stream")
+            ("input_path,i",
+                value<std::string>(),
+                "Input file for binary data to perform a local reconstruction with")
+            ("output_path,o",
+                value<std::string>(),
+                "Output file for binary data as a result of a local reconstruction")
+            ("config_name,c",
+                value<std::string>(),
+                "Filename of the desired gadgetron reconstruction config.");
 
     options_description storage_options("Storage options");
     storage_options.add_options()
@@ -65,29 +76,70 @@ int main(int argc, char *argv[]) {
         set_locale();
 
         if (args.count("help")) {
-            std::cout << desc << std::endl;
+            GINFO_STREAM(desc);
             return 0;
         }
 
         if (args.count("info")) {
-            Info::print_system_information(std::cout);
+            std::stringstream str;
+            Info::print_system_information(str);
+            GINFO(str.str().c_str());
             return 0;
         }
 
         GINFO("Gadgetron %s [%s]\n", GADGETRON_VERSION_STRING, GADGETRON_GIT_SHA1_HASH);
-        GINFO("Running on port %d\n", args["port"].as<unsigned short>());
 
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
         auto [storage_address, storage_server] = ensure_storage_server(args);
 
-        Server server(args, storage_address);
-        server.serve();
+        if(!args.count("from_stream"))
+        {
+            GINFO("Running on port %d\n", args["port"].as<unsigned short>());
+            Server server(args, storage_address);
+            server.serve();
+        }
+        else
+        {
+            auto cfg = args["config_name"].as<std::string>();
+            StreamConsumer consumer(args, storage_address);
+
+            if(args.count("input_path") && args.count("output_path"))
+            {
+                auto input_stream = std::ifstream(args["input_path"].as<std::string>());
+                auto output_stream = std::ofstream(args["output_path"].as<std::string>());
+                consumer.consume(input_stream, output_stream, cfg);
+                output_stream.close();
+            }
+            else if(args.count("input_path"))
+            {
+                auto input_stream = std::ifstream(args["input_path"].as<std::string>());
+                consumer.consume(input_stream, std::cout, cfg);
+                std::flush(std::cout);
+            }
+            else if(args.count("output_path"))
+            {
+                auto output_stream = std::ofstream(args["output_path"].as<std::string>());
+                consumer.consume(std::cin, output_stream, cfg);
+                output_stream.close();
+            }
+            else
+            {
+                consumer.consume(std::cin, std::cout, cfg);
+                std::flush(std::cout);
+            }
+        }
     }
-    catch (std::exception &e) {
+    catch (std::exception &e)
+    {
         GERROR_STREAM(e.what() << std::endl);
-        return 1;
+        std::exit(EXIT_FAILURE);
+    }
+    catch(...)
+    {
+        GERROR_STREAM("Unhandled exception, exiting" << std::endl);
+        std::exit(EXIT_FAILURE);
     }
 
     return 0;

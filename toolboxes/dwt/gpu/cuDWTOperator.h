@@ -44,7 +44,6 @@ public:
 			for (auto dim : run_dimensions){
 				cuNDArray<T> small_in(img_dim, tmp_in->get_data_ptr());
 				cuNDArray<T> small_out(img_dim, tmp_out->get_data_ptr());
-				//std::cout << "Dimension " << dim << std::endl;
 				DWT1<T,D,4>(&small_in,&small_out,daubechies4,dim,shift_);
 				std::swap(tmp_in,tmp_out);
 			}

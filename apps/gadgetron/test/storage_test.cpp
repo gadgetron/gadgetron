@@ -228,7 +228,6 @@ TEST_F(StorageTest, storage_client_should_return_empty_ptr_when_not_found) {
 
 TEST_F(StorageTest, storage_client_exception_contains_server_error_message) {
     StorageClient storage_client(storage_address);
-    std::cout << storage_address << std::endl;
     auto tags = StorageItemTags::Builder("")
                     .build();
 
