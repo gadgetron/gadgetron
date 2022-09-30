@@ -89,7 +89,7 @@ int main(int argc, char** argv)
         else
         {
             adapter.convert(std::cout, args.input_path, args.dataset_group);
-            close(STDOUT_FILENO);
+            std::flush(std::cout);
         }
     }
     catch(const std::exception& exc)
