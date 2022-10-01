@@ -127,7 +127,7 @@ template<class T, unsigned int D, class wave> __device__ static void lift(T& dat
 template<class T, unsigned int D, unsigned int WD> void Gadgetron::DWT1( cuNDArray<T>* in, cuNDArray<T>* out, vector_td<typename realType<T>::Type,WD> wavelet, int dim, int shift){
 
 	if (!(isPowerOfTwo(in->get_size(dim)) && in->get_size(dim) >= WD)){
-		std::cout << "Dimension is: " << in->get_size(dim) << std::endl;
+		GINFO(std::string("Dimension is: " + std::to_string(in->get_size(dim)) + "\n").c_str());
 		throw std::runtime_error("DWT: Illegal input dimensions for DWT. Power of two reconstructions only");
 	}
 
@@ -155,8 +155,14 @@ template<class T, unsigned int D, unsigned int WD> void Gadgetron::DWT1( cuNDArr
 template<class T, unsigned int D, unsigned int WD> void Gadgetron::IDWT1( cuNDArray<T>* in, cuNDArray<T>* out, vector_td<typename realType<T>::Type,WD> wavelet, int dim, int shift){
 
 	if (!(isPowerOfTwo(in->get_size(dim)) && in->get_size(dim) >= WD)){
-
-		std::cout << "Dimension " << dim <<" is: " << in->get_size(dim) << " " << in->get_number_of_dimensions() << std::endl;
+		GINFO(std::string(
+			"Dimension " +
+			std::to_string(dim) +
+			" is: " +
+			std::to_string(in->get_size(dim)) +
+			" " +
+			std::to_string(in->get_number_of_dimensions()) +
+			"\n").c_str());
 		throw std::runtime_error("IDWT: Illegal input dimensions for DWT. Power of two reconstructions only");
 	}
 

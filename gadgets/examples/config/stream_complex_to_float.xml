@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <gadget>
+        <name>ComplexToFloatAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ComplexToFloatGadget</classname>
+    </gadget>
+
+</gadgetronStreamConfiguration>

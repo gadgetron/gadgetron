@@ -2,6 +2,7 @@
 #include "ismrmrd/ismrmrd.h"
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
+#include "log.h"
 
 using namespace Gadgetron;
 
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
         PythonFunction<float> atan2("math", "atan2");
         int x = 7, y = 4;
         float atan = atan2(x, y);
-        std::cout << atan << std::endl;
+        GINFO_STREAM(std::to_string(atan) << std::endl);
     }
 
     {
@@ -72,7 +73,7 @@ int main(int argc, char** argv)
         float z = 4.12;
         float fsum = 0, fdiff = 0;
         std::tie(fsum, fdiff) = divmod(w, z);
-        std::cout << fsum << ", " << fdiff << std::endl;
+        GINFO_STREAM(fsum << ", " << fdiff << std::endl);
     }
 
     {
@@ -85,7 +86,7 @@ int main(int argc, char** argv)
         PythonFunction<int> tuplen("__builtin__", "len");
 #endif
         int l = tuplen(std::make_tuple(-7, 0, 7));
-        std::cout << "tuple length: " << l << std::endl;
+        GINFO_STREAM("tuple length: " << l << std::endl);
     }
 
     {
@@ -94,8 +95,7 @@ int main(int argc, char** argv)
         PythonFunction<hoNDArray<float>> arange("numpy", "arange");
         // hoNDArray<float> evens = arange(0, 100, 2, "float64");
         hoNDArray<float> evens = arange(0, 100, 2, "f");
-        std::cout << "number of even numbers between 0 and 100: " <<
-                evens.get_number_of_elements() << std::endl;
+        GINFO_STREAM("number of even numbers between 0 and 100: " << std::to_string(evens.get_number_of_elements()) << std::endl);
     }
 
     {
@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 
         PythonFunction< hoNDArray<float>, hoNDArray<float> > scale_array_test("__main__", "scale_array");
         std::tie(a2, b) = scale_array_test(a);
-        std::cout << "a2[0] = " << a2[0] << std::endl;
-        std::cout << "b[12] = " << b[12] << std::endl;
-        std::cout << std::endl;
+        GINFO_STREAM("a2[0] = " << a2[0] << std::endl);
+        GINFO_STREAM("b[12] = " << b[12] << std::endl);
+        GINFO_STREAM(std::endl);
     }
 
     {
@@ -151,10 +151,10 @@ int main(int argc, char** argv)
 
         PythonFunction< hoNDArray<float>, hoNDArray<float>, hoNDArray<float> > scale_array_test("__main__", "scale_array");
         std::tie(a2, b2, c) = scale_array_test(a, b);
-        std::cout << "a2[0]  = " << a2[0] << std::endl;
-        std::cout << "b2[12] = " << b[12] << std::endl;
-        std::cout << "c[20]  = " << c[20] << std::endl;
-        std::cout << std::endl;
+        GINFO_STREAM("a2[0]  = " << a2[0] << std::endl);
+        GINFO_STREAM("b2[12] = " << b[12] << std::endl);
+        GINFO_STREAM("c[20]  = " << c[20] << std::endl);
+        GINFO_STREAM(std::endl);
     }
 
     {
@@ -171,10 +171,10 @@ int main(int argc, char** argv)
         GDEBUG_STREAM("Test converter for ISMRMRD::ISMRMRD_WaveformHeader");
         ISMRMRD::ISMRMRD_WaveformHeader wav_head, wav_head2;
         wav_head.version = 41;
-        std::cout << "version before: " << wav_head.version << std::endl;
+        GINFO_STREAM("version before: " << wav_head.version << std::endl);
         PythonFunction<ISMRMRD::ISMRMRD_WaveformHeader> modify_wav_header("__main__", "modify");
         wav_head2 = modify_wav_header(wav_head);
-        std::cout << "version after: " << wav_head2.version << std::endl;
+        GINFO_STREAM("version after: " << wav_head2.version << std::endl);
     }
 
     {
@@ -197,14 +197,14 @@ int main(int argc, char** argv)
         for (size_t n = 0; n < wav1.head.channels*wav1.head.number_of_samples; n++)
             wav1.data[n] = n;
 
-        std::cout << "version before: " << wav1.head.version << std::endl;
+        GINFO_STREAM("version before: " << wav1.head.version << std::endl);
         PythonFunction<ISMRMRD::Waveform> modify_wav_header("__main__", "modify");
         wav2 = modify_wav_header(wav1);
-        std::cout << "version after: " << wav2.head.version << std::endl;
-        std::cout << "contents: " << std::endl;
+        GINFO_STREAM("version after: " << wav2.head.version << std::endl);
+        GINFO_STREAM("contents: " << std::endl);
         for (size_t n = 0; n < wav1.head.channels*wav1.head.number_of_samples; n++)
-            std::cout << wav2.data[n] << " ";
-        std::cout << std::endl;
+            GINFO_STREAM(wav2.data[n] << " ");
+        GINFO_STREAM(std::endl);
     }
 
     {
@@ -237,11 +237,11 @@ int main(int argc, char** argv)
 
         PythonFunction<std::vector<ISMRMRD::Waveform>> modify_vector_wav("__main__", "mk_vector_waveform");
         wav = modify_vector_wav(wav);
-        std::cout << "version after: " << wav[0].head.version << std::endl;
-        std::cout << "contents: " << std::endl;
+        GINFO_STREAM("version after: " << wav[0].head.version << std::endl);
+        GINFO_STREAM("contents: " << std::endl);
         for (size_t n = 0; n < wav[0].head.channels*wav[0].head.number_of_samples; n++)
-            std::cout << wav[0].data[n] << " ";
-        std::cout << std::endl;
+            GINFO_STREAM(wav[0].data[n] << " ");
+        GINFO_STREAM(std::endl);
     }
 
     {
@@ -257,19 +257,19 @@ int main(int argc, char** argv)
         GDEBUG_STREAM("Test converter for ISMRMRD::ImageHeader");
         ISMRMRD::ImageHeader img_head, img_head2;
         img_head.version = 0;
-        std::cout << "version before: " << img_head.version << std::endl;
+        GINFO_STREAM("version before: " << img_head.version << std::endl);
         PythonFunction<ISMRMRD::ImageHeader> modify_img_header("__main__", "modify");
         img_head2 = modify_img_header(img_head);
-        std::cout << "version after: " << img_head2.version << std::endl;
+        GINFO_STREAM("version after: " << img_head2.version << std::endl);
 
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Test converter for ISMRMRD::AcquisitionHeader");
         ISMRMRD::AcquisitionHeader acq_head, acq_head2;
         acq_head.version = 0;
-        std::cout << "version before: " << img_head.version << std::endl;
+        GINFO_STREAM("version before: " << img_head.version << std::endl);
         PythonFunction<ISMRMRD::AcquisitionHeader> modify_acq_header("__main__", "modify");
         acq_head2 = modify_acq_header(acq_head);
-        std::cout << "version after: " << acq_head2.version << std::endl;
+        GINFO_STREAM("version after: " << acq_head2.version << std::endl);
     }
 
     {
@@ -288,7 +288,7 @@ int main(int argc, char** argv)
         std::vector<std::complex<double> > vec;
         PythonFunction<std::vector<std::complex<double> > > make_vec("__main__", "rand_cplx_array");
         vec = make_vec(32);
-        std::cout << vec[16] << std::endl;
+        GINFO_STREAM(vec[16] << std::endl);
     }
 
     {
@@ -316,7 +316,7 @@ int main(int argc, char** argv)
         GDEBUG_STREAM("Test converter for PythonFunction<hoNDArray<ISMRMRD::ImageHeader> >");
         PythonFunction<hoNDArray<ISMRMRD::ImageHeader> > make_image_header("__main__", "mk_image_headers");
         img_head_array = make_image_header(img_head_array);
-        std::cout << img_head_array(2, 4).version << std::endl;
+        GINFO_STREAM(img_head_array(2, 4).version << std::endl);
 
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Test for ISMRMRD::MetaContainer")
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
         GDEBUG_STREAM("Test converter for PythonFunction<hoNDArray<ISMRMRD::AcquisitionHeader> >");
         PythonFunction<hoNDArray<ISMRMRD::AcquisitionHeader> > mk_acq_headers("__main__", "mk_acq_headers");
         acq_head_array = mk_acq_headers(acq_head_array);
-        std::cout << acq_head_array(2, 4).version << std::endl;
+        GINFO_STREAM(acq_head_array(2, 4).version << std::endl);
     }
 
     {
