@@ -112,7 +112,7 @@ std::string internal::get_output_filename(const std::string& command_line)
 			    || second == '1'
 			    || second == 'P'
 			    || second == 'a')) {
-			 std::cout << "ecalib: flag\n";
+			 GINFO("ecalib: flag\n");
 			 return *(it2 + 2);
 		    }
 		    else {

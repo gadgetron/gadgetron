@@ -63,7 +63,9 @@ TYPED_TEST(cmr_mapping_test, T2Mapping)
 
     hoNDArray< T > data;
     this->gt_io_.import_array(data, this->gt_ut_data_folder_ + "/T2Mapping/MultiEcho_Image_Mag_REP0_SLC0");
-    data.print(std::cout);
+    std::stringstream data_stream;
+    data.print(data_stream);
+    GINFO(data_stream.str().c_str());
 
     T v = Gadgetron::nrm2(data); GDEBUG_STREAM("data = " << v);
 

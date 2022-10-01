@@ -63,11 +63,15 @@ TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
 
     hoNDArray< T > epi_mask;
     this->gt_io_.import_array(epi_mask, this->gt_ut_data_folder_ + "/RadialThickening/retro_cine_epi_mask");
-    epi_mask.print(std::cout);
+    std::stringstream epi_mask_stream;
+    epi_mask.print(epi_mask_stream);
+    GINFO(epi_mask_stream.str().c_str());
 
     hoNDArray< T > endo_mask;
     this->gt_io_.import_array(endo_mask, this->gt_ut_data_folder_ + "/RadialThickening/retro_cine_endo_mask");
-    endo_mask.print(std::cout);
+    std::stringstream endo_mask_stream;
+    endo_mask.print(endo_mask_stream);
+    GINFO(endo_mask_stream.str().c_str());
 
     hoNDArray<T> rad_strain, edge_endo, edge_epi;
     size_t ref_phase = 1;
@@ -83,24 +87,24 @@ TYPED_TEST(cmr_thickening_test, 229201050_229201055_362_20190718_retro_cine)
     T norm_ref;
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RadialThickening/retro_cine_strain");
-    std::cout << Gadgetron::nrm2(rad_strain) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(rad_strain) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, rad_strain, diff);
     T v = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(v / norm_ref, 0.1);
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RadialThickening/retro_cine_edge_endo");
-    std::cout << Gadgetron::nrm2(edge_endo) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(edge_endo) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, edge_endo, diff);
     T q = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(q / norm_ref, 0.15);
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/RadialThickening/retro_cine_edge_epi");
-    std::cout << Gadgetron::nrm2(edge_epi) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(edge_epi) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, edge_epi, diff);
     T s = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);

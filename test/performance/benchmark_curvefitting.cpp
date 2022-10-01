@@ -1,20 +1,21 @@
 //
 // Created by dch on 21/02/18.
 //
-
-#include "ImageIOAnalyze.h"
+#include "cmr_t1_mapping.h"
+#include "curveFittingCostFunction.h"
 #include "GadgetronTimer.h"
+#include "hoNDArray_math.h"
 #include "hoNDHarrWavelet.h"
 #include "hoNDRedundantWavelet.h"
-#include "hoNDArray_math.h"
+#include "ImageIOAnalyze.h"
+#include "log.h"
 #include "simplexLagariaSolver.h"
 #include "twoParaExpDecayOperator.h"
 #include "twoParaExpRecoveryOperator.h"
-#include "curveFittingCostFunction.h"
-#include "cmr_t1_mapping.h"
+
+#include <chrono>
 #include <gtest/gtest.h>
 #include <boost/random.hpp>
-#include <chrono>
 
 #include <dlib/optimization.h>
 
@@ -89,9 +90,9 @@ void time_ceres(){
 
         ceres::Solver::Summary summary;
         ceres::Solve(options, &problem, &summary);
-//    std::cout << summary.FullReport() << std::endl;
+//    GINFO_STREAM(summary.FullReport() << std::endl);
 
-//        std::cout << "B" << b[0] << " " << b[1] << std::endl;
+//        GINFO_STREAM("B" << b[0] << " " << b[1] << std::endl);
 
     }
 
@@ -119,12 +120,12 @@ void time_ceres(){
 
         };
 
-    std::cout <<"Cost " <<  cost_function2(b) << std::endl;
+    GINFO_STREAM("Cost " <<  cost_function2(b) << std::endl);
 
     auto end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Fitting tookz " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
-    std::cout << "B " << b[0] << " " << b[1] << std::endl;
+    GINFO_STREAM("Fitting tookz " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl);
+    GINFO_STREAM("B " << b[0] << " " << b[1] << std::endl);
 
 }
 void time_dlib(){
@@ -186,9 +187,9 @@ void time_dlib(){
     }
     auto end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Fitting tookz " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
+    GINFO_STREAM("Fitting tookz " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl);
 
-    std::cout << "Best cost " << best_cost << " " << b << std::endl;
+    GINFO_STREAM("Best cost " << best_cost << " " << b << std::endl);
 }
 void time_gadgetron(){
 
@@ -244,8 +245,8 @@ void time_gadgetron(){
     }
     auto end = std::chrono::system_clock::now();
 
-    std::cout << "Fitting tookz " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
-    std::cout << "Best cost " << best_cost << " " << b[0] << " " << b[1] <<  std::endl;
+    GINFO_STREAM("Fitting tookz " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl);
+    GINFO_STREAM("Best cost " << best_cost << " " << b[0] << " " << b[1] <<  std::endl);
 }
 using namespace Gadgetron;
 int main(){
