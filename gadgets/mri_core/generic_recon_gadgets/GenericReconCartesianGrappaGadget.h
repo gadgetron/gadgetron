@@ -99,8 +99,8 @@ namespace Gadgetron {
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int process_config(ACE_Message_Block* mb) override;
+        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1) override;
 
         // --------------------------------------------------
         // recon step functions

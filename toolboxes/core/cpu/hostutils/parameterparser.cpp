@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <stdexcept>
 
+#include "log.h"
 namespace Gadgetron {
 
   CommandLineParameter::CommandLineParameter(char com_switch,CommandLineParameterType type, unsigned int nr_values, const char* desc, bool required)
@@ -185,7 +186,7 @@ namespace Gadgetron {
     CommandLineParameter *p = new CommandLineParameter(com_switch, type, nr_values, desc, required);
     for (int i = 0; i < m_number_of_parameters; i++){
       if (m_parameter_list[i]->is_switch_equal_to(com_switch)){
-        std::cout << "ParameterParser: Attempt to parameter twice " << com_switch << std::endl;
+        GINFO(std::string("ParameterParser: Attempt to parameter twice " + std::to_string(com_switch) + "\n").c_str());
         delete p;
         return -1;
       }
@@ -209,7 +210,7 @@ namespace Gadgetron {
     bool argument_found;
     while (a < argc){
       if (argv[a][0] != '-'){
-        std::cout << "ParameterParser: malformed argument list" << std::endl;
+        GINFO("ParameterParser: malformed argument list\n");
         print_usage();
       }
 
@@ -223,7 +224,7 @@ namespace Gadgetron {
             break;
           }
           else{
-            std::cout << std::endl << "ParameterParser: malformed argument list: -" << argv[a][1] << std::endl;
+            GINFO(std::string("\nParameterParser: malformed argument list: -" + std::to_string(argv[a][1]) + "\n").c_str());
             //print_usage();
             argument_found = true;
             a++;
@@ -235,7 +236,7 @@ namespace Gadgetron {
       }
 
       if (!argument_found){
-        std::cout << std::endl << "ParameterParser: unknown argument: -" << argv[a][1] << std::endl;
+        GINFO(std::string("\n" + std::string("ParameterParser: unknown argument: -") + std::to_string( argv[a][1]) + "\n").c_str());
         //print_usage();
         ret = -1;
         a++;
@@ -248,63 +249,69 @@ namespace Gadgetron {
   void ParameterParser::print_usage()
   {
     int space_fill = 0;
+    std::stringstream usage_stream;
 
-    std::cout << "---------------------------------------------------- " << std::endl;
-    std::cout << "Usage: " << m_command_name << " -[";
+    GINFO("----------------------------------------------------\n");
+    usage_stream << "Usage: " << m_command_name << " -[";
     for (int i = 0; i < m_number_of_parameters; i++){
-      std::cout << m_parameter_list[i]->get_switch();
+      usage_stream << m_parameter_list[i]->get_switch();
     }
-    std::cout << "]" << std::endl;
+    usage_stream << "]" << "\n";
  
     for (int i = 0; i < m_number_of_parameters; i++){
-        std::cout << " -" << m_parameter_list[i]->get_switch() << " ";
+        usage_stream << " -" << m_parameter_list[i]->get_switch() << " ";
         if (m_max_number_values > 1){
           if (m_parameter_list[i]->get_number_of_values() > 1){
-            std::cout << m_parameter_list[i]->get_number_of_values() << "x "; 
+            usage_stream << m_parameter_list[i]->get_number_of_values() << "x "; 
           }
           else{
-            std::cout << " "; 
+            usage_stream << " "; 
           }
         }
         if (m_parameter_list[i]->get_number_of_values() > 0){
-          std::cout << "[" << m_parameter_list[i]->get_desc() << "]";
+          usage_stream << "[" << m_parameter_list[i]->get_desc() << "]";
           space_fill = (m_max_desc_length - m_parameter_list[i]->get_desc().length())+2;
         }
         else{
           space_fill = m_max_desc_length+2+2;
         }
-        std::cout << std::endl;
+        usage_stream << "\n";
       }
-    std::cout << "---------------------------------------------------- " << std::endl; 
+    usage_stream << "----------------------------------------------------\n "; 
+
+    GINFO(usage_stream.str().c_str());
   }
 
   void ParameterParser::print_parameter_list()
   {
-    std::cout << "---------------------------------------------------- " << std::endl;
+    std::stringstream stream;
+    stream << "----------------------------------------------------\n";
     for (int i = 0; i < m_number_of_parameters; i++){
-      std::cout << " ";
-      std::cout << "(-" << m_parameter_list[i]->get_switch() << ") ";
-      std::cout << std::setw(m_max_desc_length+2) << std::setiosflags(std::ios::left);
-      std::cout << m_parameter_list[i]->get_desc() << ": ";
+      stream << " ";
+      stream << "(-" << m_parameter_list[i]->get_switch() << ") ";
+      stream << std::setw(m_max_desc_length+2) << std::setiosflags(std::ios::left);
+      stream << m_parameter_list[i]->get_desc() << ": ";
       if (m_parameter_list[i]->get_is_set()){
         for (int j = 0; j < m_parameter_list[i]->get_number_of_values(); j++){
-          std::cout << m_parameter_list[i]->get_string_value(j) << " ";
+          stream << m_parameter_list[i]->get_string_value(j) << " ";
           if (!m_parameter_list[i]->get_is_required()){
-            std::cout << "(optional)";
+            stream << "(optional)";
           }
         }
       }
       else{
         if (m_parameter_list[i]->get_is_required()){
-          std::cout << "(missing)";
+          stream << "(missing)";
         }
         else{
-          std::cout << "N/A (optional)";
+          stream << "N/A (optional)";
         }
       }
-      std::cout << std::endl;
+      stream << "\n";
     }
-    std::cout << "---------------------------------------------------- " << std::endl;
+    stream << "----------------------------------------------------\n";
+
+    GINFO(stream.str().c_str());
   }
  
   bool ParameterParser::all_required_parameters_set()

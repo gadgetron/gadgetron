@@ -33,11 +33,11 @@ int main( int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running with the following parameters: " << endl;
+    GINFO_STREAM(" Running with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -48,7 +48,7 @@ int main( int argc, char** argv)
     read_nd_array<float>((char*)parms.get_parameter('d')->get_string_value());
 
   if( !(_host_image->get_number_of_dimensions() == 2) ){
-    cout << endl << "Input image is not two-dimensional. Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Input image is not two-dimensional. Quitting.\n" << endl);
     return 1;
   }
 

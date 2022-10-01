@@ -1,8 +1,7 @@
-from __future__ import print_function
-import numpy as np
+import sys
+
 from gadgetron import Gadget
 
-import logging
 
 
 class ArrayImagePassThrough(Gadget):
@@ -22,7 +21,7 @@ class ArrayImagePassThrough(Gadget):
         self.headers.append(header)
         if metadata is not None:
             self.metas.append(metadata)
-            print(metadata)
+            print(metadata, file=sys.stderr)
 
         #Send the combined image and the modified header and metadata
         if metadata is not None:

@@ -1,4 +1,6 @@
+import itertools
 import numpy as np
+import sys 
 
 from gadgetron import Gadget
 from gadgetron.util.cfft import cifftn
@@ -6,7 +8,6 @@ from gadgetron.util.cfft import cifftn
 import ismrmrd
 import ismrmrd.xsd
 
-import itertools
 
 
 class BucketRecon(Gadget):
@@ -22,8 +23,7 @@ class BucketRecon(Gadget):
         self.enc = self.header.encoding[0]
 
     def process(self, recondata):
-
-        print(np.shape(recondata[0].data.data))
+        print(np.shape(recondata[0].data.data), file=sys.stderr)
 
         image = cifftn(recondata[0].data.data, axes=(0, 1, 2))
         image = np.reshape(image,(image.shape[0],image.shape[1],image.shape[2],image.shape[3]))
@@ -60,8 +60,8 @@ class BucketRecon(Gadget):
 
         #Return image to Gadgetron
         self.put_next(img_head,image)
-        print("Slice ", img_head.slice)
-        print("----------------------------------------------")
+        print(f"Slice {img_head.slice}", file=sys.stderr)
+        print("----------------------------------------------", file=sys.stderr)
         return 0    
         #print "Returning to Gadgetron"
  

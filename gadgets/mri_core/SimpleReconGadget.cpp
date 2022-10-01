@@ -55,8 +55,6 @@ namespace Gadgetron {
                 for (uint16_t loc = 0; loc < LOC; loc++) {
                     for (uint16_t s = 0; s < S; s++) {
                         for (uint16_t n = 0; n < N; n++) {
-                            GDEBUG("HERE1");
-
                             // Set some information into the image header
                             // Use the middle acquisition header for some info
                             //[E1, E2, N, S, LOC]

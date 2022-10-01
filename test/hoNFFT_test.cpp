@@ -63,13 +63,19 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     hoNDArray< std::complex<T> > data;
     this->gt_io_.import_array_complex(data, this->gt_ut_data_folder_ + "/spiral/data_spiral_real",
         this->gt_ut_data_folder_ + "/spiral/data_spiral_imag");
-    data.print(std::cout);
+    std::stringstream data_stream;
+    data.print(data_stream);
+    GINFO(data_stream.str().c_str());
+
 
     T v = Gadgetron::nrm2(data); GDEBUG_STREAM("data = " << v);
 
     hoNDArray< T > k_spiral;
     this->gt_io_.import_array(k_spiral, this->gt_ut_data_folder_ + "/spiral/k_spiral");
-    k_spiral.print(std::cout);
+    std::stringstream k_spiral_stream;
+    k_spiral.print(k_spiral_stream);
+    GINFO(k_spiral_stream.str().c_str());
+
     v = Gadgetron::nrm2(k_spiral); GDEBUG_STREAM("k_spiral = " << v);
 
     size_t num = data.get_size(0);
@@ -87,7 +93,10 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
 
     hoNDArray< T > w_spiral;
     this->gt_io_.import_array(w_spiral, this->gt_ut_data_folder_ + "/spiral/w_spiral");
-    w_spiral.print(std::cout);
+    std::stringstream w_spiral_stream;
+    w_spiral.print(w_spiral_stream);
+    GINFO(w_spiral_stream.str().c_str());
+
     v = Gadgetron::nrm2(w_spiral); GDEBUG_STREAM("w_spiral = " << v);
 
     // test the simple gridding
@@ -117,7 +126,10 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     }
     this->timer_.stop();
 
-    res.print(std::cout);
+    std::stringstream res_stream;
+    res.print(res_stream);
+    GINFO(res_stream.str().c_str());
+
 
     this->gt_io_.export_array_complex(res, this->gt_ut_res_folder_ + "/spiral/res_regridding");
 
@@ -125,7 +137,10 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     hoNDArray< std::complex<T> > ref;
     this->gt_io_.import_array_complex(ref, this->gt_ut_data_folder_ + "/spiral/ref_regridding_REAL",
         this->gt_ut_data_folder_ + "/spiral/ref_regridding_IMAG");
-    ref.print(std::cout);
+    std::stringstream ref_stream;
+    ref.print(ref_stream);
+    GINFO(ref_stream.str().c_str());
+
 
     hoNDArray< std::complex<T> > diff;
     Gadgetron::subtract(res, ref, diff);

@@ -306,8 +306,10 @@ namespace Gadgetron {
 
             if ( verbose_ )
             {
+                std::stringstream stream;
                 GDEBUG_STREAM("Initial transformation : ");
-                transform_->print(std::cout);
+                transform_->print(stream);
+                GINFO(stream.str().c_str());
             }
 
             int level;
@@ -319,7 +321,9 @@ namespace Gadgetron {
                 if ( verbose_ )
                 {
                     GDEBUG_STREAM("Transformation for level " << level << " : ");
-                    transform_->printTransform(std::cout);
+                    std::stringstream stream; 
+                    transform_->printTransform(stream);
+                    GINFO(stream.str().c_str());
                 }
 
                 // adjust transformation for the next resolution level
