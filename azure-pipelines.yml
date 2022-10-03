@@ -132,11 +132,9 @@ jobs:
         system_profiler SPHardwareDataType
         system_profiler SPMemoryDataType
         sysctl hw.memsize
-    displayName: "Check for basic utilities and available hardware and RAM on macOS"
-    # To be enabled (and replace above lines) when Azure macOS conda build issues are resolved.
-      # eval "$(conda shell.bash hook)"
-      # conda env create -f environment.yml
-      # conda activate gadgetron
-      # set -euo pipefail
-      # cd conda && ./package.sh
-    # displayName: "Building Gadgetron on macOS"
+        eval "$(conda shell.bash hook)"
+        conda env create -f environment-macos.yml
+        conda activate gadgetron
+        set -euo pipefail
+        cd conda && ./package.sh
+    displayName: "Check available hardware and RAM on macOS, then build Gadgetron on macOS."
