@@ -119,8 +119,8 @@ jobs:
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
-  timeoutInMinutes: 10
-  displayName: "Testing for macOS"
+  timeoutInMinutes: 120
+  displayName: "Building for macOS"
   steps:
   - task: AzureKeyVault@2
     inputs:
