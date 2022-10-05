@@ -56,7 +56,9 @@ if (BUILD_PYTHON_SUPPORT)
 
     set( config_LandmarkDetection_files 
         config/LandmarkDetection/CMR_RTCine_LAX_AI.xml
+        config/LandmarkDetection/CMR_RTCine_LAX_AI_Complex.xml
         config/LandmarkDetection/CMR_Image_Chain_RTCine_LAX_AI.xml
+        config/LandmarkDetection/stream_image_array.xml
         )
 
     set( config_cmr_files ${config_cmr_files} ${config_LandmarkDetection_files})
