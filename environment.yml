@@ -51,6 +51,7 @@ dependencies:
   - nlohmann_json=3.10.4                  # dev
   - numpy=1.22.1
   - onnxruntime=1.10.0
+  - openssl=3.0.5
   - pyyaml=6.0                            # dev
   - pip=21.2.4                            # dev
   - packaging=21.3
