@@ -21,7 +21,7 @@ requirements:
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
     - cuda-nvcc=11.6.112                  # [linux64]
-    - dcmtk=3.6.1
+    - dcmtk=3.6.7
     - fftw=3.3.9
     - gcc_linux-64=9.4.0                  # [linux64]
     - gadgetron::gadgetron-python>=1.4.1
@@ -40,12 +40,12 @@ requirements:
     - ninja=1.10.2
     - nlohmann_json=3.10.4
     - numpy>=1.22.1
-    - openssl=3.0.5
+    - openssl=3.0.4
     - packaging=21.3
     - pugixml=1.11.4
     - pyfftw>=0.12.0
     - pyyaml>=6.0
-    - python=3.9.7
+    - python>=3.9.7
     - gadgetron::range-v3>=0.11.0
     - sysroot_linux-64=2.17               # [linux64]
   run:
@@ -71,7 +71,7 @@ requirements:
     - openssl=3.0.5
     - pugixml=1.11.4
     - pyfftw>=0.12.0
-    - python=3.9.7
+    - python>=3.9.7
     - scipy=1.7.1
     - sysroot_linux-64=2.17               # [linux64]
 
