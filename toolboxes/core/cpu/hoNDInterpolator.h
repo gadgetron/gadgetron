@@ -245,17 +245,17 @@ namespace Gadgetron
         void setDerivative(const std::vector<unsigned int>& derivative) { GADGET_CHECK_THROW(derivative.size()>=D); derivative_ = derivative; }
 
         /// access the pixel value
-        virtual T operator()( const coord_type* pos );
-        virtual T operator()( const std::vector<coord_type>& pos );
-        virtual T operator()( coord_type x );
-        virtual T operator()( coord_type x, coord_type y );
-        virtual T operator()( coord_type x, coord_type y, coord_type z );
-        virtual T operator()( coord_type x, coord_type y, coord_type z, coord_type s );
-        virtual T operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p );
-        virtual T operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r );
-        virtual T operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a );
-        virtual T operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q );
-        virtual T operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q, coord_type u );
+        virtual T operator() ( const coord_type* pos ) override;
+        virtual T operator() ( const std::vector<coord_type>& pos ) override;
+        virtual T operator() ( coord_type x ) override;
+        virtual T operator() ( coord_type x, coord_type y ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z, coord_type s ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q ) override;
+        virtual T operator() ( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q, coord_type u ) override;
 
      protected:
 

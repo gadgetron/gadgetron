@@ -53,38 +53,38 @@ def check_and_get_model(model_host, model_file, model_dest, model_sha256):
     If model cannot be downloaded, an exception is thrown
     """
     try:
-        print(f"check_and_get_model,  model_host is {model_host}")
-        print(f"check_and_get_model,  model_file is {model_file}")
-        print(f"check_and_get_model,  model_dest is {model_dest}")
-        print(f"check_and_get_model,  model_sha256 is {model_sha256}")
+        print(f"check_and_get_model,  model_host is {model_host}", file=sys.stderr)
+        print(f"check_and_get_model,  model_file is {model_file}", file=sys.stderr)
+        print(f"check_and_get_model,  model_dest is {model_dest}", file=sys.stderr)
+        print(f"check_and_get_model,  model_sha256 is {model_sha256}", file=sys.stderr)
         
         # assemble the source and destination of model
         model_url = model_host + model_file
         destination = os.path.join(model_dest, model_file)
         
-        print(f"check_and_get_model,  model_url is {model_url}")
-        print(f"check_and_get_model,  destination is {destination}")
+        print(f"check_and_get_model,  model_url is {model_url}", file=sys.stderr)
+        print(f"check_and_get_model,  destination is {destination}", file=sys.stderr)
                    
         with model_file_lock(model_dest, model_sha256):
             # download the model if not exist
             if(not os.path.isfile(destination)):            
-                print(f"check_and_get_model, start downloading model")
+                print(f"check_and_get_model, start downloading model", file=sys.stderr)
                 urllib.request.urlretrieve(model_url, destination)
-                print(f"check_and_get_model, finish downloading model")
+                print(f"check_and_get_model, finish downloading model", file=sys.stderr)
 
             if not is_model_valid(destination, model_sha256):
-                print(f"Downloaded model file {destination} failed in sha256 validation.")
+                print(f"Downloaded model file {destination} failed in sha256 validation.", file=sys.stderr)
                 urllib.request.urlretrieve(model_url, destination)
                     
                 if not is_model_valid(destination, model_sha256):
-                    print(f"Newly downloaded model file {destination} failed in sha256 validation.")
+                    print(f"Newly downloaded model file {destination} failed in sha256 validation.", file=sys.stderr)
                     raise "invalid model"
             else:
-                print(f"Downloaded model file {destination} succeeded in sha256 validation.")
+                print(f"Downloaded model file {destination} succeeded in sha256 validation.", file=sys.stderr)
                 
     except Exception as e:
-            print("Error happened in check_and_get_model ... ")
-            print(e)
+            print("Error happened in check_and_get_model ... ", file=sys.stderr)
+            print(e, file=sys.stderr)
             raise e
 
 def cpad_2d(data, RO, E1):
@@ -209,7 +209,7 @@ def adaptive_thresh_cpu(probs, p_thresh=0.5, p_thresh_max=0.988):
 
         if(number_of_blobs == 0):
             mask = np.zeros((RO, E1))
-            sys.stderr.flush()
+            file=sys.stderr.flush()
             return mask
 
         # if there are more than one blob, try to isolate the high probablity one
@@ -226,7 +226,7 @@ def adaptive_thresh_cpu(probs, p_thresh=0.5, p_thresh_max=0.988):
     except Exception as e:
         print("Error happened in adaptive_thresh_cpu ...")
         print(e)
-        sys.stderr.flush()
+        file=sys.stderr.flush()
         mask = np.zeros((RO,E1))
 
     return mask

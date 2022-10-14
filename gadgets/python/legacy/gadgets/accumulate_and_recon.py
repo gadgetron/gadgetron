@@ -1,10 +1,9 @@
 import numpy as np
+import ismrmrd
+import ismrmrd.xsd
 
 from gadgetron import Gadget
 from gadgetron.util.cfft import cifftn
-
-import ismrmrd
-import ismrmrd.xsd
 
 
 class AccumulateAndRecon(Gadget):
@@ -77,5 +76,4 @@ class AccumulateAndRecon(Gadget):
             #Return image to Gadgetron
             self.put_next(img_head, image.astype('complex64'), *args)
             
-        #print "Returning to Gadgetron"
         return 0 #Everything OK

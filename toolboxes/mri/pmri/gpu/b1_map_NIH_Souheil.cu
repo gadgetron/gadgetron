@@ -41,7 +41,7 @@ namespace Gadgetron{
     {
         if( data->get_number_of_dimensions() < 2 )
         {
-            cout << endl << "estimate_b1_map_2D_NIH_Souheil:: dimensionality mismatch." << endl; 
+            GINFO_STREAM(endl << "estimate_b1_map_2D_NIH_Souheil:: dimensionality mismatch." << endl);
             return false;
         }
 

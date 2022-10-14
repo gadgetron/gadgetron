@@ -16,6 +16,7 @@ output_path="$(dirname "$0")/build_pkg"
 # Build up channel directives
 channels=(
   nvidia
+  ismrmrd
   gadgetron
   conda-forge
   bioconda

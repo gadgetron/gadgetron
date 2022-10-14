@@ -317,7 +317,7 @@ void spirit3d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst,
         size_t rowA = lenRO*lenE1*lenE2;
         size_t colB = dstCHA;
 
-#pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
+#pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, std::cerr) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
         {
             hoMatrix<T> A(rowA, colA);
             hoMatrix<T> B(rowA, colB);

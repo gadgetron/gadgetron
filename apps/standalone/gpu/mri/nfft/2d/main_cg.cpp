@@ -41,11 +41,11 @@ int main( int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running reconstruction with the following parameters: " << endl;
+    GINFO_STREAM(" Running reconstruction with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -59,7 +59,7 @@ int main( int argc, char** argv)
   delete timer;
    
   if( !(host_samples->get_number_of_dimensions() == 2) ){
-    cout << endl << "Samples ndarray is not two-dimensional (samples/profile x #profiles). Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Samples ndarray is not two-dimensional (samples/profile x #profiles). Quitting.\n" << endl);
     return 1;
   }
   
