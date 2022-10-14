@@ -23,6 +23,7 @@ set(gadgetron_debugging_src_files
         )
 
 set(gadgetron_debugging_config_files
+        config/pseudoreplica_test.xml
         )
 
 add_library(gadgetron_debugging SHARED

@@ -14,5 +14,6 @@ namespace Gadgetron{
       using Core::ChannelGadget<IsmrmrdReconData>::ChannelGadget;
       void process(Core::InputChannel<IsmrmrdReconData>& input, Core::OutputChannel& out) override;
       NODE_PROPERTY(repetitions,int,"Number of pseudoreplicas to produce",10);
+      NODE_PROPERTY(seed,unsigned long,"Random number generator seed",5489UL);
     };
 }

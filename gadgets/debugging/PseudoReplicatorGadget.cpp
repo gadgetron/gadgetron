@@ -3,23 +3,19 @@
 namespace Gadgetron {
 
     void PseudoReplicatorGadget::process(Core::InputChannel<IsmrmrdReconData>& input, Core::OutputChannel& out) {
-
         for (IsmrmrdReconData reconData : input) {
-			std::mt19937 engine(5489UL);
+			std::mt19937 engine(seed);
 			std::normal_distribution<float> distribution;
 
 			auto reconDataCopy = reconData;
 
-			//First just send the normal data to obtain standard image
+			// First just send the normal data to obtain standard image
 			out.push(std::move(reconData));
 
-			//Now for the noisy projections
+			// Now for the noisy projections
 			for (int i =0; i < repetitions; i++){
-
-				auto reconDataCopyMessage = new GadgetContainerMessage<IsmrmrdReconData>();
-				*reconDataCopyMessage->getObjectPtr() = reconDataCopy;
-				auto & datasets = reconDataCopyMessage->getObjectPtr()->rbit_;
-
+				auto reconDataTemp = reconDataCopy;
+				auto & datasets = reconDataTemp.rbit_;
 				for (auto & buffer : datasets){
 					auto & data = buffer.data_.data_;
 					auto dataptr = data.get_data_ptr();
@@ -27,8 +23,7 @@ namespace Gadgetron {
 						dataptr[k] += std::complex<float>(distribution(engine),distribution(engine));
 					}
 				}
-				GDEBUG("Sending out Pseudoreplica\n");
-				out.push(std::move(reconDataCopyMessage));
+				out.push(std::move(reconDataTemp));
 			}
         }
     }
