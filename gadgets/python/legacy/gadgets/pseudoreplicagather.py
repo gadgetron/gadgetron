@@ -1,3 +1,8 @@
+##
+    # Brief: Collects a defined number of noisy pseudoreplica reconstructions and outputs standard deviation images
+    # Test:  pseudoreplica.cfg
+##
+
 import sys
 
 import ismrmrd

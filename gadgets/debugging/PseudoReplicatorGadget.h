@@ -1,6 +1,6 @@
 /**
     \brief  Appends defined number of noisy pseudoreplicas to incoming IsmrmrdReconData
-    \test   Untested 
+    \test   pseudoreplica.cfg
 */
 
 #pragma once
