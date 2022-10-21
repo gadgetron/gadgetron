@@ -9,7 +9,6 @@
 #include <boost/program_options/variables_map.hpp>
 
 #include "Channel.h"
-#include "Message.h"
 #include "connection/Core.h"
 #include "connection/Loader.h"
 
