@@ -161,9 +161,11 @@ This makes it easy to compare results from different reconstructions.
 
 ### Stream Mode
 
+You can use the ISMRMRD HDF5/Stream conversion tools (or adapters).
+
 Open up a single terminal. We begin by converting 'testdata.h5' generated above to an intermediary streaming format:
 
-    mrd_to_stream -i testdata.h5 -o test_out.dat
+    ismrmrd_hdf5_to_stream -i testdata.h5 -o test_out.dat
 
 This produces a file which can be consumed by the gadgetron in stream mode as follows:
 
@@ -171,30 +173,30 @@ This produces a file which can be consumed by the gadgetron in stream mode as fo
 
 The output of this command generates a file that contains images in an intermediary format, which must be converted back:
 
-    stream_to_mrd -i img_out.dat -o out.h5
+    ismrmrd_stream_to_hdf5 -i img_out.dat -o out.h5
 
 More simply, this entire chain can be performed in a single shell command by using anonymous pipes:
 
-    mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c default.xml | stream_to_mrd -o out.h5
+    ismrmrd_stream_to_hdf5 -i testdata.h5 --use-stdout | gadgetron --from_stream -c default.xml | ismrmrd_stream_to_hdf5 --use-stdin -o out.h5
 
 Also, a more complicated reconstruction can be formulated by chaining compatible reconstruction configurations, for
 instance a chain which produces complex images can be converted to floats images, and then to short images later:
 
-    mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out.h5
+    ismrmrd_hdf5_to_stream -i testdata.h5 --use-stdout | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml | ismrmrd_stream_to_hdf5 --use-stdin -o out.h5
 
 A chain like this can be broken up with the intermediary data being processed in different ways enabling post processing:
 
-    mrd_to_stream -i testdata.h5 | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml -o tmp.dat
+    ismrmrd_hdf5_to_stream --use-stdout -i testdata.h5 | gadgetron --from_stream -c Generic_Cartesian_Grappa_Complex.xml -o tmp.dat
 
 And consumed in different ways:
 
-    gadgetron --from_stream -c stream_complex_to_float.xml -i tmp.dat | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out1.h5
-    cat tmp.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml |  stream_to_mrd -o out2.h5
+    gadgetron --from_stream -c stream_complex_to_float.xml -i tmp.dat | gadgetron --from_stream -c stream_float_to_short.xml | ismrmrd_stream_to_hdf5 --use-stdin -o out1.h5
+    cat tmp.dat | gadgetron --from_stream -c stream_complex_to_float.xml | gadgetron --from_stream -c stream_float_to_short.xml | ismrmrd_stream_to_hdf5 --use-stdin -o out2.h5
 
 Additionally, the gadgetron docker container can be leveraged to invoke a reconstruction without requiring gadgetron to
 be installed locally:
 
-    mrd_to_stream -i testdata.h5 | docker run -i --gpus=all ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_rt_cuda:latest --from_stream -c default.xml | stream_to_mrd -o out.h5
+    ismrmrd_hdf5_to_stream --use-stdout -i testdata.h5 | docker run -i --gpus=all ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_rt_cuda:latest --from_stream -c default.xml | ismrmrd_stream_to_hdf5 --use-stdin -o out.h5
 
 ### Viewing output
 
