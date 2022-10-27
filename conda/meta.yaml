@@ -27,7 +27,7 @@ requirements:
     - gxx_linux-64=9.4.0                  # [linux64]
     - gtest=1.10.0
     - howardhinnant_date=3.0.1
-    - ismrmrd::ismrmrd=1.11.1
+    - ismrmrd::ismrmrd=1.12.0
     - ismrmrd::ismrmrd-python>=1.9.8
     - libblas=*=*mkl
     - libcurl=7.79.1
@@ -54,7 +54,7 @@ requirements:
     - dcmtk=3.6.1
     - fftw=3.3.9
     - gadgetron::gadgetron-python>=1.4.1
-    - ismrmrd::ismrmrd=1.11.1
+    - ismrmrd::ismrmrd=1.12.0
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
     - libblas=*=*mkl
@@ -73,7 +73,7 @@ requirements:
 
 test:
   requires:
-    - ismrmrd::siemens_to_ismrmrd=1.2.4
+    - ismrmrd::siemens_to_ismrmrd=1.2.6
 
 about:
   home: https://github.com/gadgetron/gadgetron
