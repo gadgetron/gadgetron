@@ -71,6 +71,8 @@ template <typename T> class cuNFFT_test : public ::testing::Test {
     std::vector<size_t> image_dims_;
     boost::shared_ptr<cuNFFT_plan<float, 2>> nfft_plan_;
     std::vector<size_t> recon_dims;
+    GadgetronTimer timer_;
+
 };
 
 typedef Types<float_complext> cplxImplementations;
@@ -78,7 +80,7 @@ typedef Types<float_complext> cplxImplementations;
 TYPED_TEST_SUITE(cuNFFT_test, cplxImplementations);
 
 TYPED_TEST(cuNFFT_test, cuNFFT_ATOMIC) {
-
+    this->timer_.start("ATOMIC NUFFT");
     std::vector<size_t> flat_dims = {this->fake_traj.get_number_of_elements()};
     cuNDArray<vector_td<float, 2>> flat_traj(flat_dims, this->fake_traj.get_data_ptr());
     this->nfft_plan_ =
@@ -86,34 +88,30 @@ TYPED_TEST(cuNFFT_test, cuNFFT_ATOMIC) {
                                              this->kernel_width_, ConvolutionType::ATOMIC);
 
     {
-        GadgetronTimer timer("Preprocess Atomic");
-
         this->nfft_plan_->preprocess(flat_traj, NFFT_prep_mode::NC2C);
     }
     auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
 
     {
-        GadgetronTimer timer("Recon Atomic");
-
         this->nfft_plan_->compute(&this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
     }
+    EXPECT_TRUE(this->timer_.stop()<2e6);// Test should take less than 2 sec
 }
 
 TYPED_TEST(cuNFFT_test, cuNFFT_STANDARD) {
-
+    this->timer_.start("STANDARD NUFFT");
     std::vector<size_t> flat_dims = {this->fake_traj.get_number_of_elements()};
     cuNDArray<vector_td<float, 2>> flat_traj(flat_dims, this->fake_traj.get_data_ptr());
     this->nfft_plan_ =
         NFFT<cuNDArray, float, 2>::make_plan(from_std_vector<size_t, 2>(this->image_dims_), this->image_dims_os_,
                                              this->kernel_width_, ConvolutionType::STANDARD);
     {
-        GadgetronTimer timer("Preprocess Standard");
         this->nfft_plan_->preprocess(flat_traj, NFFT_prep_mode::NC2C);
     }
 
     auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
     {
-        GadgetronTimer timer("Recon Standard");
         this->nfft_plan_->compute(&this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
     }
+    EXPECT_TRUE(this->timer_.stop()<20e6); // Test should take less than 20 sec
 }
