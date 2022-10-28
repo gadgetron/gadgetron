@@ -41,7 +41,7 @@ public:
     /// although BSpline grid has the padding, every index is defined on the unpadded grid
 
     /// get the size of control point arrays
-    virtual size_t get_size(size_t dimension) const { return ctrl_pt_[0].get_size(dimension)-2*BSPLINEPADDINGSIZE; }
+    virtual size_t get_size(size_t dimension) const override { return ctrl_pt_[0].get_size(dimension)-2*BSPLINEPADDINGSIZE; }
     virtual std::vector<size_t> get_dimensions() const
     {
         std::vector<size_t> dim;
@@ -102,7 +102,7 @@ public:
     /// compute the control point location in world coordinates
     void get_location(size_t x, size_t y, CoordType& sx, CoordType& sy) const override { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, sx, sy); }
     void get_location(size_t x, size_t y, size_t z, CoordType& sx, CoordType& sy, CoordType& sz) const override { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, sx, sy, sz); }
-    void get_location(size_t x, size_t y, size_t z, size_t s, CoordType& sx, CoordType& sy, CoordType& sz, CoordType& ss) const { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE, sx, sy, sz, ss); }
+    void get_location(size_t x, size_t y, size_t z, size_t s, CoordType& sx, CoordType& sy, CoordType& sz, CoordType& ss) const override { ctrl_pt_[0].image_to_world(x+BSPLINEPADDINGSIZE, y+BSPLINEPADDINGSIZE, z+BSPLINEPADDINGSIZE, s+BSPLINEPADDINGSIZE, sx, sy, sz, ss); }
 
     /// convert a world coordinate point to FFD grid location
     bool world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const override;

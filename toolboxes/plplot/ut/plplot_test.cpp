@@ -45,7 +45,6 @@ protected:
         #pragma omp parallel default(shared)
         {
             int tid = omp_get_thread_num();
-            // std::cout << tid << std::endl;
             DWORD_PTR mask = (1 << tid);
             SetThreadAffinityMask( GetCurrentThread(), mask );
         }

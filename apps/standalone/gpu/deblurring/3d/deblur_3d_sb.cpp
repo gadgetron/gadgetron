@@ -39,11 +39,11 @@ int main(int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running deblurring with the following parameters: " << endl;
+    GINFO_STREAM(" Running deblurring with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     read_nd_array<_complext>((char*)parms.get_parameter('k')->get_string_value());
    
   if( !(host_data->get_number_of_dimensions() == 3) || !(host_kernel->get_number_of_dimensions() == 3) ){
-    cout << endl << "Input data (image/kernel) is not two-dimensional. Quitting!\n" << endl;
+    GINFO_STREAM(endl << "Input data (image/kernel) is not two-dimensional. Quitting!\n" << endl);
     return 1;
   }
 
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
   _real lambda = (_real) parms.get_parameter('L')->get_float_value();
 
   if( mu <= (_real) 0.0 ) {
-    cout << endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl;
+    GINFO_STREAM(endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl);
     return 1;
   }
 

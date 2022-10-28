@@ -62,11 +62,11 @@ int main( int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running reconstruction with the following parameters: " << endl;
+    GINFO_STREAM(" Running reconstruction with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -80,7 +80,7 @@ int main( int argc, char** argv)
   delete timer;
    
   if( !(host_image->get_number_of_dimensions() == 3) ){
-    cout << endl << "Input image is not three-dimensional (2d multislice). Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Input image is not three-dimensional (2d multislice). Quitting.\n" << endl);
     return 1;
   }
   
@@ -96,8 +96,10 @@ int main( int argc, char** argv)
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 
   if( matrix_size.vec[0] != matrix_size.vec[1] ){
-    cout << endl << "For this samples application we only allow square input images. "
-	 << endl << "The only reason being that only one oversampled matrix size is specified and the oversampling ratio must be consistent." << endl;
+    GINFO_STREAM(
+      endl << "For this samples application we only allow square input images. " <<
+      endl << "The only reason being that only one oversampled matrix size is specified and the oversampling ratio must be consistent." << 
+      endl);
   }
 
   if( frames_per_reconstruction < 0 ) frames_per_reconstruction = num_frames;

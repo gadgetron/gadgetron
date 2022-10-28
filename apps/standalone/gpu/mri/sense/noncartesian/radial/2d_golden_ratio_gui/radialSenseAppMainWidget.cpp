@@ -108,7 +108,7 @@ void radialSenseAppMainWindow::open()
 
   // Read samples from disk
   host_samples = read_nd_array<float_complext>(filename.toLatin1().constData());
-  cout << endl << "loaded dataset with " << host_samples->get_number_of_elements() << " samples." << endl;
+  GINFO_STREAM(endl << "loaded dataset with " << host_samples->get_number_of_elements() << " samples." << endl);
 
   // This is to prevent the user changing the matrix sizes before any data is initially loaded
   matrixSizeSpinBox->setEnabled(true); 

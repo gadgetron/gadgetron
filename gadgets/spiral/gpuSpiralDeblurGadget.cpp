@@ -443,11 +443,11 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			double  *weighting;
 			int     ngrad;
 			//Map trajecotry is different, parameters defined in user_floats
-			std::cout << "fov " << B0_header.user_float[5] << std::endl;
-			std::cout << "smax " << 3*B0_header.user_float[3]/10. << std::endl;
-			std::cout << "gmax " << B0_header.user_float[1]/10. << std::endl;
-			std::cout << "krmax " << 2*((B0_header.user_float[4])/10000.) << std::endl;
-			std::cout << "sampling_time " << sample_time << std::endl;
+			GINFO("fov %f\n", B0_header.user_float[5]);
+			GINFO("smax %f\n", 3*B0_header.user_float[3]/10.);
+			GINFO("gmax %f\n", B0_header.user_float[1]/10.);
+			GINFO("krmax %f\n", 2*((B0_header.user_float[4])/10000.));
+			GINFO("sampling_time %f\n", sample_time);
 			double fov2_[nfov] = {B0_header.user_float[5], -1/(1.1*2*((B0_header.user_float[4])/10000.))*B0_header.user_float[5]};
 			calc_vds(3.*((B0_header.user_float[3])/10.),(B0_header.user_float[1])/10.,sample_time,sample_time,E1,&fov2_[0],nfov,2.*((B0_header.user_float[4])/10000.),ngmax,&xgrad,&ygrad,&ngrad);
 			calc_traj(xgrad, ygrad, R0, E1, sample_time, krmaxB0_, &x_trajectory, &y_trajectory, &weighting);

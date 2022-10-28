@@ -114,8 +114,8 @@ namespace Gadgetron{
         // Determine image coordinate of current neighbor
         //
         
-        const typename uint64d<D>::Type stride = idx_to_co<uint64_t,D>( i, twos );
-        
+        const typename uint64d<D>::Type stride = idx_to_co<size_t,D>( i, twos );
+
         if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
         
         typename reald<REAL,D>::Type co_stride;

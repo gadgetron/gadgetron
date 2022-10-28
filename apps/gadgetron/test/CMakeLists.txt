@@ -20,7 +20,7 @@ target_link_libraries(server_tests
         gadgetron_toolbox_log
         GTest::GTest
         GTest::Main
-        gtest
-        gtest_main
+        GTest::gtest
+        GTest::gtest_main
         )
 

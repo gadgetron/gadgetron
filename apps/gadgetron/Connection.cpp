@@ -15,7 +15,7 @@ using namespace Gadgetron::Server::Connection;
 
 namespace Gadgetron::Server::Connection {
 
-#if _WIN32 || !NDEBUG || GADGETRON_DISABLE_FORK
+#if _WIN32 || !NDEBUG || GADGETRON_DISABLE_FORK || __clang__
 
     void handle(
             const Gadgetron::Core::StreamContext::Paths& paths,
