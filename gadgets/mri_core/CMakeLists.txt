@@ -61,7 +61,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         generic_recon_gadgets/GenericReconAccumulateImageTriggerGadget.h
         generic_recon_gadgets/GenericImageReconArrayToImageGadget.h
         generic_recon_gadgets/GenericReconReferenceKSpaceDelayedBufferGadget.h
-        generic_recon_gadgets/GenericReconImageToImageArrayGadget.h 
+        generic_recon_gadgets/GenericReconImageToImageArrayGadget.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
@@ -72,7 +72,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         ImageArraySendMixin.h
         ImageArraySendMixin.hpp
         DenoiseGadget.h
-        CoilComputationGadget.h 
+        CoilComputationGadget.h
         ImageFFTGadget.h
         FlagTriggerGadget.h
         ImageIndexGadget.h
@@ -127,7 +127,7 @@ set(gadgetron_mricore_src_files
         generic_recon_gadgets/GenericImageReconGadget.cpp
         generic_recon_gadgets/GenericReconAccumulateImageTriggerGadget.cpp
         generic_recon_gadgets/GenericImageReconArrayToImageGadget.cpp
-        generic_recon_gadgets/GenericReconImageToImageArrayGadget.cpp 
+        generic_recon_gadgets/GenericReconImageToImageArrayGadget.cpp
         CompressedFloatBuffer.cpp
         CompressedFloatBufferSse41.cpp
         CompressedFloatBufferAvx2.cpp
@@ -154,22 +154,24 @@ set(gadgetron_mricore_config_files
         config/isalive.xml
         config/gtquery.xml
         generic_recon_gadgets/config/Generic_Cartesian_FFT.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Grappa.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_Cine_Denoise.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_Complex.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI_AVE.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_ImageArray.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_SNR.xml
         generic_recon_gadgets/config/Generic_Cartesian_Grappa_T2W.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI_AVE.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Spirit.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Image_Chain_FFT.xml
+        generic_recon_gadgets/config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
+        generic_recon_gadgets/config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+        generic_recon_gadgets/config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
+        generic_recon_gadgets/config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
         generic_recon_gadgets/config/Generic_Cartesian_Spirit_RealTimeCine.xml
         generic_recon_gadgets/config/Generic_Cartesian_Spirit_SASHA.xml
-        generic_recon_gadgets/config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
-        generic_recon_gadgets/config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
-        generic_recon_gadgets/config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
-        generic_recon_gadgets/config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Grappa_Cine_Denoise.xml
-        generic_recon_gadgets/config/Generic_Cartesian_Image_Chain_FFT.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Spirit.xml
         config/NoiseSummary.xml
         )
 

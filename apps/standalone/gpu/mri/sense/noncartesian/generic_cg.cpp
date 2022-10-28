@@ -73,11 +73,11 @@ int main( int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running reconstruction with the following parameters: " << endl;
+    GINFO_STREAM(" Running reconstruction with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -102,17 +102,17 @@ int main( int argc, char** argv)
     } */
 
   if( !(host_samples->get_number_of_dimensions() == 2 && host_traj->get_number_of_dimensions() == 2) ){
-    cout << endl << "Samples/trajectory arrays must be two-dimensional: (dim 0: samples/profile x #profiles/frame; dim 1: #frames). Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Samples/trajectory arrays must be two-dimensional: (dim 0: samples/profile x #profiles/frame; dim 1: #frames). Quitting.\n" << endl);
     return 1;
   }
 
   if( !(host_csm->get_number_of_dimensions() == 3 )){
-    cout << endl << "Coil sensitivity maps must be three-dimensional. Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Coil sensitivity maps must be three-dimensional. Quitting.\n" << endl);
     return 1;
   }
 
   if( !(host_reg->get_number_of_dimensions() == 2 )){
-    cout << endl << "Regularization image must be two-dimensional. Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Regularization image must be two-dimensional. Quitting.\n" << endl);
     return 1;
   }
 

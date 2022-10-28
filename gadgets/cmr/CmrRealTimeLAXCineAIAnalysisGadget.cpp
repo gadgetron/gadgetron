@@ -514,7 +514,9 @@ namespace Gadgetron {
                 gt_exporter_.export_array(lax_images, this->debug_folder_full_path_ + "/" + str.str());
             }
 
-            lax_images.print(std::cout);
+            std::stringstream imgs_stream; 
+            lax_images.print(imgs_stream);
+            GINFO(imgs_stream.str().c_str());
 
             // ---------------------------------------------------------
             // call cmr landmark detection
@@ -530,7 +532,9 @@ namespace Gadgetron {
                 std::tie(pts, probs) = perform_cmr_landmark_detection(lax_images, this->model_, p_thresh, this->oper_RO.value(), this->oper_E1.value());
                 gt_timer_.stop();
 
-                pts.print(std::cout);  
+                std::stringstream pts_stream;
+                pts.print(pts_stream);
+                
 
                 GDEBUG_STREAM("=============================================");
 

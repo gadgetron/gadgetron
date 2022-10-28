@@ -1,19 +1,17 @@
 import os
-import sys
 import pickle
+import platform
+import sys
+
 import ismrmrd
 import ismrmrd.xsd
-import numpy as np
-import platform
 
 from gadgetron import Gadget, IsmrmrdImageArray
-import copy 
-import math
 
 class ImageArrayRecon(Gadget):
 
     def process_config(self, cfg):
-        print("ImageArrayRecon, process config ... ")
+        print("ImageArrayRecon, process config ... ", file=sys.stderr)
         self.header = ismrmrd.xsd.CreateFromDocument(cfg)
 
         # first encoding space
@@ -38,8 +36,8 @@ class ImageArrayRecon(Gadget):
 
         self.num_processed_ = 0
 
-        print("ImageArrayRecon, maximal number of slice ", self.slc)
-        print("ImageArrayRecon, find debug folder ", self.debug_folder)
+        print(f"ImageArrayRecon, maximal number of slice {self.slc}", file=sys.stderr)
+        print(f"ImageArrayRecon, find debug folder {self.debug_folder}", file=sys.stderr)
 
     def process(self, array_data):
 
@@ -53,68 +51,36 @@ class ImageArrayRecon(Gadget):
         S = ndim[5]
         SLC = ndim[6]
 
-        print("\nImageArrayRecon, receiving image array, ", ndim)
+        print(f"\nImageArrayRecon, receiving image array, {ndim}", file=sys.stderr)
 
         if (self.debug_folder is not None):
             save_file = os.path.join(self.debug_folder, "image_array"+str(self.num_processed_)+".dat")
             with open(save_file, "wb") as f:
                 pickle.dump(array_data, f, pickle.HIGHEST_PROTOCOL)
-                print("Save incoming array data to %s" % save_file)
+                print(f"Save incoming array data to {save_file}", file=sys.stderr)
 
         # self.put_next(array_data)
 
-        print("ImageArrayRecon, parse meta ... ")
+        print("ImageArrayRecon, parse meta ... ", file=sys.stderr)
         mt = list()
         for x in array_data.meta:
             curr_meta = ismrmrd.Meta.deserialize(x)
             mt.append(curr_meta)
 
-        print("ImageArrayRecon, convert %d meta containers ... " % len(mt))
+        print(f"ImageArrayRecon, convert {len(mt)} meta containers ... ", file=sys.stderr)
 
         if array_data.waveform is not None:
-            print("ImageArrayRecon, receive %d waveforms ... " % len(array_data.waveform))
-            print("ImageArrayRecon, receive waveforms ", array_data.waveform)
+            print(f"ImageArrayRecon, receive %d waveforms ... {len(array_data.waveform)}", file=sys.stderr)
+            print(f"ImageArrayRecon, receive waveforms {array_data.waveform}", file=sys.stderr)
 
         if array_data.acq_headers is not None:
-            print("ImageArrayRecon, receive acq headers ... ", array_data.acq_headers.shape)
+            print(f"ImageArrayRecon, receive acq headers ... {array_data.acq_headers.shape}", file=sys.stderr)
 
         for slc in range(0,SLC):
             for s in range(0,S):
                 for phs in range(0,PHS):
-                    print("send out image %d-%d-%d" % (phs, s, slc))
+                    print(f"send out image {phs}-{s}-{slc}", file=sys.stderr)
                     a = array_data.data[:,:,:,:,phs,s,slc]
-                    # print(a.shape)
                     self.put_next(array_data.headers[phs,s,slc], a)
         
-        """
-        print("ImageArrayRecon, receiving image array, ", ndim)
-
-        print("ImageArrayRecon, buffer incoming array ... ")
-        self.array_data=array_data
-
-        print("ImageArrayRecon, pass down incoming array ... ") 
-        self.put_next(array_data)
-
-        print("ImageArrayRecon, parse meta ... ")
-        mt = list()
-        for x in self.array_data.meta:
-            curr_meta = ismrmrd.Meta.deserialize(x)
-            mt.append(curr_meta)
-
-        print("ImageArrayRecon, convert %d meta containers ... ", len(mt))
-        print("ImageArrayRecon, receive %d waveforms ... ", len(self.array_data.waveform))
-
-        if len(self.array_data.waveform)>0:
-            print(self.array_data.waveform[0].version)
-
-        for slc in range(0,SLC-1):
-            h = np.ravel(self.array_data.headers)[0, 0, slc]
-            print(h)
-            h.image_series_index += 100
-
-        if len(mt)>0:
-            print(mt[0])
-            
-        print(self.array_data.headers[0, 0, 0])
-        """
         return 0

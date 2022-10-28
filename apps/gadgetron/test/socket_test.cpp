@@ -1,10 +1,14 @@
 //
 // Created by dchansen on 9/10/19.
 //
-#include "../connection/SocketStreamBuf.h"
+#include <random>
+
 #include <boost/asio.hpp>
 #include <gtest/gtest.h>
-#include <random>
+
+#include "../connection/SocketStreamBuf.h"
+#include "log.h"
+
 
 namespace ba = boost::asio;
 using tcp    = boost::asio::ip::tcp;
@@ -87,7 +91,7 @@ TEST_F(SocketTest, nulltest) {
     std::uniform_int_distribution<char> distribution(0);
     for (auto& d : data) d = distribution(engine);
 
-    std::cout << data.size() << std::endl;
+    GINFO_STREAM(std::to_string(data.size()) << std::endl);
     std::stringstream sstream;
     sstream.write(data.data(),data.size());
 
@@ -101,4 +105,3 @@ TEST_F(SocketTest, nulltest) {
     ASSERT_EQ(ref,data);
     thread.join();
 }
-

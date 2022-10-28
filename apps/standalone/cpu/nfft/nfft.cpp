@@ -37,10 +37,10 @@ int main(int argc, char** argv){
 
 	parms.parse_parameter_list(argc, argv);
 	if(parms.all_required_parameters_set()){
-		cout << "Running nfft with the following parameter:" << endl;
+		GINFO_STREAM("Running nfft with the following parameter:" << endl);
 		parms.print_parameter_list();
 	}else{
-		cout << "Some required parameters are missing: " << endl;
+		GINFO_STREAM("Some required parameters are missing: " << endl);
 		parms.print_parameter_list();
 		parms.print_usage();
 		return 1;
@@ -58,12 +58,12 @@ int main(int argc, char** argv){
 	int n = parms.get_parameter('n')->get_int_value();
 
 	// Print data info
-	cout << "data n: " << data->get_number_of_elements() << endl;
-	cout << "traj n: " << traj->get_number_of_elements() << endl;
-	cout << "weights n: " << weights->get_number_of_elements() << endl;
-	cout << "osf: " << osf << endl;
-	cout << "Kernel width: " << kernelWidth << endl;
-	cout << "Matrix size: " << n << endl;
+	GINFO_STREAM("data n: " << data->get_number_of_elements() << endl);
+	GINFO_STREAM("traj n: " << traj->get_number_of_elements() << endl);
+	GINFO_STREAM("weights n: " << weights->get_number_of_elements() << endl);
+	GINFO_STREAM("osf: " << osf << endl);
+	GINFO_STREAM("Kernel width: " << kernelWidth << endl);
+	GINFO_STREAM("Matrix size: " << n << endl);
 
 	// Reformat data for hoNFFT
 	hoNDArray<typename reald<float,2>::Type> k(weights->get_number_of_elements());
@@ -83,4 +83,3 @@ int main(int argc, char** argv){
 	auto output = boost::make_shared<hoNDArray<complext<float>>>(result);
 	write_nd_array<complext<float>>(output.get(), (char*) parms.get_parameter('o')->get_string_value());
 }
-

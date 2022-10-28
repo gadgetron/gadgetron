@@ -133,25 +133,28 @@ namespace Gadgetron
 
     void grappa2D::status()
     {
-        std::cout << "grappa2D of Gadgetron python binding" << std::endl;
-        std::cout << "accelFactor is " << accelFactor_ << std::endl;
-        std::cout << "kRO is " << kRO_ << std::endl;
+        std::stringstream stream; 
+        stream << "grappa2D of Gadgetron python binding" << "\n";
+        stream << "accelFactor is " << accelFactor_ << "\n";
+        stream << "kRO is " << kRO_ << "\n";
 
-        std::cout << "kE1 is [";
+        stream << "kE1 is [";
         size_t n;
         for (n=0; n<kE1_.size(); n++)
         {
-            std::cout << kE1_[n];
+            stream << kE1_[n];
         }
-        std::cout << "]" << std::endl;
+        stream << "]" << "\n";
 
-        std::cout << "oE1 is [";
-        for (n = 0; n<oE1_.size(); n++)
+        stream << "oE1 is [";
+        for (n = 0; n<oE1_.size(); n++) 
         {
-            std::cout << oE1_[n];
+            stream << oE1_[n];
         }
-        std::cout << "]" << std::endl;
+        stream << "]" << "\n";
 
-        std::cout << "thres is " << thres_ << std::endl;
+        stream << "thres is " << thres_ << "\n";
+
+        GINFO(stream.str().c_str());
     }
 }

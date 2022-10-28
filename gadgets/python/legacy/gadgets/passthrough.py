@@ -5,9 +5,9 @@ class Passthrough(Gadget):
 
     def process_config(self, conf):
         pass 
+    
     def process(self, recondata,*args):
          #Return image to Gadgetron
         self.put_next(recondata)
         return 0    
-        #print "Returning to Gadgetron"
  

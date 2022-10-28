@@ -9,6 +9,8 @@
 #include <vector>
 #include <iostream>
 
+#include "log.h"
+
 using namespace std;
 
 namespace Gadgetron{
@@ -53,7 +55,7 @@ namespace Gadgetron{
     const unsigned int warp_size = deviceProp.warpSize;
   
     if( num_samples_per_profile%warp_size ){
-      cout << endl << "compute_radial_trajectory_golden_ratio_2d: #samples/profile is not a multiple of the device's warp size." << endl;
+      GINFO_STREAM(endl << "compute_radial_trajectory_golden_ratio_2d: #samples/profile is not a multiple of the device's warp size." << endl);
       return boost::shared_ptr< cuNDArray<T> >();
     }
 
@@ -64,7 +66,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
   
     if(!co.get()){
-      cout << endl << "Error:: compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl);
       return boost::shared_ptr< cuNDArray<T> >();
     }
   
@@ -113,7 +115,7 @@ namespace Gadgetron{
     const unsigned int warp_size = deviceProp.warpSize;
 
     if( num_samples_per_profile%warp_size ){
-      cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: #samples/profile is not a multiple of the device's warp size." << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_trajectory_fixed_angle_2d: #samples/profile is not a multiple of the device's warp size." << endl);
       return boost::shared_ptr< cuNDArray<T> >();
     }
 
@@ -171,7 +173,7 @@ namespace Gadgetron{
     const unsigned int warp_size = deviceProp.warpSize;
   
     if( num_samples_per_profile%warp_size ){
-      cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: #samples/profile is not a multiple of the device's warp size." << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_trajectory_fixed_angle_2d: #samples/profile is not a multiple of the device's warp size." << endl);
       return boost::shared_ptr< cuNDArray<T> >();
     }
 
@@ -387,7 +389,7 @@ namespace Gadgetron{
                          REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset = 0 )
   {
     if( num_profiles < 4 ){
-      cout << endl << "Error:: compute_radial_dcw_<*>_2d: use at least four profiles" << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_dcw_<*>_2d: use at least four profiles" << endl);
       return boost::shared_ptr< cuNDArray<REAL> >();
     }
   
@@ -397,12 +399,12 @@ namespace Gadgetron{
     const unsigned int warp_size = deviceProp.warpSize;
   
     if( samples_per_profile%2 ){
-      cout << endl << "Error:: compute_radial_dcw_<*>_2d: samples/profile must be even." << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_dcw_<*>_2d: samples/profile must be even." << endl);
       return boost::shared_ptr< cuNDArray<REAL> >();
     }
 
     if( samples_per_profile%warp_size ){
-      cout << endl << "Error:: compute_radial_dcw_<*>_2d: samples/profile number a multiple of the device's warp size." << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_dcw_<*>_2d: samples/profile number a multiple of the device's warp size." << endl);
       return boost::shared_ptr< cuNDArray<REAL> >();
     }
 
@@ -413,7 +415,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<REAL> > dcw( new cuNDArray<REAL>(&dims) );
   
     if(!dcw.get()){
-      cout << endl << "Error:: compute_radial_dcw_<*>_2d: memory allocation failed." << endl;
+      GINFO_STREAM(endl << "Error:: compute_radial_dcw_<*>_2d: memory allocation failed." << endl);
       return boost::shared_ptr< cuNDArray<REAL> >();
     }
   

@@ -58,7 +58,7 @@ namespace Gadgetron{
             cudaEventDestroy( start_event_ );
             cudaEventDestroy( stop_event_ );
 
-            GDEBUG_STREAM(name_ << ": " << time << " ms" << std::endl; std::cout.flush());
+            GDEBUG_STREAM(name_ << ": " << time << " ms" << std::endl);
         }
 
         void set_timing_in_destruction(bool timing) { timing_in_destruction_ = timing; }
