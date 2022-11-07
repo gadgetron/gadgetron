@@ -36,7 +36,7 @@ dependencies:
   - howardhinnant_date=3.0.1              # dev
   - ismrmrd::ismrmrd=1.12.0
   - ismrmrd::ismrmrd-python>=1.9.8
-  - junitparser==2.7.0
+  - junitparser=2.7.0
   - jupyter=1.0.0                         # dev
   - jq=1.6
   - libblas=*=*mkl
