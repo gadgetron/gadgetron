@@ -93,7 +93,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetro
     cd /opt/code/gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package -DUSE_MKL=ON && \
+    cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/package -DUSE_MKL=ON && \
     ninja && \
     ninja install
     
@@ -102,6 +102,17 @@ ARG USER_UID
 USER ${USER_UID}
 WORKDIR /opt
 #COPY NHLBI TOOLBOX
+RUN mkdir -p /opt/code/ITK
+COPY --chown=$USER_UID:conda ITK/ /opt/code/ITK/
+SHELL ["/bin/bash", "-c"]
+RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
+    cd /opt/code/ITK && \
+    mkdir build && \
+    cd build && \
+ ##   cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package && \
+     cmake ../ -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/package -DCMAKE_PREFIX_PATH=/opt/package && \
+    ninja && \
+    ninja install
 RUN mkdir -p /opt/code/NHLBI-GT-Non-Cartesian
 COPY --chown=$USER_UID:conda NHLBI-GT-Non-Cartesian/ /opt/code/NHLBI-GT-Non-Cartesian/
 SHELL ["/bin/bash", "-c"]
@@ -110,7 +121,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetro
     mkdir build && \
     cd build && \
  ##   cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package && \
-     cmake ../ -GNinja -DUSE_MKL=ON  -DCMAKE_INSTALL_PREFIX=/opt/package -DCMAKE_PREFIX_PATH=/opt/package && \
+     cmake ../ -GNinja -DUSE_MKL=ON  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/package -DCMAKE_PREFIX_PATH=/opt/package && \
     ninja && \
     ninja install
 RUN mkdir -p /opt/code/MATLAB/
@@ -120,6 +131,8 @@ COPY --chown=$USER_UID:conda gadgetron-matlab-nhlbi/ /home/vscode/Documents/MATL
 COPY --chown=$USER_UID:conda gadgetron-matlab-nhlbi/pathdef.m /opt/code/MATLAB/
 RUN echo "/home/vscode/Documents/MATLAB/gadgetron.external.SocketWrapper.jar" >> ${HOME}/.matlab/R2021a/javaclasspath.txt
 RUN echo "/home/vscode/Documents/MATLAB/java" >> ${HOME}/.matlab/R2021a/javaclasspath.txt
+RUN echo "LC_ALL=C" >> ${HOME}/.bashrc
+RUN echo "unset LANGUAGE" >> ${HOME}/.bashrc
 
 FROM gadgetron_dev_cuda AS gadgetron_nhlbi_rt_cuda
 ARG USER_UID
