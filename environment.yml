@@ -64,3 +64,4 @@ dependencies:
   - itk
   - pip:
     - junitparser==2.2.0
+    - cupy-cuda117==10.6.0
