@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10...3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.17...3.21 FATAL_ERROR)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -52,7 +52,7 @@ endif ()
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 4)
 set(GADGETRON_VERSION_MINOR 4)
-set(GADGETRON_VERSION_PATCH 0)
+set(GADGETRON_VERSION_PATCH 1)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
 find_package(Git)
@@ -343,7 +343,7 @@ if (BUILD_PYTHON_SUPPORT)
     find_package(Python3 COMPONENTS Development NumPy REQUIRED)
     find_package(Boost COMPONENTS python3${Python3_VERSION_MINOR} REQUIRED)
 
-    message("Found numpy : ${Python3_Numpy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
+    message("Found numpy : ${Python3_NumPy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
 
     if (Python3_VERSION_MINOR LESS 7)
         message(FATAL_ERROR "Gadgetron Python support requires Python 3.7 or newer. Found: ${Python3_VERSION}")
