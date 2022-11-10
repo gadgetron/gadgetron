@@ -276,7 +276,7 @@ set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO
 add_definitions(-DARMA_DONT_USE_WRAPPER -DARMA_USE_CXX11 -DARMA_64BIT_WORD)
 install(TARGETS armadillo EXPORT gadgetron-export)
 
-find_package(cpr REQUIRED)
+find_package(CURL REQUIRED)
 find_package(PugiXML REQUIRED)
 find_package(ISMRMRD CONFIG REQUIRED)
 

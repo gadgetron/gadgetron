@@ -14,7 +14,6 @@ requirements:
     - armadillo>=9.900.5
     - boost=1.76.0
     - cmake>=3.21.3
-    - gadgetron::cpr=1.7.2
     - cuda-libraries-dev=11.6.1           # [linux64]
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
@@ -48,7 +47,6 @@ requirements:
   run:
     - armadillo>=9.900.5
     - boost=1.76.0
-    - gadgetron::cpr=1.7.2
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
     - dcmtk=3.6.1

@@ -146,6 +146,10 @@ TEST_F(StorageTest, storage_client_supports_paging) {
     list = storage_client.list_items(tags, items_to_insert);
     EXPECT_TRUE(list.complete);
     EXPECT_EQ(list.items.size(), items_to_insert);
+
+    list = storage_client.get_next_page_of_items(list);
+    EXPECT_TRUE(list.complete);
+    EXPECT_EQ(list.items.size(), 0);
 }
 
 TEST_F(StorageTest, storage_client_should_store_items_and_return_list) {
