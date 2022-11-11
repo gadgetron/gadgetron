@@ -1,6 +1,8 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
-add_subdirectory(test)
+if (BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 add_executable(gadgetron
         main.cpp
