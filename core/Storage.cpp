@@ -10,12 +10,14 @@ using json = nlohmann::json;
 using namespace Gadgetron::Storage;
 
 namespace {
+
 // Ensures that curl_global_init and curl_global_cleanup are called once
 class CurlGlobalStateGuard {
   public:
     CurlGlobalStateGuard() { curl_global_init(CURL_GLOBAL_DEFAULT); }
     ~CurlGlobalStateGuard() { curl_global_cleanup(); }
 };
+
 static CurlGlobalStateGuard curl_global_state;
 
 // Copies the response body
@@ -29,10 +31,10 @@ size_t content_read_callback(char* dest, size_t size, size_t nmemb, std::istream
     return stream->readsome(dest, size * nmemb);
 }
 
-template <typename T> using Handle = std::unique_ptr<T, std::function<void(T*)>>;
+template <typename T> using CurlHandle = std::unique_ptr<T, std::function<void(T*)>>;
 
-Handle<CURL> create_curl_handle() {
-    Handle<CURL> handle(curl_easy_init(), curl_easy_cleanup);
+CurlHandle<CURL> create_curl_handle() {
+    CurlHandle<CURL> handle(curl_easy_init(), curl_easy_cleanup);
     if (!handle) {
         throw std::runtime_error("unable to create CURL instance");
     }
@@ -84,20 +86,35 @@ StorageItem storage_item_from_json(json j) {
     return s;
 }
 
+void escape_and_write_string(std::stringstream& ss, std::string const& str) {
+    char* escaped_string = curl_easy_escape(nullptr, str.c_str(), str.size());
+    ss << escaped_string;
+    curl_free(escaped_string);
+}
+
 std::string tags_to_query_string(StorageItemTags const& tags) {
     std::stringstream ss;
-    ss << "?subject=" << tags.subject;
+
+    ss << "?subject=";
+    escape_and_write_string(ss, tags.subject);
+
     if (tags.device.has_value()) {
-        ss << "&device=" << *tags.device;
+        ss << "&device=";
+        escape_and_write_string(ss, *tags.device);
     }
     if (tags.session.has_value()) {
-        ss << "&session=" << *tags.session;
+        ss << "&session=";
+        escape_and_write_string(ss, *tags.session);
     }
     if (tags.name.has_value()) {
-        ss << "&name=" << *tags.name;
+        ss << "&name=";
+        escape_and_write_string(ss, *tags.name);
     }
     for (const auto& t : tags.custom_tags) {
-        ss << "&" << t.first << "=" << t.second;
+        ss << "&";
+        escape_and_write_string(ss, t.first);
+        ss << "=";
+        escape_and_write_string(ss, t.second);
     }
     return ss.str();
 }
@@ -152,7 +169,7 @@ StorageItemList StorageClient::list_items(StorageItemTags const& tags, size_t li
 
 StorageItemList StorageClient::get_next_page_of_items(StorageItemList const& page) {
     if (page.complete || page.continuation.empty()) {
-        return StorageItemList{ .complete = true };
+        return StorageItemList{.complete = true};
     }
 
     return get_item_list(page.continuation);
@@ -164,7 +181,7 @@ std::shared_ptr<std::istream> StorageClient::get_latest_item(StorageItemTags con
 }
 
 std::shared_ptr<std::istream> StorageClient::get_item_by_url(const std::string& url) {
-    // Note that we are loading the entire response into memory here, which will be 
+    // Note that we are loading the entire response into memory here, which will be
     // problematic for large items.
 
     auto response_body = std::make_shared<std::stringstream>();
@@ -211,10 +228,14 @@ StorageItem StorageClient::store_item(StorageItemTags const& tags, std::istream&
     curl_easy_setopt(curl_handle.get(), CURLOPT_WRITEFUNCTION, content_write_callback);
     curl_easy_setopt(curl_handle.get(), CURLOPT_WRITEDATA, &response_body);
 
-    // use chunked transfer encoding and disable Expect: 100-continue
-    Handle<curl_slist> headers_handle(
-        curl_slist_append(curl_slist_append(nullptr, "Transfer-Encoding: chunked"), "Expect:"), curl_slist_free_all);
-    curl_easy_setopt(curl_handle.get(), CURLOPT_HTTPHEADER, headers_handle.get());
+    // Set headers to use chunked transfer encoding and disable Expect: 100-continue
+    curl_slist* headers = nullptr;
+    headers = curl_slist_append(headers, "Transfer-Encoding: chunked");
+    headers = curl_slist_append(headers, "Expect:");
+
+    // ensure that headers is freed at the end of this function
+    CurlHandle<curl_slist> headers_handle(headers, curl_slist_free_all);
+    curl_easy_setopt(curl_handle.get(), CURLOPT_HTTPHEADER, headers);
 
     auto res = curl_easy_perform(curl_handle.get());
     if (res != CURLE_OK) {
