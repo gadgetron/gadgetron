@@ -10,7 +10,7 @@ add_library(storage OBJECT
 
 target_link_libraries(storage
         gadgetron_core
-        cpr::cpr
+        ${CURL_LIBRARIES}
         Boost::filesystem
         Boost::program_options)
 
