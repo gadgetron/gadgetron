@@ -52,7 +52,7 @@ endif ()
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 4)
 set(GADGETRON_VERSION_MINOR 4)
-set(GADGETRON_VERSION_PATCH 2)
+set(GADGETRON_VERSION_PATCH 3)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
 find_package(Git)
@@ -369,6 +369,17 @@ find_package(GLEW)
 find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
+
+# Fetch the range-v3 header-only library and add its include directory
+# to all compilation targets
+include(FetchContent)
+FetchContent_Declare(
+        Range-v3
+        GIT_REPOSITORY "https://github.com/ericniebler/range-v3"
+        GIT_TAG "4989f3e9ff2efee1852942bb9328ef121369ba02" # release 0.11.0
+)
+FetchContent_MakeAvailable(Range-v3)
+link_libraries(range-v3)
 
 option(BUILD_TESTING "Enable test building" On)
 if (BUILD_TESTING)
