@@ -12,7 +12,7 @@ dependencies:
   - armadillo=9.900.5                     # dev
   - boost=1.76.0
   - breathe=4.32.0                        # dev
-  - cmake=3.21.3                          # dev
+  - cmake=3.23.3                          # dev
   - conda-build=3.21.9                    # dev
   - conda-verify=3.4.2                    # dev
   - cuda-libraries-dev=11.6.1             # cuda, dev
