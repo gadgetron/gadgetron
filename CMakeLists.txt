@@ -212,6 +212,8 @@ if (NOT DEFINED Boost_VERSION_STRING)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
 
+# date library: https://github.com/HowardHinnant/date/
+find_package(date REQUIRED)
 
 option(USE_CUDA "Build with CUDA support" On)
 
