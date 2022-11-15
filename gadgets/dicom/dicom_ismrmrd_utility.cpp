@@ -113,9 +113,7 @@ namespace Gadgetron
 
             // -------------------------------------------------
 
-            ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
             ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-            ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
             // -------------------------------------------------
 
