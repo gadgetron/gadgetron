@@ -7,14 +7,12 @@ channels:
   - bioconda
   - defaults
   - intel
-  - cefca
 dependencies:
   - anaconda-client=1.8.0                 # dev
   - armadillo=9.900.5                     # dev
   - boost=1.76.0
   - breathe=4.32.0                        # dev
   - cmake=3.21.3                          # dev
-  - gadgetron::cpr=1.7.2
   - conda-build=3.21.9                    # dev
   - conda-verify=3.4.2                    # dev
   - cuda-libraries-dev=11.6.1             # cuda, dev
@@ -34,9 +32,9 @@ dependencies:
   - h5py=3.2.1
   - hdf5=1.10.6
   - howardhinnant_date=3.0.1              # dev
-  - ismrmrd::ismrmrd=1.11.1
+  - ismrmrd::ismrmrd=1.12.0
   - ismrmrd::ismrmrd-python>=1.9.8
-  - junitparser==2.7.0
+  - junitparser=2.7.0
   - jupyter=1.0.0                         # dev
   - jq=1.6
   - libblas=*=*mkl
@@ -55,7 +53,7 @@ dependencies:
   - pyyaml=6.0                            # dev
   - pip=21.2.4                            # dev
   - packaging=21.3
-  - plplot=5.11.2
+  - plplot=5.15.0
   - pugixml=1.11.4                        # dev
   - pyfftw=0.12.0
   - python=3.9.7
@@ -63,7 +61,7 @@ dependencies:
   - recommonmark=0.7.1                    # dev
   - scipy=1.7.1
   - shellcheck=0.7.2                      # dev
-  - ismrmrd::siemens_to_ismrmrd=1.2.4
+  - ismrmrd::siemens_to_ismrmrd=1.2.6
   - sphinx=4.4.0                          # dev
   - sphinx_rtd_theme=0.4.3                # dev
   - sysroot_linux-64=2.17

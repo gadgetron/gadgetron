@@ -9,7 +9,6 @@
 #include <boost/process.hpp>
 #include <boost/program_options.hpp>
 
-#include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
 #include "IsmrmrdContextVariables.h"
