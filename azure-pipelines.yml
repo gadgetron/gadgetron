@@ -119,8 +119,8 @@ jobs:
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
-  timeoutInMinutes: 10
-  displayName: "Testing for macOS"
+  timeoutInMinutes: 120
+  displayName: "Building for macOS"
   steps:
   - task: AzureKeyVault@2
     inputs:
@@ -129,7 +129,13 @@ jobs:
   - script: |
         set -e
         uname -a
-        which curl
-        which wget
-        which conda
-    displayName: "Check for basic utilities"
+        system_profiler SPHardwareDataType
+        system_profiler SPMemoryDataType
+        sysctl hw.memsize
+        sw_vers
+        eval "$(conda shell.bash hook)"
+        conda env create -f environment-macos.yml
+        conda activate gadgetron
+        set -euo pipefail
+        cd conda && ./package.sh
+    displayName: "Check available hardware and RAM on macOS, then build Gadgetron on macOS."
