@@ -13,8 +13,8 @@ if [[ $(uname) =~ Darwin ]]; then
    system_profiler SPMemoryDataType
    sysctl hw.memsize
    sw_vers
-   echo "Tests for macOS/Darwin TBD"
-   # python run_tests.py cases/*
+   # echo "Tests for macOS/Darwin TBD"
+   python run_tests.py cases/*
 else
    python run_tests.py --ignore-requirements python,cuda cases/*
 fi
