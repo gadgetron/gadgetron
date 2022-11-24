@@ -11,6 +11,9 @@ if [[ $(uname) =~ Darwin ]]; then
     # identify Python causing trouble in cloud environment when building in Python support into macOS build
     which python
     python --version
+    # also determine which cmake is being called
+    which cmake
+    cmake --version
     export MACOSX_DEPLOYMENT_TARGET=10.15
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${CONDA_PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${CONDA_PREFIX}/bin/clang++ -DBUILD_PYTHON_SUPPORT=ON -DUSE_MKL=ON -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 else
