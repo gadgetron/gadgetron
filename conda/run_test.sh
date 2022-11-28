@@ -7,6 +7,9 @@ cd "${PREFIX}/share/gadgetron/test/integration" || exit 1
 
 python get_data.py
 
+# confirm reported gadgetron configuration
+gadgetron --info
+
 if [[ $(uname) =~ Darwin ]]; then
    echo "Reported hardware and RAM for macOS:"
    system_profiler SPHardwareDataType
