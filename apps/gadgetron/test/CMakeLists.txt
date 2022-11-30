@@ -24,3 +24,5 @@ target_link_libraries(server_tests
         GTest::gtest_main
         )
 
+install(TARGETS server_tests DESTINATION bin COMPONENT main)
+
