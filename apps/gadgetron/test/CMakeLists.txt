@@ -22,6 +22,7 @@ target_link_libraries(server_tests
         GTest::Main
         GTest::gtest
         GTest::gtest_main
+        GTest::gmock
         )
 
 install(TARGETS server_tests DESTINATION bin COMPONENT main)
