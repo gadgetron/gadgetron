@@ -54,6 +54,8 @@ requirements:
     - dcmtk=3.6.1
     - fftw=3.3.9
     - gadgetron::gadgetron-python>=1.4.1
+    - gmock>=1.10.0
+    - gtest=1.10.0
     - ismrmrd::ismrmrd=1.12.0
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
