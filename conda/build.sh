@@ -25,7 +25,12 @@ if [[ $(uname) =~ Darwin ]]; then
 else
     cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCUDA_COMPUTE_CAPABILITY=ALL -DUSE_MKL=ON -DUSE_CUDA=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 fi
+
 ninja && ninja install
+
+if [[ $(uname) =~ Darwin ]]; then
+   ./test/test_all && ./apps/gadgetron/test/server_tests &
+fi
 
 TEST_DIR="${PREFIX}/share/gadgetron/test/"
 mkdir -p "${TEST_DIR}"
