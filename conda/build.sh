@@ -8,6 +8,12 @@ mkdir -p "${PKG_DIR}"
 cd "${PKG_DIR}" || exit 1
 
 if [[ $(uname) =~ Darwin ]]; then
+   echo "Reported hardware and RAM for macOS:"
+   uname -a
+   system_profiler SPHardwareDataType
+   system_profiler SPMemoryDataType
+   sysctl hw.memsize
+   sw_vers
     # identify Python causing trouble in cloud environment when building in Python support into macOS build
     which python
     python --version

@@ -11,11 +11,6 @@ python get_data.py
 gadgetron --info
 
 if [[ $(uname) =~ Darwin ]]; then
-   echo "Reported hardware and RAM for macOS:"
-   system_profiler SPHardwareDataType
-   system_profiler SPMemoryDataType
-   sysctl hw.memsize
-   sw_vers
    echo "Tests for macOS/Darwin TBD"
    # python run_tests.py cases/*
    server_tests
