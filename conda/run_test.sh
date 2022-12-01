@@ -11,10 +11,8 @@ python get_data.py
 gadgetron --info
 
 if [[ $(uname) =~ Darwin ]]; then
-   echo "Tests for macOS/Darwin TBD"
-   # python run_tests.py cases/*
-   server_tests
-   test_all
+   # echo "Tests for macOS/Darwin TBD"
+   python run_tests.py cases/*
 else
    python run_tests.py --ignore-requirements python,cuda cases/*
 fi

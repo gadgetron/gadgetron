@@ -11,7 +11,7 @@ if [[ $(uname) =~ Darwin ]]; then
    echo "Reported hardware and RAM for macOS:"
    uname -a
    system_profiler SPHardwareDataType
-   system_profiler SPMemoryDataType
+   # system_profiler SPMemoryDataType
    sysctl hw.memsize
    sw_vers
     # identify Python causing trouble in cloud environment when building in Python support into macOS build
@@ -29,7 +29,8 @@ fi
 ninja && ninja install
 
 if [[ $(uname) =~ Darwin ]]; then
-   ./test/test_all && ./apps/gadgetron/test/server_tests &
+   ./test/test_all
+   ./apps/gadgetron/test/server_tests &
 fi
 
 TEST_DIR="${PREFIX}/share/gadgetron/test/"
