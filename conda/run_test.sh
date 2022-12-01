@@ -18,8 +18,8 @@ if [[ $(uname) =~ Darwin ]]; then
    sw_vers
    echo "Tests for macOS/Darwin TBD"
    # python run_tests.py cases/*
-   test_all
    server_tests
+   test_all
 else
    python run_tests.py --ignore-requirements python,cuda cases/*
 fi
