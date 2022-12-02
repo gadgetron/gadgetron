@@ -29,8 +29,8 @@ fi
 ninja && ninja install
 
 if [[ $(uname) =~ Darwin ]]; then
-   # ./test/test_all
    ./apps/gadgetron/test/server_tests &
+   ./test/test_all
 fi
 
 TEST_DIR="${PREFIX}/share/gadgetron/test/"
