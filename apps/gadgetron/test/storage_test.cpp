@@ -269,7 +269,7 @@ TEST_F(StorageTest, storage_spaces_basic) {
     ASSERT_EQ(x, *item);
 
     hoNDArray<float> y(2, 2);
-    std::fill(x.begin(), x.end(), 23);
+    std::fill(y.begin(), y.end(), 23);
     storage.session->store("stuff", y);
 
     item = storage.session->get_latest<hoNDArray<float>>("stuff");
@@ -295,7 +295,7 @@ TEST_F(StorageTest, storage_spaces_image_data) {
     std::fill(data.begin(), data.end(), 3);
     storage.session->store("image", image);
 
-    auto item = storage.session->get_latest<Core::Image<float>>("image");
+    auto item = storage.session->get_latest<Core::Image<float>>("image"); // Causing "std::bad_alloc" exception to be thrown
 
     auto [stored_header, stored_data, stored_meta] = *item;
     ASSERT_EQ(data, stored_data);
