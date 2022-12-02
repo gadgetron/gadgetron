@@ -3,11 +3,11 @@
 
 	Handles reconstruction of 2D float data with 
 	density compensation provided. Iterative reconstruction 
-	can be easily integreated
+	can be easily integrated
 */
 
 #pragma once 
-#include "GenericReconGadget.h"
+#include "generic_recon_gadgets/GenericReconGadget.h"
 #include "gadgetron_mri_noncartesian_export.h"
 #include "hoNDArray.h"
 #include "GriddingReconGadgetBase.h"

@@ -64,14 +64,14 @@ namespace Gadgetron
       enableOutputOption(GADGETRON_LOG_PRINT_DATETIME);
     }
 
-    // Redirect stdout to a log file
+    // Redirect stderr to a log file
     char *log_file = getenv(GADGETRON_LOG_FILE_ENVIRONMENT);
     if (log_file != NULL) {
-       fflush(stdout);
-       FILE *newStdOut = freopen(log_file, "a", stdout);
+       fflush(stderr);
+       FILE *newStdOut = freopen(log_file, "a", stderr);
        if (newStdOut == NULL) {
-         printf("Unable to redirect stdout to %s\n", log_file);
-         fflush(stdout);
+         fprintf(stderr, "Unable to redirect stderr to %s\n", log_file);
+         fflush(stderr);
        }
     }
   }
@@ -99,7 +99,7 @@ namespace Gadgetron
       int micros = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000000;
 
       //Time the format MM-DD HH:MM:SS.uuu
-      char timestr[22];sprintf(timestr, "%02d-%02d %02d:%02d:%02d.%03d ",
+      char timestr[66];sprintf(timestr, "%02d-%02d %02d:%02d:%02d.%03d ",
 			       timeinfo->tm_mon+1, timeinfo->tm_mday,
 			       timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, micros/1000);
 
@@ -155,10 +155,9 @@ namespace Gadgetron
 
     va_list args;
     va_start (args, cformatting);
-    vprintf(fmt, args);
+    vfprintf(stderr, fmt, args);
     va_end (args);
-    fflush(stdout);
-
+    fflush(stderr);
   }
 
   void GadgetronLogger::enableLogLevel(GadgetronLogLevel LEVEL)

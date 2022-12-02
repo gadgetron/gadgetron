@@ -25,7 +25,7 @@ namespace Gadgetron {
 
 			typedef hoNDArray<T> ArrayType;
 
-			hoNDArray<T> thetas(RO, E1, PHS), centroidE(PHS), centroidR(PHS); 
+			hoNDArray<T> thetas(RO, E1, PHS), centroidE(PHS), centroidR(PHS);
 			Gadgetron::clear(centroidE);
 			Gadgetron::clear(centroidR);
 
@@ -122,8 +122,6 @@ namespace Gadgetron {
 					}
 				}
 			}
-			//std::cout << Gadgetron::nrm2(edge_epi) << std::endl;
-			//std::cout << Gadgetron::nrm2(edge_endo) << std::endl;
 			int epi_e_ref, epi_r_ref, p;
 
 //#pragma omp parallel for default(none) private(p, epi_e_ref, epi_r_ref) shared(PHS, RO, E1, rad_strain, mask, centroidE, centroidR, thetas)
@@ -139,7 +137,7 @@ namespace Gadgetron {
 						double theta_pt = thetas(epi_r_ref, epi_e_ref, ref_phase);
 						double check_e = epi_e_ref - samples / 8 * sin(theta_pt);
 						double check_r = epi_r_ref + samples / 8 * cos(theta_pt);
-						
+
 						hoNDArray<T> test_r(samples), test_e(samples);
 						double r_stepsize = (check_r - centroidR(ref_phase))/samples;
 						double e_stepsize = (check_e - centroidE(ref_phase))/samples;
@@ -153,7 +151,7 @@ namespace Gadgetron {
 
 						hoNDBoundaryHandlerBorderValue<ArrayType> bv_edge_endo(edge_endo_ref);
 						hoNDInterpolatorLinear<ArrayType> interp_ref(edge_endo_ref, bv_edge_endo);
-						
+
 						hoNDArray<T> endo_ref_line(samples);
 						for (int s = 0; s < samples; s++)
 						{

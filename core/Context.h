@@ -1,19 +1,15 @@
-#ifndef GADGETRON_CONTEXT_H
-#define GADGETRON_CONTEXT_H
-
+#pragma once
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
+#include "StorageSetup.h"
 
 namespace Gadgetron::Core {
 
     struct Context {
-
-
-        using Header =
-                ISMRMRD::IsmrmrdHeader;
+        using Header = ISMRMRD::IsmrmrdHeader;
 
         struct Paths {
             boost::filesystem::path gadgetron_home;
@@ -22,16 +18,28 @@ namespace Gadgetron::Core {
 
         Header header;
         Paths  paths;
+        StorageSpaces storage;
     };
 
     struct StreamContext : Context {
         using Args = boost::program_options::variables_map;
-        StreamContext(ISMRMRD::IsmrmrdHeader header, const Paths paths, const Args args) : Context{std::move(header),paths},args{args} {}
-        Args   args;
+        using StorageAddress = std::string;
+
+        StreamContext(
+            ISMRMRD::IsmrmrdHeader header,
+            const Paths paths,
+            const Args args,
+            const StorageAddress storage_address,
+            StorageSpaces storage
+        ) : Context{
+                std::move(header),
+                paths,
+                storage
+            },
+            args{args},
+            storage_address{storage_address} {}
+
+        Args args;
+        StorageAddress storage_address;
     };
-
-
 }
-
-
-#endif //GADGETRON_CONTEXT_H

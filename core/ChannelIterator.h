@@ -18,7 +18,9 @@ namespace Gadgetron { namespace Core {
         using difference_type   = long long;
         using value_type        = decltype(channel->pop());
         using pointer           = value_type*;
-        using reference         = value_type&&;
+
+        using reference         = value_type;
+
         using iterator_category = std::input_iterator_tag;
 
     private:
@@ -34,6 +36,10 @@ namespace Gadgetron { namespace Core {
             return *this;
         };
 
+        void operator++(int){
+            this->operator++();
+        }
+
         bool operator==(const ChannelIterator& other) const {
             return this->channel == other.channel;
         }
@@ -42,8 +48,15 @@ namespace Gadgetron { namespace Core {
             return this->channel != other.channel;
         }
 
+        reference operator*() const {
+            return *element;
+        }
+
         reference operator*() {
             return std::move(*element);
         }
+
     };
+
+
 } }

@@ -39,6 +39,10 @@ cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED
     htgrappa.cu
     trajectory_utils.h
     trajectory_utils.cu
+    cuNonCartesianTSenseOperator.h
+    cuNonCartesianTSenseOperator.cu
+    cuNonCartesianMOCOOperator.h
+    cuNonCartesianMOCOOperator.cu
   )
 
 set_target_properties(gadgetron_toolbox_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -50,22 +54,30 @@ target_link_libraries(gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_gpunfft 
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
+  gadgetron_toolbox_gpureg
+  gadgetron_toolbox_cpureg
+  gadgetron_toolbox_cpufft
+  gadgetron_mricore
+  gadgetron_toolbox_mri_core
+  gadgetron_toolbox_demons
   )
 
 
 target_include_directories(gadgetron_toolbox_gpuparallelmri
 		PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR})
+		$<INSTALL_INTERFACE:include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		)
 
 install(TARGETS gadgetron_toolbox_gpuparallelmri
+    EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	COMPONENT main
 )
 
-
-install(FILES 
+install(FILES
 	b1_map.h
 	sense_utilities.h
 	htgrappa.h
@@ -74,6 +86,8 @@ install(FILES
 	cuCartesianSenseOperator.h
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
+  cuNonCartesianTSenseOperator.h
+  cuNonCartesianMOCOOperator.h
         cuSpiritOperator.h
         cuBuffer.h
 	cuSenseBuffer.h

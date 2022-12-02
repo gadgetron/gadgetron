@@ -50,14 +50,13 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
 
   this->mult_csm(in,&tmp);
 
-
   std::vector<size_t> ft_dims;
-  for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
-    ft_dims.push_back(i);
-  }
+   for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
+     ft_dims.push_back(i);
+   }
 
-  cuNDFFT<REAL>::instance()->fft(&tmp, &ft_dims);
-
+   cuNDFFT<REAL>::instance()->fft(&tmp, &ft_dims);
+   
   if (!accumulate) 
     clear(out);
 

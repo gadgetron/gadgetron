@@ -4,18 +4,23 @@ endif ()
 
 find_package(ZFP)
 
-include_directories(${HDF5_INCLUDE_DIR})
+include_directories(${HDF5_INCLUDE_DIRS})
+
+if(MSVC)
+  set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+else()
+  set_source_files_properties(CompressedFloatBufferSse41.cpp PROPERTIES COMPILE_FLAGS "-msse4.1")
+  set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -mfma")
+endif()
+
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         NoiseAdjustGadget.h
         PCACoilGadget.h
-        RateLimitGadget.h
-        AcquisitionPassthroughGadget.h
         AccumulatorGadget.h
         FFTGadget.h
         CombineGadget.h
         CropAndCombineGadget.h
-        ImageWriterGadget.h
         writers/MRIImageWriter.h
         readers/MRIImageReader.h
         NoiseAdjustGadget_unoptimized.h
@@ -27,55 +32,54 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         FlowPhaseSubtractionGadget.h
         readers/GadgetIsmrmrdReader.h
         PhysioInterpolationGadget.h
-        IsmrmrdDumpGadget.h
         AsymmetricEchoAdjustROGadget.h
         MaxwellCorrectionGadget.h
-        CplxDumpGadget.h
         dependencyquery/DependencyQueryGadget.h
         dependencyquery/DependencyQueryWriter.h
         ComplexToFloatGadget.h
         AcquisitionAccumulateTriggerGadget.h
         BucketToBufferGadget.h
         ImageArraySplitGadget.h
-        PseudoReplicatorGadget.h
         SimpleReconGadget.h
         ImageSortGadget.h
-        GenericReconBase.h
-        GenericReconGadget.h
-        GenericReconCartesianFFTGadget.h
-        GenericReconCartesianGrappaGadget.h
-        GenericReconCartesianSpiritGadget.h
-        GenericReconCartesianNonLinearSpirit2DTGadget.h
-        GenericReconCartesianReferencePrepGadget.h
-        GenericReconPartialFourierHandlingGadget.h
-        GenericReconPartialFourierHandlingFilterGadget.h
-        GenericReconPartialFourierHandlingPOCSGadget.h
-        GenericReconKSpaceFilteringGadget.h
-        GenericReconFieldOfViewAdjustmentGadget.h
-        GenericReconImageArrayScalingGadget.h
-        GenericReconEigenChannelGadget.h
-        GenericReconNoiseStdMapComputingGadget.h
-        GenericImageReconGadget.h
-        GenericReconAccumulateImageTriggerGadget.h
-        GenericImageReconArrayToImageGadget.h
-        GenericReconReferenceKSpaceDelayedBufferGadget.h
-        GenericReconImageToImageArrayGadget.h 
-        WhiteNoiseInjectorGadget.h
+        generic_recon_gadgets/GenericReconBase.h
+        generic_recon_gadgets/GenericReconGadget.h
+        generic_recon_gadgets/GenericReconCartesianFFTGadget.h
+        generic_recon_gadgets/GenericReconCartesianGrappaGadget.h
+        generic_recon_gadgets/GenericReconCartesianSpiritGadget.h
+        generic_recon_gadgets/GenericReconCartesianNonLinearSpirit2DTGadget.h
+        generic_recon_gadgets/GenericReconCartesianReferencePrepGadget.h
+        generic_recon_gadgets/GenericReconPartialFourierHandlingGadget.h
+        generic_recon_gadgets/GenericReconPartialFourierHandlingFilterGadget.h
+        generic_recon_gadgets/GenericReconPartialFourierHandlingPOCSGadget.h
+        generic_recon_gadgets/GenericReconKSpaceFilteringGadget.h
+        generic_recon_gadgets/GenericReconFieldOfViewAdjustmentGadget.h
+        generic_recon_gadgets/GenericReconImageArrayScalingGadget.h
+        generic_recon_gadgets/GenericReconEigenChannelGadget.h
+        generic_recon_gadgets/GenericReconNoiseStdMapComputingGadget.h
+        generic_recon_gadgets/GenericImageReconGadget.h
+        generic_recon_gadgets/GenericReconAccumulateImageTriggerGadget.h
+        generic_recon_gadgets/GenericImageReconArrayToImageGadget.h
+        generic_recon_gadgets/GenericReconReferenceKSpaceDelayedBufferGadget.h
+        generic_recon_gadgets/GenericReconImageToImageArrayGadget.h
         ImageFinishGadget.h
         dependencyquery/NoiseSummaryGadget.h
         NHLBICompression.h
+    	cpuisa.h
         ImageAccumulatorGadget.h
         writers/GadgetIsmrmrdWriter.h
         ImageResizingGadget.h
         ImageArraySendMixin.h
         ImageArraySendMixin.hpp
         DenoiseGadget.h
-        CoilComputationGadget.h 
-        ImageFFTGadget.h 
+        CoilComputationGadget.h
+        ImageFFTGadget.h
+        FlagTriggerGadget.h
+        ImageIndexGadget.h
+        IsmrmrdDumpGadget.h
         )
 
 set(gadgetron_mricore_src_files
-        AcquisitionPassthroughGadget.cpp
         NoiseAdjustGadget.cpp
         PCACoilGadget.cpp
         AccumulatorGadget.cpp
@@ -83,7 +87,6 @@ set(gadgetron_mricore_src_files
         CombineGadget.cpp
         CropAndCombineGadget.cpp
         ImageFinishGadget.cpp
-        ImageWriterGadget.cpp
         writers/MRIImageWriter.cpp
         readers/MRIImageReader.cpp
         NoiseAdjustGadget_unoptimized.cpp
@@ -95,41 +98,40 @@ set(gadgetron_mricore_src_files
         FlowPhaseSubtractionGadget.cpp
         readers/GadgetIsmrmrdReader.cpp
         PhysioInterpolationGadget.cpp
-        IsmrmrdDumpGadget.cpp
         AsymmetricEchoAdjustROGadget.cpp
         MaxwellCorrectionGadget.cpp
-        CplxDumpGadget.cpp
         dependencyquery/DependencyQueryGadget.cpp
         dependencyquery/DependencyQueryWriter.cpp
         ComplexToFloatGadget.cpp
         AcquisitionAccumulateTriggerGadget.cpp
         BucketToBufferGadget.cpp
         ImageArraySplitGadget.cpp
-        PseudoReplicatorGadget.cpp
         SimpleReconGadget.cpp
         ImageSortGadget.cpp
-        GenericReconBase.cpp
-        GenericReconGadget.cpp
-        GenericReconCartesianFFTGadget.cpp
-        GenericReconCartesianGrappaGadget.cpp
-        GenericReconCartesianSpiritGadget.cpp
-        GenericReconCartesianNonLinearSpirit2DTGadget.cpp
-        GenericReconCartesianReferencePrepGadget.cpp
-        GenericReconPartialFourierHandlingGadget.cpp
-        GenericReconPartialFourierHandlingFilterGadget.cpp
-        GenericReconPartialFourierHandlingPOCSGadget.cpp
-        GenericReconReferenceKSpaceDelayedBufferGadget.cpp
-        GenericReconKSpaceFilteringGadget.cpp
-        GenericReconFieldOfViewAdjustmentGadget.cpp
-        GenericReconImageArrayScalingGadget.cpp
-        GenericReconEigenChannelGadget.cpp
-        GenericReconNoiseStdMapComputingGadget.cpp
-        GenericImageReconGadget.cpp
-        GenericReconAccumulateImageTriggerGadget.cpp
-        GenericImageReconArrayToImageGadget.cpp
-        GenericReconImageToImageArrayGadget.cpp 
-        WhiteNoiseInjectorGadget.cpp
-        RateLimitGadget.cpp
+        generic_recon_gadgets/GenericReconBase.cpp
+        generic_recon_gadgets/GenericReconGadget.cpp
+        generic_recon_gadgets/GenericReconCartesianFFTGadget.cpp
+        generic_recon_gadgets/GenericReconCartesianGrappaGadget.cpp
+        generic_recon_gadgets/GenericReconCartesianSpiritGadget.cpp
+        generic_recon_gadgets/GenericReconCartesianNonLinearSpirit2DTGadget.cpp
+        generic_recon_gadgets/GenericReconCartesianReferencePrepGadget.cpp
+        generic_recon_gadgets/GenericReconPartialFourierHandlingGadget.cpp
+        generic_recon_gadgets/GenericReconPartialFourierHandlingFilterGadget.cpp
+        generic_recon_gadgets/GenericReconPartialFourierHandlingPOCSGadget.cpp
+        generic_recon_gadgets/GenericReconReferenceKSpaceDelayedBufferGadget.cpp
+        generic_recon_gadgets/GenericReconKSpaceFilteringGadget.cpp
+        generic_recon_gadgets/GenericReconFieldOfViewAdjustmentGadget.cpp
+        generic_recon_gadgets/GenericReconImageArrayScalingGadget.cpp
+        generic_recon_gadgets/GenericReconEigenChannelGadget.cpp
+        generic_recon_gadgets/GenericReconNoiseStdMapComputingGadget.cpp
+        generic_recon_gadgets/GenericImageReconGadget.cpp
+        generic_recon_gadgets/GenericReconAccumulateImageTriggerGadget.cpp
+        generic_recon_gadgets/GenericImageReconArrayToImageGadget.cpp
+        generic_recon_gadgets/GenericReconImageToImageArrayGadget.cpp
+        CompressedFloatBuffer.cpp
+        CompressedFloatBufferSse41.cpp
+        CompressedFloatBufferAvx2.cpp
+        cpuisa.cpp
         dependencyquery/NoiseSummaryGadget.cpp
         ImageAccumulatorGadget.cpp
         writers/GadgetIsmrmrdWriter.cpp
@@ -138,7 +140,10 @@ set(gadgetron_mricore_src_files
         DenoiseGadget.cpp
         CoilComputationGadget.cpp
         ImageFFTGadget.cpp
-        FlagTriggerGadget.cpp FlagTriggerGadget.h)
+        FlagTriggerGadget.cpp
+        ImageIndexGadget.cpp
+        IsmrmrdDumpGadget.cpp
+        )
 
 set(gadgetron_mricore_config_files
         config/default.xml
@@ -148,25 +153,26 @@ set(gadgetron_mricore_config_files
         config/default_measurement_dependencies_ismrmrd_storage.xml
         config/isalive.xml
         config/gtquery.xml
-        config/Generic_Cartesian_FFT.xml
-        config/Generic_Cartesian_Grappa.xml
-        config/Generic_Cartesian_Grappa_SNR.xml
-        config/Generic_Cartesian_Grappa_T2W.xml
-        config/Generic_Cartesian_Grappa_RealTimeCine.xml
-        config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
-        config/Generic_Cartesian_Grappa_EPI.xml
-        config/Generic_Cartesian_Grappa_EPI_AVE.xml
-        config/Generic_Cartesian_Spirit.xml
-        config/Generic_Cartesian_Spirit_RealTimeCine.xml
-        config/Generic_Cartesian_Spirit_SASHA.xml
-        config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
-        config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
-        config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
-        config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
-        config/Generic_Cartesian_Grappa_Cine_Denoise.xml
-        config/Generic_Cartesian_Image_Chain_FFT.xml
+        generic_recon_gadgets/config/Generic_Cartesian_FFT.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_Cine_Denoise.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_Complex.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI_AVE.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_EPI.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_ImageArray.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_RealTimeCine.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_SNR.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa_T2W.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Grappa.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Image_Chain_FFT.xml
+        generic_recon_gadgets/config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
+        generic_recon_gadgets/config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+        generic_recon_gadgets/config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
+        generic_recon_gadgets/config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Spirit_RealTimeCine.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Spirit_SASHA.xml
+        generic_recon_gadgets/config/Generic_Cartesian_Spirit.xml
         config/NoiseSummary.xml
-        config/ismrmrd_dump.xml
         )
 
 # if there is python, add gadgets using python
@@ -180,9 +186,9 @@ if (Boost_PYTHON3_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
       ${NUMPY_INCLUDE_DIRS}
       )
 
-      set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} GenericReconCartesianGrappaAIGadget.h)
-      set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} GenericReconCartesianGrappaAIGadget.cpp)
-      set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} config/Generic_Cartesian_Grappa_AI.xml)
+      set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} generic_recon_gadgets/GenericReconCartesianGrappaAIGadget.h)
+      set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} generic_recon_gadgets/GenericReconCartesianGrappaAIGadget.cpp)
+      set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} generic_recon_gadgets/config/Generic_Cartesian_Grappa_AI.xml)
 
       set( gadgetron_python_models_files models/grappa_ai.py )
 endif ()

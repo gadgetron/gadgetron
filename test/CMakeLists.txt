@@ -15,10 +15,13 @@ include(GoogleTest)
             hoNDWavelet_test.cpp
             curveFitting_test.cpp
             image_morphology_test.cpp
+            IsmrmrdContextVariables_test.cpp
+            StorageSpaces_test.cpp
             pattern_recognition_test.cpp
             cmr_mapping_test.cpp
             hoNDArray_linalg_test.cpp
             core_test.cpp
+            core_primitive_io_test.cpp 
             threadpool_test.cpp
             from_string_test.cpp
             hoNDArrayView_test.cpp
@@ -28,7 +31,11 @@ include(GoogleTest)
             cmr_analytical_strain_test.cpp
             #lapack_test.cpp
             hoSDC_test.cpp
-            gadgets/setup_gadget.h gadgets/AcquisitionAccumulateTrigget_test.cpp gadgets/FlagTriggerParsing_test.cpp )
+            nhlbi_compression_tests.cpp
+            gadgets/setup_gadget.h 
+            gadgets/AcquisitionAccumulateTrigget_test.cpp 
+            gadgets/FlagTriggerParsing_test.cpp  
+            )
 
     if (PYTHONLIBS_FOUND)
         set(test_src_files ${test_src_files} python_converter_test.cpp)
@@ -45,6 +52,7 @@ include(GoogleTest)
                 cuVector_td_test_kernels.cu
                 cuNDFFT_test.cpp
                 cuSDC_test.cpp
+                cuNFFT_test.cpp
                 )
 
         cuda_add_executable(test_all
@@ -57,15 +65,14 @@ include(GoogleTest)
 
     if (CUDA_FOUND)
         target_link_libraries(test_all
-                gadgetron_toolbox_gpucore
-                gadgetron_toolbox_gpufft
-                gadgetron_toolbox_gpusdc
+                gadgetron_toolbox_gpu
                 )
     endif ()
     target_link_libraries(test_all
             gadgetron_core
-    gadgetron_core_readers
-		gadgetron_core_writers        gadgetron_mricore
+            gadgetron_core_readers
+            gadgetron_core_writers
+            gadgetron_mricore
             gadgetron_toolbox_cpucore
             gadgetron_toolbox_cpucore_math
             gadgetron_toolbox_cpufft
@@ -82,9 +89,8 @@ include(GoogleTest)
             gadgetron_toolbox_cmr
             gadgetron_toolbox_pr
             gadgetron_toolbox_cpusdc
-
             ${GTEST_LIBRARIES}
-
+            GTest::gmock
             )
 
     if (PYTHONLIBS_FOUND)
@@ -93,7 +99,7 @@ include(GoogleTest)
                 python)
     endif ()
 
-    gtest_add_tests(TARGET test_all SOURCES ${test_src_files})
+    gtest_discover_tests(test_all DISCOVERY_MODE PRE_TEST)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 

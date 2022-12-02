@@ -2,8 +2,6 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_MRI_NONCARTESIAN__)
 endif ()
 
-
-
 set( gadgetron_mri_noncartesian_header_files
 	CPUGriddingReconGadget.h NonCartesianTools.h GriddingReconGadgetBase.h GriddingReconGadgetBase.hpp)
 
@@ -51,10 +49,7 @@ target_link_libraries(gadgetron_mri_noncartesian
 )
 if(CUDA_FOUND)
     target_link_libraries(gadgetron_mri_noncartesian
-	gadgetron_toolbox_gpucore
-    gadgetron_toolbox_gpusolvers
-    gadgetron_toolbox_gpuoperators
-    gadgetron_toolbox_gpuparallelmri
+	gadgetron_toolbox_gpu
 	)
 endif()
 

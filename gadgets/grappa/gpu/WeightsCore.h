@@ -2,6 +2,7 @@
 
 #include "hoNDArray.h"
 #include "cuNDArray.h"
+#include "cuNDFFT.h"
 
 namespace Gadgetron::Grappa::GPU {
 
@@ -25,5 +26,7 @@ namespace Gadgetron::Grappa::GPU {
             uint16_t width, height;
             float threshold;
         } kernel_params;
+
+
     };
 }

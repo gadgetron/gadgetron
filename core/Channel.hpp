@@ -19,21 +19,34 @@ namespace Gadgetron { namespace Core {
 
     template <> class ChannelIterator<OutputChannel> {
     public:
-        explicit ChannelIterator(OutputChannel* c) : channel(c) {}
+        using difference_type = std::ptrdiff_t;
+        using value_type = void;
+        using reference = void;
+        using iterator_category = std::output_iterator_tag;
 
-        template <class T> void operator=(T&& data) {
+        explicit ChannelIterator(OutputChannel* c) : channel(c) {}
+        ChannelIterator() = default;
+
+        ChannelIterator(const ChannelIterator& other) = default;
+        ChannelIterator(ChannelIterator&&) = default;
+        ChannelIterator& operator=(const ChannelIterator&) = default;
+        ChannelIterator& operator=(ChannelIterator&&) = default;
+
+        template <class T> ChannelIterator& operator=(T&& data) {
             channel->push(std::forward<T>(data));
+            return *this;
         }
 
-        void operator=(Message&& message) {
+        ChannelIterator& operator=(Message&& message) {
             channel->push_message(std::move(message));
+            return *this;
         }
 
         ChannelIterator& operator++() {
             return *this;
         }
 
-        ChannelIterator& operator++(int) {
+        ChannelIterator operator++(int) {
             return *this;
         }
 
@@ -53,4 +66,15 @@ namespace Gadgetron { namespace Core {
         this->push_message(Message(std::forward<ARGS>(ptr)...));
     }
 
+
 } }
+
+template<>
+class std::iterator_traits<Gadgetron::Core::ChannelIterator<Gadgetron::Core::OutputChannel>> {
+public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = void;
+    using reference = void;
+    using iterator_category = std::output_iterator_tag;
+};
+

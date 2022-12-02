@@ -199,6 +199,8 @@
         <name>LAXAI</name>
         <dll>gadgetron_cmr</dll>
         <classname>CmrRealTimeLAXCineAIAnalysisGadget</classname>
+        
+        <property><name>perform_AI</name><value>true</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>perform_timing</name><value>true</value></property>

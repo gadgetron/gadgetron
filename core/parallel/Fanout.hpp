@@ -14,7 +14,7 @@ namespace Gadgetron::Core::Parallel {
         for (auto thing : input) {
             for (auto &pair : output) {
                 auto copy_of_thing = thing;
-                pair.second.push(copy_of_thing);
+                pair.second.push(std::move(copy_of_thing));
             }
         }
     }

@@ -87,7 +87,7 @@ public:
                 Gadgetron::scal(REAL(1.0) / alpha, v);
             }
 
-            ARRAY_TYPE d(x);
+            ARRAY_TYPE d(*x);
             Gadgetron::clear(d);
 
             REAL normar;

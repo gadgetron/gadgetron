@@ -33,11 +33,11 @@ int main( int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running with the following parameters: " << endl;
+    GINFO_STREAM(" Running with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -48,12 +48,12 @@ int main( int argc, char** argv)
     read_nd_array<float>((char*)parms.get_parameter('d')->get_string_value());
 
   if( !(_host_image->get_number_of_dimensions() == 2) ){
-    cout << endl << "Input image is not two-dimensional. Quitting.\n" << endl;
+    GINFO_STREAM(endl << "Input image is not two-dimensional. Quitting.\n" << endl);
     return 1;
   }
 
   // Convert to _real
-  hoNDArray<_real> host_image; host_image.create(_host_image->get_dimensions().get()); 
+  hoNDArray<_real> host_image; host_image.create(_host_image->dimensions());
   for( unsigned int i=0; i<host_image.get_number_of_elements(); i++ )
     host_image.get_data_ptr()[i] = (_real) _host_image->get_data_ptr()[i];
     
@@ -69,7 +69,7 @@ int main( int argc, char** argv)
   // Generate convolution kernel (just do this on the host for now)
   _real sigma = 2.5;
   hoNDArray<_real> host_kernel;
-  host_kernel.create(image->get_dimensions().get());
+  host_kernel.create(image->dimensions());
   for( unsigned int y=0; y<image->get_size(1); y++ ){
     for( unsigned int x=0; x<image->get_size(0); x++ ){
       _real biasx = (_real)(image->get_size(0)>>1);

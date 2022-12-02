@@ -3,91 +3,17 @@
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <!--
-        Gadgetron generic image analysis chain for CMR
-
-        Cine Landmark Detection
-        Triggered by slice
-        Working on phases
-
-        Author: Hui Xue
-        National Heart, Lung and Blood Institute, National Institutes of Health
-        10 Center Drive, Bethesda, MD 20814, USA
-        Email: hui.xue@nih.gov
-    -->
-
-    <!-- reader -->
-    <reader><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageReader</classname></reader>
-
-    <!-- writer -->
-    <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
-
-    <!-- Convert image to image array -->
-    <gadget>
-        <name>ImageToArray</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>GenericReconImageToImageArrayGadget</classname>
-        <property><name>verbose</name><value>false</value></property>
-    </gadget>
-
-    <!-- Image recon accummulator -->
-    <gadget>
-        <name>ImageAcc</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>GenericReconAccumulateImage2DTriggerGadget</classname>
-
-        <!-- triggered dimensions -->
-        <property><name>TriggerChannel</name><value>false</value></property>
-        <property><name>TriggerSlice</name><value>true</value></property>
-        <property><name>TriggerContrast</name><value>false</value></property>
-        <property><name>TriggerPhase</name><value>true</value></property>
-        <property><name>TriggerRepetition</name><value>false</value></property>
-        <property><name>TriggerSet</name><value>false</value></property>
-        <property><name>TriggerAverage</name><value>false</value></property>
-
-        <!-- work flow -->
-        <property><name>PassImageImmediately</name><value>false</value></property>
-
-        <!-- debug and info mode -->
-        <property><name>verbose</name><value>true</value></property>
-    </gadget>
-
-    <!-- LAX landmark detection -->
     <gadget>
         <name>LAXAI</name>
         <dll>gadgetron_cmr</dll>
         <classname>CmrRealTimeLAXCineAIAnalysisGadget</classname>
+        
+        <property><name>perform_AI</name><value>true</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
         <property><name>debug_folder</name><value></value></property>
-    </gadget>
-
-    <!-- ImageArray to images -->
-    <gadget>
-        <name>ImageArraySplit</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>ImageArraySplitGadget</classname>
-    </gadget>
-
-    <!-- after recon processing -->
-    <gadget>
-        <name>ComplexToFloatAttrib</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>ComplexToFloatGadget</classname>
-    </gadget>
-
-    <gadget>
-        <name>FloatToShortAttrib</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>FloatToUShortGadget</classname>
-    </gadget>
-
-    <gadget>
-        <name>ImageFinish</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>ImageFinishGadget</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>

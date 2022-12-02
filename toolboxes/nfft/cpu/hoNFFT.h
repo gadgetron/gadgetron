@@ -14,6 +14,8 @@
 #include "vector_td.h"
 #include "complext.h"
 #include <complex>
+#include "hoNDArray_utils.h"
+#include "hoNDArray_math.h"
 #include "NFFT.h"
 
 #include <boost/shared_ptr.hpp>

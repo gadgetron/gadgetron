@@ -1,172 +1,410 @@
-# - Find the MKL libraries
-# Modified from Armadillo's ARMA_FindMKL.cmake
-# This module defines
-#  MKL_INCLUDE_DIR, the directory for the MKL headers
-#  MKL_LIB_DIR, the directory for the MKL library files
-#  MKL_COMPILER_LIB_DIR, the directory for the MKL compiler library files
-#  MKL_LIBRARIES, the libraries needed to use Intel's implementation of BLAS & LAPACK.
-#  MKL_FOUND, If false, do not try to use MKL; if true, the macro definition USE_MKL is added.
+# - Find INTEL MKL library
+#
+# This module sets the following variables:
+#  MKL_FOUND - set to true if a library implementing the CBLAS interface is found
+#  MKL_VERSION - best guess of the found mkl version
+#  MKL_INCLUDE_DIR - path to include dir.
+#  MKL_LIBRARIES - list of libraries for base mkl
+#  MKL_OPENMP_TYPE - OpenMP flavor that the found mkl uses: GNU or Intel
+#  MKL_OPENMP_LIBRARY - path to the OpenMP library the found mkl uses
+#  MKL_LAPACK_LIBRARIES - list of libraries to add for lapack
+#  MKL_SCALAPACK_LIBRARIES - list of libraries to add for scalapack
+#  MKL_SOLVER_LIBRARIES - list of libraries to add for the solvers
+#  MKL_CDFT_LIBRARIES - list of libraries to add for the solvers
 
-# Set the include path
-# TODO: what if MKL is not installed in /opt/intel/mkl?
-# try to find at /opt/intel/mkl
-# in windows, try to find MKL at C:/Program Files (x86)/Intel/Composer XE/mkl
+# Do nothing if MKL_FOUND was set before!
+IF (NOT MKL_FOUND)
 
-if (WIN32)
-    if (NOT DEFINED ENV{MKLROOT_PATH})
-        set(MKLROOT_PATH "C:/Program Files (x86)/Intel/Composer XE" CACHE PATH "Where the MKL are stored")
-    else ()
-        message("MKLROOT_PATH is set as the corresponding environmental variable ... ")
-        set(MKLROOT_PATH $ENV{MKLROOT_PATH} CACHE PATH "Where the MKL are stored")
-    endif ()
-else ()
-    set(MKLROOT_PATH "/opt/intel" CACHE PATH "Where the MKL are stored")
-endif ()
-find_path(MKL_PATH "include/mkl.h" PATHS ${MKLROOT_PATH}/mkl "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl")
+SET(MKL_VERSION)
+SET(MKL_INCLUDE_DIR)
+SET(MKL_LIBRARIES)
+SET(MKL_OPENMP_TYPE)
+SET(MKL_OPENMP_LIBRARY)
+SET(MKL_LAPACK_LIBRARIES)
+SET(MKL_SCALAPACK_LIBRARIES)
+SET(MKL_SOLVER_LIBRARIES)
+SET(MKL_CDFT_LIBRARIES)
 
+# Includes
+INCLUDE(CheckTypeSize)
+INCLUDE(CheckFunctionExists)
 
-if (EXISTS ${MKL_PATH})
-    set(MKL_FOUND TRUE)
-    message("MKL is found at ${MKL_PATH}")
+# Set default value of INTEL_COMPILER_DIR and INTEL_MKL_DIR
+IF (WIN32)
+  IF(DEFINED ENV{MKLProductDir})
+    SET(DEFAULT_INTEL_COMPILER_DIR $ENV{MKLProductDir})
+  ELSE()
+    SET(DEFAULT_INTEL_COMPILER_DIR
+     "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows")
+  ENDIF()
+  SET(DEFAULT_INTEL_MKL_DIR "${INTEL_COMPILER_DIR}/mkl")
+ELSE (WIN32)
+  SET(DEFAULT_INTEL_COMPILER_DIR "/opt/intel")
+  SET(DEFAULT_INTEL_MKL_DIR "/opt/intel/mkl")
+ENDIF (WIN32)
 
-        set(USE_MKL_64BIT On)
-        if (ARMADILLO_FOUND)
+# Intel Compiler Suite
+SET(INTEL_COMPILER_DIR "${DEFAULT_INTEL_COMPILER_DIR}" CACHE STRING
+  "Root directory of the Intel Compiler Suite (contains ipp, mkl, etc.)")
+SET(INTEL_MKL_DIR "${DEFAULT_INTEL_MKL_DIR}" CACHE STRING
+  "Root directory of the Intel MKL (standalone)")
+SET(INTEL_OMP_DIR "${DEFAULT_INTEL_MKL_DIR}" CACHE STRING
+  "Root directory of the Intel OpenMP (standalone)")
+SET(MKL_THREADING "OMP" CACHE STRING "MKL flavor: SEQ, TBB or OMP (default)")
 
-                set(USE_MKL_64BIT_LIB On)
-                add_definitions(-DMKL_ILP64 -DARMA_BLAS_LONG_LONG -DARMA_USE_BLAS -DARMA_USE_LAPACK	)
-                message("MKL is linked against ILP64 interface ... ")
-        endif ()
-else ()
-    set(MKL_FOUND FALSE)
-    message("MKL is NOT found ... ")
-endif ()
+IF (NOT "${MKL_THREADING}" STREQUAL "SEQ" AND
+    NOT "${MKL_THREADING}" STREQUAL "TBB" AND
+    NOT "${MKL_THREADING}" STREQUAL "OMP")
+  MESSAGE(FATAL_ERROR "Invalid MKL_THREADING (${MKL_THREADING}), should be one of: SEQ, TBB, OMP")
+ENDIF()
 
-if (MKL_FOUND)
-    set(MKL_INCLUDE_DIR "${MKL_PATH}/include")
-    add_definitions(-DUSE_MKL)
+IF ("${MKL_THREADING}" STREQUAL "TBB" AND NOT USE_TBB)
+  MESSAGE(FATAL_ERROR "MKL_THREADING is TBB but USE_TBB is turned off")
+ENDIF()
 
-    set(MKL_LIB_DIR "${MKL_PATH}/lib/intel64")
-    set(MKL_COMPILER_LIB_DIR)
-    if (EXISTS "${MKL_PATH}/../compiler/lib/intel64")
-        set(MKL_COMPILER_LIB_DIR "${MKL_PATH}/../compiler/lib/intel64")
-    else ()
-        if (WIN32)
-            if (EXISTS "${MKL_PATH}/../compiler/lib/intel64_win")
-                set(MKL_COMPILER_LIB_DIR "${MKL_PATH}/../compiler/lib/intel64_win")
-            endif ()
-        else ()
-            if (EXISTS "${MKL_PATH}/../compiler/lib/intel64_lin")
-                    set(MKL_COMPILER_LIB_DIR "${MKL_PATH}/../compiler/lib/intel64_lin")
-            endif ()
-        endif ()
-    endif ()
+MESSAGE(STATUS "MKL_THREADING = ${MKL_THREADING}")
 
-        if (EXISTS "${MKLROOT_PATH}/lib/intel64")
-            set(MKL_COMPILER_LIB_DIR ${MKL_COMPILER_LIB_DIR} "${MKLROOT_PATH}/lib/intel64")
-        else ()
-            if (WIN32)
-                if (EXISTS "${MKLROOT_PATH}/lib/intel64_win")
-                    set(MKL_COMPILER_LIB_DIR ${MKL_COMPILER_LIB_DIR} "${MKLROOT_PATH}/lib/intel64_win")
-                endif ()
-            else ()
-                if (EXISTS "${MKLROOT_PATH}/lib/intel64_lin")
-                    set(MKL_COMPILER_LIB_DIR ${MKL_COMPILER_LIB_DIR} "${MKLROOT_PATH}/lib/intel64_lin")
-                endif ()
-            endif ()
-        endif ()
+# Checks
+CHECK_TYPE_SIZE("void*" SIZE_OF_VOIDP)
+IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+  SET(mklvers "intel64")
+  SET(iccvers "intel64")
+  SET(mkl64s "_lp64")
+ELSE ("${SIZE_OF_VOIDP}" EQUAL 8)
+  SET(mklvers "32")
+  SET(iccvers "ia32")
+  SET(mkl64s)
+ENDIF ("${SIZE_OF_VOIDP}" EQUAL 8)
+IF(CMAKE_COMPILER_IS_GNUCC)
+  IF ("${MKL_THREADING}" STREQUAL "TBB")
+    SET(mklthreads "mkl_tbb_thread")
+    SET(mklrtls "tbb")
+  ELSE()
+    SET(mklthreads "mkl_gnu_thread" "mkl_intel_thread")
+    SET(mklrtls "gomp" "iomp5")
+  ENDIF()
+  SET(mklifaces  "intel" "gf")
+ELSE(CMAKE_COMPILER_IS_GNUCC)
+  IF ("${MKL_THREADING}" STREQUAL "TBB")
+    SET(mklthreads "mkl_tbb_thread")
+    SET(mklrtls "tbb")
+  ELSE()
+    SET(mklthreads "mkl_intel_thread")
+    SET(mklrtls "iomp5" "guide")
+    IF (MSVC)
+      SET(mklrtls "libiomp5md")
+    ENDIF (MSVC)
+  ENDIF()
+  SET(mklifaces  "intel")
+ENDIF (CMAKE_COMPILER_IS_GNUCC)
 
-        if (MKL_COMPILER_LIB_DIR)
-            message("MKL_COMPILER_LIB_DIR is " ${MKL_COMPILER_LIB_DIR})
-        else (MKL_COMPILER_LIB_DIR)
-            error("MKL compiler lib dir is not found")
-        endif (MKL_COMPILER_LIB_DIR)
+# Kernel libraries dynamically loaded
+SET(mklkerlibs "mc" "mc3" "nc" "p4n" "p4m" "p4m3" "p4p" "def")
+SET(mklseq)
 
-        if (USE_MKL_64BIT_LIB)
-            if (WIN32)
-                set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_ilp64_dll)
-            else ()
-                set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_ilp64)
-            endif ()
-        else ()
-            if (WIN32)
-                set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_lp64_dll )
-            else ()
-                set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_lp64)
-            endif ()
-        endif ()
+# Paths
+SET(saved_CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH})
+SET(saved_CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH})
+IF(WIN32)
+  # Change mklvers and iccvers when we are using MSVC instead of ICC
+  IF(MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    SET(mklvers "${mklvers}_win")
+    SET(iccvers "${iccvers}_win")
+  ENDIF()
+ENDIF(WIN32)
+IF (EXISTS ${INTEL_COMPILER_DIR})
+  # TODO: diagnostic if dir does not exist
+  SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+    "${INTEL_COMPILER_DIR}/lib/${iccvers}")
+  IF(MSVC)
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+      "${INTEL_COMPILER_DIR}/compiler/lib/${iccvers}")
+  ENDIF()
+  IF (APPLE)
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+      "${INTEL_COMPILER_DIR}/lib")
+  ENDIF()
+  IF (NOT EXISTS ${INTEL_MKL_DIR})
+    SET(INTEL_MKL_DIR "${INTEL_COMPILER_DIR}/mkl")
+  ENDIF()
+ENDIF()
+IF (EXISTS ${INTEL_MKL_DIR})
+  # TODO: diagnostic if dir does not exist
+  SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH}
+    "${INTEL_MKL_DIR}/include")
+  SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+    "${INTEL_MKL_DIR}/lib/${mklvers}")
+  IF (MSVC)
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+      "${INTEL_MKL_DIR}/lib/${iccvers}")
+    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+      SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+        "${INTEL_MKL_DIR}/win-x64")
+    ENDIF ()
+  ENDIF()
+  IF (APPLE)
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+      "${INTEL_MKL_DIR}/lib")
+  ENDIF()
+ENDIF()
 
-#    if (WIN32)
+IF (EXISTS ${INTEL_OMP_DIR})
+  # TODO: diagnostic if dir does not exist
+  SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH}
+    "${INTEL_OMP_DIR}/include")
+  SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+    "${INTEL_OMP_DIR}/lib/${mklvers}")
+  IF (MSVC)
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+      "${INTEL_OMP_DIR}/lib/${iccvers}")
+    IF ("${SIZE_OF_VOIDP}" EQUAL 8)
+      SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+        "${INTEL_OMP_DIR}/win-x64")
+    ENDIF ()
+  ENDIF()
+  IF (APPLE)
+    SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}
+      "${INTEL_OMP_DIR}/lib")
+  ENDIF()
+ENDIF()
 
- #       set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_intel_thread_dll mkl_core_dll libiomp5md)
- #   else ()
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_gnu_thread)
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} gomp)
-        # call sequential MKL to improve robustness in multi-threading runtime
-        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_sequential)
-        #set(MKL_LIBRARIES ${MKL_LIBRARIES} iomp5)
-        set(MKL_LIBRARIES ${MKL_LIBRARIES} mkl_core)
- #   endif ()
-endif ()
+# Try linking multiple libs
+MACRO(CHECK_ALL_LIBRARIES LIBRARIES OPENMP_TYPE OPENMP_LIBRARY _name _list _flags)
+  # This macro checks for the existence of the combination of libraries given by _list.
+  # If the combination is found, this macro checks whether we can link against that library
+  # combination using the name of a routine given by _name using the linker
+  # flags given by _flags.  If the combination of libraries is found and passes
+  # the link test, LIBRARIES is set to the list of complete library paths that
+  # have been found.  Otherwise, LIBRARIES is set to FALSE.
+  # N.B. _prefix is the prefix applied to the names of all cached variables that
+  # are generated internally and marked advanced by this macro.
+  SET(_prefix "${LIBRARIES}")
+  # start checking
+  SET(_libraries_work TRUE)
+  SET(${LIBRARIES})
+  SET(${OPENMP_TYPE})
+  SET(${OPENMP_LIBRARY})
+  SET(_combined_name)
+  SET(_openmp_type)
+  SET(_openmp_library)
+  SET(_paths)
+  IF (NOT MKL_FIND_QUIETLY)
+    set(_str_list)
+    foreach(_elem ${_list})
+      if(_str_list)
+        set(_str_list "${_str_list} - ${_elem}")
+      else()
+        set(_str_list "${_elem}")
+      endif()
+    endforeach(_elem)
+    message(STATUS "Checking for [${_str_list}]")
+  ENDIF ()
+  SET(_found_tbb FALSE)
+  FOREACH(_library ${_list})
+    SET(_combined_name ${_combined_name}_${_library})
+    UNSET(${_prefix}_${_library}_LIBRARY)
+    IF(_libraries_work)
+      IF(${_library} MATCHES "omp")
+        IF(_openmp_type)
+          MESSAGE(FATAL_ERROR "More than one OpenMP libraries appear in the MKL test: ${_list}")
+        ELSEIF(${_library} MATCHES "gomp")
+          SET(_openmp_type "GNU")
+          # Use FindOpenMP to find gomp
+          FIND_PACKAGE(OpenMP QUIET)
+          IF(OPENMP_FOUND)
+            # Test that none of the found library names contains "iomp" (Intel
+            # OpenMP). This doesn't necessarily mean that we have gomp... but it
+            # is probably good enough since on gcc we should already have
+            # OpenMP_CXX_FLAGS="-fopenmp" and OpenMP_CXX_LIB_NAMES="".
+            SET(_found_gomp true)
+            FOREACH(_lib_name ${OpenMP_CXX_LIB_NAMES})
+              IF (_found_gomp AND "${_lib_name}" MATCHES "iomp")
+                SET(_found_gomp false)
+              ENDIF()
+            ENDFOREACH()
+            IF(_found_gomp)
+              SET(${_prefix}_${_library}_LIBRARY ${OpenMP_CXX_FLAGS})
+              SET(_openmp_library "${${_prefix}_${_library}_LIBRARY}")
+            ENDIF()
+          ENDIF(OPENMP_FOUND)
+        ELSEIF(${_library} MATCHES "iomp")
+          SET(_openmp_type "Intel")
+          FIND_LIBRARY(${_prefix}_${_library}_LIBRARY NAMES ${_library})
+          SET(_openmp_library "${${_prefix}_${_library}_LIBRARY}")
+        ELSE()
+          MESSAGE(FATAL_ERROR "Unknown OpenMP flavor: ${_library}")
+        ENDIF()
+      ELSEIF(${_library} STREQUAL "tbb")
+        # Separately handling compiled TBB
+        SET(_found_tbb TRUE)
+      ELSE()
+        SET(lib_names ${_library})
+        FIND_LIBRARY(${_prefix}_${_library}_LIBRARY NAMES ${lib_names})
+      ENDIF()
+      MARK_AS_ADVANCED(${_prefix}_${_library}_LIBRARY)
+      IF(NOT (${_library} STREQUAL "tbb"))
+        SET(${LIBRARIES} ${${LIBRARIES}} ${${_prefix}_${_library}_LIBRARY})
+        SET(_libraries_work ${${_prefix}_${_library}_LIBRARY})
+        IF (NOT MKL_FIND_QUIETLY)
+          IF(${_prefix}_${_library}_LIBRARY)
+            MESSAGE(STATUS "  Library ${_library}: ${${_prefix}_${_library}_LIBRARY}")
+          ELSE(${_prefix}_${_library}_LIBRARY)
+            MESSAGE(STATUS "  Library ${_library}: not found")
+          ENDIF(${_prefix}_${_library}_LIBRARY)
+        ENDIF ()
+      ENDIF()
+    ENDIF(_libraries_work)
+  ENDFOREACH(_library ${_list})
+  # Test this combination of libraries.
+  IF(_libraries_work)
+    IF (NOT _found_tbb)
+      SET(CMAKE_REQUIRED_LIBRARIES ${_flags} ${${LIBRARIES}})
+      SET(CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES};${CMAKE_REQUIRED_LIBRARIES}")
+      CHECK_FUNCTION_EXISTS(${_name} ${_prefix}${_combined_name}_WORKS)
+      SET(CMAKE_REQUIRED_LIBRARIES)
+      MARK_AS_ADVANCED(${_prefix}${_combined_name}_WORKS)
+      SET(_libraries_work ${${_prefix}${_combined_name}_WORKS})
+    ENDIF()
+  ENDIF(_libraries_work)
+  # Fin
+  IF(_libraries_work)
+    SET(${OPENMP_TYPE} ${_openmp_type})
+    MARK_AS_ADVANCED(${OPENMP_TYPE})
+    SET(${OPENMP_LIBRARY} ${_openmp_library})
+    MARK_AS_ADVANCED(${OPENMP_LIBRARY})
+  ELSE (_libraries_work)
+    SET(${LIBRARIES})
+    MARK_AS_ADVANCED(${LIBRARIES})
+  ENDIF(_libraries_work)
+ENDMACRO(CHECK_ALL_LIBRARIES)
 
-if (MKL_FOUND)
-#    if (NOT MKL_FIND_QUIETLY)
-        message(STATUS "Found MKL libraries: ${MKL_LIBRARIES}")
-        message(STATUS "MKL_INCLUDE_DIR: ${MKL_INCLUDE_DIR}")
-        message(STATUS "MKL_LIB_DIR: ${MKL_LIB_DIR}")
-        message(STATUS "MKL_COMPILER_LIB_DIR: ${MKL_COMPILER_LIB_DIR}")
-#    endif ()
+IF(WIN32)
+  SET(mkl_m "")
+  SET(mkl_pthread "")
+ELSE(WIN32)
+  SET(mkl_m "m")
+  SET(mkl_pthread "pthread")
+ENDIF(WIN32)
 
-    # ------------------------------------------------------------------------
-    #  Extract version information from <mkl.h>
-    # ------------------------------------------------------------------------
+IF(UNIX AND NOT APPLE)
+  SET(mkl_dl "${CMAKE_DL_LIBS}")
+ELSE(UNIX AND NOT APPLE)
+  SET(mkl_dl "")
+ENDIF(UNIX AND NOT APPLE)
 
-    set(INTEL_MKL_VERSION_MAJOR 0)
-    set(INTEL_MKL_VERSION_MINOR 0)
-    set(INTEL_MKL_VERSION_UPDATE 0)
+# Check for version 10/11
+IF (NOT MKL_LIBRARIES)
+  SET(MKL_VERSION 1011)
+ENDIF (NOT MKL_LIBRARIES)
 
-    if (EXISTS "${MKL_INCLUDE_DIR}/mkl_version.h")
+# First: search for parallelized ones with intel thread lib
+IF (NOT "${MKL_THREADING}" STREQUAL "SEQ")
+  FOREACH(mklrtl ${mklrtls} "")
+    FOREACH(mkliface ${mklifaces})
+      FOREACH(mkl64 ${mkl64s} "")
+        FOREACH(mklthread ${mklthreads})
+          IF (NOT MKL_LIBRARIES)
+            CHECK_ALL_LIBRARIES(MKL_LIBRARIES MKL_OPENMP_TYPE MKL_OPENMP_LIBRARY cblas_sgemm
+              "mkl_${mkliface}${mkl64};${mklthread};mkl_core;${mklrtl};${mkl_pthread};${mkl_m};${mkl_dl}" "")
+          ENDIF (NOT MKL_LIBRARIES)
+        ENDFOREACH(mklthread)
+      ENDFOREACH(mkl64)
+    ENDFOREACH(mkliface)
+  ENDFOREACH(mklrtl)
+ENDIF (NOT "${MKL_THREADING}" STREQUAL "SEQ")
 
-        # Read and parse header file for version number
-        file(STRINGS "${MKL_INCLUDE_DIR}/mkl_version.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL__ ")
-        string(REGEX REPLACE ".*#define __INTEL_MKL__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_MAJOR "${_mkl_HEADER_CONTENTS}")
-        unset(_mkl_HEADER_CONTENTS)
+# Second: search for sequential ones
+FOREACH(mkliface ${mklifaces})
+  FOREACH(mkl64 ${mkl64s} "")
+    IF (NOT MKL_LIBRARIES)
+      CHECK_ALL_LIBRARIES(MKL_LIBRARIES MKL_OPENMP_TYPE MKL_OPENMP_LIBRARY cblas_sgemm
+        "mkl_${mkliface}${mkl64};mkl_sequential;mkl_core;${mkl_m};${mkl_dl}" "")
+      IF (MKL_LIBRARIES)
+        SET(mklseq "_sequential")
+      ENDIF (MKL_LIBRARIES)
+    ENDIF (NOT MKL_LIBRARIES)
+  ENDFOREACH(mkl64)
+ENDFOREACH(mkliface)
 
-        file(STRINGS "${MKL_INCLUDE_DIR}/mkl_version.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL_MINOR__ ")
-        string(REGEX REPLACE ".*#define __INTEL_MKL_MINOR__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_MINOR "${_mkl_HEADER_CONTENTS}")
-        unset(_mkl_HEADER_CONTENTS)
+# First: search for parallelized ones with native pthread lib
+FOREACH(mklrtl ${mklrtls} "")
+  FOREACH(mkliface ${mklifaces})
+    FOREACH(mkl64 ${mkl64s} "")
+      IF (NOT MKL_LIBRARIES)
+        CHECK_ALL_LIBRARIES(MKL_LIBRARIES MKL_OPENMP_TYPE MKL_OPENMP_LIBRARY cblas_sgemm
+          "mkl_${mkliface}${mkl64};${mklthread};mkl_core;${mklrtl};pthread;${mkl_m};${mkl_dl}" "")
+      ENDIF (NOT MKL_LIBRARIES)
+    ENDFOREACH(mkl64)
+  ENDFOREACH(mkliface)
+ENDFOREACH(mklrtl)
 
-        file(STRINGS "${MKL_INCLUDE_DIR}/mkl_version.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL_UPDATE__ ")
-        string(REGEX REPLACE ".*#define __INTEL_MKL_UPDATE__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_UPDATE "${_mkl_HEADER_CONTENTS}")
+# Check for older versions
+IF (NOT MKL_LIBRARIES)
+  SET(MKL_VERSION 900)
+  CHECK_ALL_LIBRARIES(MKL_LIBRARIES MKL_OPENMP_TYPE MKL_OPENMP_LIBRARY cblas_sgemm
+    "mkl;guide;pthread;m" "")
+ENDIF (NOT MKL_LIBRARIES)
 
-        unset(_mkl_HEADER_CONTENTS)
-    else (EXISTS "${MKL_INCLUDE_DIR}/mkl_version.h")
-        if (EXISTS "${MKL_INCLUDE_DIR}/mkl.h")
+# Include files
+IF (MKL_LIBRARIES)
+  FIND_PATH(MKL_INCLUDE_DIR "mkl_cblas.h")
+  MARK_AS_ADVANCED(MKL_INCLUDE_DIR)
+ENDIF (MKL_LIBRARIES)
 
-            # Read and parse header file for version number
-            file(STRINGS "${MKL_INCLUDE_DIR}/mkl.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL__ ")
-            string(REGEX REPLACE ".*#define __INTEL_MKL__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_MAJOR "${_mkl_HEADER_CONTENTS}")
-            unset(_mkl_HEADER_CONTENTS)
+# Other libraries
+IF (MKL_LIBRARIES)
+  FOREACH(mkl64 ${mkl64s} "_core" "")
+    FOREACH(mkls ${mklseq} "")
+      IF (NOT MKL_LAPACK_LIBRARIES)
+        FIND_LIBRARY(MKL_LAPACK_LIBRARIES NAMES "mkl_lapack${mkl64}${mkls}")
+        MARK_AS_ADVANCED(MKL_LAPACK_LIBRARIES)
+      ENDIF (NOT MKL_LAPACK_LIBRARIES)
+      IF (NOT MKL_SCALAPACK_LIBRARIES)
+        FIND_LIBRARY(MKL_SCALAPACK_LIBRARIES NAMES "mkl_scalapack${mkl64}${mkls}")
+        MARK_AS_ADVANCED(MKL_SCALAPACK_LIBRARIES)
+      ENDIF (NOT MKL_SCALAPACK_LIBRARIES)
+      IF (NOT MKL_SOLVER_LIBRARIES)
+        FIND_LIBRARY(MKL_SOLVER_LIBRARIES NAMES "mkl_solver${mkl64}${mkls}")
+        MARK_AS_ADVANCED(MKL_SOLVER_LIBRARIES)
+      ENDIF (NOT MKL_SOLVER_LIBRARIES)
+      IF (NOT MKL_CDFT_LIBRARIES)
+        FIND_LIBRARY(MKL_CDFT_LIBRARIES NAMES "mkl_cdft${mkl64}${mkls}")
+        MARK_AS_ADVANCED(MKL_CDFT_LIBRARIES)
+      ENDIF (NOT MKL_CDFT_LIBRARIES)
+    ENDFOREACH(mkls)
+  ENDFOREACH(mkl64)
+ENDIF (MKL_LIBRARIES)
 
-            file(STRINGS "${MKL_INCLUDE_DIR}/mkl.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL_MINOR__ ")
-            string(REGEX REPLACE ".*#define __INTEL_MKL_MINOR__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_MINOR "${_mkl_HEADER_CONTENTS}")
-            unset(_mkl_HEADER_CONTENTS)
+# Final
+SET(CMAKE_LIBRARY_PATH ${saved_CMAKE_LIBRARY_PATH})
+SET(CMAKE_INCLUDE_PATH ${saved_CMAKE_INCLUDE_PATH})
+IF (MKL_LIBRARIES AND MKL_INCLUDE_DIR)
+  SET(MKL_FOUND TRUE)
+ELSE (MKL_LIBRARIES AND MKL_INCLUDE_DIR)
+  if (MKL_LIBRARIES AND NOT MKL_INCLUDE_DIR)
+    MESSAGE(WARNING "MKL libraries files are found, but MKL header files are \
+      not. You can get them by `conda install mkl-include` if using conda (if \
+      it is missing, run `conda upgrade -n root conda` first), and \
+      `pip install mkl-devel` if using pip. If build fails with header files \
+      available in the system, please make sure that CMake will search the \
+      directory containing them, e.g., by setting CMAKE_INCLUDE_PATH.")
+  endif()
+  SET(MKL_FOUND FALSE)
+  SET(MKL_VERSION)  # clear MKL_VERSION
+ENDIF (MKL_LIBRARIES AND MKL_INCLUDE_DIR)
 
-            file(STRINGS "${MKL_INCLUDE_DIR}/mkl.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL_UPDATE__ ")
-            string(REGEX REPLACE ".*#define __INTEL_MKL_UPDATE__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_UPDATE "${_mkl_HEADER_CONTENTS}")
+# Standard termination
+IF(NOT MKL_FOUND AND MKL_FIND_REQUIRED)
+  MESSAGE(FATAL_ERROR "MKL library not found. Please specify library location \
+    by appending the root directory of the MKL installation to the environment variable CMAKE_PREFIX_PATH.")
+ENDIF(NOT MKL_FOUND AND MKL_FIND_REQUIRED)
+IF(NOT MKL_FIND_QUIETLY)
+  IF(MKL_FOUND)
+    MESSAGE(STATUS "MKL library found")
+  ELSE(MKL_FOUND)
+    MESSAGE(STATUS "MKL library not found")
+  ENDIF(MKL_FOUND)
+ENDIF(NOT MKL_FIND_QUIETLY)
 
-            unset(_mkl_HEADER_CONTENTS)
-        endif (EXISTS "${MKL_INCLUDE_DIR}/mkl.h")
-    endif (EXISTS "${MKL_INCLUDE_DIR}/mkl_version.h")
-
-    set(MKL_VERSION_STRING "${INTEL_MKL_VERSION_MAJOR}.${INTEL_MKL_VERSION_MINOR}.${INTEL_MKL_VERSION_UPDATE}")
-    message("find MKL version : ${MKL_VERSION_STRING}")
-
-    include_directories(${MKL_INCLUDE_DIR})
-    link_directories(${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR})
-else ()
-    if (MKL_FIND_REQUIRED)
-        message(FATAL_ERROR "Could not find MKL libraries")
-    endif ()
-endif ()
-
-# mark_as_advanced(MKL_LIBRARY)
+# Do nothing if MKL_FOUND was set before!
+ENDIF (NOT MKL_FOUND)

@@ -88,6 +88,10 @@ void MFIOperator::calc_MFI_coeff()
     int j;
     int i;
     float f;
+    //Have to make variables local to appease the OMP gods. 
+    float fmax = this->fmax;
+    size_t L = this->L;
+
     #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod)
     for(j = 0; j<L; j++){
       f = -fmax+float(j)*fmax*2./float(L-1);
@@ -96,8 +100,9 @@ void MFIOperator::calc_MFI_coeff()
       }
     }
 
-    #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod, b, x)
-    for(j = 0; j<fmax*2+1; j++){
+    int loop_limit = fmax * 2 + 1;
+    #pragma omp parallel for private(f,i,j) shared(fmax, R0, L, om, demod, b, x, loop_limit)
+    for(j = 0; j<loop_limit; j++){
       f = -fmax+j;
       for(i = 0; i < R0; i++) {
         b(i,j) = exp(om*(float)i*(float)sample_time*f);
@@ -111,8 +116,8 @@ void MFIOperator::calc_phase_mask()
 {
   //Phase mask for fast demodulation in gridded domain (See MFI paper)
   hoNDArray<std::complex<float>> tau(data_dims[0],data_dims[1],data_dims[2]);
-  hoNDArray<complext<float>> phase_mask(&image_dims);
-  cuNDArray<complext<float>> ch_images(&image_dims);
+  hoNDArray<complext<float>> phase_mask(image_dims);
+  cuNDArray<complext<float>> ch_images(image_dims);
   float f_step = fmax/((L-1)/2.);
   size_t R0 = data_dims[0];
 
@@ -123,7 +128,7 @@ void MFIOperator::calc_phase_mask()
   nfft_plan_->compute( &gpu_data,ch_images, nullptr, NFFT_comp_mode::BACKWARDS_NC2C );
   nfft_plan_->fft(ch_images, NFFT_fft_mode::FORWARDS);
 
-  auto time_grid = *(ch_images.to_host());
+  auto time_grid = std::move(*(ch_images.to_host()));
   for (int i = 0; i < time_grid.get_number_of_elements(); i++) {
     phase_mask[i] = exp(complext<float>(0.0,2.*M_PI*f_step*(abs(time_grid[i]))));
   }
@@ -135,7 +140,7 @@ void MFIOperator::calc_phase_mask()
 void MFIOperator::calc_kspace_filter(std::vector<size_t>& matrix_size)
 {
   //Setup circular k-space filter to get rid of spurious high-frequency data from forward and backward FFTs (Similar to CG-sense)
-  hoNDArray<std::complex<float>> kspace_filter(&matrix_size);
+  hoNDArray<std::complex<float>> kspace_filter(matrix_size);
   float kx;
   float ky;
   for(int x = 0; x < matrix_size[0]; x++){
@@ -154,10 +159,10 @@ hoNDArray<complext<float>> MFIOperator::MFI_apply(hoNDArray<complext<float>>& ho
 
   //Core MFI function - assumes MFI operator has already been prepared
   //Takes in blurred imaged (ho_image) and field map (B0_map) as inputs
-  hoNDArray<complext<float>> output_image(&image_dims);
-  hoNDArray<complext<float>> temp_image(&image_dims);
+  hoNDArray<complext<float>> output_image(image_dims);
+  hoNDArray<complext<float>> temp_image(image_dims);
   output_image.fill(0.0);
-  cuNDArray<complext<float>> cu_image(&image_dims);
+  cuNDArray<complext<float>> cu_image(image_dims);
   int mfc_index;
 
   //Upload image and transform

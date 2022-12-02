@@ -5,6 +5,9 @@
 
 #include "ComplexToFloatGadget.h"
 #include "hoNDArray_elemwise.h"
+
+#include "log.h"
+
 Gadgetron::ComplexToFloatGadget::ComplexToFloatGadget(
     const Gadgetron::Core::Context& context, const Gadgetron::Core::GadgetProperties& props)
     : PureGadget(context,props) {
@@ -24,8 +27,14 @@ Gadgetron::Core::Image<float> Gadgetron::ComplexToFloatGadget::process_function(
 
     hoNDArray<float> output_data;
 
-    if (converters.count(header.image_type)) output_data = converters.at(header.image_type)(input_data);
-    else output_data = converters.at(ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE)(input_data);
+    if (converters.count(header.image_type)) {
+        output_data = converters.at(header.image_type)(input_data);
+    }
+    else {
+        GDEBUG_STREAM("Image type not set; defaulting to magnitude image.");
+        output_data = converters.at(ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE)(input_data);
+        header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+    }
 
     return { header, output_data, meta };
 }

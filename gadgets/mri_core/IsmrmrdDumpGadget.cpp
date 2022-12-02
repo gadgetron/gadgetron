@@ -2,12 +2,14 @@
 #include <iomanip>
 #include <boost/filesystem.hpp>
 #include "network_utils.h"
+#include <thread>
 
 namespace bf = boost::filesystem;
 
+
 namespace Gadgetron
 {
-    std::string get_date_time_string()
+    static std::string get_date_time_string()
     {
         time_t rawtime;
         struct tm * timeinfo;
@@ -27,133 +29,88 @@ namespace Gadgetron
 
         return ret;
     }
+    bool IsmrmrdDumpGadget::is_ip_on_blacklist() const {
+        if (ip_no_data_saving.empty()){
+            return false; 
+        }
+        GDEBUG_STREAM("IsmrmrdDumpGadget, find pre-set ip for no-data-saving : " << ip_no_data_saving.size() << " [ ");
+        for (auto ip : ip_no_data_saving)
+                GDEBUG_STREAM(ip);
+        GDEBUG_STREAM(" ] ");
 
-    IsmrmrdDumpGadget::IsmrmrdDumpGadget() : BaseClass(), first_call_(true), save_ismrmrd_data_(true)
-    {
-    }
-
-    IsmrmrdDumpGadget::~IsmrmrdDumpGadget()
-    {
-    }
-
-    int IsmrmrdDumpGadget::process_config(ACE_Message_Block* mb)
-    {
-
-        ISMRMRD::deserialize(mb->rd_ptr(), ismrmrd_header_);
-        ismrmrd_xml_ = std::string(mb->rd_ptr());
-
-        // if ip_no_data_saving is set, check current ip of gadgetron server
-        if (!this->ip_no_data_saving.value().empty())
-        {
-            std::vector<std::string> ip_list = this->ip_no_data_saving.value();
-
-            GDEBUG_STREAM("IsmrmrdDumpGadget, find pre-set ip for no-data-saving : " << ip_list.size() << " [ ");
-
-            size_t n;
-            for (n = 0; n < ip_list.size(); n++)
-            {
-                GDEBUG_STREAM(ip_list[n]);
-            }
-            GDEBUG_STREAM(" ] ");
-
-            // get current ip of gadgetron
-            std::string host_name;
-            std::vector<std::string> gt_ip_list;
-            try
-            {
-                Gadgetron::find_gadgetron_ip(host_name, gt_ip_list);
-            }
-            catch (...)
-            {
-                GERROR_STREAM("Find gadgetrion ip failed ... ");
-                gt_ip_list.clear();
-            }
+            const auto [host_name, gt_ip_list ] = Gadgetron::find_gadgetron_ip();
 
             GDEBUG_STREAM("IsmrmrdDumpGadget, find gadgetron host name : " << host_name);
 
             GDEBUG_STREAM("IsmrmrdDumpGadget, find gadgetron ip : " << gt_ip_list.size() << " [ ");
-            for (n = 0; n < gt_ip_list.size(); n++)
-            {
-                GDEBUG_STREAM(gt_ip_list[n]);
-            }
+            for (const auto & ip : gt_ip_list) 
+                GDEBUG_STREAM(ip);
             GDEBUG_STREAM(" ] ");
 
-            size_t m;
 
-            for (n = 0; n < ip_list.size(); n++)
-            {
-                for (m = 0; m < gt_ip_list.size(); m++)
-                {
-                    if (ip_list[n] == gt_ip_list[m])
-                    {
-                        this->save_ismrmrd_data_ = false;
-                        GDEBUG_STREAM("IsmrmrdDumpGadget, find matching ip pair : " << ip_list[n]);
-                        break;
-                    }
-                }
+            for (const auto & ip : gt_ip_list ){
+                if (ip_no_data_saving.count(ip)){
 
-                if (!this->save_ismrmrd_data_)
-                {
-                    break;
+                    GDEBUG_STREAM("IsmrmrdDumpGadget, find matching ip pair : " << ip);
+                    return true;
                 }
             }
-        }
+            return false;
+       }
 
-        if (this->save_ismrmrd_data_)
+
+    
+
+    IsmrmrdDumpGadget::IsmrmrdDumpGadget(const Core::Context& context, const Core::GadgetProperties& props ) : Core::ChannelGadget<Core::variant<Core::Acquisition,Core::Waveform>>(context, props), save_ismrmrd_data_(!is_ip_on_blacklist()) {
+        if (save_ismrmrd_data_)
         {
-            boost::filesystem::path p(folder.value());
-
-            if (!exists(p))
+            if (!exists(folder ))
             {
                 try
                 {
-                    boost::filesystem::create_directory(p);
+                    boost::filesystem::create_directory(folder );
                 }
                 catch (...)
                 {
-                    GERROR("Error caught trying to create folder %s\n", folder.value().c_str());
-                    return GADGET_FAIL;
+                    std::stringstream stream("Error caught trying to create folder ");
+                    stream << folder;
+                    GADGET_THROW(stream.str());
                 }
             }
             else
             {
-                if (!is_directory(p))
+                if (!is_directory(folder ))
                 {
-                    GERROR("Specified path is not a directory\n");
-                    return GADGET_FAIL;
+                    GADGET_THROW("Specified path is not a directory\n");
                 }
             }
         }
-
-        return GADGET_OK;
     }
 
-    int IsmrmrdDumpGadget::create_ismrmrd_dataset()
+    ISMRMRD::Dataset IsmrmrdDumpGadget::create_ismrmrd_dataset() const 
     {
-        try {
             std::string measurement_id = "";
             std::string ismrmrd_filename = "";
 
-            if (ismrmrd_header_.measurementInformation)
+            if (header.measurementInformation)
             {
-                if (ismrmrd_header_.measurementInformation->measurementID)
+                if (header.measurementInformation->measurementID)
                 {
-                    measurement_id = *ismrmrd_header_.measurementInformation->measurementID;
+                    measurement_id = *header.measurementInformation->measurementID;
                 }
             }
 
             GDEBUG("Measurement ID: %s\n", measurement_id.c_str());
 
-            boost::filesystem::path p(folder.value());
 
-            if (file_prefix.value().empty())
+            if (file_prefix.empty())
             {
                 // try to use the protocol name
-                if (ismrmrd_header_.measurementInformation.is_present())
+                if (header.measurementInformation.is_present())
                 {
-                    if (ismrmrd_header_.measurementInformation.get().protocolName.is_present())
+                    if (header.measurementInformation.get().protocolName.is_present())
                     {
-                        ismrmrd_filename = ismrmrd_header_.measurementInformation.get().protocolName.get();
+                        ismrmrd_filename = header.measurementInformation.get().protocolName.get();
 
                         for (std::string::size_type i = 0; (i = ismrmrd_filename.find(" ", i)) != std::string::npos;)
                         {
@@ -175,27 +132,27 @@ namespace Gadgetron
             }
             else
             {
-                ismrmrd_filename = file_prefix.value();
+                ismrmrd_filename = file_prefix;
             }
 
             ismrmrd_filename.append("_");
             ismrmrd_filename.append(measurement_id);
 
             std::string study_date, study_time;
-            if (ismrmrd_header_.studyInformation)
+            if (header.studyInformation)
             {
-                if (ismrmrd_header_.studyInformation->studyDate)
+                if (header.studyInformation->studyDate)
                 {
-                    study_date = *ismrmrd_header_.studyInformation->studyDate;
+                    study_date = *header.studyInformation->studyDate;
 
                     std::string d(study_date);
                     d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
                     study_date = d;
                 }
 
-                if (ismrmrd_header_.studyInformation->studyTime)
+                if (header.studyInformation->studyTime)
                 {
-                    study_time = *ismrmrd_header_.studyInformation->studyTime;
+                    study_time = *header.studyInformation->studyTime;
 
                     std::string d(study_time);
                     d.erase(std::remove(d.begin(), d.end(), ':'), d.end());
@@ -219,189 +176,91 @@ namespace Gadgetron
 
             ismrmrd_filename.append(".h5");
 
-            p /= ismrmrd_filename;
+            auto filepath = folder / ismrmrd_filename;
 
-            ismrmrd_filename = p.string();
+            ismrmrd_filename = filepath.string();
             GDEBUG_STREAM("KSpace dump file name : " << ismrmrd_filename);
 
-            ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset", true));
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Error happened in IsmrmrdDumpGadget::create_ismrmrd_dataset(...) ... ");
-            return GADGET_FAIL;
+            return ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset", true);
         }
 
-        return GADGET_OK;
+    static void append_to_dataset(const Core::Acquisition& acq, ISMRMRD::Dataset& dataset){
+        const auto& [acq_head, data, traj]  = acq;         
+                   ISMRMRD::Acquisition ismrmrd_acq;
+                   ismrmrd_acq.setHead(acq_head);
+                   ismrmrd_acq.setData(const_cast<std::complex<float>*>(data.data()));
+                   if (traj) ismrmrd_acq.setTraj(const_cast<float*>(traj->data()));
+                   dataset.appendAcquisition(ismrmrd_acq);
+    }
+    static void append_to_dataset(const Core::Waveform& acq, ISMRMRD::Dataset& dataset){
+        const auto& [wav_head, data ]  = acq;         
+                   ISMRMRD::Waveform ismrmrd_wav(wav_head.number_of_samples,wav_head.channels);
+                   ismrmrd_wav.head = wav_head;
+                   std::copy(data.begin(),data.end(),ismrmrd_wav.data);
+                   dataset.appendWaveform(ismrmrd_wav);
     }
 
-    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1)
+
+    void IsmrmrdDumpGadget::process(Core::InputChannel<Core::variant<Core::Acquisition,Core::Waveform>>& input, Core::OutputChannel& output)
     {
-        if (first_call_)
-        {
-            if (this->save_ismrmrd_data_)
+
+        auto is_valid_type =[this](const auto& item){ return this->pass_waveform_downstream || std::holds_alternative<Core::Acquisition>(item);};
+
+        auto move_if = [](auto& input, auto& output, const auto& pred ){
+            for (auto item : input ){
+                if (pred(item)){
+                    output.push(std::move(item));
+                }
+            }
+        };
+
+        if (!save_ismrmrd_data_) {
+            GDEBUG_STREAM("IsmrmrdDumpGadget, do NOT save ismrmrd data ... ");
+            move_if(input,output, is_valid_type );
+            return;
+        }
+
+
+
+        Core::MPMCChannel<Core::variant<Core::Acquisition,Core::Waveform>> data_buffer;
+
+        auto save_thread = std::thread([&data_buffer,this](){
+            auto dataset = create_ismrmrd_dataset();
+
             {
-                this->create_ismrmrd_dataset();
-
-                try
-                {
-                    ismrmrd_dataset_->writeHeader(ismrmrd_xml_);
-                }
-                catch (...)
-                {
-                    GDEBUG("Failed to write XML header to HDF file\n");
-                    return GADGET_FAIL;
-                }
-
+                auto stream = std::stringstream();
+                ISMRMRD::serialize(header,stream);
+                dataset.writeHeader(stream.str());
                 GDEBUG_STREAM("IsmrmrdDumpGadget, save ismrmrd xml header ... ");
             }
-            else
-            {
-                GDEBUG_STREAM("IsmrmrdDumpGadget, do NOT save ismrmrd data ... ");
-            }
 
-            first_call_ = false;
+
+            try {
+                for (;;) {
+                    Core::visit([&dataset](const auto& item) { append_to_dataset(item, dataset); }, data_buffer.pop());
+                }
+            } catch (const Core::ChannelClosed& closed) {              
+            }
+        });
+
+        if (save_xml_header_only){
+            GDEBUG_STREAM("Only saving header");
+            data_buffer.close();
+            move_if(input,output, is_valid_type);
+            save_thread.join();
+            return;
         }
-
-        if (this->save_ismrmrd_data_ && !this->save_xml_header_only.value())
-        {
-            ISMRMRD::Acquisition ismrmrd_acq;
-            ismrmrd_acq.setHead(*m1->getObjectPtr());
-
-            GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2 = AsContainerMessage< hoNDArray< std::complex<float> > >(m1->cont());
-            if (!m2)
-            {
-                GDEBUG("Error casting acquisition data package");
-                return GADGET_FAIL;
-            }
-
-            memcpy((void *)ismrmrd_acq.getDataPtr(), m2->getObjectPtr()->get_data_ptr(), sizeof(float)*m2->getObjectPtr()->get_number_of_elements() * 2);
-
-            if (m2->cont())
-            {
-                //Write trajectory
-                if (ismrmrd_acq.trajectory_dimensions() == 0)
-                {
-                    GDEBUG("Malformed dataset. Trajectory attached but trajectory dimensions == 0\n");
-                    return GADGET_FAIL;
-                }
-
-                GadgetContainerMessage< hoNDArray<float> >* m3 = AsContainerMessage< hoNDArray<float> >(m2->cont());
-
-                if (!m3)
-                {
-                    GDEBUG("Error casting trajectory data package");
-                    return GADGET_FAIL;
-                }
-
-                memcpy((void *)ismrmrd_acq.getTrajPtr(), m3->getObjectPtr()->get_data_ptr(),
-                    sizeof(float)*m3->getObjectPtr()->get_number_of_elements());
-            }
-            else
-            {
-                if (ismrmrd_acq.trajectory_dimensions() != 0)
-                {
-                    GDEBUG("Malformed dataset. Trajectory dimensions not zero but no trajectory attached\n");
-                    return GADGET_FAIL;
-                }
-            }
-
-            {
-                try
-                {
-                    ismrmrd_dataset_->appendAcquisition(ismrmrd_acq);
-                }
-                catch (...)
-                {
-                    GDEBUG("Error appending ISMRMRD Dataset\n");
-                    return GADGET_FAIL;
-                }
-            }
+        
+        for (auto item : input){
+            data_buffer.push(item);
+            if (is_valid_type(item))
+                output.push(std::move(item));
         }
-
-        //It is enough to put the first one, since they are linked
-        if (this->next()->putq(m1) == -1)
-        {
-            m1->release();
-            GERROR("IsmrmrdDumpGadget::process, passing data on to next gadget");
-            return -1;
-        }
-
-        return 0;
+        data_buffer.close();
+        save_thread.join();
     }
+    GADGETRON_GADGET_EXPORT(IsmrmrdDumpGadget);
 
-    int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::WaveformHeader>* m1)
-    {
-        if (first_call_)
-        {
-            if (this->save_ismrmrd_data_)
-            {
-                this->create_ismrmrd_dataset();
 
-                try
-                {
-                    ismrmrd_dataset_->writeHeader(ismrmrd_xml_);
-                }
-                catch (...)
-                {
-                    GDEBUG("Failed to write XML header to HDF file\n");
-                    return GADGET_FAIL;
-                }
 
-                GDEBUG_STREAM("IsmrmrdDumpGadget, first call is on waveform, save ismrmrd xml header ... ");
-            }
-            else
-            {
-                GDEBUG_STREAM("IsmrmrdDumpGadget, first call is on waveform, do NOT save ismrmrd data ... ");
-            }
-
-            first_call_ = false;
-        }
-
-        if (this->save_ismrmrd_data_ && !this->save_xml_header_only.value())
-        {
-            ISMRMRD::Waveform ismrmrd_wav;
-            ismrmrd_wav.head = *m1->getObjectPtr();
-
-            GadgetContainerMessage< hoNDArray< uint32_t > >* m2 = AsContainerMessage< hoNDArray< uint32_t > >(m1->cont());
-            if (!m2)
-            {
-                GDEBUG("Error casting waveform data package");
-                return GADGET_FAIL;
-            }
-
-            ismrmrd_wav.data = m2->getObjectPtr()->begin();
-
-            try
-            {
-                ismrmrd_dataset_->appendWaveform(ismrmrd_wav);
-            }
-            catch (...)
-            {
-                GDEBUG("Error appending ISMRMRD Waveform\n");
-                return GADGET_FAIL;
-            }
-
-            ismrmrd_wav.data = NULL;
-        }
-
-        // TODO: remove this check
-        if(this->pass_waveform_downstream.value())
-        {
-            if (this->next()->putq(m1) == -1)
-            {
-                m1->release();
-                GERROR("IsmrmrdDumpGadget::process, passing waveform on to next gadget");
-                return -1;
-            }
-        }
-        else
-        {
-            m1->release();
-        }
-
-        return 0;
-    }
-
-    GADGET_FACTORY_DECLARE(IsmrmrdDumpGadget)
 }

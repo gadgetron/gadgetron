@@ -3,9 +3,10 @@
 #include "../common/grappa_common.h"
 
 #include "cuNDArray.h"
-#include "cuNDFFT.h"
 #include "htgrappa.h"
 #include "b1_map.h"
+#include "cuNDFFT.h"
+
 
 namespace Gadgetron::Grappa::GPU {
 
@@ -50,7 +51,6 @@ namespace Gadgetron::Grappa::GPU {
 
         std::vector<size_t> fft_dims = {0, 1};
         cuNDFFT<float>::instance()->ifft(&r_space_data, &fft_dims);
-
         return estimate_b1_map<float, 2>(r_space_data);
     }
 }

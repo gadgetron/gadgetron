@@ -22,7 +22,7 @@ protected:
 };
 
 typedef Types<float> realImplementations;
-TYPED_TEST_CASE(pattern_recognition_test, realImplementations);
+TYPED_TEST_SUITE(pattern_recognition_test, realImplementations);
 
 TYPED_TEST(pattern_recognition_test, kmeans_test)
 {
@@ -71,56 +71,56 @@ TYPED_TEST(pattern_recognition_test, kmeans_test)
 
     hoNDArray<float> C_for_initial;
     km.get_initial_guess_sample(X, K, C_for_initial);
-    std::cout << " ----------------------------------------" << std::endl;
-    std::cout << "get_initial_guess_sample ... " << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
+    GINFO_STREAM("get_initial_guess_sample ... " << std::endl);
 
     for (r = 0; r < km.replicates_; r++)
     {
-        std::cout << r << " - ";
+        GINFO_STREAM(r << " - ");
         for (k = 0; k < K; k++)
         {
-            std::cout << k << " - ";
+            GINFO_STREAM(k << " - ");
             for (p = 0; p < P; p++)
             {
-                std::cout << C_for_initial(p, k, r) << " , ";
+                GINFO_STREAM(C_for_initial(p, k, r) << " , ");
             }
         }
-        std::cout << std::endl;
+        GINFO_STREAM(std::endl);
     }
 
-    std::cout << " ----------------------------------------" << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
     km.get_initial_guess_uniform(X, K, C_for_initial);
-    std::cout << "get_initial_guess_uniform ... " << std::endl;
+    GINFO_STREAM("get_initial_guess_uniform ... " << std::endl);
     for (r = 0; r < km.replicates_; r++)
     {
-        std::cout << r << " - ";
+        GINFO_STREAM(r << " - ");
         for (k = 0; k < K; k++)
         {
-            std::cout << k << " - ";
+            GINFO_STREAM(k << " - ");
             for (p = 0; p < P; p++)
             {
-                std::cout << C_for_initial(p, k, r) << " , ";
+                GINFO_STREAM(C_for_initial(p, k, r) << " , ");
             }
         }
-        std::cout << std::endl;
+        GINFO_STREAM(std::endl);
     }
-    std::cout << " ----------------------------------------" << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
     km.get_initial_guess_kmeansplusplus(X, K, C_for_initial);
-    std::cout << "get_initial_guess_kmeansplusplus ... " << std::endl;
+    GINFO_STREAM("get_initial_guess_kmeansplusplus ... " << std::endl);
     for (r = 0; r < km.replicates_; r++)
     {
-        std::cout << r << " - ";
+        GINFO_STREAM(r << " - ");
         for (k = 0; k < K; k++)
         {
-            std::cout << k << " - ";
+            GINFO_STREAM(k << " - ");
             for (p = 0; p < P; p++)
             {
-                std::cout << C_for_initial(p, k, r) << " , ";
+                GINFO_STREAM(C_for_initial(p, k, r) << " , ");
             }
         }
-        std::cout << std::endl;
+        GINFO_STREAM(std::endl);
     }
-    std::cout << " ----------------------------------------" << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
 
     hoNDArray<float> C;
     C.create(2, K);
@@ -135,49 +135,49 @@ TYPED_TEST(pattern_recognition_test, kmeans_test)
     float sumD;
     km.run(X, K, C, IDX, C_res, sumD);
 
-    std::cout << " ----------------------------------------" << std::endl;
-    std::cout << "kmeans results with known centroid " << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
+    GINFO_STREAM("kmeans results with known centroid " << std::endl);
     for (k = 0; k < K; k++)
     {
-        std::cout << k << " - ";
+        GINFO_STREAM(k << " - ");
         for (p = 0; p < P; p++)
         {
-            std::cout << C_res(p, k) << " , ";
+            GINFO_STREAM(C_res(p, k) << " , ");
         }
     }
-    std::cout << std::endl;
-    std::cout << " ----------------------------------------" << std::endl;
+    GINFO_STREAM(std::endl);
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
 
     EXPECT_LE( std::sqrt(sumD) / N, 2.0);
 
-    std::cout << " ----------------------------------------" << std::endl;
-    std::cout << "kmeans with known centroid " << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
+    GINFO_STREAM("kmeans with known centroid " << std::endl);
     for (k = 0; k < K; k++)
     {
-        std::cout << k << " - ";
+        GINFO_STREAM(k << " - ");
         for (p = 0; p < P; p++)
         {
-            std::cout << C_res(p, k) << " , ";
+            GINFO_STREAM(C_res(p, k) << " , ");
         }
     }
-    std::cout << std::endl;
-    std::cout << " ----------------------------------------" << std::endl;
+    GINFO_STREAM(std::endl);
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
 
     std::vector<float> sumD_rep;
     km.run_replicates(X, K, C_for_initial, IDX, C_res, sumD_rep, sumD);
 
-    std::cout << " ----------------------------------------" << std::endl;
-    std::cout << "kmeans with replicated centroids " << std::endl;
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
+    GINFO_STREAM("kmeans with replicated centroids " << std::endl);
     for (k = 0; k < K; k++)
     {
-        std::cout << k << " - ";
+        GINFO_STREAM(k << " - ");
         for (p = 0; p < P; p++)
         {
-            std::cout << C_res(p, k) << " , ";
+            GINFO_STREAM(C_res(p, k) << " , ");
         }
     }
-    std::cout << std::endl;
-    std::cout << " ----------------------------------------" << std::endl;
+    GINFO_STREAM(std::endl);
+    GINFO_STREAM(" ----------------------------------------" << std::endl);
 
     //hoNDArray<size_t> IDX_array;
     //IDX_array.create(IDX.size(), &IDX[0]);

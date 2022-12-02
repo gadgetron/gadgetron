@@ -49,7 +49,7 @@ class hoSDC_test : public ::testing::Test
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(hoSDC_test, realImplementations);
+TYPED_TEST_SUITE(hoSDC_test, realImplementations);
 
 TYPED_TEST(hoSDC_test, randomTestOne)
 {
@@ -64,7 +64,9 @@ TYPED_TEST(hoSDC_test, randomTestOne)
     // Load test trajectory.
     hoNDArray<T> k_spiral;
     this->gt_io_.import_array(k_spiral, this->gt_ut_data_folder_ + "/spiral/k_spiral");
-    k_spiral.print(std::cout);
+    std::stringstream k_spiral_stream;
+    k_spiral.print(k_spiral_stream);
+    GINFO(k_spiral_stream.str().c_str());
     T v = Gadgetron::nrm2(k_spiral); GDEBUG_STREAM("k_spiral = " << v);
 
     // Copy test trajectory to array of vector_td elements.
@@ -85,15 +87,19 @@ TYPED_TEST(hoSDC_test, randomTestOne)
     this->timer_.start("Estimate DCW...");
     hoNDArray<T> res = *estimate_dcw(traj, dims, T(3), 20);
     this->timer_.stop();
-    res.print(std::cout);
-    
+    std::stringstream res_stream;
+    res.print(res_stream);
+    GINFO(res_stream.str().c_str());
+
     // Save resulting weights.
     this->gt_io_.export_array(res, this->gt_ut_res_folder_ + "/spiral/res_weights");
 
     // Load reference weights.
     hoNDArray<T> ref;
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/spiral/ref_weights");
-    ref.print(std::cout);
+    std::stringstream ref_stream;
+    ref.print(ref_stream);
+    GINFO(ref_stream.str().c_str());
     v = Gadgetron::nrm2(ref); GDEBUG_STREAM("ref = " << v);
 
     // Compare resulting weights against reference.

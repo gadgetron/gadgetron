@@ -11,7 +11,7 @@
 namespace Gadgetron{
 
     /// support wavelet transform of 1D, 2D and 3D
-    template <typename T> class EXPORTCPUDWT hoNDHarrWavelet : public hoNDWavelet<T>
+    template <typename T> class hoNDHarrWavelet : public hoNDWavelet<T>
     {
     public:
 

@@ -35,11 +35,15 @@ namespace Gadgetron::Grappa::CPU {
     ) {
         // TODO: Optimize accel_factor == 1;
 
+
         size_t RO = data.get_size(0);
         size_t E1 = data.get_size(1);
         size_t CHA = data.get_size(2);
 
+
+
         auto coil_map = estimate_coil_map(data);
+
 
         Gadgetron::grappa2d_calib_convolution_kernel(
                 data,

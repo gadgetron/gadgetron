@@ -1,35 +1,24 @@
-#ifndef AUTOSCALEGADGET_H_
-#define AUTOSCALEGADGET_H_
+/**
+    \brief  Autoscales real-type images based on a given max value and the 99th percentile of the data
+    \test   Tested by: epi_2d.cfg and others
+*/
 
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#pragma once
 
-#include <ismrmrd/ismrmrd.h>
+#include "PureGadget.h"
+#include "Types.h"
+#include "hoNDArray_math.h"
+#include <algorithm>
 
 namespace Gadgetron{
-
-  class EXPORTGADGETSMRICORE AutoScaleGadget:
-    public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
-  {
-  public:
-    GADGET_DECLARE(AutoScaleGadget);
-
-    AutoScaleGadget();
-    virtual ~AutoScaleGadget();
-
-  protected:
-    GADGET_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
-
-    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			GadgetContainerMessage< hoNDArray< float > >* m2);
-    virtual int process_config(ACE_Message_Block *mb);
-
-    unsigned int histogram_bins_;
-    std::vector<size_t> histogram_;
-    float current_scale_;
-    float max_value_;
-  };
+    class AutoScaleGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
+    public:
+        using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
+        Core::AnyImage process_function(Core::AnyImage image) const override;
+    protected:
+        NODE_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
+        NODE_PROPERTY(histogram_bins, unsigned int, "Number of Histogram Bins", 100);
+        float current_scale_;
+        std::vector<size_t> histogram_;
+    };
 }
-
-#endif /* AUTOSCALEGADGET_H_ */

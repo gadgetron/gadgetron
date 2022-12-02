@@ -3,48 +3,45 @@
 import os
 import os.path
 
-import sys
-import time
-import json
-import hashlib
 import argparse
 import functools
+import hashlib
+import json
+import socket
+import sys
+import time
 
+import urllib.error
 import urllib.request
 
+from concurrent.futures import ThreadPoolExecutor
 
-def __update_handler(current_size, total_size):
-    print(' ' * 64, end='\r')
-    print("\t{:n} of {:n} bytes [{:.2%}]".format(current_size, total_size, current_size / total_size), end='\r')
+def calc_mdf5(file):
+    md5 = hashlib.new('md5')
 
-
-def __finish_handler(total_size, duration):
-    print(' ' * 64, end='\r')
-    print("Downloaded {:n} bytes at {:n} bytes per second.".format(total_size, int(total_size / duration)))
-
-
-def __progress_notification_handler(on_update, on_finish, start, blocks, block_size, total_size):
-    current_size = blocks * block_size
-
-    if total_size <= current_size:
-        on_finish(total_size, time.time() - start)
-    else:
-        on_update(current_size, total_size)
-
+    with open(file, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            md5.update(chunk)
+    return md5.hexdigest()
 
 def is_valid(file, digest):
 
     if not os.path.isfile(file):
         return False
 
-    md5 = hashlib.new('md5')
+    return digest == calc_mdf5(file) 
 
-    with open(file, 'rb') as f:
-        for chunk in iter(lambda: f.read(65536), b''):
-            md5.update(chunk)
-
-    return digest == md5.hexdigest()
-
+def urlretrieve(url, filename, retries=5):
+    if retries <= 0:
+        raise RuntimeError("Download from {} failed".format(url))
+    try:
+        with urllib.request.urlopen(url, timeout=60) as connection:
+            with open(filename,'wb') as f:
+                for chunk in iter(lambda : connection.read(1024*1024), b''):
+                    f.write(chunk)
+    except (urllib.error.URLError, ConnectionResetError, socket.timeout) as exc:
+        print("Retrying connection for file {}, reason: {}".format(filename, str(exc)))
+        urlretrieve(url, filename, retries=retries-1)
 
 def main():
 
@@ -60,36 +57,32 @@ def main():
     parser.add_argument('-H', '--host', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/',
                         help="Host from which to download the data.")
 
-    parser.add_argument('--mute-download-progress', dest='progress', action='store_const',
-                        const=functools.partial(__progress_notification_handler, lambda *_: None, __finish_handler),
-                        default=functools.partial(__progress_notification_handler, __update_handler, __finish_handler),
-                        help="Mute download progress messages.")
-
     args = parser.parse_args()
 
     with open(args.list, 'r') as list:
         entries = json.load(list)
 
-    for entry in entries:
-
+    def download_entry(entry):
         url = "{}{}".format(args.host, entry['file'])
         destination = os.path.join(args.destination, entry['file'])
 
         if is_valid(destination, entry['md5']):
             print("Verified: {}".format(destination))
-            continue
+            return 
 
-        print("Downloading file: {}".format(destination))
+        print("Downloading file: {}".format(url))
 
         os.makedirs(os.path.dirname(destination), exist_ok=True)
-        urllib.request.urlretrieve(url, destination, reporthook=functools.partial(args.progress, time.time()))
+        urlretrieve(url,destination)
 
         if not is_valid(destination, entry['md5']):
-            print("Downloaded file {} failed validation.".format(destination))
-            sys.exit(1)
+            raise(RuntimeError("Downloaded file {} failed validation. Expected MD5 {}. Actual MD5 {}".format(destination,entry['md5'],calc_mdf5(destination))))
 
-    sys.exit(0)
+        print("File saved as: {}".format(destination))
 
+    with ThreadPoolExecutor() as executor:
+       for result in executor.map(download_entry,entries): #Required song and dance to get the Threadpoolexecutor to return exceptions
+           pass
 
 if __name__ == '__main__':
     main()

@@ -29,7 +29,7 @@ protected:
 };
 
 typedef Types<float> realImplementations;
-TYPED_TEST_CASE(curveFitting_test, realImplementations);
+TYPED_TEST_SUITE(curveFitting_test, realImplementations);
 
 TYPED_TEST(curveFitting_test, T2SE)
 {
@@ -217,8 +217,10 @@ TYPED_TEST(curveFitting_test, T1SRMapping)
     // -------------------------------------------------------------
     // get the results
 
-    t1_sr.map_.print(std::cout);
-    t1_sr.para_.print(std::cout);
+    std::stringstream stream;
+    t1_sr.map_.print(stream);
+    t1_sr.para_.print(stream);
+    GINFO(stream.str().c_str());
 
     EXPECT_NEAR(t1_sr.para_(0, 0, 0, 0, 0), 471.062894, 0.003);
     EXPECT_NEAR(t1_sr.para_(RO / 2, E1 / 2, 0, 0, 0), 471.062894, 0.003);

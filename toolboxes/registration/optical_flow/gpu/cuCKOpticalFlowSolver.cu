@@ -83,7 +83,7 @@ namespace Gadgetron{
     while(true){
     
       if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-        GDEBUG_STREAM("."; std::cout.flush());
+        GDEBUG_STREAM("."; std::cerr.flush());
       }
     
       // Clear termination flag

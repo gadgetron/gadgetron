@@ -9,9 +9,13 @@ cuda_add_library(gadgetron_toolbox_gpureg SHARED
         cuCKOpticalFlowSolver.cu
         cuResampleOperator.cu
         cuLinearResampleOperator.cu
+        cubicTex3D.cu
+        cubicPrefilter3D.cu
         )
 
 set_target_properties(gadgetron_toolbox_gpureg PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(gadgetron_toolbox_mri_core PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(gadgetron_toolbox_mri_core PROPERTIES LINKER_LANGUAGE CXX)
 
 target_link_libraries(gadgetron_toolbox_gpureg
         gadgetron_toolbox_registration_optical_flow
@@ -23,10 +27,13 @@ target_link_libraries(gadgetron_toolbox_gpureg
 
 target_include_directories(gadgetron_toolbox_gpureg
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<INSTALL_INTERFACE:include/gadgetron>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        ${CUDA_INCLUDE_DIRS}
         )
 
 install(TARGETS gadgetron_toolbox_gpureg
+        EXPORT gadgetron-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
@@ -42,6 +49,8 @@ install(FILES
         cuResampleOperator.h
         cuLinearResampleOperator.h
         cuCGHSOFSolver.h
+        cubicPrefilter3D.cu
+        cubicTex3D.cu
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

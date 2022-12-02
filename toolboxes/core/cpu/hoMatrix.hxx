@@ -508,7 +508,6 @@ bool copyL2U(hoMatrix<T>& A)
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
         size_t R = A.rows();
-        size_t C = A.cols();
 
         size_t row, col;
         for(row=0; row<R; row++) 

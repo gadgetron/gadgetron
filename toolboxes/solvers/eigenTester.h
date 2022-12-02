@@ -30,7 +30,7 @@ public:
 
 
 	  regularization_operators_.push_back(id_operator);
-	  std::cout << "ID operator weight " << beta << std::endl;
+	  GINFO(std::string("ID operator weight " + std::to_string(beta) + "\n").c_str());
 	  ELEMENT_TYPE eig1 = get_dominant_eigenvalue();
 	  regularization_operators_.pop_back();
 	  return eig1+beta;
@@ -45,7 +45,7 @@ public:
    inline bool add_encoding_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op)
    {
      if( !op.get() ){
-       std::cout << "Error: linearSolver::add_matrix_operator : NULL operator provided" << std::endl;
+       GINFO("Error: linearSolver::add_matrix_operator : NULL operator provided\n");
        return false;
      }
 
@@ -60,7 +60,7 @@ public:
    inline bool add_linear_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op)
      {
        if( !op.get() ){
-    	   std::cout << "Error: linearSolver::add_matrix_operator : NULL operator provided"  << std::endl;
+    	   GINFO("Error: linearSolver::add_matrix_operator : NULL operator provided\n");
          return false;
        }
 
@@ -73,11 +73,11 @@ public:
 	  {
 	    // Basic validity checks
 	    if( !in || !out ){
-	      std::cout << "Error: cgSolver::mult_MH_M : invalid input pointer(s)" << std::endl;
+	      GINFO("Error: cgSolver::mult_MH_M : invalid input pointer(s)\n");
 	      return false;
 	    }
 	    if( in->get_number_of_elements() != out->get_number_of_elements() ){
-	    	std::cout << "Error: cgSolver::mult_MH_M : array dimensionality mismatch"<< std::endl;
+	    	GINFO("Error: cgSolver::mult_MH_M : array dimensionality mismatch\n");
 	      return false;
 	    }
 
@@ -112,7 +112,7 @@ public:
 	 }
 
 	  boost::shared_ptr<ARRAY_TYPE> get_dominant_eigenvector(){
-		  std::cout << "Starting dominant eigenvector calculations "<< tolerance << std::endl;
+		  GINFO_STREAM("Starting dominant eigenvector calculations " << tolerance << std::endl);
 		  ELEMENT_TYPE norm = ELEMENT_TYPE(1);
 		  ELEMENT_TYPE norm_old = ELEMENT_TYPE(2);
 
@@ -129,7 +129,7 @@ public:
 		  while (abs(norm-norm_old)/abs(norm)> tolerance){
 			  norm_old=norm;
 			  mult_MH_M(in,out);
-			  std::cout << dot(in,out) << std::endl;
+			  GINFO_STREAM(dot(in,out) << std::endl);
 
 			  norm = nrm2(out);
 
@@ -139,7 +139,7 @@ public:
 			  out = tmp;
 
 			  }
-		  std::cout << "Done" << std::endl;
+		  GINFO("Done\n");
 		  delete in;
 		  return boost::shared_ptr<ARRAY_TYPE>(out);
 		}

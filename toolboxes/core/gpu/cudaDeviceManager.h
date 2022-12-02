@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpucore_export.h"
+
 
 #include <vector>
 #include <cublas_v2.h>
@@ -11,7 +11,7 @@
 
 namespace Gadgetron{
 
-  class EXPORTGPUCORE cudaDeviceManager 
+  class cudaDeviceManager 
   {
   public:
 

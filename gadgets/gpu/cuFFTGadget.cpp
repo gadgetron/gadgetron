@@ -1,25 +1,26 @@
 
 #include "cuFFTGadget.h"
 #include "cuNDFFT.h"
-
+#include "cuFFTPlan.h"
 namespace Gadgetron{
 
-  int cuFFTGadget::process(GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-  	{
-	  hoNDArray<complext<float>> * tmp = (hoNDArray<complext<float>>*) m2->getObjectPtr();
-	  cuNDArray< complext<float> > cu_data(*tmp);
+  void cuFFTGadget::process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) {
 
-	  cu_data.squeeze();
-	  cuNDFFT<float>::instance()->ifft(&cu_data);
-	  cu_data.to_host(tmp);
+      for (auto [header, data, meta] : in){
+          auto * tmp = (hoNDArray<complext<float>>*) &data;
+          cuNDArray< complext<float> > cu_data(*tmp);
 
-    if (this->next()->putq(m1) < 0) {
-      return GADGET_FAIL;
-    }
+          cu_data.squeeze();
+          cuNDFFT<float>::instance()->ifft(&cu_data);
+          cu_data.to_host(tmp);
 
-    return GADGET_OK;
+
+          out.push(header, std::move(data),std::move(meta));
+      }
+
   }
 
-  GADGET_FACTORY_DECLARE(cuFFTGadget)
-}
+GADGETRON_GADGET_EXPORT(cuFFTGadget);
+
+  }
+

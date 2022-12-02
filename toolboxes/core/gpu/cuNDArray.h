@@ -113,13 +113,13 @@ namespace Gadgetron{
     };
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray() : NDArray<T>::NDArray() 
+    cuNDArray<T>::cuNDArray() : Gadgetron::NDArray<T>::NDArray() 
     { 
         cudaGetDevice(&this->device_); 
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const cuNDArray<T> &a) : NDArray<T>::NDArray() 
+    cuNDArray<T>::cuNDArray(const cuNDArray<T> &a) : Gadgetron::NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
         this->data_ = 0;
@@ -143,7 +143,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const cuNDArray<T> *a) : NDArray<T>::NDArray() 
+    cuNDArray<T>::cuNDArray(const cuNDArray<T> *a) : Gadgetron::NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
         this->data_ = 0;
@@ -169,7 +169,7 @@ namespace Gadgetron{
 
 #if __cplusplus > 199711L
     template <typename T>
-    cuNDArray<T>::cuNDArray(cuNDArray<T>&& a) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(cuNDArray<T>&& a) : Gadgetron::NDArray<T>::NDArray()
     {
         device_ = a.device_;
         this->data_ = a.data_;
@@ -180,7 +180,7 @@ namespace Gadgetron{
     }
 #endif
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const hoNDArray<T> &a) : NDArray<T>::NDArray() 
+    cuNDArray<T>::cuNDArray(const hoNDArray<T> &a) : Gadgetron::NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
         a.get_dimensions(this->dimensions_);
@@ -193,7 +193,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray() 
+    cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : Gadgetron::NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
 	a->get_dimensions(this->dimensions_);
@@ -206,63 +206,63 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions, int device_no) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions, int device_no) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions,device_no);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions,data,delete_data_on_destruct);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions, int device_no) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions, int device_no) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions,device_no);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions,data,delete_data_on_destruct);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions.get());
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions.get(),device_no);
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct) : NDArray<T>::NDArray()
+    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
         create(dimensions.get(),data,delete_data_on_destruct);
@@ -472,7 +472,7 @@ namespace Gadgetron{
             return;
         }
 
-        return NDArray<T>::create(dimensions);
+        return Gadgetron::NDArray<T>::create(dimensions);
     }
 
     template <typename T> 
@@ -488,7 +488,7 @@ namespace Gadgetron{
         }
 
         this->device_ = device_no; 
-        NDArray<T>::create(dimensions);
+        Gadgetron::NDArray<T>::create(dimensions);
     }
 
     template <typename T> 
@@ -519,7 +519,7 @@ namespace Gadgetron{
             this->device_ = tmp_device;
         }
 
-        NDArray<T>::create(dimensions, data, delete_data_on_destruct);
+        Gadgetron::NDArray<T>::create(dimensions, data, delete_data_on_destruct);
     }
 
     template <typename T> 
@@ -530,7 +530,7 @@ namespace Gadgetron{
             return;
         }
 
-        return NDArray<T>::create(dimensions);
+        return Gadgetron::NDArray<T>::create(dimensions);
     }
 
     template <typename T> 
@@ -546,7 +546,7 @@ namespace Gadgetron{
         }
 
         this->device_ = device_no; 
-        NDArray<T>::create(dimensions);
+        Gadgetron::NDArray<T>::create(dimensions);
     }
 
     template <typename T> 
@@ -577,7 +577,7 @@ namespace Gadgetron{
             this->device_ = tmp_device;
         }
 
-        NDArray<T>::create(dimensions, data, delete_data_on_destruct);
+        Gadgetron::NDArray<T>::create(dimensions, data, delete_data_on_destruct);
     }
 
     template <typename T> 

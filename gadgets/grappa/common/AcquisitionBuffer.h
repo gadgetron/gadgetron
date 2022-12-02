@@ -35,7 +35,10 @@ namespace Gadgetron::Grappa {
 
         void clear(size_t index);
 
-        bool is_fully_sampled(size_t index) const;
+        bool is_sufficiently_sampled(size_t index) const;
+
+
+        std::array<uint16_t,4> region_of_support(size_t index) const;
 
         void add_pre_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
         void add_post_update_callback(std::function<void(const AnnotatedAcquisition &)> fn);
@@ -54,9 +57,12 @@ namespace Gadgetron::Grappa {
             std::set<uint32_t> sampled_lines;
         };
 
+        std::pair<uint32_t,uint32_t> fully_sampled_region(size_t slice) const;
         buffer create_buffer(const std::vector<size_t> &dimensions);
 
         std::map<size_t, buffer> buffers;
+
+        const int minimum_calibration_region = 8;
 
         std::vector<std::function<void(const AnnotatedAcquisition &)>> pre_update_callbacks;
         std::vector<std::function<void(const AnnotatedAcquisition &)>> post_update_callbacks;

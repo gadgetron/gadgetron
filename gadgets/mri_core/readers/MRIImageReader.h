@@ -13,7 +13,7 @@
 namespace Gadgetron{
 
     /**
-    Default implementation of GadgetMessageReader for Ismrmrd Images with attribues messages
+    Default implementation of GadgetMessageReader for Ismrmrd Images with attributes messages
     */
 class EXPORTGADGETSMRICORE MRIImageReader : public Core::Reader
     {

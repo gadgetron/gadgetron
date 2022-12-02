@@ -21,10 +21,13 @@ build_debug/
 *.pyc
 toolboxes/core/core_defines.h
 prod/
-external/
 test/integration/test_cases.txt
 *.h5
 tags
 test/integration/*.xprot
 test/integration/*.xml
 .atom-build.json
+.vscode/
+dep-build/
+stats.csv
+junit.xml

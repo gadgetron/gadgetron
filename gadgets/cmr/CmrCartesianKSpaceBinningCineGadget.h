@@ -21,7 +21,7 @@
 #pragma once
 
 #include "gadgetron_cmr_export.h"
-#include "GenericReconGadget.h"
+#include "generic_recon_gadgets/GenericReconGadget.h"
 #include "cmr_kspace_binning.h"
 
 namespace Gadgetron {
@@ -42,7 +42,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(number_of_output_phases, int, "Number of output phases after binning", 30);
 
         GADGET_PROPERTY(send_out_raw, bool, "Whether to set out raw images", false);
-        GADGET_PROPERTY(send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple seires", false);
+        GADGET_PROPERTY(send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple series", false);
 
         /// parameters for raw image reconstruction
         GADGET_PROPERTY(arrhythmia_rejector_factor, float, "If a heart beat RR is not in the range of [ (1-arrhythmiaRejectorFactor)*meanRR (1+arrhythmiaRejectorFactor)*meanRR], it will be rejected", 0.25);
@@ -127,7 +127,7 @@ namespace Gadgetron {
         hoNDArray< float > acq_time_binning_;
         hoNDArray< float > cpt_time_binning_;
 
-        // if ture, every slice will be sent out as a separate series
+        // if true, every slice will be sent out as separate series
         bool send_out_multiple_series_by_slice_;
 
         // --------------------------------------------------

@@ -45,7 +45,6 @@ protected:
         #pragma omp parallel default(shared)
         {
             int tid = omp_get_thread_num();
-            // std::cout << tid << std::endl;
             DWORD_PTR mask = (1 << tid);
             SetThreadAffinityMask( GetCurrentThread(), mask );
         }
@@ -69,7 +68,7 @@ typedef Types<std::complex<float>, std::complex<double>, float_complext, double_
 typedef Types<std::complex<float>, std::complex<double> > stdCplxImplementations;
 typedef Types<float_complext, double_complext> cplxtImplementations;
 
-TYPED_TEST_CASE(gt_plplot_Test, cpfloatImplementations);
+TYPED_TEST_SUITE(gt_plplot_Test, cpfloatImplementations);
 
 TYPED_TEST(gt_plplot_Test, plplot_noise_covariance_test)
 {
