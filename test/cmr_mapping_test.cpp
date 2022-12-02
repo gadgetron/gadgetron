@@ -49,7 +49,7 @@ class cmr_mapping_test : public ::testing::Test
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(cmr_mapping_test, realImplementations);
+TYPED_TEST_SUITE(cmr_mapping_test, realImplementations);
 
 TYPED_TEST(cmr_mapping_test, T2Mapping)
 {
@@ -63,7 +63,9 @@ TYPED_TEST(cmr_mapping_test, T2Mapping)
 
     hoNDArray< T > data;
     this->gt_io_.import_array(data, this->gt_ut_data_folder_ + "/T2Mapping/MultiEcho_Image_Mag_REP0_SLC0");
-    data.print(std::cout);
+    std::stringstream data_stream;
+    data.print(data_stream);
+    GINFO(data_stream.str().c_str());
 
     T v = Gadgetron::nrm2(data); GDEBUG_STREAM("data = " << v);
 
@@ -105,7 +107,7 @@ TYPED_TEST(cmr_mapping_test, T2Mapping)
     this->gt_io_.export_array(t2mapper.map_, this->gt_ut_res_folder_ + "/T2Mapping/t2_map");
     this->gt_io_.export_array(t2mapper.sd_map_, this->gt_ut_res_folder_ + "/T2Mapping/t2_sd_map");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;

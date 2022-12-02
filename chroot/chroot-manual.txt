@@ -15,7 +15,7 @@ sudo apt-get install build-essential git-core cmake gcc-multilib libace-dev liba
 2. In order to be able to install nvidia driver (http://stackoverflow.com/questions/25463952/drm-ko-missing-for-cuda-6-5-ubuntu-14-04-aws-ec2-gpu-instance-g2-2xlarge)
 sudo apt-get install linux-image-extra-virtual
 
-3. Follow the instructions from: http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html#ubuntu-installation or apply steps 1-11 from bellow:
+3. Follow the instructions from: http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html#ubuntu-installation or apply steps 1-11 from below:
 
     1. cd && wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_6.5-14_amd64.deb
     2. sudo dpkg -i cuda-repo-ubuntu1404_6.5-14_amd64.deb
@@ -63,13 +63,13 @@ make; sudo make install
 
 *** Extras ***
 
-Usefull links (but not 100% acurate):
+Useful links (but not 100% accurate):
 http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html#ubuntu-installation
 https://gist.github.com/zcshiner/4b32980792d367222304
 http://www.r-tutor.com/gpu-computing/cuda-installation/cuda6.5-ubuntu
 http://askubuntu.com/questions/451672/installing-and-testing-cuda-in-ubuntu-14-04
 
-MH Usefull links: 
+MH Useful links:
 https://sourceforge.net/p/gadgetron/discussion/general/thread/d0ee5b27/
 https://sourceforge.net/p/gadgetron/home/Linux%20Installation/
 
@@ -146,7 +146,7 @@ fi
 
 *** Extras ***
 
-Usefull links:
+Useful links:
 https://help.ubuntu.com/community/BasicChroot
 http://ocsovszki-dorian.blogspot.com/2014/06/building-chroot-environment-ubuntu-1404.html
 

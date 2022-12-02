@@ -76,7 +76,10 @@ namespace Gadgetron::Server::Connection::Handlers {
             throw std::runtime_error("Unsupported value in reserved bytes.");
         }
 
-        channel.push(Response(corr_id, answers.at(query)()));
+        if (answers.count(query))
+            channel.push(Response(corr_id, answers.at(query)()));
+        else
+            channel.push(Response(corr_id,"Unknown query"));
     }
 
 

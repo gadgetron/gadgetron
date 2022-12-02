@@ -1,37 +1,11 @@
-GADGETRON IMAGE RECONSTRUCTION FRAMEWORK
-=========================================
+# Gadgetron Image Reconstruction Framework
 
-Detailed installation instructions and manual is available at:
+The Gadgetron is an open source project for medical image reconstruction. If you find the Gadgetron useful in your research, please cite this paper:
 
-https://github.com/gadgetron/gadgetron/wiki
+Hansen MS, Sørensen TS. Gadgetron: An Open Source Framework for Medical Image Reconstruction. Magn Reson Med. 2013 Jun;69(6):1768-76.
 
-General Building Instructions (on Unix platforms) to install Gadgetron to system path
--------------------------------------------------
+Documentation for the project is available at [https://gadgetron.readthedocs.io](https://gadgetron.readthedocs.io)
 
-```
-mkdir build
-cd build
-cmake ../
-make
-sudo make install
-```
+## License
 
-Please check manual for detailed instructions for your platform.
-
-To install Gadgetron in your home folder
--------------------------------------------------
-Please follow the instructions at [Set up Gadgetron in your home folder](https://github.com/gadgetron/gadgetron/wiki/Visual-debug-Gadgetron-in-Ubuntu-using-Eclipse)
-
-After compiling Gadgetron, it is a good idea to run integration test
--------------------------------------------------
-Please follow instructionst at [Integration test in Gadgetron](https://github.com/gadgetron/gadgetron/wiki/Integration-test-in-Gadgetron)
-
-To deploy Gadgetron, it is convenient to use docker
--------------------------------------------------
-Please follow instructionst at [Deploy Gadgetron via Docker](https://github.com/gadgetron/gadgetron/wiki/Using-Docker)
-
-Gadgetron does support cluster/cloud deployment
--------------------------------------------------
-If you have multiple computers, they can be assembled as a cluster to run distributed Gadgetron. Please check instructions [Set up Gadgetron Cluster in your LAN](https://github.com/gadgetron/gadgetron/wiki/How-to-set-up-Gadgetron-cloud-in-the-LAN-environment)
-
-Please read LICENSE file for licensing details.
+The Gadgetron is available under a modified MIT license. Please read [LICENSE](LICENSE) file for licensing details.

@@ -35,7 +35,7 @@ namespace Gadgetron{
   ( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, cuNDArray<float> *continuation )
   {
     GadgetContainerMessage< hoNDArray<float> > *m2 = new GadgetContainerMessage< hoNDArray<float> >();      
-    m2->getObjectPtr()->create(continuation->get_dimensions());
+    m2->getObjectPtr()->create(continuation->dimensions());
     
     if( cudaMemcpy( m2->getObjectPtr()->get_data_ptr(), continuation->get_data_ptr(), 
 		    continuation->get_number_of_elements()*sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) {

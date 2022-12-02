@@ -1,7 +1,7 @@
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-	add_subdirectory(doxygen)
-	  find_package(Sphinx REQUIRED)
+    add_subdirectory(doxygen)
+    find_package(Sphinx REQUIRED)
 
     set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
     set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)

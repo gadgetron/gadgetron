@@ -17,20 +17,25 @@ template<class T> cuNDFFT<T>* cuNDFFT<T>::instance()
 	return __instance;
   				}
 
-template<class T> cuNDFFT<T>* cuNDFFT<T>::__instance = NULL;
+template<class T> cuNDFFT<T>* cuNDFFT<T>::__instance = nullptr;
+namespace {
+template <class T> cufftType_t get_transform_type();
+template <> cufftType_t get_transform_type<float>() { return CUFFT_C2C; }
+template <> cufftType_t get_transform_type<double>() { return CUFFT_Z2Z; }
 
-template<class T> cufftType_t get_transform_type();
-template<> cufftType_t get_transform_type<float>() { return CUFFT_C2C; }
-template<> cufftType_t get_transform_type<double>() { return CUFFT_Z2Z; }
+template <class T> cufftResult_t cuNDA_FFT_execute(cufftHandle plan, cuNDArray<complext<T>>* in_out, int direction);
 
-template<class T> cufftResult_t cuNDA_FFT_execute( cufftHandle plan, cuNDArray< complext<T> > *in_out, int direction );
+template <> cufftResult_t cuNDA_FFT_execute<float>(cufftHandle plan, cuNDArray<float_complext>* in_out, int direction) {
+    return cufftExecC2C(plan, (cuFloatComplex*)in_out->get_data_ptr(), (cuFloatComplex*)in_out->get_data_ptr(),
+                        direction);
+}
 
-template<> cufftResult_t cuNDA_FFT_execute<float>( cufftHandle plan, cuNDArray<float_complext> *in_out, int direction ){
-	return cufftExecC2C(plan, (cuFloatComplex*)in_out->get_data_ptr(), (cuFloatComplex*)in_out->get_data_ptr(), direction); }
-
-template<> cufftResult_t cuNDA_FFT_execute<double>( cufftHandle plan, cuNDArray<double_complext> *in_out, int direction ){
-	return cufftExecZ2Z(plan, (cuDoubleComplex*)in_out->get_data_ptr(), (cuDoubleComplex*)in_out->get_data_ptr(), direction); }
-
+template <>
+cufftResult_t cuNDA_FFT_execute<double>(cufftHandle plan, cuNDArray<double_complext>* in_out, int direction) {
+    return cufftExecZ2Z(plan, (cuDoubleComplex*)in_out->get_data_ptr(), (cuDoubleComplex*)in_out->get_data_ptr(),
+                        direction);
+}
+}
 template<class T> void
 cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_to_transform, int direction, bool do_scale )
 {
@@ -187,9 +192,9 @@ cuNDFFT<T>::fft2_int(cuNDArray<complext<T> > *input, int direction, bool do_scal
 	cufftResult ftres;
 
 	std::vector<int> int_dims {int(input->get_size(1)),int(input->get_size(0))};
-	int elements_in_ft = input->get_size(0)*input->get_size(1);
-	int batches = input->get_number_of_elements()/elements_in_ft;
-	ftres = cufftPlanMany(&plan,2,&int_dims[0], &int_dims[0], 1, elements_in_ft, &int_dims[0], 1, elements_in_ft, get_transform_type<T>(), batches);
+	size_t elements_in_ft = input->get_size(0)*input->get_size(1);
+	size_t batches = input->get_number_of_elements()/elements_in_ft;
+	ftres = cufftPlanMany(&plan,2,int_dims.data(), int_dims.data(), 1, elements_in_ft, int_dims.data(), 1, elements_in_ft, get_transform_type<T>(), batches);
 	if (ftres != CUFFT_SUCCESS) {
 		std::stringstream ss;
 		ss << "cuNDFFT FFT plan failed: " << ftres;

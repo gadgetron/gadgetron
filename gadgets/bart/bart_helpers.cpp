@@ -112,7 +112,7 @@ std::string internal::get_output_filename(const std::string& command_line)
 			    || second == '1'
 			    || second == 'P'
 			    || second == 'a')) {
-			 std::cout << "ecalib: flag\n";
+			 GINFO("ecalib: flag\n");
 			 return *(it2 + 2);
 		    }
 		    else {
@@ -150,7 +150,7 @@ std::string internal::get_output_filename(const std::string& command_line)
 	       else if (num_args == 6 && arg1[0] != '-') {
 		    return *(end - 2);		 
 	       }
-	       // Minmum arguments to ecaltwo
+	       // Minimum arguments to ecaltwo
 	       // 6      x y z <input> <sensitivities> [<ev_maps>]
 	       // 6 -S   x y z <input> <sensitivities>
 	       // 7 -m 3 x y z <input> <sensitivities>
@@ -179,7 +179,7 @@ std::string internal::get_output_filename(const std::string& command_line)
 	       else if (num_args == 3 && arg1[0] != '-') {
 		    return *(end - 2);
 	       }
-	       // Minmum arguments to nlinv
+	       // Minimum arguments to nlinv
 	       // 2       kspace output
 	       // 3       kspace output sens
 	       // 3  -S   kspace output

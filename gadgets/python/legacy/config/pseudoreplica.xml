@@ -78,7 +78,7 @@
     </gadget>
 	<gadget>
 		<name>PseudoReplicatorGadget</name>
-		<dll>gadgetron_mricore</dll>
+		<dll>gadgetron_debugging</dll>
 		<classname>PseudoReplicatorGadget</classname>
 		<property>
 			<name>repetitions</name>

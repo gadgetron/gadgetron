@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10...3.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.17...3.21 FATAL_ERROR)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -37,7 +37,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message("CXX COMPILER VERSION: ${CMAKE_CXX_COMPILER_ID} : ${CMAKE_CXX_COMPILER_VERSION}")
         message(FATAL_ERROR "Gadgetron requires GCC version >= 6.0")
     endif ()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)
         message(FATAL_ERROR "Gadgetron requires Clang version >= 3.5")
     endif ()
@@ -51,8 +51,8 @@ endif ()
 
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 4)
-set(GADGETRON_VERSION_MINOR 1)
-set(GADGETRON_VERSION_PATCH 1)
+set(GADGETRON_VERSION_MINOR 4)
+set(GADGETRON_VERSION_PATCH 2)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
 find_package(Git)
@@ -86,6 +86,7 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/gadgetron_sha1.h.in" ${PROJECT_BINARY_
 include_directories(${PROJECT_BINARY_DIR}/include)
 install(FILES ${PROJECT_BINARY_DIR}/include/gadgetron_sha1.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
+
 #Set the build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -105,9 +106,14 @@ endif ()
 
 #set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_INSTALL_RPATH ".:${CMAKE_INSTALL_PREFIX}/lib")
-
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
+option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
+
+if (DISABLE_FORK)
+    add_definitions(-DGADGETRON_DISABLE_FORK)
+endif()
 
 # build options for OpenMP support
 find_package(OpenMP)
@@ -125,16 +131,18 @@ else ()
     message("OpenMP multithreading not supported")
 endif ()
 
+set(CMAKE_CXX_STANDARD 17)
 if (WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_definitions(-DWIN32 -D_WIN32 -D_WINDOWS -DWIN -D_AMD64_)
     add_definitions(-Zc:__cplusplus)
+    add_definitions(-DNOMINMAX)
     #add_definitions(-DUNICODE -D_UNICODE)
     add_definitions("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients/
     if (HAS_64_BIT)
         add_definitions(-DWIN64 -D_WIN64)
     endif ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /std:c++17 /openmp:experimental /DNOGDI")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj /openmp:experimental /permissive- /FS /DNOGDI /we4667")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W1")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w1")
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
@@ -149,13 +157,13 @@ if (WIN32)
 else ()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     include(CheckCXXCompilerFlag)
-    set(CMAKE_CXX_STANDARD 17)
     if (APPLE)
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-array-bounds -Wno-switch -Wno-dynamic-class-memaccess -Wno-undefined-var-template -Wno-parentheses")
         endif ()
     endif ()
 
+    add_compile_options(-Werror)
     check_cxx_compiler_flag(-Werror=return-type COMPILER_SUPPORTS_WRETURNTYPE)
     if (COMPILER_SUPPORTS_WRETURNTYPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
@@ -168,6 +176,11 @@ else ()
     if (COMPILER_SUPPORT_WNON_VIRTUAL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=non-virtual-dtor")
     endif ()
+
+    check_cxx_compiler_flag(-Werror=format-overflow COMPILER_SUPPORT_WOVERFLOW)
+    if (COMPILER_SUPPORT_WOVERFLOW)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-overflow")
+    endif()
 endif ()
 
 # whether to suppress compilation warnings
@@ -180,21 +193,23 @@ if (BUILD_SUPPRESS_WARNINGS)
     endif ()
 endif ()
 
+
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 # necessary for Windows and RHEL <=6 systems
 
 if(WIN32)
-add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
+    add_definitions( -DHAVE_SNPRINTF) #Python decides to overwrite snprintf if this is not defined, because ofcourse it does.
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-find_package(Boost 1.65.0 COMPONENTS system date_time chrono program_options filesystem timer exception REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
-find_package(Boost 1.65.0 COMPONENTS system program_options filesystem timer REQUIRED )
+    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
 endif()
-
+add_definitions("-DBOOST_BIND_GLOBAL_PLACEHOLDERS") # To suppress messages in later versions of boost, in version 1.76.0 there are internal conflicts in boost
+add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS") # To suppress messages in later versions of boost, in version 1.76.0 there are internal conflicts in boost
 if (NOT DEFINED Boost_VERSION_STRING)
     set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif()
@@ -203,61 +218,70 @@ endif()
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
-find_package(CUDA_advanced)
+    find_package(CUDA_advanced)
 endif()
+
 if (CUDA_FOUND AND USE_CUDA)
 
-if (NOT CUDA_cublas_device_LIBRARY)
-list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES CUDA_cublas_device_LIBRARY-NOTFOUND)
+    if (NOT CUDA_cublas_device_LIBRARY)
+        list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES CUDA_cublas_device_LIBRARY-NOTFOUND)
+    endif()
+
+    add_definitions(-DUSE_CUDA)
+    set( GADGETRON_CUDA_FOUND_BOOL 1 )
+    include_directories( ${CUDA_INCLUDE_DIRS} )
+    set(CUDA_PROPAGATE_HOST_FLAGS ON)
+    set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --std=c++17")
+    set(CMAKE_CUDA_STANDARD 17)
+    #  endif ()
+    #set(CUDA_VERBOSE_BUILD ON)
+
+
+    # Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
+    # Support compute model 3.0 from Cuda 4.2 and up
+    # Support compute model 3.5 from Cuda 5 and up
+
+    option(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" OFF)
+    if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
+        message("Compiling CUDA components to support all compute model 3.5, 5.0, 5.2, 6.0, 6.1, 7.0")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_50,code=sm_50")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_52,code=sm_52")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_60,code=sm_60")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_61,code=sm_61")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_70,code=sm_70")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_75,code=sm_75")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_80,code=sm_80")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_86,code=sm_86")
+    endif ()
+
+    message("Compiling with ${CUDA_NVCC_FLAGS}")
+else ()
+    message("CUDA not found. CUDA components will not be compiled.")
+    set( GADGETRON_CUDA_FOUND_BOOL 0 )
+    set( CUDA_NVCC_FLAGS "NA")
+endif ()
+
+option(REQUIRE_SIGNED_CONFIG "Force Gadgetron to accept only signed config files." Off)
+if (REQUIRE_SIGNED_CONFIG)
+    message("Compile with signed config; GTBabylon is needed")
+    add_definitions(-DUSE_GTBABYLON)
+    find_package(GTBabylon REQUIRED)
 endif()
 
-add_definitions(-DUSE_CUDA)
-set( GADGETRON_CUDA_FOUND_BOOL 1 )
-include_directories( ${CUDA_INCLUDE_DIRS} )
-set(CUDA_PROPAGATE_HOST_FLAGS ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "--std=c++17" )
-set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-set(CMAKE_CUDA_STANDARD 17)
-#  endif ()
-#set(CUDA_VERBOSE_BUILD ON)
-
-
-# Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
-# Support compute model 3.0 from Cuda 4.2 and up
-# Support compute model 3.5 from Cuda 5 and up
-
-option(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" OFF)
-if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
-message("Compiling CUDA components to support all compute model 3.5, 5.0, 5.2, 6.0, 6.1, 7.0")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_50,code=sm_50")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_52,code=sm_52")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_60,code=sm_60")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_61,code=sm_61")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_70,code=sm_70")
-endif ()
-
-message("Compiling with ${CUDA_NVCC_FLAGS}")
-else ()
-message("CUDA not found. CUDA components will not be compiled.")
-set( GADGETRON_CUDA_FOUND_BOOL 0 )
-set( CUDA_NVCC_FLAGS "NA")
-endif ()
-
-
-find_package(Armadillo REQUIRED )
+find_package(Armadillo REQUIRED)
 add_library(armadillo INTERFACE)
 set_property(TARGET armadillo PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ARMADILLO_INCLUDE_DIR})
 add_definitions(-DARMA_DONT_USE_WRAPPER -DARMA_USE_CXX11 -DARMA_64BIT_WORD)
 install(TARGETS armadillo EXPORT gadgetron-export)
 
+find_package(CURL REQUIRED)
 find_package(PugiXML REQUIRED)
-
 find_package(ISMRMRD CONFIG REQUIRED)
 
-
 if (CUDA_FOUND AND USE_CUDA)
-# bart needs cuda
+    # bart needs cuda
     find_package(BART CONFIG QUIET)
 endif()
 
@@ -271,25 +295,23 @@ set(GADGETRON_BUILD_RPATH "")
 
 option(USE_MKL Off)
 if (USE_MKL)
+    if (LINUX)
+        list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/mkl/latest")
+    endif()
     find_package(MKL REQUIRED)
-    add_library(BLAS INTERFACE)
-    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MKL_INCLUDE_DIR})
-    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_DIRECTORIES ${MKL_LIB_DIR})
-    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+    link_directories(GTBLAS BEFORE INTERFACE "${MKL_ROOT}/lib/intel64/")
+    add_library(GTBLAS INTERFACE)
+    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES ${MKL_LIBRARIES})
+    message("MKL LIB DIR ${MKL_ROOT}/lib/intel64")
 
-
-    string(REPLACE ";" ":" MKL_COMPILER_LIB_DIR_NO_SEMICOLON "${MKL_COMPILER_LIB_DIR}")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${MKL_LIB_DIR}:${MKL_COMPILER_LIB_DIR_NO_SEMICOLON}")
-    add_definitions(-DUSE_MKL)
-    set(GADGETRON_BUILD_RPATH "${MKL_LIB_DIR};${MKL_COMPILER_LIB_DIR}")
+    add_definitions(-DUSE_MKL -DARMA_BLAS_LONG_LONG -DARMA_USE_BLAS -DARMA_USE_LAPACK)
 else ()
     find_package(CBLAS REQUIRED)
     find_package(LAPACK REQUIRED)
     find_package(LAPACKE REQUIRED)
-
-    add_library(BLAS INTERFACE)
-    set_property(TARGET BLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CBLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR} ${LAPACKE_INCLUDE_DIR})
-    set_property(TARGET BLAS PROPERTY INTERFACE_LINK_LIBRARIES ${CBLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES})
+    add_library(GTBLAS INTERFACE)
+    set_property(TARGET GTBLAS PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CBLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR} ${LAPACKE_INCLUDE_DIR})
+    set_property(TARGET GTBLAS PROPERTY INTERFACE_LINK_LIBRARIES ${CBLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES})
 
     find_package(PkgConfig)
     pkg_check_modules(PC_lapacke lapacke)
@@ -301,8 +323,7 @@ else ()
     endif()
 endif ()
 
-install(TARGETS BLAS EXPORT gadgetron-export)
-
+install(TARGETS GTBLAS EXPORT gadgetron-export)
 
 if(EXISTS $ENV{TORCH_HOME})
     find_package(Torch)
@@ -319,36 +340,28 @@ endif()
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
+    find_package(Python3 COMPONENTS Development NumPy REQUIRED)
+    find_package(Boost COMPONENTS python3${Python3_VERSION_MINOR} REQUIRED)
 
-find_package(PythonLibs 3  REQUIRED)
+    message("Found numpy : ${Python3_NumPy_INCLUDE_DIRS} ${Python3_NumPy_LIBRARIES} ${Python3_INCLUDE_DIRS} ${Python3_LIBRARIES}")
 
-find_package(NumPy REQUIRED)
-message("Found numpy : ${NUMPY_INCLUDE_DIRS} ${NUMPY_LIBRARIES} ${PYTHON_INCLUDE_DIRS} ${PYTHON_LIBRARIES}")
+    if (Python3_VERSION_MINOR LESS 7)
+        message(FATAL_ERROR "Gadgetron Python support requires Python 3.7 or newer. Found: ${Python3_VERSION}")
+    endif()
 
+    message("Boost Version: ${Boost_VERSION_STRING} (with Python ${Python3_VERSION})")
+    message("Secret: ${Boost_PYTHON3_TARGET}")
 
-add_library(python INTERFACE)
-set_property(TARGET python PROPERTY
-INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-message("Boost_VERSION ${Boost_VERSION_STRING}")
-if (Boost_VERSION_STRING VERSION_LESS 1.67.0)
-    find_package(Boost 1.65.0 COMPONENTS python3 REQUIRED)
-    set(Boost_PYTHON3_TARGET Boost::python3)
-    else()
-    string(REGEX MATCH "^3\\.([0-9]+)\\.[0-9]+" PYTHON_MINOR_VERSION ${PYTHONLIBS_VERSION_STRING} )
-    set(PYTHON_MINOR_VERSION ${CMAKE_MATCH_1})
-    find_package(Boost 1.65.0 COMPONENTS "python3${PYTHON_MINOR_VERSION}" REQUIRED)
-    set(Boost_PYTHON3_FOUND TRUE)
-    set(Boost_PYTHON3_TARGET Boost::python3${PYTHON_MINOR_VERSION})
-endif()
-set_property(TARGET python PROPERTY
-INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-target_link_libraries(python INTERFACE ${PYTHON_LIBRARIES} ${NUMPY_LIBRARIES} ${Boost_PYTHON3_TARGET})
-install(TARGETS python EXPORT gadgetron-export)
+    add_library(python INTERFACE)
+    set_property(TARGET python PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+    target_link_libraries(python INTERFACE Python3::Python Python3::NumPy Boost::python3${Python3_VERSION_MINOR})
+
+    install(TARGETS python EXPORT gadgetron-export)
 endif()
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
-message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
+    message("For Windows users in particular, for ease of installation we do not recommend installing these libraries.")
 endif()
 
 find_package(OpenGL)
@@ -357,6 +370,31 @@ find_package(GLUT)
 find_package(Qt4 4.6)
 find_package(PLplot)
 
+option(BUILD_TESTING "Enable test building" On)
+if (BUILD_TESTING)
+    enable_testing()
+    find_package(GTest)
+    if (NOT GTEST_FOUND)
+        find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
+        find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
+        if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
+            message("GTest src package found. Compiling as part of Gadgetron.")
+            add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
+            include_directories(${GTEST_INCLUDE_DIRS})
+            set(GTEST_FOUND 1)
+            set(GTEST_LIBRARIES GTest::gtest GTest::gtest_main)
+        else()
+            message(FATAL_ERROR "GTest required for building tests")
+        endif ()
+
+    endif ()
+    MESSAGE("GTEST FOUND: ${GTEST_FOUND}")
+    add_subdirectory(test)
+else()
+    MESSAGE("Testing not being built")
+endif()
+
+
 add_subdirectory(core)
 add_subdirectory(toolboxes)
 add_subdirectory(gadgets)
@@ -364,31 +402,11 @@ add_subdirectory(apps)
 
 option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
 if (BUILD_WITH_GPERFTOOLS_PROFILER)
-message("Adding gpertools to build.")
-find_package(Gperftools REQUIRED)
+    message("Adding gpertools to build.")
+    find_package(Gperftools REQUIRED)
 endif()
-option(BUILD_TESTING ON)
-if (BUILD_TESTING)
-enable_testing()
-find_package(GTest)
-if (NOT GTEST_FOUND)
-    find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
-    find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
-    if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
-        message("GTest src package found. Compiling as part of Gadgetron.")
-        add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
-        include_directories(${GTEST_INCLUDE_DIRS})
-        set(GTEST_FOUND 1)
-        set(GTEST_LIBRARIES gtest gtest_main)
-    else()
-        message(FATAL_ERROR "GTest required for building tests")
-    endif ()
 
-endif ()
-MESSAGE("GTEST FOUND: ${GTEST_FOUND}")
-add_subdirectory(test)
-endif()
-add_subdirectory(cmake)
+
 add_subdirectory(chroot)
 
 option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)
@@ -398,17 +416,17 @@ endif()
 
 # install dependencies for WIN32
 if (WIN32)
-if (GADGETRON_INSTALL_DEPENDENCIES)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
-endif ()
+    if (GADGETRON_INSTALL_DEPENDENCIES)
+        include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
+    endif ()
 endif ()
 
 if (UNIX)
-if (NOT APPLE)
-if (GADGETRON_INSTALL_DEPENDENCIES)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
-endif ()
-endif ()
+    if (NOT APPLE)
+        if (GADGETRON_INSTALL_DEPENDENCIES)
+            include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
+        endif ()
+    endif ()
 endif ()
 
 #  ---   Main Library  (end) ----
@@ -418,36 +436,33 @@ install(EXPORT gadgetron-export
         NAMESPACE
         Gadgetron::
         DESTINATION
-            ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
+        ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
 
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-        ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
-        PATH_VARS GADGETRON_INSTALL_PYTHON_MODULE_PATH GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH
-)
+    ${CMAKE_SOURCE_DIR}/cmake/gadgetron-config.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
+    PATH_VARS GADGETRON_INSTALL_PYTHON_MODULE_PATH GADGETRON_INSTALL_CONFIG_PATH GADGETRON_INSTALL_SCHEMA_PATH)
 
 write_basic_package_version_file(
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
-        VERSION ${GADGETRON_VERSION_STRING}
-        COMPATIBILITY AnyNewerVersion
-)
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
+    VERSION ${GADGETRON_VERSION_STRING}
+    COMPATIBILITY AnyNewerVersion)
 
 install(
-        FILES
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
-        ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron
-)
+    FILES
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config.cmake
+    ${CMAKE_BINARY_DIR}/cmake/gadgetron-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/gadgetron)
 
 # Create package
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
 if(CPACK_GENERATOR)
-message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
-include(CPack)
+    message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+    configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+    set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+    include(CPack)
 endif()

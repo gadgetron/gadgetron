@@ -12,7 +12,6 @@ set(header_files ../NDArray.h
                 hoNDArray.hxx
                 hoNDArray_converter.h
 				        hoNDArray_iterators.h
-                hoNDObjectArray.h
                 hoNDArray_utils.h
                 hoNDArray_fileio.h
                 ho2DArray.h
@@ -75,6 +74,8 @@ target_link_libraries(
   gadgetron_toolbox_log
   ISMRMRD::ISMRMRD
 	Boost::boost
+    Boost::system
+    Boost::filesystem
   )
 
 install(TARGETS gadgetron_toolbox_cpucore

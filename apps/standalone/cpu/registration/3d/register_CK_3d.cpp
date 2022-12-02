@@ -34,11 +34,11 @@ int main(int argc, char** argv)
   
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running registration with the following parameters: " << endl;
+    GINFO_STREAM(" Running registration with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     read_nd_array<_real>((char*)parms.get_parameter('m')->get_string_value());
   
   if( !fixed_image.get() || !moving_image.get() ){
-    cout << endl << "One of the input images is not found. Quitting!\n" << endl;
+    GINFO_STREAM(endl << "One of the input images is not found. Quitting!\n" << endl);
     return 1;
   }
   
@@ -62,12 +62,12 @@ int main(int argc, char** argv)
   size_t num_moving_dims = moving_image->get_number_of_dimensions();
 
   if( !(num_fixed_dims == 3 || num_fixed_dims == 4)  ){
-    cout << endl << "The fixed image is not three- or four-dimensional. Quitting!\n" << endl;
+    GINFO_STREAM(endl << "The fixed image is not three- or four-dimensional. Quitting!\n" << endl);
     return 1;
   }
   
   if( !(num_moving_dims == 3 || num_moving_dims == 4)  ){
-    cout << endl << "The moving image is not three- or four-dimensional. Quitting!\n" << endl;
+    GINFO_STREAM(endl << "The moving image is not three- or four-dimensional. Quitting!\n" << endl);
     return 1;
   }
 
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_real> > result = CK.solve( fixed_image.get(), moving_image.get() );
 
   if( !result.get() ){
-    cout << endl << "Registration solver failed. Quitting!\n" << endl;
+    GINFO_STREAM(endl << "Registration solver failed. Quitting!\n" << endl);
     return 1;
   }
   

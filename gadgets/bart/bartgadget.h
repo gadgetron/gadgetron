@@ -15,7 +15,7 @@
 #ifndef BART_GADGET_H
 #define BART_GADGET_H
 
-#include "GenericReconGadget.h"
+#include "generic_recon_gadgets/GenericReconGadget.h"
 #include "gadgetron_mricore_export.h"
 #include "mri_core_data.h"
 

@@ -60,7 +60,7 @@ namespace Gadgetron
 
       void add_acquisition(Core::Acquisition acq) {
           auto& head  = std::get<ISMRMRD::AcquisitionHeader>(acq);
-          auto espace = head.encoding_space_ref;
+          auto espace = size_t{head.encoding_space_ref};
 
           if (ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(head.flags)
               || ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(head.flags)) {

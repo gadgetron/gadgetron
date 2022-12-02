@@ -63,8 +63,10 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
 
 template<class REAL, unsigned int D> void
 cuNonCartesianSenseOperator<REAL,D>::setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W )
-{  
-  plan_ = NFFT<cuNDArray,REAL,D>::make_plan( matrix_size, matrix_size_os, W,convolutionType );
+{
+    if (plan_) return plan_->reconfigure(matrix_size,matrix_size_os,W);
+    plan_ = NFFT<cuNDArray,REAL,D>::make_plan( matrix_size, matrix_size_os, W,convolutionType );
+    is_preprocessed_ = false;
 }
 
 template<class REAL, unsigned int D> void
@@ -75,7 +77,7 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
   }
   
   boost::shared_ptr< std::vector<size_t> > domain_dims = this->get_domain_dimensions();
-  if( domain_dims.get() == 0x0 || domain_dims->size() == 0 ){
+  if( domain_dims.get() == 0x0 || domain_dims->empty() ){
     throw std::runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set");
   }
   plan_->preprocess( trajectory, NFFT_prep_mode::ALL );

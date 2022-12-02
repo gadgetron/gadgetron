@@ -39,12 +39,12 @@ protected:
 
 		virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims, REAL normalization_factor = REAL(1))
 		{
-			d_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(reg_op->get_codomain_dimensions()));
-			b_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(reg_op->get_codomain_dimensions()));
+			d_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*reg_op->get_codomain_dimensions()));
+			b_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*reg_op->get_codomain_dimensions()));
 			clear(d_k.get());
 			clear(b_k.get());
 			if(prior.get()){
-				p_M = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(reg_op->get_codomain_dimensions()));
+				p_M = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*reg_op->get_codomain_dimensions()));
 				reg_op->mult_M(prior.get(),p_M.get());
 				*p_M *= normalization_factor;
 			}
@@ -153,7 +153,7 @@ protected:
 		virtual void update_encoding_space(ARRAY_TYPE_ELEMENT* encoding_space)
 		{
 			for (int i=0; i < reg_ops.size(); i++){
-				ARRAY_TYPE_ELEMENT tmp(codom_dims,encoding_space->get_data_ptr()+op_cont->get_offset(i));
+				ARRAY_TYPE_ELEMENT tmp(*codom_dims,encoding_space->get_data_ptr()+op_cont->get_offset(i));
 				tmp = *d_ks[i];
 				tmp -= *b_ks[i];
 				if (this->prior.get())
@@ -169,12 +169,12 @@ protected:
 			if (this->prior.get())
 				p_Ms = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
 			for (int i=0; i<reg_ops.size(); i++){
-				d_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(codom_dims));
+				d_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*codom_dims));
 				clear(d_ks[i].get());
-				b_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(codom_dims));
+				b_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*codom_dims));
 				clear(b_ks[i].get());
 				if (this->prior.get()){
-					p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(codom_dims));
+					p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*codom_dims));
 					reg_ops[i]->mult_M(this->prior.get(),p_Ms[i].get());
 					*p_Ms[i] *= normalization_factor;
 				}
@@ -190,7 +190,7 @@ protected:
 
 		virtual void update_dk(ARRAY_TYPE_ELEMENT* u_k)
 		{
-			ARRAY_TYPE_REAL s_k(codom_dims);
+			ARRAY_TYPE_REAL s_k(*codom_dims);
 			ARRAY_TYPE_ELEMENT *tmp = new ARRAY_TYPE_ELEMENT[reg_ops.size()];
 			for (int i=0; i<reg_ops.size(); i++) {
 				tmp[i] = *b_ks[i];
@@ -208,7 +208,7 @@ protected:
 
 		virtual void update_dk_bk(ARRAY_TYPE_ELEMENT* u_k)
 		{
-			ARRAY_TYPE_REAL s_k(codom_dims);
+			ARRAY_TYPE_REAL s_k(*codom_dims);
 			for (int i=0; i<reg_ops.size(); i++) {
 				this->reg_ops[i]->mult_M(u_k,b_ks[i].get(),true);
 				if (this->prior.get())
@@ -253,7 +253,7 @@ protected:
 		virtual void update_encoding_space(ARRAY_TYPE_ELEMENT* encoding_space)
 		{
 			for (int i=0; i < reg_ops.size(); i++){
-				ARRAY_TYPE_ELEMENT tmp(codom_dims,encoding_space->get_data_ptr()+op_cont->get_offset(i));
+				ARRAY_TYPE_ELEMENT tmp(*codom_dims,encoding_space->get_data_ptr()+op_cont->get_offset(i));
 				tmp = *d_ks[i];
 				tmp -= *b_ks[i];
 				if (this->prior.get())
@@ -269,12 +269,12 @@ protected:
 			if (this->prior.get())
 				p_Ms = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
 			for (int i=0; i<reg_ops.size(); i++){
-				d_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(codom_dims));
+				d_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*codom_dims));
 				clear(d_ks[i].get());
-				b_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(codom_dims));
+				b_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*codom_dims));
 				clear(b_ks[i].get());
 				if (this->prior.get()){
-					p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(codom_dims));
+					p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(*codom_dims));
 					reg_ops[i]->mult_M(this->prior.get(),p_Ms[i].get());
 					*p_Ms[i] *= normalization_factor;
 				}
@@ -290,7 +290,7 @@ protected:
 
 		virtual void update_dk(ARRAY_TYPE_ELEMENT* u_k)
 		{
-			ARRAY_TYPE_REAL s_k(codom_dims);
+			ARRAY_TYPE_REAL s_k(*codom_dims);
 			ARRAY_TYPE_ELEMENT *tmp = new ARRAY_TYPE_ELEMENT[reg_ops.size()];
 			for (int i=0; i<reg_ops.size(); i++) {
 				tmp[i] = *b_ks[i];
@@ -308,7 +308,7 @@ protected:
 
 		virtual void update_dk_bk(ARRAY_TYPE_ELEMENT* u_k)
 		{
-			ARRAY_TYPE_REAL s_k(codom_dims);
+			ARRAY_TYPE_REAL s_k(*codom_dims);
 			for (int i=0; i<reg_ops.size(); i++) {
 				this->reg_ops[i]->mult_M(u_k,b_ks[i].get(),true);
 				if (this->prior.get())
@@ -555,7 +555,7 @@ protected:
 
 		// Define u_k
 		//
-		boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT(this->encoding_operator_->get_domain_dimensions()) );
+		boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT(*this->encoding_operator_->get_domain_dimensions()) );
 
 		// Use x0 (if provided) as starting solution estimate
 		//
@@ -737,8 +737,8 @@ protected:
 					// Setup input vector to the encoding operator container (argument to the inner solver's solve)
 					//
 
-					ARRAY_TYPE_ELEMENT data(enc_op_container_->get_codomain_dimensions());
-					ARRAY_TYPE_ELEMENT tmp(f->get_dimensions().get(), data.get_data_ptr() );
+					ARRAY_TYPE_ELEMENT data(*enc_op_container_->get_codomain_dimensions());
+					ARRAY_TYPE_ELEMENT tmp(f->dimensions(), data.get_data_ptr());
 
 					tmp = *f;
 
@@ -747,7 +747,7 @@ protected:
 
 					for( unsigned int i=0; i< regularization_operators_.size(); i++ ){
 						boost::shared_ptr<sbRegularizationOperator > op = regularization_operators_[i];
-						tmp.create( op->get_codomain_dimensions(), data.get_data_ptr()+enc_op_container_->get_offset(i+1) );
+						tmp.create( *op->get_codomain_dimensions(), data.get_data_ptr()+enc_op_container_->get_offset(i+1) );
 						op->update_encoding_space(&tmp);
 					}
 
@@ -816,7 +816,7 @@ protected:
 			//
 
 			boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = this->encoding_operator_;
-			ARRAY_TYPE_ELEMENT tmp( op->get_domain_dimensions() );
+			ARRAY_TYPE_ELEMENT tmp( *op->get_domain_dimensions() );
 			op->mult_MH( f, &tmp );
 			REAL sum = asum( &tmp );
 			image_scale = REAL(tmp.get_number_of_elements())/sum;

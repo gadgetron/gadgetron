@@ -289,9 +289,10 @@ namespace Gadgetron
 			memcpy(rep_array.get_data_ptr() + offset, host_img->get_data_ptr(), host_img->get_number_of_bytes());
 		}
 
-		hoNDArray<float> mag(rep_array.get_dimensions());
-		hoNDArray<float> mean(image_dims_[0], image_dims_[1]);
-		hoNDArray<float> std(image_dims_[0], image_dims_[1]);
+		hoNDArray<float> mag(rep_array.dimensions());
+		hoNDArray<float> mean(image_dims_[0],image_dims_[1]);
+		hoNDArray<float> std(image_dims_[0],image_dims_[1]);
+
 
 		Gadgetron::abs(rep_array, mag);
 		Gadgetron::sum_over_dimension(mag, mean, 2);

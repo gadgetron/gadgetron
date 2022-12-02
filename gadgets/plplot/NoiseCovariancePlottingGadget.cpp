@@ -14,6 +14,7 @@
 #include <boost/algorithm/string/split.hpp>
 
 #include "mri_core_def.h"
+#include "io/primitives.h"
 
 namespace Gadgetron{
 
@@ -62,7 +63,7 @@ int NoiseCovariancePlottingGadget::process_config(ACE_Message_Block* mb)
             GDEBUG("Measurement ID is %s\n", measurement_id_.c_str());
         }
 
-        // find the noise depencies if any
+        // find the noise dependencies if any
         if (current_ismrmrd_header_.measurementInformation->measurementDependency.size() > 0)
         {
             measurement_id_of_noise_dependency_.clear();
@@ -150,18 +151,11 @@ bool NoiseCovariancePlottingGadget::loadNoiseCovariance()
         size_t len;
         infile.read(reinterpret_cast<char*>(&len), sizeof(size_t));
 
-        char* buf = new char[len];
-        if (buf == NULL) return false;
+        auto buf = std::vector<char>(len);
 
-        infile.read(buf, len);
+        infile.read(buf.data(), len);
 
-        if (!noise_covariance_matrixf_.deserialize(buf, len))
-        {
-            delete[] buf;
-            return false;
-        }
-
-        delete[] buf;
+        noise_covariance_matrixf_ = Core::IO::read<hoNDArray<std::complex<float>>>(infile);
         infile.close();
     }
     else
@@ -260,7 +254,7 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
 
                 try
                 {
-                    cm2->getObjectPtr()->create(&img_dims);
+                    cm2->getObjectPtr()->create(img_dims);
                 }
                 catch (...)
                 {

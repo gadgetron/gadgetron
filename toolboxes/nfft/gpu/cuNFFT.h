@@ -21,8 +21,9 @@
 #include "vector_td.h"
 #include "complext.h"
 #include "cuSparseMatrix.h"
-
-#include "gpunfft_export.h"
+#include "cuFFTCachedPlan.h"
+#include "cuNDArray_utils.h"
+#include "cuNDArray_math.h"
 #include "NFFT.h"
 #include "cuGriddingConvolution.h"
 
@@ -51,7 +52,7 @@ namespace Gadgetron
         Notice: currently no devices support atomics operations in double precision.
     */
     template<class REAL, unsigned int D, ConvolutionType CONV = ConvolutionType::STANDARD>
-    class EXPORTGPUNFFT cuNFFT_impl : public cuNFFT_plan<REAL, D> {
+    class cuNFFT_impl : public cuNFFT_plan<REAL, D> {
 
     public: // Main interface
 
@@ -73,7 +74,7 @@ namespace Gadgetron
         /**
            Destructor
         */
-        virtual ~cuNFFT_impl();
+        virtual ~cuNFFT_impl() = default;
 
         /**
            Cartesian FFT. For completeness, just invokes the cuNDFFT class.
@@ -81,13 +82,13 @@ namespace Gadgetron
            \param mode enum class specifying the direction of the FFT.
            \param do_scale boolean specifying whether FFT normalization is desired.
         */
-        virtual void fft(cuNDArray <complext<REAL>> &data, NFFT_fft_mode mode, bool do_scale = true) override;
+        void fft(cuNDArray <complext<REAL>> &data, NFFT_fft_mode mode, bool do_scale = true) override;
 
         /**
            NFFT deapodization.
            \param[in,out] image the image to be deapodized (inplace).
         */
-        virtual void deapodize(cuNDArray <complext<REAL>> &image, bool fourier_domain = false);
+        void deapodize(cuNDArray <complext<REAL>> &image, bool fourier_domain = false) override;
 
     private:
 
@@ -99,7 +100,9 @@ namespace Gadgetron
         boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filter; 
 
         // Fourier transformed deapodization filter.
-        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT; 
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT;
+
+        cuFFTCachedPlan<complext<REAL>> fft_plan;
 
         int device_;
     };
@@ -107,12 +110,12 @@ namespace Gadgetron
     // Pure virtual class to cause compile errors if you try to use NFFT with double and atomics
     // - since this is not supported on the device
     template<unsigned int D>
-    class EXPORTGPUNFFT cuNFFT_impl<double, D, ConvolutionType::ATOMIC> {
+    class cuNFFT_impl<double, D, ConvolutionType::ATOMIC> {
         virtual void atomics_not_supported_for_type_double() = 0;
     };
 
     template<class REAL, unsigned int D>
-    EXPORTGPUNFFT struct NFFT<cuNDArray,REAL,D> 
+    struct NFFT<cuNDArray,REAL,D> 
     {
         static boost::shared_ptr<cuNFFT_plan<REAL,D>> make_plan(
             const vector_td<size_t,D>& matrix_size,
@@ -122,7 +125,7 @@ namespace Gadgetron
     };
 
     template<unsigned int D>
-    EXPORTGPUNFFT struct NFFT<cuNDArray,double,D>
+    struct NFFT<cuNDArray,double,D>
     {
         static boost::shared_ptr<cuNFFT_plan<double,D>> make_plan(
             const vector_td<size_t,D>& matrix_size,

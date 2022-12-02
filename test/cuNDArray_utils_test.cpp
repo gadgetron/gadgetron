@@ -41,7 +41,7 @@ protected:
 typedef Types<float, double> realImplementations;
 typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(cuNDArray_utils_TestReal, realImplementations);
+TYPED_TEST_SUITE(cuNDArray_utils_TestReal, realImplementations);
 
 TYPED_TEST(cuNDArray_utils_TestReal,permuteTest){
 
@@ -111,7 +111,7 @@ TYPED_TEST(cuNDArray_utils_TestReal,meanTest){
   EXPECT_NEAR(v1,mean(&this->Array), 0.001);
 
 }
-TYPED_TEST_CASE(cuNDArray_utils_TestCplx, cplxImplementations);
+TYPED_TEST_SUITE(cuNDArray_utils_TestCplx, cplxImplementations);
 
 
 

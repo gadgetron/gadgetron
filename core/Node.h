@@ -15,7 +15,7 @@ namespace Gadgetron::Core {
     public:
         virtual ~Node() = default;
         /**
-         * The function which processes the data comming from the InputChannel. Conceptually a coroutine.
+         * The function which processes the data coming from the InputChannel. Conceptually a coroutine.
          * @param in Channel from which messages are received from upstream
          * @param out Channel in which messages are sent on downstream
          */

@@ -8,7 +8,7 @@ if (CUDA_FOUND)
 
 
     list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp gpuRegistrationScatteringGadget.cpp)
-    list(APPEND GPU_LIBS gadgetron_toolbox_gpucore gadgetron_toolbox_gpureg ${CUDA_LIBRARIES})
+    list(APPEND GPU_LIBS gadgetron_toolbox_gpu ${CUDA_LIBRARIES})
 
 
     add_library(gadgetron_moco SHARED
@@ -27,8 +27,7 @@ if (CUDA_FOUND)
     target_link_libraries(gadgetron_moco
             gadgetron_core
             gadgetron_toolbox_cpucore gadgetron_mricore
-            gadgetron_toolbox_gpucore
-            gadgetron_toolbox_gpureg
+            gadgetron_toolbox_gpu
             )
 
 	install(TARGETS gadgetron_moco

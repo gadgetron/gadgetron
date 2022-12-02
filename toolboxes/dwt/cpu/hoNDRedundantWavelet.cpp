@@ -558,11 +558,11 @@ void hoNDRedundantWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUDWT hoNDRedundantWavelet<float>;
-template class EXPORTCPUDWT hoNDRedundantWavelet<double>;
-template class EXPORTCPUDWT hoNDRedundantWavelet< std::complex<float> >;
-template class EXPORTCPUDWT hoNDRedundantWavelet< std::complex<double> >;
-template class EXPORTCPUDWT hoNDRedundantWavelet< complext<float> >;
-template class EXPORTCPUDWT hoNDRedundantWavelet< complext<double> >;
+template class hoNDRedundantWavelet<float>;
+template class hoNDRedundantWavelet<double>;
+template class hoNDRedundantWavelet< std::complex<float> >;
+template class hoNDRedundantWavelet< std::complex<double> >;
+template class hoNDRedundantWavelet< complext<float> >;
+template class hoNDRedundantWavelet< complext<double> >;
 
 }

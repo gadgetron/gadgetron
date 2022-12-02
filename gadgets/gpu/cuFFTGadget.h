@@ -7,27 +7,15 @@
 
 #include <boost/make_shared.hpp>
 
-#if defined (WIN32)
-#if defined (__BUILD_GADGETRON_GPUGADGET__)
-#define EXPORTGPUGADGET __declspec(dllexport)
-#else
-#define EXPORTGPUGADGET __declspec(dllimport)
-#endif
-#else
-#define EXPORTGPUGADGET
-#endif
-
 
 namespace Gadgetron{
 
-  class EXPORTGPUGADGET cuFFTGadget :
-  public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
+  class cuFFTGadget :
+    public Core::ChannelGadget<Core::Image<std::complex<float>>>
     {
     public:
-      GADGET_DECLARE(cuFFTGadget)
-
-	protected:
-      virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
-			   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
-    };
+      using Core::ChannelGadget<Core::Image<std::complex<float>>>::ChannelGadget;
+      ~cuFFTGadget() override = default;
+      void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
+  };
 }

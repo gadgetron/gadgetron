@@ -7,202 +7,90 @@
 
 #include "FloatToFixPointGadget.h"
 #include "mri_core_def.h"
+#include "hoNDArray_math.h"
 
 
 #include <boost/math/constants/constants.hpp>
 
 namespace Gadgetron
 {
-    template <typename T> 
-    FloatToFixPointGadget<T>::FloatToFixPointGadget() 
-        : max_intensity_value_(std::numeric_limits<T>::max()), 
-          min_intensity_value_(std::numeric_limits<T>::min()), 
-          intensity_offset_value_(0)
-    {
-    }
+    template<class T>
+    constexpr auto ismrmrd_image_type(){
+        if constexpr (std::is_same_v<T,unsigned short>) return ISMRMRD::ISMRMRD_USHORT;
+        if constexpr (std::is_same_v<T,short>) return ISMRMRD::ISMRMRD_SHORT;
+        if constexpr (std::is_same_v<T,int >) return ISMRMRD::ISMRMRD_INT;
+        if constexpr (std::is_same_v<T,unsigned int>) return ISMRMRD::ISMRMRD_UINT;
 
-    template <typename T> 
-    FloatToFixPointGadget<T>::~FloatToFixPointGadget()
-    {
-    }
+        throw std::runtime_error("Unsupported type");
 
-    template <typename T> 
-    int FloatToFixPointGadget<T>::process_config(ACE_Message_Block* mb)
-    {
-        // gadget parameters
-        max_intensity_value_ = max_intensity.value();
-        min_intensity_value_ = min_intensity.value();
-        intensity_offset_value_ = intensity_offset.value();
-
-        return GADGET_OK;
-    }
-
-    template <typename T> 
-    int FloatToFixPointGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2)
-    {
-        GadgetContainerMessage<hoNDArray< T > > *cm2 =
-            new GadgetContainerMessage<hoNDArray< T > >();
-
-        boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->get_dimensions();
-
-        try {cm2->getObjectPtr()->create(*dims);}
-        catch (std::runtime_error &err){
-            GEXCEPTION(err,"Unable to create unsigned fix point storage in Extract Magnitude Gadget");
-            return GADGET_FAIL;
         }
 
-        float* src = m2->getObjectPtr()->get_data_ptr();
-        T* dst = cm2->getObjectPtr()->get_data_ptr();
+    template<typename T, typename Base >
+    void FloatToFixPointGadget<T,Base >::process(Core::InputChannel<Core::Image<float>> &input, Core::OutputChannel &output) {
 
-        long long i;
-        long long numOfPixels = (long long)cm2->getObjectPtr()->get_number_of_elements();
+        auto self = static_cast<Base&>(*this);
 
-        GadgetContainerMessage<ISMRMRD::MetaContainer>* m3 = AsContainerMessage<ISMRMRD::MetaContainer>(m2->cont());
+        auto clamp = [&](float val){
+            return lround(std::min<float>(std::max<float>(val,self.min_intensity),self.max_intensity));
+        };
+        auto magnitude = [&](auto val){
+            return T(clamp(std::abs(val)));
+        };
 
-        switch (m1->getObjectPtr()->image_type)
-        {
-            case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
-            {
-                #pragma omp parallel for default(none) private(i) shared(numOfPixels, src, dst)
-                for (i=0; i<numOfPixels; i++)
-                {
-                    float pix_val = src[i];
-                    pix_val = std::abs(pix_val);
-                    if (pix_val < (float)min_intensity_value_) pix_val = (float)min_intensity_value_;
-                    if (pix_val > (float)max_intensity_value_) pix_val = (float)max_intensity_value_;
-                    dst[i] = static_cast<T>(pix_val+0.5);
+        auto real_value = [&](auto val){
+            return T(clamp(float(val)+self.intensity_offset));
+        };
+
+        auto phase = [&](float val){
+            return T(clamp((val*self.intensity_offset/boost::math::float_constants::pi)+self.intensity_offset));
+        };
+
+
+        for (auto [img_header,data,meta] : input) {
+            GDEBUG("Float to shorts norm: %f \n", nrm2(&data));
+            auto output_data = hoNDArray<T>(data.dimensions());
+
+            switch (img_header.image_type) {
+                case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE: {
+                    std::transform(data.begin(),data.end(),output_data.begin(),magnitude);
                 }
-            }
-            break;
+                    break;
 
-            case ISMRMRD::ISMRMRD_IMTYPE_REAL:
-            case ISMRMRD::ISMRMRD_IMTYPE_IMAG:
-            {
-                #pragma omp parallel for default(none) private(i) shared(numOfPixels, src, dst)
-                for (i=0; i<numOfPixels; i++)
-                {
-                    float pix_val = src[i];
-                    pix_val = pix_val + intensity_offset_value_;
-                    if (pix_val < (float)min_intensity_value_) pix_val = (float)min_intensity_value_;
-                    if (pix_val > (float)max_intensity_value_) pix_val = (float)max_intensity_value_;
-                    dst[i] = static_cast<T>(pix_val+0.5);
-                }
+                case ISMRMRD::ISMRMRD_IMTYPE_REAL:
+                case ISMRMRD::ISMRMRD_IMTYPE_IMAG: {
+                    std::transform(data.begin(),data.end(),output_data.begin(),real_value);
 
-                if (m3)
-                {
-                    if (m3->getObjectPtr()->length(GADGETRON_IMAGE_WINDOWCENTER) > 0)
-                    {
-                        long windowCenter;
-                        windowCenter = m3->getObjectPtr()->as_long(GADGETRON_IMAGE_WINDOWCENTER, 0);
-                        m3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, windowCenter + (long)intensity_offset_value_);
+                    if (meta) {
+                        if (meta->length(GADGETRON_IMAGE_WINDOWCENTER) > 0) {
+                            long windowCenter;
+                            windowCenter = meta->as_long(GADGETRON_IMAGE_WINDOWCENTER, 0);
+                            meta->set(GADGETRON_IMAGE_WINDOWCENTER,
+                                                    windowCenter + (long) self.intensity_offset);
+                        }
                     }
                 }
-            }
-            break;
+                    break;
 
-            case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
-            {
-                #pragma omp parallel for default(none) private(i) shared(numOfPixels, src, dst)
-                for (i=0; i<numOfPixels; i++)
-                {
-                    float pix_val = src[i];
-                    pix_val *= (float)(intensity_offset_value_/boost::math::float_constants::pi);
-                    pix_val += intensity_offset_value_;
-                    if (pix_val < (float)min_intensity_value_) pix_val = (float)min_intensity_value_;
-                    if (pix_val > (float)max_intensity_value_) pix_val = (float)max_intensity_value_;
-                    dst[i] = static_cast<T>(pix_val);
+                case ISMRMRD::ISMRMRD_IMTYPE_PHASE: {
+                    std::transform(data.begin(),data.end(),output_data.begin(),phase );
+
                 }
+                    break;
+
+                default:
+                    throw std::runtime_error("Unknown image type in Image");
+
             }
-            break;
 
-            default:
-                GDEBUG("Unknown image type %d, bailing out\n",m1->getObjectPtr()->image_type);
-                m1->release();
-                cm2->release();
-                return GADGET_FAIL;
+            img_header.data_type = ismrmrd_image_type<T>();
+            output.push(img_header,std::move(output_data),std::move(meta));
         }
 
-        m1->cont(cm2);
-        if(m3) cm2->cont(m3);
-
-        m2->cont(NULL);
-        m2->release();
-
-        if (typeid(T) == typeid(unsigned short))
-        {
-            m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
-        }
-        else if (typeid(T) == typeid(short))
-        {
-            m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_SHORT;
-        }
-        else if (typeid(T) == typeid(unsigned int))
-        {
-            m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_UINT;
-        }
-        else if (typeid(T) == typeid(int))
-        {
-            m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_INT;
-        }
-        else
-        {
-            GDEBUG("Unknown data type, bailing out\n");
-            m1->release();
-            cm2->release();
-            return GADGET_FAIL;
-        }
-
-        if (this->next()->putq(m1) == -1)
-        {
-            m1->release();
-            GDEBUG("Unable to put unsigned fix point image on next gadgets queue");
-            return GADGET_FAIL;
-        }
-
-        return GADGET_OK;
     }
 
-    FloatToUShortGadget::FloatToUShortGadget()
-    {
-        max_intensity.value(4095);
-        min_intensity.value(0);
-        intensity_offset.value(2048);
 
-        max_intensity_value_ = 4095;
-        min_intensity_value_ = 0;
-        intensity_offset_value_ = 2048;
-    }
-
-    FloatToUShortGadget::~FloatToUShortGadget()
-    {
-    }
-
-    FloatToShortGadget::FloatToShortGadget()
-    {
-    }
-
-    FloatToShortGadget::~FloatToShortGadget()
-    {
-    }
-
-    FloatToUIntGadget::FloatToUIntGadget()
-    {
-    }
-
-    FloatToUIntGadget::~FloatToUIntGadget()
-    {
-    }
-
-    FloatToIntGadget::FloatToIntGadget()
-    {
-    }
-
-    FloatToIntGadget::~FloatToIntGadget()
-    {
-    }
-
-    GADGET_FACTORY_DECLARE(FloatToUShortGadget)
-    GADGET_FACTORY_DECLARE(FloatToShortGadget)
-    GADGET_FACTORY_DECLARE(FloatToIntGadget)
-    GADGET_FACTORY_DECLARE(FloatToUIntGadget)
+    GADGETRON_GADGET_EXPORT(FloatToUShortGadget)
+    GADGETRON_GADGET_EXPORT(FloatToShortGadget)
+    GADGETRON_GADGET_EXPORT(FloatToIntGadget)
+    GADGETRON_GADGET_EXPORT(FloatToUIntGadget)
 }

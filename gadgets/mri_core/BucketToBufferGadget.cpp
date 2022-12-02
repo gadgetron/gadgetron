@@ -289,7 +289,7 @@ namespace Gadgetron {
         uint16_t NE0;
         if (((encoding.trajectory == ISMRMRD::TrajectoryType::CARTESIAN))
             || (encoding.trajectory == ISMRMRD::TrajectoryType::EPI)) {
-            // if seperate or external calibration mode, using the acq length for NE0
+            // if separate or external calibration mode, using the acq length for NE0
             if (encoding.parallelImaging) {
                 NE0 = acqhdr.number_of_samples;
             } else {

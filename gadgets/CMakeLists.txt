@@ -3,6 +3,7 @@ if (WIN32)
 endif ()
 
 add_subdirectory(examples)
+add_subdirectory(debugging)
 add_subdirectory(mri_core)
 add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
@@ -30,10 +31,7 @@ add_subdirectory(mri_noncartesian)
 add_subdirectory(spiral)
 add_subdirectory(grappa)
 
-if (BUILD_PYTHON_SUPPORT)
-    add_subdirectory(python)
-    add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
-endif () # BUILD_PYTHON_SUPPORT
+add_subdirectory(python)
 
 find_package(DCMTK CONFIG)
 if(DCMTK_FOUND)

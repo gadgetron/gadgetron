@@ -7,8 +7,6 @@
 #include <thrust/binary_search.h>
 #include <thrust/iterator/counting_iterator.h>
 
-using namespace thrust;
-
 namespace Gadgetron{
 
   template<class T, unsigned int D> void 
@@ -33,22 +31,22 @@ namespace Gadgetron{
       _dims_disp.pop_back();
     }
   
-    device_vector<REAL> displacements
-      ( device_pointer_cast<REAL>(this->offsets_->get_data_ptr()), 
-        device_pointer_cast<REAL>(this->offsets_->get_data_ptr()+num_elements_disp) );
+    thrust::device_vector<REAL> displacements
+      ( thrust::device_pointer_cast<REAL>(this->offsets_->get_data_ptr()), 
+        thrust::device_pointer_cast<REAL>(this->offsets_->get_data_ptr()+num_elements_disp) );
   
     // Make sort keys/values array from the deformation field
     //
 
     unsigned int num_elements_sort = num_elements_disp/D;
   
-    this->lower_bounds_ = device_vector<unsigned int>(num_elements_sort);
-    this->upper_bounds_ = device_vector<unsigned int>(num_elements_sort);
+    this->lower_bounds_ = thrust::device_vector<unsigned int>(num_elements_sort);
+    this->upper_bounds_ = thrust::device_vector<unsigned int>(num_elements_sort);
   
-    this->indices_ = device_vector<unsigned int>(get_num_neighbors()*num_elements_sort);
-    this->weights_ = device_vector<REAL>(get_num_neighbors()*num_elements_sort);
+    this->indices_ = thrust::device_vector<unsigned int>(get_num_neighbors()*num_elements_sort);
+    this->weights_ = thrust::device_vector<REAL>(get_num_neighbors()*num_elements_sort);
 
-    device_vector<unsigned int> sort_keys = device_vector<unsigned int>
+    thrust::device_vector<unsigned int> sort_keys = thrust::device_vector<unsigned int>
       (get_num_neighbors()*num_elements_sort);
   
     // Fill arrays
@@ -59,23 +57,23 @@ namespace Gadgetron{
     // Make copy of sort_keys before the sort modifies it
     //
 
-    device_vector<unsigned int> sort_keys_copy(sort_keys);
+    thrust::device_vector<unsigned int> sort_keys_copy(sort_keys);
   
     // Sort (twice since we have two value arrays)
     //
 
-    sort_by_key(sort_keys.begin(), sort_keys.end(), this->indices_.begin() );
-    sort_by_key(sort_keys_copy.begin(), sort_keys_copy.end(), this->weights_.begin() );
+    thrust::sort_by_key(sort_keys.begin(), sort_keys.end(), this->indices_.begin() );
+    thrust::sort_by_key(sort_keys_copy.begin(), sort_keys_copy.end(), this->weights_.begin() );
   
     // Find start/end indices (buckets) in the two values arrays
     //
   
-    counting_iterator<unsigned int> search_begin(0);
+    thrust::counting_iterator<unsigned int> search_begin(0);
     
-    lower_bound( sort_keys.begin(), sort_keys.end(), 
+    thrust::lower_bound( sort_keys.begin(), sort_keys.end(), 
 		 search_begin, search_begin + num_elements_sort, this->lower_bounds_.begin() );
   
-    upper_bound( sort_keys.begin(), sort_keys.end(), 
+    thrust::upper_bound( sort_keys.begin(), sort_keys.end(), 
 		 search_begin, search_begin + num_elements_sort, this->upper_bounds_.begin() );
     
     this->preprocessed_ = true;

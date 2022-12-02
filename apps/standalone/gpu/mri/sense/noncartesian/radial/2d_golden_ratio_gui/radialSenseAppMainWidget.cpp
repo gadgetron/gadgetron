@@ -108,7 +108,7 @@ void radialSenseAppMainWindow::open()
 
   // Read samples from disk
   host_samples = read_nd_array<float_complext>(filename.toLatin1().constData());
-  cout << endl << "loaded dataset with " << host_samples->get_number_of_elements() << " samples." << endl;
+  GINFO_STREAM(endl << "loaded dataset with " << host_samples->get_number_of_elements() << " samples." << endl);
 
   // This is to prevent the user changing the matrix sizes before any data is initially loaded
   matrixSizeSpinBox->setEnabled(true); 
@@ -169,7 +169,7 @@ void radialSenseAppMainWindow::replan()
   progress.setValue(0);
   progress.show();
 
-  // Set GUI elements before the plan is created to avoid triggering unneccessary reconstructions
+  // Set GUI elements before the plan is created to avoid triggering unnecessary reconstructions
   unsigned int maxProjections = min(get_matrix_size().vec[0]<<2, (get_num_points_per_array_coil()/get_num_samples_per_projection())>>1);
   reconWidget->numProjectionsScrollBar->setMaximum(maxProjections);
   reconWidget->numProjectionsSpinBox->setMaximum(maxProjections);

@@ -6,6 +6,7 @@
 #include "cmr_analytical_strain.h"
 #include "ImageIOAnalyze.h"
 #include "GadgetronTimer.h"
+#include "log.h"
 
 using namespace Gadgetron;
 using testing::Types;
@@ -49,7 +50,7 @@ protected:
 
 typedef Types<float> realImplementations;
 
-TYPED_TEST_CASE(cmr_analytical_strain_test, realImplementations);
+TYPED_TEST_SUITE(cmr_analytical_strain_test, realImplementations);
 
 TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
 {
@@ -63,11 +64,15 @@ TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
 
     hoNDArray< T > dx;
     this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/SynthesisStrain/grtr_dx");
-    dx.print(std::cout);
+    std::stringstream stream;
+    dx.print(stream);
+    GINFO(stream.str().c_str());
 
     hoNDArray< T > dy;
     this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/SynthesisStrain/grtr_dy");
-    dy.print(std::cout);
+    stream.clear();
+    dy.print(stream);
+    GINFO(stream.str().c_str());
 
     hoNDArray< T > mask;
     this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/SynthesisStrain/mask");
@@ -87,22 +92,22 @@ TYPED_TEST(cmr_analytical_strain_test, QuadarticStrain)
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_rad_strain");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_quad_circ_strain");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_quad_rad_strain");
-    std::cout << Gadgetron::nrm2(radial) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(radial) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, radial, diff);
     T v = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(v / norm_ref, 0.002);
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_quad_circ_strain");
-    std::cout << Gadgetron::nrm2(circ) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(circ) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, circ, diff);
     T q = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);
@@ -121,11 +126,15 @@ TYPED_TEST(cmr_analytical_strain_test, ConstStrain)
 
     hoNDArray< T > dx;
     this->gt_io_.import_array(dx, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_grtr_dx");
-    dx.print(std::cout);
+    std::stringstream dx_stream;
+    dx.print(dx_stream);
+    GINFO(dx_stream.str().c_str());
 
     hoNDArray< T > dy;
     this->gt_io_.import_array(dy, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_grtr_dy");
-    dy.print(std::cout);
+    std::stringstream dy_stream;
+    dy.print(dy_stream);
+    GINFO(dy_stream.str().c_str());
 
     hoNDArray< T > mask;
     this->gt_io_.import_array(mask, this->gt_ut_data_folder_ + "/SynthesisStrain/cons_mask");
@@ -145,22 +154,22 @@ TYPED_TEST(cmr_analytical_strain_test, ConstStrain)
     this->gt_io_.export_array(radial, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_rad_strain");
     this->gt_io_.export_array(circ, this->gt_ut_res_folder_ + "/AnalyticalStrain/analytical_cons_circ_strain");
 
-    // compare agains ground truth
+    // compare against ground truth
     hoNDArray<T> ref;
     hoNDArray<T> diff;
     T norm_ref;
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_cons_rad_strain");
-    std::cout << Gadgetron::nrm2(radial) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(radial) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, radial, diff);
     T v = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);
     EXPECT_LE(v / norm_ref, 0.002);
 
     this->gt_io_.import_array(ref, this->gt_ut_data_folder_ + "/AnalyticalStrain/analytical_cons_circ_strain");
-    std::cout << Gadgetron::nrm2(circ) << std::endl;
-    std::cout << Gadgetron::nrm2(ref) << std::endl;
+    GINFO_STREAM(Gadgetron::nrm2(circ) << std::endl);
+    GINFO_STREAM(Gadgetron::nrm2(ref) << std::endl);
     Gadgetron::subtract(ref, circ, diff);
     T q = Gadgetron::nrm2(diff);
     norm_ref = Gadgetron::nrm2(ref);

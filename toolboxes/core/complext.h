@@ -21,6 +21,7 @@ namespace Gadgetron {
     using std::cos;
     using std::exp;
     using std::sqrt;
+    using std::atan2;
 
     /**
      * \class complext
@@ -318,7 +319,7 @@ namespace Gadgetron {
 
     template<class T>
     __inline__ __host__ __device__ T arg(complext<T> comp) {
-        return std::atan2(comp._imag, comp._real);
+        return atan2(comp._imag, comp._real);
     }
 
     template<class T, class S>

@@ -27,8 +27,6 @@ void initialize_python(void)
         Py_Initialize();
         initialize_numpy();
 
-        PyEval_InitThreads();
-
         //Swap out and return current thread state and release the GIL
         //Must be done, otherwise subsequent calls to PyGILState_Ensure()
         //will not be guaranteed to acquire lock

@@ -8,8 +8,8 @@
 #include "gpuBufferSensePrepGadget.h"
 #include <ismrmrd/xml.h>
 #include "GenericReconJob.h"
-#include "NFFTOperator.h"
 #include "cuNFFT.h"
+#include "NFFTOperator.h"
 #include "cuNDArray_math.h"
 #include "vector_td_utilities.h"
 #include <boost/shared_ptr.hpp>
@@ -107,9 +107,11 @@ int gpuBufferSensePrepGadget::process(
 	}
 	{
 		auto tmpdim = *buffer->data_.get_dimensions();
+		std::stringstream stream; 
 		for (auto dim : tmpdim)
-			std::cout << dim << " ";
-		std::cout << std::endl;
+			stream << dim << " ";
+		stream << "\n";
+		GINFO(stream.str().c_str());
 		auto permuted = permute(*(hoNDArray<float_complext>*)&buffer->data_,new_order);
 		cuNDArray<float_complext> data(permuted);
 		if (dcw){

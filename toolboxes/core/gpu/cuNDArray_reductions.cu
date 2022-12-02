@@ -86,18 +86,18 @@ namespace Gadgetron {
 		return *thrust::max_element(in->begin(),in->end());
 	}
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > sum<float>( cuNDArray<float>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > sum<double>( cuNDArray<double>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);  
+  template boost::shared_ptr< cuNDArray<float> > sum<float>( cuNDArray<float>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<double> > sum<double>( cuNDArray<double>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);  
 
-  template EXPORTGPUCORE float mean<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE float_complext mean<float_complext>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE double mean<double>(cuNDArray<double>*);
-  template EXPORTGPUCORE double_complext mean<double_complext>(cuNDArray<double_complext>*);
+  template float mean<float>(cuNDArray<float>*);
+  template float_complext mean<float_complext>(cuNDArray<float_complext>*);
+  template double mean<double>(cuNDArray<double>*);
+  template double_complext mean<double_complext>(cuNDArray<double_complext>*);
 
-  template EXPORTGPUCORE float min<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE float max<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE double min<double>(cuNDArray<double>*);
-	template EXPORTGPUCORE double max<double>(cuNDArray<double>*);
+  template float min<float>(cuNDArray<float>*);
+  template float max<float>(cuNDArray<float>*);
+  template double min<double>(cuNDArray<double>*);
+	template double max<double>(cuNDArray<double>*);
 }

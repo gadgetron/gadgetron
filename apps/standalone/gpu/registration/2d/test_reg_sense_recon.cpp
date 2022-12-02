@@ -181,11 +181,11 @@ int main(int argc, char** argv)
   
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running registration with the following parameters: " << endl;
+    GINFO_STREAM(" Running registration with the following parameters: " << endl);
     parms.print_parameter_list();
   }
   else{
-    cout << " Some required parameters are missing: " << endl;
+    GINFO_STREAM(" Some required parameters are missing: " << endl);
     parms.print_parameter_list();
     parms.print_usage();
     return 1;
@@ -204,7 +204,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_data = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
    
   if( !(host_data->get_number_of_dimensions() == 3) ){
-    cout << endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!" << endl;
+    GINFO_STREAM(endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!" << endl);
     return 1;
   }
   
@@ -450,7 +450,7 @@ int main(int argc, char** argv)
   CK->set_limit(0.01f);
   
   // 
-  // Peform "averaging by registration" type reconstruction
+  // Perform "averaging by registration" type reconstruction
   //
 
   timer = new GPUTimer("\nReconstruction by optical flow averaging");
@@ -481,7 +481,7 @@ int main(int argc, char** argv)
   delete timer;
 
   //
-  // Peform "registration in cost function" type reconstruction
+  // Perform "registration in cost function" type reconstruction
   //
 
   timer = new GPUTimer("\nRunning registration recon");

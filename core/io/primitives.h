@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "hoNDArray.h"
+#include "hoNDImage.h"
 #include "Types.h"
 #include <boost/hana/adapt_struct.hpp>
 
@@ -30,7 +31,16 @@ namespace Gadgetron::Core::IO {
     void read(std::istream &stream, std::set<T> &vec);
 
     template<class T>
-    void read(std::istream &stream, hoNDArray<T> &array);
+    void read(std::istream &stream, Gadgetron::hoNDArray<T> &array);
+
+    template<class T, unsigned int D>
+    void read(std::istream &stream, Gadgetron::hoNDImage<T, D> &image);
+
+    template<class T, unsigned int D>
+    void read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array);
+    
+    template<class... ARGS>
+    void read(std::istream& stream, Core::tuple<ARGS...>& tup);
 
     template<class T>
     std::enable_if_t<boost::hana::Struct<T>::value> read(std::istream &istream, T &x);
@@ -41,6 +51,9 @@ namespace Gadgetron::Core::IO {
         IO::read(stream, val);
         return val;
     }
+
+    template<class TObjectType>
+    void read_many(std::istream &stream, Gadgetron::hoNDArray<TObjectType> &array);
 
     template<class T = uint64_t >
     std::string read_string_from_stream(std::istream &stream);
@@ -56,6 +69,9 @@ namespace Gadgetron::Core::IO {
 
     template<class T>
     void write(std::ostream &ostream, const std::set<T> &val);
+
+    template<class... ARGS>
+    void write(std::ostream& ostream, const std::tuple<ARGS...>& tup);
 
     template<class T>
     std::enable_if_t<boost::hana::Struct<T>::value, void> write(std::ostream &ostream, const T &x);
@@ -79,7 +95,16 @@ namespace Gadgetron::Core::IO {
     }
 
     template<class T>
-    void write(std::ostream &stream, const hoNDArray<T> &array);
+    void write(std::ostream &stream, const Gadgetron::hoNDArray<T> &array);
+
+    template<class T, unsigned int D>
+    void write(std::ostream &stream, const Gadgetron::hoNDImage<T, D> &image);
+
+    template<class T, unsigned int D>
+    void write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array);
+
+    template<class TObjectType>
+    void write_many(std::ostream &stream, const Gadgetron::hoNDArray<TObjectType> &array);
 
     template<class T = uint64_t>
     void write_string_to_stream(std::ostream &stream, const std::string &str);

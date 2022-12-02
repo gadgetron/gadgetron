@@ -98,8 +98,8 @@ namespace Gadgetron { namespace Core {
 
         explicit GenericInputChannel(std::shared_ptr<Channel>);
 
-        std::shared_ptr<Channel::Closer> closer;
         std::shared_ptr<Channel> channel;
+        std::shared_ptr<Channel::Closer> closer;
     };
 
     template <class CHANNEL> class ChannelIterator;
@@ -174,5 +174,6 @@ namespace Gadgetron { namespace Core {
         GenericInputChannel& in;
         OutputChannel& bypass;
     };
+
 
 }}

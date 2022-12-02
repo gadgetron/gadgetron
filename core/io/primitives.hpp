@@ -55,6 +55,25 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const hoNDArray <T> &array
     write(stream, array.get_data_ptr(), array.get_number_of_elements());
 }
 
+template<class... ARGS>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Core::tuple<ARGS...>& tup) {
+    Core::apply([&](const auto&... elements){(write(stream,elements),...);},tup);
+}
+
+template<class TObjectType>
+void Gadgetron::Core::IO::write_many(std::ostream &stream, const Gadgetron::hoNDArray<TObjectType> &array)
+{
+    std::vector<size_t> dimensions;
+    array.get_dimensions(dimensions);
+
+    Gadgetron::Core::IO::write(stream, dimensions);
+
+    size_t N = array.get_number_of_elements();
+    for (size_t i = 0; i < N; i++) {
+        Gadgetron::Core::IO::write(stream, array[i]);
+    }
+}
+
 template<class T>
 void Gadgetron::Core::IO::write_string_to_stream(std::ostream &stream, const std::string &str) {
     auto string_length = static_cast<T>(str.size());
@@ -62,12 +81,47 @@ void Gadgetron::Core::IO::write_string_to_stream(std::ostream &stream, const std
     stream.write(str.data(), string_length);
 }
 
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDImage<T, D> &image) {
 
+    typedef typename Gadgetron::hoNDImage<T, D>::coord_type coord_type;
+    typedef typename Gadgetron::hoNDImage<T, D>::axis_type axis_type;
+    
+    std::vector<size_t> dimensions;
+    std::vector<coord_type> pixelSize;
+    std::vector<coord_type> origin;
+    axis_type axis;
+
+    image.get_dimensions(dimensions);
+    image.get_pixel_size(pixelSize);
+    image.get_origin(origin);
+    image.get_axis(axis);
+
+    std::vector<coord_type> axis_values(D*D);
+    for (auto d=0; d<D; d++) {
+        for (auto a=0; a<D; a++) {
+            axis_values[a + d*D] = axis[d][a];
+        }
+    }
+
+    Gadgetron::Core::IO::write(stream, dimensions);
+    Gadgetron::Core::IO::write(stream, pixelSize);
+    Gadgetron::Core::IO::write(stream, origin);
+    Gadgetron::Core::IO::write(stream, axis_values);
+
+    Gadgetron::Core::IO::write(stream, image.get_data_ptr(), image.get_number_of_elements());
+}
+
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array) {
+    Gadgetron::Core::IO::write_many(stream, array);
+}
 
 template<class T>
 std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
     stream.read(reinterpret_cast<char *>(data), elements*sizeof(T));
-    }
+}
+
 template<class T>
 std::enable_if_t<!Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
     for (size_t i = 0; i < elements; i++) read(stream,data[i]);
@@ -122,6 +176,54 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray<T> &ar
 
 }
 
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDImage<T, D> &image) {
+
+    typedef typename Gadgetron::hoNDImage<T, D>::coord_type coord_type;
+    typedef typename Gadgetron::hoNDImage<T, D>::axis_type axis_type;
+
+    std::vector<size_t> dimensions;
+    std::vector<coord_type> pixelSize, origin, axis_values;
+
+    Gadgetron::Core::IO::read(stream, dimensions);
+    Gadgetron::Core::IO::read(stream, pixelSize);
+    Gadgetron::Core::IO::read(stream, origin);
+    Gadgetron::Core::IO::read(stream, axis_values);
+
+    axis_type axis(D);
+    for (auto d=0; d<D; d++) {
+        for (auto a=0; a<D; a++) {
+            axis[d][a] = axis_values[a + d*D]; 
+        }
+    }
+
+    image = Gadgetron::hoNDImage<T, D>(dimensions, pixelSize, origin, axis);
+    Gadgetron::Core::IO::read(stream, image.data(), image.size());
+}
+
+template<class TObjectType>
+void Gadgetron::Core::IO::read_many(std::istream &stream, Gadgetron::hoNDArray<TObjectType> &array)
+{
+    std::vector<size_t> dimensions;
+    Gadgetron::Core::IO::read(stream, dimensions);
+
+    array.create(dimensions);
+
+    size_t N = array.get_number_of_elements();
+    for (size_t i = 0; i < N; i++) {
+        Gadgetron::Core::IO::read(stream, array[i]);
+    }
+}
+    
+template<class T, unsigned int D>
+void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array) {
+    Gadgetron::Core::IO::read_many(stream, array);
+}
+
+template<class... ARGS>
+void Gadgetron::Core::IO::read(std::istream &stream,  Core::tuple<ARGS...>& tup) {
+    Core::apply([&](auto&&... elements){(read(stream,elements),...);},tup);
+}
 template<class T>
 std::enable_if_t<boost::hana::Struct<T>::value> Gadgetron::Core::IO::read(std::istream &istream, T &x) {
   namespace hana = boost::hana;
