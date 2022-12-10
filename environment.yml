@@ -2,27 +2,34 @@ name: gadgetron
 channels:
   - ismrmrd
   - gadgetron
-  - nvidia
+  - nvidia/label/cuda-11.6.1
   - conda-forge
   - bioconda
   - defaults
   - intel
 dependencies:
   - anaconda-client                       # dev
-  - armadillo=9.900.5                    # dev
+  - armadillo=9.900.5                     # dev
   - boost=1.80.0
   - breathe                               # dev
   - cmake=3.21.3                          # dev
   - conda-build                           # dev
   - conda-verify                          # dev
+  - cuda-cudart=11.6.55                   # cuda
+  - cuda-cudart-dev=11.6.55               # cuda, dev
+  - cuda-cccl=11.6.55                     # cuda
+  - cuda-driver-dev=11.6.55               # cuda, dev
   - cuda-libraries-dev=11.6.1             # cuda, dev
   - cuda-libraries=11.6.1                 # cuda
   - cuda-runtime=11.6.1                   # cuda
   - cuda-nvcc=11.6.112                    # cuda, dev
+  - cuda-nvrtc=11.6                       # cuda
+  - cuda-nvrtc-dev=11.6                   # cuda, dev
   - dcmtk=3.6.1
   - deepdiff=5.8
   - doxygen=1.9                           # dev
   - fftw=3.3.9
+  - gadgetron::gadgetron-python=1.4.1
   - gcc_linux-64=9.4.0                    # dev
   - gdb=11.1                              # dev
   - gmock=1.10.0                          # dev
@@ -31,6 +38,8 @@ dependencies:
   - h5py=3.2.1
   - hdf5=1.10.6
   - howardhinnant_date=3.0.1              # dev
+  - ismrmrd::ismrmrd=1.13.1
+  - ismrmrd::ismrmrd-python>=1.9.8
   - junitparser=2.7.0
   - jupyter=1.0.0                         # dev
   - jq=1.6

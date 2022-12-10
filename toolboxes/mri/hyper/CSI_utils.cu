@@ -63,7 +63,7 @@ void Gadgetron::CSI_dft(cuNDArray<complext<T> >* kspace,
 		// Invoke kernel
 		dft_kernel<T><<<dimGrid, dimBlock>>>(kspace->get_data_ptr()+i*elements,tspace->get_data_ptr()+i*t_elements,frequencies->data(),dims[0],dims[1], frequencies->size(),dte,dtt);
 		CHECK_FOR_CUDA_ERROR();
-		cudaThreadSynchronize();
+		cudaDeviceSynchronize();
 
 	}
 
