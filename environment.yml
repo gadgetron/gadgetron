@@ -8,13 +8,13 @@ channels:
   - defaults
   - intel
 dependencies:
-  - anaconda-client                       # dev
+  - anaconda-client=1.11                  # dev
   - armadillo=9.900.5                     # dev
   - boost=1.80.0
-  - breathe                               # dev
+  - breathe=4.34                          # dev
   - cmake=3.21.3                          # dev
-  - conda-build                           # dev
-  - conda-verify                          # dev
+  - conda-build=3.23                      # dev
+  - conda-verify=3.1                      # dev
   - cuda-cudart=11.6.55                   # cuda
   - cuda-cudart-dev=11.6.55               # cuda, dev
   - cuda-cccl=11.6.55                     # cuda
