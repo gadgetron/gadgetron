@@ -12,7 +12,7 @@ gadgetron --info
 
 if [[ $(uname) =~ Darwin ]]; then
    # echo "Tests for macOS/Darwin TBD"
-   python run_tests.py cases/*
+   # python run_tests.py cases/*
 else
    python run_tests.py --ignore-requirements python,cuda cases/*
 fi
