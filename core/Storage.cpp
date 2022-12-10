@@ -28,7 +28,8 @@ size_t content_write_callback(char* ptr, size_t size, size_t nmemb, std::strings
 
 // Copies the request body
 size_t content_read_callback(char* dest, size_t size, size_t nmemb, std::istream* stream) {
-    return stream->readsome(dest, size * nmemb);
+    stream->read(dest, size * nmemb);
+    return stream->gcount();
 }
 
 template <typename T> using CurlHandle = std::unique_ptr<T, std::function<void(T*)>>;
