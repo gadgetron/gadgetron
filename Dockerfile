@@ -24,7 +24,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # The version of conda to use
-ARG CONDA_VERSION=4.11.0
+ARG CONDA_VERSION=22.11.1
 
 # Based on https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile.
 # We also install conda-lock.

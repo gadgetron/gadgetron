@@ -2,6 +2,8 @@
 #include "cuGriddingConvolution.h"
 
 #include <thrust/binary_search.h>
+#include <thrust/extrema.h>
+#include <thrust/sort.h>
 
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"

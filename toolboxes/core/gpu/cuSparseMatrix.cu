@@ -2,6 +2,8 @@
 #include <thrust/extrema.h>
 #include <thrust/device_ptr.h>
 #include "cuNDArray_math.h"
+#include <cusparse.h>
+
 using namespace Gadgetron;
 
 template<class T>
@@ -33,10 +35,10 @@ template<class T> void Gadgetron::sparseMV(T alpha,T beta, const cuCsrMatrix<T> 
 
 	size_t bufferSize;
 	auto handle =  cudaDeviceManager::Instance()->lockSparseHandle();
-	cusparseSpMV(handle, trans, &alpha,mat.descr,dnvec_in.get(),&beta,dnvec_out.get(),cuda_datatype<T>(),CUSPARSE_CSRMV_ALG2,&bufferSize);
+	cusparseSpMV(handle, trans, &alpha,mat.descr,dnvec_in.get(),&beta,dnvec_out.get(),cuda_datatype<T>(),CUSPARSE_SPMV_CSR_ALG2,&bufferSize);
 	cuNDArray<char> buffer(bufferSize);
 
-	cusparseStatus_t status = cusparseSpMV(handle, trans, &alpha,mat.descr,dnvec_in.get(),&beta,dnvec_out.get(),cuda_datatype<T>(),CUSPARSE_CSRMV_ALG2, buffer.data());
+	cusparseStatus_t status = cusparseSpMV(handle, trans, &alpha,mat.descr,dnvec_in.get(),&beta,dnvec_out.get(),cuda_datatype<T>(),CUSPARSE_SPMV_CSR_ALG2, buffer.data());
 
 	cudaDeviceManager::Instance()->unlockSparseHandle();
 	if (status != CUSPARSE_STATUS_SUCCESS){
@@ -73,10 +75,10 @@ template<class T> void Gadgetron::sparseMM(T alpha,T beta, const cuCsrMatrix<T> 
 	auto dnmat_in = create_DnMat(const_cast<cuNDArray<T>&>(mat_in));
 	auto dnmat_out = create_DnMat(mat_out);
 	size_t bufferSize;
-	CUSPARSE_CALL(cusparseSpMM_bufferSize(handle, trans, CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, mat.descr, dnmat_in.get(), &beta, dnmat_out.get(), cuda_datatype<T>(),CUSPARSE_CSRMM_ALG1, &bufferSize));
+	CUSPARSE_CALL(cusparseSpMM_bufferSize(handle, trans, CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, mat.descr, dnmat_in.get(), &beta, dnmat_out.get(), cuda_datatype<T>(),CUSPARSE_SPMM_CSR_ALG1, &bufferSize));
 	cuNDArray<char> buffer(bufferSize);
 
-	CUSPARSE_CALL(cusparseSpMM(handle, trans, CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, mat.descr, dnmat_in.get(), &beta, dnmat_out.get(), cuda_datatype<T>(),CUSPARSE_CSRMM_ALG1, buffer.data()));
+	CUSPARSE_CALL(cusparseSpMM(handle, trans, CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, mat.descr, dnmat_in.get(), &beta, dnmat_out.get(), cuda_datatype<T>(),CUSPARSE_SPMM_CSR_ALG1, buffer.data()));
 	cudaDeviceManager::Instance()->unlockSparseHandle();
 
 }
