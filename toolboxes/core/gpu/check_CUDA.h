@@ -18,7 +18,7 @@ namespace Gadgetron {
       throw cuda_error(errorCode);
     }
 #ifdef DEBUG
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     errorCode = cudaGetLastError();
     if (errorCode != cudaSuccess) {
       throw cuda_error(errorCode);
