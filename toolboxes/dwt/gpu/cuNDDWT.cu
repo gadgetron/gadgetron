@@ -139,7 +139,7 @@ template<class T, unsigned int D, unsigned int WD> void Gadgetron::DWT1( cuNDArr
 
 	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
 	dwt_kernel<T,D,WD><<<dimGrid,dimBlock>>>(dims, in->get_data_ptr(),out->get_data_ptr(),dim,wavelet,shift);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR()
 	*out *= T(1.0/std::sqrt(sum(wavelet)));
 

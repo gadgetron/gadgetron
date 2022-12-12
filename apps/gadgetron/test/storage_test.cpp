@@ -269,7 +269,7 @@ TEST_F(StorageTest, storage_spaces_basic) {
     ASSERT_EQ(x, *item);
 
     hoNDArray<float> y(2, 2);
-    std::fill(x.begin(), x.end(), 23);
+    std::fill(y.begin(), y.end(), 23);
     storage.session->store("stuff", y);
 
     item = storage.session->get_latest<hoNDArray<float>>("stuff");
