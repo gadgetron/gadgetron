@@ -205,7 +205,7 @@ namespace Gadgetron
             // Accession Number
             key.set(0x0008, 0x0050);
             if (study_info.accessionNumber) {
-                snprintf(buf, BUFSIZE, "%ld", *study_info.accessionNumber);
+                snprintf(buf, BUFSIZE, "%lld", *study_info.accessionNumber);
                 write_dcm_string(dataset, key, buf);
             }
             else {
