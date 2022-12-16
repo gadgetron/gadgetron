@@ -18,7 +18,7 @@ template<class T, unsigned int D> void Gadgetron::test_abs(cuNDArray< vector_td<
 	dim3 dimBlock(std::min(cudaDeviceManager::Instance()->max_griddim(),(int)data->get_number_of_elements()));
 	dim3 dimGrid((dimBlock.x-1)/data->get_number_of_elements()+1);
 	abs_kernel<<<dimGrid,dimBlock>>>(data->get_data_ptr(),data->get_number_of_elements());
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR();
 }
 
@@ -32,7 +32,7 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_norm(
 
 	thrust::device_vector<T> out(data->get_number_of_elements());
 	thrust::transform(data->begin(),data->end(),out.begin(),test_norm_functor<T,D>());
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR();
 	return out;
 }
@@ -48,7 +48,7 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_min(c
 
 	thrust::device_vector<T> out(data->get_number_of_elements());
 	thrust::transform(data->begin(),data->end(),out.begin(),test_min_functor<T,D>());
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR();
 	return out;
 }
@@ -63,7 +63,7 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_max(c
 
 	thrust::device_vector<T> out(data->get_number_of_elements());
 	thrust::transform(data->begin(),data->end(),out.begin(),test_max_functor<T,D>());
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR();
 	return out;
 }
