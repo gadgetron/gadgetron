@@ -51,11 +51,11 @@
         <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property>
             <name>trigger_dimension</name>
-            <value>repetition</value>
+            <value>none</value>
         </property>
         <property>
           <name>sorting_dimension</name>
-          <value>slice</value>
+          <value>none</value>
         </property>
     </gadget>
 
@@ -65,7 +65,7 @@
         <classname>BucketToBufferGadget</classname>
         <property>
             <name>N_dimension</name>
-            <value></value>
+            <value>repetition</value>
         </property>
         <property>
           <name>S_dimension</name>
@@ -73,49 +73,36 @@
         </property>
         <property>
           <name>split_slices</name>
-          <value>true</value>
+          <value>false</value>
         </property>
     </gadget>
+
 	<gadget>
 		<name>PseudoReplicatorGadget</name>
 		<dll>gadgetron_debugging</dll>
 		<classname>PseudoReplicatorGadget</classname>
 		<property>
 			<name>repetitions</name>
-			<value>50</value>
+			<value>100</value>
 		</property>
 	</gadget>
 
   <gadget>
-  <name>SimpleRecon</name>
-  <dll>gadgetron_mricore</dll>
-  <classname>SimpleReconGadget</classname>
-  </gadget>
-
-    <gadget>
-      <name>ImageArraySplit</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageArraySplitGadget</classname>
-     </gadget>
-     
-	 <gadget>
-		<name>PseudoReplicaGatherPython</name>
-        <dll>gadgetron_python</dll>
-        <classname>PythonGadget</classname>
-        <property>
-            <name>python_module</name>
-            <value>pseudoreplicagather</value>
-        </property>
-        <property>
-            <name>python_class</name> 
-            <value>PseudoreplicaGather</value>
-        </property>
-        <property>
-			<name>repetitions</name>
-			<value>50</value>
+		<name>StandardDeviationGadget</name>
+		<dll>gadgetron_debugging</dll>
+		<classname>StandardDeviationGadget</classname>
+    <property>
+			<name>errorThreshold</name>
+			<value>0.000001</value>
 		</property>
 	</gadget>
 
+  <gadget>
+    <name>ImageArraySplit</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>ImageArraySplitGadget</classname>
+  </gadget>
+    
   <gadget>
       <name>FloatToShort</name>
       <dll>gadgetron_mricore</dll>

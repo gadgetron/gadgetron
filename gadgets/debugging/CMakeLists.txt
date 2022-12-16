@@ -10,6 +10,7 @@ set(gadgetron_debugging_header_files
         ImageWriterGadget.h
         PseudoReplicatorGadget.h
         RateLimitGadget.h
+        StandardDeviationGadget.h
         WhiteNoiseInjectorGadget.h
         )
 
@@ -19,6 +20,7 @@ set(gadgetron_debugging_src_files
         ImageWriterGadget.cpp
         PseudoReplicatorGadget.cpp
         RateLimitGadget.cpp
+        StandardDeviationGadget.cpp
         WhiteNoiseInjectorGadget.cpp
         )
 
