@@ -1252,6 +1252,7 @@ namespace Gadgetron
     std::map<std::string, std::string> to_map(const std::vector<ISMRMRD::UserParameterString> & userparameters) {
         return to_map_internal(userparameters);
     }
+
     ISMRMRD::ImageHeader image_header_from_acquisition(
         const ISMRMRD::AcquisitionHeader& acq_header, const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data) {
 
