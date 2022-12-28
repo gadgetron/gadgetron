@@ -60,4 +60,3 @@ dependencies:
   - xsdata>=22.2
   - yq=2.13                               # dev
 
-
