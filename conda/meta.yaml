@@ -73,6 +73,8 @@ requirements:
 
 test:
   requires:
+    - gmock>=1.10.0
+    - gtest=1.10.0
     - ismrmrd::siemens_to_ismrmrd=1.2.8
 
 about:
