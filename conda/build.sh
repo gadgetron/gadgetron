@@ -25,7 +25,7 @@ if [[ $(uname) =~ Darwin ]]; then
 else
    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCUDA_COMPUTE_CAPABILITY=ALL -DUSE_MKL=ON -DUSE_CUDA=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 
-   # Run server tests from build, as this binary is currently not installed
+   echo "Run storage server tests at end of build, as this testing binary is not installed."
    ./apps/gadgetron/test/server_tests &
 fi
 
