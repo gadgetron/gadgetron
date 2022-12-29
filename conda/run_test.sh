@@ -11,7 +11,7 @@ python get_data.py
 gadgetron --info
 
 if [[ $(uname) =~ Darwin ]]; then
-   # echo "Tests for macOS/Darwin TBD"
+   echo "Tests for macOS/Darwin TBD"
    # echo "Running unit tests on macOS."
    # test_all
    # echo "Now run integration tests."
