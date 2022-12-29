@@ -30,7 +30,6 @@ requirements:
     - howardhinnant_date=3.0.1
     - ismrmrd::ismrmrd=1.13.1
     - ismrmrd::ismrmrd-python>=1.9.8
-    - ismrmrd::siemens_to_ismrmrd=1.2.8   # [osx]
     - libblas=*=*mkl
     - libcurl=7.79.1
     - libxml2=2.9
