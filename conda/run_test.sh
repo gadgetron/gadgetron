@@ -12,7 +12,7 @@ gadgetron --info
 
 if [[ $(uname) =~ Darwin ]]; then
    echo "Place for running unit tests on macOS."
-   # test_all
+   test_all
    # echo "Now run integration tests."
    # python run_tests.py cases/*
 else
