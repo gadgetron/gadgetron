@@ -11,8 +11,8 @@ dependencies:
   - armadillo=9.900.5                     # dev
   - boost=1.80.0
   - breathe=4.34                          # dev
-  - clang=15.0                            # dev
-  - clangxx=15.0                          # dev
+  - clang=13.0                            # dev
+  - clangxx=13.0                          # dev
   - cmake=3.21.3                          # dev
   - conda-build=3.23                      # dev
   - conda-verify=3.1                      # dev
