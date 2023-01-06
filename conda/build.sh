@@ -21,7 +21,8 @@ if [[ $(uname) =~ Darwin ]]; then
    which cmake
    cmake --version
    export MACOSX_DEPLOYMENT_TARGET=10.15
-   cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_IGNORE_PATH='/Applications/Xcode.app/Contents/Developer/usr/bin' -DCMAKE_C_COMPILER=${CONDA_PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${CONDA_PREFIX}/bin/clang++ -DBUILD_PYTHON_SUPPORT=ON -DUSE_MKL=ON -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
+   export CMAKE_IGNORE_PATH='Applications/Xcode.app_14.0.1.app/Contents/Developer/usr/bin;/Applications/Xcode_14.0.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/lib/'
+   cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${CONDA_PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${CONDA_PREFIX}/bin/clang++ -DBUILD_PYTHON_SUPPORT=ON -DUSE_MKL=ON -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 else
    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCUDA_COMPUTE_CAPABILITY=ALL -DUSE_MKL=ON -DUSE_CUDA=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 fi
