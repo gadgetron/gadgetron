@@ -29,6 +29,7 @@ if [[ $(uname) =~ Darwin ]]; then
    export SYSTEM_DIRECTORIES_TO_IGNORE="${XCODE_ROOT}/Contents/Developer/usr/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/lib"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/bin"
+   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/lib"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/bin"
