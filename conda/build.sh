@@ -23,9 +23,9 @@ if [[ $(uname) =~ Darwin ]]; then
    export MACOSX_DEPLOYMENT_TARGET=10.15
    export XCODE_ROOT="/Applications/Xcode.app_14.0.1.app"
    # See where else on system python3 may be installed
-   echo "*** Trying to find other Python installations on host system."
-   find /usr -name "python3*" -print
-   find $XCODE_ROOT -name "python3*" -print
+   # echo "*** Trying to find other Python installations on host system."
+   # find /usr -name "python3*" -print
+   # find $XCODE_ROOT -name "python3*" -print
    export SYSTEM_DIRECTORIES_TO_IGNORE="${XCODE_ROOT}/Contents/Developer/usr/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/lib"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/bin"
@@ -33,6 +33,8 @@ if [[ $(uname) =~ Darwin ]]; then
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/lib"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/lib"
+   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/opt"
+   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/miniconda/bin"
    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_IGNORE_PATH=$SYSTEM_DIRECTORIES_TO_IGNORE -DCMAKE_C_COMPILER=${PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${PREFIX}/bin/clang++ -DBUILD_PYTHON_SUPPORT=OFF -DUSE_MKL=ON -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 else
    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCUDA_COMPUTE_CAPABILITY=ALL -DUSE_MKL=ON -DUSE_CUDA=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
