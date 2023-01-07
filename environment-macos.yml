@@ -37,7 +37,6 @@ dependencies:
   - make=4.3                              # dev
   - matplotlib=3.4.3                      # dev
   - mkl>=2022.0.0
-  - mkl-devel>=2022.0.0                   # dev
   - mkl-include>=2022.0.0                 # dev
   - ismrmrd::mrd-storage-server=0.0.12
   - ninja=1.10                            # dev
