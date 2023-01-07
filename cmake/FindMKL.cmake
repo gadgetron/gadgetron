@@ -292,6 +292,13 @@ ELSE(UNIX AND NOT APPLE)
   SET(mkl_dl "")
 ENDIF(UNIX AND NOT APPLE)
 
+IF(EXISTS $ENV{CONDA_PREFIX})
+  SET(mkl_m "")
+  SET(mkl_pthread "")
+  SET(mklthreads "mkl_intel_thread")
+  SET(mklrtls "gomp" "iomp5")
+ENDIF(EXISTS $ENV{CONDA_PREFIX})
+
 # Check for version 10/11
 IF (NOT MKL_LIBRARIES)
   SET(MKL_VERSION 1011)
