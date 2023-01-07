@@ -34,6 +34,7 @@ requirements:
     - libcurl=7.79.1
     - libxml2=2.9
     - mkl>=2022.0.0
+    - mkl-devel>=2022.0.0
     - mkl-include>=2022.0.0
     - ismrmrd::mrd-storage-server=0.0.12
     - ninja=1.10.2
