@@ -14,28 +14,14 @@ if [[ $(uname) =~ Darwin ]]; then
    # system_profiler SPMemoryDataType
    sysctl hw.memsize
    sw_vers
-   # identify Python causing trouble in cloud environment when building in Python support into macOS build
-   which python
-   python --version
-   # also determine which cmake is being called
-   which cmake
-   cmake --version
    export MACOSX_DEPLOYMENT_TARGET=10.15
    export XCODE_ROOT="/Applications/Xcode.app_14.0.1.app"
-   # See where else on system python3 may be installed
-   # echo "*** Trying to find other Python installations on host system."
-   # find /usr -name "python3*" -print
-   # find $XCODE_ROOT -name "python3*" -print
    export SYSTEM_DIRECTORIES_TO_IGNORE="${XCODE_ROOT}/Contents/Developer/usr/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/lib"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/usr/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};${XCODE_ROOT}/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/bin"
    export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/lib"
-   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/bin"
-   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/lib"
-   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/opt"
-   export SYSTEM_DIRECTORIES_TO_IGNORE="${SYSTEM_DIRECTORIES_TO_IGNORE};/usr/local/miniconda/bin"
    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${PREFIX} -DCMAKE_IGNORE_PATH=$SYSTEM_DIRECTORIES_TO_IGNORE -DCMAKE_C_COMPILER=${PREFIX}/bin/clang -DCMAKE_CXX_COMPILER=${PREFIX}/bin/clang++ -DPython3_EXECUTABLE=${PREFIX}/bin/python3 -DBUILD_PYTHON_SUPPORT=ON -DUSE_MKL=ON -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
 else
    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCUDA_COMPUTE_CAPABILITY=ALL -DUSE_MKL=ON -DUSE_CUDA=ON -DCMAKE_INSTALL_PREFIX="${PREFIX}" "${SRC_DIR}"
