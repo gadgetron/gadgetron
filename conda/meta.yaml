@@ -12,9 +12,8 @@ source:
 requirements:
   build:
     - armadillo>=9.900.5
-    - boost=1.76.0
+    - boost=1.80.0
     - cmake>=3.21.3
-    - gadgetron::cpr=1.7.2
     - cuda-libraries-dev=11.6.1           # [linux64]
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
@@ -27,11 +26,11 @@ requirements:
     - gxx_linux-64=9.4.0                  # [linux64]
     - gtest=1.10.0
     - howardhinnant_date=3.0.1
-    - ismrmrd::ismrmrd=1.12.0
+    - ismrmrd::ismrmrd=1.13.1
     - ismrmrd::ismrmrd-python>=1.9.8
     - libblas=*=*mkl
     - libcurl=7.79.1
-    - libxml2=2.9.12
+    - libxml2=2.9
     - mkl>=2022.0.0
     - mkl-include>=2022.0.0
     - ismrmrd::mrd-storage-server=0.0.12
@@ -42,24 +41,23 @@ requirements:
     - pugixml=1.11.4
     - pyfftw>=0.12.0
     - pyyaml>=6.0
-    - python>=3.9.7
+    - python=3.9
     - gadgetron::range-v3>=0.11.0
     - sysroot_linux-64=2.17
   run:
     - armadillo>=9.900.5
-    - boost=1.76.0
-    - gadgetron::cpr=1.7.2
+    - boost=1.80.0
     - cuda-libraries=11.6.1               # [linux64]
     - cuda-runtime=11.6.1                 # [linux64]
     - dcmtk=3.6.1
     - fftw=3.3.9
     - gadgetron::gadgetron-python>=1.4.1
-    - ismrmrd::ismrmrd=1.12.0
+    - ismrmrd::ismrmrd=1.13.1
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
     - libblas=*=*mkl
     - libcurl=7.79.1
-    - libxml2=2.9.12
+    - libxml2=2.9
     - memkind>=1.10.1
     - mkl>=2022.0.0
     - ismrmrd::mrd-storage-server=0.0.12
@@ -67,13 +65,13 @@ requirements:
     - onnxruntime=1.10.0
     - pugixml=1.11.4
     - pyfftw>=0.12.0
-    - python>=3.9.7
+    - python=3.9
     - scipy=1.7.1
     - sysroot_linux-64=2.17               # [linux64]
 
 test:
   requires:
-    - ismrmrd::siemens_to_ismrmrd=1.2.6
+    - ismrmrd::siemens_to_ismrmrd=1.2.8
 
 about:
   home: https://github.com/gadgetron/gadgetron

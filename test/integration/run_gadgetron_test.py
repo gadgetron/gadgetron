@@ -128,7 +128,7 @@ def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, co
                    stderr=log_stderr)
 
 
-def wait_for_storage_server(port, proc, retries=20):
+def wait_for_storage_server(port, proc, retries=50):
     for i in range(retries):
         try:
             urllib.request.urlopen(f"http://localhost:{port}/healthcheck")

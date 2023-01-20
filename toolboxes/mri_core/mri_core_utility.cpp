@@ -1231,6 +1231,7 @@ namespace Gadgetron
 
         return DIM_NONE;
     }
+
     namespace {
         template<class T> std::map<std::string, decltype(T::value)> to_map_internal(const std::vector<T>& userparameters){
             std::map<std::string, decltype(T::value)> output_map;
@@ -1241,7 +1242,7 @@ namespace Gadgetron
         }
     }
 
-    std::map<std::string, long> to_map(const std::vector<ISMRMRD::UserParameterLong> & userparameters) {
+    std::map<std::string, std::int64_t> to_map(const std::vector<ISMRMRD::UserParameterLong> & userparameters) {
         return to_map_internal(userparameters);
     }
 
@@ -1252,6 +1253,7 @@ namespace Gadgetron
     std::map<std::string, std::string> to_map(const std::vector<ISMRMRD::UserParameterString> & userparameters) {
         return to_map_internal(userparameters);
     }
+
     ISMRMRD::ImageHeader image_header_from_acquisition(
         const ISMRMRD::AcquisitionHeader& acq_header, const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data) {
 
