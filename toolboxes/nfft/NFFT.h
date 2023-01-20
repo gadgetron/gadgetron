@@ -59,9 +59,6 @@ namespace Gadgetron {
         NFFT_plan(const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os, REAL W);
         NFFT_plan(const vector_td<size_t,D>& matrix_size, REAL oversampling_factor, REAL W);
 
-
-        void reconfigure(const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os, REAL W);
-        void reconfigure(const vector_td<size_t,D>& matrix_size, REAL oversampling_Factor,  REAL W);
         /**
            Perform NFFT preprocessing for a given trajectory.
            \param trajectory the NFFT non-Cartesian trajectory normalized to the range [-1/2;1/2].
@@ -181,4 +178,3 @@ namespace Gadgetron {
 
 
 }
-#include "NFFT.hpp"
