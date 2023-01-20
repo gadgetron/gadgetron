@@ -225,8 +225,6 @@ if(CUDA_FOUND)
         core/gpu/setup_grid.h
         dwt/gpu/cuDWTOperator.h
         dwt/gpu/cuNDDWT.h
-        fft/gpu/cuFFTCachedPlan.h
-        fft/gpu/cuFFTCachedPlan.hpp
         fft/gpu/cuFFTPlan.h
         fft/gpu/cuFFTPlan.hpp
         fft/gpu/cuNDFFT.h

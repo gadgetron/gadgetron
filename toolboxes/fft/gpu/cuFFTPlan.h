@@ -15,6 +15,22 @@ template <class ComplexType, class = std::enable_if_t<is_complex_type_v<ComplexT
 
     ~cuFFTPlan();
 
+    void fft1(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void fft2(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void fft3(cuNDArray<ComplexType>& in_out, bool scale=true);
+
+    void ifft1(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void ifft2(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void ifft3(cuNDArray<ComplexType>& in_out, bool scale=true);
+
+    void fft1c(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void fft2c(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void fft3c(cuNDArray<ComplexType>& in_out, bool scale=true);
+
+    void ifft1c(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void ifft2c(cuNDArray<ComplexType>& in_out, bool scale=true);
+    void ifft3c(cuNDArray<ComplexType>& in_out, bool scale=true);
+    
     /**
      * Creates a non-centered inplace FFT
      * @param in_out

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "cuSenseOperator.h"
-#include "cuFFTCachedPlan.h"
 
 namespace Gadgetron{
   
@@ -32,6 +31,5 @@ namespace Gadgetron{
     
   protected:
     boost::shared_ptr< cuNDArray<unsigned int> > idx_;
-    cuFFTCachedPlan<complext<REAL>> fft_plan;
   };
 }
