@@ -36,6 +36,7 @@ namespace Gadgetron {
             user_5,
             user_6,
             user_7,
+            parallel_calibration,
             n_acquisitions,
             none
         };
