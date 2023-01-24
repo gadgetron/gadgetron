@@ -29,7 +29,7 @@ namespace Gadgetron {
             case TriggerDimension::user_5: return header.idx.user[5];
             case TriggerDimension::user_6: return header.idx.user[6];
             case TriggerDimension::user_7: return header.idx.user[7];
-            case TriggerDimension::parallel_calibration: return (unsigned short) header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION);
+            case TriggerDimension::parallel_calibration: return header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION);
             case TriggerDimension::n_acquisitions: return 0;
             case TriggerDimension::none: return 0;
             }
@@ -58,11 +58,11 @@ namespace Gadgetron {
         struct FlagRemovedTrigger {
             explicit FlagRemovedTrigger(TriggerDimension trig) : trigger{trig} {}
             const TriggerDimension trigger;
-            Core::optional<unsigned short> previous_trigger;
+            bool previous_trigger = false;
             bool trigger_before(const ISMRMRD::AcquisitionHeader& head) {
-                auto flag_active = get_index(head, trigger);
-                auto result = (previous_trigger != flag_active && !flag_active && previous_trigger != Core::none);
-                // GDEBUG("Previous Trigger: %d, Trigger: %d, result: %d\n", previous_trigger, flag_active, result);
+                bool flag_active = (bool) get_index(head, trigger);
+                bool result = (previous_trigger && !flag_active);
+                // GDEBUG("cnt: %d, Previous Trigger: %d, Trigger: %d, result: %d\n", head.scan_counter, previous_trigger, flag_active, result);
                 previous_trigger = flag_active;
                 return result;
             }
