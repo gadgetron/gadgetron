@@ -57,7 +57,8 @@ requirements:
     - gadgetron::gadgetron-python>=1.4.1
     - gmock>=1.10.0
     - gtest=1.10.0
-    - ismrmrd::ismrmrd=1.13.1
+    - ismrmrd::ismrmrd=1.13.1             # [linux64]
+    - ismrmrd::ismrmrd=1.13.2             # [osx]
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
     - libblas=*=*mkl
