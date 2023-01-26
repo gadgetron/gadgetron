@@ -297,6 +297,7 @@ IF(EXISTS $ENV{CONDA_PREFIX})
   SET(mkl_pthread "")
   SET(mklthreads "mkl_intel_thread")
   SET(mklrtls "gomp" "iomp5")
+  list(APPEND CMAKE_PREFIX_PATH $ENV{CONDA_PREFIX})
 ENDIF(EXISTS $ENV{CONDA_PREFIX})
 
 # Check for version 10/11
