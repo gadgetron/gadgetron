@@ -560,13 +560,6 @@ namespace Gadgetron{
           traj.reshape(&dims);
           dcw.reshape(&dims);
         }
-	
-        /*
-          static int counter = 0;
-          char filename[256];
-          sprintf((char*)filename, "reg_%d.cplx", counter);
-          write_nd_array<float_complext>( &reg_host_[idx], filename );
-          counter++; */
 
         buffer_update_needed_[idx] = false;
       }

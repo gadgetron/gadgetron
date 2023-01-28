@@ -198,14 +198,6 @@ namespace Gadgetron {
 
     CHECK_FOR_CUDA_ERROR();    
 
-    /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "_A_%d.cplx", counter);
-    write_nd_array<float_complext>( A.to_host().get(), filename );
-    counter++;
-    */
-
     // Compute A^H A
     //
 
@@ -242,14 +234,6 @@ namespace Gadgetron {
       throw std::runtime_error("estimate_spirit_kernels: CUBLAS error computing A^HA");
     }
 
-    /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "_AHA_%d.cplx", counter);
-    write_nd_array<float_complext>( AHA.to_host().get(), filename );
-    counter++;
-    */
-
     // Multiply A^H with each coil image (to form the rhs)
     //
 
@@ -271,15 +255,6 @@ namespace Gadgetron {
       throw std::runtime_error("estimate_spirit_kernels: CUBLAS error computing rhs");
     }
     
-    /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "_rhs_%d.cplx", counter);
-    write_nd_array<float_complext>( rhs.to_host().get(), filename );
-    counter++;
-    */
-
-
 
     //CGELS is used rather than a more conventional solver as it is part of CULA free.
     /*
@@ -335,14 +310,6 @@ namespace Gadgetron {
     dims_to_xform.push_back(0); dims_to_xform.push_back(1);    
     cuNDFFT<float>::instance()->ifft( kernel_images.get(), &dims_to_xform, false );
     
-    /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "_kernels_%d.cplx", counter);
-    write_nd_array<float_complext>( kernel_images->to_host().get(), filename );
-    counter++;
-    */
-
     return kernel_images;
   }
 }

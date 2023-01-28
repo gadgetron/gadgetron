@@ -239,24 +239,6 @@ namespace Gadgetron{
               deformed_moving = this->of_solver_->deform( &moving_image, deformations );
             }
 	  
-            /*{
-            // The debug code below only compiles for cuNDArrays.
-            // To use (temporarily) comment out
-            // list(APPEND CPU_GADGETS cpuRegistrationScatteringGadget.cpp)
-            // in the CMakeList.txt
-            //
-            char filename[256];
-            sprintf((char*)filename, "fixed_%d.real", phase);
-            write_nd_array<float>( fixed_image.to_host().get(), filename );
-            sprintf((char*)filename, "moving_%d.real", phase);
-            write_nd_array<float>( moving_image.to_host().get(), filename );
-            sprintf((char*)filename, "deformed_moving_%d.real", phase);
-            write_nd_array<float>( deformed_moving->to_host().get(), filename );
-            sprintf((char*)filename, "deformation_%d.real", phase);
-            write_nd_array<float>( deformations->to_host().get(), filename );
-            } */
-
-
             // Pass along the deformed moving images
             //	  
 	  
