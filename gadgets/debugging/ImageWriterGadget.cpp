@@ -13,16 +13,16 @@ process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
     char filename[1024];
     switch (sizeof(T)) {
      case (8): //Complex float
-     	sprintf(filename, "out_%05d.cplx", (int)this->calls_);
+     	snprintf(filename, 1024, "out_%05d.cplx", (int)this->calls_);
      	break;
      case (4): //Real floats
- 		sprintf(filename, "out_%05d.real", (int)this->calls_);
+ 		snprintf(filename, 1024, "out_%05d.real", (int)this->calls_);
  		break;
      case (2): //Unsigned short
- 		sprintf(filename, "out_%05d.short", (int)this->calls_);
+ 		snprintf(filename, 1024, "out_%05d.short", (int)this->calls_);
  		break;
      default:
-     	sprintf(filename, "out_%05d.cplx", (int)this->calls_);
+     	snprintf(filename, 1024, "out_%05d.cplx", (int)this->calls_);
      	break;
      }
 
