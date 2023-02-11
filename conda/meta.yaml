@@ -25,6 +25,8 @@ requirements:
     - gmock>=1.10.0
     - gxx_linux-64=9.4.0                  # [linux64]
     - gtest=1.10.0
+    - h5py=3.2.1
+    - hdf5=1.10.6
     - howardhinnant_date=3.0.1
     - ismrmrd::ismrmrd=1.13.1
     - ismrmrd::ismrmrd-python>=1.9.8
