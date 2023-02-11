@@ -26,7 +26,6 @@ requirements:
     - gxx_linux-64=9.4.0                  # [linux64]
     - gtest=1.10.0
     - h5py=3.2.1
-    - hdf5=1.10.6
     - howardhinnant_date=3.0.1
     - ismrmrd::ismrmrd=1.13.1
     - ismrmrd::ismrmrd-python>=1.9.8
@@ -55,7 +54,6 @@ requirements:
     - fftw=3.3.9
     - gadgetron::gadgetron-python>=1.4.1
     - h5py=3.2.1
-    - hdf5=1.10.6
     - ismrmrd::ismrmrd=1.13.1
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
