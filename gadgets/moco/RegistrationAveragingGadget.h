@@ -216,38 +216,20 @@ namespace Gadgetron{
 
             // Deform moving images based on the registration
             //
-	  
+
             boost::shared_ptr<ARRAY_TYPE> deformed_moving;
             {
               GadgetronTimer timer("Applying deformation");
               deformed_moving = this->of_solver_->deform( &moving_image, deformations );
             }
-	  
-            /*{
-            // The debug code below only compiles for cuNDArrays.
-            // To use (temporarily) comment out
-            // list(APPEND CPU_GADGETS cpuRegistrationAveragingGadget.cpp)
-            // in the CMakeList.txt
-            //
-            char filename[256];
-            sprintf((char*)filename, "fixed_%d.real", phase);
-            write_nd_array<float>( fixed_image.to_host().get(), filename );
-            sprintf((char*)filename, "moving_%d.real", phase);
-            write_nd_array<float>( moving_image.to_host().get(), filename );
-            sprintf((char*)filename, "deformed_moving_%d.real", phase);
-            write_nd_array<float>( deformed_moving->to_host().get(), filename );
-            sprintf((char*)filename, "deformation_%d.real", phase);
-            write_nd_array<float>( deformations->to_host().get(), filename );
-            } */
 
-	 
             // Accumulate the deformed moving images (into one image) and add this image to the fixed image. 
             // Then divide by the number of images to get the average.
             //	  
-	  
+
             fixed_image += ((deformed_moving->get_number_of_dimensions() == 3) ? *sum(deformed_moving.get(), 2) : *deformed_moving);
             fixed_image /= ((typename ARRAY_TYPE::element_type)num_images);
-	  
+
             // Pass along averaged image
             //
 	  

@@ -178,23 +178,6 @@ namespace Gadgetron{
     //Apply dcw weights
     *device_samples *= *dcw;
 
-
-    /*{
-      static int counter = 0;
-      char filename[256];
-      sprintf((char*)filename, "_traj_%d.real", counter);
-      write_nd_array<floatd2>( traj->to_host().get(), filename );
-      sprintf((char*)filename, "_dcw_%d.real", counter);
-      write_nd_array<float>( dcw->to_host().get(), filename );
-      sprintf((char*)filename, "_csm_%d.cplx", counter);
-      write_nd_array<float_complext>( csm->to_host().get(), filename );
-      sprintf((char*)filename, "_samples_%d.cplx", counter);
-      write_nd_array<float_complext>( device_samples->to_host().get(), filename );
-      sprintf((char*)filename, "_reg_%d.cplx", counter);
-      write_nd_array<float_complext>( reg_image->to_host().get(), filename );
-      counter++; 
-      }*/
-
     // Invoke solver
     // 
     boost::shared_ptr< cuNDArray<float_complext> > cgresult;
@@ -214,14 +197,6 @@ namespace Gadgetron{
       GDEBUG("Iterative_sense_compute failed\n");
       return GADGET_FAIL;
     }
-
-    /*
-      static int counter = 0;
-      char filename[256];
-      sprintf((char*)filename, "recon_%d.real", counter);
-      write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
-      counter++; 
-    */
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )

@@ -33,28 +33,6 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > csm =       
       estimate_spirit_kernels( csm_data.get(), 7 ); // TODO: let the kernel size be user defined
 
-
-
-/*
-    // --> START debug output
-    boost::shared_ptr< cuSpirit2DOperator<float> > C( new cuSpirit2DOperator<float>() );
-		C->set_calibration_kernels(csm);
-    static int counter = 0;
-    char filename[256];
-    cuNDFFT<float>::instance()->ifft( csm_data.get(), &dims_to_xform );
-    //boost::shared_ptr< cuSpirit2DOperator<float> > C( new cuSpirit2DOperator<float>() );
-    //C->set_calibration_kernels(csm);
-    sprintf((char*)filename, "_before_%d.real", counter);
-    write_nd_array<float>( abs(csm_data.get())->to_host().get(), filename );
-    cuNDArray<float_complext> after(csm_data->get_dimensions()); C->mult_M(csm_data.get(),&after);
-    sprintf((char*)filename, "_after_%d.real", counter);
-    write_nd_array<float>( abs(&after)->to_host().get(), filename );
-    sprintf((char*)filename, "_spirit_calibration_%d.real", counter);
-    write_nd_array<float>( abs(csm.get())->to_host().get(), filename );    
-    counter++;
-    // <-- END debug output
-*/
-
     return csm->to_host(); 
   }
   
