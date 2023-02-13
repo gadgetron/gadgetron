@@ -99,9 +99,9 @@ namespace Gadgetron
       int micros = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000000;
 
       //Time the format MM-DD HH:MM:SS.uuu
-      char timestr[66];sprintf(timestr, "%02d-%02d %02d:%02d:%02d.%03d ",
-			       timeinfo->tm_mon+1, timeinfo->tm_mday,
-			       timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, micros/1000);
+      char timestr[66];snprintf(timestr, 66, "%02d-%02d %02d:%02d:%02d.%03d ",
+                                timeinfo->tm_mon+1, timeinfo->tm_mday,
+                                timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, micros/1000);
 
       fmt_str += std::string(timestr);
       append_cformatting_needed = true;
@@ -142,7 +142,7 @@ namespace Gadgetron
       } else {
 	fmt_str += std::string("[") + std::string(filename);
       }
-      char linenostr[8];sprintf(linenostr, "%d", lineno);
+      char linenostr[8];snprintf(linenostr, 8, "%d", lineno);
       fmt_str += std::string(":") + std::string(linenostr);
       fmt_str += std::string("] ");
       append_cformatting_needed = true;

@@ -453,13 +453,6 @@ namespace Gadgetron{
         }            
 	
         reg_host_[set*slices_+slice] = *(reg_image->to_host());
-        
-        /*
-          static int counter = 0;
-          char filename[256];
-          sprintf((char*)filename, "reg_%d.real", counter);
-          write_nd_array<float>( abs(&reg_host_[set*slices_+slice]).get(), filename );
-          counter++;  */
 
         buffer_update_needed_[set*slices_+slice] = false;        
       }
