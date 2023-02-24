@@ -5,6 +5,8 @@
 
 #include "dicom_ismrmrd_utility.h"
 #include <stdio.h>
+#include <cstdio>
+#include <cinttypes>
 #include "boost/date_time/gregorian/gregorian.hpp"
 
 namespace Gadgetron
@@ -205,7 +207,7 @@ namespace Gadgetron
             // Accession Number
             key.set(0x0008, 0x0050);
             if (study_info.accessionNumber) {
-                snprintf(buf, BUFSIZE, "%lld", *study_info.accessionNumber);
+                snprintf(buf, BUFSIZE, "%+" PRId64, *study_info.accessionNumber);
                 write_dcm_string(dataset, key, buf);
             }
             else {
