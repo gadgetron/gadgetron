@@ -440,6 +440,11 @@ namespace Gadgetron {
             // TODO any other sort of trajectory?
             offset = 0;
         }
+
+
+        GDEBUG_STREAM("WARN SETTING NEW LIMITS, Limits debug: " << dataBuffer.sampling_.sampling_limits_[0].center_ << ", " << (long long)acqhdr.center_sample << ", " << dataBuffer.data_.get_size(0));
+        offset = 0;
+
         long long roffset = (long long)dataBuffer.data_.get_size(0) - npts_to_copy - offset;
 
         if ((offset < 0) | (roffset < 0)) {

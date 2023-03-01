@@ -15,6 +15,7 @@ endif()
 
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
+        AugmentImageMetadataGadget.h
         NoiseAdjustGadget.h
         PCACoilGadget.h
         AccumulatorGadget.h
@@ -80,6 +81,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         )
 
 set(gadgetron_mricore_src_files
+        AugmentImageMetadataGadget.cpp
         NoiseAdjustGadget.cpp
         PCACoilGadget.cpp
         AccumulatorGadget.cpp
@@ -147,8 +149,9 @@ set(gadgetron_mricore_src_files
 
 set(gadgetron_mricore_config_files
         config/default.xml
+        config/default_cplx.xml
         config/default_short.xml
-        config/default_optimized.xml
+        config/default.xml
         config/default_measurement_dependencies.xml
         config/default_measurement_dependencies_ismrmrd_storage.xml
         config/isalive.xml
