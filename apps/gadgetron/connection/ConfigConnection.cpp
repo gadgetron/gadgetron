@@ -68,7 +68,14 @@ namespace {
         ) : ConfigHandler(callback), paths(paths) {}
 
         void handle(std::istream &stream, Gadgetron::Core::OutputChannel&) override {
-            boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
+            auto recon_name = read_filename_from_stream(stream);
+
+            // Look up if there is an environment variable with that name
+            if (getenv(recon_name.c_str())) {
+                recon_name = std::string(getenv(recon_name.c_str()));
+            }
+
+            boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / recon_name;
 
             GDEBUG_STREAM("Reading config file: " << filename);
 
@@ -91,6 +98,15 @@ namespace {
         }
     };
 
+    class TextConfigurationHandler : public Handler {
+    public:
+        void handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) override {
+            auto msg = read_string_from_stream<uint32_t>(stream);
+            GDEBUG_STREAM("TEXT MESSAGE DISCARDED: " << msg);
+        }
+    };
+
+
     class ConfigStreamContext {
     public:
         Gadgetron::Core::optional<Config> config;
@@ -111,6 +127,7 @@ namespace {
         handlers[FILENAME] = std::make_unique<ConfigReferenceHandler>(config_callback, context.paths);
         handlers[CONFIG]   = std::make_unique<ConfigStringHandler>(config_callback);
         handlers[HEADER]   = std::make_unique<ErrorProducingHandler>("Received ISMRMRD header before config file.");
+        handlers[TEXT]     = std::make_unique<TextConfigurationHandler>();
         handlers[QUERY]    = std::make_unique<QueryHandler>();
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
