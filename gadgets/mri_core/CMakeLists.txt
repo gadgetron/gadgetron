@@ -150,7 +150,7 @@ set(gadgetron_mricore_src_files
 set(gadgetron_mricore_config_files
         config/default.xml
         config/default_short.xml
-        config/default.xml
+        config/default_optimized.xml
         config/default_measurement_dependencies.xml
         config/default_measurement_dependencies_ismrmrd_storage.xml
         config/isalive.xml
