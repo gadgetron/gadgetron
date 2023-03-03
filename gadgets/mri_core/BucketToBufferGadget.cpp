@@ -428,8 +428,7 @@ namespace Gadgetron {
         if (encoding.trajectory == ISMRMRD::TrajectoryType::CARTESIAN
             || encoding.trajectory == ISMRMRD::TrajectoryType::EPI) {
             if ((acqhdr.number_of_samples == dataBuffer.data_.get_size(0))
-                && (acqhdr.center_sample
-                    == acqhdr.number_of_samples / 2)) // acq has been corrected for center , e.g. by asymmetric handling
+                && ((acqhdr.center_sample == acqhdr.number_of_samples / 2) || acqhdr.center_sample >= acqhdr.number_of_samples)) // acq has been corrected for center , e.g. by asymmetric handling
             {
                 offset = acqhdr.discard_pre;
             } else {
@@ -440,10 +439,6 @@ namespace Gadgetron {
             // TODO any other sort of trajectory?
             offset = 0;
         }
-
-
-        GDEBUG_STREAM("WARN SETTING NEW LIMITS, Limits debug: " << dataBuffer.sampling_.sampling_limits_[0].center_ << ", " << (long long)acqhdr.center_sample << ", " << dataBuffer.data_.get_size(0));
-        offset = 0;
 
         long long roffset = (long long)dataBuffer.data_.get_size(0) - npts_to_copy - offset;
 
