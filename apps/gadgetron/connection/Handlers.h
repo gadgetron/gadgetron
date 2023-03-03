@@ -5,7 +5,6 @@
 #include <functional>
 
 #include "Channel.h"
-#include "io/primitives.h"
 
 namespace Gadgetron::Server::Connection::Handlers {
 

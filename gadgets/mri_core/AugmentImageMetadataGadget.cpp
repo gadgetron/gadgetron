@@ -25,10 +25,6 @@ Gadgetron::Core::Image<std::complex<float>> Gadgetron::AugmentImageMetadataGadge
     meta->append("ImageColumnDir", header.phase_dir[1]);
     meta->append("ImageColumnDir", header.phase_dir[2]);
 
-    std::stringstream metastream;
-    ISMRMRD::serialize(meta.value(), metastream);
-
-    GDEBUG_STREAM("META: " << std::endl << metastream.str() << std::endl);
     return { header, input_data, meta };
 }
 
