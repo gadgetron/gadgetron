@@ -17,14 +17,19 @@ Gadgetron::Core::Image<std::complex<float>> Gadgetron::AugmentImageMetadataGadge
         meta = ISMRMRD::MetaContainer();
     }
 
-    meta->append("ImageRowDir", header.read_dir[0]);
-    meta->append("ImageRowDir", header.read_dir[1]);
-    meta->append("ImageRowDir", header.read_dir[2]);
+    if (meta->length("ImageRowDir") != 3) {
+        meta->append("ImageRowDir", header.read_dir[0]);
+        meta->append("ImageRowDir", header.read_dir[1]);
+        meta->append("ImageRowDir", header.read_dir[2]);
+    }
 
-    meta->append("ImageColumnDir", header.phase_dir[0]);
-    meta->append("ImageColumnDir", header.phase_dir[1]);
-    meta->append("ImageColumnDir", header.phase_dir[2]);
 
+    if (meta->length("ImageColumnDir") != 3) {
+        meta->append("ImageColumnDir", header.phase_dir[0]);
+        meta->append("ImageColumnDir", header.phase_dir[1]);
+        meta->append("ImageColumnDir", header.phase_dir[2]);
+    }
+    
     return { header, input_data, meta };
 }
 
