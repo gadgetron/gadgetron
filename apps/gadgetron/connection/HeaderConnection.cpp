@@ -25,15 +25,6 @@ namespace {
 
     using Header = Gadgetron::Core::StreamContext::Header;
 
-    class TextConfigurationHandler : public Handler {
-    public:
-        void handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) override {
-            auto msg = read_string_from_stream<uint32_t>(stream);
-            GDEBUG_STREAM("TEXT MESSAGE DISCARDED: " << msg);
-        }
-    };
-
-
     class HeaderHandler : public Handler {
     public:
         explicit HeaderHandler(
@@ -73,7 +64,7 @@ namespace {
         handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[HEADER]   = std::make_unique<HeaderHandler>(header_callback);
-        handlers[TEXT]     = std::make_unique<TextConfigurationHandler>();
+        handlers[TEXT]     = std::make_unique<TextLoggerHandler>();
         handlers[QUERY]    = std::make_unique<QueryHandler>();
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 
