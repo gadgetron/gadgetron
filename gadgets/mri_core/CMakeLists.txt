@@ -149,7 +149,6 @@ set(gadgetron_mricore_src_files
 
 set(gadgetron_mricore_config_files
         config/default.xml
-        config/default_cplx.xml
         config/default_short.xml
         config/default.xml
         config/default_measurement_dependencies.xml
