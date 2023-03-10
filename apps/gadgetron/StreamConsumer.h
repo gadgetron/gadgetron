@@ -39,7 +39,6 @@ class ErrorThrower : public Connection::ErrorReporter
 
 std::filesystem::path find_config_path(const std::string& home_dir, const std::string& config_xml)
 {
-    std::filesystem::path path;
     auto config_path = std::filesystem::path(home_dir) / std::filesystem::path("share/gadgetron/config") /
                        std::filesystem::path(config_xml);
 
