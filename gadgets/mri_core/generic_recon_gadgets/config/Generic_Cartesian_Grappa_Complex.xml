@@ -24,12 +24,10 @@
     <!-- Noise prewhitening -->
     <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
 
-    <!-- RO asymmetric echo handling -->
     <gadget><name>AsymmetricEcho</name><dll>gadgetron_mricore</dll><classname>AsymmetricEchoAdjustROGadget</classname></gadget>
 
-    <!-- RO oversampling removal -->
     <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
-
+    
     <!-- Data accumulation and trigger gadget -->
     <gadget>
         <name>AccTrig</name>
@@ -200,5 +198,11 @@
         <dll>gadgetron_mricore</dll>
         <classname>ImageArraySplitGadget</classname>
     </gadget>
+
+     <gadget>
+      <name>AugmentImageMetadataGadget</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>AugmentImageMetadataGadget</classname>
+     </gadget>
 
 </gadgetronStreamConfiguration>

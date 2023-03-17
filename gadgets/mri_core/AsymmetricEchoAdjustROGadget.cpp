@@ -5,7 +5,7 @@ namespace {
         // 1 : pre zeros
         // 2 : post zeros
         // 0 : no zeros
-        if (2 * centre_column == samples) {
+        if (2 * centre_column == samples || centre_column >= samples) {
             return 0;
         }
         if (2 * centre_column < samples) {

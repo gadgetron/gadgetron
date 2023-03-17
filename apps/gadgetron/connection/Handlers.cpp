@@ -94,5 +94,10 @@ namespace Gadgetron::Server::Connection::Handlers {
     CloseHandler::CloseHandler(std::function<void()> callback) : callback(std::move(callback)) {}
 
     void CloseHandler::handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) { callback(); }
+
+    void TextLoggerHandler::handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) {
+        auto msg = read_string_from_stream<uint32_t>(stream);
+        GDEBUG_STREAM("TEXT MESSAGE RECEIVED: " << std::endl << msg);
+    }
 }
 
