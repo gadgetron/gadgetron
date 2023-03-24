@@ -18,9 +18,9 @@ The dicom image is sent out with message id -> dicom image -> dicom image name -
 
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"
-#define INCLUDE_CSTDLIB
-#define INCLUDE_CSTDIO
-#define INCLUDE_CSTRING
+// #define INCLUDE_CSTDLIB
+// #define INCLUDE_CSTDIO
+// #define INCLUDE_CSTRING
 #include "dcmtk/dcmdata/dctk.h"
 #include "dcmtk/dcmdata/dcostrmb.h"
 

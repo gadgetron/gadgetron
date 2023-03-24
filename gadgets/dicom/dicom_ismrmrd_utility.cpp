@@ -4,7 +4,6 @@
 */
 
 #include "dicom_ismrmrd_utility.h"
-#include <stdio.h>
 #include "boost/date_time/gregorian/gregorian.hpp"
 
 namespace Gadgetron

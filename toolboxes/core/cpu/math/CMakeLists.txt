@@ -5,6 +5,10 @@ elseif(WIN32)
 endif (WIN32)
 
 
+IF(MKL_FOUND)
+    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
+ENDIF (MKL_FOUND)
+
 set(cpucore_math_header_files
     hoNDArray_math.h
     hoNDImage_util.h

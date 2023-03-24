@@ -5,20 +5,23 @@
 
 #pragma once
 
+//#include "dcmtk/config/osconfig.h"
+//#include "dcmtk/ofstd/ofstdinc.h"
+//#define INCLUDE_CSTDLIB
+//#define INCLUDE_CSTDIO
+//#define INCLUDE_CSTRING
+#include "dcmtk/dcmdata/dctk.h"
+#include "dcmtk/dcmdata/dcostrmb.h"
+
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <string>
 #include <map>
 #include <complex>
 
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-
-#include "dcmtk/config/osconfig.h"
-#include "dcmtk/ofstd/ofstdinc.h"
-#define INCLUDE_CSTDLIB
-#define INCLUDE_CSTDIO
-#define INCLUDE_CSTRING
-#include "dcmtk/dcmdata/dctk.h"
-#include "dcmtk/dcmdata/dcostrmb.h"
 
 #include "gadgetron_dicom_export.h"
 #include "hoNDArray.h"
