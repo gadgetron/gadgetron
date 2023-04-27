@@ -14,4 +14,5 @@ target_link_libraries(nffth_2d_radial gadgetron_toolbox_gpu gadgetron_toolbox_ho
 target_link_libraries(nffth_cg_2d_radial gadgetron_toolbox_gpu gadgetron_toolbox_hostutils ${CUDA_LIBRARIES})
 target_link_libraries(nffth_sb_2d_radial gadgetron_toolbox_gpu gadgetron_toolbox_hostutils ${CUDA_LIBRARIES})
 
+
 install(TARGETS nfft_2d_radial nffth_2d_radial nffth_cg_2d_radial nffth_sb_2d_radial DESTINATION bin COMPONENT main)

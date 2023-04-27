@@ -45,7 +45,7 @@ namespace Gadgetron {
 
     static int counter = 0;
     char filename[256];
-    sprintf((char*)filename, "_coil_images_%d.real", counter);
+    snprintf((char*)filename, 256, "_coil_images_%d.real", counter);
     write_nd_array<REAL>( abs(this->acc_image_.get())->to_host().get(), filename );
     counter++;
 

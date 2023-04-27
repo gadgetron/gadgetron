@@ -61,10 +61,11 @@
 			"username": "automatic"
 		},
 		"docker-from-docker": {
-			"version": "latest",
+			"version": "20.10",
 			"moby": "false"
 		},
-		"git": "os-provided"
+		"git": "os-provided",
+		"azure-cli": "latest"
 	},
 	"postCreateCommand": ".devcontainer/bootstrap-vscode.sh ",
 }

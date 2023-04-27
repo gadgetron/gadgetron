@@ -68,7 +68,14 @@ namespace {
         ) : ConfigHandler(callback), paths(paths) {}
 
         void handle(std::istream &stream, Gadgetron::Core::OutputChannel&) override {
-            boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / read_filename_from_stream(stream);
+            auto recon_name = read_filename_from_stream(stream);
+
+            // Look up if there is an environment variable with that name
+            if (getenv(recon_name.c_str())) {
+                recon_name = std::string(getenv(recon_name.c_str()));
+            }
+
+            boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / recon_name;
 
             GDEBUG_STREAM("Reading config file: " << filename);
 

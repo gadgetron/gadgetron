@@ -223,13 +223,6 @@ namespace Gadgetron{
     // Goto from x-f to x-t space
     cuNDFFT<float>::instance()->fft( cgresult.get(), 2,true );
 
-    /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "recon_%d.real", counter);
-    write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
-    counter++; */
-
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
       *cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, *cgresult );
