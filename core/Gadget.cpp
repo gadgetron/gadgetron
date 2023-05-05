@@ -3,7 +3,6 @@
 
 namespace Gadgetron {
     std::string Gadget::get_string_value(const char *name) {
-        std::string str_val;
         GadgetPropertyBase *p = find_property(name);
         if (!p) {
             GERROR("Property %s\n", name);
