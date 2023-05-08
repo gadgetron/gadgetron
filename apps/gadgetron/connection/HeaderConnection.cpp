@@ -64,6 +64,7 @@ namespace {
         handlers[FILENAME] = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[CONFIG]   = std::make_unique<ErrorProducingHandler>(CONFIG_ERROR);
         handlers[HEADER]   = std::make_unique<HeaderHandler>(header_callback);
+        handlers[TEXT]     = std::make_unique<TextLoggerHandler>();
         handlers[QUERY]    = std::make_unique<QueryHandler>();
         handlers[CLOSE]    = std::make_unique<CloseHandler>(close);
 

@@ -290,13 +290,6 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    /*
-      static int counter = 0;
-      char filename[256];
-      sprintf((char*)filename, "recon_sb_%d.cplx", counter);
-      write_nd_array<float_complext>( sbresult->to_host().get(), filename );
-      counter++; */
-
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
       *result = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, *result );

@@ -15,14 +15,13 @@ output_path="$(dirname "$0")/build_pkg"
 
 # Build up channel directives
 channels=(
-  nvidia
+  nvidia/label/cuda-11.6.1
   ismrmrd
   gadgetron
   conda-forge
   bioconda
   defaults
   intel
-  cefca
 )
 
 channel_directives=$(printf -- "-c %s " "${channels[@]}")

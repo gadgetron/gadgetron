@@ -52,6 +52,7 @@ include(GoogleTest)
                 cuVector_td_test_kernels.cu
                 cuNDFFT_test.cpp
                 cuSDC_test.cpp
+                cuNFFT_test.cpp
                 )
 
         cuda_add_executable(test_all
@@ -98,7 +99,7 @@ include(GoogleTest)
                 python)
     endif ()
 
-    gtest_discover_tests(test_all)
+    gtest_discover_tests(test_all DISCOVERY_MODE PRE_TEST)
 
     install(TARGETS test_all DESTINATION bin COMPONENT main)
 

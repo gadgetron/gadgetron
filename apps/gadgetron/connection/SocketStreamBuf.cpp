@@ -4,6 +4,8 @@
 
 #include "SocketStreamBuf.h"
 
+#include <thread>
+
 #include "Types.h"
 
 #include <boost/asio.hpp>
@@ -13,10 +15,29 @@ namespace {
     std::unique_ptr<tcp::socket> connect_socket(
         const std::string& host, const std::string& service, boost::asio::io_service& context) {
         tcp::resolver resolver{ context };
-        auto endpoint = *resolver.resolve(tcp::resolver::query(host, service));
-        auto socket   = std::make_unique<tcp::socket>(context);
-        socket->connect(endpoint);
-        return std::move(socket);
+        boost::system::error_code ec;
+        for (int remaining_attemps = 10; remaining_attemps > 0; remaining_attemps--) {
+            if (ec.failed()) {
+                GDEBUG_STREAM("Waiting to retry after receiving error when connecting to service " << service << " on host " << host << ": " << ec.message());
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                ec.clear();
+            }
+
+            auto result = resolver.resolve(host, service, ec);
+            if (ec.failed()) {
+                continue;
+            }
+
+            auto socket = std::make_unique<tcp::socket>(context);
+            auto endpoint = *result;
+            socket->connect(endpoint, ec);
+            if (ec.failed()) {
+                continue;
+            } 
+            return std::move(socket);
+    }
+
+        throw std::runtime_error("Failed to connect to service " + service + " on host " + host + ": " + ec.message());
     }
 
     class SocketStreamBuf : public std::streambuf {

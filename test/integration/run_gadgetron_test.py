@@ -112,13 +112,13 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    stderr=log)
 
 def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, configurations, input_adapter, output_adapter, output_group, log_stdout, log_stderr):
-    stream_command = f"{input_adapter} -i {input}"
+    stream_command = f"{input_adapter} -i {input} --use-stdout"
 
     commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration}' for configuration in configurations]
     for command in commands:
         stream_command += f" | {command}"
 
-    stream_command += f" | {output_adapter} -o {output} -g {output_group}"
+    stream_command += f" | {output_adapter} --use-stdin -o {output} -g {output_group}"
 
     split_cmd = ['bash', '-c', stream_command]
     echo_handler(split_cmd)
@@ -128,7 +128,7 @@ def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, co
                    stderr=log_stderr)
 
 
-def wait_for_storage_server(port, proc, retries=20):
+def wait_for_storage_server(port, proc, retries=50):
     for i in range(retries):
         try:
             urllib.request.urlopen(f"http://localhost:{port}/healthcheck")

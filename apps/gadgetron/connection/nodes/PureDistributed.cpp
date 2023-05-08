@@ -39,7 +39,7 @@ namespace {
     ) {
         std::list<std::unique_ptr<Worker>> workers;
         for (auto &pending_worker : pending_workers) {
-            auto status = pending_worker.wait_for(std::chrono::seconds(5));
+            auto status = pending_worker.wait_for(std::chrono::seconds(60));
             if (status == std::future_status::ready) {
                 try {
                     workers.emplace_back(pending_worker.get());

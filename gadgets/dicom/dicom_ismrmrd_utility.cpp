@@ -5,6 +5,8 @@
 
 #include "dicom_ismrmrd_utility.h"
 #include <stdio.h>
+#include <cstdio>
+#include <cinttypes>
 #include "boost/date_time/gregorian/gregorian.hpp"
 
 namespace Gadgetron
@@ -113,9 +115,7 @@ namespace Gadgetron
 
             // -------------------------------------------------
 
-            ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
             ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-            ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
             // -------------------------------------------------
 
@@ -207,7 +207,7 @@ namespace Gadgetron
             // Accession Number
             key.set(0x0008, 0x0050);
             if (study_info.accessionNumber) {
-                snprintf(buf, BUFSIZE, "%ld", *study_info.accessionNumber);
+                snprintf(buf, BUFSIZE, "%+" PRId64, *study_info.accessionNumber);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -607,12 +607,31 @@ namespace Gadgetron
         }
     }
 
+    template<typename T>
+    uint16_t convert_to_uint16(T val)
+    {
+      T val_to_convert = val;
+
+      if (std::is_floating_point<T>::value)
+      {
+        val_to_convert = std::round(val);
+      }
+
+      if (val_to_convert < 0 || val_to_convert > std::numeric_limits<uint16_t>::max())
+      {
+        const std::string exceptMsg = "Failed to convert " + std::to_string(val) + " to 16-bit unsigned integer because it is out of the range [0, 65535]";
+        GADGET_THROW(exceptMsg);
+      }
+
+      return static_cast<uint16_t>(val_to_convert);
+    }
+
     template<typename T> 
     void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile)
     {
         try
         {
-            hoNDArray< int16_t > data(m2.dimensions());
+            hoNDArray< uint16_t > data(m2.dimensions());
 
             const T *src = m2.get_data_ptr();
             auto dst = data.get_data_ptr();
@@ -631,8 +650,7 @@ namespace Gadgetron
                 if (pix_val < min_pix_val) min_pix_val = pix_val;
                 if (pix_val > max_pix_val) max_pix_val = pix_val;
                 sum_pix_val += pix_val / 4; // scale by 25% to avoid overflow
-
-                dst[i] = static_cast<int16_t>(pix_val);
+                dst[i] = convert_to_uint16(pix_val);
             }
             T mean_pix_val = (T)((sum_pix_val * 4) / (T)data.get_number_of_elements());
 
@@ -755,7 +773,7 @@ namespace Gadgetron
                 GADGET_THROW("Mismatch in image dimensions and available data");
             }
             key.set(0x7fe0, 0x0010);
-            status = dataset->putAndInsertUint16Array(key, (unsigned short *)data.get_data_ptr(), (unsigned long)data.get_number_of_elements());
+            status = dataset->putAndInsertUint16Array(key, data.get_data_ptr(), data.get_number_of_elements());
             if (!status.good()) {
                 GADGET_THROW("Failed to stuff Pixel Data");
             }

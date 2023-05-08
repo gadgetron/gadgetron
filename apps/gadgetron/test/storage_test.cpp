@@ -75,15 +75,15 @@ TEST_F(StorageTest, storage_client_should_return_inserted_data_and_all_meta_tags
     StorageClient storage_client(storage_address);
     auto data = generate_random_vector(256);
     auto datastream = std::stringstream(std::string(data.begin(), data.end()));
-    std::string session_id = "mysession3";
-    auto tags = StorageItemTags::Builder("mypatient")
-                    .with_device("mydevice")
+    std::string session_id = "my&session3";
+    auto tags = StorageItemTags::Builder("my&patient")
+                    .with_device("my&device")
                     .with_session(session_id)
-                    .with_name("myvariable1")
-                    .with_custom_tag("tagone", "first")
-                    .with_custom_tag("tagtwo", "second")
-                    .with_custom_tag("multival", "value1")
-                    .with_custom_tag("multival", "value2")
+                    .with_name("my&variable1")
+                    .with_custom_tag("tagone", "first&")
+                    .with_custom_tag("tagtwo", "second&")
+                    .with_custom_tag("multival", "value1&")
+                    .with_custom_tag("multival", "value2&")
                     .build();
 
     auto resp = storage_client.store_item(tags, datastream);
@@ -97,24 +97,26 @@ TEST_F(StorageTest, storage_client_should_return_inserted_data_and_all_meta_tags
               std::back_inserter(outBytesByUrl));
     EXPECT_EQ(data, outBytesByUrl);
 
+    // using ampersands in the tag values to ensure that they are properly escaped
+
     // Get the list of items
     auto list = storage_client.list_items(
-        StorageItemTags::Builder("mypatient").with_session(session_id).with_name("myvariable1").build());
+        StorageItemTags::Builder("my&patient").with_session(session_id).with_name("my&variable1").build());
     EXPECT_TRUE(list.complete);
     EXPECT_EQ(list.items.size(), 1);
 
     // check tags
-    EXPECT_EQ(list.items[0].tags.subject, "mypatient");
-    EXPECT_EQ(list.items[0].tags.device, "mydevice");
+    EXPECT_EQ(list.items[0].tags.subject, "my&patient");
+    EXPECT_EQ(list.items[0].tags.device, "my&device");
     EXPECT_EQ(list.items[0].tags.session, session_id);
-    EXPECT_EQ(list.items[0].tags.name, "myvariable1");
-    EXPECT_EQ(list.items[0].tags.custom_tags.find("tagone")->second, "first");
-    EXPECT_EQ(list.items[0].tags.custom_tags.find("tagtwo")->second, "second");
+    EXPECT_EQ(list.items[0].tags.name, "my&variable1");
+    EXPECT_EQ(list.items[0].tags.custom_tags.find("tagone")->second, "first&");
+    EXPECT_EQ(list.items[0].tags.custom_tags.find("tagtwo")->second, "second&");
     auto multival_iterators = list.items[0].tags.custom_tags.equal_range("multival");
     std::vector<std::string> multival_values;
     std::transform(multival_iterators.first, multival_iterators.second, std::back_inserter(multival_values),
                    [](auto p) { return p.second; });
-    ASSERT_THAT(multival_values, testing::ElementsAre("value1", "value2"));
+    ASSERT_THAT(multival_values, testing::ElementsAre("value1&", "value2&"));
 }
 
 TEST_F(StorageTest, storage_client_supports_paging) {
@@ -146,6 +148,10 @@ TEST_F(StorageTest, storage_client_supports_paging) {
     list = storage_client.list_items(tags, items_to_insert);
     EXPECT_TRUE(list.complete);
     EXPECT_EQ(list.items.size(), items_to_insert);
+
+    list = storage_client.get_next_page_of_items(list);
+    EXPECT_TRUE(list.complete);
+    EXPECT_EQ(list.items.size(), 0);
 }
 
 TEST_F(StorageTest, storage_client_should_store_items_and_return_list) {
@@ -263,7 +269,7 @@ TEST_F(StorageTest, storage_spaces_basic) {
     ASSERT_EQ(x, *item);
 
     hoNDArray<float> y(2, 2);
-    std::fill(x.begin(), x.end(), 23);
+    std::fill(y.begin(), y.end(), 23);
     storage.session->store("stuff", y);
 
     item = storage.session->get_latest<hoNDArray<float>>("stuff");

@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <limits>
+#include <exception>
+#include <type_traits>
 
 namespace Gadgetron::Core::IO {
 

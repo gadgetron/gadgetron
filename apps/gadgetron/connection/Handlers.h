@@ -45,6 +45,9 @@ namespace Gadgetron::Server::Connection::Handlers {
         std::function<void()> callback;
     };
 
-
+    class TextLoggerHandler : public Handler {
+    public:
+        void handle(std::istream &stream, Gadgetron::Core::OutputChannel& ) override;
+    };
 }
 

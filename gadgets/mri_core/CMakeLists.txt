@@ -15,6 +15,7 @@ endif()
 
 
 set(gadgetron_mricore_header_files GadgetMRIHeaders.h
+        AugmentImageMetadataGadget.h
         NoiseAdjustGadget.h
         PCACoilGadget.h
         AccumulatorGadget.h
@@ -80,6 +81,7 @@ set(gadgetron_mricore_header_files GadgetMRIHeaders.h
         )
 
 set(gadgetron_mricore_src_files
+        AugmentImageMetadataGadget.cpp
         NoiseAdjustGadget.cpp
         PCACoilGadget.cpp
         AccumulatorGadget.cpp
