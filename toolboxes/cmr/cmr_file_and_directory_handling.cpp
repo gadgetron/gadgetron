@@ -112,12 +112,12 @@ namespace Gadgetron
                             GDEBUG_STREAM("clean " << filename << " ... ");
 #endif // _WIN32
                         }
+                        else
+                        {
+                            GDEBUG_STREAM("Keep " << filename << " ... ");
+                        }
                     }
-                    else
-                    {
-                        GDEBUG_STREAM("Keep " << filename << " ... ");
-                    }
-
+                    
                     // update the file list
                     v.clear();
                     std::copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
