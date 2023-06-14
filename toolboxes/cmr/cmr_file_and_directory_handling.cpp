@@ -69,6 +69,8 @@ namespace Gadgetron
             struct tm* currTm = std::gmtime(&curr_time_UTC_);
             curr_time_UTC_ = std::mktime(currTm);
 
+            GDEBUG_STREAM("clean_items_older_than, clean " << workingdirectory << " ... ");
+
             // list and clean the content in the workingdirectory
             boost::filesystem::path p(workingdirectory);
 
@@ -107,8 +109,13 @@ namespace Gadgetron
                             {
                                 GERROR_STREAM("clean_items_older_than. error removing " << filename);
                             }
+                            GDEBUG_STREAM("clean " << filename << " ... ");
 #endif // _WIN32
                         }
+                    }
+                    else
+                    {
+                        GDEBUG_STREAM("Keep " << filename << " ... ");
                     }
 
                     // update the file list
