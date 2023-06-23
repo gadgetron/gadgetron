@@ -17,7 +17,7 @@ pr:
 jobs:
 - job: BuildAndTest
   pool:
-    name: gadgetron-gpu-nodes
+    name: gadgetron-msft-managed-pool-westus3
     vmImage:
   timeoutInMinutes: 120
   displayName: "Build, Unit and Integration tests"
