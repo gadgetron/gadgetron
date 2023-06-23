@@ -28,7 +28,7 @@ requirements:
     - h5py=3.2.1
     - hdf5=1.10.6
     - howardhinnant_date=3.0.1
-    - ismrmrd::ismrmrd=1.13.1
+    - ismrmrd::ismrmrd=1.13.7
     - ismrmrd::ismrmrd-python>=1.9.8
     - libblas=*=*mkl
     - libcurl=7.79.1
@@ -40,7 +40,7 @@ requirements:
     - nlohmann_json=3.10.4
     - numpy>=1.22.1
     - packaging=21.3
-    - pugixml=1.11.4
+    - pugixml=1.12.1
     - pyfftw>=0.12.0
     - pyyaml>=6.0
     - python=3.9
@@ -56,7 +56,7 @@ requirements:
     - gadgetron::gadgetron-python>=1.4.1
     - h5py=3.2.1
     - hdf5=1.10.6
-    - ismrmrd::ismrmrd=1.13.1
+    - ismrmrd::ismrmrd=1.13.7
     - ismrmrd::ismrmrd-python>=1.9.8
     - jq>=1.6
     - libblas=*=*mkl
@@ -67,7 +67,7 @@ requirements:
     - ismrmrd::mrd-storage-server=0.0.12
     - numpy>=1.22.1
     - onnxruntime=1.10.0
-    - pugixml=1.11.4
+    - pugixml=1.12.1
     - pyfftw>=0.12.0
     - python=3.9
     - scipy=1.7.1
@@ -75,7 +75,7 @@ requirements:
 
 test:
   requires:
-    - ismrmrd::siemens_to_ismrmrd=1.2.8
+    - ismrmrd::siemens_to_ismrmrd=1.2.12
 
 about:
   home: https://github.com/gadgetron/gadgetron
