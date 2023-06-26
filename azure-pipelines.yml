@@ -4,7 +4,7 @@ variables:
   DOCKER_BUILDKIT: 1
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   isCI: $[or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI'))]
-
+  poolName: gadgetron-gpu-nodes
 
 # Trigger when merging to master
 trigger:
@@ -17,7 +17,7 @@ pr:
 jobs:
 - job: BuildAndTest
   pool:
-    name: gadgetron-msft-managed-pool-westus3
+    name: $(poolName)
     vmImage:
   timeoutInMinutes: 120
   displayName: "Build, Unit and Integration tests"
@@ -67,7 +67,7 @@ jobs:
     condition: and(succeeded(), eq(variables.isCI, 'true'))
 - job: Package
   pool:
-    name: gadgetron-gpu-nodes
+    name: $(poolName)
     vmImage:
   timeoutInMinutes: 120
   displayName: "Create Conda Package"
@@ -90,7 +90,7 @@ jobs:
     artifact: drop
 - job: Publish
   pool:
-    name: gadgetron-gpu-nodes
+    name: $(poolName)
     vmImage:
   timeoutInMinutes: 120
   displayName: "Publish Conda Package"
