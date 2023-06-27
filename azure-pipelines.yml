@@ -4,7 +4,7 @@ variables:
   DOCKER_BUILDKIT: 1
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
   isCI: $[or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI'))]
-  poolName: gadgetron-gpu-nodes
+  poolName: gadgetron-msft-managed-pool-westus3
 
 # Trigger when merging to master
 trigger:
@@ -35,6 +35,10 @@ jobs:
       azureSubscription: $(AzureConnection)
       keyVaultName: gadgetron-build-secrets
   - script: |
+        set -euo pipefail
+        docker run --rm --gpus all nvidia/cuda:11.4.0-base-ubuntu20.04 nvidia-smi
+    displayName: 'Check GPU availability'
+  - script: |
         set -e
         # First build a dev image and run unit tests
         stage_name="gadgetron_$(flavor)build"
@@ -44,14 +48,14 @@ jobs:
             && /opt/code/gadgetron/build/test/test_all \
             && /opt/code/gadgetron/build/apps/gadgetron/test/server_tests"
         docker run --gpus=all ${stage_name} /bin/bash -c "$test_command"
-    displayName: "Run unit tests"
+    displayName: "Run unit and integration tests"
   - script: |
         set -e
         ./build-images.sh --type dev --type rt --flavor $(flavor) --base-name $(imageBaseName) --tag $(build.BuildNumber)
         cd test/integration && python3 get_data.py && cd ../../
         fullImageName="$(imageBaseName)_rt_$(flavor):$(build.BuildNumber)"
         ./docker/integration-test-image.sh --image ${fullImageName} --ignore-requirements $(requirements) --gpus all --cases cases/*
-    displayName: "Run integration tests"
+    displayName: "Publish test results"
   - task: PublishTestResults@2
     inputs:
       testRunner: JUnit
