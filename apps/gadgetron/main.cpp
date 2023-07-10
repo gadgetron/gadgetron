@@ -19,8 +19,30 @@ using namespace boost::filesystem;
 using namespace boost::program_options;
 using namespace Gadgetron::Server;
 
+using gadget_parameter = std::pair<std::string, std::string>;
+
+std::istream& operator>>(std::istream& in, gadget_parameter& param) {
+    std::string token;
+    in >> token;
+    // parse <key>=<value> into a gadget_parameter
+    auto pos = token.find('=');
+    if (pos == std::string::npos) {
+        throw std::runtime_error("Invalid gadget parameter: " + token);
+    }
+    param.first = token.substr(0, pos);
+    param.second = token.substr(pos + 1);
+    return in;
+}
+
+std::ostream& operator<<(std::ostream& out, const gadget_parameter& param) {
+    out << param.first << "=" << param.second;
+    return out;
+}
+
 int main(int argc, char *argv[]) {
     options_description gadgetron_options("Allowed options:");
+
+
     gadgetron_options.add_options()
             ("help,h", "Prints this help message.")
             ("info", "Prints build info about the Gadgetron.")
@@ -43,7 +65,12 @@ int main(int argc, char *argv[]) {
                 "Output file for binary data as a result of a local reconstruction")
             ("config_name,c",
                 value<std::string>(),
-                "Filename of the desired gadgetron reconstruction config.");
+                "Filename of the desired gadgetron reconstruction config.")
+            ("parameter",
+                value<std::vector<gadget_parameter>>(),
+                "Parameter to be passed to the gadgetron reconstruction config. "
+                "Format: --parameter <name>=<value>");
+
 
     options_description storage_options("Storage options");
     storage_options.add_options()
@@ -91,6 +118,14 @@ int main(int argc, char *argv[]) {
 
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
+
+        // If parameter is set loop through pairs
+        if (args.count("parameter")) {
+            auto parameters = args["parameter"].as<std::vector<gadget_parameter>>();
+            for (auto& param : parameters) {
+                GDEBUG_STREAM("Parameter: " << param);
+            }
+        }
 
         auto [storage_address, storage_server] = ensure_storage_server(args);
 
