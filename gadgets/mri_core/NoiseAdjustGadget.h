@@ -10,13 +10,56 @@
 #include <complex>
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/xml.h>
+#include <nlohmann/json.hpp>
+#include "sfndam.h"
+
+using json = nlohmann::json;
 
 namespace Gadgetron {
-
+    
         struct NoiseCovariance {
-            ISMRMRD::IsmrmrdHeader header;
-            float noise_dwell_time_us;
-            hoNDArray<std::complex<float>> noise_covariance_matrix;
+            void SerializeToSfndam(std::ostream& stream) const
+            {
+                sfndam::sfndam<std::complex<float>> sf;
+                json j;
+                j["channels"] = channels_;
+                j["sample_count"] = sample_count_;
+                j["labels"] = labels_;
+                j["noise_dwell_time_us"] = noise_dwell_time_us_;
+                j["receiver_noise_bandwidth"] = receiver_noise_bandwidth_;
+                sf.meta = j.dump();
+                sf.array_dimensions = {static_cast<uint32_t>(channels_), static_cast<uint32_t>(channels_)};
+                sf.data.resize(matrix_.get_number_of_elements());
+                for (size_t i = 0; i < matrix_.get_number_of_elements(); i++) {
+                    sf.data[i] = matrix_(i);
+                }
+                sfndam::serialize(sf, stream);
+            }
+
+            static NoiseCovariance DeserializeSfndam(std::istream& stream)
+            {
+                sfndam::sfndam<std::complex<float>> sf = sfndam::deserialize<std::complex<float>>(stream);
+                json j = json::parse(sf.meta);
+                auto labels = j["labels"].get<std::vector<std::string>>();
+                NoiseCovariance out;
+                out.labels_ = labels;
+                out.channels_ = j["channels"].get<size_t>();
+                out.sample_count_ = j["sample_count"].get<size_t>();
+                out.noise_dwell_time_us_ = j["noise_dwell_time_us"].get<float>();
+                out.receiver_noise_bandwidth_ = j["receiver_noise_bandwidth"].get<float>();
+                out.matrix_ = hoNDArray<std::complex<float>(out.channels_, out.channels_);
+                for (size_t i = 0; i < sf.data.size(); i++) {
+                    out.matrix_(i) = sf.data[i];
+                }
+                return out;
+            }
+
+            size_t channels_;
+            std::vector<std::string> labels_;
+            hoNDArray<std::complex<float>> matrix_;
+            size_t sample_count_;
+            float noise_dwell_time_us_;
+            float receiver_noise_bandwidth_;
         };
 
 
@@ -82,6 +125,9 @@ namespace Gadgetron {
 
         NoiseHandler load_or_gather() const;
         std::shared_ptr<MeasurementSpace> measurement_storage;
+
+        // File name for file storage and retrival of noise covariance
+        std::string noise_covariance_file_name = "";
     };
 }
 BOOST_HANA_ADAPT_STRUCT(Gadgetron::NoiseCovariance,header,noise_dwell_time_us,noise_covariance_matrix);

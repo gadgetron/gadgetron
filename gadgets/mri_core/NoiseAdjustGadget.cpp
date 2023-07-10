@@ -204,6 +204,11 @@ namespace Gadgetron {
         // find the measurementID of this scan
 
         noisehandler = load_or_gather();
+
+        if (context.parameters.find("noisecovariance") != context.parameters.end()) {
+            noise_covariance_file_name = context.parameters.at("noisecovariance");
+            GDEBUG_STREAM("Noise covariance matrix is provided as a parameter: " << noise_covariance_file_name);
+        }
     }
 
     NoiseAdjustGadget::NoiseHandler NoiseAdjustGadget::load_or_gather() const {

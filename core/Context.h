@@ -8,7 +8,7 @@
 
 inline std::map<std::string, std::string> GetParameters(const boost::program_options::variables_map& args) {
     std::map<std::string, std::string> parameters;
-    if (!args.count("parameter")) {
+    if (args.count("parameter")) {
         auto params = args["parameter"].as<std::vector<std::pair<std::string, std::string>>>();
         for (auto &arg : params) {
             parameters[arg.first] = arg.second;
