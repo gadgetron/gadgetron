@@ -124,7 +124,7 @@ namespace Gadgetron {
         NoiseHandler handle_acquisition(NOISEHANDLER nh, Core::Acquisition&);
 
 
-        Core::optional<NoiseCovariance> load_noisedata(const std::string& measurement_id) const;
+        Core::optional<NoiseCovariance> load_noisedata() const;
 
         template<class NOISEHANDLER>
         void save_noisedata(NOISEHANDLER& nh);

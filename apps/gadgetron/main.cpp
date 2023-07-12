@@ -127,10 +127,13 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        auto [storage_address, storage_server] = ensure_storage_server(args);
+        // std::string storage_address = "http://foo.bar:1234";
+        // std::optional<boost::process::child> storage_server = std::nullopt;
 
         if(!args.count("from_stream"))
         {
+            auto [storage_address, storage_server] = ensure_storage_server(args);
+
             GINFO("Running on port %d\n", args["port"].as<unsigned short>());
             Server server(args, storage_address);
             server.serve();
@@ -138,7 +141,7 @@ int main(int argc, char *argv[]) {
         else
         {
             auto cfg = args["config_name"].as<std::string>();
-            StreamConsumer consumer(args, storage_address);
+            StreamConsumer consumer(args, "http://foo.bar:1234");
 
             if(args.count("input_path") && args.count("output_path"))
             {

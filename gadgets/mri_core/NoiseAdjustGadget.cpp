@@ -201,46 +201,19 @@ namespace Gadgetron {
         omp_set_num_threads(1);
 #endif // USE_OMP
 
-        // find the measurementID of this scan
-
-        noisehandler = load_or_gather();
-
         if (context.parameters.find("noisecovariance") != context.parameters.end()) {
             noise_covariance_file_name = context.parameters.at("noisecovariance");
             GDEBUG_STREAM("Noise covariance matrix is provided as a parameter: " << noise_covariance_file_name);
         }
+        
+        noisehandler = load_or_gather();
     }
 
     NoiseAdjustGadget::NoiseHandler NoiseAdjustGadget::load_or_gather() const {
-        GDEBUG("Measurement ID is %s\n", measurement_id.c_str());
-        if (!current_ismrmrd_header.measurementInformation) {
-            GWARN("ISMRMRD Header is missing measurmentinformation. Skipping noise adjust");
-            return NoiseGatherer{};
-        }
-        const auto& measurementDependency = current_ismrmrd_header.measurementInformation->measurementDependency;
-        auto val = std::find_if(measurementDependency.begin(), measurementDependency.end(), [](const auto& dependency) {
-            return boost::algorithm::to_lower_copy(dependency.dependencyType) == "noise";
-        });
+        auto noise_covariance = load_noisedata();
 
-        // find the noise dependencies if any
-        if (val == measurementDependency.end())
-            return NoiseGatherer{};
-
-        auto noise_dependency = *val;
-        GDEBUG("Measurement ID of noise dependency is %s\n", noise_dependency.measurementID.c_str());
-
-        auto noise_covariance = load_noisedata(noise_dependency.measurementID);
-
-        // try to load the precomputed noise prewhitener
-        if (!noise_covariance) {
-            GDEBUG("Stored noise dependency is NOT found : %s\n", noise_dependency.measurementID.c_str());
-            return NoiseGatherer{};
-        } else {
-            GDEBUG("Stored noise dependency is found : %s\n", noise_dependency.measurementID.c_str());
-            GDEBUG("Stored noise dwell time in us is %f\n", noise_covariance->noise_dwell_time_us_);
+        if (noise_covariance) {
             size_t CHA = noise_covariance->matrix_.get_size(0);
-            GDEBUG("Stored noise channel number is %d\n", CHA);
-
             if (noise_covariance->labels_.size() == CHA) {
                 std::vector<std::string> current_coil_labels;
                 if (current_ismrmrd_header.acquisitionSystemInformation) {
@@ -273,13 +246,11 @@ namespace Gadgetron {
                 return LoadedNoise{noise_covariance->matrix_,noise_covariance->noise_dwell_time_us_};
 
             } else if (current_ismrmrd_header.acquisitionSystemInformation) {
-                GERROR("Noise ismrmrd header does not have acquisition system information but current header "
-                       "does\n");
+                GERROR("Noise covariance matrix is malformed. Number of labels does not match number of channels.");
             }
-
-            //                    number_of_noise_samples_ = 1; // When we load the matrix, it is already
-            //                    scaled.
         }
+
+        // No noise data found, gather it
         return NoiseGatherer{};
     }
 
@@ -335,7 +306,20 @@ namespace Gadgetron {
             ng.noise_dwell_time_us,
             receiver_noise_bandwidth);
 
-        this->measurement_storage->store("noise_covariance", noise_covariance);
+        if (!noise_covariance_file_name.empty()) {
+            std::ofstream os(noise_covariance_file_name, std::ios::out | std::ios::binary);
+            if (os.is_open()) {
+                GDEBUG("Writing noise covariance to %s\n", noise_covariance_file_name.c_str());
+                noise_covariance.SerializeToSfndam(os);
+                os.flush();
+                os.close();
+            } else {
+                GERROR("Unable to open file %s for writing noise covariance\n", noise_covariance_file_name.c_str());
+            }
+        } else {
+            this->measurement_storage->store("noise_covariance", noise_covariance);
+
+        }
     }
 
     template <> void NoiseAdjustGadget::save_noisedata(NoiseHandler& nh) {
@@ -420,8 +404,33 @@ namespace Gadgetron {
         this->save_noisedata(noisehandler);
     }
 
-    Core::optional<NoiseCovariance> NoiseAdjustGadget::load_noisedata(const std::string &noise_measurement_id) const {
-       return measurement_storage->get_latest<NoiseCovariance>(noise_measurement_id, "noise_covariance");
+    Core::optional<NoiseCovariance> NoiseAdjustGadget::load_noisedata() const {
+        GDEBUG_STREAM("Noise Adjust Gadget: Loading noise data from " << noise_covariance_file_name << "\n");
+        if (!noise_covariance_file_name.empty()) {
+            std::ifstream file(noise_covariance_file_name, std::ios::binary);
+            if (!file) {
+                GERROR("Could not open noise covariance file %s\n", noise_covariance_file_name.c_str());
+                throw std::runtime_error("Could not open noise covariance file");
+            }
+            return NoiseCovariance::DeserializeFromSfnadm(file);
+        } else {
+            GDEBUG("Measurement ID is %s\n", measurement_id.c_str());
+            if (!current_ismrmrd_header.measurementInformation) {
+                GWARN("ISMRMRD Header is missing measurmentinformation. Skipping noise adjust");
+                return Core::none;
+            }
+            const auto& measurementDependency = current_ismrmrd_header.measurementInformation->measurementDependency;
+            auto val = std::find_if(measurementDependency.begin(), measurementDependency.end(), [](const auto& dependency) {
+                return boost::algorithm::to_lower_copy(dependency.dependencyType) == "noise";
+            });
+
+            if (val == measurementDependency.end())
+                return Core::none;
+
+            auto noise_dependency = *val;
+            GDEBUG("Measurement ID of noise dependency is %s\n", noise_dependency.measurementID.c_str());
+            return measurement_storage->get_latest<NoiseCovariance>(noise_dependency.measurementID, "noise_covariance");
+        }
     }
 
     GADGETRON_GADGET_EXPORT(NoiseAdjustGadget)
