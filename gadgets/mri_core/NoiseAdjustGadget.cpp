@@ -37,9 +37,9 @@ namespace Gadgetron {
 
 
         void normalize_covariance(NoiseGatherer& ng){
-            if (ng.number_of_samples > 1) {
-                ng.tmp_covariance /= std::complex<float>(ng.number_of_samples - 1);
-                ng.number_of_samples = 1;
+            if (ng.total_number_of_samples > 1) {
+                ng.tmp_covariance /= std::complex<float>(ng.total_number_of_samples - 1);
+                ng.normalized_number_of_samples = 1;
             }
         }
 
@@ -58,10 +58,10 @@ namespace Gadgetron {
         // order gives the matching order for src and dst coils
         // e.g. [2 1 0 3] means coil 0 of src matches coil 2 of dst etc.
 
-        bool compare_coil_label(const std::vector<ISMRMRD::CoilLabel>& src_coils,
-            const std::vector<ISMRMRD::CoilLabel>& dst_coils, std::vector<size_t>& order_in_src) {
+        bool compare_coil_label(const std::vector<std::string>& src_coils,
+            const std::vector<std::string>& dst_coils, std::vector<size_t>& order_in_src) {
             auto coil_name_comparer
-                = [](const auto& coil1, const auto& coil2) { return coil1.coilName == coil2.coilName; };
+                = [](const auto& coil1, const auto& coil2) { return coil1 == coil2; };
             bool labels_match = std::equal(
                 src_coils.begin(), src_coils.end(), dst_coils.begin(), dst_coils.end(), coil_name_comparer);
 
@@ -237,39 +237,40 @@ namespace Gadgetron {
             return NoiseGatherer{};
         } else {
             GDEBUG("Stored noise dependency is found : %s\n", noise_dependency.measurementID.c_str());
-            GDEBUG("Stored noise dwell time in us is %f\n", noise_covariance->noise_dwell_time_us);
-            size_t CHA = noise_covariance->noise_covariance_matrix.get_size(0);
+            GDEBUG("Stored noise dwell time in us is %f\n", noise_covariance->noise_dwell_time_us_);
+            size_t CHA = noise_covariance->matrix_.get_size(0);
             GDEBUG("Stored noise channel number is %d\n", CHA);
 
-            if (noise_covariance->header.acquisitionSystemInformation) {
-                GDEBUG_STREAM("Noise coil info: ");
-                GDEBUG_STREAM(to_string(noise_covariance->header.acquisitionSystemInformation->coilLabel));
-
-                GDEBUG_STREAM("Data coil info: ");
-                GDEBUG_STREAM(to_string(current_ismrmrd_header.acquisitionSystemInformation->coilLabel));
+            if (noise_covariance->labels_.size() == CHA) {
+                std::vector<std::string> current_coil_labels;
+                if (current_ismrmrd_header.acquisitionSystemInformation) {
+                    for (auto& l : current_ismrmrd_header.acquisitionSystemInformation->coilLabel) {
+                        current_coil_labels.push_back(l.coilName);
+                    }
+                }
 
                 std::vector<size_t> coil_order_of_data_in_noise;
-                bool labels_match = compare_coil_label(noise_covariance->header.acquisitionSystemInformation->coilLabel,
-                    current_ismrmrd_header.acquisitionSystemInformation->coilLabel, coil_order_of_data_in_noise);
+                bool labels_match = compare_coil_label(noise_covariance->labels_,
+                    current_coil_labels, coil_order_of_data_in_noise);
 
                 if (!labels_match) {
                     // if number of channels in noise is different than data
                     // or
                     // if any channels in noise do not exist in data
-                    if (CHA != current_ismrmrd_header.acquisitionSystemInformation->coilLabel.size()) {
+                    if (CHA != current_coil_labels.size()) {
                         GDEBUG("Noise and measurement have different number of coils\n");
                     } else {
                         if (coil_order_of_data_in_noise.size() == CHA) {
                             GWARN_STREAM("Noise and meansurement have different coils, but will be reordered ... ");
-                            noise_covariance->noise_covariance_matrix = reorder_noise_channels(
-                                noise_covariance->noise_covariance_matrix, coil_order_of_data_in_noise);
+                            noise_covariance->matrix_ = reorder_noise_channels(
+                                noise_covariance->matrix_, coil_order_of_data_in_noise);
 
                         } else {
                             GWARN_STREAM("Noise and meansurement have different coils and cannot be reordered ... ");
                         }
                     }
                 }
-                return LoadedNoise{noise_covariance->noise_covariance_matrix,noise_covariance->noise_dwell_time_us};
+                return LoadedNoise{noise_covariance->matrix_,noise_covariance->noise_dwell_time_us_};
 
             } else if (current_ismrmrd_header.acquisitionSystemInformation) {
                 GERROR("Noise ismrmrd header does not have acquisition system information but current header "
@@ -307,7 +308,7 @@ namespace Gadgetron {
         covariance += dataM.t()*dataM;
 
 
-        ng.number_of_samples += head.number_of_samples;
+        ng.total_number_of_samples += head.number_of_samples;
     }
 
     template <> void NoiseAdjustGadget::add_noise(NoiseHandler& nh, const Gadgetron::Core::Acquisition& acq) const {
@@ -321,7 +322,20 @@ namespace Gadgetron {
 
         normalize_covariance(ng);
 
-        this->measurement_storage->store("noise_covariance",NoiseCovariance{ this->current_ismrmrd_header, ng.noise_dwell_time_us, ng.tmp_covariance });
+        std::vector<std::string> coil_labels;
+        for (auto& label : current_ismrmrd_header.acquisitionSystemInformation->coilLabel) {
+            coil_labels.push_back(label.coilName);
+        }
+
+        auto noise_covariance = NoiseCovariance( 
+            ng.tmp_covariance.get_size(0),
+            coil_labels,
+            ng.tmp_covariance,
+            ng.total_number_of_samples,
+            ng.noise_dwell_time_us,
+            receiver_noise_bandwidth);
+
+        this->measurement_storage->store("noise_covariance", noise_covariance);
     }
 
     template <> void NoiseAdjustGadget::save_noisedata(NoiseHandler& nh) {
@@ -353,11 +367,10 @@ namespace Gadgetron {
     NoiseAdjustGadget::NoiseHandler NoiseAdjustGadget::handle_acquisition(
         NoiseGatherer ng, Core::Acquisition& acq) {
         auto& head = std::get<ISMRMRD::AcquisitionHeader>(acq);
-        if (ng.number_of_samples == 0)
+        if (ng.total_number_of_samples == 0)
             return std::move(ng);
 
 
-        normalize_covariance(ng);
         this->save_noisedata(ng);
 
         auto masked_covariance = mask_channels(ng.tmp_covariance, scale_only_channels);

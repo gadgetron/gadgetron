@@ -4,7 +4,7 @@ endif ()
 
 find_package(ZFP)
 
-include_directories(${HDF5_INCLUDE_DIRS})
+include_directories(${HDF5_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/core/io)
 
 if(MSVC)
   set_source_files_properties(CompressedFloatBufferAvx2.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX2")

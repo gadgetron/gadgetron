@@ -1,5 +1,4 @@
 #include "NoiseSummaryGadget.h"
-
 #include <boost/filesystem.hpp>
 #include <limits>
 #include <fstream>
@@ -47,12 +46,12 @@ namespace Gadgetron
             }
 
             auto noise_covariance = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
+            auto noise_covariance2 = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
 
             if (!noise_covariance) {
                 dependencies.append("status", "failed");
             } else {
-
-                const auto& noise_covariance_matrix = noise_covariance->noise_covariance_matrix;
+                const auto& noise_covariance_matrix = noise_covariance->matrix_;
 
                 size_t coils = noise_covariance_matrix.get_size(0);
                 
@@ -68,11 +67,11 @@ namespace Gadgetron
                     min_sigma = std::min(sigma,min_sigma);
                 }
 
-                GDEBUG("Min Sigma: %f\n", min_sigma);
-                GDEBUG("Max Sigma: %f\n", max_sigma);
-                GDEBUG("Mean Sigma: %f\n", mean_sigma);
+                GDEBUG("Min Sigma: %e\n", min_sigma);
+                GDEBUG("Max Sigma: %e\n", max_sigma);
+                GDEBUG("Mean Sigma: %e\n", mean_sigma);
 
-                dependencies.append("noise_dwell_time_us",noise_covariance->noise_dwell_time_us);
+                dependencies.append("noise_dwell_time_us",noise_covariance->noise_dwell_time_us_);
                 dependencies.append("min_sigma",min_sigma);
                 dependencies.append("max_sigma",max_sigma);
                 dependencies.append("mean_sigma",mean_sigma);
