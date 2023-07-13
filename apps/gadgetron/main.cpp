@@ -74,6 +74,9 @@ int main(int argc, char *argv[]) {
 
     options_description storage_options("Storage options");
     storage_options.add_options()
+            ("disable_storage,d",
+                value<bool>()->default_value(false),
+                "Disable storage server access. Used for testing cases where storage is not available.")
             ("storage_address,E",
                 value<std::string>(),
                 "External address of a storage server. If not provided, a storage server will be started.")
@@ -127,13 +130,10 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // std::string storage_address = "http://foo.bar:1234";
-        // std::optional<boost::process::child> storage_server = std::nullopt;
+        auto [storage_address, storage_server] = ensure_storage_server(args);
 
         if(!args.count("from_stream"))
         {
-            auto [storage_address, storage_server] = ensure_storage_server(args);
-
             GINFO("Running on port %d\n", args["port"].as<unsigned short>());
             Server server(args, storage_address);
             server.serve();
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
         else
         {
             auto cfg = args["config_name"].as<std::string>();
-            StreamConsumer consumer(args, "http://foo.bar:1234");
+            StreamConsumer consumer(args, storage_address);
 
             if(args.count("input_path") && args.count("output_path"))
             {

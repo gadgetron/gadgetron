@@ -115,17 +115,12 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
 def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, configurations, input_adapter, output_adapter, output_group, log_stdout, log_stderr):
     stream_command = f"{input_adapter} -i {input} --use-stdout"
 
-    commands =[]
-    for configuration in configurations:
-        parm = f'--parameter {configuration["parameters"]}' if 'parameters' in configuration and configuration["parameters"] is not None else ''
-        commands.append(f'gadgetron --from_stream -c {configuration["config"]} {parm}')
-        #commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration.config} --parameter {configuration.parameters}' for configuration in configurations]
+    commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration["config"]} {configuration["args"]}' for configuration in configurations]
     
     for command in commands:
         stream_command += f" | {command}"
 
     stream_command += f" | {output_adapter} --use-stdin -o {output} -g {output_group}"
-    print(stream_command)
 
     split_cmd = ['bash', '-c', stream_command]
     echo_handler(split_cmd)
@@ -555,9 +550,14 @@ def run_gadgetron_client(args, config, section):
 
     yield send_data_action
 
+def interpolate_args(test_args, action_args):
+    import re
+    pattern = r"\$\{([^\}]+)\}"
+    return re.sub(pattern, lambda match: getattr(test_args, match.group(1)), action_args)    
+
 def prepare_stream_configurations(args, config, section):
     def prepare_configurations_action(cont, **state):
-        c = {'config': config[section]['configuration'], 'parameters': config[section]['parameters'] if 'parameters' in config[section] else None}
+        c = {'config': config[section]['configuration'], 'args': interpolate_args(args, config[section]['args']) if 'args' in config[section] else ''}
         if state.get('configurations'):
             configurations=state['configurations']
             configurations.append(c)
