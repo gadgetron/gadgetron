@@ -201,9 +201,14 @@ namespace Gadgetron {
         omp_set_num_threads(1);
 #endif // USE_OMP
 
-        if (context.parameters.find("noisecovariance") != context.parameters.end()) {
-            noise_covariance_file_name = context.parameters.at("noisecovariance");
-            GDEBUG_STREAM("Noise covariance matrix is provided as a parameter: " << noise_covariance_file_name);
+        if (context.parameters.find("noisecovariancein") != context.parameters.end()) {
+            noise_covariance_in = context.parameters.at("noisecovariancein");
+            GDEBUG_STREAM("Input noise covariance matrix is provided as a parameter: " << noise_covariance_in);
+        }
+
+        if (context.parameters.find("noisecovarianceout") != context.parameters.end()) {
+            noise_covariance_out = context.parameters.at("noisecovarianceout");
+            GDEBUG_STREAM("Output noise covariance matrix is provided as a parameter: " << noise_covariance_out);
         }
         
         noisehandler = load_or_gather();
@@ -306,15 +311,15 @@ namespace Gadgetron {
             ng.noise_dwell_time_us,
             receiver_noise_bandwidth);
 
-        if (!noise_covariance_file_name.empty()) {
-            std::ofstream os(noise_covariance_file_name, std::ios::out | std::ios::binary);
+        if (!noise_covariance_out.empty()) {
+            std::ofstream os(noise_covariance_out, std::ios::out | std::ios::binary);
             if (os.is_open()) {
-                GDEBUG("Writing noise covariance to %s\n", noise_covariance_file_name.c_str());
+                GDEBUG("Writing noise covariance to %s\n", noise_covariance_out.c_str());
                 noise_covariance.SerializeToSfndam(os);
                 os.flush();
                 os.close();
             } else {
-                GERROR("Unable to open file %s for writing noise covariance\n", noise_covariance_file_name.c_str());
+                GERROR("Unable to open file %s for writing noise covariance\n", noise_covariance_out.c_str());
             }
         } else {
             this->measurement_storage->store("noise_covariance", noise_covariance);
@@ -405,11 +410,10 @@ namespace Gadgetron {
     }
 
     Core::optional<NoiseCovariance> NoiseAdjustGadget::load_noisedata() const {
-        GDEBUG_STREAM("Noise Adjust Gadget: Loading noise data from " << noise_covariance_file_name << "\n");
-        if (!noise_covariance_file_name.empty()) {
-            std::ifstream file(noise_covariance_file_name, std::ios::binary);
+        if (!noise_covariance_in.empty()) {
+            std::ifstream file(noise_covariance_in, std::ios::binary);
             if (!file) {
-                GERROR("Could not open noise covariance file %s\n", noise_covariance_file_name.c_str());
+                GERROR("Could not open noise covariance file %s\n", noise_covariance_in.c_str());
                 throw std::runtime_error("Could not open noise covariance file");
             }
             return NoiseCovariance::DeserializeFromSfnadm(file);

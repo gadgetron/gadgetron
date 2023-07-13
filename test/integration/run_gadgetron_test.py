@@ -113,15 +113,19 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
                    stderr=log)
 
 def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, configurations, input_adapter, output_adapter, output_group, log_stdout, log_stderr):
-    rnd_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-    noise_covariance_file_name = f'noise_covariance{rnd_id}.bin'
     stream_command = f"{input_adapter} -i {input} --use-stdout"
 
-    commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration} --parameter noisecovariance={noise_covariance_file_name}' for configuration in configurations]
+    commands =[]
+    for configuration in configurations:
+        parm = f'--parameter {configuration["parameters"]}' if 'parameters' in configuration and configuration["parameters"] is not None else ''
+        commands.append(f'gadgetron --from_stream -c {configuration["config"]} {parm}')
+        #commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration.config} --parameter {configuration.parameters}' for configuration in configurations]
+    
     for command in commands:
         stream_command += f" | {command}"
 
     stream_command += f" | {output_adapter} --use-stdin -o {output} -g {output_group}"
+    print(stream_command)
 
     split_cmd = ['bash', '-c', stream_command]
     echo_handler(split_cmd)
@@ -553,13 +557,14 @@ def run_gadgetron_client(args, config, section):
 
 def prepare_stream_configurations(args, config, section):
     def prepare_configurations_action(cont, **state):
+        c = {'config': config[section]['configuration'], 'parameters': config[section]['parameters'] if 'parameters' in config[section] else None}
         if state.get('configurations'):
             configurations=state['configurations']
-            configurations.append(config[section]['configuration'])
+            configurations.append(c)
             state.update(configurations=configurations,
             )
         else:
-            state.update(configurations=[config[section]['configuration']])
+            state.update(configurations=[c])
 
         return cont(**state)
 

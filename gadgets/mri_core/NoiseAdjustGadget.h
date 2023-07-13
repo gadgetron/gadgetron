@@ -133,8 +133,9 @@ namespace Gadgetron {
         NoiseHandler load_or_gather() const;
         std::shared_ptr<MeasurementSpace> measurement_storage;
 
-        // File name for file storage and retrival of noise covariance
-        std::string noise_covariance_file_name = "";
+        // File names for file storage and retrival of noise covariance
+        std::string noise_covariance_out = "";
+        std::string noise_covariance_in = "";
         
     };
 }
