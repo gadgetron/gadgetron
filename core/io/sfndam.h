@@ -76,6 +76,7 @@ void serialize(const sfndam<T>& a, std::ostream& out) {
   }
   // Write magic bytes
   out.write(&magic_bytes[0], sizeof(magic_bytes));
+
   // Write data type
   auto type_id = typeid_for_type<T>();
   out.write((char*)(&type_id), sizeof(uint32_t));
@@ -93,6 +94,10 @@ void serialize(const sfndam<T>& a, std::ostream& out) {
   out.write((char*)(&a.data[0]), a.data.size() * sizeof(T));
   // Write metadata
   out.write(a.meta.c_str(), a.meta.size());
+
+  if (!out.good()) {
+    throw std::runtime_error("SFNDAM: Error writing to stream");
+  }
 }
 
 template <typename T>
@@ -127,6 +132,10 @@ sfndam<T> deserialize(std::istream& in) {
   // Read metadata
   a.meta.resize(meta_len);
   in.read(&a.meta[0], meta_len);
+
+  if (in.fail() || in.bad()) {
+    throw std::runtime_error("SFNDAM: Error reading file.");
+  }
   return a;
 }
 

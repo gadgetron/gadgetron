@@ -46,7 +46,6 @@ namespace Gadgetron
             }
 
             auto noise_covariance = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
-            auto noise_covariance2 = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
 
             if (!noise_covariance) {
                 dependencies.append("status", "failed");

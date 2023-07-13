@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
                 "Filename of the desired gadgetron reconstruction config.")
             ("parameter",
                 value<std::vector<gadget_parameter>>(),
-                "Parameter to be passed to the gadgetron reconstruction config. "
-                "Format: --parameter <name>=<value>");
+                "Parameter to be passed to the gadgetron reconstruction config. Multiple parameters can be passed."
+                "Format: --parameter <name>=<value> --parameter <name>=<value> ...");
 
 
     options_description storage_options("Storage options");

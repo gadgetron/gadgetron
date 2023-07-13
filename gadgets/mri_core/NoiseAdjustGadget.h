@@ -15,6 +15,12 @@
 
 using json = nlohmann::json;
 
+#define NOISE_COVARIANCE_CHANNEL_FIELD "channels"
+#define NOISE_COVARIANCE_LABELS_FIELD "labels"
+#define NOISE_COVARIANCE_SAMPLE_COUNT_FIELD "sampleCount"
+#define NOISE_COVARIANCE_DWELL_TIME_FIELD "noiseDwellTimeUs"
+#define NOISE_COVARIANCE_RECEIVER_NOISE_BANDWIDTH_FIELD "receiverNoiseBandwidth"
+
 namespace Gadgetron {
     
         struct NoiseCovariance : Gadgetron::Core::IO::SfndamSerializable<NoiseCovariance>{
@@ -22,11 +28,11 @@ namespace Gadgetron {
             {
                 sfndam::sfndam<std::complex<float>> sf;
                 json j;
-                j["channels"] = channels_;
-                j["sample_count"] = sample_count_;
-                j["labels"] = labels_;
-                j["noise_dwell_time_us"] = noise_dwell_time_us_;
-                j["receiver_noise_bandwidth"] = receiver_noise_bandwidth_;
+                j[NOISE_COVARIANCE_CHANNEL_FIELD] = channels_;
+                j[NOISE_COVARIANCE_SAMPLE_COUNT_FIELD] = sample_count_;
+                j[NOISE_COVARIANCE_LABELS_FIELD] = labels_;
+                j[NOISE_COVARIANCE_DWELL_TIME_FIELD] = noise_dwell_time_us_;
+                j[NOISE_COVARIANCE_RECEIVER_NOISE_BANDWIDTH_FIELD] = receiver_noise_bandwidth_;
                 sf.meta = j.dump();
                 sf.array_dimensions = {static_cast<uint32_t>(channels_), static_cast<uint32_t>(channels_)};
                 sf.data.resize(matrix_.get_number_of_elements());
@@ -38,14 +44,20 @@ namespace Gadgetron {
             {
                 sfndam::sfndam<std::complex<float>> sf = sfndam::deserialize<std::complex<float>>(stream);
                 json j = json::parse(sf.meta);
-                auto labels = j["labels"].get<std::vector<std::string>>();
-                auto channels = j["channels"].get<size_t>();
                 NoiseCovariance out;
-                out.labels_ = labels;
-                out.channels_ = channels;
-                out.sample_count_ = j["sample_count"].get<size_t>();
-                out.noise_dwell_time_us_ = j["noise_dwell_time_us"].get<float>();
-                out.receiver_noise_bandwidth_ = j["receiver_noise_bandwidth"].get<float>();
+                size_t channels;
+                try {
+                    auto labels = j.at(NOISE_COVARIANCE_LABELS_FIELD).get<std::vector<std::string>>();
+                    channels = j.at(NOISE_COVARIANCE_CHANNEL_FIELD).get<size_t>();
+                    out.labels_ = labels;
+                    out.channels_ = channels;
+                    out.sample_count_ = j.at(NOISE_COVARIANCE_SAMPLE_COUNT_FIELD).get<size_t>();
+                    out.noise_dwell_time_us_ = j.at(NOISE_COVARIANCE_DWELL_TIME_FIELD).get<float>();
+                    out.receiver_noise_bandwidth_ = j.at(NOISE_COVARIANCE_RECEIVER_NOISE_BANDWIDTH_FIELD).get<float>();
+                } catch (json::exception& e) {
+                    GERROR_STREAM("Failed to parse json: " << e.what());
+                    throw;
+                }
                 out.matrix_ = hoNDArray<std::complex<float>>(channels, channels);
                 std::copy(sf.data.begin(), sf.data.end(), out.matrix_.begin());
                 return out;
