@@ -43,6 +43,9 @@ void invoke_storage_server_health_check(std::string base_address) {
 }
 
 std::tuple<std::string, std::optional<boost::process::child>> ensure_storage_server(const variables_map& args) {
+    if (args.count("disable_storage") && args["disable_storage"].as<bool>()) {
+        return {"", std::nullopt};
+    }
 
     if (args.count("storage_address")) {
         auto uri = args["storage_address"].as<std::string>();

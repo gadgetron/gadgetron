@@ -19,8 +19,30 @@ using namespace boost::filesystem;
 using namespace boost::program_options;
 using namespace Gadgetron::Server;
 
+using gadget_parameter = std::pair<std::string, std::string>;
+
+std::istream& operator>>(std::istream& in, gadget_parameter& param) {
+    std::string token;
+    in >> token;
+    // parse <key>=<value> into a gadget_parameter
+    auto pos = token.find('=');
+    if (pos == std::string::npos) {
+        throw std::runtime_error("Invalid gadget parameter: " + token);
+    }
+    param.first = token.substr(0, pos);
+    param.second = token.substr(pos + 1);
+    return in;
+}
+
+std::ostream& operator<<(std::ostream& out, const gadget_parameter& param) {
+    out << param.first << "=" << param.second;
+    return out;
+}
+
 int main(int argc, char *argv[]) {
     options_description gadgetron_options("Allowed options:");
+
+
     gadgetron_options.add_options()
             ("help,h", "Prints this help message.")
             ("info", "Prints build info about the Gadgetron.")
@@ -43,10 +65,18 @@ int main(int argc, char *argv[]) {
                 "Output file for binary data as a result of a local reconstruction")
             ("config_name,c",
                 value<std::string>(),
-                "Filename of the desired gadgetron reconstruction config.");
+                "Filename of the desired gadgetron reconstruction config.")
+            ("parameter",
+                value<std::vector<gadget_parameter>>(),
+                "Parameter to be passed to the gadgetron reconstruction config. Multiple parameters can be passed."
+                "Format: --parameter <name>=<value> --parameter <name>=<value> ...");
+
 
     options_description storage_options("Storage options");
     storage_options.add_options()
+            ("disable_storage,d",
+                value<bool>()->default_value(false),
+                "Disable storage server access. Used for testing cases where storage is not available.")
             ("storage_address,E",
                 value<std::string>(),
                 "External address of a storage server. If not provided, a storage server will be started.")
@@ -91,6 +121,12 @@ int main(int argc, char *argv[]) {
 
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
+
+        // We do not currently allow the user to specify parameters unless in streaming mode.
+        if (args.count("parameter") && !args.count("from_stream")) {
+            GERROR_STREAM("Parameters can only be specified in streaming mode.");
+            return 1;
+        }
 
         auto [storage_address, storage_server] = ensure_storage_server(args);
 
