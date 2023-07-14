@@ -122,12 +122,10 @@ int main(int argc, char *argv[]) {
         // Ensure working directory exists.
         create_directories(args["dir"].as<path>());
 
-        // If parameter is set loop through pairs
-        if (args.count("parameter")) {
-            auto parameters = args["parameter"].as<std::vector<gadget_parameter>>();
-            for (auto& param : parameters) {
-                GDEBUG_STREAM("Parameter: " << param);
-            }
+        // We do not currently allow the user to specify parameters unless in streaming mode.
+        if (args.count("parameter") && !args.count("from_stream")) {
+            GERROR_STREAM("Parameters can only be specified in streaming mode.");
+            return 1;
         }
 
         auto [storage_address, storage_server] = ensure_storage_server(args);
