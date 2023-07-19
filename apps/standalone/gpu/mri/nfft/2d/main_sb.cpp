@@ -153,7 +153,7 @@ int main( int argc, char** argv)
   // Solve
   boost::shared_ptr< cuNDArray<_complext> > cgresult;
   {
-    GPUTimer timer("GPU Conjugate Gradient solve");
+    GPUTimer mytimer("GPU Conjugate Gradient solve");
     cgresult = sb.solve(&samples);
   }
   
