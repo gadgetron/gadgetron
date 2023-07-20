@@ -17,6 +17,7 @@ namespace Gadgetron
         timeinfo = localtime(&rawtime);
 
         std::stringstream str;
+        str.imbue(std::locale::classic());
         str << timeinfo->tm_year + 1900
             << std::setw(2) << std::setfill('0') << timeinfo->tm_mon + 1
             << std::setw(2) << std::setfill('0') << timeinfo->tm_mday
