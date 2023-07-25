@@ -14,6 +14,7 @@ import glob
 import itertools
 import json
 import pathlib
+import random
 import re
 import shlex
 import shutil
@@ -114,7 +115,8 @@ def send_data_to_gadgetron(echo_handler, gadgetron, *, input, output, configurat
 def stream_data_to_gadgetron(echo_handler, storage_address, *, input, output, configurations, input_adapter, output_adapter, output_group, log_stdout, log_stderr):
     stream_command = f"{input_adapter} -i {input} --use-stdout"
 
-    commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration}' for configuration in configurations]
+    commands = [f'gadgetron -E {storage_address} --from_stream -c {configuration["config"]} {configuration["args"]}' for configuration in configurations]
+    
     for command in commands:
         stream_command += f" | {command}"
 
@@ -548,15 +550,21 @@ def run_gadgetron_client(args, config, section):
 
     yield send_data_action
 
+def interpolate_args(test_args, action_args):
+    import re
+    pattern = r"\$\{([^\}]+)\}"
+    return re.sub(pattern, lambda match: getattr(test_args, match.group(1)), action_args)    
+
 def prepare_stream_configurations(args, config, section):
     def prepare_configurations_action(cont, **state):
+        c = {'config': config[section]['configuration'], 'args': interpolate_args(args, config[section]['args']) if 'args' in config[section] else ''}
         if state.get('configurations'):
             configurations=state['configurations']
-            configurations.append(config[section]['configuration'])
+            configurations.append(c)
             state.update(configurations=configurations,
             )
         else:
-            state.update(configurations=[config[section]['configuration']])
+            state.update(configurations=[c])
 
         return cont(**state)
 
