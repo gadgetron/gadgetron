@@ -71,8 +71,9 @@ dependencies:
   - sphinx=4.4.0                          # dev
   - sphinx_rtd_theme=0.4.3                # dev
   - sysroot_linux-64=2.17
-  - valgrind=3.17                         # dev
-  - xsdata>=22.2
-  - yq=2.13                               # dev
-
-
+  - valgrind=3.17.0               # dev
+  - xsdata=22.2
+  - itk
+  - pip:
+    - junitparser==2.2.0
+    - cupy-cuda117==10.6.0

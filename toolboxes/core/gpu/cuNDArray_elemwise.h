@@ -1,26 +1,25 @@
 /** \file cuNDArray_elemwise.h
     \brief Element-wise math operations on the cuNDArray class.
-    
+
     cuNDArray_elementwise.h defines element-wise array operations on the cuNDArray class.
     Many of the provided functions come in two flavours:
     1) A function that returns a smart pointer to a new array holding the result of the element-wise operation, and
     2) A function that perform in-place element-wise computation replacing the input array.
     When both versions are available the in-place version is suffixed _inplace.
-    Some functions (clear, fill, clamp, clamp_min, clamp_max, normalize, shrink1, shrinkd) are only provided as in-place operations,
-    and they do not carry the _inplace suffix in order to keep user code compact.
-    A few functions return a different type as its input array 
-    (abs on complex data, real, imag, real_to_std_complex, real_to_complext) and consequently is not offered as an in place operation.
-    The functions provided in cuNDArray_elemwise are deliberatly placed outside the NDArray derived classes
+    Some functions (clear, fill, clamp, clamp_min, clamp_max, normalize, shrink1, shrinkd) are only provided as in-place
+   operations, and they do not carry the _inplace suffix in order to keep user code compact. A few functions return a
+   different type as its input array (abs on complex data, real, imag, real_to_std_complex, real_to_complext) and
+   consequently is not offered as an in place operation. The functions provided in cuNDArray_elemwise are deliberatly
+   placed outside the NDArray derived classes
     - to allow the NDArray classes to be lightweight header only data containers for both the cpu and gpu instances
-    - to allow for external library optimized implementations of the element-wise functions without adding such dependencies to the core data container
-    The present cpu implementation is based on Thrust.
-    The implementation is purposely split into a header and underlying implementation (.cpp) 
-    as this allows specific instantiation of the supported template types.     
-    The supported types are float, double Gadgetron::complext<float> and Gadgetron::complext<double> -- with some deliberate omissions.
-    Arrays of type std::complex<float> and std::complex<double> are currently not supported since the thrust device functors cannot 
-    link to std:: functions (as they are not declared as __device__). 
-    However, arrays of type std::complex are binary compatible with arrays of type Gadgetron::complext (for which we have support)
-    and can safely be cast to such.
+    - to allow for external library optimized implementations of the element-wise functions without adding such
+   dependencies to the core data container The present cpu implementation is based on Thrust. The implementation is
+   purposely split into a header and underlying implementation (.cpp) as this allows specific instantiation of the
+   supported template types. The supported types are float, double Gadgetron::complext<float> and
+   Gadgetron::complext<double> -- with some deliberate omissions. Arrays of type std::complex<float> and
+   std::complex<double> are currently not supported since the thrust device functors cannot link to std:: functions (as
+   they are not declared as __device__). However, arrays of type std::complex are binary compatible with arrays of type
+   Gadgetron::complext (for which we have support) and can safely be cast to such.
 */
 
 #pragma once
@@ -140,12 +139,28 @@ namespace Gadgetron{
   template<class T> boost::shared_ptr< cuNDArray<T> > conj( const cuNDArray<T> *x );
 
   /**
+   * @brief Construct a complex array from a real array and imag array.
+   * @param[in] x real array, y imag array.
+   * @return A new complex array containing the input array in the real component and imag elements in the imaginary component.
+   */
+  template<class T> boost::shared_ptr< cuNDArray<T> > cureal_imag_to_complex( const cuNDArray<typename realType<T>::Type> *x, const cuNDArray<typename realType<T>::Type> *y );
+
+  /**
    * @brief Construct a complex array from a real array.
    * @param[in] x Input array.
    * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
    */
   template<class T> boost::shared_ptr< cuNDArray<T> > real_to_complex( const cuNDArray<typename realType<T>::Type> *x );
   
+
+  /**
+ * @brief Construct a complex array from a imag array.
+ * @param[in] x Input array.
+ * @return A new complex array containing the input array in the imag component and zeros in the imaginary component.
+ */
+
+template <class T> boost::shared_ptr<cuNDArray<T>> imag_to_complex(const cuNDArray<typename realType<T>::Type>* x);
+
   /**
    * Converts array from type T to type T2
    * @param[in] x Input array

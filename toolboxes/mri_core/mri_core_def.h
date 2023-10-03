@@ -29,6 +29,7 @@ namespace Gadgetron
     /// role of image data
     #define GADGETRON_DATA_ROLE                            "GADGETRON_DataRole"
     #define GADGETRON_IMAGE_REGULAR                        "Image"
+    #define GADGETRON_IMAGE_BINNED                         "Binned_Image"
     #define GADGETRON_IMAGE_RETRO                          "ImageRetro"
     #define GADGETRON_IMAGE_MOCORECON                      "ImageMoCo"
     #define GADGETRON_IMAGE_GFACTOR                        "Gfactor"
@@ -49,6 +50,8 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP "PS_Map"
     #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "Gd"
     #define GADGETRON_IMAGE_PERF_AHA_SEGMENT_MODEL         "AHA"
+    #define GADGETRON_IMAGE_PERF_ASL                       "ASL"
+
 
     // other images than the regular reconstruction results
     #define GADGETRON_IMAGE_OTHER                          "Image_Other"

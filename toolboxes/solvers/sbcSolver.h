@@ -80,7 +80,7 @@ namespace Gadgetron{
 	}
 
 	*f_k -= encoded_image;
-      
+      encoded_image.clear();
       } // end of outer loop
         
       // Clean up memory occupied by the operator container and inner solver

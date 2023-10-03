@@ -35,7 +35,7 @@ void interpolation_loop(hoNDArray<T>& output, const hoNDArray<vector_td<R, 3>>& 
                                     output.dimensions()[2]};
     for (size_t z = 0; z < dims[2]; z++) {
         for (size_t y = 0; y < dims[1]; y++) {
-            size_t offset = y * dims[0];
+            size_t offset = y * dims[0] + z * dims[1] * dims[0];
             for (size_t x = 0; x < dims[0]; x++) {
                 const auto& deformation = deformation_field[x + offset];
                 output[x + offset] =
@@ -264,23 +264,23 @@ template <class T> struct DemonStep<T, 3> {
     T noise_sigma;
 
     hoNDArray<vector_td<T, 3>> operator()(const hoNDArray<T>& fixed) {
-        assert(fixed.get_number_of_dimensions() == 2);
+        assert(fixed.get_number_of_dimensions() == 3);
         assert(fixed.dimensions() == moving.dimensions());
 
-        auto dims = from_std_vector<size_t, 2>(fixed.dimensions());
-        auto result = hoNDArray<vector_td<T, 2>>(fixed.dimensions());
+        auto dims = from_std_vector<size_t, 3>(fixed.dimensions());
+        auto result = hoNDArray<vector_td<T, 3>>(fixed.dimensions());
 
         auto zstride = dims[0] * dims[1];
 #pragma omp parallel for if (dims[2] > 1)
         for (size_t z = 0; z < dims[2]; z++) {
-            vector_td<size_t, 2> index;
+            vector_td<size_t, 3> index;
             index[2] = z;
             for (size_t y = 0; y < dims[1]; y++) {
                 index[1] = y;
                 for (size_t x = 0; x < dims[0]; x++) {
                     index[0] = x;
                     result[x + y * dims[0] + z * zstride] =
-                        demons_point(fixed, moving, alpha, beta, index, dims);
+                        demons_point(fixed, moving, alpha, beta, index, dims,noise_sigma);
                 }
             }
         }
@@ -660,10 +660,21 @@ Registration::diffeomorphic_demons(const hoNDArray<T>& fixed, const hoNDArray<T>
 template hoNDArray<vector_td<float, 2>>
 Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<float>&, const hoNDArray<float>&,
                                               unsigned int, float, float, float);
+
 template hoNDArray<vector_td<float, 2>>
 Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<float>&, const hoNDArray<float>&,
                                               hoNDArray<vector_td<float, 2>>, unsigned int, float,
                                               float, float);
+
+template hoNDArray<vector_td<float, 3>>
+Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<float>&, const hoNDArray<float>&,
+                                              unsigned int, float, float, float);
+
+template hoNDArray<vector_td<float, 3>>
+Gadgetron::Registration::diffeomorphic_demons(const hoNDArray<float>&, const hoNDArray<float>&,
+                                              hoNDArray<vector_td<float, 3>>, unsigned int, float,
+                                              float, float);
+
 template <class T, unsigned int D>
 hoNDArray<vector_td<T, D>> Gadgetron::Registration::ngf_diffeomorphic_demons(
     const hoNDArray<T>& fixed, const hoNDArray<T>& moving, unsigned int iterations, float sigma,

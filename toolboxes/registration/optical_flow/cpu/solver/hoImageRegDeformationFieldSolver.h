@@ -433,7 +433,7 @@ namespace Gadgetron {
                     {
                         CoordType ix, iy, iz, wx, wy, wz, pX, pY, pZ, deltaWX, deltaWY, deltaWZ;
 
-                        #pragma omp parallel for default(none) private(y, x, z, ix, iy, iz, wx, wy, wz, pX, pY, pZ, deltaWX, deltaWY, deltaWZ) shared(sx, sy, sz, target, deform_delta, deform_updated, transform)
+#pragma omp parallel for default(none) private(y, x, z, ix, iy, iz, wx, wy, wz, pX, pY, pZ, deltaWX, deltaWY, deltaWZ) shared(sx, sy, sz, target, deform_delta, deform_updated, transform)
                         for ( z=0; z<sz; z++ )
                         {
                             for ( y=0; y<sy; y++ )

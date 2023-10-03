@@ -85,7 +85,7 @@ TYPED_TEST(hoSDC_test, randomTestOne)
     dims[1] = 256;
 
     this->timer_.start("Estimate DCW...");
-    hoNDArray<T> res = *estimate_dcw(traj, dims, T(3), 20);
+    hoNDArray<T> res = *estimate_dcw(traj, dims, T(3), 20, float(5.5));
     this->timer_.stop();
     std::stringstream res_stream;
     res.print(res_stream);

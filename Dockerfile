@@ -41,7 +41,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     && find /opt -type d | xargs -n 1 chmod g+s
 
 # Copy environment, which will be filtered for later staged
-COPY --chown=$USER_UID:conda environment.yml /tmp/build/
+COPY --chown=$USER_UID:conda gadgetron_lit/environment.yml /tmp/build/
 
 # Create mount points for tests
 RUN mkdir -p /test && chown ${USER_UID}:${USER_GID} /test
@@ -83,8 +83,11 @@ FROM gadgetron_dev_cuda AS gadgetron_cudabuild
 ARG USER_UID
 USER ${USER_UID}
 WORKDIR /opt
-RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
-COPY --chown=$USER_UID:conda . /opt/code/gadgetron/
+#RUN sudo chown $USER_UID:$USER_GID /opt 
+RUN sudo chown ${USER_UID} /opt 
+#RUN sudo chgrp ${USER_GID} /opt 
+RUN mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
+COPY --chown=$USER_UID:conda gadgetron_lit/ /opt/code/gadgetron/
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
     cd /opt/code/gadgetron && \
@@ -93,6 +96,24 @@ RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetro
     cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package && \
     ninja && \
     ninja install
+
+FROM gadgetron_cudabuild AS gadgetron_nhlbicudabuild
+ARG USER_UID
+USER ${USER_UID}
+WORKDIR /opt
+#COPY NHLBI TOOLBOX
+RUN mkdir -p /opt/code/NHLBI-GT-Non-Cartesian
+COPY --chown=$USER_UID:conda NHLBI-GT-Non-Cartesian/ /opt/code/NHLBI-GT-Non-Cartesian/
+SHELL ["/bin/bash", "-c"]
+#RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && sh -x && \
+#    cd /opt/code/NHLBI-GT-Non-Cartesian && \
+#    mkdir build && \
+ #   cd build && \
+ ##   cmake ../ -GNinja -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=/opt/package && \
+   #  cmake ../ -GNinja -DUSE_MKL=ON  -DCMAKE_INSTALL_PREFIX=/opt/package -DCMAKE_PREFIX_PATH=/opt/package && \
+    #ninja && \
+    #ninja install
+
 
 FROM gadgetron_dev_nocuda AS gadgetron_nocudabuild
 ARG USER_UID

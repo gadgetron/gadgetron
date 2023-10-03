@@ -60,6 +60,7 @@ install(FILES
         Types.h
         Types.hpp
         TypeTraits.h
+        IsmrmrdContextVariables.h
         Writer.h
         Writer.hpp
         Node.h

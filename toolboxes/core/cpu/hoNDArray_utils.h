@@ -816,6 +816,75 @@ namespace Gadgetron {
     return _out;
   }
 
+   // Downsample
+  template<class REAL, unsigned int D>
+   hoNDArray<REAL>  downsample(const  hoNDArray<REAL>& _in, typename uint64d<D>::Type matrix_size_out )
+  {
+    // A few sanity checks
+    if( _in.get_number_of_dimensions() < D ){
+      throw std::runtime_error( "downsample(): the number of array dimensions should be at least D");
+    }
+
+    for( size_t d=0; d<D; d++ ){
+      if( (_in.get_size(d)%2) == 1 && _in.get_size(d) != 1 ){
+	throw std::runtime_error( "downsample(): uneven array dimensions larger than one not accepted");
+      }
+    }
+
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
+    //typename uint64d<D>::Type matrix_size_out = matrix_size_in >> 1;
+
+    for( size_t d=0; d<D; d++ ){
+      if( matrix_size_out[d] == 0 )
+	matrix_size_out[d] = 1;
+    }
+
+    size_t num_elements = prod(matrix_size_out);
+    size_t num_batches = 1;
+
+    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
+      num_batches *= _in.get_size(d);
+    }
+
+    std::vector<size_t> dims = to_std_vector(matrix_size_out);
+    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
+      dims.push_back(_in.get_size(d));
+    }
+
+    const REAL *in = _in.get_data_ptr();
+
+     hoNDArray<REAL>  _out( dims );
+    REAL *out = _out.get_data_ptr();
+
+    typedef vector_td<size_t,D> uint64d;
+
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
+    for( int64_t idx=0; idx < num_elements*num_batches; idx++ ){
+
+      const size_t frame_offset = idx/num_elements;
+      const uint64d co_out = idx_to_co<uint64_t,D>( idx-frame_offset*num_elements, matrix_size_out );
+      const uint64d co_in = co_out << 1;
+      const uint64d twos(2);
+      const size_t num_adds = 1 << D;
+
+      size_t actual_adds = 0;
+      REAL res = REAL(0);
+
+      for( size_t i=0; i<num_adds; i++ ){
+	const uint64d local_co = idx_to_co( i, twos );
+	if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of size 1
+	const size_t in_idx = co_to_idx(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
+	actual_adds++;
+	res += in[in_idx];
+      }
+      out[idx] = res/REAL(actual_adds);
+    }
+
+    return _out;
+  }
+
   namespace {
           template<class T> hoNDArray<T> upsample_along_dimension(const hoNDArray<T>& array,int dim){
               auto new_dims = *array.get_dimensions();
@@ -853,7 +922,7 @@ namespace Gadgetron {
           }
 
 
-          template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,int scale){
+          template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,float scale){
               namespace ba = boost::adaptors;
               namespace bm = boost::math;
               auto new_dims = *array.get_dimensions();
@@ -879,6 +948,38 @@ namespace Gadgetron {
                       );
                       for (int i = 0; i < new_dims[dim]; i++){
                           result_ptr[k+i*stride] = spline(i);
+                      }
+
+                  }
+
+              }
+              return result;
+
+
+
+          }
+          template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,float scale, float factor){
+              namespace ba = boost::adaptors;
+              namespace bm = boost::math;
+              auto new_dims = *array.get_dimensions();
+              auto old_dim = new_dims[dim];
+              new_dims[dim] *= factor;
+              hoNDArray<T> result(new_dims);
+              size_t stride = std::accumulate(new_dims.begin(),new_dims.begin()+dim,size_t(1),std::multiplies<size_t>());
+              size_t nbatches = result.get_number_of_elements()/stride/new_dims[dim];
+              size_t batch_size = stride*new_dims[dim];
+              size_t old_batch_size = batch_size/2;
+
+#pragma omp parallel for
+              for (int batch = 0; batch < (int)nbatches; batch++){
+                  T* result_ptr = result.get_data_ptr()+batch_size*batch;
+                  const T* input_ptr = array.get_data_ptr()+batch*old_batch_size;
+
+                  for (size_t k = 0; k < stride; k++){
+                      auto strided_iterator = std::make_pair(input_ptr+k,input_ptr+k+old_batch_size) | ba::strided(stride);
+                      auto spline =boost::math::interpolators::cardinal_cubic_b_spline(boost::begin(strided_iterator),boost::end(strided_iterator),T(scale),T(scale),T(0),T(0));
+                      for (int i = 0; i < new_dims[dim]; i++){
+                          result_ptr[k+i*stride] = spline(i/factor);
                       }
 
                   }

@@ -325,9 +325,9 @@ namespace Gadgetron
             
             // Image view for this repetition.
             size_t image_view_elements = std::accumulate(
-                view_dims.begin(), view_dims.end()-1, size_t(1), std::multiplies<>());
+                view_dims.begin(), view_dims.end()-1, size_t(1), std::multiplies<size_t>());
             auto image_view = cuNDArray<T>(view_dims, const_cast<T*>(
-                image.get_data_ptr()) + repetition * image_view_elements*domain_size_coils);
+                image.get_data_ptr()) + repetition * image_view_elements * domain_size_coils);
             auto permutation = std::vector<size_t>(D+2);
             permutation[0] = D+1;
             std::iota(permutation.begin() + 1, permutation.end(), 0);

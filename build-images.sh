@@ -79,7 +79,7 @@ for t in "${types[@]}"; do
   for f in "${flavors[@]}"; do
     image_name="${base_name}_${t}_${f}:${image_tag}"
     build_stage="gadgetron_${t}_${f}"
-    docker build --build-arg BUILDKIT_INLINE_CACHE=1 --target "$build_stage" -t "$image_name" -f "$(dirname "$0")/Dockerfile" "$(dirname "$0")"
+    docker build --build-arg BUILDKIT_INLINE_CACHE=1 --target "$build_stage" -t "$image_name" -f "$(dirname "$0")/Dockerfile" "$(dirname "$0")" 
     if [[ -n "${push:-}" ]]; then
       docker push "$image_name"
     fi

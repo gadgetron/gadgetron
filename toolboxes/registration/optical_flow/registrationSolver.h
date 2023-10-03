@@ -85,6 +85,24 @@ namespace Gadgetron{
     
       return out;
     }
+
+    virtual boost::shared_ptr<ARRAY_TYPE> 
+    deform_adj( ARRAY_TYPE *image, boost::shared_ptr<ARRAY_TYPE> displacements )
+    {
+      if( !interpolator_.get() ){
+	    throw std::runtime_error("registrationSolver::deform() : interpolator not set");;
+      }
+    
+      boost::shared_ptr<ARRAY_TYPE> out(new ARRAY_TYPE);
+      std::vector<size_t> out_dims = displacements->dimensions(); out_dims.pop_back();    
+      out->create(out_dims);
+    
+      interpolator_->set_displacement_field( displacements );
+      interpolator_->mult_MH( image, out.get() );
+      interpolator_->reset();
+    
+      return out;
+    }
   
     // Deform image based on an invocation of the registration solver
     //
