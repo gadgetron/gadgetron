@@ -28,7 +28,6 @@ namespace {
 				cumsum += (long long)(histogram_[counter++]);
 			}
 			max = (counter+1)*(max/histogram_bins);
-			GDEBUG("Max: %f\n",max);
 			current_scale_ = max_value/max;
 			for (auto& d : data){
 				d *= current_scale_;
