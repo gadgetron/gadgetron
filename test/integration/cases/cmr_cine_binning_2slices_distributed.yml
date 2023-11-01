@@ -1,0 +1,39 @@
+cases:
+  - name: cmr_cine_binning_2slices
+    tags: slow
+    reconstruction:
+      data_file: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/meas_MID838_PK_rt_test_2slice_FID22519.dat
+      data_file_hash: 7f52ef8abeb44b7a23648b195307ccc8
+      measurement: 2
+      # [Optional] parameter_xml: 
+      # [Optional] parameter_xsl:
+      # [Optional] data_conversion_flag:
+      configuration: CMR_2DT_RTCine_KspaceBinning.xml
+    validation:
+      images:
+        CMR_2DT_RTCine_KspaceBinning.xml/image_2:
+          reference_file_path: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/cmr_cine_binning_2slice_ref_20220817.mrd          
+          reference_file_hash: ddd08991b7837dc37d7457cc74fb40cb
+          scale_comparison_threshold: 0.01
+          value_comparison_threshold: 0.01
+
+  - name: generic_cartesian_cine_denoise
+    tags: generic
+    reconstruction:
+      data_file: generic/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4.dat
+      measurement: 2
+      configuration: Generic_Cartesian_Grappa_Cine_Denoise.xml
+    noise:
+      data_file: generic/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4.dat
+      measurement: 1
+      configuration: default_measurement_dependencies.xml
+    validation:
+      images:
+        Generic_Cartesian_Grappa_Cine_Denoise.xml/image_1:
+          reference_file_path: denoise/meas_MID00051_FID110020_SAX_realtime_gt_TPAT4/denoise_ref_20220817.mrd
+          scale_comparison_threshold: 0.005
+          value_comparison_threshold: 0.001
+  
+  
+
+  
