@@ -5,9 +5,26 @@ import os
 
 from pathlib import Path
 
+
 def pytest_addoption(parser):
     parser.addoption(
-        '--host', action='store', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/', 
+        '--host', action='store', default='localhost', 
+        help='Address of (external) Gadgetron host.'
+    )
+    parser.addoption(
+        '--port', action='store', default='9003', 
+        help='Port used by Gadgetron.'
+    )
+    parser.addoption(
+        '--storage-port', action='store', default='9113', 
+        help='Port used by Gadgetron Storage Server.'
+    )
+    parser.addoption(
+        '--external', action='store_true', default=False,
+        help="External, do not start Gadgetron"
+    )
+    parser.addoption(
+        '--data-host', action='store', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/', 
         help='Host from which to download the data.'
     )
     parser.addoption(
@@ -20,9 +37,25 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def host_url(request):
     return request.config.getoption('--host')
+
+@pytest.fixture(scope="module")
+def port(request):
+    return request.config.getoption('--port')
+
+@pytest.fixture(scope="module")
+def storage_port(request):
+    return request.config.getoption('--storage-port')
+
+@pytest.fixture(scope="module")
+def external(request):
+    return request.config.getoption('--external')
+
+@pytest.fixture
+def data_host_url(request):
+    return request.config.getoption('--data-host')
 
 @pytest.fixture
 def cache_disable(request):
@@ -39,3 +72,4 @@ def cache_path(request):
         base = Path(base)
 
     return base
+
