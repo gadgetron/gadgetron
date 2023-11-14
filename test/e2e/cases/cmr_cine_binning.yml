@@ -1,0 +1,24 @@
+cases:
+- name: cmr_cine_binning
+  tags:
+  - slow
+  dependency:
+    data_file: cmr/CineBinning/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8.dat
+    measurement: 1
+    data_file_hash: 8be03b636dc08f4f8cd0412874b9f101
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: cmr/CineBinning/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8.dat
+    measurement: 2
+    data_file_hash: 8be03b636dc08f4f8cd0412874b9f101
+    configuration: CMR_2DT_RTCine_KspaceBinning.xml
+  validation:
+    images:
+      CMR_2DT_RTCine_KspaceBinning.xml/image_2:
+        reference_file: cmr/CineBinning/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8/cmr_cine_binning_ref_20220817.mrd
+        reference_file_hash: 50f1fe4c36a5b7123c0358b8036d4a23
+        reference_image: CMR_2DT_RTCine_KspaceBinning.xml/image_2
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 16384

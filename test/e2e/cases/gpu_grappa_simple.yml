@@ -1,0 +1,22 @@
+cases:
+- name: gpu_grappa_simple
+  tags:
+  - fast
+  - realtime
+  reconstruction:
+    data_file: rtgrappa/acc_data_with_device_2.dat
+    measurement: 1
+    data_file_hash: ac0b59c6c8989c94738e41e2c4b5ec13
+    configuration: grappa_float.xml
+  validation:
+    images:
+      grappa_float.xml/image_0:
+        reference_file: rtgrappa/grappa_rate2_cpu_out.mrd
+        reference_file_hash: 5fb75eefe3828a74cffe7da6f521d841
+        reference_image: grappa_float_cpu.xml/image_0
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.1
+  requirements:
+    system_memory: 2048
+    gpu_support: 1
+    gpu_memory: 1024

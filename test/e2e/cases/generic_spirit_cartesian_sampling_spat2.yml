@@ -1,0 +1,19 @@
+cases:
+- name: generic_spirit_cartesian_sampling_spat2
+  tags:
+  - slow
+  reconstruction:
+    data_file: generic/meas_MID00062_FID114726_SAX_SASHA/meas_MID00062_FID114726_SAX_SASHA.dat
+    measurement: 1
+    data_file_hash: 148a408bca29ac6ec967795341708d21
+    configuration: Generic_Cartesian_Spirit_SASHA.xml
+  validation:
+    images:
+      Generic_Cartesian_Spirit_SASHA.xml/image_1:
+        reference_file: generic/meas_MID00062_FID114726_SAX_SASHA/ref_20220817_klk.mrd
+        reference_file_hash: 1f2022cca5188a557d83d23d5fcca495
+        reference_image: Generic_Cartesian_Spirit_SASHA.xml/image_1
+        scale_comparison_threshold: 0.001
+        value_comparison_threshold: 0.001
+  requirements:
+    system_memory: 4096

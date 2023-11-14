@@ -1,0 +1,21 @@
+cases:
+- name: gpu_golden_radial_mode2_realtime
+  tags:
+  - fast
+  reconstruction:
+    data_file: radial_phantom/meas_MID00135_FID20082_CV_Radial_Golden_Angle_128_512_views.dat
+    measurement: 1
+    data_file_hash: 0326afbb168982f4144704781a08b3ec
+    configuration: golden_radial_mode2_realtime.xml
+  validation:
+    images:
+      golden_radial_mode2_realtime.xml/image_0:
+        reference_file: radial_phantom/golden_radial_mode2_20210923_klk.mrd
+        reference_file_hash: 8b296905309f2e6f1458d56417d5c365
+        reference_image: realtime/image_0
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 2048
+    gpu_support: 1
+    gpu_memory: 1024

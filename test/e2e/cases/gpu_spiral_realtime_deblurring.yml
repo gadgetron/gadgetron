@@ -1,0 +1,27 @@
+cases:
+- name: gpu_spiral_realtime_deblurring
+  tags:
+  - fast
+  dependency:
+    data_file: spiral/meas_MID00080_FID16005_MiniIRT_B0.dat
+    measurement: 1
+    data_file_hash: 31865ce197491bb675e095a1d6096d36
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: spiral/meas_MID00080_FID16005_MiniIRT_B0.dat
+    measurement: 2
+    data_file_hash: 31865ce197491bb675e095a1d6096d36
+    parameter_xsl: IsmrmrdParameterMap_Siemens_B0REF.xsl
+    configuration: deblurring_recon_acctrig.xml
+  validation:
+    images:
+      deblurring_recon_acctrig.xml/image_1:
+        reference_file: spiral/spiral_rt_deblurring_out.mrd
+        reference_file_hash: 75cc7b2aec83ca854a5ad06e6afad76e
+        reference_image: deblurring_recon_acctrig.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 2048
+    gpu_support: 1
+    gpu_memory: 1024

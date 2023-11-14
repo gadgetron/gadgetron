@@ -1,0 +1,25 @@
+cases:
+- name: generic_grappa_snr_R3_spat_PEFOV100_PERes75_PF6_8_AsymStrong
+  tags:
+  - fast
+  - generic
+  dependency:
+    data_file: generic/meas_MID00416_FID114618_R3_spat_PEFOV100_PERes75_PF6_8_AsymStrong/meas_MID00416_FID114618_R3_spat_PEFOV100_PERes75_PF6_8_AsymStrong.dat
+    measurement: 1
+    data_file_hash: eb6983639ce8b5a07fbfa1030bdb189a
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: generic/meas_MID00416_FID114618_R3_spat_PEFOV100_PERes75_PF6_8_AsymStrong/meas_MID00416_FID114618_R3_spat_PEFOV100_PERes75_PF6_8_AsymStrong.dat
+    measurement: 2
+    data_file_hash: eb6983639ce8b5a07fbfa1030bdb189a
+    configuration: Generic_Cartesian_Grappa_SNR.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa_SNR.xml/image_300:
+        reference_file: generic/meas_MID00416_FID114618_R3_spat_PEFOV100_PERes75_PF6_8_AsymStrong/ref_20160401.mrd
+        reference_file_hash: 5cd9d55e1c728a390e52dd1b89d5a75c
+        reference_image: Generic_Cartesian_Grappa_SNR.xml/image_300
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096

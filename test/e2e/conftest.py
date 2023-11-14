@@ -35,6 +35,14 @@ def pytest_addoption(parser):
         '--cache-path', action='store', default="", 
         help='Location for storing cached data files.'
     )
+    parser.addoption(
+        '--ignore-requirements', action='store_true', default=False,
+        help="Run tests regardless of Gadgetron capabilities."
+    )
+    parser.addoption(
+        '--tag', action='store', default="", 
+        help='Only run tests that has the provided tag.'
+    )
 
 
 @pytest.fixture(scope="module")
@@ -52,6 +60,11 @@ def storage_port(request):
 @pytest.fixture(scope="module")
 def external(request):
     return request.config.getoption('--external')
+
+@pytest.fixture
+def ignore_requirements(request):
+    return request.config.getoption('--ignore-requirements')
+
 
 @pytest.fixture
 def data_host_url(request):
@@ -72,4 +85,10 @@ def cache_path(request):
         base = Path(base)
 
     return base
+
+
+@pytest.fixture
+def run_tag(request):
+    return request.config.getoption('--tag')
+
 

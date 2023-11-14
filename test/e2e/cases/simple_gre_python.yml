@@ -1,0 +1,26 @@
+cases:
+- name: simple_gre_python
+  tags:
+  - fast
+  reconstruction:
+    data_file: simple_gre/meas_MiniGadgetron_GRE.dat
+    measurement: 1
+    data_file_hash: 7c5c255522e42367546b4045560afcf8
+    configuration: python_short.xml
+  validation:
+    images:
+      python_short.xml/image_1:
+        reference_file: simple_gre/simple_gre_out_20210909_klk.mrd
+        reference_file_hash: 85e35ab4c68fa2e5ee25086bc08e615f
+        reference_image: python_short.xml/image_1
+        scale_comparison_threshold: 0.001
+        value_comparison_threshold: 0.002
+      python_short.xml/image_2:
+        reference_file: simple_gre/simple_gre_out_20210909_klk.mrd
+        reference_file_hash: 85e35ab4c68fa2e5ee25086bc08e615f
+        reference_image: python_short.xml/image_2
+        scale_comparison_threshold: 0.001
+        value_comparison_threshold: 0.002
+  requirements:
+    system_memory: 2048
+    python_support: 1

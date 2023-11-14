@@ -1,0 +1,32 @@
+cases:
+- name: stream_generic_rtcine_ai_landmark
+  tags:
+  - fast
+  - stream
+  - generic
+  reconstruction:
+    copy_file: cmr/RTCine/CH4/rtcine_R4_CH2.mrd
+    copy_file_hash: fcf7253923df0fee8fff8fb68e410929
+    stream:
+    - configuration: CMR_RTCine_Recon.xml
+    - configuration: CMR_Image_Chain_RTCine_LAX_AI.xml
+    - configuration: stream_image_array.xml
+    input_adapter: ismrmrd_hdf5_to_stream
+    output_adapter: ismrmrd_stream_to_hdf5
+    output_group: CMR_RTCine_LAX_AI.xml
+  validation:
+    images:
+      CMR_RTCine_LAX_AI.xml/image_1:
+        reference_file: cmr/RTCine/CH4/ref_20220124_173736.mrd
+        reference_file_hash: b5e9c37bbd3eb4be076d89fd7dd7db6d
+        reference_image: CMR_RTCine_LAX_AI.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.3
+      CMR_RTCine_LAX_AI.xml/image_100:
+        reference_file: cmr/RTCine/CH4/ref_20220124_173736.mrd
+        reference_file_hash: b5e9c37bbd3eb4be076d89fd7dd7db6d
+        reference_image: CMR_RTCine_LAX_AI.xml/image_100
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.3
+  requirements:
+    system_memory: 4096

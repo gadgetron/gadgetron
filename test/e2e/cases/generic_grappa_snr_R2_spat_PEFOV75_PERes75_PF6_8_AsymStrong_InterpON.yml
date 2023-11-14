@@ -1,0 +1,25 @@
+cases:
+- name: generic_grappa_snr_R2_spat_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON
+  tags:
+  - fast
+  - generic
+  dependency:
+    data_file: generic/meas_MID00402_FID114604_R2_spat_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON/meas_MID00402_FID114604_R2_spat_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON.dat
+    measurement: 1
+    data_file_hash: beb93e9b2169ae4ea803a7727103b618
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: generic/meas_MID00402_FID114604_R2_spat_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON/meas_MID00402_FID114604_R2_spat_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON.dat
+    measurement: 2
+    data_file_hash: beb93e9b2169ae4ea803a7727103b618
+    configuration: Generic_Cartesian_Grappa_SNR.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa_SNR.xml/image_300:
+        reference_file: generic/meas_MID00402_FID114604_R2_spat_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON/ref_20160401.mrd
+        reference_file_hash: 7abcd80112b08130407b92f26d36aea8
+        reference_image: Generic_Cartesian_Grappa_SNR.xml/image_300
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096

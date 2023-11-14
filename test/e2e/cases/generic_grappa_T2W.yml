@@ -1,0 +1,25 @@
+cases:
+- name: generic_grappa_T2W
+  tags:
+  - fast
+  - generic
+  dependency:
+    data_file: T2W/meas_MID00057_T2w.dat
+    measurement: 1
+    data_file_hash: 46aa75c471a41c793006328a224a4001
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: T2W/meas_MID00057_T2w.dat
+    measurement: 2
+    data_file_hash: 46aa75c471a41c793006328a224a4001
+    configuration: Generic_Cartesian_Grappa_T2W.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa_T2W.xml/image_1:
+        reference_file: T2W/generic_grappa_T2W_ref_20220817_klk.mrd
+        reference_file_hash: b13b4d961a1fe24fec79f20e6d126bef
+        reference_image: Generic_Cartesian_Grappa_T2W.xml/image_1
+        scale_comparison_threshold: 0.075
+        value_comparison_threshold: 0.075
+  requirements:
+    system_memory: 4096
