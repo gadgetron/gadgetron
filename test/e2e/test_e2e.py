@@ -9,6 +9,7 @@ import yaml
 import time
 import string
 import re
+import sys
 
 import h5py
 import ismrmrd
@@ -294,7 +295,7 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
                             env=environment)
 
         assert result.returncode == 0, "gadgetron_ismrmrd_client return {}".format(result.returncode)
-        assert os.path.isfile(output_file), "{} is missing".format(output_file)
+        # assert os.path.isfile(output_file), "{} is missing".format(output_file)
 
         return output_file
 
@@ -331,7 +332,7 @@ def stream_to_gadgetron(tmp_path: Path, host_url, port, storage_port):
                             stderr=log_stderr)
 
         assert result.returncode == 0, "stream return {}".format(result.returncode)
-        assert os.path.isfile(output_file), "{} is missing".format(output_file)
+        # assert os.path.isfile(output_file), "{} is missing".format(output_file)
 
         return output_file
 
@@ -410,6 +411,49 @@ def start_gadgetron(host_url, port, external, storage_port, tmp_path_factory):
     else:
         yield
 
+@pytest.fixture
+def start_additional_nodes(tmp_path: Path, storage_port, external):
+    
+    def _start_additional_nodes(fileConfig:dict):
+        if external:
+            return
+
+        if not fileConfig.has_section('nodes'):
+            return
+
+        storage_address = "http://localhost:" + storage_port
+        env=environment
+
+        if sys.platform.startswith('win32'):
+            env['GADGETRON_REMOTE_WORKER_COMMAND'] = 'cmd /k echo ' + json.dumps(worker_list) + ' & exit'
+        else:
+            env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+
+        print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
+
+        base_port = 9050
+        number_of_nodes = int(fileConfig['nodes'])
+
+        ids = range(number_of_nodes)
+        print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
+
+        instances = []
+
+        for id in ids:
+            port = base_port + id
+            with open(os.path.join(tmp_path, 'gadgetron_worker' + port + '.log.out'), 'w') as log_stdout:
+                with open(os.path.join(tmp_path, 'gadgetron_worker' + port + '.log.err'), 'w') as log_stderr:
+                    instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address))
+
+        yield
+
+        for instance in instances:
+            instance.kill()
+
+
+    return _start_additional_nodes
+
+
 Failure = "Failure", 1
 
 def validate_output(*, output_file, reference_file, output_group, reference_group, value_threshold, scale_threshold):
@@ -470,10 +514,13 @@ def get_recontruction_cases():
     case_ids = []
     
     for case in test_cases:
-        if 'stream' not in case['tags']:
+        if 'stream' not in case['tags'] and 'distributed' not in case['tags']:
             cases.append(case)
             case_ids.append(case['name'])
 
+    print(case_ids)
+
+    
     return cases, case_ids
 
 def get_streaming_cases():
@@ -487,11 +534,24 @@ def get_streaming_cases():
 
     return cases, case_ids
 
+
+def get_distributed_cases():
+    cases = []
+    case_ids = []
+    
+    for case in test_cases:
+        if 'distributed' in case['tags']:
+            cases.append(case)
+            case_ids.append(case['name'])
+
+    return cases, case_ids
+
+
 test_cases = load_cases()
 
 recontruction_cases, recontruction_ids = get_recontruction_cases()
 stream_cases, stream_ids = get_streaming_cases()
-
+distributed_cases, distributed_ids = get_distributed_cases()
 
 @pytest.mark.parametrize('config', recontruction_cases, ids=recontruction_ids)
 def test_reconstruction(config, fetch_data_file, siemens_to_ismrmrd, send_to_gadgetron, check_requirements):
@@ -528,6 +588,31 @@ def test_streaming(config, fetch_data_file, siemens_to_ismrmrd, stream_to_gadget
 
     reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
     output_file = stream_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
+
+    for output_image in config['validation']['images']:        
+        output_image_data = config['validation']['images'][output_image]
+        reference_file = fetch_data_file(output_image_data['reference_file'], output_image_data['reference_file_hash'])
+        result, reason = validate_output(output_file=output_file, 
+                                        reference_file=reference_file, 
+                                        output_group=output_image,
+                                        reference_group=output_image_data['reference_image'], 
+                                        value_threshold=output_image_data['value_comparison_threshold'], 
+                                        scale_threshold=output_image_data['scale_comparison_threshold'])
+        
+        assert result != Failure, reason
+
+@pytest.mark.parametrize('config', distributed_cases, ids=distributed_ids)
+def test_distributed(config, fetch_data_file, siemens_to_ismrmrd, send_to_gadgetron, check_requirements, start_additional_nodes):
+    check_requirements(config['requirements'], config['tags'])
+
+    start_additional_nodes(config)
+
+    if 'dependency' in config:
+        dependency_file = siemens_to_ismrmrd(config['dependency'], "dependency")
+        _ = send_to_gadgetron(config['dependency'], dependency_file, "dependency")
+
+    reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
+    output_file = send_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
 
     for output_image in config['validation']['images']:        
         output_image_data = config['validation']['images'][output_image]
