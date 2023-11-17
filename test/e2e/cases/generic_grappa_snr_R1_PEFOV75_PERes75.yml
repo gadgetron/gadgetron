@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_snr_R1_PEFOV75_PERes75
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: generic/meas_MID00394_FID114596_R1_PEFOV75_PERes75/meas_MID00394_FID114596_R1_PEFOV75_PERes75.dat
     measurement: 1

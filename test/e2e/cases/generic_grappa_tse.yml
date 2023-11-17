@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_tse
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
     measurement: 1

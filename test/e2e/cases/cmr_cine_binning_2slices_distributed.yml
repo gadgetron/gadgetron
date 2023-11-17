@@ -18,4 +18,5 @@ cases:
         value_comparison_threshold: 0.01
   requirements:
     system_memory: 8192
-  nodes: 2
+  distributed:
+    nodes: 2

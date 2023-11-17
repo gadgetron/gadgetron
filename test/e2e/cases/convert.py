@@ -178,7 +178,10 @@ def read_config(file: Path, file_data):
             continue
 
         elif section == 'distributed':
-            config_data['nodes'] = int(config[section]['nodes'])
+            config_data['distributed'] = {}
+            config_data['distributed']['nodes'] = int(config[section]['nodes'])
+            if 'node_port_base' in config[section]:
+                config_data['distributed']['node_port_base'] = int(config[section]['node_port_base'])
 
         elif section != 'DEFAULT':
             print(section)

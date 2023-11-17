@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_snr_R2_ipat_PEFOV75_PERes75_PEOverSampling120
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: generic/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120.dat
     measurement: 1

@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_snr_R1_PEFOV100_PERes120
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: generic/meas_MID00423_FID114625_R1_PEFOV100_PERes120/meas_MID00423_FID114625_R1_PEFOV100_PERes120.dat
     measurement: 1

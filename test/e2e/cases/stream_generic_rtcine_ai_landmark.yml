@@ -1,9 +1,9 @@
 cases:
 - name: stream_generic_rtcine_ai_landmark
   tags:
+  - generic
   - fast
   - stream
-  - generic
   reconstruction:
     copy_file: cmr/RTCine/CH4/rtcine_R4_CH2.mrd
     copy_file_hash: fcf7253923df0fee8fff8fb68e410929

@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_snr_R1_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: generic/meas_MID00397_FID114599_R1_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON/meas_MID00397_FID114599_R1_PEFOV75_PERes75_PF6_8_AsymStrong_InterpON.dat
     measurement: 1

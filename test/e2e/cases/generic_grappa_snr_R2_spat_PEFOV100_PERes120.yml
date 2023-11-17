@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_snr_R2_spat_PEFOV100_PERes120
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: generic/meas_MID00424_FID114626_R2_spat__PEFOV100_PERes120/meas_MID00424_FID114626_R2_spat__PEFOV100_PERes120.dat
     measurement: 1

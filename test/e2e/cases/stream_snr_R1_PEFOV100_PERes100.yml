@@ -1,9 +1,9 @@
 cases:
 - name: stream_snr_R1_PEFOV100_PERes100
   tags:
+  - generic
   - fast
   - stream
-  - generic
   dependency:
     data_file: generic/meas_MID00393_FID114595_R1_PEFOV100_PERes100/meas_MID00393_FID114595_R1_PEFOV100_PERes100.dat
     measurement: 1

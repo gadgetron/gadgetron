@@ -1,9 +1,9 @@
 cases:
 - name: stream_image_array
   tags:
+  - generic
   - fast
   - stream
-  - generic
   dependency:
     data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
     measurement: 1

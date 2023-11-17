@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_snr_R3_tpat_PEFOV100_PERes75_PF6_8_AsymStrong
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: generic/meas_MID00421_FID114623_R3_tpat_PEFOV100_PERes75_PF6_8_AsymStrong/meas_MID00421_FID114623_R3_tpat_PEFOV100_PERes75_PF6_8_AsymStrong.dat
     measurement: 1

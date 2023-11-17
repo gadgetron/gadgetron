@@ -1,8 +1,8 @@
 cases:
 - name: gpu_grappa_simple
   tags:
-  - fast
   - realtime
+  - fast
   reconstruction:
     data_file: rtgrappa/acc_data_with_device_2.dat
     measurement: 1

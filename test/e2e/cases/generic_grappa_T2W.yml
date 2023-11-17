@@ -1,8 +1,8 @@
 cases:
 - name: generic_grappa_T2W
   tags:
-  - fast
   - generic
+  - fast
   dependency:
     data_file: T2W/meas_MID00057_T2w.dat
     measurement: 1

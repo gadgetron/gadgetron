@@ -14,7 +14,8 @@ import sys
 import h5py
 import ismrmrd
 import numpy
-
+import glob
+import json
 
 import urllib.error
 import urllib.request
@@ -123,8 +124,9 @@ def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file):
                                 stderr=log_stderr, 
                                 cwd=tmp_path)
             
-            assert result.returncode == 0, "siemens_to_ismrmrd return {}".format(result.returncode)
-        
+            if result.returncode != 0:
+                pytest.fail("siemens_to_ismrmrd failed with return code {}".format(result.returncode))
+
         return output
     
     return _siemens_to_ismrmrd
@@ -294,7 +296,9 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
                             stderr=log_stderr, 
                             env=environment)
 
-        assert result.returncode == 0, "gadgetron_ismrmrd_client return {}".format(result.returncode)
+        if result.returncode != 0:
+            pytest.fail("gadgetron_ismrmrd_client failed with return code {}".format(result.returncode))
+
         # assert os.path.isfile(output_file), "{} is missing".format(output_file)
 
         return output_file
@@ -331,7 +335,9 @@ def stream_to_gadgetron(tmp_path: Path, host_url, port, storage_port):
                             stdout=log_stdout,
                             stderr=log_stderr)
 
-        assert result.returncode == 0, "stream return {}".format(result.returncode)
+        if result.returncode != 0:
+            pytest.fail("stream processing failed with return code {}".format(result.returncode))
+
         # assert os.path.isfile(output_file), "{} is missing".format(output_file)
 
         return output_file
@@ -385,8 +391,7 @@ def start_gadgetron_instance(*, log_stdout, log_stderr, port, storage_address, e
 
 
 @pytest.fixture(scope="module", autouse="true")
-def start_gadgetron(host_url, port, external, storage_port, tmp_path_factory):
-    storage_address = "http://localhost:" + storage_port
+def start_storage(external, storage_port, tmp_path_factory):
     log_path = tmp_path_factory.mktemp("logs")
     storage_path = tmp_path_factory.mktemp("storage")
 
@@ -396,33 +401,69 @@ def start_gadgetron(host_url, port, external, storage_port, tmp_path_factory):
             storage = start_storage_server(log=log,
                         port=str(storage_port),
                         storage_folder=str(storage_path))
+            
+            yield
 
-        print("Starting Gadgetron instance on port {} with logs in {}".format(port, log_path))
-
-        with open(os.path.join(log_path, 'gadgetron.log.out'), 'w') as log_stdout:
-            with open(os.path.join(log_path, 'gadgetron.log.err'), 'w') as log_stderr:
-                instance = start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address)
-
-                yield
-
-                instance.kill()
-                storage.kill()
+            storage.kill()
 
     else:
-        yield
+        return
 
 @pytest.fixture
-def start_additional_nodes(tmp_path: Path, storage_port, external):
-    
-    def _start_additional_nodes(fileConfig:dict):
+def start_gadgetron(port, external, storage_port, tmp_path):
+    instance = None
+    def _start_gadgetron():
+        nonlocal instance
+
+        storage_address = "http://localhost:" + storage_port
+
+        if not external:
+            print("Starting Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
+
+            with open(os.path.join(tmp_path, 'gadgetron.log.out'), 'w') as log_stdout:
+                with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
+                    instance = start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address)
+
+
+        else:
+            yield
+
+
+    yield _start_gadgetron
+
+    if instance != None:
+        instance.kill()
+
+
+@pytest.fixture
+def start_gadgetron_with_additional_nodes(tmp_path: Path, port, storage_port, external):
+    instances = []
+
+    def _start_gadgetron_with_additional_nodes(fileConfig:dict):
+        nonlocal instances
+
         if external:
             return
 
-        if not fileConfig.has_section('nodes'):
+        if 'nodes' not in fileConfig:
             return
 
         storage_address = "http://localhost:" + storage_port
         env=environment
+        base_port = int(fileConfig.get('node_port_base', 9050))
+        number_of_nodes = int(fileConfig['nodes'])
+
+        ids = range(number_of_nodes)
+        print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
+
+        worker_list = []
+
+        for id in ids:
+            instance_port = str(base_port + id)
+            with open(os.path.join(tmp_path, 'gadgetron_worker' + instance_port + '.log.out'), 'w') as log_stdout:
+                with open(os.path.join(tmp_path, 'gadgetron_worker' + instance_port + '.log.err'), 'w') as log_stderr:
+                    instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=instance_port, storage_address=storage_address))
+                    worker_list=worker_list + ['localhost:' + str(instance_port)]
 
         if sys.platform.startswith('win32'):
             env['GADGETRON_REMOTE_WORKER_COMMAND'] = 'cmd /k echo ' + json.dumps(worker_list) + ' & exit'
@@ -431,27 +472,16 @@ def start_additional_nodes(tmp_path: Path, storage_port, external):
 
         print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
 
-        base_port = 9050
-        number_of_nodes = int(fileConfig['nodes'])
+        print("Starting main Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
 
-        ids = range(number_of_nodes)
-        print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
+        with open(os.path.join(tmp_path, 'gadgetron.log.out'), 'w') as log_stdout:
+            with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
+                instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address, env=env))
 
-        instances = []
+    yield _start_gadgetron_with_additional_nodes
 
-        for id in ids:
-            port = base_port + id
-            with open(os.path.join(tmp_path, 'gadgetron_worker' + port + '.log.out'), 'w') as log_stdout:
-                with open(os.path.join(tmp_path, 'gadgetron_worker' + port + '.log.err'), 'w') as log_stderr:
-                    instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address))
-
-        yield
-
-        for instance in instances:
-            instance.kill()
-
-
-    return _start_additional_nodes
+    for instance in instances:
+        instance.kill()
 
 
 Failure = "Failure", 1
@@ -490,6 +520,79 @@ def validate_output(*, output_file, reference_file, output_group, reference_grou
     return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
                                                                 scale_threshold)
 
+
+def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_group):
+    try:
+        dataset_file = ismrmrd.File(dataset_file, 'r')
+    except OSError as e:
+        return Failure, "Failed to read dataset file '{}'".format(dataset_file)
+
+    try:
+        reference_file = ismrmrd.File(reference_file, 'r')
+    except OSError as e:
+        return Failure, "Failed to read reference file '{}'".format(reference_file)
+
+    header = dataset_file[dataset_group].header
+    ref_header = reference_file[reference_group].header
+    if not dataset_file[dataset_group].header == reference_file[reference_group].header:
+        import deepdiff
+        diff = deepdiff.diff.DeepDiff(header, ref_header)
+        print(diff.pretty())
+        return Failure, "Dataset header did not match reference header"
+
+    for attribute in ['acquisitions', 'waveforms', 'images']:
+
+        dataset = getattr(dataset_file[dataset_group], attribute) or []
+        reference = getattr(reference_file[reference_group], attribute) or []
+
+        if not list(dataset) == list(reference):
+            return Failure, "Dataset {attr} did not match reference {attr}".format(attr=attribute)
+
+    return None, "Dataset matched reference"
+
+@pytest.fixture
+def validate_dataset_output(tmp_path: Path, fetch_data_file):
+    def _validate_dataset_output(fileConfig:dict):
+        
+        dataset_prefix = os.path.join(tmp_path, fileConfig['dataset_prefix'])
+        dataset_files = glob.glob(dataset_prefix + "*")
+
+        print(dataset_files)
+
+        if len(dataset_files) == 0:
+            return Failure, "Found no dataset with prefix: {}".format(dataset_prefix)
+
+        if len(dataset_files) > 1:
+            return Failure, "Too many datasets with prefix: {}".format(dataset_prefix)
+
+        reference_file = fetch_data_file(fileConfig['reference_file'], fileConfig['reference_file_hash'])
+
+        result, reason = validate_dataset(dataset_file=dataset_files[0],
+                                            dataset_group=fileConfig.get('dataset_group', 'dataset'),
+                                            reference_file=reference_file,
+                                            reference_group=fileConfig.get('reference_group', 'dataset'))
+        return result, reason
+
+    return _validate_dataset_output
+
+@pytest.fixture
+def validate_output_data(fetch_data_file):
+    def _validate_output_data(fileConfig:dict, output_file, output_image):
+        reference_file = fetch_data_file(fileConfig['reference_file'], fileConfig['reference_file_hash'])
+        result, reason = validate_output(output_file=output_file, 
+                                        reference_file=reference_file, 
+                                        output_group=output_image,
+                                        reference_group=fileConfig['reference_image'], 
+                                        value_threshold=fileConfig['value_comparison_threshold'], 
+                                        scale_threshold=fileConfig['scale_comparison_threshold'])
+
+
+        return result, reason
+
+    return _validate_output_data
+
+
+
 case_path = './cases'
 
 def load_cases():    
@@ -518,9 +621,6 @@ def get_recontruction_cases():
             cases.append(case)
             case_ids.append(case['name'])
 
-    print(case_ids)
-
-    
     return cases, case_ids
 
 def get_streaming_cases():
@@ -553,9 +653,11 @@ recontruction_cases, recontruction_ids = get_recontruction_cases()
 stream_cases, stream_ids = get_streaming_cases()
 distributed_cases, distributed_ids = get_distributed_cases()
 
+
 @pytest.mark.parametrize('config', recontruction_cases, ids=recontruction_ids)
-def test_reconstruction(config, fetch_data_file, siemens_to_ismrmrd, send_to_gadgetron, check_requirements):
-    
+def test_reconstruction(config, start_gadgetron, validate_output_data, validate_dataset_output, siemens_to_ismrmrd, send_to_gadgetron, check_requirements):
+    start_gadgetron()
+
     check_requirements(config['requirements'], config['tags'])
         
     if 'dependency' in config:
@@ -565,20 +667,18 @@ def test_reconstruction(config, fetch_data_file, siemens_to_ismrmrd, send_to_gad
     reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
     output_file = send_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
 
-    for output_image in config['validation']['images']:        
-        output_image_data = config['validation']['images'][output_image]
-        reference_file = fetch_data_file(output_image_data['reference_file'], output_image_data['reference_file_hash'])
-        result, reason = validate_output(output_file=output_file, 
-                                        reference_file=reference_file, 
-                                        output_group=output_image,
-                                        reference_group=output_image_data['reference_image'], 
-                                        value_threshold=output_image_data['value_comparison_threshold'], 
-                                        scale_threshold=output_image_data['scale_comparison_threshold'])
-        
-        assert result != Failure, reason
+    if 'equals' in config['validation']:
+        result, reason = validate_dataset_output(config['validation']['equals'])
+        if result == Failure:
+            pytest.fail(reason)
+
+    for output_image in config['validation']['images']:   
+        result, reason = validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
+        if result == Failure:
+            pytest.fail(reason)
 
 @pytest.mark.parametrize('config', stream_cases, ids=stream_ids)
-def test_streaming(config, fetch_data_file, siemens_to_ismrmrd, stream_to_gadgetron, check_requirements):
+def test_streaming(config, validate_output_data, validate_dataset_output, siemens_to_ismrmrd, stream_to_gadgetron, check_requirements):
 
     check_requirements(config['requirements'], config['tags'])
 
@@ -589,23 +689,21 @@ def test_streaming(config, fetch_data_file, siemens_to_ismrmrd, stream_to_gadget
     reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
     output_file = stream_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
 
-    for output_image in config['validation']['images']:        
-        output_image_data = config['validation']['images'][output_image]
-        reference_file = fetch_data_file(output_image_data['reference_file'], output_image_data['reference_file_hash'])
-        result, reason = validate_output(output_file=output_file, 
-                                        reference_file=reference_file, 
-                                        output_group=output_image,
-                                        reference_group=output_image_data['reference_image'], 
-                                        value_threshold=output_image_data['value_comparison_threshold'], 
-                                        scale_threshold=output_image_data['scale_comparison_threshold'])
-        
-        assert result != Failure, reason
+    if 'equals' in config['validation']:
+        result, reason = validate_dataset_output(config['validation']['equals'])
+        if result == Failure:
+            pytest.fail(reason)
+
+    for output_image in config['validation']['images']:   
+        result, reason = validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
+        if result == Failure:
+            pytest.fail(reason)
 
 @pytest.mark.parametrize('config', distributed_cases, ids=distributed_ids)
-def test_distributed(config, fetch_data_file, siemens_to_ismrmrd, send_to_gadgetron, check_requirements, start_additional_nodes):
-    check_requirements(config['requirements'], config['tags'])
+def test_distributed(config, start_gadgetron_with_additional_nodes, validate_output_data, validate_dataset_output, siemens_to_ismrmrd, send_to_gadgetron, check_requirements):
+    start_gadgetron_with_additional_nodes(config['distributed'])
 
-    start_additional_nodes(config)
+    check_requirements(config['requirements'], config['tags'])   
 
     if 'dependency' in config:
         dependency_file = siemens_to_ismrmrd(config['dependency'], "dependency")
@@ -614,14 +712,12 @@ def test_distributed(config, fetch_data_file, siemens_to_ismrmrd, send_to_gadget
     reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
     output_file = send_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
 
-    for output_image in config['validation']['images']:        
-        output_image_data = config['validation']['images'][output_image]
-        reference_file = fetch_data_file(output_image_data['reference_file'], output_image_data['reference_file_hash'])
-        result, reason = validate_output(output_file=output_file, 
-                                        reference_file=reference_file, 
-                                        output_group=output_image,
-                                        reference_group=output_image_data['reference_image'], 
-                                        value_threshold=output_image_data['value_comparison_threshold'], 
-                                        scale_threshold=output_image_data['scale_comparison_threshold'])
-        
-        assert result != Failure, reason
+    if 'equals' in config['validation']:
+        result, reason = validate_dataset_output(config['validation']['equals'])
+        if result == Failure:
+            pytest.fail(reason)
+
+    for output_image in config['validation']['images']:   
+        result, reason = validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
+        if result == Failure:
+            pytest.fail(reason)
