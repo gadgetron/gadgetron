@@ -612,12 +612,12 @@ def load_cases():
 
     return case_list
 
-def get_recontruction_cases():
+def get_recontruction_cases(stream_cases, distributed_cases):
     cases = []
     case_ids = []
     
     for case in test_cases:
-        if 'stream' not in case['tags'] and 'distributed' not in case['tags']:
+        if case not in stream_cases and case not in distributed_cases:
             cases.append(case)
             case_ids.append(case['name'])
 
@@ -628,7 +628,11 @@ def get_streaming_cases():
     case_ids = []
     
     for case in test_cases:
-        if 'stream' in case['tags']:
+        if 'stream' in case['reconstruction']:    
+            cases.append(case)
+            case_ids.append(case['name'])
+
+        elif 'dependency' in case and 'stream' in case['dependency']:
             cases.append(case)
             case_ids.append(case['name'])
 
@@ -640,7 +644,7 @@ def get_distributed_cases():
     case_ids = []
     
     for case in test_cases:
-        if 'distributed' in case['tags']:
+        if 'distributed' in case:
             cases.append(case)
             case_ids.append(case['name'])
 
@@ -649,9 +653,9 @@ def get_distributed_cases():
 
 test_cases = load_cases()
 
-recontruction_cases, recontruction_ids = get_recontruction_cases()
 stream_cases, stream_ids = get_streaming_cases()
 distributed_cases, distributed_ids = get_distributed_cases()
+recontruction_cases, recontruction_ids = get_recontruction_cases(stream_cases, distributed_cases)
 
 
 @pytest.mark.parametrize('config', recontruction_cases, ids=recontruction_ids)
