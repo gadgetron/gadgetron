@@ -8,6 +8,8 @@ else
     cp -r "${thisFolder}/.vscode" "${thisFolder}/../"
 fi
 
+pip install pytest
+
 mkdir -p /home/vscode/.local/share/CMakeTools && \
     echo '[{"name":"GCC-CONDA","compilers":{"C":"/opt/conda/envs/gadgetron/bin/x86_64-conda_cos6-linux-gnu-gcc","CXX":"/opt/conda/envs/gadgetron/bin/x86_64-conda_cos6-linux-gnu-g++"}}]' > /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json && \
     chown vscode:conda /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
