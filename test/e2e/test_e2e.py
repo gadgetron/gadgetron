@@ -390,7 +390,7 @@ def start_gadgetron_instance(*, log_stdout, log_stderr, port, storage_address, e
     return proc
 
 
-@pytest.fixture(scope="module", autouse="true")
+@pytest.fixture(autouse="true")
 def start_storage(external, storage_port, tmp_path_factory):
     log_path = tmp_path_factory.mktemp("logs")
     storage_path = tmp_path_factory.mktemp("storage")

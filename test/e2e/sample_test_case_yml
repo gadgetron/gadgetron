@@ -1,0 +1,251 @@
+# Root of the test case file, can have more then one test case inder it.
+cases:                                
+  # Name of the test case, required.
+- name: cmr_cine_binning_2slices    
+  # Tags related test case. Required, use - '' if the test has no tags
+  #   Tagging streaming test with 'stream' and distributed tests with 'distributed'
+  # is recomended but not required for them to run correctly.
+  tags:                             
+  - generic
+  - fast
+
+# used only for distributed tests, required to make the test distributed
+  distributed:
+    nodes: 2    # The number of distributed nodes to run
+    node_port_base: 9050 # Optional, the base port to used for the distributed nodes
+
+# Requirments for the test to run, if the current gadgetron instance dosn't meet them
+# The test will be skipped
+  requirements:
+    system_memory: 8192   # Ammount of avaliable system memory
+    python_support: 1     # Python support is required
+    julia_support: 1      # Julia support is required
+    matlab_support: 1     # matlab support is required
+    gpu_support: 1        # GPU support is required
+    gpu_memory: 1024      # Ammount of avaliable GPU memory
+  
+# Optional, Describes a dependency file that needs to be processes before the reconstruction. 
+# The fields are exactly the same as the reconstruction group that follows
+dependency:
+  data_file: dependency_file.dat                      
+  data_file_hash: 8be03b636dc08f4f8cd0412874b9f101
+  measurement: 1                                      
+  configuration: default_measurement_dependencies.xml
+
+# Describes the recontstruction process for the gadgetron test
+reconstruction:
+# ======= Only one of the follow blocks of fields ===============
+  # Input data file to send to gadgetron  
+  copy_file: reconstruction.mrd                       # Data file to download and the expected hash of the file
+  copy_file_hash: 54ffc7676ddfeb30349b59be4332dc7f
+
+  # -------------------------------------------------------------
+
+  # Input data file to convert from the siemens format to send to gadgetron
+  data_file: reconstruction_file.dat                  # Data file to download and the expected hash of the file
+  data_file_hash: 8be03b636dc08f4f8cd0412874b9f101
+  measurement: 1                                      # The measurement in the siemens file to convert
+  data_conversion_flag: --flashPatRef                 # Optional, extra flags to pass to the conversion tool
+
+  # Optional, provides alternate values for the XML and XSL file for the gadgetron processing
+  parameter_xml: IsmrmrdParameterMap_Siemens.xml
+  parameter_xsl: IsmrmrdParameterMap_Siemens.xsl
+
+# ===============================================================
+
+# ======= Only one of the follow blocks of fields ===============
+  # The name of a template file used to generrate the configuration file
+  template: ismrmrd_dump_gadget_test.template.xml
+
+  # -------------------------------------------------------------
+
+  # The configuration file to pass to gagetron
+  configuration: default_measurement_dependencies.xml
+# ===============================================================
+
+# ============== Only used for non-streaming tests ==============
+    # Optional, additial arguments to pass to gadgetron 
+  additional_arguments:
+# ===============================================================
+
+# ============== Only used for streaming tests ==================
+  # An array of stream configurations in the order they are to be run
+  # The output of one stream will be the input to to the following stream
+  # Required to enable stream testing
+  stream:
+  - configuration: Generic_Cartesian_Grappa_Complex.xml               # The name of the configuration file to use
+    args: --parameter noisecovariancein=${test_folder}/mycov.bin      # Optional, the arguments for this stream 
+
+  # The input adapter for the stream data to gadgetron
+  input_adapter: ismrmrd_hdf5_to_stream
+  
+  # The output adapter for the stream data from gadgetron
+  output_adapter: ismrmrd_stream_to_hdf5
+
+  # The output group that will be used by the output adapter
+  output_group: Generic_Cartesian_Grappa.xml
+# ===============================================================
+
+# How to validate the test
+validation:    
+  # Comparsion of dumped data from the gadgetronn run
+  equals:     
+    # Reference file to compare against
+    reference_file: simple_gre/simple_gre_in_20220831.mrd
+    reference_file_hash: cd1598b0e60854281f5fce6342d42fe3
+    
+    # The prefix of the output dataset files    
+    dataset_prefix: ismrmrd_dump_output
+
+    # Optional, the dataset group of the generated dataset
+    dataset_group: dataset
+
+    # Optional, the dataset group of the reference dataset
+    reference_group: dataset
+
+  # An array of named images for comparasion
+  images:   
+    # The name of the image
+    CMR_2DT_RTCine_KspaceBinning.xml/image_2: 
+      # The reference file and hash that will be compared againt
+      reference_file: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/cmr_cine_binning_2slice_ref_20220817.mrd          
+      reference_file_hash: ddd08991b7837dc37d7457cc74fb40cb          
+      
+      # The image in the reference file to compare the output image to
+      reference_image: CMR_2DT_RTCine_KspaceBinning.xml/image_2
+      
+      # Scaling threasholds for the comparsion
+      scale_comparison_threshold: 0.01
+      value_comparison_threshold: 0.01
+
+- name: generic_grappa_epi_ave
+  tags:
+  - generic
+  reconstruction:
+    data_file: epi_ave/meas_MID01349_FID12150_amri_ep2d_bold_96x72x5_R2_16avg_gadgetron/meas_MID01349_FID12150_amri_ep2d_bold_96x72x5_R2_16avg_gadgetron.dat
+    measurement: 1
+    data_file_hash: 7afdcf271e6aa53952ee8c0a0291acd9
+    parameter_xsl: IsmrmrdParameterMap_Siemens_EPI_FLASHREF.xsl
+    data_conversion_flag: --flashPatRef
+    configuration: Generic_Cartesian_Grappa_EPI_AVE.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa_EPI_AVE.xml/image_1:
+        reference_file: epi_ave/meas_MID01349_FID12150_amri_ep2d_bold_96x72x5_R2_16avg_gadgetron/ref_20161020.mrd
+        reference_file_hash: 6bed66d191c14bd442b6214a6fd0db7d
+        reference_image: Generic_Cartesian_Grappa_EPI_AVE.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096
+
+- name: stream_image_array
+  tags:
+  - generic
+  - fast
+  - stream
+  dependency:
+    data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
+    measurement: 1
+    data_file_hash: 72b10d19eb14f558bc30c0e27e1af5f0
+    stream:
+    - configuration: default_measurement_dependencies.xml
+    input_adapter: ismrmrd_hdf5_to_stream
+    output_adapter: ismrmrd_stream_to_hdf5
+    output_group: Generic_Cartesian_Grappa.xml
+  reconstruction:
+    data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
+    measurement: 2
+    data_file_hash: 72b10d19eb14f558bc30c0e27e1af5f0
+    stream:
+    - configuration: Generic_Cartesian_Grappa_ImageArray.xml
+    - configuration: stream_image_array_scaling.xml
+    - configuration: stream_image_array_split.xml
+    - configuration: stream_complex_to_float.xml
+    - configuration: stream_float_to_short.xml
+    input_adapter: ismrmrd_hdf5_to_stream
+    output_adapter: ismrmrd_stream_to_hdf5
+    output_group: Generic_Cartesian_Grappa.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa.xml/image_1:
+        reference_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/ref_20220817_klk.mrd
+        reference_file_hash: a0701936b6454524afd5512d0776e78c
+        reference_image: Generic_Cartesian_Grappa.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096
+
+- name: cmr_cine_binning_2slices_distributed
+  tags:
+  - slow
+  - distributed
+  reconstruction:
+    data_file: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/meas_MID838_PK_rt_test_2slice_FID22519.dat
+    measurement: 2
+    data_file_hash: 7f52ef8abeb44b7a23648b195307ccc8
+    configuration: CMR_2DT_RTCine_KspaceBinning_Cloud.xml
+  validation:
+    images:
+      CMR_2DT_RTCine_KspaceBinning_Cloud.xml/image_2:
+        reference_file: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/cmr_cine_binning_2slice_ref_20220817.mrd
+        reference_file_hash: ddd08991b7837dc37d7457cc74fb40cb
+        reference_image: CMR_2DT_RTCine_KspaceBinning.xml/image_2
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 8192
+  distributed:
+    nodes: 2
+
+- name: generic_rtcine_ai_landmark
+  tags:
+  - slow
+  - generic
+  reconstruction:
+    copy_file: cmr/RTCine/CH4/rtcine_R4_CH2.mrd
+    copy_file_hash: fcf7253923df0fee8fff8fb68e410929
+    configuration: CMR_RTCine_LAX_AI.xml
+  validation:
+    images:
+      CMR_RTCine_LAX_AI.xml/image_1:
+        reference_file: cmr/RTCine/CH4/ref_20220124_173736.mrd
+        reference_file_hash: b5e9c37bbd3eb4be076d89fd7dd7db6d
+        reference_image: CMR_RTCine_LAX_AI.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+      CMR_RTCine_LAX_AI.xml/image_100:
+        reference_file: cmr/RTCine/CH4/ref_20220124_173736.mrd
+        reference_file_hash: b5e9c37bbd3eb4be076d89fd7dd7db6d
+        reference_image: CMR_RTCine_LAX_AI.xml/image_100
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096
+    python_support: 1
+
+- name: epi_2d
+  tags:
+  - ''
+  dependency:
+    data_file: epi/meas_MID517_nih_ep2d_bold_fa60_FID82077.dat
+    measurement: 1
+    data_file_hash: 8790d64a101acdc7b6990dd414b14be6
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: epi/meas_MID517_nih_ep2d_bold_fa60_FID82077.dat
+    measurement: 2
+    data_file_hash: 8790d64a101acdc7b6990dd414b14be6
+    parameter_xsl: IsmrmrdParameterMap_Siemens_EPI.xsl
+    configuration: epi.xml
+  validation:
+    images:
+      epi.xml/image_0:
+        reference_file: epi/epi_2d_out_20161020_pjv.mrd
+        reference_file_hash: cd39f21d02ed6d434f91f8418632f64d
+        reference_image: epi.xml/image_0
+        scale_comparison_threshold: 0.001
+        value_comparison_threshold: 0.001
+  requirements:
+    system_memory: 1024
