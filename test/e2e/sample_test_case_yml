@@ -1,10 +1,10 @@
-# Root of the test case file, can have more then one test case inder it.
+# Root of the test case file, holds an array of test cases.
 cases:                                
   # Name of the test case, required.
 - name: cmr_cine_binning_2slices    
   # Tags related test case. Required, use - '' if the test has no tags
   #   Tagging streaming test with 'stream' and distributed tests with 'distributed'
-  # is recomended but not required for them to run correctly.
+  # is recommended but not required for them to run correctly.
   tags:                             
   - generic
   - fast
@@ -14,15 +14,15 @@ cases:
     nodes: 2    # The number of distributed nodes to run
     node_port_base: 9050 # Optional, the base port to used for the distributed nodes
 
-# Requirments for the test to run, if the current gadgetron instance dosn't meet them
+# Requirements for the test to run, if the current Gadgetron instance doesn't meet them
 # The test will be skipped
   requirements:
-    system_memory: 8192   # Ammount of avaliable system memory
+    system_memory: 8192   # Amount of available system memory
     python_support: 1     # Python support is required
     julia_support: 1      # Julia support is required
     matlab_support: 1     # matlab support is required
     gpu_support: 1        # GPU support is required
-    gpu_memory: 1024      # Ammount of avaliable GPU memory
+    gpu_memory: 1024      # Amount of available GPU memory
   
 # Optional, Describes a dependency file that needs to be processes before the reconstruction. 
 # The fields are exactly the same as the reconstruction group that follows
@@ -32,22 +32,22 @@ dependency:
   measurement: 1                                      
   configuration: default_measurement_dependencies.xml
 
-# Describes the recontstruction process for the gadgetron test
+# Describes the reconstruction process for the Gadgetron test
 reconstruction:
 # ======= Only one of the follow blocks of fields ===============
-  # Input data file to send to gadgetron  
+  # Input data file to send to Gadgetron  
   copy_file: reconstruction.mrd                       # Data file to download and the expected hash of the file
   copy_file_hash: 54ffc7676ddfeb30349b59be4332dc7f
 
   # -------------------------------------------------------------
 
-  # Input data file to convert from the siemens format to send to gadgetron
+  # Input data file to convert from the siemens format to send to Gadgetron
   data_file: reconstruction_file.dat                  # Data file to download and the expected hash of the file
   data_file_hash: 8be03b636dc08f4f8cd0412874b9f101
   measurement: 1                                      # The measurement in the siemens file to convert
   data_conversion_flag: --flashPatRef                 # Optional, extra flags to pass to the conversion tool
 
-  # Optional, provides alternate values for the XML and XSL file for the gadgetron processing
+  # Optional, provides alternate values for the XML and XSL file for the Gadgetron processing
   parameter_xml: IsmrmrdParameterMap_Siemens.xml
   parameter_xsl: IsmrmrdParameterMap_Siemens.xsl
 
@@ -64,7 +64,7 @@ reconstruction:
 # ===============================================================
 
 # ============== Only used for non-streaming tests ==============
-    # Optional, additial arguments to pass to gadgetron 
+    # Optional, additional arguments to pass to Gadgetron 
   additional_arguments:
 # ===============================================================
 
@@ -76,10 +76,10 @@ reconstruction:
   - configuration: Generic_Cartesian_Grappa_Complex.xml               # The name of the configuration file to use
     args: --parameter noisecovariancein=${test_folder}/mycov.bin      # Optional, the arguments for this stream 
 
-  # The input adapter for the stream data to gadgetron
+  # The input adapter for the stream data to Gadgetron
   input_adapter: ismrmrd_hdf5_to_stream
   
-  # The output adapter for the stream data from gadgetron
+  # The output adapter for the stream data from Gadgetron
   output_adapter: ismrmrd_stream_to_hdf5
 
   # The output group that will be used by the output adapter
@@ -88,7 +88,7 @@ reconstruction:
 
 # How to validate the test
 validation:    
-  # Comparsion of dumped data from the gadgetronn run
+  # Comparison of dumped data from the Gadgetron run
   equals:     
     # Reference file to compare against
     reference_file: simple_gre/simple_gre_in_20220831.mrd
@@ -103,7 +103,7 @@ validation:
     # Optional, the dataset group of the reference dataset
     reference_group: dataset
 
-  # An array of named images for comparasion
+  # An array of named images for comparison
   images:   
     # The name of the image
     CMR_2DT_RTCine_KspaceBinning.xml/image_2: 
@@ -114,7 +114,7 @@ validation:
       # The image in the reference file to compare the output image to
       reference_image: CMR_2DT_RTCine_KspaceBinning.xml/image_2
       
-      # Scaling threasholds for the comparsion
+      # Scaling thresholds for the comparison
       scale_comparison_threshold: 0.01
       value_comparison_threshold: 0.01
 
