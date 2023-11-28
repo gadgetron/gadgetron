@@ -3,6 +3,8 @@ cases:
   tags:
   - slow
   - distributed
+  mode: 
+  - distributed
   reconstruction:
     data_file: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/meas_MID838_PK_rt_test_2slice_FID22519.dat
     measurement: 2

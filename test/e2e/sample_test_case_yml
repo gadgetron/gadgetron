@@ -9,7 +9,14 @@ cases:
   - generic
   - fast
 
-# used only for distributed tests, required to make the test distributed
+  # Optional, a list of tests modes this test can run as, defaults to all modes
+  # Test will be skipped if run as the wrong mode
+  mode:
+  - server
+  - stream
+  - distributed
+
+# Optional, used only for distributed tests
   distributed:
     nodes: 2    # The number of distributed nodes to run
     node_port_base: 9050 # Optional, the base port to used for the distributed nodes
@@ -144,6 +151,8 @@ validation:
   - generic
   - fast
   - stream
+  mode: 
+  - stream
   dependency:
     data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
     measurement: 1
@@ -180,6 +189,8 @@ validation:
 - name: cmr_cine_binning_2slices_distributed
   tags:
   - slow
+  - distributed
+  mode: 
   - distributed
   reconstruction:
     data_file: cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/meas_MID838_PK_rt_test_2slice_FID22519.dat

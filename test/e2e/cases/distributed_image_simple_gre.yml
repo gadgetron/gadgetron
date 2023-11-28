@@ -3,6 +3,8 @@ cases:
   tags:
   - fast
   - distributed
+  mode: 
+  - distributed
   reconstruction:
     data_file: simple_gre/meas_MiniGadgetron_GRE.dat
     measurement: 1

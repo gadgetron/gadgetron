@@ -74,5 +74,5 @@ dependencies:
   - valgrind=3.17                         # dev
   - xsdata>=22.2
   - yq=2.13                               # dev
-
+  - pytest>=7.4.3
 

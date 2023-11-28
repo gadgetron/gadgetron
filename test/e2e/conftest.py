@@ -43,6 +43,10 @@ def pytest_addoption(parser):
         '--tag', action='store', default="", 
         help='Only run tests that has the provided tag.'
     )
+    parser.addoption(
+        '--mode', action='store', default="", 
+        help='run all tests in a specific mode (server, stream, distributed). Defaults to server unless the test specifies another mode'
+    )
 
 
 @pytest.fixture(scope="module")

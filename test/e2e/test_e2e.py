@@ -180,7 +180,7 @@ def query_gadgetron_capabilities(info_string):
 
 @pytest.fixture
 def check_requirements(host_url, port, external, ignore_requirements, run_tag):
-    def _check_requirements(requirements:dict, tags:list):
+    def _check_requirements(requirements:dict, tags:list, local = False):
         def rules_from_reqs(section):
             class Rule:
                 def __init__(self, capability, validator, message):
@@ -226,7 +226,7 @@ def check_requirements(host_url, port, external, ignore_requirements, run_tag):
         if ignore_requirements:
             return
 
-        if external: 
+        if local or external: 
             command = ["gadgetron", "--info"]
         else:
             command = ["gadgetron_ismrmrd_client",
@@ -248,34 +248,39 @@ def check_requirements(host_url, port, external, ignore_requirements, run_tag):
 template_path = './config'
 
 
+def get_config(fileConfig:dict, tmp_path:str, section:str):
+    if 'template' in fileConfig:
+        template_file = os.path.join(template_path, fileConfig['template'])
+        configuration = os.path.join(tmp_path, section + '.config.xml')
+
+        config_option = ["-G", section, 
+                        "-C", configuration]
+
+        with open(template_file, 'r') as input:
+            with open(configuration, 'w') as output:
+                output.write(
+                    string.Template(input.read()).substitute(
+                        test_folder=os.path.abspath(tmp_path),
+                        # Expand substitution list as needed.
+                    )
+                )
+
+    else:
+        configuration = fileConfig['configuration']
+
+        config_option = ["-G", configuration, 
+                        "-c", configuration]
+        
+    return configuration, config_option
+
+
 @pytest.fixture
 def send_to_gadgetron(tmp_path: Path, host_url, port):
     def _send_to_gadgetron(fileConfig:dict, input_file:str, section:str):
         output_file = os.path.join(tmp_path, section + ".output.mrd")
         additional_arguments = fileConfig.get('additional_arguments', '')
 
-        if 'template' in fileConfig:
-            template_file = os.path.join(template_path, fileConfig['template'])
-            configuration = os.path.join(tmp_path, section + '.config.xml')
-
-            config_option = ["-G", section, 
-                            "-C", configuration]
-
-            with open(template_file, 'r') as input:
-                with open(configuration, 'w') as output:
-                    output.write(
-                        string.Template(input.read()).substitute(
-                            test_folder=os.path.abspath(tmp_path),
-                            # Expand substitution list as needed.
-                        )
-                    )
-
-        else:
-            configuration = fileConfig['configuration']
-
-            config_option = ["-G", configuration, 
-                            "-c", configuration]
-
+        _, config_option = get_config(fileConfig, tmp_path, section)
         
         print("Passing data to Gadgetron: {} -> {}".format(input_file, output_file)) 
         command = ["gadgetron_ismrmrd_client",
@@ -306,15 +311,22 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
     return _send_to_gadgetron
 
 @pytest.fixture
-def stream_to_gadgetron(tmp_path: Path, host_url, port, storage_port):
+def stream_to_gadgetron(tmp_path: Path, storage_port):
     def _stream_to_gadgetron(fileConfig:dict, input_file:str, section:str):
         output_file = os.path.join(tmp_path, section + ".output.mrd")
         storage_address = "http://localhost:" + str(storage_port)
 
-        input_adapter = fileConfig['input_adapter']
-        output_adapter = fileConfig['output_adapter']
-        output_group = fileConfig['output_group']
-        streamConfig = fileConfig['stream']
+        input_adapter = fileConfig.get('input_adapter', 'ismrmrd_hdf5_to_stream')
+        output_adapter = fileConfig.get('output_adapter', 'ismrmrd_stream_to_hdf5')
+        output_group = fileConfig.get('output_group', '')
+        streamConfig = fileConfig.get('stream', [])
+        
+        if not output_group:
+            output_group = fileConfig.get('configuration')
+
+        if not streamConfig:
+            configuration, _ = get_config(fileConfig, tmp_path, section)
+            streamConfig = [ {"configuration": configuration} ]
 
         stream_command = f"{input_adapter} -i {input_file} --use-stdout"
 
@@ -322,11 +334,13 @@ def stream_to_gadgetron(tmp_path: Path, host_url, port, storage_port):
             stream_command += f" | gadgetron -E {storage_address} --from_stream -c {stream['configuration']} {stream.get('args', '')}"
             
         stream_command += f" | {output_adapter} --use-stdin -o {output_file} -g {output_group}"
-
+        
         # Some stream arguments use ${test_folder} directly so this will provide support for that.
         stream_command = stream_command.replace('${test_folder}', os.path.abspath(tmp_path))
 
         split_cmd = ['bash', '-c', stream_command]
+
+        print("Streaming data to Gadgetron: {} -> {}".format(input_file, output_file)) 
 
         with open(os.path.join(tmp_path, section + '_gadgetron.log.out'), 'w') as log_stdout:
             with open(os.path.join(tmp_path, section + '_gadgetron.log.err'), 'w') as log_stderr:
@@ -410,7 +424,7 @@ def start_storage(external, storage_port, tmp_path_factory):
         return
 
 @pytest.fixture
-def start_gadgetron(port, external, storage_port, tmp_path):
+def start_gadgetron_sever(port, external, storage_port, tmp_path):
     instance = None
     def _start_gadgetron():
         nonlocal instance
@@ -424,11 +438,6 @@ def start_gadgetron(port, external, storage_port, tmp_path):
                 with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
                     instance = start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address)
 
-
-        else:
-            yield
-
-
     yield _start_gadgetron
 
     if instance != None:
@@ -436,7 +445,7 @@ def start_gadgetron(port, external, storage_port, tmp_path):
 
 
 @pytest.fixture
-def start_gadgetron_with_additional_nodes(tmp_path: Path, port, storage_port, external):
+def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port, storage_port, external):
     instances = []
 
     def _start_gadgetron_with_additional_nodes(fileConfig:dict):
@@ -445,13 +454,15 @@ def start_gadgetron_with_additional_nodes(tmp_path: Path, port, storage_port, ex
         if external:
             return
 
-        if 'nodes' not in fileConfig:
-            return
+        base_port = 9050
+        number_of_nodes = 2
+
+        if 'config' in fileConfig:
+            base_port = int(fileConfig['distributed'].get('node_port_base', 9050))
+            number_of_nodes = int(fileConfig['distributed'].get('nodes', 2))
 
         storage_address = "http://localhost:" + storage_port
         env=environment
-        base_port = int(fileConfig.get('node_port_base', 9050))
-        number_of_nodes = int(fileConfig['nodes'])
 
         ids = range(number_of_nodes)
         print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
@@ -606,115 +617,104 @@ def load_cases():
             cases = yaml.safe_load(file)
 
             for case in cases['cases']:
+                if not 'mode' in case:
+                    case['mode'] = ['server', 'stream', 'distributed']
+
                 case_list.append(case)
 
     case_list.sort(key=lambda x: (x['name']))
 
     return case_list
 
-def get_recontruction_cases(stream_cases, distributed_cases):
-    cases = []
-    case_ids = []
+test_cases= []
+test_ids = []
+
+def pytest_generate_tests(metafunc):
+    get_test_cases(metafunc.config.getoption('--mode'))
+
+def get_test_cases(mode):
+    global test_cases, test_ids 
     
-    for case in test_cases:
-        if case not in stream_cases and case not in distributed_cases:
-            cases.append(case)
-            case_ids.append(case['name'])
+    raw_test_cases = load_cases()
 
-    return cases, case_ids
+    for case in raw_test_cases:
+        if mode == 'server':
+            send = 'send_to_gadgetron'
+            start = 'start_gadgetron_sever'
 
-def get_streaming_cases():
-    cases = []
-    case_ids = []
-    
-    for case in test_cases:
-        if 'stream' in case['reconstruction']:    
-            cases.append(case)
-            case_ids.append(case['name'])
+        elif mode == 'stream':
+            send = 'stream_to_gadgetron'
+            start = 'start_gadgetron_streaming'
 
-        elif 'dependency' in case and 'stream' in case['dependency']:
-            cases.append(case)
-            case_ids.append(case['name'])
+        elif mode == 'distributed':
+            send = 'send_to_gadgetron'
+            start = 'start_gadgetron_sever_with_additional_nodes'
 
-    return cases, case_ids
+        else:
+            send = 'send_to_gadgetron'
+            start = 'start_gadgetron_sever'
 
+            if 'distributed' in case:
+                start = 'start_gadgetron_sever_with_additional_nodes'
 
-def get_distributed_cases():
-    cases = []
-    case_ids = []
-    
-    for case in test_cases:
-        if 'distributed' in case:
-            cases.append(case)
-            case_ids.append(case['name'])
+            if 'stream' in case['reconstruction']:    
+                send = 'stream_to_gadgetron'
+                start = 'start_gadgetron_streaming'
 
-    return cases, case_ids
+        test_cases.append((case, start, send))
+        test_ids.append(case['name'])
 
 
-test_cases = load_cases()
+@pytest.fixture
+def start_gadgetron(request, start_gadgetron_sever, start_gadgetron_sever_with_additional_nodes, check_requirements):
+    def _start_gadgetron(fileConfig:dict):        
+        local = False        
+        if request.param == 'start_gadgetron_sever':
+            if 'server' not in fileConfig['mode']:
+                pytest.skip("test can't be run in server mode")
 
-stream_cases, stream_ids = get_streaming_cases()
-distributed_cases, distributed_ids = get_distributed_cases()
-recontruction_cases, recontruction_ids = get_recontruction_cases(stream_cases, distributed_cases)
+            print("starting gadgetron")
+            start_gadgetron_sever()
 
+        elif request.param == 'start_gadgetron_sever_with_additional_nodes':
+            if 'distributed' not in fileConfig['mode']:
+                pytest.skip("test can't be run in distributed mode")
 
-@pytest.mark.parametrize('config', recontruction_cases, ids=recontruction_ids)
-def test_reconstruction(config, start_gadgetron, validate_output_data, validate_dataset_output, siemens_to_ismrmrd, send_to_gadgetron, check_requirements):
-    start_gadgetron()
+            start_gadgetron_sever_with_additional_nodes(fileConfig)
 
-    check_requirements(config['requirements'], config['tags'])
-        
-    if 'dependency' in config:
-        dependency_file = siemens_to_ismrmrd(config['dependency'], "dependency")
-        _ = send_to_gadgetron(config['dependency'], dependency_file, "dependency")
+        elif request.param == 'start_gadgetron_streaming':
+            if 'stream' not in fileConfig['mode']:
+                pytest.skip("test can't be run in stream mode")
 
-    reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
-    output_file = send_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
+            local = True
 
-    if 'equals' in config['validation']:
-        result, reason = validate_dataset_output(config['validation']['equals'])
-        if result == Failure:
-            pytest.fail(reason)
+        else:
+            pytest.fail("unknown start_gadgetron type")
 
-    for output_image in config['validation']['images']:   
-        result, reason = validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
-        if result == Failure:
-            pytest.fail(reason)
+        check_requirements(fileConfig['requirements'], fileConfig['tags'], local=local)
 
-@pytest.mark.parametrize('config', stream_cases, ids=stream_ids)
-def test_streaming(config, validate_output_data, validate_dataset_output, siemens_to_ismrmrd, stream_to_gadgetron, check_requirements):
+    yield _start_gadgetron
 
-    check_requirements(config['requirements'], config['tags'])
+@pytest.fixture
+def process_data(request, send_to_gadgetron, stream_to_gadgetron):
+    if request.param == 'send_to_gadgetron':
+        return send_to_gadgetron
 
-    if 'dependency' in config:
-        dependency_file = siemens_to_ismrmrd(config['dependency'], "dependency")
-        _ = stream_to_gadgetron(config['dependency'], dependency_file, "dependency")
+    if request.param == 'stream_to_gadgetron':
+        return stream_to_gadgetron
 
-    reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
-    output_file = stream_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
+    pytest.fail("unknown process_data type")
 
-    if 'equals' in config['validation']:
-        result, reason = validate_dataset_output(config['validation']['equals'])
-        if result == Failure:
-            pytest.fail(reason)
-
-    for output_image in config['validation']['images']:   
-        result, reason = validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
-        if result == Failure:
-            pytest.fail(reason)
-
-@pytest.mark.parametrize('config', distributed_cases, ids=distributed_ids)
-def test_distributed(config, start_gadgetron_with_additional_nodes, validate_output_data, validate_dataset_output, siemens_to_ismrmrd, send_to_gadgetron, check_requirements):
-    start_gadgetron_with_additional_nodes(config['distributed'])
-
-    check_requirements(config['requirements'], config['tags'])   
+@pytest.mark.parametrize('config, start_gadgetron, process_data', test_cases, ids=test_ids, indirect=['process_data', 'start_gadgetron'])
+def test_reconstruction(config, start_gadgetron, process_data, validate_output_data, validate_dataset_output, siemens_to_ismrmrd):
+    start_gadgetron(config)
 
     if 'dependency' in config:
         dependency_file = siemens_to_ismrmrd(config['dependency'], "dependency")
-        _ = send_to_gadgetron(config['dependency'], dependency_file, "dependency")
+        _ = process_data(config['dependency'], dependency_file, "dependency")
 
     reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
-    output_file = send_to_gadgetron(config['reconstruction'], reconstruction_file, "reconstruction")
+    output_file = process_data(config['reconstruction'], reconstruction_file, "reconstruction")
 
     if 'equals' in config['validation']:
         result, reason = validate_dataset_output(config['validation']['equals'])

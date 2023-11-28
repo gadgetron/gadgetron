@@ -4,6 +4,8 @@ cases:
   - generic
   - fast
   - stream
+  mode: 
+  - stream
   reconstruction:
     copy_file: cmr/RTCine/CH4/rtcine_R4_CH2.mrd
     copy_file_hash: fcf7253923df0fee8fff8fb68e410929
