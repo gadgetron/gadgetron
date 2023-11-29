@@ -120,7 +120,7 @@ COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/package /opt/conda/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
 RUN chmod +x /opt/entrypoint.sh
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
-COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/e2e /opt/integration-test/
 ENTRYPOINT [ "/tini", "--", "/opt/entrypoint.sh" ]
 
 FROM gadgetron_baseimage AS gadgetron_rt_nocuda
@@ -134,5 +134,5 @@ COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/package /opt/cond
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
 RUN chmod +x /opt/entrypoint.sh
 RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
-COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
+COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/e2e /opt/integration-test/
 ENTRYPOINT [ "/tini", "--", "/opt/entrypoint.sh" ]

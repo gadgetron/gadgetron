@@ -12,4 +12,4 @@ ninja && ninja install
 
 TEST_DIR="${PREFIX}/share/gadgetron/test/"
 mkdir -p "${TEST_DIR}"
-rsync -a --exclude 'data' "${SRC_DIR}/test/integration" "${TEST_DIR}"
+rsync -a --exclude 'data' "${SRC_DIR}/test/e2e" "${TEST_DIR}"
