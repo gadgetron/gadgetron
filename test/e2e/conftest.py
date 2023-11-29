@@ -36,8 +36,8 @@ def pytest_addoption(parser):
         help='Location for storing cached data files.'
     )
     parser.addoption(
-        '--ignore-requirements', action='store_true', default=False,
-        help="Run tests regardless of Gadgetron capabilities."
+        '--ignore-requirements', action='store', default="",
+        help="Run tests with the specified tags regardless of Gadgetron capabilities."
     )
     parser.addoption(
         '--tag', action='store', default="", 
@@ -67,8 +67,7 @@ def external(request):
 
 @pytest.fixture
 def ignore_requirements(request):
-    return request.config.getoption('--ignore-requirements')
-
+    return request.config.getoption('--ignore-requirements').split(',')
 
 @pytest.fixture
 def data_host_url(request):

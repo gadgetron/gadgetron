@@ -223,9 +223,6 @@ def check_requirements(host_url, port, external, ignore_requirements, run_tag):
         if 'skip' in tags:
             pytest.skip("Test was marked as skipped")
 
-        if ignore_requirements:
-            return
-
         if local or external: 
             command = ["gadgetron", "--info"]
         else:
@@ -240,6 +237,10 @@ def check_requirements(host_url, port, external, ignore_requirements, run_tag):
         reqs = rules_from_reqs(requirements)
 
         for rule in [rule for key, rule in reqs]:
+            # Ignore rules that are in the ignore_requirements list
+            if rule.capability in ignore_requirements:
+                continue
+
             if not rule.is_satisfied(capabilities):
                 pytest.skip(rule.message)    
 
