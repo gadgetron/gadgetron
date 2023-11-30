@@ -1,8 +1,0 @@
-*#
-.#*
-*~
-data/
-test/
-*.log
-index.html
-test_cases.txt
