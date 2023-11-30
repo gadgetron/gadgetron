@@ -295,12 +295,11 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
         if additional_arguments:
             command = command + additional_arguments.split()
 
-        with open(os.path.join(tmp_path, section + '_gadgetron.log.out'), 'w') as log_stdout:
-            with open(os.path.join(tmp_path, section + '_gadgetron.log.err'), 'w') as log_stderr:
-                result = subprocess.run(command,
-                            stdout=log_stdout,
-                            stderr=log_stderr, 
-                            env=environment)
+        with open(os.path.join(tmp_path, section + '.client.log'), 'w') as log_stdout:
+            result = subprocess.run(command,
+                        stdout=log_stdout,
+                        stderr=log_stdout, 
+                        env=environment)
 
         if result.returncode != 0:
             pytest.fail("gadgetron_ismrmrd_client failed with return code {}".format(result.returncode))
@@ -406,13 +405,13 @@ def start_gadgetron_instance(*, log_stdout, log_stderr, port, storage_address, e
 
 
 @pytest.fixture(autouse="true")
-def start_storage(external, storage_port, tmp_path_factory):
-    log_path = tmp_path_factory.mktemp("logs")
-    storage_path = tmp_path_factory.mktemp("storage")
+def start_storage(external, storage_port, tmp_path: Path):
+    storage_path = os.path.join(tmp_path, "storage")
+    os.mkdir(storage_path)
 
     if not external:
         print("Starting storage server on port", storage_port)
-        with open(os.path.join(log_path, 'storage.log'), 'w') as log:
+        with open(os.path.join(tmp_path, 'storage.log'), 'w') as log:
             storage = start_storage_server(log=log,
                         port=str(storage_port),
                         storage_folder=str(storage_path))
@@ -507,14 +506,14 @@ def validate_output(*, output_file, reference_file, output_group, reference_grou
                     group = group + '/data'
                     return numpy.squeeze(f[group])
                 except KeyError:
-                    raise RuntimeError("Did not find group '{}' in file {}".format(group, file))
+                    pytest.fail("Did not find group '{}' in file {}".format(group, file))
 
         output_data = get_group_data(output_file, output_group)
         reference_data = get_group_data(reference_file, reference_group)
     except OSError as e:
-        return Failure, str(e)
+        pytest.fail(str(e))
     except RuntimeError as e:
-        return Failure, str(e)
+        pytest.fail(str(e))
 
     output = output_data[...].flatten().astype('float32')
     reference = reference_data[...].flatten().astype('float32')
@@ -523,26 +522,22 @@ def validate_output(*, output_file, reference_file, output_group, reference_grou
     scale = numpy.dot(output, output) / numpy.dot(output, reference)
 
     if value_threshold < norm_diff:
-        return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
+        pytest.fail("Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold))
 
     if value_threshold < abs(1 - scale):
-        return Failure, "Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale),
-                                                                                        scale_threshold)
-
-    return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
-                                                                scale_threshold)
-
+        pytest.fail("Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale),
+                                                                                        scale_threshold))
 
 def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_group):
     try:
         dataset_file = ismrmrd.File(dataset_file, 'r')
     except OSError as e:
-        return Failure, "Failed to read dataset file '{}'".format(dataset_file)
+        pytest.fail("Failed to read dataset file '{}'".format(dataset_file))
 
     try:
         reference_file = ismrmrd.File(reference_file, 'r')
     except OSError as e:
-        return Failure, "Failed to read reference file '{}'".format(reference_file)
+        pytest.fail("Failed to read reference file '{}'".format(reference_file))
 
     header = dataset_file[dataset_group].header
     ref_header = reference_file[reference_group].header
@@ -550,17 +545,14 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
         import deepdiff
         diff = deepdiff.diff.DeepDiff(header, ref_header)
         print(diff.pretty())
-        return Failure, "Dataset header did not match reference header"
+        pytest.fail("Dataset header did not match reference header")
 
     for attribute in ['acquisitions', 'waveforms', 'images']:
-
         dataset = getattr(dataset_file[dataset_group], attribute) or []
         reference = getattr(reference_file[reference_group], attribute) or []
 
         if not list(dataset) == list(reference):
-            return Failure, "Dataset {attr} did not match reference {attr}".format(attr=attribute)
-
-    return None, "Dataset matched reference"
+            pytest.fail("Dataset {attr} did not match reference {attr}".format(attr=attribute))
 
 @pytest.fixture
 def validate_dataset_output(tmp_path: Path, fetch_data_file):
@@ -572,18 +564,17 @@ def validate_dataset_output(tmp_path: Path, fetch_data_file):
         print(dataset_files)
 
         if len(dataset_files) == 0:
-            return Failure, "Found no dataset with prefix: {}".format(dataset_prefix)
+            pytest.fail("Found no dataset with prefix: {}".format(dataset_prefix))
 
         if len(dataset_files) > 1:
-            return Failure, "Too many datasets with prefix: {}".format(dataset_prefix)
+            pytest.fail("Too many datasets with prefix: {}".format(dataset_prefix))
 
         reference_file = fetch_data_file(fileConfig['reference_file'], fileConfig['reference_file_hash'])
 
-        result, reason = validate_dataset(dataset_file=dataset_files[0],
-                                            dataset_group=fileConfig.get('dataset_group', 'dataset'),
-                                            reference_file=reference_file,
-                                            reference_group=fileConfig.get('reference_group', 'dataset'))
-        return result, reason
+        validate_dataset(dataset_file=dataset_files[0],
+                        dataset_group=fileConfig.get('dataset_group', 'dataset'),
+                        reference_file=reference_file,
+                        reference_group=fileConfig.get('reference_group', 'dataset'))
 
     return _validate_dataset_output
 
@@ -591,19 +582,27 @@ def validate_dataset_output(tmp_path: Path, fetch_data_file):
 def validate_output_data(fetch_data_file):
     def _validate_output_data(fileConfig:dict, output_file, output_image):
         reference_file = fetch_data_file(fileConfig['reference_file'], fileConfig['reference_file_hash'])
-        result, reason = validate_output(output_file=output_file, 
-                                        reference_file=reference_file, 
-                                        output_group=output_image,
-                                        reference_group=fileConfig['reference_image'], 
-                                        value_threshold=fileConfig['value_comparison_threshold'], 
-                                        scale_threshold=fileConfig['scale_comparison_threshold'])
-
-
-        return result, reason
+        validate_output(output_file=output_file, 
+                        reference_file=reference_file, 
+                        output_group=output_image,
+                        reference_group=fileConfig['reference_image'], 
+                        value_threshold=fileConfig['value_comparison_threshold'], 
+                        scale_threshold=fileConfig['scale_comparison_threshold'])
 
     return _validate_output_data
 
 
+@pytest.fixture
+def validate_stdout(tmp_path: Path):
+    def _validate_stdout():
+        files = glob.glob(os.path.join(tmp_path, 'gadgetron_worker*.log.out'))
+        files.append(os.path.join(tmp_path, 'gadgetron.log.out'))
+
+        for file in files:
+            if os.stat(file).st_size != 0:
+                pytest.fail("stdout is not empty as indicated by {}".format(file))
+    
+    return _validate_stdout
 
 case_path = './cases'
 
@@ -707,7 +706,7 @@ def process_data(request, send_to_gadgetron, stream_to_gadgetron):
     pytest.fail("unknown process_data type")
 
 @pytest.mark.parametrize('config, start_gadgetron, process_data', test_cases, ids=test_ids, indirect=['process_data', 'start_gadgetron'])
-def test_reconstruction(config, start_gadgetron, process_data, validate_output_data, validate_dataset_output, siemens_to_ismrmrd):
+def test_reconstruction(config, start_gadgetron, process_data, siemens_to_ismrmrd, validate_output_data, validate_dataset_output, validate_stdout):
     start_gadgetron(config)
 
     if 'dependency' in config:
@@ -717,12 +716,10 @@ def test_reconstruction(config, start_gadgetron, process_data, validate_output_d
     reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
     output_file = process_data(config['reconstruction'], reconstruction_file, "reconstruction")
 
+    validate_stdout()
+
     if 'equals' in config['validation']:
-        result, reason = validate_dataset_output(config['validation']['equals'])
-        if result == Failure:
-            pytest.fail(reason)
+        validate_dataset_output(config['validation']['equals'])
 
     for output_image in config['validation']['images']:   
-        result, reason = validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
-        if result == Failure:
-            pytest.fail(reason)
+        validate_output_data(config['validation']['images'][output_image], output_file, output_image)             

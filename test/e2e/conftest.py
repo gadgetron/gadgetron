@@ -2,9 +2,17 @@
 
 import pytest
 import os
+import glob
 
 from pathlib import Path
 
+def pytest_exception_interact(node, call, report):
+    if report.failed and node.config.getoption('--echo-log-on-failure'):
+        tmp_path = node.funcargs['tmp_path']
+        for log in glob.glob(os.path.join(tmp_path, '*.log')):
+            with open(log, 'r') as logfile:
+                logdata = logfile.read()                
+                report.sections.append((log, logdata))       
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -42,6 +50,10 @@ def pytest_addoption(parser):
     parser.addoption(
         '--tag', action='store', default="", 
         help='Only run tests that has the provided tag.'
+    )
+    parser.addoption(
+        '--echo-log-on-failure', action='store_true', default=False, 
+        help='capture test logs on a failed test.'
     )
     parser.addoption(
         '--mode', action='store', default="", 
