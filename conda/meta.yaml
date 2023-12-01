@@ -76,6 +76,8 @@ requirements:
 test:
   requires:
     - ismrmrd::siemens_to_ismrmrd=1.2.11
+    - pytest>=7.4.3                         
+    - pytest-timeout>=2.2.0                 
 
 about:
   home: https://github.com/gadgetron/gadgetron

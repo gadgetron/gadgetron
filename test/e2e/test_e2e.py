@@ -131,16 +131,6 @@ def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file):
     
     return _siemens_to_ismrmrd
 
-
-reqs = {
-    'python_support': 'python',
-    'julia_support': 'julia',
-    'matlab_support': 'matlab',
-    'system_memory': 'memory',
-    'gpu_support': 'cuda',
-    'gpu_memory': 'cuda'
-}
-
 def query_gadgetron_capabilities(info_string):
     print("Querying Gadgetron capabilities...")
 
@@ -154,6 +144,7 @@ def query_gadgetron_capabilities(info_string):
         'julia': "Julia Support",
         'matlab': "Matlab Support",
         'cuda': "CUDA Support",
+        'cuda_devices': "Number of CUDA capable devices",
     }
 
     plural_capability_markers = {
@@ -212,6 +203,7 @@ def check_requirements(host_url, port, external, ignore_requirements, run_tag):
                 ('julia_support', lambda req: Rule('julia', is_enabled, "Julia support required.")),
                 ('system_memory', lambda req: Rule('memory', has_more_than(req), "Not enough system memory.")),
                 ('gpu_support', lambda req: Rule('cuda', is_enabled, "CUDA support required.")),
+                ('gpu_support', lambda req: Rule('cuda_devices', has_more_than(req), "Not enough CUDA devices.")),
                 ('gpu_memory', lambda req: Rule('cuda_memory', each(has_more_than(req)), "Not enough graphics memory."))
             ]
 
@@ -363,7 +355,7 @@ def wait_for_storage_server(port, proc, retries=50):
         try:
             urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
             return
-        except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        except (urllib.error.URLError, urllib.error.HTTPError, ConnectionResetError, socket.timeout) as e:
             if i == retries - 1 or proc.poll() is not None:
                 raise RuntimeError("Unable to get a successful response from storage server.") from e
             time.sleep(0.2)
