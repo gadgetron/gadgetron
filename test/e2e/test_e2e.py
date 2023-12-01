@@ -596,7 +596,7 @@ def validate_output_data(fetch_data_file):
 def validate_stdout(tmp_path: Path):
     def _validate_stdout():
         files = glob.glob(os.path.join(tmp_path, 'gadgetron_worker*.log.out'))
-        files.append(os.path.join(tmp_path, 'gadgetron.log.out'))
+        files.extend(glob.glob(os.path.join(tmp_path, '*gadgetron.log.out')))
 
         for file in files:
             if os.stat(file).st_size != 0:
