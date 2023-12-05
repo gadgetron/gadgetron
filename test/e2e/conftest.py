@@ -3,6 +3,7 @@
 import pytest
 import os
 import glob
+import shutil
 
 from pathlib import Path
 
@@ -13,6 +14,16 @@ def pytest_exception_interact(node, call, report):
             with open(log, 'r') as logfile:
                 logdata = logfile.read()                
                 report.sections.append((log, logdata))       
+
+def pytest_runtest_teardown(item, nextitem):
+    if item.config.getoption('--save-results'):
+        output_path=item.config.getoption('--save-results')
+        output_path = os.path.join(os.path.abspath(output_path), item.callspec.id)
+
+        tmp_path = item.funcargs['tmp_path']
+
+        shutil.copytree(tmp_path, output_path, dirs_exist_ok=True)
+    
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -54,6 +65,10 @@ def pytest_addoption(parser):
     parser.addoption(
         '--echo-log-on-failure', action='store_true', default=False, 
         help='capture test logs on a failed test.'
+    )
+    parser.addoption(
+        '--save-results', action='store', default="",
+        help='Save Gadgetron output and client logs to specified folder'
     )
     parser.addoption(
         '--mode', action='store', default="", 
@@ -100,7 +115,6 @@ def cache_path(request):
         base = Path(base)
 
     return base
-
 
 @pytest.fixture
 def run_tag(request):

@@ -296,8 +296,6 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
         if result.returncode != 0:
             pytest.fail("gadgetron_ismrmrd_client failed with return code {}".format(result.returncode))
 
-        # assert os.path.isfile(output_file), "{} is missing".format(output_file)
-
         return output_file
 
     return _send_to_gadgetron
@@ -343,8 +341,6 @@ def stream_to_gadgetron(tmp_path: Path, storage_port):
 
         if result.returncode != 0:
             pytest.fail("stream processing failed with return code {}".format(result.returncode))
-
-        # assert os.path.isfile(output_file), "{} is missing".format(output_file)
 
         return output_file
 
@@ -449,7 +445,7 @@ def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port, storage_po
         base_port = 9050
         number_of_nodes = 2
 
-        if 'config' in fileConfig:
+        if 'distributed' in fileConfig:
             base_port = int(fileConfig['distributed'].get('node_port_base', 9050))
             number_of_nodes = int(fileConfig['distributed'].get('nodes', 2))
 

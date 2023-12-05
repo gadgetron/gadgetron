@@ -37,7 +37,7 @@ ninja install
 After building and installing the Gadgetron, it is recommended to run the end to end tests:
 
 ```bash
-cd test/integration
+cd test/e2e
 pytest --echo-log-on-failure --timeout=600 
 ```
 
