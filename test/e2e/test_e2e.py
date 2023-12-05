@@ -10,6 +10,7 @@ import time
 import string
 import re
 import sys
+import itertools
 
 import h5py
 import ismrmrd
@@ -577,7 +578,95 @@ def validate_output_data(fetch_data_file):
                         value_threshold=fileConfig['value_comparison_threshold'], 
                         scale_threshold=fileConfig['scale_comparison_threshold'])
 
+        if not fileConfig.get('disable_image_header_test', False):
+            validate_image_header(output_file=output_file,                         
+                                    reference_file=reference_file, 
+                                    output_group=output_image,
+                                    reference_group=fileConfig['reference_image'])
+    
     return _validate_output_data
+
+
+def validate_image_header(*, output_file, reference_file, output_group, reference_group):
+    def equals():
+        return lambda out, ref: out == ref
+
+    def approx(threshold=1e-6):
+        return lambda out, ref: abs(out - ref) <= threshold
+
+    def ignore():
+        return lambda out, ref: True
+
+    def each(rule):
+        return lambda out, ref: all(rule(out, ref) for out, ref in itertools.zip_longest(out, ref))
+
+    header_rules = {
+        'version': equals(),
+        'data_type': equals(),
+        'flags': equals(),
+        'measurement_uid': equals(),
+        'matrix_size': each(equals()),
+        'field_of_view': each(approx()),
+        'channels': equals(),
+        'position': each(approx()),
+        'read_dir': each(approx()),
+        'phase_dir': each(approx()),
+        'slice_dir': each(approx()),
+        'patient_table_position': each(approx()),
+        'average': equals(),
+        'slice': equals(),
+        'contrast': equals(),
+        'phase': equals(),
+        'repetition': equals(),
+        'set': equals(),
+        'acquisition_time_stamp': ignore(),
+        'physiology_time_stamp': each(ignore()),
+        'image_type': equals(),
+        'image_index': equals(),
+        'image_series_index': ignore(),
+        'user_int': each(equals()),
+        'user_float': each(approx()),
+        'attribute_string_len': ignore()
+    }
+
+    def check_image_header(output, reference):
+
+        if not output:
+            pytest.fail("Missing output")
+
+        if not reference:
+            pytest.fail("Missing reference")
+
+        output = output.getHead()
+        reference = reference.getHead()
+
+        for attribute, rule in header_rules.items():
+            if not rule(getattr(output, attribute), getattr(reference, attribute)):
+                print(output)
+                print(reference)
+
+                pytest.fail(
+                    "Image header '{}' does not match reference. [index {}, series {}]".format(
+                        attribute,
+                        output.image_index,
+                        output.image_series_index
+                    )
+                )
+
+    try:
+        with ismrmrd.File(output_file, 'r') as output_file:
+            with ismrmrd.File(reference_file, 'r') as reference_file:
+                output_images = output_file[output_group].images or []
+                reference_images = reference_file[reference_group].images or []
+
+                for output_image, reference_image in itertools.zip_longest(output_images, reference_images):
+                    check_image_header(output_image, reference_image)
+
+    except OSError as e:
+        pytest.fail(str(e))
+
+    except RuntimeError as e:
+        pytest.fail(str(e))
 
 
 @pytest.fixture
