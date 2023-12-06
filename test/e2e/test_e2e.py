@@ -11,6 +11,7 @@ import string
 import re
 import sys
 import itertools
+import io
 
 import h5py
 import ismrmrd
@@ -22,17 +23,10 @@ import urllib.error
 import urllib.request
 
 from pathlib import Path
+from typing import Dict, List, Callable
 
 
-# Importing h5py on windows will mess with your environment. When we pass the messed up environment to gadgetron
-# child processes, they won't load properly. We're saving our environment here to spare our children from the
-# crimes of h5py.
-environment = dict(os.environ)
-
-
-# http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/
-
-def calc_mdf5(file):
+def calc_mdf5(file: Path) -> str:
     md5 = hashlib.new('md5')
     
     with open(file, 'rb') as f:
@@ -40,15 +34,15 @@ def calc_mdf5(file):
             md5.update(chunk)
     return md5.hexdigest()
 
-def is_valid(file, digest):
+def is_valid(file: Path, digest: str) -> bool:
     if not os.path.isfile(file):
         return False
 
     return digest == calc_mdf5(file) 
 
-def urlretrieve(url, filename, retries=5):
+def urlretrieve(url: str, filename: str, retries: int = 5) -> str:
     if retries <= 0:
-        raise RuntimeError("Download from {} failed".format(url))
+        pytest.fail(RuntimeError("Download from {} failed".format(url)))
     try:
         with urllib.request.urlopen(url, timeout=60) as connection:                        
             with open(filename,'wb') as f:
@@ -57,13 +51,13 @@ def urlretrieve(url, filename, retries=5):
             return connection.headers["Content-MD5"]
     except (urllib.error.URLError, ConnectionResetError, socket.timeout) as exc:
         print("Retrying connection for file {}, reason: {}".format(filename, str(exc)))
-        urlretrieve(url, filename, retries=retries-1)
+        return urlretrieve(url, filename, retries=retries-1)
 
 @pytest.fixture
-def fetch_data_file(cache_path: Path, data_host_url:str, cache_disable:bool, tmp_path: Path):
+def fetch_data_file(cache_path: Path, data_host_url: str, cache_disable: bool, tmp_path: Path) -> Callable:
     created_files = []
     
-    def _fetch_data_file(filename:str, fileHash:str):
+    def _fetch_data_file(filename: str, fileHash: str) -> str:
         nonlocal created_files
         url = "{}{}".format(data_host_url, filename)
 
@@ -82,7 +76,7 @@ def fetch_data_file(cache_path: Path, data_host_url:str, cache_disable:bool, tmp
             print("File already exists: {}".format(destination)) 
 
         if not is_valid(destination, fileHash):
-            raise(RuntimeError("Downloaded file {} failed validation. Expected MD5 {}. Actual MD5 {}".format(destination, fileHash, calc_mdf5(destination))))
+            pytest.fail("Downloaded file {} failed validation. Expected MD5 {}. Actual MD5 {}".format(destination, fileHash, calc_mdf5(destination)))
 
         created_files.append(destination)
 
@@ -98,8 +92,8 @@ def fetch_data_file(cache_path: Path, data_host_url:str, cache_disable:bool, tmp
                     os.removedirs(os.path.dirname(file))
 
 @pytest.fixture
-def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file):
-    def _siemens_to_ismrmrd(fileConfig:dict, section:str):
+def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file: Callable) -> Callable:
+    def _siemens_to_ismrmrd(fileConfig: Dict[str, str], section: str) -> str:
         if 'copy_file' in fileConfig:
             output = fetch_data_file(fileConfig['copy_file'], fileConfig['copy_file_hash'])
             print("Using output file {}".format(output)) 
@@ -132,7 +126,7 @@ def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file):
     
     return _siemens_to_ismrmrd
 
-def query_gadgetron_capabilities(info_string):
+def query_gadgetron_capabilities(info_string: str) -> Dict[str, str]:
     print("Querying Gadgetron capabilities...")
 
     value_pattern = r"(?:\s*):(?:\s+)(?P<value>.*)?"
@@ -157,7 +151,7 @@ def query_gadgetron_capabilities(info_string):
         match = pattern.search(info_string)
 
         if not match:
-            raise RuntimeError("Failed to parse Gadgetron info string; Gadgetron capabilities could not be determined.")
+            pytest.fail("Failed to parse Gadgetron info string; Gadgetron capabilities could not be determined.")
 
         return match['value']
 
@@ -171,8 +165,8 @@ def query_gadgetron_capabilities(info_string):
     return capabilities
 
 @pytest.fixture
-def check_requirements(host_url, port, external, ignore_requirements, run_tag):
-    def _check_requirements(requirements:dict, tags:list, local = False):
+def check_requirements(host_url: str, port: int, external: bool, ignore_requirements: List[str], run_tag: List[str]) -> Callable:
+    def _check_requirements(requirements: Dict[str, str], tags: List[str], local: bool = False) -> None:
         def rules_from_reqs(section):
             class Rule:
                 def __init__(self, capability, validator, message):
@@ -242,7 +236,7 @@ def check_requirements(host_url, port, external, ignore_requirements, run_tag):
 template_path = './config'
 
 
-def get_config(fileConfig:dict, tmp_path:str, section:str):
+def get_config(fileConfig: Dict[str, str], tmp_path: str, section: str) -> (str, List[str]):
     if 'template' in fileConfig:
         template_file = os.path.join(template_path, fileConfig['template'])
         configuration = os.path.join(tmp_path, section + '.config.xml')
@@ -269,8 +263,8 @@ def get_config(fileConfig:dict, tmp_path:str, section:str):
 
 
 @pytest.fixture
-def send_to_gadgetron(tmp_path: Path, host_url, port):
-    def _send_to_gadgetron(fileConfig:dict, input_file:str, section:str):
+def send_to_gadgetron(tmp_path: Path, host_url: str, port: int) -> Callable:
+    def _send_to_gadgetron(fileConfig: Dict[str, str], input_file: str, section: str) -> str:
         output_file = os.path.join(tmp_path, section + ".output.mrd")
         additional_arguments = fileConfig.get('additional_arguments', '')
 
@@ -279,7 +273,7 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
         print("Passing data to Gadgetron: {} -> {}".format(input_file, output_file)) 
         command = ["gadgetron_ismrmrd_client",
                     "-a", host_url,
-                    "-p", port,
+                    "-p", str(port),
                     "-f", input_file,
                     "-o", output_file]
         
@@ -291,8 +285,7 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
         with open(os.path.join(tmp_path, section + '.client.log'), 'w') as log_stdout:
             result = subprocess.run(command,
                         stdout=log_stdout,
-                        stderr=log_stdout, 
-                        env=environment)
+                        stderr=log_stdout)
 
         if result.returncode != 0:
             pytest.fail("gadgetron_ismrmrd_client failed with return code {}".format(result.returncode))
@@ -302,8 +295,8 @@ def send_to_gadgetron(tmp_path: Path, host_url, port):
     return _send_to_gadgetron
 
 @pytest.fixture
-def stream_to_gadgetron(tmp_path: Path, storage_port):
-    def _stream_to_gadgetron(fileConfig:dict, input_file:str, section:str):
+def stream_to_gadgetron(tmp_path: Path, storage_port: int) -> Callable:
+    def _stream_to_gadgetron(fileConfig: Dict[str, str], input_file: str, section: str) -> str:
         output_file = os.path.join(tmp_path, section + ".output.mrd")
         storage_address = "http://localhost:" + str(storage_port)
 
@@ -336,7 +329,6 @@ def stream_to_gadgetron(tmp_path: Path, storage_port):
         with open(os.path.join(tmp_path, section + '_gadgetron.log.out'), 'w') as log_stdout:
             with open(os.path.join(tmp_path, section + '_gadgetron.log.err'), 'w') as log_stderr:
                 result = subprocess.run(split_cmd,
-                            env=environment,
                             stdout=log_stdout,
                             stderr=log_stderr)
 
@@ -347,18 +339,18 @@ def stream_to_gadgetron(tmp_path: Path, storage_port):
 
     return _stream_to_gadgetron
 
-def wait_for_storage_server(port, proc, retries=50):
+def wait_for_storage_server(port: int, proc: subprocess.Popen, retries: int = 50) -> None:
     for i in range(retries):
         try:
             urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
             return
-        except (urllib.error.URLError, urllib.error.HTTPError, ConnectionResetError, socket.timeout) as e:
+        except (urllib.error.URLError, urllib.error.HTTPError, ConnectionResetError, ConnectionRefusedError, socket.timeout) as e:
             if i == retries - 1 or proc.poll() is not None:
-                raise RuntimeError("Unable to get a successful response from storage server.") from e
+                pytest.fail("Unable to get a successful response from storage server. {}".format(e))
             time.sleep(0.2)
 
-def start_storage_server(*, log, port, storage_folder):
-    storage_server_environment = environment.copy()
+def start_storage_server(*, log: str, port: int, storage_folder: str) -> None:
+    storage_server_environment = os.environ.copy()
     storage_server_environment["MRD_STORAGE_SERVER_PORT"] = port
     storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
     storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
@@ -384,9 +376,9 @@ def start_storage_server(*, log, port, storage_folder):
                 proc.kill()
                 raise
 
-def start_gadgetron_instance(*, log_stdout, log_stderr, port, storage_address, env=environment):
+def start_gadgetron_instance(*, log_stdout: io.TextIOWrapper, log_stderr: io.TextIOWrapper, port: int, storage_address: str, env = None) -> subprocess.Popen:
     print("Starting Gadgetron instance on port", port)
-    proc = subprocess.Popen(["gadgetron", "-p", port, "-E", storage_address],
+    proc = subprocess.Popen(["gadgetron", "-p", str(port), "-E", str(storage_address)],
                             stdout=log_stdout,
                             stderr=log_stderr,
                             env=env)
@@ -394,7 +386,7 @@ def start_gadgetron_instance(*, log_stdout, log_stderr, port, storage_address, e
 
 
 @pytest.fixture(autouse="true")
-def start_storage(external, storage_port, tmp_path: Path):
+def start_storage(external: bool, storage_port: int, tmp_path: Path) -> None:
     storage_path = os.path.join(tmp_path, "storage")
     os.mkdir(storage_path)
 
@@ -413,12 +405,12 @@ def start_storage(external, storage_port, tmp_path: Path):
         return
 
 @pytest.fixture
-def start_gadgetron_sever(port, external, storage_port, tmp_path):
+def start_gadgetron_sever(port: int, external: bool, storage_port: int, tmp_path: Path) -> Callable:
     instance = None
-    def _start_gadgetron():
+    def _start_gadgetron() -> None:
         nonlocal instance
 
-        storage_address = "http://localhost:" + storage_port
+        storage_address = "http://localhost:" + str(storage_port)
 
         if not external:
             print("Starting Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
@@ -434,10 +426,10 @@ def start_gadgetron_sever(port, external, storage_port, tmp_path):
 
 
 @pytest.fixture
-def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port, storage_port, external):
+def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port: int, storage_port: int, external: bool) -> Callable:
     instances = []
 
-    def _start_gadgetron_with_additional_nodes(fileConfig:dict):
+    def _start_gadgetron_with_additional_nodes(fileConfig: Dict[str, str]) -> None:
         nonlocal instances
 
         if external:
@@ -450,8 +442,8 @@ def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port, storage_po
             base_port = int(fileConfig['distributed'].get('node_port_base', 9050))
             number_of_nodes = int(fileConfig['distributed'].get('nodes', 2))
 
-        storage_address = "http://localhost:" + storage_port
-        env=environment
+        storage_address = "http://localhost:" + str(storage_port)
+        env=os.environ.copy()
 
         ids = range(number_of_nodes)
         print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
@@ -465,10 +457,7 @@ def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port, storage_po
                     instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=instance_port, storage_address=storage_address))
                     worker_list=worker_list + ['localhost:' + str(instance_port)]
 
-        if sys.platform.startswith('win32'):
-            env['GADGETRON_REMOTE_WORKER_COMMAND'] = 'cmd /k echo ' + json.dumps(worker_list) + ' & exit'
-        else:
-            env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+        env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
 
         print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
 
@@ -484,9 +473,7 @@ def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port, storage_po
         instance.kill()
 
 
-Failure = "Failure", 1
-
-def validate_output(*, output_file, reference_file, output_group, reference_group, value_threshold, scale_threshold):
+def validate_output(*, output_file: str, reference_file: str, output_group: str, reference_group: str, value_threshold: float, scale_threshold: float) -> None:
     try:
         # The errors produced by h5py are not entirely excellent. We spend some code here to clear them up a bit.
         def get_group_data(file, group):
@@ -517,7 +504,7 @@ def validate_output(*, output_file, reference_file, output_group, reference_grou
         pytest.fail("Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale),
                                                                                         scale_threshold))
 
-def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_group):
+def validate_dataset(*, dataset_file: str, reference_file: str, dataset_group: str, reference_group: str) -> None:
     try:
         dataset_file = ismrmrd.File(dataset_file, 'r')
     except OSError as e:
@@ -544,8 +531,8 @@ def validate_dataset(*, dataset_file, reference_file, dataset_group, reference_g
             pytest.fail("Dataset {attr} did not match reference {attr}".format(attr=attribute))
 
 @pytest.fixture
-def validate_dataset_output(tmp_path: Path, fetch_data_file):
-    def _validate_dataset_output(fileConfig:dict):
+def validate_dataset_output(tmp_path: Path, fetch_data_file: Callable) -> Callable:
+    def _validate_dataset_output(fileConfig: Dict[str, str]) -> None:
         
         dataset_prefix = os.path.join(tmp_path, fileConfig['dataset_prefix'])
         dataset_files = glob.glob(dataset_prefix + "*")
@@ -568,8 +555,8 @@ def validate_dataset_output(tmp_path: Path, fetch_data_file):
     return _validate_dataset_output
 
 @pytest.fixture
-def validate_output_data(fetch_data_file):
-    def _validate_output_data(fileConfig:dict, output_file, output_image):
+def validate_output_data(fetch_data_file: Callable) -> Callable:
+    def _validate_output_data(fileConfig: Dict[str, str], output_file: str, output_image: str) -> None:
         reference_file = fetch_data_file(fileConfig['reference_file'], fileConfig['reference_file_hash'])
         validate_output(output_file=output_file, 
                         reference_file=reference_file, 
@@ -587,7 +574,7 @@ def validate_output_data(fetch_data_file):
     return _validate_output_data
 
 
-def validate_image_header(*, output_file, reference_file, output_group, reference_group):
+def validate_image_header(*, output_file: str, reference_file: str, output_group: str, reference_group: str) -> None:
     def equals():
         return lambda out, ref: out == ref
 
@@ -670,8 +657,8 @@ def validate_image_header(*, output_file, reference_file, output_group, referenc
 
 
 @pytest.fixture
-def validate_stdout(tmp_path: Path):
-    def _validate_stdout():
+def validate_stdout(tmp_path: Path) -> Callable:
+    def _validate_stdout() -> None:
         files = glob.glob(os.path.join(tmp_path, 'gadgetron_worker*.log.out'))
         files.extend(glob.glob(os.path.join(tmp_path, '*gadgetron.log.out')))
 
@@ -683,7 +670,7 @@ def validate_stdout(tmp_path: Path):
 
 case_path = './cases'
 
-def load_cases():    
+def load_cases() -> List[Dict[str, str]]:    
     case_list = []
     
     for filename in os.listdir(case_path):
@@ -706,10 +693,10 @@ def load_cases():
 test_cases= []
 test_ids = []
 
-def pytest_generate_tests(metafunc):
+def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     get_test_cases(metafunc.config.getoption('--mode'))
 
-def get_test_cases(mode):
+def get_test_cases(mode: str) -> None:
     global test_cases, test_ids 
     
     raw_test_cases = load_cases()
@@ -743,8 +730,8 @@ def get_test_cases(mode):
 
 
 @pytest.fixture
-def start_gadgetron(request, start_gadgetron_sever, start_gadgetron_sever_with_additional_nodes, check_requirements):
-    def _start_gadgetron(fileConfig:dict):        
+def start_gadgetron(request: pytest.FixtureRequest, start_gadgetron_sever: Callable, start_gadgetron_sever_with_additional_nodes: Callable, check_requirements: Callable) -> Callable:
+    def _start_gadgetron(fileConfig: Dict[str, str]) -> None:
         local = False        
         if request.param == 'start_gadgetron_sever':
             if 'server' not in fileConfig['mode']:
@@ -773,7 +760,7 @@ def start_gadgetron(request, start_gadgetron_sever, start_gadgetron_sever_with_a
     yield _start_gadgetron
 
 @pytest.fixture
-def process_data(request, send_to_gadgetron, stream_to_gadgetron):
+def process_data(request: pytest.FixtureRequest, send_to_gadgetron: Callable, stream_to_gadgetron: Callable) -> Callable:
     if request.param == 'send_to_gadgetron':
         return send_to_gadgetron
 
@@ -783,7 +770,7 @@ def process_data(request, send_to_gadgetron, stream_to_gadgetron):
     pytest.fail("unknown process_data type")
 
 @pytest.mark.parametrize('config, start_gadgetron, process_data', test_cases, ids=test_ids, indirect=['process_data', 'start_gadgetron'])
-def test_reconstruction(config, start_gadgetron, process_data, siemens_to_ismrmrd, validate_output_data, validate_dataset_output, validate_stdout):
+def test_reconstruction(config: Dict[str, str], start_gadgetron: Callable, process_data: Callable, siemens_to_ismrmrd: Callable, validate_output_data: Callable, validate_dataset_output: Callable, validate_stdout: Callable) -> None:
     start_gadgetron(config)
 
     if 'dependency' in config:

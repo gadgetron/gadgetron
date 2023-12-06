@@ -58,9 +58,6 @@ reconstruction:
   parameter_xml: IsmrmrdParameterMap_Siemens.xml
   parameter_xsl: IsmrmrdParameterMap_Siemens.xsl
 
-  # Optional, disables the validate of the reconstruction image header
-  disable_image_header_test: true
-
 # ===============================================================
 
 # ======= Only one of the follow blocks of fields ===============
@@ -127,6 +124,9 @@ validation:
       # Scaling thresholds for the comparison
       scale_comparison_threshold: 0.01
       value_comparison_threshold: 0.01
+
+      # Optional, disables the validation of the image header
+      disable_image_header_test: true
 
 - name: generic_grappa_epi_ave
   tags:

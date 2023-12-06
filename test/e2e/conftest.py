@@ -6,6 +6,7 @@ import glob
 import shutil
 
 from pathlib import Path
+from typing import List
 
 def pytest_exception_interact(node, call, report):
     if report.failed and node.config.getoption('--echo-log-on-failure'):
@@ -77,47 +78,47 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="module")
-def host_url(request):
+def host_url(request) -> str:
     return request.config.getoption('--host')
 
 @pytest.fixture(scope="module")
-def port(request):
-    return request.config.getoption('--port')
+def port(request) -> int:
+    return int(request.config.getoption('--port'))
 
 @pytest.fixture(scope="module")
-def storage_port(request):
-    return request.config.getoption('--storage-port')
+def storage_port(request) -> int:
+    return int(request.config.getoption('--storage-port'))
 
 @pytest.fixture(scope="module")
-def external(request):
+def external(request) -> bool:
     return request.config.getoption('--external')
 
 @pytest.fixture
-def ignore_requirements(request):
+def ignore_requirements(request) -> List[str]:
     return request.config.getoption('--ignore-requirements').split(',')
 
 @pytest.fixture
-def data_host_url(request):
+def data_host_url(request) -> str:
     return request.config.getoption('--data-host')
 
 @pytest.fixture
-def cache_disable(request):
+def cache_disable(request) -> bool:
     return request.config.getoption('--cache-disable')
 
 @pytest.fixture
-def cache_path(request):
+def cache_path(request) -> str:
     base = request.config.getoption('--cache-path')
 
     if base == "":
         current_dir = Path(os.path.dirname(__file__))
-        base = current_dir/"data"
+        base = os.path.join(current_dir, "data")
     else:
         base = Path(base)
 
     return base
 
 @pytest.fixture
-def run_tag(request):
+def run_tag(request) -> str:
     return request.config.getoption('--tag')
 
 
