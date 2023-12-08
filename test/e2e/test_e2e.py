@@ -295,7 +295,7 @@ def send_to_gadgetron(tmp_path: Path, host_url: str, port: int) -> Callable:
     return _send_to_gadgetron
 
 @pytest.fixture
-def stream_to_gadgetron(tmp_path: Path, storage_port: int) -> Callable:
+def stream_to_gadgetron(tmp_path: Path, storage_port: int, external: bool) -> Callable:
     def _stream_to_gadgetron(fileConfig: Dict[str, str], input_file: str, section: str) -> str:
         output_file = os.path.join(tmp_path, section + ".output.mrd")
         storage_address = "http://localhost:" + str(storage_port)
@@ -340,6 +340,7 @@ def stream_to_gadgetron(tmp_path: Path, storage_port: int) -> Callable:
     return _stream_to_gadgetron
 
 def wait_for_storage_server(port: int, proc: subprocess.Popen, retries: int = 50) -> None:
+    sleep_time = 0.2
     for i in range(retries):
         try:
             urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
@@ -347,11 +348,12 @@ def wait_for_storage_server(port: int, proc: subprocess.Popen, retries: int = 50
         except (urllib.error.URLError, urllib.error.HTTPError, ConnectionResetError, ConnectionRefusedError, socket.timeout) as e:
             if i == retries - 1 or proc.poll() is not None:
                 pytest.fail("Unable to get a successful response from storage server. {}".format(e))
-            time.sleep(0.2)
+            time.sleep(sleep_time)
+            sleep_time += 0.2
 
 def start_storage_server(*, log: str, port: int, storage_folder: str) -> None:
     storage_server_environment = os.environ.copy()
-    storage_server_environment["MRD_STORAGE_SERVER_PORT"] = port
+    storage_server_environment["MRD_STORAGE_SERVER_PORT"] = str(port)
     storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
     storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
 
@@ -385,24 +387,25 @@ def start_gadgetron_instance(*, log_stdout: io.TextIOWrapper, log_stderr: io.Tex
     return proc
 
 
-@pytest.fixture(autouse="true")
+@pytest.fixture
 def start_storage(external: bool, storage_port: int, tmp_path: Path) -> None:
-    storage_path = os.path.join(tmp_path, "storage")
-    os.mkdir(storage_path)
+    def _start_storage():
+        storage_path = os.path.join(tmp_path, "storage")
+        print(storage_path)
+        os.mkdir(storage_path)
 
-    if not external:
-        print("Starting storage server on port", storage_port)
-        with open(os.path.join(tmp_path, 'storage.log'), 'w') as log:
-            storage = start_storage_server(log=log,
-                        port=str(storage_port),
-                        storage_folder=str(storage_path))
-            
-            yield
+        storage = None
 
-            storage.kill()
+        if not external:
+            print("Starting storage server on port", storage_port)
+            with open(os.path.join(tmp_path, 'storage.log'), 'w') as log:
+                storage = start_storage_server(log=log,
+                            port=int(storage_port),
+                            storage_folder=str(storage_path))
+                
+        return storage 
 
-    else:
-        return
+    return _start_storage
 
 @pytest.fixture
 def start_gadgetron_sever(port: int, external: bool, storage_port: int, tmp_path: Path) -> Callable:
@@ -770,7 +773,9 @@ def process_data(request: pytest.FixtureRequest, send_to_gadgetron: Callable, st
     pytest.fail("unknown process_data type")
 
 @pytest.mark.parametrize('config, start_gadgetron, process_data', test_cases, ids=test_ids, indirect=['process_data', 'start_gadgetron'])
-def test_reconstruction(config: Dict[str, str], start_gadgetron: Callable, process_data: Callable, siemens_to_ismrmrd: Callable, validate_output_data: Callable, validate_dataset_output: Callable, validate_stdout: Callable) -> None:
+def test_reconstruction(config: Dict[str, str], start_gadgetron: Callable, process_data: Callable, siemens_to_ismrmrd: Callable, validate_output_data: Callable, validate_dataset_output: Callable, validate_stdout: Callable, start_storage: Callable) -> None:
+    storage = start_storage()
+    
     start_gadgetron(config)
 
     if 'dependency' in config:
@@ -787,3 +792,6 @@ def test_reconstruction(config: Dict[str, str], start_gadgetron: Callable, proce
 
     for output_image in config['validation']['images']:   
         validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
+
+    if storage != None:
+        storage.kill()

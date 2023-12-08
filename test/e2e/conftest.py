@@ -10,20 +10,22 @@ from typing import List
 
 def pytest_exception_interact(node, call, report):
     if report.failed and node.config.getoption('--echo-log-on-failure'):
-        tmp_path = node.funcargs['tmp_path']
-        for log in glob.glob(os.path.join(tmp_path, '*.log')):
-            with open(log, 'r') as logfile:
-                logdata = logfile.read()                
-                report.sections.append((log, logdata))       
+        if 'tmp_path' in node.funcargs:
+            tmp_path = node.funcargs['tmp_path']
+            for log in glob.glob(os.path.join(tmp_path, '*.log*')):
+                with open(log, 'r') as logfile:
+                    logdata = logfile.read()                
+                    report.sections.append((log, logdata))       
 
 def pytest_runtest_teardown(item, nextitem):
     if item.config.getoption('--save-results'):
         output_path=item.config.getoption('--save-results')
         output_path = os.path.join(os.path.abspath(output_path), item.callspec.id)
 
-        tmp_path = item.funcargs['tmp_path']
+        if 'tmp_path' in item.funcargs:
+            tmp_path = item.funcargs['tmp_path']
 
-        shutil.copytree(tmp_path, output_path, dirs_exist_ok=True)
+            shutil.copytree(tmp_path, output_path, dirs_exist_ok=True)
     
 
 def pytest_addoption(parser):
