@@ -165,8 +165,8 @@ def query_gadgetron_capabilities(info_string: str) -> Dict[str, str]:
     return capabilities
 
 @pytest.fixture
-def check_requirements(host_url: str, port: int, external: bool, ignore_requirements: List[str], run_tag: List[str]) -> Callable:
-    def _check_requirements(requirements: Dict[str, str], tags: List[str], local: bool = False) -> None:
+def check_requirements(host_url: str, port: int, external: bool, ignore_requirements: List[str], run_tag: List[str], tmp_path: Path) -> Callable:
+    def _check_requirements(requirements: Dict[str, str], tags: List[str], local: bool = False, retries: int = 50) -> None:
         def rules_from_reqs(section):
             class Rule:
                 def __init__(self, capability, validator, message):
@@ -218,7 +218,30 @@ def check_requirements(host_url: str, port: int, external: bool, ignore_requirem
                         "-p", str(port),
                         "-q", "-Q", "gadgetron::info"]
 
-        info_string = subprocess.check_output(command, stderr=subprocess.STDOUT, universal_newlines=True)
+
+        sleep_time = 0.2
+        for i in range(retries):
+            with open(os.path.join(tmp_path, 'gadgetron_info.log'), 'w') as log_stdout:
+                info_process = subprocess.run(command, stdout=log_stdout, stderr=log_stdout, universal_newlines=True)            
+
+                if info_process.returncode:
+                    if i == retries - 1:
+                        pytest.fail("Querying gadgetron info failed with return code {}".format(info_process.returncode))
+
+                    time.sleep(sleep_time)
+                    sleep_time += 0.2
+                else:
+                    break
+
+        with open(os.path.join(tmp_path, 'gadgetron_info.log'), 'w') as log_stdout:
+            info_process = subprocess.run(command, stdout=log_stdout, stderr=log_stdout, universal_newlines=True)            
+            if info_process.returncode:
+                pytest.fail("Querying gadgetron info failed with return code {}".format(info_process.returncode))
+            
+        with open(os.path.join(tmp_path, 'gadgetron_info.log')) as log_stdout:
+            info_string = log_stdout.read()
+
+        # info_string = subprocess.check_output(command, stderr=subprocess.STDOUT, universal_newlines=True)
         capabilities = query_gadgetron_capabilities(info_string)
 
         reqs = rules_from_reqs(requirements)
