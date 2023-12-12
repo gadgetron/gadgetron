@@ -78,6 +78,6 @@ volume_name="gadgetron_test_${RANDOM}"
 docker volume create "$volume_name" 1>/dev/null
 docker run --rm --gpus="${gpus}" \
     --mount src="$volume_name",destination=/test --entrypoint /bin/bash "$image_name" \
-    -c ". /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && cd /opt/integration-test/ && pytest -r ap -v --junit-xml=/test/junit.xml ${cases} ${ignore} --timeout=600"
+    -c ". /opt/conda/etc/profile.d/conda.sh && conda activate gadgetron && cd /opt/integration-test/ && pytest -r ap -v --junit-xml=/test/junit.xml --echo-log-on-failure ${cases} ${ignore} --timeout=600"
 docker run --rm --mount src="$volume_name",destination=/test busybox cat /test/junit.xml > junit.xml
 docker volume rm "$volume_name" 1>/dev/null
