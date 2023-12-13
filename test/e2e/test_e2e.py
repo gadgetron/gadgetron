@@ -75,6 +75,12 @@ def fetch_data_file(cache_path: Path, data_host_url: str, cache_disable: bool, t
         else:
             print("File already exists: {}".format(destination)) 
 
+            if not is_valid(destination, fileHash):
+                print("Downloaded file {} MD5 mismatch, forcing download. Expected MD5 {}. Actual MD5 {}".format(destination, fileHash, calc_mdf5(destination)))
+
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            urlretrieve(url, destination)
+
         if not is_valid(destination, fileHash):
             pytest.fail("Downloaded file {} failed validation. Expected MD5 {}. Actual MD5 {}".format(destination, fileHash, calc_mdf5(destination)))
 
@@ -138,12 +144,12 @@ def query_gadgetron_capabilities(info_string: str) -> Dict[str, str]:
         'python': "Python Support",
         'julia': "Julia Support",
         'matlab': "Matlab Support",
-        'cuda': "CUDA Support",
-        'cuda_devices': "Number of CUDA capable devices",
+        'cuda': "CUDA Support"
     }
 
     plural_capability_markers = {
-        'cuda_memory': "Total amount of global GPU memory"
+        'cuda_memory': "Total amount of global GPU memory",
+        'cuda_devices': "Number of CUDA capable devices"
     }
 
     def find_value(marker):
@@ -198,7 +204,7 @@ def check_requirements(host_url: str, port: int, external: bool, ignore_requirem
                 ('julia_support', lambda req: Rule('julia', is_enabled, "Julia support required.")),
                 ('system_memory', lambda req: Rule('memory', has_more_than(req), "Not enough system memory.")),
                 ('gpu_support', lambda req: Rule('cuda', is_enabled, "CUDA support required.")),
-                ('gpu_support', lambda req: Rule('cuda_devices', has_more_than(req), "Not enough CUDA devices.")),
+                ('gpu_support', lambda req: Rule('cuda_devices', each(has_more_than(req)), "Not enough CUDA devices.")),
                 ('gpu_memory', lambda req: Rule('cuda_memory', each(has_more_than(req)), "Not enough graphics memory."))
             ]
 
@@ -756,7 +762,7 @@ def get_test_cases(mode: str) -> None:
 
 
 @pytest.fixture
-def start_gadgetron(request: pytest.FixtureRequest, start_gadgetron_sever: Callable, start_gadgetron_sever_with_additional_nodes: Callable, check_requirements: Callable) -> Callable:
+def start_gadgetron(request: pytest.FixtureRequest, external: bool, start_gadgetron_sever: Callable, start_gadgetron_sever_with_additional_nodes: Callable, check_requirements: Callable) -> Callable:
     def _start_gadgetron(fileConfig: Dict[str, str]) -> None:
         local = False        
         if request.param == 'start_gadgetron_sever':
@@ -776,6 +782,9 @@ def start_gadgetron(request: pytest.FixtureRequest, start_gadgetron_sever: Calla
             if 'stream' not in fileConfig['mode']:
                 pytest.skip("test can't be run in stream mode")
 
+            if external:
+                pytest.skip("Stream tests do not run in external mode")
+            
             local = True
 
         else:
