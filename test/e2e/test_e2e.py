@@ -9,7 +9,6 @@ import yaml
 import time
 import string
 import re
-import sys
 import itertools
 import io
 
@@ -52,7 +51,7 @@ def urlretrieve(url: str, filename: str, retries: int = 5) -> str:
     except (urllib.error.URLError, ConnectionResetError, socket.timeout) as exc:
         print("Retrying connection for file {}, reason: {}".format(filename, str(exc)))
         return urlretrieve(url, filename, retries=retries-1)
-
+    
 @pytest.fixture
 def fetch_data_file(cache_path: Path, data_host_url: str, cache_disable: bool, tmp_path: Path) -> Callable:
     created_files = []
@@ -97,6 +96,8 @@ def fetch_data_file(cache_path: Path, data_host_url: str, cache_disable: bool, t
                 if len(os.listdir(os.path.dirname(file))) == 0:
                     os.removedirs(os.path.dirname(file))
 
+
+
 @pytest.fixture
 def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file: Callable) -> Callable:
     def _siemens_to_ismrmrd(fileConfig: Dict[str, str], section: str) -> str:
@@ -132,138 +133,160 @@ def siemens_to_ismrmrd(tmp_path: Path, fetch_data_file: Callable) -> Callable:
     
     return _siemens_to_ismrmrd
 
-def query_gadgetron_capabilities(info_string: str) -> Dict[str, str]:
-    print("Querying Gadgetron capabilities...")
 
-    value_pattern = r"(?:\s*):(?:\s+)(?P<value>.*)?"
 
-    capability_markers = {
-        'version': "Version",
-        'build': "Git SHA1",
-        'memory': "System Memory size",
-        'python': "Python Support",
-        'julia': "Julia Support",
-        'matlab': "Matlab Support",
-        'cuda': "CUDA Support"
-    }
 
-    plural_capability_markers = {
-        'cuda_memory': "Total amount of global GPU memory",
-        'cuda_devices': "Number of CUDA capable devices"
-    }
+def wait_for_storage_server(port: int, proc: subprocess.Popen, retries: int = 50) -> None:
+    sleep_time = 0.2
+    for i in range(retries):
+        try:
+            urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
+            return
+        except (urllib.error.URLError, urllib.error.HTTPError, ConnectionResetError, ConnectionRefusedError, socket.timeout) as e:
+            if i == retries - 1 or proc.poll() is not None:
+                pytest.fail("Unable to get a successful response from storage server. {}".format(e))
+            time.sleep(sleep_time)
+            sleep_time += 0.2
 
-    def find_value(marker):
-        pattern = re.compile(marker + value_pattern, re.IGNORECASE)
-        match = pattern.search(info_string)
+def start_storage_server(*, log: str, port: int, storage_folder: str) -> None:
+    storage_server_environment = os.environ.copy()
+    storage_server_environment["MRD_STORAGE_SERVER_PORT"] = str(port)
+    storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
+    storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
 
-        if not match:
-            pytest.fail("Failed to parse Gadgetron info string; Gadgetron capabilities could not be determined.")
+    retries = 5
+    for i in range(retries):
+        print("Starting MRD Storage Server on port", port)
+        proc = subprocess.Popen(["mrd-storage-server", "--require-parent-pid", str(os.getpid())],
+                                stdout=log,
+                                stderr=log,
+                                env=storage_server_environment)
 
-        return match['value']
-
-    def find_plural_values(marker):
-        pattern = re.compile(marker + value_pattern, re.IGNORECASE)
-        return [match['value'] for match in pattern.finditer(info_string)]
-
-    capabilities = {key: find_value(marker) for key, marker in capability_markers.items()}
-    capabilities.update({key: find_plural_values(marker) for key, marker in plural_capability_markers.items()})
-
-    return capabilities
+        try:
+            wait_for_storage_server(port, proc)
+            return proc
+        except:
+            # If the process has exited, it might be because the
+            # port was in use. This can be because the previous storage server
+            # instance was just killed. So we try again.
+            if proc.poll() is not None and i < retries:
+                time.sleep(1)
+            else:
+                proc.kill()
+                raise
 
 @pytest.fixture
-def check_requirements(host_url: str, port: int, external: bool, ignore_requirements: List[str], run_tag: List[str], tmp_path: Path) -> Callable:
-    def _check_requirements(requirements: Dict[str, str], tags: List[str], local: bool = False, retries: int = 50) -> None:
-        def rules_from_reqs(section):
-            class Rule:
-                def __init__(self, capability, validator, message):
-                    self.capability = capability
-                    self.validator = validator
-                    self.message = message
+def start_storage(external: bool, storage_port: int, tmp_path: Path) -> None:
+    def _start_storage():
+        storage_path = os.path.join(tmp_path, "storage")
+        print(storage_path)
+        os.mkdir(storage_path)
 
-                def is_satisfied(self, capabilities):
-                    value = capabilities.get(self.capability)
-                    return self.validator(value)
-        
-            def parse_memory(string):
-                pattern = re.compile(r"(?P<value>\d+)(?: MB)?")
-                match = pattern.search(string)
-                return float(match['value'])
+        storage = None
 
-            def is_enabled(value):
-                return value in ['YES', 'yes', 'True', 'true', '1']
+        if not external:
+            print("Starting storage server on port", storage_port)
+            with open(os.path.join(tmp_path, 'storage.log'), 'w') as log:
+                storage = start_storage_server(log=log,
+                            port=int(storage_port),
+                            storage_folder=str(storage_path))
+                
+        return storage 
 
-            def has_more_than(target):
-                return lambda value: parse_memory(str(target)) <= parse_memory(value)
+    return _start_storage
 
-            def each(validator):
-                return lambda values: all([validator(value) for value in values])
+def start_gadgetron_instance(*, log_stdout: io.TextIOWrapper, log_stderr: io.TextIOWrapper, port: int, storage_address: str, env = None) -> subprocess.Popen:
+    print("Starting Gadgetron instance on port", port)
+    proc = subprocess.Popen(["gadgetron", "-p", str(port), "-E", str(storage_address)],
+                            stdout=log_stdout,
+                            stderr=log_stderr,
+                            env=env)
+    return proc
 
-            rules = [
-                ('matlab_support', lambda req: Rule('matlab', is_enabled, "MATLAB support required.")),
-                ('python_support', lambda req: Rule('python', is_enabled, "Python support required.")),
-                ('julia_support', lambda req: Rule('julia', is_enabled, "Julia support required.")),
-                ('system_memory', lambda req: Rule('memory', has_more_than(req), "Not enough system memory.")),
-                ('gpu_support', lambda req: Rule('cuda', is_enabled, "CUDA support required.")),
-                ('gpu_support', lambda req: Rule('cuda_devices', each(has_more_than(req)), "Not enough CUDA devices.")),
-                ('gpu_memory', lambda req: Rule('cuda_memory', each(has_more_than(req)), "Not enough graphics memory."))
-            ]
+@pytest.fixture
+def start_gadgetron_sever(port: int, external: bool, storage_port: int, tmp_path: Path, start_storage: Callable) -> Callable:
+    storage = None
+    instance = None
+    def _start_gadgetron() -> None:
+        nonlocal instance, storage
 
-            return [(key, rule(section[key])) for key, rule in rules if key in section]
+        storage_address = "http://localhost:" + str(storage_port)
 
-        if run_tag != "" and run_tag not in tags:
-            pytest.skip("Test missing required tag.")    
+        if not external:           
+            storage = start_storage()    
 
-        if 'skip' in tags:
-            pytest.skip("Test was marked as skipped")
+            print("Starting Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
 
-        if local or external: 
-            command = ["gadgetron", "--info"]
-        else:
-            command = ["gadgetron_ismrmrd_client",
-                        "-a", host_url,
-                        "-p", str(port),
-                        "-q", "-Q", "gadgetron::info"]
+            with open(os.path.join(tmp_path, 'gadgetron.log.out'), 'w') as log_stdout:
+                with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
+                    instance = start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address)
+
+    yield _start_gadgetron
+
+    if storage != None:
+        storage.kill()
+
+    if instance != None:
+        instance.kill()
 
 
-        sleep_time = 0.2
-        for i in range(retries):
-            with open(os.path.join(tmp_path, 'gadgetron_info.log'), 'w') as log_stdout:
-                info_process = subprocess.run(command, stdout=log_stdout, stderr=log_stdout, universal_newlines=True)            
+@pytest.fixture
+def start_gadgetron_sever_with_additional_nodes(start_storage: Callable, tmp_path: Path, port: int, storage_port: int, external: bool) -> Callable:
+    instances = []
+    storage = None
 
-                if info_process.returncode:
-                    if i == retries - 1:
-                        pytest.fail("Querying gadgetron info failed with return code {}".format(info_process.returncode))
+    def _start_gadgetron_with_additional_nodes(fileConfig: Dict[str, str]) -> None:
+        nonlocal instances, storage
 
-                    time.sleep(sleep_time)
-                    sleep_time += 0.2
-                else:
-                    break
+        if external:
+            return
 
-        with open(os.path.join(tmp_path, 'gadgetron_info.log'), 'w') as log_stdout:
-            info_process = subprocess.run(command, stdout=log_stdout, stderr=log_stdout, universal_newlines=True)            
-            if info_process.returncode:
-                pytest.fail("Querying gadgetron info failed with return code {}".format(info_process.returncode))
-            
-        with open(os.path.join(tmp_path, 'gadgetron_info.log')) as log_stdout:
-            info_string = log_stdout.read()
+        storage = start_storage()    
 
-        # info_string = subprocess.check_output(command, stderr=subprocess.STDOUT, universal_newlines=True)
-        capabilities = query_gadgetron_capabilities(info_string)
+        base_port = 9050
+        number_of_nodes = 2
 
-        reqs = rules_from_reqs(requirements)
+        if 'distributed' in fileConfig:
+            base_port = int(fileConfig['distributed'].get('node_port_base', 9050))
+            number_of_nodes = int(fileConfig['distributed'].get('nodes', 2))
 
-        for rule in [rule for key, rule in reqs]:
-            # Ignore rules that are in the ignore_requirements list
-            if rule.capability in ignore_requirements:
-                continue
+        storage_address = "http://localhost:" + str(storage_port)
+        env=os.environ.copy()
 
-            if not rule.is_satisfied(capabilities):
-                pytest.skip(rule.message)    
+        ids = range(number_of_nodes)
+        print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
 
-    return _check_requirements        
+        worker_list = []
+
+        for id in ids:
+            instance_port = str(base_port + id)
+            with open(os.path.join(tmp_path, 'gadgetron_worker' + instance_port + '.log.out'), 'w') as log_stdout:
+                with open(os.path.join(tmp_path, 'gadgetron_worker' + instance_port + '.log.err'), 'w') as log_stderr:
+                    instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=instance_port, storage_address=storage_address))
+                    worker_list=worker_list + ['localhost:' + str(instance_port)]
+
+        env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
+
+        print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
+
+        print("Starting main Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
+
+        with open(os.path.join(tmp_path, 'gadgetron.log.out'), 'w') as log_stdout:
+            with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
+                instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address, env=env))
+
+    yield _start_gadgetron_with_additional_nodes
+
+    if storage != None:
+        storage.kill()
+
+    for instance in instances:
+        instance.kill()
+
+
+
 
 template_path = './config'
-
 
 def get_config(fileConfig: Dict[str, str], tmp_path: str, section: str) -> (str, List[str]):
     if 'template' in fileConfig:
@@ -368,141 +391,136 @@ def stream_to_gadgetron(tmp_path: Path, storage_port: int, external: bool) -> Ca
 
     return _stream_to_gadgetron
 
-def wait_for_storage_server(port: int, proc: subprocess.Popen, retries: int = 50) -> None:
-    sleep_time = 0.2
-    for i in range(retries):
-        try:
-            urllib.request.urlopen(f"http://localhost:{port}/healthcheck")
-            return
-        except (urllib.error.URLError, urllib.error.HTTPError, ConnectionResetError, ConnectionRefusedError, socket.timeout) as e:
-            if i == retries - 1 or proc.poll() is not None:
-                pytest.fail("Unable to get a successful response from storage server. {}".format(e))
-            time.sleep(sleep_time)
-            sleep_time += 0.2
 
-def start_storage_server(*, log: str, port: int, storage_folder: str) -> None:
-    storage_server_environment = os.environ.copy()
-    storage_server_environment["MRD_STORAGE_SERVER_PORT"] = str(port)
-    storage_server_environment["MRD_STORAGE_SERVER_STORAGE_CONNECTION_STRING"] = storage_folder
-    storage_server_environment["MRD_STORAGE_SERVER_DATABASE_CONNECTION_STRING"] = storage_folder + "/metadata.db"
 
-    retries = 5
-    for i in range(retries):
-        print("Starting MRD Storage Server on port", port)
-        proc = subprocess.Popen(["mrd-storage-server", "--require-parent-pid", str(os.getpid())],
-                                stdout=log,
-                                stderr=log,
-                                env=storage_server_environment)
 
-        try:
-            wait_for_storage_server(port, proc)
-            return proc
-        except:
-            # If the process has exited, it might be because the
-            # port was in use. This can be because the previous storage server
-            # instance was just killed. So we try again.
-            if proc.poll() is not None and i < retries:
-                time.sleep(1)
-            else:
-                proc.kill()
-                raise
+def query_gadgetron_capabilities(info_string: str) -> Dict[str, str]:
+    print("Querying Gadgetron capabilities...")
 
-def start_gadgetron_instance(*, log_stdout: io.TextIOWrapper, log_stderr: io.TextIOWrapper, port: int, storage_address: str, env = None) -> subprocess.Popen:
-    print("Starting Gadgetron instance on port", port)
-    proc = subprocess.Popen(["gadgetron", "-p", str(port), "-E", str(storage_address)],
-                            stdout=log_stdout,
-                            stderr=log_stderr,
-                            env=env)
-    return proc
+    value_pattern = r"(?:\s*):(?:\s+)(?P<value>.*)?"
 
+    capability_markers = {
+        'version': "Version",
+        'build': "Git SHA1",
+        'memory': "System Memory size",
+        'python': "Python Support",
+        'julia': "Julia Support",
+        'matlab': "Matlab Support",
+        'cuda': "CUDA Support"
+    }
+
+    plural_capability_markers = {
+        'cuda_memory': "Total amount of global GPU memory",
+        'cuda': "Number of CUDA capable devices"
+    }
+
+    def find_value(marker):
+        pattern = re.compile(marker + value_pattern, re.IGNORECASE)
+        match = pattern.search(info_string)
+
+        if not match:
+            pytest.fail("Failed to parse Gadgetron info string; Gadgetron capabilities could not be determined.")
+
+        return match['value']
+
+    def find_plural_values(marker):
+        pattern = re.compile(marker + value_pattern, re.IGNORECASE)
+        return [match['value'] for match in pattern.finditer(info_string)]
+
+    capabilities = {key: find_value(marker) for key, marker in capability_markers.items()}
+    capabilities.update({key: find_plural_values(marker) for key, marker in plural_capability_markers.items()})
+
+    return capabilities
 
 @pytest.fixture
-def start_storage(external: bool, storage_port: int, tmp_path: Path) -> None:
-    def _start_storage():
-        storage_path = os.path.join(tmp_path, "storage")
-        print(storage_path)
-        os.mkdir(storage_path)
+def check_requirements(host_url: str, port: int, external: bool, ignore_requirements: List[str], run_tag: List[str], tmp_path: Path) -> Callable:
+    def _check_requirements(requirements: Dict[str, str], tags: List[str], gadgetron_client: bool = True, retries: int = 50) -> None:
+        def rules_from_reqs(section):
+            class Rule:
+                def __init__(self, capability, validator, message):
+                    self.capability = capability
+                    self.validator = validator
+                    self.message = message
 
-        storage = None
+                def is_satisfied(self, capabilities):
+                    value = capabilities.get(self.capability)
+                    return self.validator(value)
+        
+            def parse_memory(string):
+                pattern = re.compile(r"(?P<value>\d+)(?: MB)?")
+                match = pattern.search(string)
+                return float(match['value'])
 
-        if not external:
-            print("Starting storage server on port", storage_port)
-            with open(os.path.join(tmp_path, 'storage.log'), 'w') as log:
-                storage = start_storage_server(log=log,
-                            port=int(storage_port),
-                            storage_folder=str(storage_path))
-                
-        return storage 
+            def is_enabled(value):
+                return value in ['YES', 'yes', 'True', 'true', '1']
 
-    return _start_storage
+            def has_more_than(target):
+                return lambda value: parse_memory(str(target)) <= parse_memory(value)
 
-@pytest.fixture
-def start_gadgetron_sever(port: int, external: bool, storage_port: int, tmp_path: Path) -> Callable:
-    instance = None
-    def _start_gadgetron() -> None:
-        nonlocal instance
+            def each(validator):
+                return lambda values: all([validator(value) for value in values])
 
-        storage_address = "http://localhost:" + str(storage_port)
+            rules = [
+                ('matlab_support', lambda req: Rule('matlab', is_enabled, "MATLAB support required.")),
+                ('python_support', lambda req: Rule('python', is_enabled, "Python support required.")),
+                ('julia_support', lambda req: Rule('julia', is_enabled, "Julia support required.")),
+                ('system_memory', lambda req: Rule('memory', has_more_than(req), "Not enough system memory.")),
+                ('gpu_support', lambda req: Rule('cuda', is_enabled, "CUDA support required.")),
+                ('gpu_support', lambda req: Rule('cuda', each(has_more_than(req)), "Not enough CUDA devices.")),
+                ('gpu_memory', lambda req: Rule('cuda_memory', each(has_more_than(req)), "Not enough graphics memory."))
+            ]
 
-        if not external:
-            print("Starting Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
+            return [(key, rule(section[key])) for key, rule in rules if key in section]
 
-            with open(os.path.join(tmp_path, 'gadgetron.log.out'), 'w') as log_stdout:
-                with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
-                    instance = start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address)
+        if run_tag != "" and run_tag not in tags:
+            pytest.skip("Test missing required tag.")    
 
-    yield _start_gadgetron
+        if 'skip' in tags:
+            pytest.skip("Test was marked as skipped")
 
-    if instance != None:
-        instance.kill()
+        if not gadgetron_client or external: 
+            command = ["gadgetron", "--info"]
+        else:
+            command = ["gadgetron_ismrmrd_client",
+                        "-a", host_url,
+                        "-p", str(port),
+                        "-q", "-Q", "gadgetron::info"]
 
+        sleep_time = 0.2
+        for i in range(retries):
+            with open(os.path.join(tmp_path, 'gadgetron_info.log'), 'w') as log_stdout:
+                info_process = subprocess.run(command, stdout=log_stdout, stderr=log_stdout, universal_newlines=True)            
 
-@pytest.fixture
-def start_gadgetron_sever_with_additional_nodes(tmp_path: Path, port: int, storage_port: int, external: bool) -> Callable:
-    instances = []
+                if info_process.returncode:
+                    if i == retries - 1:
+                        pytest.fail("Querying gadgetron info failed with return code {}".format(info_process.returncode))
 
-    def _start_gadgetron_with_additional_nodes(fileConfig: Dict[str, str]) -> None:
-        nonlocal instances
+                    time.sleep(sleep_time)
+                    sleep_time += 0.2
+                else:
+                    break
 
-        if external:
-            return
+        with open(os.path.join(tmp_path, 'gadgetron_info.log'), 'w') as log_stdout:
+            info_process = subprocess.run(command, stdout=log_stdout, stderr=log_stdout, universal_newlines=True)            
+            if info_process.returncode:
+                pytest.fail("Querying gadgetron info failed with return code {}".format(info_process.returncode))
+            
+        with open(os.path.join(tmp_path, 'gadgetron_info.log')) as log_stdout:
+            info_string = log_stdout.read()
 
-        base_port = 9050
-        number_of_nodes = 2
+        capabilities = query_gadgetron_capabilities(info_string)
 
-        if 'distributed' in fileConfig:
-            base_port = int(fileConfig['distributed'].get('node_port_base', 9050))
-            number_of_nodes = int(fileConfig['distributed'].get('nodes', 2))
+        reqs = rules_from_reqs(requirements)
 
-        storage_address = "http://localhost:" + str(storage_port)
-        env=os.environ.copy()
+        for rule in [rule for key, rule in reqs]:
+            # Ignore rules that are in the ignore_requirements list
+            if rule.capability in ignore_requirements:
+                continue
 
-        ids = range(number_of_nodes)
-        print("Will start additional Gadgetron workers on ports:", *map(lambda idx: base_port + idx, ids))
+            if not rule.is_satisfied(capabilities):
+                pytest.skip(rule.message)    
 
-        worker_list = []
-
-        for id in ids:
-            instance_port = str(base_port + id)
-            with open(os.path.join(tmp_path, 'gadgetron_worker' + instance_port + '.log.out'), 'w') as log_stdout:
-                with open(os.path.join(tmp_path, 'gadgetron_worker' + instance_port + '.log.err'), 'w') as log_stderr:
-                    instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=instance_port, storage_address=storage_address))
-                    worker_list=worker_list + ['localhost:' + str(instance_port)]
-
-        env["GADGETRON_REMOTE_WORKER_COMMAND"] = "echo " + json.dumps(worker_list)
-
-        print("Setting env to", env["GADGETRON_REMOTE_WORKER_COMMAND"])
-
-        print("Starting main Gadgetron instance on port {} with logs in {}".format(port, tmp_path))
-
-        with open(os.path.join(tmp_path, 'gadgetron.log.out'), 'w') as log_stdout:
-            with open(os.path.join(tmp_path, 'gadgetron.log.err'), 'w') as log_stderr:
-                instances.append(start_gadgetron_instance(log_stdout=log_stdout, log_stderr=log_stderr, port=port, storage_address=storage_address, env=env))
-
-    yield _start_gadgetron_with_additional_nodes
-
-    for instance in instances:
-        instance.kill()
+    return _check_requirements        
 
 
 def validate_output(*, output_file: str, reference_file: str, output_group: str, reference_group: str, value_threshold: float, scale_threshold: float) -> None:
@@ -700,7 +718,26 @@ def validate_stdout(tmp_path: Path) -> Callable:
     
     return _validate_stdout
 
+
+
+
+
+
+
+
 case_path = './cases'
+
+test_cases_loaded = False
+
+test_cases = []
+test_ids = []
+
+distributed_cases = []
+distributed_test_ids = []
+
+stream_cases = []
+stream_test_ids = []
+
 
 def load_cases() -> List[Dict[str, str]]:    
     case_list = []
@@ -722,100 +759,122 @@ def load_cases() -> List[Dict[str, str]]:
 
     return case_list
 
-test_cases= []
-test_ids = []
-
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
-    get_test_cases(metafunc.config.getoption('--mode'))
+    global test_cases_loaded
+    if not test_cases_loaded:
+        get_test_cases(metafunc.config.getoption('--mode'))
+        test_cases_loaded = True
 
 def get_test_cases(mode: str) -> None:
-    global test_cases, test_ids 
-    
     raw_test_cases = load_cases()
 
     for case in raw_test_cases:
-        if mode == 'server':
-            send = 'send_to_gadgetron'
-            start = 'start_gadgetron_sever'
+        test_name = case['name']
+        test_mode = mode
 
-        elif mode == 'stream':
-            send = 'stream_to_gadgetron'
-            start = 'start_gadgetron_streaming'
-
-        elif mode == 'distributed':
-            send = 'send_to_gadgetron'
-            start = 'start_gadgetron_sever_with_additional_nodes'
-
-        else:
-            send = 'send_to_gadgetron'
-            start = 'start_gadgetron_sever'
-
-            if 'distributed' in case:
-                start = 'start_gadgetron_sever_with_additional_nodes'
-
-            if 'stream' in case['reconstruction']:    
-                send = 'stream_to_gadgetron'
-                start = 'start_gadgetron_streaming'
-
-        test_cases.append((case, start, send))
-        test_ids.append(case['name'])
-
-
-@pytest.fixture
-def start_gadgetron(request: pytest.FixtureRequest, external: bool, start_gadgetron_sever: Callable, start_gadgetron_sever_with_additional_nodes: Callable, check_requirements: Callable) -> Callable:
-    def _start_gadgetron(fileConfig: Dict[str, str]) -> None:
-        local = False        
-        if request.param == 'start_gadgetron_sever':
-            if 'server' not in fileConfig['mode']:
-                pytest.skip("test can't be run in server mode")
-
-            print("starting gadgetron")
-            start_gadgetron_sever()
-
-        elif request.param == 'start_gadgetron_sever_with_additional_nodes':
-            if 'distributed' not in fileConfig['mode']:
-                pytest.skip("test can't be run in distributed mode")
-
-            start_gadgetron_sever_with_additional_nodes(fileConfig)
-
-        elif request.param == 'start_gadgetron_streaming':
-            if 'stream' not in fileConfig['mode']:
-                pytest.skip("test can't be run in stream mode")
-
-            if external:
-                pytest.skip("Stream tests do not run in external mode")
+        if mode == "":
+            if 'server' in case['mode']:
+                test_mode = 'server'
             
-            local = True
+            elif 'distributed' in case['mode']:
+                distributed_cases.append(case)
+                distributed_test_ids.append(test_name)
 
-        else:
-            pytest.fail("unknown start_gadgetron type")
+            elif 'stream' in case['mode']:
+                stream_cases.append(case)
+                stream_test_ids.append(test_name)
 
-        check_requirements(fileConfig['requirements'], fileConfig['tags'], local=local)
+        if test_mode == 'server':
+            test_cases.append(case)
+            test_ids.append(test_name)
+        
+        elif test_mode == 'distributed':
+            distributed_cases.append(case)
+            distributed_test_ids.append(test_name)
 
-    yield _start_gadgetron
+        elif test_mode == 'stream':
+            stream_cases.append(case)
+            stream_test_ids.append(test_name)
+
+
+
 
 @pytest.fixture
-def process_data(request: pytest.FixtureRequest, send_to_gadgetron: Callable, stream_to_gadgetron: Callable) -> Callable:
-    if request.param == 'send_to_gadgetron':
-        return send_to_gadgetron
+def step(siemens_to_ismrmrd: Callable, fetch_data_file: Callable):
+    def _step(config: Dict[str, str], section: str, process_data: Callable, input_file: str = ""):
+        if not input_file:
+            if 'copy_file' in config:
+                input_file = fetch_data_file(config['copy_file'], config['copy_file_hash'])
+                print("Using output file {}".format(input_file))
+            else:                    
+                input_file = siemens_to_ismrmrd(config, section)
 
-    if request.param == 'stream_to_gadgetron':
-        return stream_to_gadgetron
+        return process_data(config, input_file, section)
 
-    pytest.fail("unknown process_data type")
+    return _step
 
-@pytest.mark.parametrize('config, start_gadgetron, process_data', test_cases, ids=test_ids, indirect=['process_data', 'start_gadgetron'])
-def test_reconstruction(config: Dict[str, str], start_gadgetron: Callable, process_data: Callable, siemens_to_ismrmrd: Callable, validate_output_data: Callable, validate_dataset_output: Callable, validate_stdout: Callable, start_storage: Callable) -> None:
-    storage = start_storage()
-    
-    start_gadgetron(config)
+@pytest.mark.parametrize('config', test_cases, ids=test_ids)
+def test_server(config: Dict[str, str], fetch_data_file, start_gadgetron_sever: Callable, check_requirements: Callable, step: Callable, send_to_gadgetron: Callable, validate_stdout: Callable, validate_output_data: Callable, validate_dataset_output: Callable) -> None:
+    if 'server' not in config['mode']:
+        pytest.skip("test can't be run in server mode")
+
+    start_gadgetron_sever()
+
+    check_requirements(config['requirements'], config['tags'])
 
     if 'dependency' in config:
-        dependency_file = siemens_to_ismrmrd(config['dependency'], "dependency")
-        _ = process_data(config['dependency'], dependency_file, "dependency")
+        step(config['dependency'], "dependency", process_data=send_to_gadgetron)
+    
+    output_file = step(config['reconstruction'], "reconstruction", process_data=send_to_gadgetron)
 
-    reconstruction_file = siemens_to_ismrmrd(config['reconstruction'], "reconstruction")
-    output_file = process_data(config['reconstruction'], reconstruction_file, "reconstruction")
+    validate_stdout()
+
+    if 'equals' in config['validation']:
+        validate_dataset_output(config['validation']['equals'])
+
+    for output_image in config['validation']['images']:   
+        validate_output_data(config['validation']['images'][output_image], output_file, output_image)             
+
+
+@pytest.mark.parametrize('config', distributed_cases, ids=distributed_test_ids)
+def test_distributed_client(config: Dict[str, str], start_gadgetron_sever_with_additional_nodes: Callable, check_requirements: Callable, step: Callable, send_to_gadgetron: Callable, validate_stdout: Callable, validate_output_data: Callable, validate_dataset_output: Callable) -> None:
+    if 'distributed' not in config['mode']:
+        pytest.skip("test can't be run in distributed mode")
+
+    start_gadgetron_sever_with_additional_nodes(config)
+
+    check_requirements(config['requirements'], config['tags'])
+
+    if 'dependency' in config:
+        step(config['dependency'], "dependency", process_data=send_to_gadgetron)
+    
+    output_file = step(config['reconstruction'], "reconstruction", process_data=send_to_gadgetron)
+
+    validate_stdout()
+
+    if 'equals' in config['validation']:
+        validate_dataset_output(config['validation']['equals'])
+
+    for output_image in config['validation']['images']:   
+        validate_output_data(config['validation']['images'][output_image], output_file, output_image)                 
+
+
+@pytest.mark.parametrize('config', stream_cases, ids=stream_test_ids)
+def test_stream(config: Dict[str, str], external: bool, start_storage: Callable, check_requirements: Callable, step: Callable, stream_to_gadgetron: Callable, validate_stdout: Callable, validate_output_data: Callable, validate_dataset_output: Callable) -> None:
+    if 'stream' not in config['mode']:
+        pytest.skip("test can't be run in stream mode")
+
+    if external:
+        pytest.skip("stream tests can't be run with --external")
+
+    storage = start_storage()
+
+    check_requirements(config['requirements'], config['tags'], gadgetron_client = False)
+
+    if 'dependency' in config:
+        step(config['dependency'], "dependency", process_data=stream_to_gadgetron)
+    
+    output_file = step(config['reconstruction'], "reconstruction", process_data=stream_to_gadgetron)
 
     validate_stdout()
 
@@ -827,3 +886,4 @@ def test_reconstruction(config: Dict[str, str], start_gadgetron: Callable, proce
 
     if storage != None:
         storage.kill()
+
