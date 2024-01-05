@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.17...3.21 FATAL_ERROR)
 if (${CMAKE_VERSION} VERSION_LESS 3.17)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else ()
-    cmake_policy(VERSION 3.12)
+    cmake_policy(VERSION 3.17)
 endif()
 project(GADGETRON LANGUAGES CXX C)
 
