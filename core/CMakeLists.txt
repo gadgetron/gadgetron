@@ -81,6 +81,8 @@ install(FILES
         io/ismrmrd_types.h
         io/primitives.h
         io/primitives.hpp
+        io/sfndam_serializable.h
+        io/sfndam.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH}/io COMPONENT main)
 install(FILES
         config/distributed_default.xml

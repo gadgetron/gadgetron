@@ -1,0 +1,7 @@
+name: gadgetron-build
+channels:
+  - conda-forge
+dependencies:
+  - conda-build
+  - anaconda-client
+  - conda-libmamba-solver

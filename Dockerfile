@@ -23,25 +23,22 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-# The version of conda to use
-ARG CONDA_VERSION=22.11.1
+ARG MAMBAFORGE_VERSION=22.9.0-2
+ARG CONDA_GID=900
 
-# Based on https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile.
-# We also install conda-lock.
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh \
-    && mkdir -p /opt \
-    && sh miniconda.sh -b -p /opt/conda \
-    && ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh \
-    && find /opt/conda/ -follow -type f -name '*.a' -delete \
-    && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
-    && [ -z "$CONDA_VERSION" ] || /opt/conda/bin/conda install -n base conda=$CONDA_VERSION \
-    && /opt/conda/bin/conda install -c conda-forge -n base conda-lock \
-    && /opt/conda/bin/conda clean -afy \
-    && groupadd -r conda --gid 900 \
+# Based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile
+RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MAMBAFORGE_VERSION}/Mambaforge-${MAMBAFORGE_VERSION}-Linux-$(uname -m).sh -O /tmp/miniforge.sh \
+    && /bin/bash /tmp/miniforge.sh -b -p /opt/conda \
+    && rm /tmp/miniforge.sh \
+    && /opt/conda/bin/mamba clean --tarballs --index-cache --packages --yes \
+    && find /opt/conda -follow -type f -name '*.a' -delete \
+    && find /opt/conda -follow -type f -name '*.pyc' -delete \
+    && /opt/conda/bin/mamba clean --force-pkgs-dirs --all --yes  \
+    && groupadd -r conda --gid ${CONDA_GID} \
     && usermod -aG conda ${USERNAME} \
     && chown -R :conda /opt/conda \
     && chmod -R g+w /opt/conda \
-    && find /opt -type d | xargs -n 1 chmod g+s 
+    && find /opt -type d | xargs -n 1 chmod g+s
 
 # Copy environment, which will be filtered for later staged
 COPY --chown=$USER_UID:conda environment.yml /tmp/build/
@@ -70,7 +67,7 @@ ARG HOME
 USER ${USER_UID}
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
 RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 USER root
 
 FROM gadgetron_baseimage AS gadgetron_dev_nocuda
@@ -79,7 +76,7 @@ ARG HOME
 USER ${USER_UID}
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
 RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 USER root
 
 FROM gadgetron_dev_cuda AS gadgetron_cudabuild
@@ -118,7 +115,7 @@ ARG HOME
 USER ${USER_UID}
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
 RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
 RUN chmod +x /opt/entrypoint.sh
@@ -132,7 +129,7 @@ ARG HOME
 USER ${USER_UID}
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
 RUN grep -v "#.*\<cuda\|dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/conda env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/conda clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_nocudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
 RUN chmod +x /opt/entrypoint.sh

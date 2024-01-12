@@ -23,7 +23,8 @@ namespace Gadgetron
         const ARRAY<vector_td<REAL, D>>& traj,
         const vector_td<size_t, D>& matrix_size,
         REAL os_factor = 2.1,
-        unsigned int num_iterations = 10);
+        unsigned int num_iterations = 10,
+        REAL kernelWidth = REAL(5.5));
 
     /**
      * \brief Estimate density compensation weights for an arbitrary trajectory.
@@ -44,7 +45,8 @@ namespace Gadgetron
         const ARRAY<REAL>& initial_dcw,
         const vector_td<size_t, D>& matrix_size,
         REAL os_factor = 2.1,
-        unsigned int num_iterations = 10);
+        unsigned int num_iterations = 10,
+        REAL kernelWidth = REAL(5.5));
 
 
 } // namespace Gadgetron
