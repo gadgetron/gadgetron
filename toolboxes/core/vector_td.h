@@ -106,31 +106,37 @@ namespace Gadgetron {
     typedef vector_td<unsigned int, 2> uintd2;
     typedef vector_td<unsigned int, 3> uintd3;
     typedef vector_td<unsigned int, 4> uintd4;
+    typedef vector_td<unsigned int, 5> uintd5;
 
     typedef vector_td<size_t, 1> uint64d1;
     typedef vector_td<size_t, 2> uint64d2;
     typedef vector_td<size_t, 3> uint64d3;
     typedef vector_td<size_t, 4> uint64d4;
+    typedef vector_td<size_t, 5> uint64d5;
 
     typedef vector_td<int, 1> intd1;
     typedef vector_td<int, 2> intd2;
     typedef vector_td<int, 3> intd3;
     typedef vector_td<int, 4> intd4;
+    typedef vector_td<int, 5> intd5;
 
     typedef vector_td<long long, 1> int64d1;
     typedef vector_td<long long, 2> int64d2;
     typedef vector_td<long long, 3> int64d3;
     typedef vector_td<long long, 4> int64d4;
+    typedef vector_td<long long, 5> int64d5;
 
     typedef vector_td<float, 1> floatd1;
     typedef vector_td<float, 2> floatd2;
     typedef vector_td<float, 3> floatd3;
     typedef vector_td<float, 4> floatd4;
+    typedef vector_td<float, 5> floatd5;
 
     typedef vector_td<double, 1> doubled1;
     typedef vector_td<double, 2> doubled2;
     typedef vector_td<double, 3> doubled3;
     typedef vector_td<double, 4> doubled4;
+    typedef vector_td<double, 5> doubled5;
 }
 
 template <class T, unsigned int N> class std::tuple_size<Gadgetron::vector_td<T, N>> : public std::integral_constant<size_t, N> {};
