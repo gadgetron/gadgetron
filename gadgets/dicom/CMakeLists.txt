@@ -1,7 +1,7 @@
 # DCMTK-necessary preprocessor flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H -D_REENTRANT -D_OSF_SOURCE")
 
-set(Boost_NO_BOOST_CMAKE ON)
+# set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost COMPONENTS date_time REQUIRED)
 
 if(WIN32)
