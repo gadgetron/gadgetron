@@ -1,4 +1,4 @@
-name: gadgetron
+name: gadgetron-macos
 channels:
   - ismrmrd
   - gadgetron
@@ -11,8 +11,8 @@ dependencies:
   - armadillo=9.900.5                     # dev
   - boost=1.80.0
   - breathe=4.34                          # dev
-  - clang=13.0                            # dev
-  - clangxx=13.0                          # dev
+  - clang=17.0                            # dev
+  - clangxx=17.0                          # dev
   - cmake=3.21.3                          # dev
   - conda-build=3.23                      # dev
   - conda-verify=3.1                      # dev
@@ -26,7 +26,7 @@ dependencies:
   - h5py=3.2.1
   - hdf5=1.10.6
   - howardhinnant_date=3.0.1              # dev
-  - ismrmrd::ismrmrd=1.13.1
+  - ismrmrd::ismrmrd=1.13.7
   - ismrmrd::ismrmrd-python>=1.9.8
   - junitparser=2.7.0
   - jupyter=1.0.0                         # dev
@@ -47,14 +47,14 @@ dependencies:
   - pip=21.2.4                            # dev
   - packaging=21.3
   - plplot=5.15.0
-  - pugixml=1.11.4                        # dev
+  - pugixml=1.12.1
   - pyfftw=0.12.0
   - python=3.9
   - gadgetron::range-v3=0.11.0
   - recommonmark=0.7.1                    # dev
   - scipy=1.7.1
   - shellcheck=0.7.2                      # dev
-  - ismrmrd::siemens_to_ismrmrd=1.2.8
+  - ismrmrd::siemens_to_ismrmrd=1.2.11
   - sphinx=4.4.0                          # dev
   - sphinx_rtd_theme=0.4.3                # dev
   - xsdata>=22.2
