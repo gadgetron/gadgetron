@@ -1,0 +1,24 @@
+cases:
+- name: distributed_image_simple_gre
+  tags:
+  - fast
+  - distributed
+  mode: 
+  - distributed
+  reconstruction:
+    data_file: simple_gre/meas_MiniGadgetron_GRE.dat
+    measurement: 1
+    data_file_hash: 7c5c255522e42367546b4045560afcf8
+    configuration: distributed_image_default.xml
+  validation:
+    images:
+      distributed_image_default.xml/image_0:
+        reference_file: simple_gre/simple_gre_out_20210909_klk.mrd
+        reference_file_hash: 85e35ab4c68fa2e5ee25086bc08e615f
+        reference_image: default.xml/image_0
+        scale_comparison_threshold: 1.0e-05
+        value_comparison_threshold: 1.0e-05
+  requirements:
+    system_memory: 1024
+  distributed:
+    nodes: 2

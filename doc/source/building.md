@@ -37,9 +37,8 @@ ninja install
 After building and installing the Gadgetron, it is recommended to run the end to end tests:
 
 ```bash
-cd test/integration
-python get_data.py
-python run_tests.py --echo-log-on-failure --timeout=600 -F --stats stats.csv cases/*
+cd test/e2e
+pytest --echo-log-on-failure --timeout=600 
 ```
 
 ## Building Docker images

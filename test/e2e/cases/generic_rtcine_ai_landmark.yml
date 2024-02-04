@@ -1,0 +1,26 @@
+cases:
+- name: generic_rtcine_ai_landmark
+  tags:
+  - slow
+  - generic
+  reconstruction:
+    copy_file: cmr/RTCine/CH4/rtcine_R4_CH2.mrd
+    copy_file_hash: fcf7253923df0fee8fff8fb68e410929
+    configuration: CMR_RTCine_LAX_AI.xml
+  validation:
+    images:
+      CMR_RTCine_LAX_AI.xml/image_1:
+        reference_file: cmr/RTCine/CH4/ref_20220124_173736.mrd
+        reference_file_hash: b5e9c37bbd3eb4be076d89fd7dd7db6d
+        reference_image: CMR_RTCine_LAX_AI.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+      CMR_RTCine_LAX_AI.xml/image_100:
+        reference_file: cmr/RTCine/CH4/ref_20220124_173736.mrd
+        reference_file_hash: b5e9c37bbd3eb4be076d89fd7dd7db6d
+        reference_image: CMR_RTCine_LAX_AI.xml/image_100
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096
+    python_support: 1

@@ -1,0 +1,25 @@
+cases:
+- name: generic_grappa_snr_R2_spat_PEFOV75_PERes75
+  tags:
+  - generic
+  - fast
+  dependency:
+    data_file: generic/meas_MID00399_FID114601_R2_spat_PEFOV75_PERes75/meas_MID00399_FID114601_R2_spat_PEFOV75_PERes75.dat
+    measurement: 1
+    data_file_hash: ca4683fa5a5bf2d057bc9d5e203643c7
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: generic/meas_MID00399_FID114601_R2_spat_PEFOV75_PERes75/meas_MID00399_FID114601_R2_spat_PEFOV75_PERes75.dat
+    measurement: 2
+    data_file_hash: ca4683fa5a5bf2d057bc9d5e203643c7
+    configuration: Generic_Cartesian_Grappa_SNR.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa_SNR.xml/image_300:
+        reference_file: generic/meas_MID00399_FID114601_R2_spat_PEFOV75_PERes75/ref_20160401.mrd
+        reference_file_hash: ae9a034a3ec57fb57229232cc06f2467
+        reference_image: Generic_Cartesian_Grappa_SNR.xml/image_300
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096

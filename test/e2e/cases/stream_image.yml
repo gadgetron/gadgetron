@@ -1,0 +1,40 @@
+cases:
+- name: stream_image
+  tags:
+  - generic
+  - fast
+  - stream
+  mode: 
+  - stream
+  dependency:
+    data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
+    measurement: 1
+    data_file_hash: 72b10d19eb14f558bc30c0e27e1af5f0
+    stream:
+    - configuration: default_measurement_dependencies.xml
+      args: --disable_storage true --parameter noisecovarianceout=${test_folder}/mycov.bin
+    input_adapter: ismrmrd_hdf5_to_stream
+    output_adapter: ismrmrd_stream_to_hdf5
+    output_group: Generic_Cartesian_Grappa.xml
+  reconstruction:
+    data_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat
+    measurement: 2
+    data_file_hash: 72b10d19eb14f558bc30c0e27e1af5f0
+    stream:
+    - configuration: Generic_Cartesian_Grappa_Complex.xml
+      args: --disable_storage true --parameter noisecovariancein=${test_folder}/mycov.bin
+    - configuration: stream_complex_to_float.xml
+    - configuration: stream_float_to_short.xml
+    input_adapter: ismrmrd_hdf5_to_stream
+    output_adapter: ismrmrd_stream_to_hdf5
+    output_group: Generic_Cartesian_Grappa.xml
+  validation:
+    images:
+      Generic_Cartesian_Grappa.xml/image_1:
+        reference_file: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/ref_20220817_klk.mrd
+        reference_file_hash: a0701936b6454524afd5512d0776e78c
+        reference_image: Generic_Cartesian_Grappa.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 4096

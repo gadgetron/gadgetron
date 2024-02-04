@@ -1,0 +1,43 @@
+cases:
+- name: cmr_mapping_t1_sr
+  tags:
+  - fast
+  dependency:
+    data_file: cmr/T1SRmapping/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256.dat
+    measurement: 1
+    data_file_hash: dc4f02e31f84b641e41a485c2762054f
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: cmr/T1SRmapping/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256.dat
+    measurement: 2
+    data_file_hash: dc4f02e31f84b641e41a485c2762054f
+    parameter_xsl: IsmrmrdParameterMap_Siemens_T1Mapping_SASHA.xsl
+    configuration: CMR_2DT_T1Mapping_SASHA.xml
+  validation:
+    images:
+      CMR_2DT_T1Mapping_SASHA.xml/image_1:
+        reference_file: cmr/T1SRmapping/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256/ref_20170427.mrd
+        reference_file_hash: 3e213dd4c8f97baa9adfc6b2859147c5
+        reference_image: CMR_2DT_T1Mapping_SASHA.xml/image_1
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+      CMR_2DT_T1Mapping_SASHA.xml/image_12:
+        reference_file: cmr/T1SRmapping/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256/ref_20170427.mrd
+        reference_file_hash: 3e213dd4c8f97baa9adfc6b2859147c5
+        reference_image: CMR_2DT_T1Mapping_SASHA.xml/image_12
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+      CMR_2DT_T1Mapping_SASHA.xml/image_11:
+        reference_file: cmr/T1SRmapping/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256/ref_20170427.mrd
+        reference_file_hash: 3e213dd4c8f97baa9adfc6b2859147c5
+        reference_image: CMR_2DT_T1Mapping_SASHA.xml/image_11
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+      CMR_2DT_T1Mapping_SASHA.xml/image_20:
+        reference_file: cmr/T1SRmapping/meas_MID00613_FID40909_pre_SASHA_10pt_TS600_256/ref_20170427.mrd
+        reference_file_hash: 3e213dd4c8f97baa9adfc6b2859147c5
+        reference_image: CMR_2DT_T1Mapping_SASHA.xml/image_20
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 16384

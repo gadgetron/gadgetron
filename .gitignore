@@ -26,6 +26,7 @@ test/integration/test_cases.txt
 tags
 test/integration/*.xprot
 test/integration/*.xml
+test/e2e/*.xml
 .atom-build.json
 .vscode/
 dep-build/

@@ -1,0 +1,21 @@
+cases:
+- name: gpu_fixed_radial_mode1_ktsense
+  tags:
+  - fast
+  reconstruction:
+    data_file: radial_phantom/meas_MID00133_FID20080_CV_Radial_Fixed_Angle_128_x8_32phs.dat
+    measurement: 1
+    data_file_hash: 58f8de6b6e755c4d3dcd0c7dace3b8f6
+    configuration: fixed_radial_mode1_gpu_ktsense.xml
+  validation:
+    images:
+      fixed_radial_mode1_gpu_ktsense.xml/image_0:
+        reference_file: radial_phantom/fixed_radial_mode1_20210923_klk.mrd
+        reference_file_hash: 04faea502d73557fd0dd1bc629d95e87
+        reference_image: kt/image_0
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 2048
+    gpu_support: 1
+    gpu_memory: 1024

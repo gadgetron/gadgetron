@@ -1,0 +1,19 @@
+cases:
+- name: external_matlab_bucket_example
+  tags:
+  - external
+  reconstruction:
+    data_file: simple_gre/meas_MiniGadgetron_GRE.dat
+    measurement: 1
+    data_file_hash: 7c5c255522e42367546b4045560afcf8
+    configuration: external_matlab_bucket_example.xml
+  validation:
+    images:
+      external_matlab_bucket_example.xml/image_0:
+        reference_file: simple_gre/simple_gre_out_20210909_klk.mrd
+        reference_file_hash: 85e35ab4c68fa2e5ee25086bc08e615f
+        reference_image: simple/image_0
+        scale_comparison_threshold: 0.0001
+        value_comparison_threshold: 0.0001
+  requirements:
+    matlab_support: 1

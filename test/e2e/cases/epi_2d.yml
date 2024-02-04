@@ -1,0 +1,25 @@
+cases:
+- name: epi_2d
+  tags:
+  - ''
+  dependency:
+    data_file: epi/meas_MID517_nih_ep2d_bold_fa60_FID82077.dat
+    measurement: 1
+    data_file_hash: 8790d64a101acdc7b6990dd414b14be6
+    configuration: default_measurement_dependencies.xml
+  reconstruction:
+    data_file: epi/meas_MID517_nih_ep2d_bold_fa60_FID82077.dat
+    measurement: 2
+    data_file_hash: 8790d64a101acdc7b6990dd414b14be6
+    parameter_xsl: IsmrmrdParameterMap_Siemens_EPI.xsl
+    configuration: epi.xml
+  validation:
+    images:
+      epi.xml/image_0:
+        reference_file: epi/epi_2d_out_20161020_pjv.mrd
+        reference_file_hash: cd39f21d02ed6d434f91f8418632f64d
+        reference_image: epi.xml/image_0
+        scale_comparison_threshold: 0.001
+        value_comparison_threshold: 0.001
+  requirements:
+    system_memory: 1024

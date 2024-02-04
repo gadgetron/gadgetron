@@ -1,0 +1,21 @@
+cases:
+- name: gpu_spiral
+  tags:
+  - fast
+  reconstruction:
+    data_file: spiral/meas_MID1132_MiniIRT_spiral_16int_tr500_acc1_10reps_FID13142.dat
+    measurement: 1
+    data_file_hash: 763baf3d7d0acff185ec9a3c85d5a3f3
+    configuration: spiral_flow_gpusense_cg.xml
+  validation:
+    images:
+      spiral_flow_gpusense_cg.xml/image_0:
+        reference_file: spiral/simple_spiral_out_v2.mrd
+        reference_file_hash: 7ab538094cb4aefa329da75a3190a948
+        reference_image: spiral_flow_gpusense_cg.xml/image_0
+        scale_comparison_threshold: 0.01
+        value_comparison_threshold: 0.01
+  requirements:
+    system_memory: 2048
+    gpu_support: 1
+    gpu_memory: 1024
