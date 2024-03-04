@@ -127,19 +127,25 @@ namespace Gadgetron{
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 2>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 3>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 5>;
 
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 1>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 2>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 3>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 5>;
 
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 1>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 2>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 3>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 5>;
 
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 1>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 2>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 3>;
   template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 5>;
 }
+
+
