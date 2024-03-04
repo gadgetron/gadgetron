@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __clang__
+    #define unary_function  __unary_function
+#endif
+
 #include <boost/process.hpp>
 
 #include "connection/config/Config.h"

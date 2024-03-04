@@ -2,6 +2,10 @@
 #include <random>
 #include <thread>
 
+#ifdef __clang__
+   #define  unary_function  __unary_function
+#endif
+
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <date/date.h>
