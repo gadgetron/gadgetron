@@ -7,6 +7,10 @@
 #include "hoNDArray_reductions.h"
 #include "hoArmadillo.h"
 
+#ifdef __clang__
+    #define unary_function  __unary_function
+#endif
+
 #include <boost/config.hpp>
 
 #include <boost/graph/graph_utility.hpp>

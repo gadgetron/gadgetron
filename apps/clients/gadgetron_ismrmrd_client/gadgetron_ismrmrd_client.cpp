@@ -15,6 +15,10 @@
 //    - having and reading and writing thread is supposedly not safe, but seems to work here
 // -Static linking for standalone executable. 
 
+#ifdef __clang__
+   #define  unary_function  __unary_function
+#endif
+
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
 

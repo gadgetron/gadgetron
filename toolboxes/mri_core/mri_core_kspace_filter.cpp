@@ -6,6 +6,11 @@
 
 #include "mri_core_kspace_filter.h"
 #include "hoNDArray_elemwise.h"
+
+#ifdef __clang__
+    #define unary_function  __unary_function
+#endif
+
 #include <boost/algorithm/string.hpp>
 
 #ifdef M_PI

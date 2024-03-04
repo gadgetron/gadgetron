@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __clang__
+    #define unary_function  __unary_function
+#endif
+
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/keys.hpp>
 #include <boost/hana/at_key.hpp>

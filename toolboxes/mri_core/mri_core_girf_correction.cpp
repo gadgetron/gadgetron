@@ -9,6 +9,11 @@
 #include "hoNDArray_math.h"
 #include <boost/filesystem.hpp>
 #include <cpu/hoNDArray_fileio.h>
+
+#ifdef __clang__
+    #define unary_function  __unary_function
+#endif
+
 #include <boost/math/constants/constants.hpp>
 
 #include <boost/config/warning_disable.hpp>
