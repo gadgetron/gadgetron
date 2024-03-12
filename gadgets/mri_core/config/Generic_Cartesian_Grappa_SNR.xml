@@ -98,7 +98,7 @@
         <property><name>coil_map_algorithm</name><value>Inati</value></property>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+        <property><name>debug_folder</name><value>DebugOutput</value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
