@@ -15,16 +15,16 @@ dependencies:
   - cmake=3.21.3                          # dev
   - conda-build=3.23                      # dev
   - conda-verify=3.1                      # dev
-  - cuda-cudart                   # cuda
-  - cuda-cudart-dev               # cuda, dev
-  - cuda-cccl                     # cuda
-  - cuda-driver-dev               # cuda, dev
-  - cuda-libraries-dev             # cuda, dev
-  - cuda-libraries                 # cuda
-  - cuda-runtime                   # cuda
-  - cuda-nvcc                    # cuda, dev
-  - cuda-nvrtc=11.8                       # cuda
-  - cuda-nvrtc-dev=11.8                   # cuda, dev
+  - cuda-cudart=11.8.89                   # cuda
+  - cuda-cudart-dev=11.8.89               # cuda, dev
+  - cuda-cccl=11.8.89                     # cuda
+  - cuda-driver-dev=11.8.89               # cuda, dev
+  - cuda-libraries-dev=11.8.0             # cuda, dev
+  - cuda-libraries=11.8.0                 # cuda
+  - cuda-runtime=11.8.0                   # cuda
+  - cuda-nvcc=11.8.89                    # cuda, dev
+  - cuda-nvrtc=11.8.89                       # cuda
+  - cuda-nvrtc-dev=11.8.89                   # cuda, dev
   - dcmtk=3.6.1
   - deepdiff=5.8
   - doxygen=1.9                           # dev
