@@ -21,9 +21,9 @@ public:
 			*out = *in;
 		}
 	}
-	virtual boost::shared_ptr< linearOperator< cuNDArray<T>  > >  clone(){
-				return linearOperator< cuNDArray<T> >::clone(this);
-			}
+	// virtual boost::shared_ptr< linearOperator< cuNDArray<T>  > >  clone(){
+	// 			return linearOperator< cuNDArray<T> >::clone(this);
+	// 		}
 	virtual void set_domain_dimensions(std::vector<size_t>* dims);
 
 };

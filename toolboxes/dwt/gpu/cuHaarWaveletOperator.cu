@@ -115,9 +115,9 @@ template<class T, unsigned int D, class wave> __global__ void haarKernel(T* in, 
 
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
 	if( idx < newsize ){
-		vector_td<int,D> co = idx_to_co<D>(idx,dims2);
+		vector_td<int,D> co = idx_to_co(idx,dims2);
 		co *= 2;
-		recWave<T,D,wave,D-1>::loadData(elements,in+co_to_idx<D>(co,dims),dims);
+		recWave<T,D,wave,D-1>::loadData(elements,in+co_to_idx(co,dims),dims);
 		recWave<T,D,wave,D-1>::predict(elements);
 
 		for (int i = 0; i < Pow<2,D>::Value; i++){
@@ -141,10 +141,10 @@ template<class T, unsigned int D, class wave> __global__ void inv_haarKernel(T* 
 			elements[i] = in[i*oldsize+idx] ;
 		}
 		recWave<T,D,wave,D-1>::ipredict(elements);
-		vector_td<int,D> co = idx_to_co<D>(idx,dims2);
+		vector_td<int,D> co = idx_to_co(idx,dims2);
 		co *= 2;
 
-		recWave<T,D,wave,D-1>::saveData(elements,out+co_to_idx<D>(co,dims),dims);
+		recWave<T,D,wave,D-1>::saveData(elements,out+co_to_idx(co,dims),dims);
 
 
 
@@ -206,7 +206,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 	if (in->dimensions_equal(tmp_in))
 		*tmp_in = *in;
 	else
-		pad<T,D>(in,tmp_in);
+		pad<T,D>(*in,*tmp_in, T(0.0));
 
 
 	cuNDArray<T>* tmp_out;
@@ -328,8 +328,11 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDA
 		delete tmp_in;
 		tmp_in = new cuNDArray<T>(&this->domain_dims_);
 		vector_td<size_t,D> offset;
+		vector_td<size_t,D> cropsize;
 		for (int i = 0; i < D; i++ ) offset[i] = (this->codomain_dims_[i]-this->domain_dims_[i])/2;
-		crop<T,D>(offset,tmp_out,tmp_in);
+		for (int i = 0; i < D; i++ ) cropsize[i] = (this->codomain_dims_[i]);
+
+		crop<T,D>(offset,cropsize,*tmp_out,*tmp_in);
 	}
 
 	if (accumulate){
@@ -347,19 +350,19 @@ template class  cuHaarWaveletOperator<float,2>;
 template class  cuHaarWaveletOperator<float,3>;
 template class  cuHaarWaveletOperator<float,4>;
 
-template class  cuHaarWaveletOperator<double,1>;
-template class  cuHaarWaveletOperator<double,2>;
-template class  cuHaarWaveletOperator<double,3>;
-template class  cuHaarWaveletOperator<double,4>;
+// template class  cuHaarWaveletOperator<double,1>;
+// template class  cuHaarWaveletOperator<double,2>;
+// template class  cuHaarWaveletOperator<double,3>;
+// template class  cuHaarWaveletOperator<double,4>;
 
 template class  cuHaarWaveletOperator<float_complext,1>;
 template class  cuHaarWaveletOperator<float_complext,2>;
 template class  cuHaarWaveletOperator<float_complext,3>;
 template class  cuHaarWaveletOperator<float_complext,4>;
 
-template class  cuHaarWaveletOperator<double_complext,1>;
-template class  cuHaarWaveletOperator<double_complext,2>;
-template class  cuHaarWaveletOperator<double_complext,3>;
-template class  cuHaarWaveletOperator<double_complext,4>;
+// template class  cuHaarWaveletOperator<double_complext,1>;
+// template class  cuHaarWaveletOperator<double_complext,2>;
+// template class  cuHaarWaveletOperator<double_complext,3>;
+// template class  cuHaarWaveletOperator<double_complext,4>;
 
 

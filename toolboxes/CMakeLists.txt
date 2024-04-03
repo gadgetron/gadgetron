@@ -156,6 +156,8 @@ if(CUDA_FOUND)
         registration/optical_flow/gpu/cuResampleOperator.cu
         solvers/gpu/cuSolverUtils.cu
         solvers/gpu/gpusolvers_export.h
+        dwt/gpu/cuHaarWaveletOperator.h
+        dwt/gpu/cuHaarWaveletOperator.cu
     )
 
     target_include_directories(gadgetron_toolbox_gpu
@@ -291,6 +293,7 @@ if(CUDA_FOUND)
         solvers/gpu/hoCuGpBbSolver.h
         solvers/gpu/hoCuNlcgSolver.h
         solvers/gpu/hoCuSbcCgSolver.h
+        dwt/gpu/cuHaarWaveletOperator.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 else()
