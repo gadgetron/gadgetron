@@ -590,5 +590,51 @@ template void linFit(const hoNDArray<double>& x, const hoNDArray<double>& y, dou
 template void linFit(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& a, std::complex<float>& b);
 template void linFit(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& a, std::complex<double>& b);
 
+template <typename T>
+void polyFit2(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b, T& c)
+{
+    try
+    {
+        GADGET_CHECK_THROW(x.get_number_of_elements() == y.get_number_of_elements());
+
+        size_t N = x.get_number_of_elements();
+
+        hoNDArray<T> A;
+        A.create(N, 3);
+
+        size_t n;
+        for (n=0; n<N; n++)
+        {
+            A(n, 0) = x(n)*x(n);
+            A(n, 1) = x(n);
+            A(n, 2) = 1;
+        }
+
+        hoNDArray<T> A2(A);
+
+        hoNDArray<T> ATA(3, 3), ATy(3, 1);
+        gemm(ATA, A, true, A2, false);
+        gemm(ATy, A, true, y, false);
+
+        invert(ATA);
+
+        hoNDArray<T> res;
+        res.create(3, 1);
+        gemm(res, ATA, false, ATy, false);
+
+        a = res(0);
+        b = res(1);
+        c = res(2);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in polyFit2(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b, T& c) ... ");
+    }
+}
+
+template void polyFit2(const hoNDArray<float>& x, const hoNDArray<float>& y, float& a, float& b, float& c);
+template void polyFit2(const hoNDArray<double>& x, const hoNDArray<double>& y, double& a, double& b, double& c);
+template void polyFit2(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& a, std::complex<float>& b, std::complex<float>& c);
+template void polyFit2(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& a, std::complex<double>& b, std::complex<double>& c);
 
 }

@@ -408,6 +408,7 @@ endif()
 
 
 add_subdirectory(chroot)
+add_subdirectory(cmake)
 
 option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)
 if(BUILD_DOCUMENTATION)
