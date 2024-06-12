@@ -12,11 +12,11 @@
 #pragma once
 
 #include "ImageIOBase.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 // the file input/output utility functions for the Analyze format
 
-// the following Analyze75 data structured is defined as this online document eeg.sourceforge.net/ANALYZE75.pdf‎
+// the following Analyze75 data structured is defined as this online document eeg.sourceforge.net/ANALYZE75.pdf
 
 // the official definition of Analyze 7.5 file format
 struct header_key
@@ -132,9 +132,9 @@ public:
         try
         {
             // Check if folder exists
-            boost::filesystem::path boost_folder_path(filename);
-            boost_folder_path.remove_filename();
-            if ( !boost::filesystem::is_directory(boost_folder_path) )
+            std::filesystem::path folder_path(filename);
+            folder_path.remove_filename();
+            if ( !std::filesystem::is_directory(folder_path) )
             {
                 GWARN_STREAM("Failed to write " << filename << " because parent folder does not exist");
                 return;

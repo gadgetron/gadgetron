@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#define ARMA_DONT_PRINT_ERRORS
+#define ARMA_WARN_LEVEL 1
 #include "hoArmadillo.h"
 namespace Gadgetron { namespace Solver {
 
