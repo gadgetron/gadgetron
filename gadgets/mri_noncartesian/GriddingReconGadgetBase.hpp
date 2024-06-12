@@ -95,8 +95,8 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 			
 			if (buffer->headers_[0].trajectory_dimensions == 3){
 				auto traj_dcw = separate_traj_and_dcw(&trajectory);
-				dcw = boost::make_shared<ARRAY<float>>(std::get<1>(traj_dcw).get());
-				traj = boost::make_shared<ARRAY<floatd2>>(std::get<0>(traj_dcw).get());
+				dcw = boost::make_shared<ARRAY<float>>(*std::get<1>(traj_dcw).get());
+				traj = boost::make_shared<ARRAY<floatd2>>(*std::get<0>(traj_dcw).get());
 			} else if (buffer->headers_[0].trajectory_dimensions == 2){
 				auto old_traj_dims = *trajectory.get_dimensions();
 				std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
@@ -120,12 +120,11 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 			//Calculate coil sensitivity map
 			auto csm = estimate_b1_map<float,2>(*images);
 
-                        //Coil combine
+            //Coil combine
 			*images *= *conj(&csm);
 			auto combined = sum(images.get(),images->get_number_of_dimensions()-1);
-				
-			auto host_img = as_hoNDArray(combined);
 
+			auto host_img = as_hoNDArray(combined);
 
 			IsmrmrdImageArray imarray;
 
@@ -133,25 +132,19 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 			imarray.data_ = std::move(*boost::reinterpret_pointer_cast<decltype(imarray.data_)>(host_img));
 //			memcpy(imarray.data_.get_data_ptr(), host_img->get_data_ptr(), host_img->get_number_of_bytes());
 
-
-
 			NonCartesian::append_image_header(imarray,recon_bit_->rbit_[e], e);
 			this->prepare_image_array(imarray, e, ((int)e + 1), GADGETRON_IMAGE_REGULAR);
 
-                        this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(std::move(imarray)));
+            this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(std::move(imarray)));
 
 
-                    //Is this where we measure SNR?
+            //Is this where we measure SNR?
 			if (replicas.value() > 0 && snr_frame.value() == process_called_times) {
-
 				pseudo_replica(buffer->data_,*traj,*dcw,csm,recon_bit_->rbit_[e],e,CHA);
 			}
 		}
-		
+
 		m1->release();
-
-
-
 		return GADGET_OK;
 	}
 

@@ -61,9 +61,9 @@ namespace Gadgetron {
 
             }
 
-            size_t nx = std::max(field->nx, 1u);
-            size_t ny = std::max(field->ny, 1u);
-            size_t nz = std::max(field->nz, 1u);
+            size_t nx = std::max(field->nx, size_t(1));
+            size_t ny = std::max(field->ny, size_t(1));
+            size_t nz = std::max(field->nz, size_t(1));
 
             if (nx * ny * nz != (header.number_of_samples * 2 * header.active_channels)) {
                 std::stringstream errorstream;
