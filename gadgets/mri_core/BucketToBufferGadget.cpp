@@ -91,9 +91,15 @@ namespace Gadgetron {
 
             for (auto& recon_data_buffer : recon_data_buffers) {
                 if (acq_bucket.waveform_.empty())
+                {
+                    GDEBUG_STREAM("Sending out ReconData buffers without waveforms ...");
                     out.push(recon_data_buffer.second);
+                }
                 else
+                {
+                    GDEBUG_STREAM("Sending out ReconData buffers with waveforms ...");
                     out.push(recon_data_buffer.second, acq_bucket.waveform_);
+                }
             }
         }
     }

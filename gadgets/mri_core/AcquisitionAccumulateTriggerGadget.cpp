@@ -126,7 +126,7 @@ namespace Gadgetron {
     void AcquisitionAccumulateTriggerGadget::send_data(Core::OutputChannel& out, std::map<unsigned short, AcquisitionBucket>& buckets,
                                                        std::vector<Core::Waveform>& waveforms) {
         trigger_events++;
-        GDEBUG("Trigger (%d) occurred, sending out %d buckets\n", trigger_events, buckets.size());
+        GDEBUG_STREAM("Trigger " << trigger_events << " occurred, sending out " << buckets.size() << " buckets, " << waveforms.size() << " waveforms ... ");
         if(!waveforms.empty())
         buckets.begin()->second.waveform_ = std::move(waveforms);
         // Pass all buckets down the chain
