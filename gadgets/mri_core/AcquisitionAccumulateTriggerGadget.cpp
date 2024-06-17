@@ -127,6 +127,7 @@ namespace Gadgetron {
                                                        std::vector<Core::Waveform>& waveforms) {
         trigger_events++;
         GDEBUG("Trigger (%d) occurred, sending out %d buckets\n", trigger_events, buckets.size());
+        if(!waveforms.empty())
         buckets.begin()->second.waveform_ = std::move(waveforms);
         // Pass all buckets down the chain
         for (auto& bucket : buckets)
