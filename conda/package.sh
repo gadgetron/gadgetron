@@ -15,7 +15,7 @@ output_path="$(dirname "$0")/build_pkg"
 
 # Build up channel directives
 channels=(
-  nvidia/label/cuda-11.6.1
+  nvidia/label/cuda-12.3.0
   ismrmrd
   gadgetron
   conda-forge
