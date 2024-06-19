@@ -218,7 +218,7 @@ endif()
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
-    find_package(CUDA_advanced)
+    find_package(CUDA_advanced 12.3)
 endif()
 
 if (CUDA_FOUND AND USE_CUDA)
@@ -257,6 +257,7 @@ if (CUDA_FOUND AND USE_CUDA)
     endif ()
 
     message("Compiling with ${CUDA_NVCC_FLAGS}")
+    message("CUDA libraries are ${CUDA_LIBRARIES}, ${CUDA_CUFFT_LIBRARIES}, ${CUDA_CUBLAS_LIBRARIES}, ${CUDA_CUSPARSE_LIBRARIES}")
 else ()
     message("CUDA not found. CUDA components will not be compiled.")
     set( GADGETRON_CUDA_FOUND_BOOL 0 )
