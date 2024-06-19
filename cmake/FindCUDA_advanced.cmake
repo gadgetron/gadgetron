@@ -1,6 +1,6 @@
 set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "")
 
-find_package(CUDA 11.1)
+find_package(CUDA 12.3)
 
 # Check for GPUs present and their compute capability
 # based on http://stackoverflow.com/questions/2285185/easiest-way-to-test-for-existence-of-cuda-capable-gpu-from-cmake/2297877#2297877 (Christopher Bruns)
@@ -13,6 +13,8 @@ if(CUDA_FOUND)
   set(CUDA_NVCC_FLAGS75 "-gencode arch=compute_75,code=sm_75")
   set(CUDA_NVCC_FLAGS8 "-gencode arch=compute_80,code=sm_80")
   set(CUDA_NVCC_FLAGS86 "-gencode arch=compute_86,code=sm_86")
+  set(CUDA_NVCC_FLAGS87 "-gencode arch=compute_87,code=sm_87")
+  set(CUDA_NVCC_FLAGS90 "-gencode arch=compute_90,code=sm_90")
 
   cuda_find_helper_file(cuda_compute_capability c)
   try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
@@ -43,7 +45,9 @@ if( "${CUDA_COMPUTE_CAPABILITY}" MATCHES ALL)
     ${CUDA_NVCC_FLAGS7}
     ${CUDA_NVCC_FLAGS75}
     ${CUDA_NVCC_FLAGS8}
-    ${CUDA_NVCC_FLAGS86})
+    ${CUDA_NVCC_FLAGS86}
+    ${CUDA_NVCC_FLAGS87}
+    ${CUDA_NVCC_FLAGS90})
 else()
   set(CUDA_MOSTUSED_ARCH "")
   foreach(code ${CUDA_COMPUTE_CAPABILITY})

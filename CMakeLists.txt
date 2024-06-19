@@ -218,7 +218,7 @@ endif()
 option(USE_CUDA "Build with CUDA support" On)
 
 if (USE_CUDA)
-    find_package(CUDA_advanced 12.3)
+    find_package(CUDA_advanced)
 endif()
 
 if (CUDA_FOUND AND USE_CUDA)
