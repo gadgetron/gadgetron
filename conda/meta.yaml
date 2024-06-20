@@ -11,9 +11,9 @@ source:
 
 requirements:
   build:
-    - armadillo>=9.900.5
+    - armadillo=12.8.4
     - boost=1.80.0
-    - cmake>=3.21.3
+    - cmake=3.25.1
     - cuda-libraries-dev=12.3.0                  # [linux64]
     - cuda-libraries=12.3.0                      # [linux64]
     - cuda-runtime=12.3.0                        # [linux64]
@@ -21,61 +21,61 @@ requirements:
     - dcmtk=3.6.1
     - fftw=3.3.9
     - gcc_linux-64=9.4.0                         # [linux64]
-    - gadgetron::gadgetron-python>=1.4.1
-    - gmock>=1.10.0
+    - gadgetron-python>=1.4.1
+    - gmock=1.14.0
     - gxx_linux-64=9.4.0                         # [linux64]
-    - gtest=1.10.0
-    - h5py=3.2.1
+    - gtest=1.14.0
+    - h5py=3.7.0
     - hdf5=1.10.6
     - howardhinnant_date=3.0.1
-    - ismrmrd::ismrmrd=1.13.7
-    - ismrmrd::ismrmrd-python>=1.9.8
+    - ismrmrd=1.13.7
+    - ismrmrd-python=1.14.0
     - libblas=*=*mkl
-    - libcurl=7.79.1
-    - libxml2=2.9
-    - mkl>=2022.0.0
-    - mkl-include>=2022.0.0
-    - ismrmrd::mrd-storage-server=0.0.12
-    - ninja=1.10.2
-    - nlohmann_json=3.10.4
-    - numpy>=1.22.1
-    - packaging=21.3
+    - libcurl=7.86.0
+    - libxml2=2.9.14
+    - mkl>=2024.1.0
+    - mkl-include>=2024.1.0
+    - mrd-storage-server=0.0.12
+    - ninja=1.12.1
+    - nlohmann_json=3.11.3
+    - numpy=1.26.4
+    - packaging=24.0
     - pugixml=1.12.1
-    - pyfftw>=0.12.0
-    - pyyaml>=6.0
-    - python=3.9
-    - gadgetron::range-v3>=0.11.0
-    - sysroot_linux-64=2.17
+    - pyfftw=0.13.1
+    - pyyaml=6.0.1
+    - python=3.10
+    - range-v3>=0.11.0
+    - sysroot_linux-64=2.12
   run:
-    - armadillo>=9.900.5
+    - armadillo=12.8.4
     - boost=1.80.0
     - cuda-libraries=12.3.0                      # [linux64]
     - cuda-runtime=12.3.0                        # [linux64]
     - dcmtk=3.6.1
     - fftw=3.3.9
-    - gadgetron::gadgetron-python>=1.4.1
-    - h5py=3.2.1
+    - gadgetron-python>=1.4.1
+    - h5py=3.7.0
     - hdf5=1.10.6
-    - ismrmrd::ismrmrd=1.13.7
-    - ismrmrd::ismrmrd-python>=1.9.8
-    - jq>=1.6
+    - ismrmrd=1.13.7
+    - ismrmrd-python=1.14.0
+    - jq=1.7.1
     - libblas=*=*mkl
-    - libcurl=7.79.1
-    - libxml2=2.9
-    - memkind>=1.10.1
-    - mkl>=2022.0.0
-    - ismrmrd::mrd-storage-server=0.0.12
-    - numpy>=1.22.1
-    - onnxruntime=1.10.0
+    - libcurl=7.86.0
+    - libxml2=2.9.14
+    - memkind=1.10.1
+    - mkl>=2024.1.0
+    - mrd-storage-server=0.0.12
+    - numpy=1.26.4
+    - onnxruntime=1.18.0
     - pugixml=1.12.1
-    - pyfftw>=0.12.0
-    - python=3.9
-    - scipy=1.7.1
-    - sysroot_linux-64=2.17                                         # [linux64]
+    - pyfftw=0.13.1
+    - python=3.10
+    - scipy=1.13.1
+    - sysroot_linux-64=2.12                                         # [linux64]
 
 test:
   requires:
-    - ismrmrd::siemens_to_ismrmrd=1.2.11
+    - siemens_to_ismrmrd=1.2.11
 
 about:
   home: https://github.com/gadgetron/gadgetron

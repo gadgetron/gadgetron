@@ -86,7 +86,7 @@ def main():
     errors = []
     for meta_pkg_name, meta_pkg_dep in meta_deps.items():
         if not environment_deps.get(meta_pkg_name):
-            raise RuntimeError(f'{meta_pkg_name} defined in meta.yaml not found in environment.yml')
+            raise RuntimeError(f"{meta_pkg_name} defined in meta.yaml not found in environment.yml")
         else:
             env_dep = environment_deps[meta_pkg_name]
 
