@@ -101,10 +101,6 @@ namespace Gadgetron {
     {
         try
         {
-            // every image requires these two fields
-            attrib.set("SiemensControl_ForceTemporalMF", "bool");
-            attrib.append("SiemensControl_ForceTemporalMF", "true");
-
             if (!dataRole.empty() && (dataRole[0] != GADGETRON_IMAGE_REGULAR))
             {
                 std::string str;

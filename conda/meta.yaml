@@ -71,7 +71,7 @@ requirements:
     - pyfftw=0.13.1
     - python=3.10
     - scipy=1.13.1
-    - sysroot_linux-64=2.12                                         # [linux64]
+    - sysroot_linux-64=2.12                     # [linux64]
 
 test:
   requires:

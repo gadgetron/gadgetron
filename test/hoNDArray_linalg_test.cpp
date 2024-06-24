@@ -52,7 +52,40 @@ TYPED_TEST(hoNDArray_linalg_TestReal, linFitTest)
     Gadgetron::linFit(x, y, ra, rb);
 
     EXPECT_LT(std::abs(ra - a)/a, 1e-3);
-    EXPECT_LT(std::abs(rb - b) / a, 1e-3);
+    EXPECT_LT(std::abs(rb - b)/b, 1e-3);
+}
+
+
+TYPED_TEST(hoNDArray_linalg_TestReal, polyFit2Test)
+{
+    hoNDArray<TypeParam> x, y;
+    x.create(8);
+
+    x(0) = 1.2;
+    x(1) = 2.3;
+    x(2) = 4.0;
+    x(3) = 4.1;
+    x(4) = 5;
+    x(5) = 6.0;
+    x(6) = 5.5;
+    x(7) = 7.5;
+
+    TypeParam a = 4.3, b=12.1, c=-3.3;
+
+    y.create(8);
+
+    size_t n;
+    for (n=0; n<y.get_number_of_elements(); n++)
+    {
+        y(n) = a*x(n)*x(n) + b*x(n) + c;
+    }
+
+    TypeParam ra, rb, rc;
+    Gadgetron::polyFit2(x, y, ra, rb, rc);
+
+    EXPECT_LT(std::abs(ra - a)/a, 1e-3);
+    EXPECT_LT(std::abs(rb - b)/b, 1e-3);
+    EXPECT_LT(std::abs(rc - c)/c, 1e-3);
 }
 
 TEST(hoNDArray_linalg, posv_test) {

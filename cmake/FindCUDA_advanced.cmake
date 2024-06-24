@@ -7,11 +7,9 @@ find_package(CUDA 12.3)
 if(CUDA_FOUND)
 
   # Enumerate the compute capabilities we will be building for if not targeting build system GPU
-  set(CUDA_NVCC_FLAGS6 "-gencode arch=compute_60,code=sm_60")
-  set(CUDA_NVCC_FLAGS61 "-gencode arch=compute_61,code=sm_61")
-  set(CUDA_NVCC_FLAGS7 "-gencode arch=compute_70,code=sm_70")
+  set(CUDA_NVCC_FLAGS7  "-gencode arch=compute_70,code=sm_70")
   set(CUDA_NVCC_FLAGS75 "-gencode arch=compute_75,code=sm_75")
-  set(CUDA_NVCC_FLAGS8 "-gencode arch=compute_80,code=sm_80")
+  set(CUDA_NVCC_FLAGS8  "-gencode arch=compute_80,code=sm_80")
   set(CUDA_NVCC_FLAGS86 "-gencode arch=compute_86,code=sm_86")
   set(CUDA_NVCC_FLAGS87 "-gencode arch=compute_87,code=sm_87")
   set(CUDA_NVCC_FLAGS90 "-gencode arch=compute_90,code=sm_90")
@@ -40,8 +38,6 @@ set(CUDA_CUSPARSE_LIBRARIES ${CUDA_cusparse_LIBRARY})
 if( "${CUDA_COMPUTE_CAPABILITY}" MATCHES ALL)
   set(CUDA_NVCC_FLAGS
     ${CUDA_NVCC_FLAGS} 
-    ${CUDA_NVCC_FLAGS6}
-    ${CUDA_NVCC_FLAGS61}
     ${CUDA_NVCC_FLAGS7}
     ${CUDA_NVCC_FLAGS75}
     ${CUDA_NVCC_FLAGS8}
