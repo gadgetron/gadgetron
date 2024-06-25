@@ -52,7 +52,7 @@ endif ()
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 4)
 set(GADGETRON_VERSION_MINOR 6)
-set(GADGETRON_VERSION_PATCH 0)
+set(GADGETRON_VERSION_PATCH 1)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
 find_package(Git)
@@ -204,9 +204,9 @@ if(WIN32)
 endif()
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
+    find_package(Boost 1.80.0 COMPONENTS coroutine system date_time chrono program_options filesystem timer exception REQUIRED )
 else()
-    find_package(Boost 1.71.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
+    find_package(Boost 1.80.0 COMPONENTS coroutine system date_time program_options filesystem timer REQUIRED )
 endif()
 add_definitions("-DBOOST_BIND_GLOBAL_PLACEHOLDERS") # To suppress messages in later versions of boost, in version 1.76.0 there are internal conflicts in boost
 add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS") # To suppress messages in later versions of boost, in version 1.76.0 there are internal conflicts in boost
@@ -257,6 +257,7 @@ if (CUDA_FOUND AND USE_CUDA)
     endif ()
 
     message("Compiling with ${CUDA_NVCC_FLAGS}")
+    message("CUDA libraries are ${CUDA_LIBRARIES}, ${CUDA_CUFFT_LIBRARIES}, ${CUDA_CUBLAS_LIBRARIES}, ${CUDA_CUSPARSE_LIBRARIES}")
 else ()
     message("CUDA not found. CUDA components will not be compiled.")
     set( GADGETRON_CUDA_FOUND_BOOL 0 )
@@ -408,6 +409,7 @@ endif()
 
 
 add_subdirectory(chroot)
+add_subdirectory(cmake)
 
 option(BUILD_DOCUMENTATION "Build Gadgetron documentation." Off)
 if(BUILD_DOCUMENTATION)

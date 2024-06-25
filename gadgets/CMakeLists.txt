@@ -46,6 +46,7 @@ add_subdirectory(moco)
 
 if(PLPLOT_FOUND)
     if (MKL_FOUND OR ARMADILLO_FOUND)
+        message("compiling plplot toolbox")
         add_subdirectory(plplot)
     endif ()
 endif()

@@ -86,12 +86,16 @@ void getrf(hoNDArray<T>& A, hoNDArray<Lapack::Int>& ipiv);
 template<typename T>  
 void invert(hoNDArray<T>& A);
 
-
-
 /**
 * @brief linear fitting, y = a*x + b
   compute linear fit for y to x
 */
 template <typename T>  void linFit(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b);
+
+/**
+* @brief 2nd-order poly fitting, y = a*x^2 + b*x + c
+  compute linear fit for y to x
+*/
+template <typename T>  void polyFit2(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b, T& c);
 
 }
