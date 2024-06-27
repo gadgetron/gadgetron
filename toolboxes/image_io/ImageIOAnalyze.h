@@ -225,10 +225,10 @@ public:
             long long n;
 
             hoNDImage<value_type, D> rpart, ipart, mag, phs;
-            rpart.create( *a.get_dimensions() );
-            ipart.create( *a.get_dimensions() );
-            mag.create( *a.get_dimensions() );
-            phs.create( *a.get_dimensions() );
+            rpart.create( a.get_dimensions() );
+            ipart.create( a.get_dimensions() );
+            mag.create( a.get_dimensions() );
+            phs.create( a.get_dimensions() );
 
             const T* pA = a.begin();
 

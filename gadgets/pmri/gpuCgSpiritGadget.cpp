@@ -155,16 +155,16 @@ namespace Gadgetron{
     image_dims.push_back(channels);
     GDEBUG("Number of coils: %d %d \n",channels,image_dims.size());
     
-    E_->set_domain_dimensions(&image_dims);
-    E_->set_codomain_dimensions(device_samples->get_dimensions().get());
+    E_->set_domain_dimensions(image_dims);
+    E_->set_codomain_dimensions(device_samples->get_dimensions());
     E_->set_dcw(dcw);
     E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );
     E_->preprocess(*traj);
     
     boost::shared_ptr< cuNDArray<float_complext> > csm_device( new cuNDArray<float_complext>( *csm ));
     S_->set_calibration_kernels(csm_device);
-    S_->set_domain_dimensions(&image_dims);
-    S_->set_codomain_dimensions(&image_dims);
+    S_->set_domain_dimensions(image_dims);
+    S_->set_codomain_dimensions(image_dims);
 
     /*
     boost::shared_ptr< cuNDArray<float_complext> > reg_image(new cuNDArray<float_complext> (j->reg_host_.get()));

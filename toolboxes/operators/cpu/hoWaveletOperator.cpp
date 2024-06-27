@@ -4,7 +4,7 @@
 namespace Gadgetron
 {
     template <typename T>
-    hoWaveletOperator<T>::hoWaveletOperator(std::vector<size_t> *dims) : input_in_kspace_(false), no_null_space_(true), num_of_wav_levels_(1), with_approx_coeff_(false), proximity_across_cha_(false), BaseClass(dims)
+    hoWaveletOperator<T>::hoWaveletOperator(const std::vector<size_t>& dims) : input_in_kspace_(false), no_null_space_(true), num_of_wav_levels_(1), with_approx_coeff_(false), proximity_across_cha_(false), BaseClass(dims)
     {
         p_active_wav_ = &harr_wav_;
 

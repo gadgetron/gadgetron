@@ -10,6 +10,8 @@
 #include "GadgetronCuException.h"
 #include "check_CUDA.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <thrust/device_vector.h>
@@ -532,7 +534,7 @@ namespace Gadgetron{
         }
 
         if( out->get_number_of_elements() != this->get_number_of_elements() ){	
-            out->create(*this->get_dimensions());
+            out->create(this->get_dimensions());
         }
 
         if( cudaMemcpy( out->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {

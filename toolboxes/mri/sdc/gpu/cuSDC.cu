@@ -43,7 +43,7 @@ std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>
                                               const vector_td<size_t, D>& matrix_size, REAL os_factor,
                                               unsigned int num_iterations, REAL kernelWidth, ConvolutionType convtype) {
     // Initialize weights to 1.
-    cuNDArray<REAL> dcw(*traj.get_dimensions());
+    cuNDArray<REAL> dcw(traj.get_dimensions());
     fill(&dcw, (REAL)1);
 
     // Compute density compensation weights.
@@ -82,7 +82,7 @@ std::shared_ptr<cuNDArray<REAL>> estimate_dcw(const cuNDArray<vector_td<REAL, D>
     // Working arrays.
     cuNDArray<REAL> dcw(initial_dcw);
     cuNDArray<REAL> grid(to_std_vector(conv->get_matrix_size_os()));
-    cuNDArray<REAL> tmp(*dcw.get_dimensions());
+    cuNDArray<REAL> tmp(dcw.get_dimensions());
 
     // Iteration loop.
     for (size_t i = 0; i < num_iterations; i++) {

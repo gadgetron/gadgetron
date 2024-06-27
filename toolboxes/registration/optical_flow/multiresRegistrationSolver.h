@@ -61,8 +61,8 @@ namespace Gadgetron{
         throw std::runtime_error("multiresRegistrationSolver::solve : interpolator not set.");
       }
 
-      typename uint64d<D>::Type fixed_dims = from_std_vector<size_t,D>(*moving_image->get_dimensions());
-      typename uint64d<D>::Type moving_dims = from_std_vector<size_t,D>(*fixed_image->get_dimensions());
+      typename uint64d<D>::Type fixed_dims = from_std_vector<size_t,D>(moving_image->get_dimensions());
+      typename uint64d<D>::Type moving_dims = from_std_vector<size_t,D>(fixed_image->get_dimensions());
 
       if(!(fixed_dims == moving_dims)){
         throw std::runtime_error("multiresRegistrationSolver::solve : fixed/moving image base dimensions mismatch.");

@@ -57,8 +57,8 @@ namespace Gadgetron
             break;
 
         default:
-            boost::shared_ptr< std::vector<size_t> > dim = data.get_dimensions();
-            res = this->computeBSplineCoefficients(data.begin(), *dim, SplineDegree, coeff.begin());
+            std::vector<size_t> dim = data.get_dimensions();
+            res = this->computeBSplineCoefficients(data.begin(), dim, SplineDegree, coeff.begin());
         }
 
         return res;

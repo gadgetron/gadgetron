@@ -15,8 +15,6 @@ public:
     explicit ho3DArray(const std::vector<size_t>& dimensions);
     ho3DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
     ho3DArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct = false);
-    ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
-    ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual ~ho3DArray();
 

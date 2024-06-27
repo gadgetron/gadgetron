@@ -248,8 +248,8 @@ int main(int argc, char** argv)
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Pass image dimensions to encoding operator
-    E->set_domain_dimensions(&image_dims);
-    E->set_codomain_dimensions(data->get_dimensions().get());
+    E->set_domain_dimensions(image_dims);
+    E->set_codomain_dimensions(data->get_dimensions());
   
     // Set current trajectory and trigger NFFT preprocessing
     E->preprocess(traj.get());

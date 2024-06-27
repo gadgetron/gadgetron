@@ -19,7 +19,7 @@ public:
     typedef typename BaseClass::REAL REAL;
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
 
-    hoSPIRIT2DTOperator(std::vector<size_t> *dims);
+    hoSPIRIT2DTOperator(const std::vector<size_t>& dims);
     virtual ~hoSPIRIT2DTOperator();
 
     /// set forward kernel, compute the adjoint and adjoint_forward kernel

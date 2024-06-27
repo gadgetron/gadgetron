@@ -107,8 +107,8 @@ namespace Gadgetron
     {
 
         typename uint64d<D>::Type image_dims = from_std_vector<size_t, D>
-                ((mode == NFFT_comp_mode::FORWARDS_C2NC || mode == NFFT_comp_mode::BACKWARDS_C2NC) ? *in.get_dimensions()
-                                                                                                : *out.get_dimensions());
+                ((mode == NFFT_comp_mode::FORWARDS_C2NC || mode == NFFT_comp_mode::BACKWARDS_C2NC) ? in.get_dimensions()
+                                                                                                : out.get_dimensions());
         bool oversampled_image = (image_dims == this->matrix_size_os_);
 
         auto vec_dims = to_std_vector(this->matrix_size_os_);

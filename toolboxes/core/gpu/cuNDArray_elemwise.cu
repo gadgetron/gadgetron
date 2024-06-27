@@ -21,7 +21,7 @@ Gadgetron::abs( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::abs(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_abs<T>());
@@ -54,7 +54,7 @@ Gadgetron::abs_square( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::abs_square(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_abs_square<T>());
@@ -73,7 +73,7 @@ Gadgetron::sqrt( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::sqrt(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_sqrt<T>());
@@ -101,7 +101,7 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::square( const cuN
     throw std::runtime_error("Gadgetron::square(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_square<T>());
@@ -129,7 +129,7 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::reciprocal( const
     throw std::runtime_error("Gadgetron::reciprocal(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_reciprocal<T>());
@@ -157,7 +157,7 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::reciprocal_sqrt( 
     throw std::runtime_error("Gadgetron::reciprocal_sqrt(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_reciprocal_sqrt<T>());
@@ -185,7 +185,7 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::sgn( const cuNDAr
     throw std::runtime_error("Gadgetron::sgn(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_sgn<T>());
@@ -214,7 +214,7 @@ Gadgetron::real( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::real(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_real<T>());
@@ -233,7 +233,7 @@ Gadgetron::imag( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::imag(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_imag<T>());
@@ -252,7 +252,7 @@ Gadgetron::conj( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::conj(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_conj<T>());
@@ -271,7 +271,7 @@ Gadgetron::real_to_complex( const cuNDArray<typename realType<T>::Type> *x )
     throw std::runtime_error("Gadgetron::real_to_complex(): Invalid input array");
    
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
   thrust::device_ptr<typename realType<T>::Type> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_real_to_complex<T>());
@@ -295,7 +295,7 @@ Gadgetron::convert_to( const cuNDArray<T> *x )
     throw std::runtime_error("Gadgetron::convert_to(): Invalid input array");
 
   boost::shared_ptr< cuNDArray<T2> > result(new cuNDArray<T2>());
-  result->create(*x->get_dimensions().get());
+  result->create(x->get_dimensions());
   thrust::device_ptr<T2> resPtr = result->get_device_ptr();
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_convert_to<T,T2>());

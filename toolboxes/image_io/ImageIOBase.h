@@ -448,8 +448,7 @@ public:
                 dim[1] = E1;
                 dim[2] = CHA;
 
-                boost::shared_ptr< std::vector<size_t> > sDim(&dim);
-                hoNDArray<T> a3D(sDim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
+                hoNDArray<T> a3D(dim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
 
                 std::ostringstream ostr;
                 ostr << filename << "_" << ii << std::ends;
@@ -480,8 +479,7 @@ public:
                 dim[1] = E1;
                 dim[2] = CHA;
 
-                boost::shared_ptr< std::vector<size_t> > sDim(&dim);
-                hoNDArray<T> a3D(sDim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
+                hoNDArray<T> a3D(dim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
 
                 std::ostringstream ostr;
                 ostr << filename << "_" << ii << std::ends;

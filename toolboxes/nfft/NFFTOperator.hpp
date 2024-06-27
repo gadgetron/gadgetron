@@ -62,8 +62,8 @@ NFFTOperator<ARRAY, REAL, D>::mult_MH_M(ARRAY <complext<REAL>> *in, ARRAY <compl
         throw std::runtime_error("NFFTOperator::mult_MH_M : 0x0 input/output not accepted");
     }
 
-    boost::shared_ptr<std::vector<size_t> > codomain_dims = this->get_codomain_dimensions();
-    if (codomain_dims.get() == 0x0 || codomain_dims->size() == 0) {
+    std::vector<size_t> codomain_dims = this->get_codomain_dimensions();
+    if (codomain_dims.empty()) {
         throw std::runtime_error("NFFTOperator::mult_MH_M : operator codomain dimensions not set");
     }
 

@@ -189,8 +189,9 @@ int main(int argc, char** argv)
 	//precon_weights.reset();
 	csm.reset();
 
-	boost::shared_ptr< std::vector<size_t> > recon_dims( new std::vector<size_t> );
-	*recon_dims = to_std_vector(matrix_size); recon_dims->push_back(frames_per_reconstruction);
+	std::vector<size_t> recon_dims;
+	recon_dims = to_std_vector(matrix_size);
+	recon_dims.push_back(frames_per_reconstruction);
 
 	delete timer;
 
@@ -201,8 +202,8 @@ int main(int argc, char** argv)
 	vector<size_t> data_dims;
 	data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
 
-	E->set_domain_dimensions(recon_dims.get());
-	E->set_codomain_dimensions(&data_dims);
+	E->set_domain_dimensions(recon_dims);
+	E->set_codomain_dimensions(data_dims);
 
 	// Setup split-Bregman solver
 	cuNlcgSolver<_complext> solver;
@@ -214,38 +215,38 @@ int main(int argc, char** argv)
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
 	Rx->set_weight( (1.0f-alpha)*lambda );
-	Rx->set_domain_dimensions(recon_dims.get());
-	Rx->set_codomain_dimensions(recon_dims.get());
+	Rx->set_domain_dimensions(recon_dims);
+	Rx->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
 	Ry->set_weight( (1.0f-alpha)*lambda );
-	Ry->set_domain_dimensions(recon_dims.get());
-	Ry->set_codomain_dimensions(recon_dims.get());
+	Ry->set_domain_dimensions(recon_dims);
+	Ry->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rz( new cuPartialDerivativeOperator<_complext,3>(2) );
 	Rz->set_weight( (1.0f-alpha)*lambda );
-	Rz->set_domain_dimensions(recon_dims.get());
-	Rz->set_codomain_dimensions(recon_dims.get());
+	Rz->set_domain_dimensions(recon_dims);
+	Rz->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rx2( new cuPartialDerivativeOperator<_complext,3>(0) );
 	Rx2->set_weight( alpha*lambda );
-	Rx2->set_domain_dimensions(recon_dims.get());
-	Rx2->set_codomain_dimensions(recon_dims.get());
+	Rx2->set_domain_dimensions(recon_dims);
+	Rx2->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Ry2( new cuPartialDerivativeOperator<_complext,3>(1) );
 	Ry2->set_weight( alpha*lambda );
-	Ry2->set_domain_dimensions(recon_dims.get());
-	Ry2->set_codomain_dimensions(recon_dims.get());
+	Ry2->set_domain_dimensions(recon_dims);
+	Ry2->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rz2( new cuPartialDerivativeOperator<_complext,3>(2) );
 	Rz2->set_weight( alpha*lambda );
-	Rz2->set_domain_dimensions(recon_dims.get());
-	Rz2->set_codomain_dimensions(recon_dims.get());
+	Rz2->set_domain_dimensions(recon_dims);
+	Rz2->set_codomain_dimensions(recon_dims);
 
 
 	// Add "TV" regularization

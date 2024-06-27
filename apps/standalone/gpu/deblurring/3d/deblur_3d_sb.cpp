@@ -83,16 +83,16 @@ int main(int argc, char** argv)
   }
 
   Rx->set_weight( lambda );
-  Rx->set_domain_dimensions(data.get_dimensions().get());
-  Rx->set_codomain_dimensions(data.get_dimensions().get());
+  Rx->set_domain_dimensions(data.get_dimensions());
+  Rx->set_codomain_dimensions(data.get_dimensions());
 
   Ry->set_weight( lambda );
-  Ry->set_domain_dimensions(data.get_dimensions().get());
-  Ry->set_codomain_dimensions(data.get_dimensions().get());
+  Ry->set_domain_dimensions(data.get_dimensions());
+  Ry->set_codomain_dimensions(data.get_dimensions());
 
   Rz->set_weight( lambda );
-  Rz->set_domain_dimensions(data.get_dimensions().get());
-  Rz->set_codomain_dimensions(data.get_dimensions().get());
+  Rz->set_domain_dimensions(data.get_dimensions());
+  Rz->set_codomain_dimensions(data.get_dimensions());
 
   //
   // Setup conjugate gradients solver
@@ -102,8 +102,8 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuConvolutionOperator<_real,3> > E( new cuConvolutionOperator<_real,3>() );  
   E->set_kernel( &kernel );
   E->set_weight( mu );
-  E->set_domain_dimensions(data.get_dimensions().get());
-  E->set_codomain_dimensions(data.get_dimensions().get());
+  E->set_domain_dimensions(data.get_dimensions());
+  E->set_codomain_dimensions(data.get_dimensions());
   
   // Setup split-Bregman solver
   cuSbcCgSolver<_complext> sb;

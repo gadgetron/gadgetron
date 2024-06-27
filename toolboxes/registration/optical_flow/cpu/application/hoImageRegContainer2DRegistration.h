@@ -876,7 +876,7 @@ namespace Gadgetron {
                         {
                             for ( ii=0; ii<DIn; ii++ )
                             {
-                                deform[ii][n]->create(*target.get_dimensions());
+                                deform[ii][n]->create(target.get_dimensions());
                                 Gadgetron::clear( *deform[ii][n] );
                             }
                         }
@@ -918,10 +918,10 @@ namespace Gadgetron {
                         {
                             for ( ii=0; ii<DIn; ii++ )
                             {
-                                deform[ii][n]->create(*target.get_dimensions());
+                                deform[ii][n]->create(target.get_dimensions());
                                 Gadgetron::clear( *deform[ii][n] );
 
-                                deformInv[ii][n]->create(*source.get_dimensions());
+                                deformInv[ii][n]->create(source.get_dimensions());
                                 Gadgetron::clear( *deformInv[ii][n] );
                             }
                         }
@@ -1048,7 +1048,7 @@ namespace Gadgetron {
 
                             for ( ii=0; ii<DIn; ii++ )
                             {
-                                deform[ii][n]->create(*targetImages[n]->get_dimensions());
+                                deform[ii][n]->create(targetImages[n]->get_dimensions());
                                 Gadgetron::clear(*deform[ii][n]);
                             }
 
@@ -1095,10 +1095,10 @@ namespace Gadgetron {
 
                             for ( ii=0; ii<DIn; ii++ )
                             {
-                                deform[ii][n]->create(*targetImages[n]->get_dimensions());
+                                deform[ii][n]->create(targetImages[n]->get_dimensions());
                                 Gadgetron::clear(*deform[ii][n]);
 
-                                deformInv[ii][n]->create(*targetImages[n]->get_dimensions());
+                                deformInv[ii][n]->create(targetImages[n]->get_dimensions());
                                 Gadgetron::clear(*deformInv[ii][n]);
                             }
 
@@ -1189,7 +1189,7 @@ namespace Gadgetron {
                 {
                     for ( ii=0; ii<DIn; ii++ )
                     {
-                        deformation_field_[ii](r, refFrame).create(*imageContainer(r, refFrame).get_dimensions());
+                        deformation_field_[ii](r, refFrame).create(imageContainer(r, refFrame).get_dimensions());
                         Gadgetron::clear(deformation_field_[ii](r, refFrame));
                     }
                 }
@@ -1198,10 +1198,10 @@ namespace Gadgetron {
                 {
                     for ( ii=0; ii<DIn; ii++ )
                     {
-                        deformation_field_[ii](r, refFrame).create(*imageContainer(r, refFrame).get_dimensions());
+                        deformation_field_[ii](r, refFrame).create(imageContainer(r, refFrame).get_dimensions());
                         Gadgetron::clear(deformation_field_[ii](r, refFrame));
 
-                        deformation_field_inverse_[ii](r, refFrame).create(*imageContainer(r, refFrame).get_dimensions());
+                        deformation_field_inverse_[ii](r, refFrame).create(imageContainer(r, refFrame).get_dimensions());
                         Gadgetron::clear(deformation_field_inverse_[ii](r, refFrame));
                     }
                 }

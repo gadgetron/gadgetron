@@ -39,7 +39,7 @@ cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_
 	std::vector<size_t> dim_count(input->get_number_of_dimensions(),0);
 
 	size_t array_ndim = input->get_number_of_dimensions();
-	boost::shared_ptr< std::vector<size_t> > array_dims = input->get_dimensions();
+	std::vector<size_t> array_dims = input->get_dimensions();
 
 	std::vector<size_t> dims = std::vector<size_t>(dims_to_transform->size(),0);
 	for (size_t i = 0; i < dims_to_transform->size(); i++) {
@@ -52,7 +52,7 @@ cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_
 			throw std::runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform");;
 		}
 		dim_count[(*dims_to_transform)[i]]++;
-		dims[dims_to_transform->size()-1-i] = (*array_dims)[(*dims_to_transform)[i]];
+		dims[dims_to_transform->size()-1-i] = array_dims[(*dims_to_transform)[i]];
 	}
 
 	new_dim_order = *dims_to_transform;

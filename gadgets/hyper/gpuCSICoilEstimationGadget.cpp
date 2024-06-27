@@ -82,7 +82,7 @@ int gpuCSICoilEstimationGadget::process(
 			senseData->traj = boost::make_shared<cuNDArray<floatd2>>(*std::get<0>(traj_dcw));
 			senseData->dcw = boost::make_shared<cuNDArray<float>>(*std::get<1>(traj_dcw));
 		} else {
-			std::vector<size_t> tdims = *ho_traj->get_dimensions();
+			std::vector<size_t> tdims = ho_traj->get_dimensions();
 			std::vector<size_t> tmp_dim(tdims.begin()+1,tdims.end());
 			hoNDArray<floatd2> tmp(tmp_dim,reinterpret_cast<floatd2*>(ho_traj->get_data_ptr()));
 			senseData->traj = boost::make_shared<cuNDArray<floatd2>>(tmp);
@@ -117,7 +117,7 @@ int gpuCSICoilEstimationGadget::process(
 			ref_traj =boost::make_shared<cuNDArray<floatd2>>(*std::get<0>(traj_dcw));
 			ref_dcw = boost::make_shared<cuNDArray<float>>(*std::get<1>(traj_dcw));
 		} else {
-			std::vector<size_t> tdims = *ho_traj->get_dimensions();
+			std::vector<size_t> tdims = ho_traj->get_dimensions();
 			std::vector<size_t> tmp_dim(tdims.begin()+1,tdims.end());
 			hoNDArray<floatd2> tmp(tmp_dim,reinterpret_cast<floatd2*>(ho_traj->get_data_ptr()));
 			ref_traj = boost::make_shared<cuNDArray<floatd2>>(tmp);
@@ -174,8 +174,8 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 
 		E->setup(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
 
-		E->set_codomain_dimensions(&spiral_dims);
-		E->set_domain_dimensions(&csm_dims);
+		E->set_codomain_dimensions(spiral_dims);
+		E->set_domain_dimensions(csm_dims);
 		cuCgSolver<float_complext> solver;
 		solver.set_max_iterations(20);
 		solver.set_encoding_operator(E);
@@ -199,7 +199,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 
 std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> gpuCSICoilEstimationGadget::separate_traj_and_dcw(
 		hoNDArray<float >* traj_dcw) {
-	std::vector<size_t> dims = *traj_dcw->get_dimensions();
+	std::vector<size_t> dims = traj_dcw->get_dimensions();
 	std::vector<size_t> reduced_dims(dims.begin()+1,dims.end()); //Copy vector, but leave out first dim
 	auto  dcw = boost::make_shared<hoNDArray<float>>(reduced_dims);
 
@@ -223,7 +223,7 @@ std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<
 
 template<class T> std::tuple<boost::shared_ptr<hoNDArray<T>>, boost::shared_ptr<hoNDArray<T>> > gpuCSICoilEstimationGadget::split_calibration_lines(hoNDArray<T>& data, int ncal_lines, int dim){
 
-	auto dimensions = *data.get_dimensions();
+	auto dimensions = data.get_dimensions();
 
 	size_t cal_dim = dimensions[dim];
 	if (ncal_lines >= dimensions[dim]){

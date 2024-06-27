@@ -10,7 +10,7 @@ namespace Gadgetron
 {
 
 template <typename T>
-hoWavelet1DBaseOperator<T>::hoWavelet1DBaseOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoWavelet1DBaseOperator<T>::hoWavelet1DBaseOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 
@@ -32,8 +32,8 @@ void hoWavelet1DBaseOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>
 
         if (y.get_size(0) != RO || y.get_size(1) != W || y.get_size(2) != CHA)
         {
-            boost::shared_ptr< std::vector<size_t> > dims = x.get_dimensions();
-            size_t NDim = dims->size();
+            std::vector<size_t> dims = x.get_dimensions();
+            size_t NDim = dims.size();
 
             std::vector<size_t> dimR(NDim + 1);
             dimR[0] = RO;
@@ -43,7 +43,7 @@ void hoWavelet1DBaseOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>
             size_t n;
             for (n = 2; n<NDim; n++)
             {
-                dimR[n + 1] = (*dims)[n];
+                dimR[n + 1] = dims[n];
             }
 
             if (!y.dimensions_equal(dimR))
@@ -112,8 +112,8 @@ void hoWavelet1DBaseOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>
 
         if (y.get_size(0) != RO || y.get_size(1) != CHA)
         {
-            boost::shared_ptr< std::vector<size_t> > dims = x.get_dimensions();
-            size_t NDim = dims->size();
+            std::vector<size_t> dims = x.get_dimensions();
+            size_t NDim = dims.size();
 
             std::vector<size_t> dimR(NDim - 1);
             dimR[0] = RO;
@@ -122,7 +122,7 @@ void hoWavelet1DBaseOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>
             size_t n;
             for (n = 2; n < NDim - 1; n++)
             {
-                dimR[n] = (*dims)[n + 1];
+                dimR[n] = dims[n + 1];
             }
 
             if (!y.dimensions_equal(dimR))
@@ -202,9 +202,9 @@ void hoWavelet1DBaseOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dims = wavCoeff.get_dimensions();
+        std::vector<size_t> dims = wavCoeff.get_dimensions();
 
-        std::vector<size_t> dimR(*dims);
+        std::vector<size_t> dimR(dims);
         dimR[2] = 1;
 
         if (!wavCoeffNorm.dimensions_equal(dimR))
@@ -212,9 +212,9 @@ void hoWavelet1DBaseOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<
             wavCoeffNorm.create(dimR);
         }
 
-        size_t RO = (*dims)[0];
-        size_t W = (*dims)[1];
-        size_t CHA = (*dims)[2];
+        size_t RO = dims[0];
+        size_t W = dims[1];
+        size_t CHA = dims[2];
 
         if (CHA > 1)
         {
@@ -397,7 +397,7 @@ void hoWavelet1DBaseOperator<T>::divide_wav_coeff_by_norm(hoNDArray<T>& wavCoeff
 // ------------------------------------------------------------
 
 template <typename T>
-hoWavelet1DOperator<T>::hoWavelet1DOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoWavelet1DOperator<T>::hoWavelet1DOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 
@@ -516,7 +516,7 @@ void hoWavelet1DOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
 // ------------------------------------------------------------
 
 template <typename T>
-hoWavelet1DREALOperator<T>::hoWavelet1DREALOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoWavelet1DREALOperator<T>::hoWavelet1DREALOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
     input_in_kspace_ = false;
 }

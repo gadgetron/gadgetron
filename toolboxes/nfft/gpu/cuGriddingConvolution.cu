@@ -222,7 +222,7 @@ namespace Gadgetron
         }
 
         vector_td<size_t, D> image_dims =
-            from_std_vector<size_t, D>(*image.get_dimensions());
+            from_std_vector<size_t, D>(image.get_dimensions());
         if (image_dims != this->matrix_size_os_)
             throw std::runtime_error("Image dimensions mismatch.");
 

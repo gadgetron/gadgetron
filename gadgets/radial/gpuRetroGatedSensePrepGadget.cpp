@@ -710,7 +710,7 @@ namespace Gadgetron{
       {
         // Copy daq into host_buffer array
         hoNDArray< std::complex<float> > tmp( dims_per_readout, host_buffer.get_data_ptr() + p*dims_per_readout[0]*dims_per_readout[1] );
-        if( !tmp.dimensions_equal( daq->getObjectPtr()->get_dimensions().get() )){
+        if( !tmp.dimensions_equal( daq->getObjectPtr()->get_dimensions() )){
           GDEBUG("Unexpected dimensionality of array on message queue\n");
           return GADGET_FAIL;
         }

@@ -27,7 +27,7 @@ MFIOperator::~MFIOperator()
 }
 
 bool MFIOperator::prepare(boost::shared_ptr<cuNFFT_plan<float, 2>> plan_, cuNDArray<floatd2>& gpu_traj,
-    std::vector<size_t>& data_d, std::vector<size_t>& image_d, uint64d2& image_d_os, double& st, float dTE)
+    const std::vector<size_t>& data_d, const std::vector<size_t>& image_d, uint64d2& image_d_os, double& st, float dTE)
 {
 
   //Setup MFIoperator instance if not already prepared
@@ -132,7 +132,7 @@ void MFIOperator::calc_phase_mask()
   for (int i = 0; i < time_grid.get_number_of_elements(); i++) {
     phase_mask[i] = exp(complext<float>(0.0,2.*M_PI*f_step*(abs(time_grid[i]))));
   }
-  cu_phase_mask.create(*phase_mask.get_dimensions());
+  cu_phase_mask.create(phase_mask.get_dimensions());
   cu_phase_mask = phase_mask;
   //write_nd_array(&phase_mask, "phase_mask.cplx");
 }

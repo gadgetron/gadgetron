@@ -272,7 +272,7 @@ namespace Gadgetron {
     }
 
     //Calculate region of support + offsets
-    std::vector<size_t> rosTmp = *ref_data->get_dimensions();
+    std::vector<size_t> rosTmp = ref_data->get_dimensions();
 
     std::vector<unsigned int> ros(rosTmp.size());
     for ( unsigned int ii=0; ii<rosTmp.size(); ii++ ){
@@ -325,10 +325,10 @@ namespace Gadgetron {
 
     cuNDArray<T> b = cuNDArray<T>(b_size);
 
-    boost::shared_ptr< std::vector<size_t> > dimTmp = ref_data->get_dimensions();
+    std::vector<size_t> dimTmp = ref_data->get_dimensions();
     std::vector<unsigned int> dimInt(2, 0);
-    dimInt[0] = (*dimTmp)[0];
-    dimInt[1] = (*dimTmp)[1];
+    dimInt[0] = dimTmp[0];
+    dimInt[1] = dimTmp[1];
 
     int2 dims = vec_to_int2(dimInt);
     int2 dros = vec_to_int2(ros);
@@ -544,7 +544,7 @@ namespace Gadgetron {
     //}
 
     //TODO: This should be source coils
-    cuNDArray<T> tmp_mixing = cuNDArray<T>(*ref_data->get_dimensions());
+    cuNDArray<T> tmp_mixing = cuNDArray<T>(ref_data->get_dimensions());
 
     int kernel_elements = gkernel.get_number_of_elements()/target_coils;
     int total_elements = tmp_mixing.get_number_of_elements()/source_coils;

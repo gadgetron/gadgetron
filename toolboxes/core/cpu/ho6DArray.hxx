@@ -48,22 +48,6 @@ ho6DArray<T>::ho6DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, s
 }
 
 template <typename T> 
-ho6DArray<T>::ho6DArray(boost::shared_ptr< std::vector<size_t> > dimensions)
-: BaseClass(dimensions), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==6);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-ho6DArray<T>::ho6DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==6);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
 ho6DArray<T>::~ho6DArray()
 {
     release_accesser();

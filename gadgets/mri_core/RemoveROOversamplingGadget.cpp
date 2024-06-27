@@ -45,7 +45,7 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
         GERROR("Error creating new temp  array");
         return;
       }
-      std::vector<size_t> data_out_dims = *acq.get_dimensions();
+      std::vector<size_t> data_out_dims = acq.get_dimensions();
       if (!ifft_buf_.dimensions_equal(data_out_dims) )
       {
           ifft_buf_.create(data_out_dims);

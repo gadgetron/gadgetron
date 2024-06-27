@@ -234,7 +234,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			host_image = *(reg_image.to_host());
 
 			gpu_traj = host_traj;
-			if(MFI.prepare(nfft_plan_, gpu_traj, *host_data.get_dimensions(), image_dimensions_recon_,
+			if(MFI.prepare(nfft_plan_, gpu_traj, host_data.get_dimensions(), image_dimensions_recon_,
                                 image_dimensions_recon_os_, sample_time, .001)){
 				output_image = MFI.MFI_apply(host_image, B0_map);
 			}

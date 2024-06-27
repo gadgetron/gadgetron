@@ -53,7 +53,7 @@ namespace Gadgetron {
       throw std::runtime_error(ss.str());
     }
 
-    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( in->get_dimensions() );
   
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;

@@ -91,7 +91,7 @@ int main( int argc, char** argv)
   int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uint64d2 matrix_size = from_std_vector<size_t,2>(*(host_image->get_dimensions().get()));
+  uint64d2 matrix_size = from_std_vector<size_t,2>(host_image->get_dimensions());
   unsigned int num_frames = host_image->get_size(2);
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 

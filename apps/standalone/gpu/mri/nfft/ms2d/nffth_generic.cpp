@@ -82,13 +82,6 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_real> >     host_dcw     = read_nd_array<_real>    ((char*)parms.get_parameter('w')->get_string_value());
   delete timer;
 
-  /* {
-    std::vector<size_t> dims;
-    dims.push_back(host_traj->get_size(0));
-    dims.push_back(host_samples->get_number_of_elements()/dims[0]);
-    host_samples->reshape(&dims);
-    } */
-  
   if( !(host_samples->get_number_of_dimensions() == 2 && host_traj->get_number_of_dimensions() == 2) ){
     GINFO_STREAM(endl << "Samples/trajectory arrays must be two-dimensional: (dim 0: samples/profile x #profiles/frame; dim 1: #frames). Quitting.\n" << endl);
     return 1;

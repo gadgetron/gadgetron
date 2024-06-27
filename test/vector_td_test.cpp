@@ -21,8 +21,8 @@ template <typename T> class vector_td_Test : public ::testing::Test {
 	 virtual void SetUp() {
 		 size_t vdims[] = {37}; //Using prime numbers for setup because they are messy
 		 dims= std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-		 cuData = cuNDArray<vector_td<T,3> >(&dims);
-		 cuData2 = cuNDArray<vector_td<T,3> >(&dims);
+		 cuData = cuNDArray<vector_td<T,3> >(dims);
+		 cuData2 = cuNDArray<vector_td<T,3> >(dims);
 	}
 	 cuNDArray<vector_td<T,3> > cuData;
 	 cuNDArray<vector_td<T,3> > cuData2;

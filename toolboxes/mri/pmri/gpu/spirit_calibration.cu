@@ -149,7 +149,7 @@ namespace Gadgetron {
 
     // Normalize input array to an average intensity of one per element
     //
-    std::vector<size_t> old_dims = *_kspace->get_dimensions();
+    std::vector<size_t> old_dims = _kspace->get_dimensions();
     std::vector<size_t> dims= old_dims;
     /*dims[0] /= 2;
     dims[1] /= 2;*/

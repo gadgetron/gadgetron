@@ -12,7 +12,7 @@ namespace Gadgetron
 {
 
 template <typename T>
-hoWavelet2DTOperator<T>::hoWavelet2DTOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoWavelet2DTOperator<T>::hoWavelet2DTOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
     scale_factor_first_dimension_ = 1;
     scale_factor_second_dimension_ = 1;

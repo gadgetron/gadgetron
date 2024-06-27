@@ -47,14 +47,14 @@ namespace Gadgetron{
         throw std::runtime_error("opticalFlowSolver::compute(): illegal input array received.");
       }
 
-      if( prod(from_std_vector<size_t,D>(*fixed_image->get_dimensions().get())) != 
-          prod(from_std_vector<size_t,D>(*moving_image->get_dimensions().get())) ){
+      if( prod(from_std_vector<size_t,D>(fixed_image->get_dimensions())) != 
+          prod(from_std_vector<size_t,D>(moving_image->get_dimensions())) ){
         throw std::runtime_error("opticalFlowSolver::compute(): core image dimensions (excluding batches) mismatch.");
       }
 
       if( stencil_image && 
-          prod(from_std_vector<size_t,D>(*fixed_image->get_dimensions().get())) != 
-          prod(from_std_vector<size_t,D>(*stencil_image->get_dimensions().get())) ){
+          prod(from_std_vector<size_t,D>(fixed_image->get_dimensions())) != 
+          prod(from_std_vector<size_t,D>(stencil_image->get_dimensions())) ){
         throw std::runtime_error("opticalFlowSolver::compute(): stencil image dimensions mismatch fixed/moving image dimensions.");
       }
 
@@ -108,7 +108,7 @@ namespace Gadgetron{
       std::vector<size_t> grad_dims;
 
       (fixed_image->get_number_of_elements()<moving_image->get_number_of_elements() )
-        ? grad_dims = *moving_image->get_dimensions() : grad_dims = *fixed_image->get_dimensions();
+        ? grad_dims = moving_image->get_dimensions() : grad_dims = fixed_image->get_dimensions();
 
       grad_dims.push_back(D+1); 
 
@@ -117,8 +117,8 @@ namespace Gadgetron{
       // Setup for the spatial partial derivatives
       //
 
-      typename uint64d<D>::Type matrix_size_fixed = from_std_vector<size_t,D>( *fixed_image->get_dimensions() );
-      typename uint64d<D>::Type matrix_size_moving = from_std_vector<size_t,D>( *moving_image->get_dimensions() );
+      typename uint64d<D>::Type matrix_size_fixed = from_std_vector<size_t,D>( fixed_image->get_dimensions() );
+      typename uint64d<D>::Type matrix_size_moving = from_std_vector<size_t,D>( moving_image->get_dimensions() );
 
       if( matrix_size_fixed != matrix_size_moving ){
         throw std::runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch (2).");

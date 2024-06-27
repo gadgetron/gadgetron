@@ -26,7 +26,7 @@ public:
     typedef typename BaseClass::REAL REAL;
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
 
-    hoRedundantWaveletOperator(std::vector<size_t> *dims);
+    hoRedundantWaveletOperator(const std::vector<size_t>& dims);
     virtual ~hoRedundantWaveletOperator();
 
     /// set forward kernel, compute the adjoint and adjoint_forward kernel

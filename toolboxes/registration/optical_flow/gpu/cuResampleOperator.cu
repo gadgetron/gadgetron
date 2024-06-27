@@ -24,7 +24,7 @@ namespace Gadgetron{
     // Make a device vector wrap of the displacement field
     //
 
-    std::vector<size_t> _dims_disp = *this->offsets_->get_dimensions(); _dims_disp.pop_back(); 
+    std::vector<size_t> _dims_disp = this->offsets_->get_dimensions(); _dims_disp.pop_back(); 
     unsigned int num_elements_disp = D;
     while(!_dims_disp.empty()){
       num_elements_disp *= _dims_disp.back();

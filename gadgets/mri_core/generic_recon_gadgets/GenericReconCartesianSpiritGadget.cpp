@@ -129,7 +129,7 @@ namespace Gadgetron {
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::make_ref_coil_map"); }
-                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_,*recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
+                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_, recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str()); }
@@ -686,7 +686,7 @@ namespace Gadgetron {
 
 #pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
             {
-                boost::shared_ptr< hoSPIRIT2DOperator< std::complex<float> > > oper(new hoSPIRIT2DOperator< std::complex<float> >(&dim));
+                boost::shared_ptr< hoSPIRIT2DOperator< std::complex<float> > > oper(new hoSPIRIT2DOperator< std::complex<float> >(dim));
                 hoSPIRIT2DOperator< std::complex<float> >& spirit = *oper;
                 spirit.use_non_centered_fft_ = true;
                 spirit.no_null_space_ = false;

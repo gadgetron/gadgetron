@@ -17,8 +17,6 @@ public:
     ho2DArray(const std::vector<size_t>& dimensions);
     ho2DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
     ho2DArray(size_t sx, size_t sy, T* data, bool delete_data_on_destruct = false);
-    ho2DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
-    ho2DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual ~ho2DArray();
 

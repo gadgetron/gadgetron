@@ -376,11 +376,11 @@ namespace Gadgetron {
 
             std::vector<size_t> domain_dims = image_dimensions_recon_;
 
-            std::vector<size_t> codomain_dims = *host_traj_.get_dimensions();
+            std::vector<size_t> codomain_dims = host_traj_.get_dimensions();
             codomain_dims.push_back(header.active_channels);
 
-            E_->set_domain_dimensions(&domain_dims);
-            E_->set_codomain_dimensions(&codomain_dims);
+            E_->set_domain_dimensions(domain_dims);
+            E_->set_codomain_dimensions(codomain_dims);
 
             cuNDArray<floatd2> traj(host_traj_);
             E_->preprocess(&traj);

@@ -111,8 +111,9 @@ namespace Gadgetron{
 
     hoNDArray();
 
-    explicit hoNDArray(const std::vector<size_t> &dimensions);
-    hoNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    explicit hoNDArray(const std::vector<size_t>& dimensions);
+    hoNDArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
+
     hoNDArray(std::initializer_list<size_t> dimensions);
     hoNDArray(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
 
@@ -153,12 +154,12 @@ namespace Gadgetron{
     hoNDArray& operator=(const hoNDArrayView<T,D,C>& view);
 
     bool operator==(const hoNDArray& rhs) const;
+
     virtual void create(const std::vector<size_t>& dimensions);
+    virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(std::initializer_list<size_t> dimensions);
     virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
-
-    virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(size_t len);
     virtual void create(size_t sx, size_t sy);

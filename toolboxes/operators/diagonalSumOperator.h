@@ -38,7 +38,7 @@ namespace Gadgetron {
       if( !accumulate ) 
         clear(out);
 
-      std::vector<size_t> dims = *out->get_dimensions();
+      std::vector<size_t> dims = out->get_dimensions();
      
       // Iterate over the last dimension of the provided diagonal image
       //

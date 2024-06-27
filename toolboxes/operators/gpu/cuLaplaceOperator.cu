@@ -61,7 +61,7 @@ namespace Gadgetron{
 
     }
   
-    typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+    typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>( in->get_dimensions()) );
 
     dim3 dimBlock( dims[0] );
     dim3 dimGrid( prod(dims)/dims[0] );

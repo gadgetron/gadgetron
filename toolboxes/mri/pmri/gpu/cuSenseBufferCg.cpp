@@ -25,9 +25,9 @@ namespace Gadgetron{
   template<class REAL, unsigned int D>
   void cuSenseBufferCg<REAL,D>::preprocess( cuNDArray<_reald> *traj ) {
     this->E_->preprocess(traj);
-    std::vector<size_t> dims = *traj->get_dimensions();
+    std::vector<size_t> dims = traj->get_dimensions();
     dims.push_back(this->num_coils_);
-    this->E_->set_codomain_dimensions(&dims);
+    this->E_->set_codomain_dimensions(dims);
   }
 
   template<class REAL, unsigned int D>

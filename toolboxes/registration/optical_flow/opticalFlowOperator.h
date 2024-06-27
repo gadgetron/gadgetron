@@ -19,7 +19,7 @@ namespace Gadgetron {
     virtual void mult_M(ARRAY_TYPE* in,ARRAY_TYPE* out,bool accumulate){
 
       if (!accumulate) clear(out);
-      std::vector<size_t> dims = *in->get_dimensions();
+      std::vector<size_t> dims = in->get_dimensions();
       if (dims.back() != D) throw std::runtime_error("Input array for optical flow has the wrong last dimensions");
       dims.pop_back();
 
@@ -36,7 +36,7 @@ namespace Gadgetron {
     virtual void mult_MH(ARRAY_TYPE* in,ARRAY_TYPE* out,bool accumulate){
 
       if (!accumulate) clear(out);
-      std::vector<size_t> dims = *out->get_dimensions();
+      std::vector<size_t> dims = out->get_dimensions();
       if (dims.back() != D) throw std::runtime_error("Output array for optical flow has the wrong last dimensions");
       dims.pop_back();
       size_t elements = std::accumulate(dims.begin(),dims.end(),1u,std::multiplies<size_t>());
@@ -54,7 +54,7 @@ namespace Gadgetron {
 
       for (int i=0; i < D; i++){
 	partialDerivOp op(i);
-	boost::shared_ptr<ARRAY_TYPE> I(new ARRAY_TYPE(*moving->get_dimensions()));
+	boost::shared_ptr<ARRAY_TYPE> I(new ARRAY_TYPE(moving->get_dimensions()));
 	op.mult_M(moving,I.get());
 	op.mult_M(stat,I.get(),true);
 	*I /= T(2);

@@ -64,7 +64,7 @@ int main( int argc, char** argv)
   
   // Setup resulting blurred image
   cuNDArray<_complext> blurred_image; 
-  blurred_image.create(*image->get_dimensions());
+  blurred_image.create(image->get_dimensions());
   
   // Generate convolution kernel (just do this on the host for now)
   _real sigma = 2.5;

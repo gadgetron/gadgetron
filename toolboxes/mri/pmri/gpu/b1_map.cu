@@ -60,7 +60,7 @@ namespace Gadgetron{
     unsigned int ncoils = data_in.get_size(D);
 
     // Make a copy of input data, but only the target coils
-      std::vector<size_t> odims = *(data_in.get_dimensions().get());
+      std::vector<size_t> odims = data_in.get_dimensions();
       odims[D] = target_coils_int;
       auto data_out = cuNDArray<complext<REAL> >(odims);
 
@@ -205,7 +205,7 @@ namespace Gadgetron{
     dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
     // Invoke kernel
-    std::vector<size_t> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
+    std::vector<size_t> dims = in->get_dimensions(); dims.push_back(number_of_batches);
     boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T> );
     out->create(dims);
 

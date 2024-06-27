@@ -18,12 +18,6 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoMRImage<T, D>::hoMRImage (boost::shared_ptr< std::vector<size_t> > dimensions) : BaseClass( dimensions )
-    {
-        this->create( *dimensions );
-    }
-
-    template <typename T, unsigned int D> 
     hoMRImage<T, D>::hoMRImage (const std::vector<size_t>& dimensions, 
         const std::vector<coord_type>& pixelSize) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
@@ -256,8 +250,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     hoMRImage<T, D>::hoMRImage(const hoNDArray<T>& a) : BaseClass(a)
     {
-         boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
-         this->create(*dim);
+         this->create(a.get_dimensions());
          memcpy(this->data_, a.begin(), this->get_number_of_bytes());
     }
 
@@ -302,12 +295,6 @@ namespace Gadgetron
     {
         BaseClass::create(dimensions);
         memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
-    }
-
-    template <typename T, unsigned int D> 
-    void hoMRImage<T, D>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
-    {
-        this->create(*dimensions);
     }
 
     template <typename T, unsigned int D> 

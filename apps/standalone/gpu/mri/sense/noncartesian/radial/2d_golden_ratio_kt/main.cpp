@@ -226,7 +226,7 @@ int main(int argc, char** argv)
     
     // Preprocess
     image_dims.pop_back(); image_dims.push_back(frames_per_reconstruction); 
-    E->set_domain_dimensions(&image_dims);
+    E->set_domain_dimensions(image_dims);
     E->preprocess( traj.get() );
     
     // Upload data
@@ -235,7 +235,7 @@ int main(int argc, char** argv)
               (reconstruction, samples_per_reconstruction, num_profiles * samples_per_profile, num_coils,
                host_data.get());
 
-    E->set_codomain_dimensions(data->get_dimensions().get());
+    E->set_codomain_dimensions(data->get_dimensions());
 
     {
       auto data_view = data;

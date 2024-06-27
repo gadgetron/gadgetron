@@ -31,7 +31,7 @@ namespace Gadgetron{
 
       // Define u_k
       //
-      boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT(*this->encoding_operator_->get_domain_dimensions()));
+      boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT(this->encoding_operator_->get_domain_dimensions()));
 
       // Use x0 (if provided) as starting estimate
       if(this->get_x0().get())
@@ -64,7 +64,7 @@ namespace Gadgetron{
 	// Update f_k
 	//
 
-	ARRAY_TYPE_ELEMENT encoded_image(*f->get_dimensions());
+	ARRAY_TYPE_ELEMENT encoded_image(f->get_dimensions());
 	this->encoding_operator_->mult_M( u_k.get(), &encoded_image );
 	encoded_image -= *f;
 

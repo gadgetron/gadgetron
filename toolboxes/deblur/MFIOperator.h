@@ -30,7 +30,7 @@ namespace Gadgetron{
 
 
       bool prepare(boost::shared_ptr<cuNFFT_plan<float, 2>> plan_, cuNDArray<floatd2>& gpu_traj,
-          std::vector<size_t>& data_d, std::vector<size_t>& image_d, uint64d2& image_d_os, double& st, float dTE);
+          const std::vector<size_t>& data_d, const std::vector<size_t>& image_d, uint64d2& image_d_os, double& st, float dTE);
 
       hoNDArray<complext<float>> MFI_apply(hoNDArray<complext<float>>& ho_image, hoNDArray<float> B0_map);
 

@@ -6,7 +6,7 @@ namespace Gadgetron
 {
 
 template <typename T> 
-hoSPIRIT2DOperator<T>::hoSPIRIT2DOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoSPIRIT2DOperator<T>::hoSPIRIT2DOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 

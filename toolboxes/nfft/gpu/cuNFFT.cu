@@ -74,7 +74,7 @@ template<class REAL, unsigned int D, ConvolutionType CONV>
 void
 Gadgetron::cuNFFT_impl<REAL, D, CONV>::deapodize(cuNDArray <complext<REAL>>& image, bool fourier_domain) {
 
-    typename uint64d<D>::Type image_dims = from_std_vector<size_t, D>(*image.get_dimensions());
+    typename uint64d<D>::Type image_dims = from_std_vector<size_t, D>(image.get_dimensions());
     bool oversampled_image = (image_dims == this->matrix_size_os_);
 
     if (!oversampled_image) {

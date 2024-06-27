@@ -6,7 +6,7 @@ namespace Gadgetron
 {
 
 template <typename T> 
-hoSPIRITOperator<T>::hoSPIRITOperator(std::vector<size_t> *dims) : use_non_centered_fft_(false), no_null_space_(false), BaseClass(dims)
+hoSPIRITOperator<T>::hoSPIRITOperator(const std::vector<size_t>& dims) : use_non_centered_fft_(false), no_null_space_(false), BaseClass(dims)
 {
 }
 
@@ -143,21 +143,21 @@ void hoSPIRITOperator<T>::sum_over_src_channel(const ARRAY_TYPE& x, ARRAY_TYPE& 
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-        size_t NDim = dim->size();
+        std::vector<size_t> dim = x.get_dimensions();
+        size_t NDim = dim.size();
 
         if (NDim < 2) return;
 
         std::vector<size_t> dimR(NDim - 1);
-        std::vector<size_t> dimRInternal = *dim;
+        std::vector<size_t> dimRInternal = dim;
         dimRInternal[NDim - 2] = 1;
 
         size_t d;
         for (d = 0; d<NDim - 2; d++)
         {
-            dimR[d] = (*dim)[d];
+            dimR[d] = dim[d];
         }
-        dimR[NDim - 2] = (*dim)[NDim - 1];
+        dimR[NDim - 2] = dim[NDim - 1];
 
         if (!r.dimensions_equal(dimR))
         {

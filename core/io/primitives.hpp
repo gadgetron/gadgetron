@@ -57,7 +57,7 @@ Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of
 
 template<class T>
 void Gadgetron::Core::IO::write(std::ostream &stream, const hoNDArray <T> &array) {
-    write(stream, *array.get_dimensions());
+    write(stream, array.get_dimensions());
     write(stream, array.get_data_ptr(), array.get_number_of_elements());
 }
 

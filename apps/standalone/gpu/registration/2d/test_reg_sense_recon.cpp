@@ -77,7 +77,7 @@ public:
     }
     
     // Allocate intermediate image
-    std::vector<size_t> tmp_dims = *R_->get_displacement_field()->get_dimensions(); tmp_dims.pop_back();
+    std::vector<size_t> tmp_dims = R_->get_displacement_field()->get_dimensions(); tmp_dims.pop_back();
     cuNDArray< complext<REAL> > tmp_in_out;
 
     tmp_in_out.create(&tmp_dims);
@@ -96,7 +96,7 @@ public:
     }
     
     // Allocate intermediate image
-    std::vector<size_t> tmp_dims = *R_->get_displacement_field()->get_dimensions().get(); tmp_dims.pop_back();
+    std::vector<size_t> tmp_dims = R_->get_displacement_field()->get_dimensions(); tmp_dims.pop_back();
     cuNDArray< complext<REAL> > tmp_in_out(&tmp_dims); 
 
     // Apply adjoint non-Cartesian Sense encoding
@@ -113,7 +113,7 @@ public:
     }
 
     // Allocate intermediate image
-    std::vector<size_t> tmp_dims = *R_->get_displacement_field()->get_dimensions().get(); tmp_dims.pop_back();
+    std::vector<size_t> tmp_dims = R_->get_displacement_field()->get_dimensions(); tmp_dims.pop_back();
     cuNDArray< complext<REAL> > tmp_in_out1(&tmp_dims), tmp_in_out2(&tmp_dims); 
     
     // Deform the input image into multiple frames by applying the registration vector field
@@ -408,20 +408,20 @@ int main(int argc, char** argv)
   //
 
 #ifdef PAD_Z
-  std::vector<size_t> _3d_dims = *(sense_result->get_dimensions());
+  std::vector<size_t> _3d_dims = sense_result->get_dimensions();
   unsigned int last_dim = _3d_dims.back();
   _3d_dims.pop_back(); _3d_dims.push_back(1); _3d_dims.push_back(last_dim);
   sense_result->reshape( &_3d_dims );
 #endif
   
-  vector<size_t> multi_dims = *sense_result->get_dimensions();
+  vector<size_t> multi_dims = sense_result->get_dimensions();
   multi_dims.pop_back();
 #ifdef PAD_Z
   multi_dims.push_back(sense_result->get_size(3)-1);
 #else
   multi_dims.push_back(sense_result->get_size(2)-1);
 #endif
-  vector<size_t> single_dims = *sense_result->get_dimensions();
+  vector<size_t> single_dims = sense_result->get_dimensions();
   single_dims.pop_back();
   
   cuNDArray<_real> 
@@ -496,8 +496,8 @@ int main(int argc, char** argv)
   regis_image.reset(); 
 
   // Test iteration
-  cuNDArray<_real> out; out.create(multi_image->get_dimensions().get());
-  cuNDArray<_real> in; in.create(single_image->get_dimensions().get());
+  cuNDArray<_real> out; out.create(multi_image->get_dimensions());
+  cuNDArray<_real> in; in.create(single_image->get_dimensions());
   
   // Release memory
   delete CK;

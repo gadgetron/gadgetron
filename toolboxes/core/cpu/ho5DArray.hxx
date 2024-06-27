@@ -46,22 +46,6 @@ ho5DArray<T>::ho5DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, T
 }
 
 template <typename T> 
-ho5DArray<T>::ho5DArray(boost::shared_ptr< std::vector<size_t> > dimensions)
-: BaseClass(dimensions), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==5);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-ho5DArray<T>::ho5DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==5);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
 ho5DArray<T>::~ho5DArray()
 {
     release_accesser();

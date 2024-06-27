@@ -102,7 +102,7 @@ int main( int argc, char** argv)
   
   // Set image dimensions
   vector<size_t> image_dims = to_std_vector(matrix_size);
-  E->set_domain_dimensions(&image_dims);
+  E->set_domain_dimensions(image_dims);
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");

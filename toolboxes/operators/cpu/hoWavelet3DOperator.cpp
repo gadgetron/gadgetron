@@ -12,7 +12,7 @@ namespace Gadgetron
 {
 
 template <typename T>
-hoWavelet3DOperator<T>::hoWavelet3DOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoWavelet3DOperator<T>::hoWavelet3DOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 

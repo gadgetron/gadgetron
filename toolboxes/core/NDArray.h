@@ -14,9 +14,6 @@
 #include <array>
 #include <algorithm>
 #include <stdint.h>
-
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
 #include <numeric>
 #include "TypeTraits.h"
 
@@ -79,7 +76,7 @@ namespace Gadgetron{
 
         size_t get_size(size_t dimension) const;
 
-        boost::shared_ptr< std::vector<size_t> > get_dimensions() const;
+        std::vector<size_t> get_dimensions() const;
         void get_dimensions(std::vector<size_t>& dim) const;
 
         std::vector<size_t> const &dimensions() const;
@@ -114,7 +111,7 @@ namespace Gadgetron{
 
         size_t get_offset_factor(size_t dim) const;
         void get_offset_factor(std::vector<size_t>& offset) const;
-        boost::shared_ptr< std::vector<size_t> > get_offset_factor() const;
+        std::vector<size_t> get_offset_factor() const;
 
         size_t get_offset_factor_lastdim() const;
 
@@ -126,8 +123,6 @@ namespace Gadgetron{
         static void calculate_index( size_t offset, const std::vector<size_t>& offsetFactors, std::vector<size_t>& index );
 
         void clear();
-
-    
 
         /// whether a point is within the array range
         bool point_in_range(const std::vector<size_t>& ind) const;
@@ -254,12 +249,9 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline boost::shared_ptr< std::vector<size_t> > NDArray<T>::get_dimensions() const
+    inline std::vector<size_t> NDArray<T>::get_dimensions() const
     {
-        // Make copy to ensure that the receiver cannot alter the array dimensions
-        std::vector<size_t> *tmp = new std::vector<size_t>;
-        *tmp=dimensions_;
-        return boost::shared_ptr< std::vector<size_t> >(tmp); 
+        return this->dimensions_;
     }
 
     template <typename T> 
@@ -435,10 +427,12 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline boost::shared_ptr< std::vector<size_t> > NDArray<T>::get_offset_factor() const
+    inline std::vector<size_t> NDArray<T>::get_offset_factor() const
     {
-
-        return boost::make_shared<std::vector<size_t>>(offsetFactors_.begin(),offsetFactors_.end());
+        size_t NDim = this->dimensions_.size();
+        std::vector<size_t> res(NDim, 0);
+        for (auto i = 0; i < NDim; i++) res[i] = this->offsetFactors_[i];
+        return res;
     }
 
     template <typename T> 
@@ -524,7 +518,6 @@ namespace Gadgetron{
         this->elements_ = 0;
         this->dimensions_.clear();
     }
-
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(const std::vector<size_t>& ind) const

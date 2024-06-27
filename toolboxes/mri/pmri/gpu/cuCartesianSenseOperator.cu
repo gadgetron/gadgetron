@@ -40,18 +40,18 @@ insert_samples_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * 
 template<class REAL, unsigned int D> void
 cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate )
 {
-  if (!(in->dimensions_equal(*this->get_domain_dimensions().get())) || !(out->dimensions_equal(*this->get_codomain_dimensions().get())) ) {
+  if (!(in->dimensions_equal(this->get_domain_dimensions())) || !(out->dimensions_equal(this->get_codomain_dimensions())) ) {
     throw std::runtime_error("cuCartesianSenseOperator::mult_M dimensions mismatch");
   }
   
-  std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> full_dimensions = this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(full_dimensions);
 
   this->mult_csm(in,&tmp);
 
   std::vector<size_t> ft_dims;
-   for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
+   for (unsigned int i = 0; i < this->get_domain_dimensions().size(); i++) {
      ft_dims.push_back(i);
    }
 
@@ -76,13 +76,13 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
 template<class REAL, unsigned int D> void
 cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate)
 {
-  if (!(out->dimensions_equal(this->get_domain_dimensions().get())) || 
-      !(in->dimensions_equal(this->get_codomain_dimensions().get())) ) {
+  if (!(out->dimensions_equal(this->get_domain_dimensions())) || 
+      !(in->dimensions_equal(this->get_codomain_dimensions())) ) {
     throw std::runtime_error( "cuCartesianSenseOperator::mult_MH dimensions mismatch");
 
   }
 
-  std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> tmp_dimensions = this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray< complext<REAL> > tmp(tmp_dimensions);
@@ -104,7 +104,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
 
 
   std::vector<size_t> ft_dims;
-  for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
+  for (unsigned int i = 0; i < this->get_domain_dimensions().size(); i++) {
     ft_dims.push_back(i);
   }
 

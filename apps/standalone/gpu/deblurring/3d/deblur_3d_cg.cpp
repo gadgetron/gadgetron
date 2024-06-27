@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   // Define encoding matrix
   boost::shared_ptr< cuConvolutionOperator<_real,3> > E( new cuConvolutionOperator<_real,3>() );
   E->set_kernel( &kernel );
-  E->set_domain_dimensions(data.get_dimensions().get());
+  E->set_domain_dimensions(data.get_dimensions());
     
   // Setup conjugate gradient solver
   cuCgSolver<_complext> cg;
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
   cg.set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE );
                 
   // Form right hand side
-  cuNDArray<_complext> rhs; rhs.create(*data.get_dimensions());
+  cuNDArray<_complext> rhs; rhs.create(data.get_dimensions());
   E->mult_MH( &data, &rhs );
   
   //

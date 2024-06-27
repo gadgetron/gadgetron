@@ -39,12 +39,12 @@ namespace Gadgetron {
   {
   public:
 
-    ArrayIterator(std::vector<size_t> *dimensions, std::vector<size_t> *order)
+    ArrayIterator(const std::vector<size_t>& dimensions, const std::vector<size_t>& order)
     {
       block_sizes_.push_back(1);
-      for (size_t i = 0; i < order->size(); i++) {
-        dimensions_.push_back((*dimensions)[i]);
-        order_.push_back((*order)[i]);
+      for (size_t i = 0; i < order.size(); i++) {
+        dimensions_.push_back(dimensions[i]);
+        order_.push_back(order[i]);
         current_.push_back(0);
         if (i > 0) {
           block_sizes_.push_back(block_sizes_[i-1]*dimensions_[i-1]);
@@ -107,10 +107,9 @@ namespace Gadgetron {
   template<class T>  hoNDArray<T>
   permute( const hoNDArray<T>& in, const std::vector<size_t>& dim_order)
   {
-
-    std::vector<size_t> dims;
+    std::vector<size_t> dims_in(in.get_dimensions()), dims;
     for (size_t i = 0; i < dim_order.size(); i++)
-      dims.push_back(in.get_dimensions()->at(dim_order[i]));
+      dims.push_back(dims_in.at(dim_order[i]));
     hoNDArray<T> out(dims);
     permute( in, out, dim_order);
     return out;
@@ -145,8 +144,9 @@ namespace Gadgetron {
       dim_order_int.push_back(dim_order[i]);
     }
 
+    std::vector<size_t> dims_in(in.get_dimensions());
     for (size_t i = 0; i < dim_order_int.size(); i++) {
-      if ((*in.get_dimensions())[dim_order_int[i]] != out.get_size(i)) {
+      if (dims_in[dim_order_int[i]] != out.get_size(i)) {
         throw std::runtime_error("permute(): dimensions of output array do not match the input array");;
       }
     }
@@ -177,7 +177,7 @@ namespace Gadgetron {
 
     if (stride == 1) {
         // point by point assignment is needed
-        ArrayIterator it(in.get_dimensions().get(), &dim_order_int);
+        ArrayIterator it(in.get_dimensions(), dim_order_int);
         for (size_t i = 0; i < in.get_number_of_elements(); i++) {
             o[i] = in.get_data_ptr()[it.get_current_idx()];
             it.advance();
@@ -265,7 +265,7 @@ namespace Gadgetron {
           }
 
           auto  out = hoNDArray<T>(dims);
-          auto orig_dims = *in.get_dimensions();
+          auto orig_dims = in.get_dimensions();
           auto stride = std::accumulate(orig_dims.begin(),orig_dims.begin()+dim,1,std::multiplies<size_t>());
 
 
@@ -341,8 +341,8 @@ namespace Gadgetron {
           out.create(dims);
       }
 
-      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in.get_dimensions());
-      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out.get_dimensions());
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(in.get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(out.get_dimensions());
 
       if (weak_greater(crop_offset + matrix_size_out, matrix_size_in)){
           throw std::runtime_error("crop: cropping size mismatch");;
@@ -383,7 +383,7 @@ namespace Gadgetron {
   {
     // compute crop offset, perserving the center
     hoNDArray<T> out;
-    auto crop_offset = (from_std_vector<size_t,D>(*in.get_dimensions())-crop_size)/size_t(2);
+    auto crop_offset = (from_std_vector<size_t,D>(in.get_dimensions())-crop_size)/size_t(2);
     crop(crop_offset, crop_size, in, out);
     return out;
   }
@@ -393,7 +393,7 @@ namespace Gadgetron {
   {
       vector_td<size_t, 1> crop_size(x);
 
-      auto crop_offset = (from_std_vector<size_t,1>(*in.get_dimensions())-crop_size)/size_t(2);
+      auto crop_offset = (from_std_vector<size_t,1>(in.get_dimensions())-crop_size)/size_t(2);
       crop(crop_offset, crop_size, in, out);
   }
 
@@ -411,7 +411,7 @@ namespace Gadgetron {
   {
       vector_td<size_t, 3> crop_size(x, y, z);
 
-      auto crop_offset = (from_std_vector<size_t,3>(*in.get_dimensions())-crop_size)/size_t(2);
+      auto crop_offset = (from_std_vector<size_t,3>(in.get_dimensions())-crop_size)/size_t(2);
       crop(crop_offset, crop_size, in, out);
   }
 
@@ -620,8 +620,8 @@ namespace Gadgetron {
           }
       }
 
-      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in.get_dimensions());
-      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out.get_dimensions());
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(in.get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(out.get_dimensions());
 
       if (weak_greater(matrix_size_in, matrix_size_out)){
           throw std::runtime_error("pad: size mismatch, cannot expand");
@@ -655,7 +655,7 @@ namespace Gadgetron {
   }
 
   template<class T, unsigned int D> void pad(const hoNDArray<T>& in, hoNDArray<T>& out, T val = T(0)){
-        vector_td<size_t,D> dims = from_std_vector<size_t,D>(*out.get_dimensions());
+        vector_td<size_t,D> dims = from_std_vector<size_t,D>(out.get_dimensions());
         pad<T,D>(dims,in,out,true, val);
   }
 
@@ -762,7 +762,7 @@ namespace Gadgetron {
       }
     }
 
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( _in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( size_t d=0; d<D; d++ ){
@@ -818,7 +818,7 @@ namespace Gadgetron {
 
   namespace {
           template<class T> hoNDArray<T> upsample_along_dimension(const hoNDArray<T>& array,int dim){
-              auto new_dims = *array.get_dimensions();
+              auto new_dims = array.get_dimensions();
               auto old_dim = new_dims[dim];
               new_dims[dim] *= 2;
               hoNDArray<T> result(new_dims);
@@ -856,7 +856,7 @@ namespace Gadgetron {
           template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,int scale){
               namespace ba = boost::adaptors;
               namespace bm = boost::math;
-              auto new_dims = *array.get_dimensions();
+              auto new_dims = array.get_dimensions();
               auto old_dim = new_dims[dim];
               new_dims[dim] *= 2;
               hoNDArray<T> result(new_dims);
@@ -935,7 +935,7 @@ namespace Gadgetron {
       throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
 
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in << 1;
 
     for( size_t d=0; d<D; d++ ){
@@ -957,7 +957,7 @@ namespace Gadgetron {
 
     const T *in_ptr = in.get_data_ptr();
 
-    hoNDArray<T> out(&dims);
+    hoNDArray<T> out(dims);
     T *out_ptr = out.get_data_ptr();
 
     typedef vector_td<size_t,D> uint64d;

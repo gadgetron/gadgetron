@@ -44,22 +44,6 @@ ho3DArray<T>::ho3DArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_da
 }
 
 template <typename T> 
-ho3DArray<T>::ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions)
-: BaseClass(dimensions), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==3);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-ho3DArray<T>::ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==3);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
 ho3DArray<T>::~ho3DArray()
 {
     release_accesser();

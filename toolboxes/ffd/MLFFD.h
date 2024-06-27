@@ -368,7 +368,7 @@ inline bool MLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos,
 
         if ( !residual.dimensions_equal(value) )
         {
-            residual.create(*value.get_dimensions());
+            residual.create(value.get_dimensions());
             Gadgetron::clear(residual);
         }
 

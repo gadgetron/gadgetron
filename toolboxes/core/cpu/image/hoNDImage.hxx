@@ -151,25 +151,25 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, axis, data, delete_data_on_destruct);
     }
@@ -268,8 +268,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage(const hoNDArray<T>& a) : BaseClass(a)
     {
-         boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
-         this->create(*dim);
+         this->create(a.get_dimensions());
          memcpy(this->data_, a.begin(), this->get_number_of_bytes());
     }
 
@@ -714,16 +713,16 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::from_NDArray(const hoNDArray<T>& a)
     {
-        boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
+        std::vector<size_t> dim = a.get_dimensions();
 
         size_t ii;
 
-        if ( dim->size() < D )
+        if ( dim.size() < D )
         {
             std::vector<size_t> dimUsed(D, 1);
-            for ( ii=0; ii<dim->size(); ii++ )
+            for ( ii=0; ii<dim.size(); ii++ )
             {
-                dimUsed[ii] = (*dim)[ii];
+                dimUsed[ii] = dim[ii];
             }
 
             if ( !this->dimensions_equal(dimUsed) )
@@ -731,12 +730,12 @@ namespace Gadgetron
                 this->create(dimUsed);
             }
         }
-        else if ( dim->size() > D )
+        else if ( dim.size() > D )
         {
             std::vector<size_t> dimUsed(D, 1);
             for ( ii=0; ii<D; ii++ )
             {
-                dimUsed[ii] = (*dim)[ii];
+                dimUsed[ii] = dim[ii];
             }
 
             if ( !this->dimensions_equal(dimUsed) )
@@ -746,9 +745,9 @@ namespace Gadgetron
         }
         else
         {
-            if ( !this->dimensions_equal(*dim) )
+            if ( !this->dimensions_equal(dim) )
             {
-                this->create(*dim);
+                this->create(dim);
             }
         }
 
@@ -763,7 +762,7 @@ namespace Gadgetron
 
         if ( !a.dimensions_equal(dim) )
         {
-            a.create(&dim);
+            a.create(dim);
         }
 
         memcpy(a.begin(), this->data_, a.get_number_of_bytes());

@@ -86,7 +86,7 @@ namespace Gadgetron{
       
       if( this->image_dimensions_.empty() ){
       
-        this->image_dimensions_ = *m2->getObjectPtr()->get_dimensions();
+        this->image_dimensions_ = m2->getObjectPtr()->get_dimensions();
         this->phase_images_ = decltype(this->phase_images_){};
 
         
@@ -253,8 +253,8 @@ namespace Gadgetron{
                   return Gadget::close(flags);
                 }
               }
-              else{                
-                std::vector<size_t> moving_dims = *moving_image.get_dimensions();
+              else{
+                std::vector<size_t> moving_dims = moving_image.get_dimensions();
                 cuNDArray<float> subimage( moving_dims, deformed_moving->get_data_ptr()+(i-1)*num_image_elements);
                 
                 if( set_continuation( headers[i], &subimage ) < 0 ) {

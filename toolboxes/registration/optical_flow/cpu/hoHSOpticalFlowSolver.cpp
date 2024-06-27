@@ -61,21 +61,21 @@ namespace Gadgetron{
     // - when removing the temporal gradient component (replacing D+1 with D)
     //
   
-    boost::shared_ptr< std::vector<size_t> > disp_dims = _gradient_image->get_dimensions();
-    disp_dims->pop_back(); disp_dims->push_back(D);
+    std::vector<size_t> disp_dims = _gradient_image->get_dimensions();
+    disp_dims.pop_back(); disp_dims.push_back(D);
 
-    boost::shared_ptr< hoNDArray<T> > displacements_ping(new hoNDArray<T>(*disp_dims));
-    boost::shared_ptr< hoNDArray<T> > displacements_pong(new hoNDArray<T>(*disp_dims));
+    boost::shared_ptr< hoNDArray<T> > displacements_ping(new hoNDArray<T>(disp_dims));
+    boost::shared_ptr< hoNDArray<T> > displacements_pong(new hoNDArray<T>(disp_dims));
   
     clear(displacements_ping.get());
     clear(displacements_pong.get());
 
     // We use "shared memory" to hold the averaged displacements
-    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(*disp_dims));
+    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(disp_dims));
     T *shared_mem = _shared_mem->get_data_ptr();
     clear( _shared_mem.get());
    
-    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *_gradient_image->get_dimensions() );  
+    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( _gradient_image->get_dimensions() );  
     size_t number_of_elements = prod(matrix_size);
     size_t num_batches = 1;
     

@@ -12,7 +12,7 @@ namespace Gadgetron {
     if( E_.get() == 0x0 ){   
       std::vector<size_t> dims = to_std_vector(this->matrix_size_);    
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D> >(new cuNonCartesianSenseOperator<REAL,D>);
-      E_->set_domain_dimensions(&dims);
+      E_->set_domain_dimensions(dims);
       E_->setup( this->matrix_size_, this->matrix_size_os_, W );
     }    
   }

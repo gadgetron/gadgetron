@@ -505,7 +505,7 @@ namespace Gadgetron{
 
         if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){	  	  
         	if (num_coils_[idx] == 1){ //If we only have 1 coil
-        		csm_ = boost::make_shared<cuNDArray<float_complext>>(*csm_data->get_dimensions());
+        		csm_ = boost::make_shared<cuNDArray<float_complext>>(csm_data->get_dimensions());
         		fill(csm_.get(),float_complext(1.0,0));
         	} else
         		csm_ = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>(*csm_data));
@@ -540,7 +540,7 @@ namespace Gadgetron{
           float scale_factor = float(prod(image_dimensions_recon_os_))/asum(&dcw);
           dcw *= scale_factor;
 
-          dims = *traj.get_dimensions();
+          dims = traj.get_dimensions();
 
           std::vector<size_t> tmp_dims;
           tmp_dims.push_back(dims[0]*dims[1]);

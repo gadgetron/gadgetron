@@ -187,8 +187,9 @@ int main(int argc, char** argv)
   precon_weights.reset();
   csm.reset();
 
-  boost::shared_ptr< std::vector<size_t> > recon_dims( new std::vector<size_t> );
-  *recon_dims = to_std_vector(matrix_size); recon_dims->push_back(frames_per_reconstruction);
+  std::vector<size_t> recon_dims;
+  recon_dims = to_std_vector(matrix_size); 
+  recon_dims.push_back(frames_per_reconstruction);
 
   delete timer;
 
@@ -196,13 +197,13 @@ int main(int argc, char** argv)
   // Setup radial SENSE reconstructions
   //
 
-  vector<size_t> data_dims;
+  std::vector<size_t> data_dims;
   data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
 
   sqrt_inplace(dcw.get());
   E->set_dcw(dcw);
-  E->set_domain_dimensions(recon_dims.get());
-  E->set_codomain_dimensions(&data_dims);
+  E->set_domain_dimensions(recon_dims);
+  E->set_codomain_dimensions(data_dims);
 
   // Setup split-Bregman solver
   cuGpBbSolver<_complext> solver;

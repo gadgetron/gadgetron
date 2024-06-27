@@ -88,7 +88,7 @@ namespace Gadgetron{
     // Make array containing the "current" buffer from the cyclic buffer
     //
 
-    cuNDArray<_complext> cur_buffer(*acc_buffer_->get_dimensions(),
+    cuNDArray<_complext> cur_buffer(acc_buffer_->get_dimensions(),
 				    cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements());
 
     // Preprocess frame
@@ -133,7 +133,7 @@ namespace Gadgetron{
       // ... but first subtract this next buffer from the accumulation buffer
       //
 
-      cur_buffer.create( *acc_buffer_->get_dimensions(), cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements() );
+      cur_buffer.create( acc_buffer_->get_dimensions(), cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements() );
       *acc_buffer_ -= cur_buffer;
 
       // Clear new buffer before refilling

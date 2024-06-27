@@ -26,7 +26,7 @@ public:
 	}
 	virtual void mult_M(cuNDArray<T> * in, cuNDArray<T> * out, bool accumulate = false){
 		unsigned int loc_levels = levels;
-		auto img_dim = *in->get_dimensions();
+		auto img_dim = in->get_dimensions();
 		if (levels == 0 ) loc_levels = calc_levels(img_dim);
 
 		if (use_random_){
@@ -36,7 +36,7 @@ public:
 		}
 		cuNDArray<T> * tmp_in = in;
 		cuNDArray<T> * tmp_out = out;
-		if (accumulate ) tmp_out = new cuNDArray<T>(*out->get_dimensions());
+		if (accumulate ) tmp_out = new cuNDArray<T>(out->get_dimensions());
 		if (run_dimensions.size() > 1) tmp_in = new cuNDArray<T>(*in);
 
 
@@ -67,10 +67,10 @@ public:
 
 		cuNDArray<T> * tmp_in = in;
 		cuNDArray<T> * tmp_out = out;
-		if (accumulate ) tmp_out = new cuNDArray<T>(*out->get_dimensions());
+		if (accumulate ) tmp_out = new cuNDArray<T>(out->get_dimensions());
 		if (run_dimensions.size() > 1) tmp_in = new cuNDArray<T>(*in);
 
-		auto img_dim = *in->get_dimensions();
+		auto img_dim = in->get_dimensions();
 		auto loc_levels = levels;
 		if (levels == 0 ) loc_levels = calc_levels(img_dim);
 		//Get smallest dimension;
