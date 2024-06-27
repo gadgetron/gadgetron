@@ -104,7 +104,7 @@ namespace Gadgetron::Server::Connection::Nodes {
                 boost::process::args = args,
                 env,
                 boost::process::limit_handles,
-                boost::process::std_out > stdout,
+                boost::process::std_out > stderr,
                 boost::process::std_err > stderr
         );
 
