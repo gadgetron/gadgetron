@@ -63,7 +63,7 @@ namespace Gadgetron {
 
     // Invoke kernel
     boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>());
-    out->create(&dims);
+    out->create(dims);
 
     sum_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
 

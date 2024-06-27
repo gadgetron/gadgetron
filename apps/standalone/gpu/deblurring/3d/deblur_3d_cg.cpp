@@ -58,8 +58,8 @@ int main(int argc, char** argv)
   }
 
   // Upload host data to device
-  cuNDArray<_complext> data(host_data.get());
-  cuNDArray<_complext> kernel(host_kernel.get());
+  cuNDArray<_complext> data(*host_data);
+  cuNDArray<_complext> kernel(*host_kernel);
   
   _real kappa = (_real) parms.get_parameter('K')->get_float_value();
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
   cg.set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE );
                 
   // Form right hand side
-  cuNDArray<_complext> rhs; rhs.create(data.get_dimensions().get());
+  cuNDArray<_complext> rhs; rhs.create(*data.get_dimensions());
   E->mult_MH( &data, &rhs );
   
   //

@@ -23,7 +23,7 @@ namespace Gadgetron {
 
   template<class REAL, unsigned int D>
   void cuSpiritBuffer<REAL,D>::preprocess( cuNDArray<_reald> *traj ) {
-    E_->preprocess(traj);
+    E_->preprocess(*traj);
     std::vector<size_t> dims = *traj->get_dimensions();
     dims.push_back(this->num_coils_);
     E_->set_codomain_dimensions(&dims);

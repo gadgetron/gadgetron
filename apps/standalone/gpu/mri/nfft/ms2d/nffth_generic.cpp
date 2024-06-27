@@ -109,7 +109,7 @@ int main( int argc, char** argv)
   // Setup resulting image array
   vector<size_t> image_dims = to_std_vector(matrix_size); 
   image_dims.push_back((num_frames/frames_per_reconstruction)*frames_per_reconstruction);
-  cuNDArray<_complext> image(&image_dims);
+  cuNDArray<_complext> image(image_dims);
   clear(&image);
   
   // Initialize plan
@@ -118,9 +118,9 @@ int main( int argc, char** argv)
   delete timer;
 
   // Upload arrays to device
-  cuNDArray<_complext> _samples(host_samples.get());
-  cuNDArray<_reald2> _trajectory(host_traj.get());
-  cuNDArray<_real> dcw(host_dcw.get());
+  cuNDArray<_complext> _samples(*host_samples);
+  cuNDArray<_reald2> _trajectory(*host_traj);
+  cuNDArray<_real> dcw(*host_dcw);
 
   std::vector<size_t> dims_recon;
   dims_recon.push_back(host_samples->get_size(0));
@@ -134,12 +134,12 @@ int main( int argc, char** argv)
 
     // Preprocess
     timer = new GPUTimer("NFFT preprocessing");
-    plan.preprocess( &trajectory, NFFT_prep_mode::NC2C );
+    plan.preprocess( trajectory, NFFT_prep_mode::NC2C );
     delete timer;
     
     std::vector<size_t> image_dims = to_std_vector(matrix_size); 
     image_dims.push_back(frames_per_reconstruction);
-    cuNDArray<_complext> tmp_image(&image_dims, image.get_data_ptr()+iteration*prod(matrix_size)*frames_per_reconstruction);
+    cuNDArray<_complext> tmp_image(image_dims, image.get_data_ptr()+iteration*prod(matrix_size)*frames_per_reconstruction);
 
     // Gridder
     timer = new GPUTimer("Computing adjoint nfft (gridding)");

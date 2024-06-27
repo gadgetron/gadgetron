@@ -132,11 +132,11 @@ int main( int argc, char** argv)
   recon_dims.push_back(num_frames);
 
   // Upload arrays to device
-  cuNDArray<_complext> samples(host_samples.get());
-  cuNDArray<_reald2> trajectory(host_traj.get());
-  boost::shared_ptr< cuNDArray<_complext> > csm( new cuNDArray<_complext>(host_csm.get()));
-  boost::shared_ptr< cuNDArray<_complext> > reg_image( new cuNDArray<_complext>(host_reg.get()));
-  boost::shared_ptr< cuNDArray<_real> > dcw( new cuNDArray<_real>(host_dcw.get()));
+  cuNDArray<_complext> samples(*host_samples);
+  cuNDArray<_reald2> trajectory(*host_traj);
+  boost::shared_ptr< cuNDArray<_complext> > csm( new cuNDArray<_complext>(*host_csm));
+  boost::shared_ptr< cuNDArray<_complext> > reg_image( new cuNDArray<_complext>(*host_reg));
+  boost::shared_ptr< cuNDArray<_real> > dcw( new cuNDArray<_real>(*host_dcw));
 
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  

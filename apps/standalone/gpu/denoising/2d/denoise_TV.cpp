@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   }
   
   // Upload host data to device
-  cuNDArray<_real> data(host_data.get());
+  cuNDArray<_real> data(*host_data);
   
   _real mu = (_real) parms.get_parameter('m')->get_float_value();
   _real lambda = (_real)parms.get_parameter('l')->get_float_value();

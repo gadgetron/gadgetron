@@ -84,13 +84,13 @@ template <class T> void ht_grappa_solve_spd_system(cuNDArray<T>& A, cuNDArray<T>
     size_t K = b->get_size(1);
 
     std::vector<size_t> AHA_dims(2,N);
-    cuNDArray<T> AHA = cuNDArray<T>(&AHA_dims);
+    cuNDArray<T> AHA = cuNDArray<T>(AHA_dims);
 
     std::vector<size_t> AHrhs_dims;
     AHrhs_dims.push_back(N);
     AHrhs_dims.push_back(K);
 
-    coeff->create(&AHrhs_dims);
+    coeff->create(AHrhs_dims);
 
     cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
 

@@ -24,7 +24,7 @@ public:
 	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
 	virtual void mult_MH_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate){
 		auto codim = this->get_codomain_dimensions(subset);
-		ARRAY_TYPE tmp(codim);
+		ARRAY_TYPE tmp(*codim);
 		this->mult_M(in,&tmp,subset,false);
 		this->mult_MH(&tmp,out,subset,accumulate);
 	}
@@ -58,7 +58,7 @@ public:
 		ELEMENT_TYPE* curPtr = projections->get_data_ptr();
 		for (int subset = 0; subset < this->get_number_of_subsets(); subset++){
 			std::vector<size_t> subset_dim = *get_codomain_dimensions(subset);
-			res.push_back(boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(&subset_dim,curPtr)));
+			res.push_back(boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(subset_dim,curPtr)));
 			curPtr += std::accumulate(subset_dim.begin(),subset_dim.end(),1,std::multiplies<unsigned int>());
 		}
 		return res;

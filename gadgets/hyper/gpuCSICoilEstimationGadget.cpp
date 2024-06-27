@@ -68,12 +68,12 @@ int gpuCSICoilEstimationGadget::process(
 
 			auto separated = split_calibration_lines<std::complex<float>>(*ho_data,skip_lines_,1);
 
-			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<0>(separated).get());
+			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>&)(*std::get<0>(separated).get()));
 			senseData->freq_calibration->squeeze();
-			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<1>(separated).get());
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>&)(*std::get<1>(separated).get()));
 		} else {
 
-			senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>&>(*ho_data));
 		}
 
 
@@ -111,7 +111,7 @@ int gpuCSICoilEstimationGadget::process(
 		hoNDArray<std::complex<float>> * ho_data = &ref.data_;
 		hoNDArray<float>* ho_traj = &ref.trajectory_.value();
 
-		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
+		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>&>(*ho_data));
 		if (ho_traj->get_size(0) > 2){
 			auto traj_dcw = separate_traj_and_dcw(ho_traj);
 			ref_traj =boost::make_shared<cuNDArray<floatd2>>(*std::get<0>(traj_dcw));
@@ -180,7 +180,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 		solver.set_max_iterations(20);
 		solver.set_encoding_operator(E);
 
-		E->preprocess(&spiral_traj);
+		E->preprocess(spiral_traj);
 
 		auto tmp = solver.solve(&second_spiral);
 		auto tmp_abs = abs(tmp.get());

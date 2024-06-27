@@ -134,7 +134,7 @@ namespace Gadgetron{
       // Get samples for frame
       //
 
-      cuNDArray<float_complext> samples(extract_samples_from_queue(frame_readout_queue_).get() );
+      cuNDArray<float_complext> samples(*extract_samples_from_queue(frame_readout_queue_));
 
       // Get trajectories/dcw for frame
       //
@@ -155,14 +155,14 @@ namespace Gadgetron{
       img_dims[0] = dimensions_[0];
       img_dims[1] = dimensions_[1];
       cm2->getObjectPtr()->create(img_dims);
-      cuNDArray<float_complext> image(&img_dims);
+      cuNDArray<float_complext> image(img_dims);
       
       // Initialize plan
       //
       
       const float kernel_width = 5.5f;
       cuNFFT_impl<float,2> plan( from_std_vector<size_t,2>(img_dims), from_std_vector<size_t,2>(img_dims)<<1, kernel_width );
-      plan.preprocess( traj.get(), NFFT_prep_mode::NC2C );
+      plan.preprocess( *traj, NFFT_prep_mode::NC2C );
 /*
       if( dcw->get_number_of_elements() == 0 ){
         std::vector<size_t> dcw_dims; dcw_dims.push_back(samples_per_readout_);
@@ -326,8 +326,8 @@ namespace Gadgetron{
     dims_2d.push_back(traj->get_number_of_elements());
     dims_2d.push_back(1); // Number of frames
 
-    traj->reshape(&dims_2d);
-    if( num_trajectory_dims_ == 3 ) dcw->reshape(&dims_2d);
+    traj->reshape(dims_2d);
+    if( num_trajectory_dims_ == 3 ) dcw->reshape(dims_2d);
   }
 
   GADGET_FACTORY_DECLARE(NFFT2DGadget)

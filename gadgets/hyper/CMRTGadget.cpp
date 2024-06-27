@@ -141,7 +141,7 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 			size_t ntimeframes = data_dims->back()/projections_per_recon_;
 			data_dims->back() = projections_per_recon_;
 			data_dims->push_back(ntimeframes);
-			data->reshape(data_dims);
+			data->reshape(*data_dims);
 			// Initialize plan
 			//
 			GDEBUG("Data size: %i %i %i",data->get_size(0),data->get_size(1),data->get_size(2));
@@ -411,8 +411,8 @@ void CMRTGadget::extract_trajectory_and_dcw_from_queue
 	dims_2d.push_back(traj->get_number_of_elements());
 	dims_2d.push_back(1); // Number of frames
 
-	traj->reshape(&dims_2d);
-	if( num_trajectory_dims_ == 3 ) dcw->reshape(&dims_2d);
+	traj->reshape(dims_2d);
+	if( num_trajectory_dims_ == 3 ) dcw->reshape(dims_2d);
 }
 
 boost::shared_ptr<cuNDArray<float_complext> > CMRTGadget::get_combined_frames(){

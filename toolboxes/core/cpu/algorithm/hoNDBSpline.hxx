@@ -12,7 +12,7 @@ namespace Gadgetron
     {
         size_t NDim = data.get_number_of_dimensions();
 
-        if (!coeff.dimensions_equal(&data))
+        if (!coeff.dimensions_equal(data))
         {
             coeff = data;
         }
@@ -1496,7 +1496,7 @@ template <typename T, unsigned int D, typename coord_type>
                 return T(0);
             }
 
-            if (!deriv.dimensions_equal(&data))
+            if (!deriv.dimensions_equal(data))
             {
                 deriv.create(data.get_dimensions());
             }

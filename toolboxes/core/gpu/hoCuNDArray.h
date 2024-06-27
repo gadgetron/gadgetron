@@ -108,7 +108,7 @@ namespace Gadgetron{
         }
 
         // Are the dimensions the same? Then we can just memcpy
-        if (this->dimensions_equal(&rhs)){
+        if (this->dimensions_equal(rhs)){
             memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
         }
         else{
@@ -132,7 +132,7 @@ namespace Gadgetron{
         }
 
         // Are the dimensions the same? Then we can just memcpy
-        if (!this->dimensions_equal(&rhs)){
+        if (!this->dimensions_equal(rhs)){
             this->create(rhs.get_dimensions());
         }
 

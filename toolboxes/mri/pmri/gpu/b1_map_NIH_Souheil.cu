@@ -47,7 +47,7 @@ namespace Gadgetron{
 
         if ( !csm->dimensions_equal(data) )
         {
-            csm->create(data->get_dimensions());
+            csm->create(*data->get_dimensions());
         }
 
         size_t kss = ks*ks;

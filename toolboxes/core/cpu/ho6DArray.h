@@ -12,8 +12,8 @@ public:
 
     ho6DArray();
     ho6DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, size_t sr);
-    explicit ho6DArray(std::vector<size_t> *dimensions);
-    ho6DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    explicit ho6DArray(const std::vector<size_t>& dimensions);
+    ho6DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
     ho6DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, size_t sr, T* data, bool delete_data_on_destruct = false);
     ho6DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
     ho6DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
@@ -23,9 +23,8 @@ public:
     ho6DArray(const ho6DArray<T>& a);
     ho6DArray<T>& operator=(const ho6DArray<T>& rhs);
 
-    virtual void create(std::vector<size_t>& dimensions);
-    virtual void create(std::vector<size_t> *dimensions);
-    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(const std::vector<size_t>& dimensions);
+    virtual void create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual bool createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, size_t sr);
     virtual bool createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, size_t sr, T* data, bool delete_data_on_destruct = false);

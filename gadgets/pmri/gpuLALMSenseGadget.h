@@ -1,8 +1,10 @@
-#ifndef gpuSbSenseGadget_H
-#define gpuSbSenseGadget_H
+#ifndef gpuLALMSenseGadget_H
+#define gpuLALMSenseGadget_H
+
 #pragma once
 
 #include "gadgetron_gpupmri_export.h"
+#include <complex>
 #include "Gadget.h"
 #include "GenericReconJob.h"
 #include "GadgetMRIHeaders.h"
@@ -17,10 +19,8 @@
 #include "cuTvPicsOperator.h"
 #include "osSenseOperator.h"
 #include "../../toolboxes/nfft/NFFTOperator.h"
-#include "osLALMSolver.h"
 #include "gpuSenseGadget.h"
-
-#include <complex>
+#include "osLALMSolver.h"
 
 namespace Gadgetron{
 
@@ -70,7 +70,7 @@ namespace Gadgetron{
     bool prepared_;
 
     // Define non-linear conjugate gradient solver
-    osLALMSolver<cuNDArray<float_complext>> solver_;
+    osLALMSolver< cuNDArray<float_complext> > solver_;
 
     // Define non-Cartesian Sense Encoding operator
     boost::shared_ptr< osSenseOperator<cuNDArray<float_complext>,2,NFFTOperator<cuNDArray,float,2>>> E_;
@@ -86,5 +86,5 @@ namespace Gadgetron{
 */
   };
 }
-#endif //gpuSbSenseGadget
+#endif //gpuLALMSenseGadget_H
 

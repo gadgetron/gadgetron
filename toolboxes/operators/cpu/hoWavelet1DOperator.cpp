@@ -46,7 +46,7 @@ void hoWavelet1DBaseOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>
                 dimR[n + 1] = (*dims)[n];
             }
 
-            if (!y.dimensions_equal(&dimR))
+            if (!y.dimensions_equal(dimR))
             {
                 y.create(dimR);
             }
@@ -87,7 +87,7 @@ void hoWavelet1DBaseOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>
 
         size_t num = x.get_number_of_elements() / (RO*W*CHA);
 
-        if (!adj_x_.dimensions_equal(&x))
+        if (!adj_x_.dimensions_equal(x))
         {
             adj_x_ = x;
         }
@@ -125,7 +125,7 @@ void hoWavelet1DBaseOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>
                 dimR[n] = (*dims)[n + 1];
             }
 
-            if (!y.dimensions_equal(&dimR))
+            if (!y.dimensions_equal(dimR))
             {
                 y.create(dimR);
             }
@@ -207,7 +207,7 @@ void hoWavelet1DBaseOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<
         std::vector<size_t> dimR(*dims);
         dimR[2] = 1;
 
-        if (!wavCoeffNorm.dimensions_equal(&dimR))
+        if (!wavCoeffNorm.dimensions_equal(dimR))
         {
             wavCoeffNorm.create(dimR);
         }
@@ -219,7 +219,7 @@ void hoWavelet1DBaseOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<
         if (CHA > 1)
         {
             // square the coefficients
-            if (!complexIm_norm_.dimensions_equal(&wavCoeff))
+            if (!complexIm_norm_.dimensions_equal(wavCoeff))
             {
                 complexIm_norm_.create(wavCoeff.dimensions());
             }
@@ -320,7 +320,7 @@ void hoWavelet1DBaseOperator<T>::divide_wav_coeff_by_norm(hoNDArray<T>& wavCoeff
         size_t W = wavCoeff.get_size(1);
         size_t CHA = wavCoeff.get_size(2);
 
-        if (!wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm))
+        if (!wav_coeff_norm_approx_.dimensions_equal(wavCoeffNorm))
         {
             wav_coeff_norm_approx_.create(wavCoeffNorm.dimensions());
         }
@@ -409,7 +409,7 @@ hoWavelet1DOperator<T>::~hoWavelet1DOperator()
 template <typename T>
 void hoWavelet1DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im)
 {
-    if (!complexIm_fft_.dimensions_equal(&x))
+    if (!complexIm_fft_.dimensions_equal(x))
     {
         complexIm_fft_.create(x.dimensions());
     }
@@ -420,7 +420,7 @@ void hoWavelet1DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T
 template <typename T>
 void hoWavelet1DOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x)
 {
-    if (!kspace_fft_.dimensions_equal(&im))
+    if (!kspace_fft_.dimensions_equal(im))
     {
         kspace_fft_.create(im.dimensions());
     }

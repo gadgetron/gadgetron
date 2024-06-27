@@ -36,8 +36,8 @@ public:
 		}
 		cuNDArray<T> * tmp_in = in;
 		cuNDArray<T> * tmp_out = out;
-		if (accumulate ) tmp_out = new cuNDArray<T>(out->get_dimensions());
-		if (run_dimensions.size() > 1) tmp_in = new cuNDArray<T>(in);
+		if (accumulate ) tmp_out = new cuNDArray<T>(*out->get_dimensions());
+		if (run_dimensions.size() > 1) tmp_in = new cuNDArray<T>(*in);
 
 
 		for (auto i = 0; i < loc_levels; i++){
@@ -67,8 +67,8 @@ public:
 
 		cuNDArray<T> * tmp_in = in;
 		cuNDArray<T> * tmp_out = out;
-		if (accumulate ) tmp_out = new cuNDArray<T>(out->get_dimensions());
-		if (run_dimensions.size() > 1) tmp_in = new cuNDArray<T>(in);
+		if (accumulate ) tmp_out = new cuNDArray<T>(*out->get_dimensions());
+		if (run_dimensions.size() > 1) tmp_in = new cuNDArray<T>(*in);
 
 		auto img_dim = *in->get_dimensions();
 		auto loc_levels = levels;

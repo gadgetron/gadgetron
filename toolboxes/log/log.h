@@ -5,7 +5,7 @@
 
 #include <vector> //For mask fields
 
-#include <sstream> //For deprecated macros
+#include <sstream>
 #include <mutex>
 
 #define GADGETRON_LOG_MASK_ENVIRONMENT "GADGETRON_LOG_MASK"

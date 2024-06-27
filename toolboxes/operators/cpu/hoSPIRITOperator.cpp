@@ -159,7 +159,7 @@ void hoSPIRITOperator<T>::sum_over_src_channel(const ARRAY_TYPE& x, ARRAY_TYPE& 
         }
         dimR[NDim - 2] = (*dim)[NDim - 1];
 
-        if (!r.dimensions_equal(&dimR))
+        if (!r.dimensions_equal(dimR))
         {
             r.create(dimR);
         }

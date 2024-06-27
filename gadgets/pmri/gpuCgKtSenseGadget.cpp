@@ -155,11 +155,11 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (j->tra_host_.get()));
-    boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
+    boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (*j->tra_host_));
+    boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (*j->dcw_host_));
     sqrt_inplace(dcw.get()); //Take square root to use for weighting
-    boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
-    boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
+    boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (*j->csm_host_));
+    boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (*j->dat_host_));
 
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
@@ -309,9 +309,9 @@ namespace Gadgetron{
     dims.push_back(frames_per_reconstruction); 
     dims.push_back(num_coils); 
 
-    cuNDArray<float_complext> image_os(&dims);    
-    cuNDArray<float_complext> data((job->dat_host_).get());
-    cuNDArray<float> dcw((job->dcw_host_).get());
+    cuNDArray<float_complext> image_os(dims);
+    cuNDArray<float_complext> data(*job->dat_host_);
+    cuNDArray<float> dcw(*job->dcw_host_);
   
     // Convolve to Cartesian k-space
     //
@@ -339,14 +339,14 @@ namespace Gadgetron{
     dims = to_std_vector(matrix_size_);
     dims.push_back(frames_per_reconstruction); 
     dims.push_back(num_coils);
-    cuNDArray<float_complext> image(&dims);
+    cuNDArray<float_complext> image(dims);
     crop<float_complext,2>( (matrix_size_os_-matrix_size_)>>1, matrix_size_, image_os, image );
 
     // Compute regularization image
     //
 
     dims.pop_back();
-    boost::shared_ptr< cuNDArray<float_complext> > reg_image( new cuNDArray<float_complext>(&dims) );
+    boost::shared_ptr< cuNDArray<float_complext> > reg_image( new cuNDArray<float_complext>(dims) );
 
     E_->mult_csm_conj_sum( &image, reg_image.get() );
     cuNDFFT<float>::instance()->ifft( reg_image.get(), 2, true );

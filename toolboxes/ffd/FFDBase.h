@@ -610,7 +610,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordArrayType
     {
         GADGET_CHECK_RETURN_FALSE(pt_w.get_size(0)==DIn);
 
-        if ( pt_g.dimensions_equal(&pt_w) )
+        if ( pt_g.dimensions_equal(pt_w) )
         {
             pt_g = pt_w;
         }
@@ -714,7 +714,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArrayType
     {
         GADGET_CHECK_RETURN_FALSE(pt_g.get_size(0)==DIn);
 
-        if ( pt_w.dimensions_equal(&pt_g) )
+        if ( pt_w.dimensions_equal(pt_g) )
         {
             pt_w = pt_g;
         }
@@ -813,7 +813,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& po
 
         totalResidual = 0;
 
-        if ( !residual.dimensions_equal(&value) )
+        if ( !residual.dimensions_equal(value) )
         {
             residual.create(value.dimensions());
             Gadgetron::clear(residual);
@@ -875,7 +875,7 @@ inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayType& p
 
         totalResidual = 0;
 
-        if ( !residual.dimensions_equal(&value) )
+        if ( !residual.dimensions_equal(value) )
         {
             residual.create(value.dimensions());
             Gadgetron::clear(residual);

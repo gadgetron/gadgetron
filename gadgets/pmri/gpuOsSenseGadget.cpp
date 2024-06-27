@@ -145,11 +145,11 @@ int gpuOsSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, 
 		return GADGET_FAIL;
 	}
 
-	boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (j->tra_host_.get()));
-	boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
+	boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (*j->tra_host_));
+	boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (*j->dcw_host_));
 	sqrt_inplace(dcw.get());
-	boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
-	boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
+	boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (*j->csm_host_));
+	boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (*j->dat_host_));
 
 
 	// Take the reconstruction matrix size from the regulariaztion image.
@@ -179,14 +179,14 @@ int gpuOsSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, 
 	E_->set_codomain_dimensions(device_samples->get_dimensions().get());
 	E_->set_csm(csm);
 	E_->setup( matrix_size_, matrix_size_os_, kernel_width_ );
-	E_->preprocess(traj.get());
+	E_->preprocess(*traj);
 
 	{
 		auto precon = boost::make_shared<cuNDArray<float_complext>>(image_dims);
 		fill(precon.get(),float_complext(1.0f));
 		//solver_.set_preconditioning_image(precon);
 	}
-	reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >(new cuNDArray<float_complext>(&image_dims));
+	reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >(new cuNDArray<float_complext>(image_dims));
 
 	// These operators need their domain/codomain set before being added to the solver
 	//
@@ -235,7 +235,7 @@ int gpuOsSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, 
 	//
 
 	if( alpha_ > 0.0 ){
-		cuNDArray<float_complext> gpureg(j->reg_host_.get());
+		cuNDArray<float_complext> gpureg(*j->reg_host_);
 		boost::shared_ptr< cuNDArray<float_complext> > gpurec = sum(result.get(),2);
 		*gpurec /= float(result->get_size(2));
 		float scale = abs(dot(gpurec.get(), gpurec.get())/dot(gpurec.get(),&gpureg));

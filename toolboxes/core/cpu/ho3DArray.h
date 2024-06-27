@@ -12,8 +12,8 @@ public:
 
     ho3DArray();
     ho3DArray(size_t sx, size_t sy, size_t sz);
-    explicit ho3DArray(std::vector<size_t> *dimensions);
-    ho3DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    explicit ho3DArray(const std::vector<size_t>& dimensions);
+    ho3DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
     ho3DArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct = false);
     ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
     ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
@@ -23,9 +23,8 @@ public:
     ho3DArray(const ho3DArray<T>& a);
     ho3DArray<T>& operator=(const ho3DArray<T>& rhs);
 
-    virtual void create(std::vector<size_t>& dimensions);
-    virtual void create(std::vector<size_t> *dimensions);
-    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(const std::vector<size_t>& dimensions);
+    virtual void create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual bool createArray(size_t sx, size_t sy, size_t sz);
     virtual bool createArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct = false);

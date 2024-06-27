@@ -17,23 +17,23 @@ ho4DArray<T>::ho4DArray(size_t sx, size_t sy, size_t sz, size_t ss)
     dim[2] = sz;
     dim[3] = ss;
 
-    this->create(&dim);
+    this->create(dim);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho4DArray<T>::ho4DArray(std::vector<size_t> *dimensions)
+ho4DArray<T>::ho4DArray(const std::vector<size_t>& dimensions)
 : BaseClass(dimensions), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==4);
+    GADGET_CHECK_THROW(dimensions.size()==4);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho4DArray<T>::ho4DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+ho4DArray<T>::ho4DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 : BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==4);
+    GADGET_CHECK_THROW(dimensions.size()==4);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -85,7 +85,7 @@ ho4DArray<T>& ho4DArray<T>::operator=(const ho4DArray<T>& rhs)
         return *this;
     }
 
-    if (this->dimensions_equal(&rhs)) 
+    if (this->dimensions_equal(rhs)) 
     {
         memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
@@ -104,21 +104,14 @@ ho4DArray<T>& ho4DArray<T>::operator=(const ho4DArray<T>& rhs)
 }
 
 template <typename T> 
-void ho4DArray<T>::create(std::vector<size_t>& dimensions)
+void ho4DArray<T>::create(const std::vector<size_t>& dimensions)
 {
     BaseClass::create(dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-void ho4DArray<T>::create(std::vector<size_t> *dimensions)
-{
-    BaseClass::create(dimensions);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-void ho4DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+void ho4DArray<T>::create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 {
     BaseClass::create(dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
@@ -135,9 +128,9 @@ bool ho4DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss)
         dim[2] = sz;
         dim[3] = ss;
 
-        if ( !this->dimensions_equal(&dim) )
+        if ( !this->dimensions_equal(dim) )
         {
-            this->create(&dim);
+            this->create(dim);
             GADGET_CHECK_RETURN_FALSE(init_accesser());
         }
         else

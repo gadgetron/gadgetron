@@ -773,7 +773,7 @@ namespace Gadgetron
         std::vector<size_t> dim;
         this->get_dimensions(dim);
 
-        if ( !a.dimensions_equal(&dim) )
+        if ( !a.dimensions_equal(dim) )
         {
             a.create(&dim);
         }

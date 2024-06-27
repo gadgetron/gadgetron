@@ -319,11 +319,11 @@ namespace Gadgetron {
     b_size.push_back(kspace_locations);
     b_size.push_back(target_coils);
 
-    cuNDArray<T> system_matrix = cuNDArray<T>(&sys_matrix_size);
+    cuNDArray<T> system_matrix = cuNDArray<T>(sys_matrix_size);
 
     clear(&system_matrix);
 
-    cuNDArray<T> b = cuNDArray<T>(&b_size);
+    cuNDArray<T> b = cuNDArray<T>(b_size);
 
     boost::shared_ptr< std::vector<size_t> > dimTmp = ref_data->get_dimensions();
     std::vector<unsigned int> dimInt(2, 0);
@@ -340,8 +340,8 @@ namespace Gadgetron {
     int m = kspace_locations;
 
     std::vector<size_t> AHA_dims(2,n);
-    cuNDArray<T> AHA = cuNDArray<T>(&AHA_dims);
-    cuNDArray<T> AHA_set0 = cuNDArray<T>(&AHA_dims);
+    cuNDArray<T> AHA = cuNDArray<T>(AHA_dims);
+    cuNDArray<T> AHA_set0 = cuNDArray<T>(AHA_dims);
 
     hoNDArray<T> AHA_host(n, n);
     float2* pAHA = (float2*) AHA_host.get_data_ptr();
@@ -351,7 +351,7 @@ namespace Gadgetron {
     AHrhs_dims.push_back(n);
     AHrhs_dims.push_back(target_coils);
 
-    cuNDArray<T> AHrhs = cuNDArray<T>(&AHrhs_dims);
+    cuNDArray<T> AHrhs = cuNDArray<T>(AHrhs_dims);
 
     cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
 
@@ -360,7 +360,7 @@ namespace Gadgetron {
     gkernel_dims.push_back((*kernel_size)[1]*acceleration_factor);
     gkernel_dims.push_back(source_coils);
     gkernel_dims.push_back(target_coils);
-    cuNDArray<T> gkernel = cuNDArray<T>(&gkernel_dims);
+    cuNDArray<T> gkernel = cuNDArray<T>(gkernel_dims);
     clear(&gkernel);
 
     //GadgetronTimer timer;
@@ -544,7 +544,7 @@ namespace Gadgetron {
     //}
 
     //TODO: This should be source coils
-    cuNDArray<T> tmp_mixing = cuNDArray<T>(ref_data->get_dimensions());
+    cuNDArray<T> tmp_mixing = cuNDArray<T>(*ref_data->get_dimensions());
 
     int kernel_elements = gkernel.get_number_of_elements()/target_coils;
     int total_elements = tmp_mixing.get_number_of_elements()/source_coils;
@@ -627,13 +627,13 @@ namespace Gadgetron {
     size_t K = b->get_size(1);
 
     std::vector<size_t> AHA_dims(2,N);
-    cuNDArray<T> AHA = cuNDArray<T>(&AHA_dims);
+    cuNDArray<T> AHA = cuNDArray<T>(AHA_dims);
 
     std::vector<size_t> AHrhs_dims;
     AHrhs_dims.push_back(N);
     AHrhs_dims.push_back(K);
 
-    coeff->create(&AHrhs_dims);
+    coeff->create(AHrhs_dims);
 
     cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
 

@@ -47,7 +47,7 @@ template <class T> void CSIOperator<T>::set_frequencies(std::vector<T>& freq) {
 
 template<class T> void CSIOperator<T>::mult_M(cuNDArray<complext<T>> *in , cuNDArray<complext<T>> * out, bool accumulate){
 	cuNDArray<complext<T>>* out_tmp = out;
-	if (accumulate) out_tmp = new cuNDArray<complext<T>>(out->get_dimensions());
+	if (accumulate) out_tmp = new cuNDArray<complext<T>>(*out->get_dimensions());
 	std::vector<size_t> kdim = *out->get_dimensions();
 	kdim[1] =frequencies.size();
 	cuNDArray<complext<T>> tmp(kdim);

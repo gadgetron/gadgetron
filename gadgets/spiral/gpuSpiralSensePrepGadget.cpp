@@ -337,7 +337,7 @@ namespace Gadgetron {
 
         // Check if we need to compute a new csm
         if (propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set || !csm_) {
-            csm_ = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float, 2>(&image)); // Estimates csm
+            csm_ = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float, 2>(image)); // Estimates csm
         }
         E_->set_csm(csm_);
 
@@ -345,7 +345,7 @@ namespace Gadgetron {
 //
 
         image_dims.pop_back();
-        cuNDArray<float_complext> reg_image(&image_dims);
+        cuNDArray<float_complext> reg_image(image_dims);
         E_->mult_csm_conj_sum(&image, &reg_image);
 
         if (buffer_using_solver_) {
@@ -448,7 +448,7 @@ namespace Gadgetron {
 
         nfft_plan_ = NFFT<cuNDArray,float,2>::make_plan(from_std_vector<size_t, 2>(image_dimensions_recon_), image_dimensions_recon_os_,
                          kernel_width_);
-        nfft_plan_->preprocess(&traj, NFFT_prep_mode::NC2C);
+        nfft_plan_->preprocess(traj, NFFT_prep_mode::NC2C);
 
 
 

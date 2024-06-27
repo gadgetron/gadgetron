@@ -55,13 +55,13 @@ namespace Gadgetron{
     dims.push_back(num_coils_);
 
     if( acc_buffer_->get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
-      acc_buffer_->create(&dims);
+      acc_buffer_->create(dims);
       Gadgetron::clear( acc_buffer_.get() );
     }
 
     dims.push_back(cycle_length_);
     if( cyc_buffer_->get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
-      cyc_buffer_->create(&dims);      
+      cyc_buffer_->create(dims);      
       Gadgetron::clear( cyc_buffer_.get() );
     }
     else if( num_cycles_changed ){
@@ -88,13 +88,13 @@ namespace Gadgetron{
     // Make array containing the "current" buffer from the cyclic buffer
     //
 
-    cuNDArray<_complext> cur_buffer(acc_buffer_->get_dimensions().get(),
+    cuNDArray<_complext> cur_buffer(*acc_buffer_->get_dimensions(),
 				    cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements());
 
     // Preprocess frame
     //
 
-    nfft_plan_->preprocess( trajectory, NFFT_prep_mode::NC2C );
+    nfft_plan_->preprocess( *trajectory, NFFT_prep_mode::NC2C );
     
     // Convolve to form k-space frame (accumulation mode)
     //
@@ -133,7 +133,7 @@ namespace Gadgetron{
       // ... but first subtract this next buffer from the accumulation buffer
       //
 
-      cur_buffer.create( acc_buffer_->get_dimensions().get(), cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements() );
+      cur_buffer.create( *acc_buffer_->get_dimensions(), cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements() );
       *acc_buffer_ -= cur_buffer;
 
       // Clear new buffer before refilling
@@ -154,7 +154,7 @@ namespace Gadgetron{
     std::vector<size_t> dims = to_std_vector(matrix_size_);
     dims.push_back(num_coils_);
 
-    acc_image_ = boost::shared_ptr< cuNDArray<_complext> >( new cuNDArray<_complext>(&dims) );
+    acc_image_ = boost::shared_ptr< cuNDArray<_complext> >( new cuNDArray<_complext>(dims) );
 				    
     // Check if we are ready to reconstruct. If not return an image of ones...
     if( acc_buffer_empty_ ){

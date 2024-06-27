@@ -19,23 +19,23 @@ ho6DArray<T>::ho6DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, s
     dim[4] = sp;
     dim[5] = sr;
 
-    this->create(&dim);
+    this->create(dim);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho6DArray<T>::ho6DArray(std::vector<size_t> *dimensions)
+ho6DArray<T>::ho6DArray(const std::vector<size_t>& dimensions)
 : BaseClass(dimensions), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==6);
+    GADGET_CHECK_THROW(dimensions.size()==6);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho6DArray<T>::ho6DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+ho6DArray<T>::ho6DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 : BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==6);
+    GADGET_CHECK_THROW(dimensions.size()==6);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -88,7 +88,7 @@ ho6DArray<T>& ho6DArray<T>::operator=(const ho6DArray<T>& rhs)
         return *this;
     }
 
-    if (this->dimensions_equal(&rhs)) 
+    if (this->dimensions_equal(rhs)) 
     {
         memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
@@ -107,21 +107,14 @@ ho6DArray<T>& ho6DArray<T>::operator=(const ho6DArray<T>& rhs)
 }
 
 template <typename T> 
-void ho6DArray<T>::create(std::vector<size_t>& dimensions)
+void ho6DArray<T>::create(const std::vector<size_t>& dimensions)
 {
     BaseClass::create(dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-void ho6DArray<T>::create(std::vector<size_t> *dimensions)
-{
-    BaseClass::create(dimensions);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-void ho6DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+void ho6DArray<T>::create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 {
     BaseClass::create(dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
@@ -140,9 +133,9 @@ bool ho6DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_
         dim[4] = sp;
         dim[5] = sr;
 
-        if ( !this->dimensions_equal(&dim) )
+        if ( !this->dimensions_equal(dim) )
         {
-            this->create(&dim);
+            this->create(dim);
             GADGET_CHECK_RETURN_FALSE(init_accesser());
         }
         else
@@ -172,7 +165,7 @@ bool ho6DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_
         dim[4] = sp;
         dim[5] = sr;
 
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
         GADGET_CHECK_RETURN_FALSE(init_accesser());
     }
     catch(...)

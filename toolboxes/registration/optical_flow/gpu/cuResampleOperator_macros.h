@@ -218,7 +218,7 @@
     cuNDArray<T> *tmp_out = out; bool mod_out = false;                  \
     if( surplus == 2 && (in->get_number_of_elements()/out->get_number_of_elements()) > 1 ){ \
       mod_out = true;                                                   \
-      tmp_out = new cuNDArray<T>(in->get_dimensions().get());           \
+      tmp_out = new cuNDArray<T>(*in->get_dimensions());                \
     }                                                                   \
                                                                         \
     typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *this->offsets_->get_dimensions().get() ); \

@@ -61,13 +61,13 @@ public:
 			throw std::runtime_error("Error: nlcgSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
-		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims.get()); //The image. Will be returned inside a shared_ptr
+		ARRAY_TYPE * x = new ARRAY_TYPE(*image_dims); //The image. Will be returned inside a shared_ptr
 
-		ARRAY_TYPE g(image_dims.get()); //Contains the gradient of the current step
-		ARRAY_TYPE g_old(image_dims.get()); //Contains the gradient of the previous step
+		ARRAY_TYPE g(*image_dims); //Contains the gradient of the current step
+		ARRAY_TYPE g_old(*image_dims); //Contains the gradient of the previous step
 
 
-		ARRAY_TYPE g_linear(image_dims.get()); //Contains the linear part of the gradient;
+		ARRAY_TYPE g_linear(*image_dims); //Contains the linear part of the gradient;
 
 		//If a prior image was given, use it for the initial guess.
 		if (this->x0_.get()){
@@ -81,7 +81,7 @@ public:
 
 		//Initialize encoding space
 		for (int i = 0; i < this->regularization_operators_.size(); i++){
-			regEnc.push_back(ARRAY_TYPE(this->regularization_operators_[i]->get_codomain_dimensions()));
+			regEnc.push_back(ARRAY_TYPE(*this->regularization_operators_[i]->get_codomain_dimensions()));
 			if (reg_priors[i].get()){
 				regEnc.back() = *reg_priors[i];
 				regEnc.back() *= -std::sqrt(this->regularization_operators_[i]->get_weight());
@@ -90,14 +90,14 @@ public:
 		}
 		std::vector<ARRAY_TYPE> regEnc2 = regEnc;
 
-		ARRAY_TYPE d(image_dims.get()); //Search direction.
+		ARRAY_TYPE d(*image_dims); //Search direction.
 		clear(&d);
 
-		ARRAY_TYPE encoding_space(in->get_dimensions().get()); //Contains the encoding space, or, equivalently, the residual vector
+		ARRAY_TYPE encoding_space(*in->get_dimensions()); //Contains the encoding space, or, equivalently, the residual vector
 
-		ARRAY_TYPE g_step(image_dims.get()); //Linear part of the gradient of the step d will be stored here
+		ARRAY_TYPE g_step(*image_dims); //Linear part of the gradient of the step d will be stored here
 
-		ARRAY_TYPE encoding_space2(in->get_dimensions().get());
+		ARRAY_TYPE encoding_space2(*in->get_dimensions());
 		REAL reg_res,data_res;
 
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
@@ -365,7 +365,7 @@ protected:
 	}
 
 	void add_linear_gradient(std::vector<ARRAY_TYPE>& elems, ARRAY_TYPE* g){
-		ARRAY_TYPE tmp(g->get_dimensions());
+		ARRAY_TYPE tmp(*g->get_dimensions());
 		for (int i = 0; i <elems.size(); i++){
 			this->regularization_operators_[i]->mult_MH(&elems[i],&tmp);
 			axpy(ELEMENT_TYPE(std::sqrt(this->regularization_operators_[i]->get_weight())),&tmp,g);

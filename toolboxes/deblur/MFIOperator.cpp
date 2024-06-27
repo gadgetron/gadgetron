@@ -124,8 +124,8 @@ void MFIOperator::calc_phase_mask()
   for(int r = 0; r < data_dims[0]*data_dims[1]*data_dims[2]; r++) {
     tau[r] = std::complex<float>(sample_time*float(r%R0),0.0);
   }
-  cuNDArray<complext<float>> gpu_data((hoNDArray<float_complext>*)&tau);
-  nfft_plan_->compute( &gpu_data,ch_images, nullptr, NFFT_comp_mode::BACKWARDS_NC2C );
+  cuNDArray<complext<float>> gpu_data((hoNDArray<float_complext>&)(tau));
+  nfft_plan_->compute( gpu_data,ch_images, nullptr, NFFT_comp_mode::BACKWARDS_NC2C );
   nfft_plan_->fft(ch_images, NFFT_fft_mode::FORWARDS);
 
   auto time_grid = std::move(*(ch_images.to_host()));
@@ -166,7 +166,7 @@ hoNDArray<complext<float>> MFIOperator::MFI_apply(hoNDArray<complext<float>>& ho
   int mfc_index;
 
   //Upload image and transform
-  cuNDArray<complext<float>> gridded_data((hoNDArray<float_complext>*)&ho_image);
+  cuNDArray<complext<float>> gridded_data((hoNDArray<float_complext>&)ho_image);
   nfft_plan_->fft(gridded_data, NFFT_fft_mode::FORWARDS);
 
   //Rewind data to get first demodulated image

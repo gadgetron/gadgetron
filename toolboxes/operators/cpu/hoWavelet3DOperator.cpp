@@ -24,7 +24,7 @@ hoWavelet3DOperator<T>::~hoWavelet3DOperator()
 template <typename T>
 void hoWavelet3DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im)
 {
-    if (!complexIm_fft_.dimensions_equal(&x))
+    if (!complexIm_fft_.dimensions_equal(x))
     {
         complexIm_fft_.create(x.dimensions());
     }
@@ -35,7 +35,7 @@ void hoWavelet3DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T
 template <typename T>
 void hoWavelet3DOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x)
 {
-    if (!kspace_fft_.dimensions_equal(&im))
+    if (!kspace_fft_.dimensions_equal(im))
     {
         kspace_fft_.create(im.dimensions());
     }
@@ -70,7 +70,7 @@ void hoWavelet3DOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y)
             dimR[n + 1] = dims[n];
         }
 
-        if (!y.dimensions_equal(&dimR))
+        if (!y.dimensions_equal(dimR))
         {
             y.create(dimR);
         }
@@ -109,7 +109,7 @@ void hoWavelet3DOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y)
             dimR[n] = dims[n + 1];
         }
 
-        if (!y.dimensions_equal(&dimR))
+        if (!y.dimensions_equal(dimR))
         {
             y.create(dimR);
         }
@@ -215,7 +215,7 @@ void hoWavelet3DOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
             GADGET_CHECK_THROW(CHA==1); // already coil combined
         }
 
-        if (!y->dimensions_equal(&dimR))
+        if (!y->dimensions_equal(dimR))
         {
             y->create(dimR);
         }

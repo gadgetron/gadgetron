@@ -195,9 +195,9 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::set_domain_di
 }
 
 template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate ){
-	if (! in->dimensions_equal(this->get_domain_dimensions().get()))
+	if (! in->dimensions_equal(*this->get_domain_dimensions().get()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_M: size of input array does not match operator domain size.");
-	if (! out->dimensions_equal(this->get_codomain_dimensions().get()))
+	if (! out->dimensions_equal(*this->get_codomain_dimensions().get()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_M: size of output array does not match operator codomain size.");
 
 
@@ -270,9 +270,9 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate ){
 
 
-	if (! out->dimensions_equal(this->get_domain_dimensions().get()))
+	if (! out->dimensions_equal(*this->get_domain_dimensions().get()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_MH: size of output array does not match operator domain size.");
-	if (! in->dimensions_equal(this->get_codomain_dimensions().get()))
+	if (! in->dimensions_equal(*this->get_codomain_dimensions().get()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_MH: size of input array does not match operator codomain size.");
 	cuNDArray<T>* tmp_out = new cuNDArray<T>(*in);
 
@@ -324,9 +324,9 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDA
 		*tmp_in = *tmp_out;
 	}
 
-	if (!in->dimensions_equal(&this->domain_dims_)){
+	if (!in->dimensions_equal(this->domain_dims_)){
 		delete tmp_in;
-		tmp_in = new cuNDArray<T>(&this->domain_dims_);
+		tmp_in = new cuNDArray<T>(this->domain_dims_);
 		vector_td<size_t,D> offset;
 		for (int i = 0; i < D; i++ ) offset[i] = (this->codomain_dims_[i]-this->domain_dims_[i])/2;
 		crop<T,D>(offset,tmp_out,tmp_in);

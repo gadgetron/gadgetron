@@ -62,8 +62,8 @@ int main(int argc, char** argv)
   }
 
   // Upload host data to device
-  cuNDArray<_complext> data(host_data.get());
-  cuNDArray<_complext> kernel(host_kernel.get());
+  cuNDArray<_complext> data(*host_data);
+  cuNDArray<_complext> kernel(*host_kernel);
   
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();

@@ -343,7 +343,7 @@ namespace {
     for( unsigned int d=D; d<in.get_number_of_dimensions(); d++ ){
       dims.push_back(in.get_size(d));
     }
-    cuNDArray<T>  result( &dims );
+    cuNDArray<T>  result( dims );
     pad<T,D>(in, result, val);
     return result;
   }
@@ -489,7 +489,7 @@ namespace {
 
     std::vector<size_t> dims_out = *in.get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] <<= 1;
-    cuNDArray<T> out(&dims_out);
+    cuNDArray<T> out(dims_out);
     upsample<T,D>( in, out );
     return out;
 	}
@@ -587,7 +587,7 @@ namespace {
     
     std::vector<size_t> dims_out = *in.get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] >>= 1;
-    cuNDArray<T> out(&dims_out);
+    cuNDArray<T> out(dims_out);
     downsample<T,D>( in, out );
     return out;
   }

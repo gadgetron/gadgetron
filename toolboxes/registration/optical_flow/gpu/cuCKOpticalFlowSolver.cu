@@ -40,8 +40,8 @@ namespace Gadgetron{
   
     boost::shared_ptr< std::vector<size_t> > disp_dims = gradient_image->get_dimensions();
 
-    boost::shared_ptr< cuNDArray<T> > displacements_ping( new cuNDArray<T>(disp_dims.get()));
-    boost::shared_ptr< cuNDArray<T> > displacements_pong( new cuNDArray<T>(disp_dims.get()));
+    boost::shared_ptr< cuNDArray<T> > displacements_ping( new cuNDArray<T>(*disp_dims));
+    boost::shared_ptr< cuNDArray<T> > displacements_pong( new cuNDArray<T>(*disp_dims));
   
     clear(displacements_ping.get());
     clear(displacements_pong.get());

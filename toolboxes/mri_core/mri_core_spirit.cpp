@@ -106,8 +106,8 @@ void spirit2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 {
     try
     {
-        GADGET_CHECK_THROW(dataSrc.dimensions_equal(&dataMask));
-        GADGET_CHECK_THROW(dataDst.dimensions_equal(&dataMask));
+        GADGET_CHECK_THROW(dataSrc.dimensions_equal(dataMask));
+        GADGET_CHECK_THROW(dataDst.dimensions_equal(dataMask));
 
         // find the fully sampled region
         size_t RO = dataMask.get_size(0);
@@ -667,8 +667,8 @@ void spirit3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 {
     try
     {
-        GADGET_CHECK_THROW(dataSrc.dimensions_equal(&dataMask));
-        GADGET_CHECK_THROW(dataDst.dimensions_equal(&dataMask));
+        GADGET_CHECK_THROW(dataSrc.dimensions_equal(dataMask));
+        GADGET_CHECK_THROW(dataDst.dimensions_equal(dataMask));
 
         // find the fully sampled region
         size_t RO = dataMask.get_size(0);
@@ -841,7 +841,7 @@ void spirit_image_domain_adjoint_kernel(const hoNDArray<T>& kIm, hoNDArray<T>& a
         dimAdj[NDim - 1] = dim[NDim - 2];
         dimAdj[NDim - 2] = dim[NDim - 1];
 
-        if (!adjkIm.dimensions_equal(&dimAdj))
+        if (!adjkIm.dimensions_equal(dimAdj))
         {
             adjkIm.create(dimAdj);
         }
