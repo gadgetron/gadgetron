@@ -173,15 +173,15 @@ namespace Gadgetron
     #pragma message ("Use matlab definition for GDEBUG stream ... ")
 
     #ifdef _DEBUG
-        #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+        #define GDEBUG_STREAM(message) { std::ostringstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
     #else
-        #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+        #define GDEBUG_STREAM(message) { std::ostringstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
     #endif // _DEBUG
 
     #ifdef _DEBUG
-        #define GWARN_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+        #define GWARN_STREAM(message) { std::ostringstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
     #else
-        #define GWARN_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+        #define GWARN_STREAM(message) { std::ostringstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
     #endif // _DEBUG
 
     #define GERROR_STREAM(message) GDEBUG_STREAM(message) 

@@ -402,7 +402,7 @@ namespace Gadgetron {
   {
       vector_td<size_t, 2> crop_size(x, y);
 
-      auto crop_offset = (from_std_vector<size_t,2>(*in.get_dimensions())-crop_size)/size_t(2);
+      auto crop_offset = (from_std_vector<size_t,2>(in.get_dimensions())-crop_size)/size_t(2);
       crop(crop_offset,crop_size, in, out);
   }
 
