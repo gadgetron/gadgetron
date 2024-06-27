@@ -175,7 +175,7 @@ namespace Gadgetron {
         dim[5] = sq;
         dim[6] = sr;
         dim[7] = ss;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>

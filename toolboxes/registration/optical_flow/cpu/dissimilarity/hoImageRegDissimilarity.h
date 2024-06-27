@@ -213,7 +213,7 @@ namespace Gadgetron {
 
         if ( !deriv_.dimensions_equal(*target_) )
         {
-            deriv_.create(target_->get_dimensions());
+            deriv_.create(*target_->get_dimensions());
         }
         memset( deriv_.get_data_ptr(), 0, deriv_.get_number_of_elements()*sizeof(ValueType));
 

@@ -36,12 +36,6 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (boost::shared_ptr< std::vector<size_t> > dimensions) : BaseClass( dimensions )
-    {
-        this->create( *dimensions );
-    }
-
-    template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, 
         const std::vector<coord_type>& pixelSize) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
@@ -397,12 +391,6 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
-    }
-
-    template <typename T, unsigned int D> 
-    void hoNDImage<T, D>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
-    {
-        this->create(*dimensions);
     }
 
     template <typename T, unsigned int D> 
