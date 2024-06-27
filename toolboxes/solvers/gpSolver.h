@@ -147,7 +147,7 @@ namespace Gadgetron{
       }
 
       virtual REAL magnitude(ARRAY_TYPE* x){
-        ARRAY_TYPE tmp(op->get_codomain_dimensions());
+        ARRAY_TYPE tmp(*op->get_codomain_dimensions());
         ARRAY_TYPE* x2 = x;
         if (this->prior.get()){
           x2 = new ARRAY_TYPE(*x);
@@ -174,8 +174,8 @@ namespace Gadgetron{
 
 
       virtual void gradient(ARRAY_TYPE* x, ARRAY_TYPE* g, bool accumulate=false){
-        ARRAY_TYPE tmp(op->get_codomain_dimensions());
-        ARRAY_TYPE q(op->get_domain_dimensions());
+        ARRAY_TYPE tmp(*op->get_codomain_dimensions());
+        ARRAY_TYPE q(*op->get_domain_dimensions());
         ARRAY_TYPE* x2 = x;
 
         if (!accumulate) clear(g);
@@ -193,7 +193,7 @@ namespace Gadgetron{
       }
 
       virtual REAL magnitude(ARRAY_TYPE* x){
-        ARRAY_TYPE tmp(op->get_codomain_dimensions());
+        ARRAY_TYPE tmp(*op->get_codomain_dimensions());
         ARRAY_TYPE* x2 = x;
         if (this->prior.get()){
           x2 = new ARRAY_TYPE(*x);
@@ -231,7 +231,7 @@ namespace Gadgetron{
       }
       virtual void gradient(ARRAY_TYPE* x, ARRAY_TYPE* g,bool accumulate=false){
         std::vector<boost::shared_ptr<ARRAY_TYPE> > data;
-        ARRAY_TYPE gData(group.front()->get_codomain_dimensions());
+        ARRAY_TYPE gData(*group.front()->get_codomain_dimensions());
         clear(&gData);
 
         if (!accumulate) clear(g);
@@ -243,7 +243,7 @@ namespace Gadgetron{
 
         for (int i = 0; i < group.size(); i++ ){
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
-          boost::shared_ptr<ARRAY_TYPE> tmp(new ARRAY_TYPE(op->get_codomain_dimensions().get()));
+          boost::shared_ptr<ARRAY_TYPE> tmp(new ARRAY_TYPE(*op->get_codomain_dimensions()));
           op->mult_M(x2,tmp.get());
           data.push_back(tmp);
           ARRAY_TYPE tmp2 = *tmp;
@@ -258,7 +258,7 @@ namespace Gadgetron{
         clamp_min(&gData,threshold);
         reciprocal_inplace(&gData);
 
-        ARRAY_TYPE q(group.front()->get_domain_dimensions());
+        ARRAY_TYPE q(*group.front()->get_domain_dimensions());
 
         for (int i = 0; i < group.size(); i++ ){
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
@@ -271,7 +271,7 @@ namespace Gadgetron{
 
 
       virtual REAL magnitude(ARRAY_TYPE* x){
-        ARRAY_TYPE gData(group.front()->get_codomain_dimensions());
+        ARRAY_TYPE gData(*group.front()->get_codomain_dimensions());
         clear(&gData);
         ARRAY_TYPE* x2 =x;
         if (this->prior.get()){
@@ -280,7 +280,7 @@ namespace Gadgetron{
         }
         for (int i = 0; i < group.size(); i++ ){
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
-          ARRAY_TYPE tmp(op->get_codomain_dimensions().get());
+          ARRAY_TYPE tmp(*op->get_codomain_dimensions());
           op->mult_M(x2,&tmp);
           tmp *= tmp;
           gData += tmp;

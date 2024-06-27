@@ -35,7 +35,7 @@ void coil_map_2d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
 
         const T* pData = data.begin();
 
-        if (!data.dimensions_equal(&coilMap))
+        if (!data.dimensions_equal(coilMap))
         {
             coilMap = data;
         }
@@ -246,7 +246,7 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
 
         const T* pData = data.begin();
 
-        if (!data.dimensions_equal(&coilMap))
+        if (!data.dimensions_equal(coilMap))
         {
             coilMap = data;
         }
@@ -422,7 +422,7 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
         const T* pData = data.begin();
 
-        if (!data.dimensions_equal(&coilMap))
+        if (!data.dimensions_equal(coilMap))
         {
             coilMap = data;
         }
@@ -535,7 +535,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
     const T* pData = data.begin();
 
-    if (!data.dimensions_equal(&coilMap))
+    if (!data.dimensions_equal(coilMap))
     {
         coilMap = data;
     }
@@ -627,7 +627,7 @@ template<typename T> void coil_map_Inati(const hoNDArray<T>& data, hoNDArray<T>&
         size_t E2 = data.get_size(2);
         size_t CHA = data.get_size(3);
 
-        if (!data.dimensions_equal(&coilMap))
+        if (!data.dimensions_equal(coilMap))
         {
             coilMap = data;
         }
@@ -695,7 +695,7 @@ template<typename T> void coil_map_Inati_Iter(const hoNDArray<T>& data, hoNDArra
         size_t E2 = data.get_size(2);
         size_t CHA = data.get_size(3);
 
-        if (!data.dimensions_equal(&coilMap))
+        if (!data.dimensions_equal(coilMap))
         {
             coilMap = data;
         }

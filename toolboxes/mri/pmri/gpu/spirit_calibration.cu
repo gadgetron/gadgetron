@@ -170,7 +170,7 @@ namespace Gadgetron {
     out_dims.push_back(num_coils*num_coils);
     
     boost::shared_ptr< cuNDArray<float_complext> > kernel_images
-      ( new cuNDArray<float_complext>(&out_dims) );
+      ( new cuNDArray<float_complext>(out_dims) );
 
     // Clear to ones in case we terminate early
     //
@@ -184,7 +184,7 @@ namespace Gadgetron {
     unsigned int n = num_coils*(kernel_size*kernel_size-1);
 
     std::vector<size_t> A_dims; A_dims.push_back(m); A_dims.push_back(n);    
-    cuNDArray<float_complext> A(&A_dims); clear(&A);
+    cuNDArray<float_complext> A(A_dims); clear(&A);
 
     // Fill system matrix
     //
@@ -205,7 +205,7 @@ namespace Gadgetron {
     cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
 
     std::vector<size_t> AHA_dims(2,n);
-    cuNDArray<float_complext> AHA(&AHA_dims);
+    cuNDArray<float_complext> AHA(AHA_dims);
 
     // Initialize AHA to identity (Tikhonov regularization)
     //
@@ -238,7 +238,7 @@ namespace Gadgetron {
     //
 
     std::vector<size_t> rhs_dims; rhs_dims.push_back(n); rhs_dims.push_back(num_coils);    
-    cuNDArray<float_complext> rhs(&rhs_dims); clear(&rhs);
+    cuNDArray<float_complext> rhs(rhs_dims); clear(&rhs);
 
     beta = float_complext(0.0f);
 

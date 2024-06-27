@@ -32,7 +32,7 @@ boost::shared_ptr< cuNDArray<_complext> >
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
 {
   vector<size_t> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
-  cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
+  cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
 		host_data->get_data_ptr()+i*total_samples_per_coil+reconstruction*samples_per_reconstruction, 
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
   timer = new GPUTimer("Computing regularization");
 
   std::vector<size_t> image_dims = to_std_vector(matrix_size);
-  cuNDArray<_complext> reg_image = cuNDArray<_complext>(&image_dims);
+  cuNDArray<_complext> reg_image = cuNDArray<_complext>(image_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &reg_image );
   acc_images.reset();
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
   
   // Allocate space for result
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
+  cuNDArray<_complext> result = cuNDArray<_complext>(image_dims);
   
   timer = new GPUTimer("Full SENSE reconstruction.");
   
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
       return 1;
 
     // Copy cgresult to overall result
-    cuNDArray<_complext> out(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
+    cuNDArray<_complext> out(image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
     out = *(cgresult.get());
   }
   

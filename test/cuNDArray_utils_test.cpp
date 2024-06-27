@@ -17,8 +17,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = cuNDArray<T>(&dims);
-    Array2 = cuNDArray<T>(&dims);
+    Array = cuNDArray<T>(dims);
+    Array2 = cuNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   cuNDArray<T> Array;
@@ -30,8 +30,8 @@ protected:
   virtual void SetUp() {
     size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
-    Array = cuNDArray<T>(&dims);
-    Array2 = cuNDArray<T>(&dims);
+    Array = cuNDArray<T>(dims);
+    Array2 = cuNDArray<T>(dims);
   }
   std::vector<size_t> dims;
   cuNDArray<T> Array;
@@ -230,9 +230,9 @@ TEST(padTest,largeSize){
 	size_t vdims2[] = {256,256,256};
 	std::vector<size_t> dims2(vdims2,vdims2+sizeof(vdims2)/sizeof(size_t));
 
-	cuNDArray<float_complext> in(&dims);
+	cuNDArray<float_complext> in(dims);
 	fill(&in,float_complext(1));
-	cuNDArray<float_complext> out(&dims2);
+	cuNDArray<float_complext> out(dims2);
 
 	pad<float_complext,3>(in,out);
 

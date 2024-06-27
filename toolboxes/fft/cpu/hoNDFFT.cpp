@@ -253,7 +253,7 @@ namespace Gadgetron {
 
     template <typename T>
     void hoNDFFT<T>::fftshift1D(const hoNDArray<std::complex<T>>& a, hoNDArray<std::complex<T>>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r = a;
         }
 
@@ -273,7 +273,7 @@ namespace Gadgetron {
 
     template <typename T>
     void hoNDFFT<T>::ifftshift1D(const hoNDArray<std::complex<T>>& a, hoNDArray<std::complex<T>>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r = a;
         }
 
@@ -337,7 +337,7 @@ namespace Gadgetron {
 
     template <typename T>
     inline void hoNDFFT<T>::fftshift2D(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r = a;
         }
 
@@ -354,7 +354,7 @@ namespace Gadgetron {
 
     template <typename T>
     inline void hoNDFFT<T>::ifftshift2D(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r = a;
         }
         size_t n = a.get_number_of_elements() / (a.get_size(0) * a.get_size(1));
@@ -457,7 +457,7 @@ namespace Gadgetron {
 
     template <typename T>
     inline void hoNDFFT<T>::fftshift3D(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r = a;
         }
 
@@ -474,7 +474,7 @@ namespace Gadgetron {
 
     template <typename T>
     inline void hoNDFFT<T>::ifftshift3D(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r = a;
         }
         size_t n = a.get_number_of_elements() / (a.get_size(0) * a.get_size(1) * a.get_size(2));
@@ -493,7 +493,7 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::fft1(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r.create(a.dimensions());
         }
 
@@ -501,7 +501,7 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::ifft1(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r.create(a.dimensions());
         }
         contigous_fftn(a, r, 1, false, true);
@@ -558,7 +558,7 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::fft2(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r.create(a.dimensions());
         }
 
@@ -566,7 +566,7 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::ifft2(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r.create(a.dimensions());
         }
 
@@ -624,7 +624,7 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::fft3(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r.create(a.dimensions());
         }
 
@@ -632,7 +632,7 @@ namespace Gadgetron {
     }
 
     template <typename T> inline void hoNDFFT<T>::ifft3(const hoNDArray<ComplexType>& a, hoNDArray<ComplexType>& r) {
-        if (!r.dimensions_equal(&a)) {
+        if (!r.dimensions_equal(a)) {
             r.create(a.dimensions());
         }
 

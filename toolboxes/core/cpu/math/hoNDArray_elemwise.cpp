@@ -83,7 +83,7 @@ namespace Gadgetron {
     // --------------------------------------------------------------------------------
 
     template <typename T> void inv(const hoNDArray<T>& x, hoNDArray<T>& r) {
-        if (!r.dimensions_equal(&x)) {
+        if (!r.dimensions_equal(x)) {
             r = x;
         }
         transform(x,r,[](auto val){return T(1)/val;});
@@ -415,9 +415,9 @@ namespace Gadgetron {
     void real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real,
         const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx) {
         try {
-            GADGET_CHECK_THROW(real.dimensions_equal(&imag));
+            GADGET_CHECK_THROW(real.dimensions_equal(imag));
 
-            if (!cplx.dimensions_equal(&real)) {
+            if (!cplx.dimensions_equal(real)) {
                 cplx.create(real.dimensions());
             }
 
@@ -448,11 +448,11 @@ namespace Gadgetron {
     void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real,
         hoNDArray<typename realType<T>::Type>& imag) {
         try {
-            if (!real.dimensions_equal(&cplx)) {
+            if (!real.dimensions_equal(cplx)) {
                 real.create(cplx.dimensions());
             }
 
-            if (!imag.dimensions_equal(&cplx)) {
+            if (!imag.dimensions_equal(cplx)) {
                 imag.create(cplx.dimensions());
             }
 
@@ -480,11 +480,11 @@ namespace Gadgetron {
 
     void complex_to_real_imag(const hoNDArray<float>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag) {
         try {
-            if (!real.dimensions_equal(&cplx)) {
+            if (!real.dimensions_equal(cplx)) {
                 real.create(cplx.dimensions());
             }
 
-            if (!imag.dimensions_equal(&cplx)) {
+            if (!imag.dimensions_equal(cplx)) {
                 imag.create(cplx.dimensions());
             }
 
@@ -507,11 +507,11 @@ namespace Gadgetron {
 
     void complex_to_real_imag(const hoNDArray<double>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag) {
         try {
-            if (!real.dimensions_equal(&cplx)) {
+            if (!real.dimensions_equal(cplx)) {
                 real.create(cplx.dimensions());
             }
 
-            if (!imag.dimensions_equal(&cplx)) {
+            if (!imag.dimensions_equal(cplx)) {
                 imag.create(cplx.dimensions());
             }
 
@@ -536,7 +536,7 @@ namespace Gadgetron {
 
     template <class T> void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real) {
         try {
-            if (!real.dimensions_equal(&cplx)) {
+            if (!real.dimensions_equal(cplx)) {
                 real.create(cplx.dimensions());
             }
 
@@ -563,7 +563,7 @@ namespace Gadgetron {
 
     template <class T> void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real) {
         try {
-            if (!real.dimensions_equal(&cplx)) {
+            if (!real.dimensions_equal(cplx)) {
                 real.create(cplx.dimensions());
             }
 
@@ -616,7 +616,7 @@ namespace Gadgetron {
 
     template <class T> void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag) {
         try {
-            if (!imag.dimensions_equal(&cplx)) {
+            if (!imag.dimensions_equal(cplx)) {
                 imag.create(cplx.dimensions());
             }
 
@@ -641,7 +641,7 @@ namespace Gadgetron {
 
     template <class T> void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag) {
         try {
-            if (!imag.dimensions_equal(&cplx)) {
+            if (!imag.dimensions_equal(cplx)) {
                 imag.create(cplx.dimensions());
             }
 
@@ -688,7 +688,7 @@ namespace Gadgetron {
 
     template <class T> void real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx) {
         try {
-            if (!cplx.dimensions_equal(&real)) {
+            if (!cplx.dimensions_equal(real)) {
                 cplx.create(real.dimensions());
             }
 
@@ -1081,7 +1081,7 @@ namespace Gadgetron {
 
     template <typename T> void conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) {
         try {
-            if (!z.dimensions_equal(&x)) {
+            if (!z.dimensions_equal(x)) {
                 z = x;
             }
 
@@ -1199,7 +1199,7 @@ namespace Gadgetron {
 
     template <typename T> void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) {
         try {
-            if (!z.dimensions_equal(&x)) {
+            if (!z.dimensions_equal(x)) {
                 z = x;
             }
 
@@ -1245,7 +1245,7 @@ namespace Gadgetron {
             auto dimR      = dimX;
             dimR[dim] = 1;
 
-            if (!r.dimensions_equal(&dimR)) {
+            if (!r.dimensions_equal(dimR)) {
                 r.create(dimR);
             }
 

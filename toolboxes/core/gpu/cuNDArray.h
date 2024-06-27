@@ -26,25 +26,15 @@ namespace Gadgetron{
 
         cuNDArray();
         cuNDArray(const cuNDArray<T> &a);
-        cuNDArray(const cuNDArray<T> *a);
         explicit cuNDArray(const hoNDArray<T> &a);
-        explicit cuNDArray(hoNDArray<T> *a);
 
 #if __cplusplus > 199711L
         // Move constructor
         cuNDArray(cuNDArray<T>&& a);
 #endif
-        explicit cuNDArray(const std::vector<size_t> *dimensions);
-        cuNDArray(const std::vector<size_t> *dimensions, int device_no);
-        cuNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
-
         explicit cuNDArray(const std::vector<size_t> &dimensions);
         cuNDArray(const std::vector<size_t> &dimensions, int device_no);
         cuNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
-
-        explicit cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions);
-        cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no);
-        cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
         explicit cuNDArray(size_t len);
         cuNDArray(size_t sx, size_t sy);
@@ -66,17 +56,9 @@ namespace Gadgetron{
 #endif
         cuNDArray<T>& operator=(const hoNDArray<T>& rhs);
 
-        virtual void create(const std::vector<size_t> *dimensions);
-        virtual void create(const std::vector<size_t> *dimensions, int device_no);
-        virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
-
         virtual void create(const std::vector<size_t> &dimensions);
         virtual void create(const std::vector<size_t> &dimensions, int device_no);
         virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
-
-        virtual void create(boost::shared_ptr<std::vector<size_t> > dimensions);
-        virtual void create(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no);
-        virtual void create(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
         virtual void create(size_t len);
         virtual void create(size_t sx, size_t sy);
@@ -142,31 +124,6 @@ namespace Gadgetron{
         }
     }
 
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(const cuNDArray<T> *a) : Gadgetron::NDArray<T>::NDArray() 
-    {
-        cudaGetDevice(&this->device_);
-        this->data_ = 0;
-        this->dimensions_ = a->dimensions_;
-        allocate_memory();
-        if (a->device_ == this->device_) {
-            CUDA_CALL(cudaMemcpy(this->data_, a->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
-        } else {
-            //This memory is on a different device, we must move it.
-            cudaSetDevice(a->device_);
-            boost::shared_ptr< hoNDArray<T> > tmp = a->to_host();
-            cudaSetDevice(this->device_);
-            cudaError_t err = cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice);
-            if (err !=cudaSuccess) {
-                deallocate_memory();
-                this->data_ = 0;
-                this->dimensions_.clear();
-                throw cuda_error(err);
-            }
-        }
-    }
-
-
 #if __cplusplus > 199711L
     template <typename T>
     cuNDArray<T>::cuNDArray(cuNDArray<T>&& a) : Gadgetron::NDArray<T>::NDArray()
@@ -193,40 +150,6 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : Gadgetron::NDArray<T>::NDArray() 
-    {
-        cudaGetDevice(&this->device_);
-	a->get_dimensions(this->dimensions_);
-        allocate_memory();
-        if (cudaMemcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
-            deallocate_memory();
-            this->data_ = 0;
-            this->dimensions_.clear();
-        }
-    }
-
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions) : Gadgetron::NDArray<T>::NDArray()
-    {
-        cudaGetDevice(&this->device_);
-        create(dimensions);
-    }
-
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions, int device_no) : Gadgetron::NDArray<T>::NDArray()
-    {
-        cudaGetDevice(&this->device_);
-        create(dimensions,device_no);
-    }
-
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray()
-    {
-        cudaGetDevice(&this->device_);
-        create(dimensions,data,delete_data_on_destruct);
-    }
-
-    template <typename T> 
     cuNDArray<T>::cuNDArray(const std::vector<size_t> &dimensions) : Gadgetron::NDArray<T>::NDArray()
     {
         cudaGetDevice(&this->device_);
@@ -245,27 +168,6 @@ namespace Gadgetron{
     {
         cudaGetDevice(&this->device_);
         create(dimensions,data,delete_data_on_destruct);
-    }
-
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions) : Gadgetron::NDArray<T>::NDArray()
-    {
-        cudaGetDevice(&this->device_);
-        create(dimensions.get());
-    }
-
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no) : Gadgetron::NDArray<T>::NDArray()
-    {
-        cudaGetDevice(&this->device_);
-        create(dimensions.get(),device_no);
-    }
-
-    template <typename T> 
-    cuNDArray<T>::cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct) : Gadgetron::NDArray<T>::NDArray()
-    {
-        cudaGetDevice(&this->device_);
-        create(dimensions.get(),data,delete_data_on_destruct);
     }
 
     template <typename T> 
@@ -396,7 +298,7 @@ namespace Gadgetron{
     {
         int cur_device; 
         CUDA_CALL(cudaGetDevice(&cur_device));
-        bool dimensions_match = this->dimensions_equal(&rhs);
+        bool dimensions_match = this->dimensions_equal(rhs);
         if (dimensions_match && (rhs.device_ == cur_device) && (cur_device == this->device_)) {
             CUDA_CALL(cudaMemcpy(this->data_, rhs.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
         }
@@ -440,7 +342,7 @@ namespace Gadgetron{
     {
         int cur_device; 
         CUDA_CALL(cudaGetDevice(&cur_device));
-        bool dimensions_match = this->dimensions_equal(&rhs);
+        bool dimensions_match = this->dimensions_equal(rhs);
         if (dimensions_match && (cur_device == this->device_)) {
             CUDA_CALL(cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T), cudaMemcpyHostToDevice));
         }
@@ -465,67 +367,9 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline void cuNDArray<T>::create(const std::vector<size_t> *dimensions)
-    {
-        if ( this->dimensions_equal(dimensions) )
-        {
-            return;
-        }
-
-        return Gadgetron::NDArray<T>::create(dimensions);
-    }
-
-    template <typename T> 
-    inline void cuNDArray<T>::create(const std::vector<size_t> *dimensions, int device_no)
-    {
-        if (device_no < 0){
-            throw cuda_error("cuNDArray::create: illegal device no");
-        }
-
-        if ( this->dimensions_equal(dimensions) && this->device_==device_no )
-        {
-            return;
-        }
-
-        this->device_ = device_no; 
-        Gadgetron::NDArray<T>::create(dimensions);
-    }
-
-    template <typename T> 
-    void cuNDArray<T>::create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-    {
-        if (!data) {
-            throw std::runtime_error("cuNDArray::create: 0x0 pointer provided");
-        }
-
-        int tmp_device; 
-        if( cudaGetDevice(&tmp_device) != cudaSuccess) {
-            throw cuda_error("cuNDArray::create: Unable to query for device");
-        }
-
-        cudaDeviceProp deviceProp; 
-        if( cudaGetDeviceProperties( &deviceProp, tmp_device) != cudaSuccess) {
-            throw cuda_error("cuNDArray::create: Unable to query device properties");
-        }
-
-        if (deviceProp.unifiedAddressing) {
-            cudaPointerAttributes attrib;
-            if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
-                CHECK_FOR_CUDA_ERROR();
-                throw cuda_error("cuNDArray::create: Unable to determine attributes of pointer");
-            }
-            this->device_ = attrib.device;
-        } else {
-            this->device_ = tmp_device;
-        }
-
-        Gadgetron::NDArray<T>::create(dimensions, data, delete_data_on_destruct);
-    }
-
-    template <typename T> 
     inline void cuNDArray<T>::create(const std::vector<size_t> &dimensions)
     {
-        if ( this->dimensions_equal(&dimensions) )
+        if ( this->dimensions_equal(dimensions) )
         {
             return;
         }
@@ -540,7 +384,7 @@ namespace Gadgetron{
             throw cuda_error("cuNDArray::create: illegal device no");
         }
 
-        if ( this->dimensions_equal(&dimensions) && this->device_==device_no )
+        if ( this->dimensions_equal(dimensions) && this->device_==device_no )
         {
             return;
         }
@@ -578,21 +422,6 @@ namespace Gadgetron{
         }
 
         Gadgetron::NDArray<T>::create(dimensions, data, delete_data_on_destruct);
-    }
-
-    template <typename T> 
-    inline void cuNDArray<T>::create(boost::shared_ptr<std::vector<size_t> > dimensions){
-        this->create(dimensions.get());
-    }
-
-    template <typename T> 
-    inline void cuNDArray<T>::create(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no){
-        this->create(dimensions.get(),device_no);
-    }
-
-    template <typename T> 
-    inline void cuNDArray<T>::create(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct){
-        this->create(dimensions.get(), data, delete_data_on_destruct);
     }
 
     template <typename T> 

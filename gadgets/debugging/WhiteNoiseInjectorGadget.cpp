@@ -225,7 +225,7 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
 
         if ( add_noise )
         {
-            if ( !noise_.dimensions_equal(m2->getObjectPtr()) )
+            if ( !noise_.dimensions_equal(*m2->getObjectPtr()) )
             {
                 noise_.create(m2->getObjectPtr()->dimensions());
                 noise_fl_.create(m2->getObjectPtr()->dimensions());

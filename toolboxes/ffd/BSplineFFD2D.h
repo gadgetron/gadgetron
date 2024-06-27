@@ -351,7 +351,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
         GADGET_CHECK_RETURN_FALSE(value.get_size(0)==DOut);
         GADGET_CHECK_RETURN_FALSE(value.get_size(1)==N);
 
-        if ( !residual.dimensions_equal(&value) )
+        if ( !residual.dimensions_equal(value) )
         {
             residual.create(value.dimensions());
             Gadgetron::clear(residual);

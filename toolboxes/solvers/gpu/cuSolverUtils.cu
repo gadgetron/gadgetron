@@ -80,7 +80,7 @@ template<class T>
 inline void Gadgetron::updateFgroup(std::vector<cuNDArray<T> >& datas,
 		typename realType<T>::Type alpha, typename realType<T>::Type sigma) {
 
-	cuNDArray<typename realType<T>::Type> squares(datas.front().get_dimensions());
+	cuNDArray<typename realType<T>::Type> squares(*datas.front().get_dimensions().get());
 	clear(&squares);
 	for (int i = 0; i < datas.size(); i++)
 		thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(datas[i].begin(),squares.begin())),

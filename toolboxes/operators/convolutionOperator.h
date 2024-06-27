@@ -31,7 +31,7 @@ namespace Gadgetron{
       operator_fft( true, freq_kernel );
       kernel_ = boost::shared_ptr<COMPLEX_ARRAY_TYPE>(freq_kernel);
       
-      COMPLEX_ARRAY_TYPE *freq_kernel_adjoint = new COMPLEX_ARRAY_TYPE(freq_kernel->get_dimensions());      
+      COMPLEX_ARRAY_TYPE *freq_kernel_adjoint = new COMPLEX_ARRAY_TYPE(*freq_kernel->get_dimensions());      
       origin_mirror( freq_kernel, freq_kernel_adjoint );
       adjoint_kernel_ = boost::shared_ptr<COMPLEX_ARRAY_TYPE>(freq_kernel_adjoint);           
     }
@@ -63,7 +63,7 @@ namespace Gadgetron{
 
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<size_t> > osdims = kernel_->get_dimensions();
-	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
+	tmp_out = new COMPLEX_ARRAY_TYPE(*osdims);
 	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
@@ -119,7 +119,7 @@ namespace Gadgetron{
 
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<size_t> > osdims = kernel_->get_dimensions();
-	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
+	tmp_out = new COMPLEX_ARRAY_TYPE(*osdims);
 	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
@@ -173,7 +173,7 @@ namespace Gadgetron{
 
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<size_t> > osdims = adjoint_kernel_->get_dimensions();
-	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
+	tmp_out = new COMPLEX_ARRAY_TYPE(*osdims);
 	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){

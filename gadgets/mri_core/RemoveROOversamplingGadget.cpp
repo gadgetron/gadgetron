@@ -46,14 +46,14 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
         return;
       }
       std::vector<size_t> data_out_dims = *acq.get_dimensions();
-      if (!ifft_buf_.dimensions_equal(&data_out_dims) )
+      if (!ifft_buf_.dimensions_equal(data_out_dims) )
       {
           ifft_buf_.create(data_out_dims);
           ifft_res_.create(data_out_dims);
       }
       float ratioFOV = encodeFOV_/reconFOV_;
       data_out_dims[0] = (size_t)(data_out_dims[0]/ratioFOV);
-      if ( !fft_buf_.dimensions_equal(&data_out_dims) )
+      if ( !fft_buf_.dimensions_equal(data_out_dims) )
       {
           fft_buf_.create(data_out_dims);
           fft_res_.create(data_out_dims);

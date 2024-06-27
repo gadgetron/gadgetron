@@ -348,7 +348,7 @@ namespace Gadgetron{
         return GADGET_FAIL;
       }
       
-      cuNDArray<float_complext> samples( host_samples.get() );
+      cuNDArray<float_complext> samples( *host_samples );
       
       long profile_offset = profiles_counter_global_[set*slices_+slice];
       boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_buffer(profile_offset, set, slice);
@@ -430,7 +430,7 @@ namespace Gadgetron{
         // Estimate CSM
         //
 
-        auto csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>( csm_data.get() ));
+        auto csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>( *csm_data ));
 
 
         acc_buffer->set_csm(csm);

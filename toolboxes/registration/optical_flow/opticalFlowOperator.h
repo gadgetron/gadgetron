@@ -26,7 +26,7 @@ namespace Gadgetron {
       size_t elements = std::accumulate(dims.begin(),dims.end(),1u,std::multiplies<size_t>());
 
       for (int i = 0; i < D; i++){
-	ARRAY_TYPE tmp(&dims,in->get_data_ptr()+elements*i);
+	ARRAY_TYPE tmp(dims,in->get_data_ptr()+elements*i);
 	ARRAY_TYPE tmp2(tmp);
 	tmp2 *= *Ix[i];
 	*out += tmp2;
@@ -42,8 +42,8 @@ namespace Gadgetron {
       size_t elements = std::accumulate(dims.begin(),dims.end(),1u,std::multiplies<size_t>());
 
       for (int i = 0; i < D; i++){
-	ARRAY_TYPE out_view(&dims,out->get_data_ptr()+elements*i);
-	ARRAY_TYPE tmp2(in);
+	ARRAY_TYPE out_view(dims,out->get_data_ptr()+elements*i);
+	ARRAY_TYPE tmp2(*in);
 	tmp2 *= *Ix[i];
 	out_view += tmp2;
       }
@@ -54,7 +54,7 @@ namespace Gadgetron {
 
       for (int i=0; i < D; i++){
 	partialDerivOp op(i);
-	boost::shared_ptr<ARRAY_TYPE> I(new ARRAY_TYPE(moving->get_dimensions()));
+	boost::shared_ptr<ARRAY_TYPE> I(new ARRAY_TYPE(*moving->get_dimensions()));
 	op.mult_M(moving,I.get());
 	op.mult_M(stat,I.get(),true);
 	*I /= T(2);

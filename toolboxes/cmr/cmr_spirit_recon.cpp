@@ -52,7 +52,7 @@ namespace Gadgetron {
 
             hoNDArray<T> kspace_initial_Shifted;
             bool hasInitial = false;
-            if ( kspaceInitial.dimensions_equal(&kspace) )
+            if ( kspaceInitial.dimensions_equal(kspace) )
             {
                 kspace_initial_Shifted = kspaceInitial;
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspaceInitial, kspace_initial_Shifted);

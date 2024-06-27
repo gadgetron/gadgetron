@@ -26,7 +26,7 @@ void hoSPIRIT2DOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im
         }
         else
         {
-            if (!fft_im_buffer_.dimensions_equal(&x))
+            if (!fft_im_buffer_.dimensions_equal(x))
             {
                 fft_im_buffer_.create(x.dimensions());
             }
@@ -51,7 +51,7 @@ void hoSPIRIT2DOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& 
         }
         else
         {
-            if (!fft_kspace_buffer_.dimensions_equal(&im))
+            if (!fft_kspace_buffer_.dimensions_equal(im))
             {
                 fft_kspace_buffer_.create(im.dimensions());
             }

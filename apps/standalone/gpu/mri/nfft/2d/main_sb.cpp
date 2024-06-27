@@ -80,7 +80,7 @@ int main( int argc, char** argv)
   
   // Upload host data to device
   timer = new GPUTimer("Uploading samples to device");
-  cuNDArray<_complext> samples(host_samples.get());
+  cuNDArray<_complext> samples(*host_samples);
   delete timer;
 
   // Reshape the data array to a one-dimensional array (we have no batch dimension)
@@ -132,7 +132,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  E->preprocess( traj.get() );
+  E->preprocess( *traj );
   delete timer;
 
   // Setup split bregman solver

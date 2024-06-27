@@ -18,23 +18,23 @@ ho5DArray<T>::ho5DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp)
     dim[3] = ss;
     dim[4] = sp;
 
-    this->create(&dim);
+    this->create(dim);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho5DArray<T>::ho5DArray(std::vector<size_t> *dimensions)
+ho5DArray<T>::ho5DArray(const std::vector<size_t>& dimensions)
 : BaseClass(dimensions), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==5);
+    GADGET_CHECK_THROW(dimensions.size()==5);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho5DArray<T>::ho5DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+ho5DArray<T>::ho5DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 : BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==5);
+    GADGET_CHECK_THROW(dimensions.size()==5);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -86,7 +86,7 @@ ho5DArray<T>& ho5DArray<T>::operator=(const ho5DArray<T>& rhs)
         return *this;
     }
 
-    if (this->dimensions_equal(&rhs)) 
+    if (this->dimensions_equal(rhs)) 
     {
         memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
@@ -105,21 +105,14 @@ ho5DArray<T>& ho5DArray<T>::operator=(const ho5DArray<T>& rhs)
 }
 
 template <typename T> 
-void ho5DArray<T>::create(std::vector<size_t>& dimensions)
+void ho5DArray<T>::create(const std::vector<size_t>& dimensions)
 {
     BaseClass::create(dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-void ho5DArray<T>::create(std::vector<size_t> *dimensions)
-{
-    BaseClass::create(dimensions);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-void ho5DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+void ho5DArray<T>::create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 {
     BaseClass::create(dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
@@ -137,7 +130,7 @@ bool ho5DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_
         dim[3] = ss;
         dim[4] = sp;
 
-        if ( !this->dimensions_equal(&dim) )
+        if ( !this->dimensions_equal(dim) )
         {
             this->create(&dim);
             GADGET_CHECK_RETURN_FALSE(init_accesser());
@@ -168,7 +161,7 @@ bool ho5DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_
         dim[3] = ss;
         dim[4] = sp;
 
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
         GADGET_CHECK_RETURN_FALSE(init_accesser());
     }
     catch(...)

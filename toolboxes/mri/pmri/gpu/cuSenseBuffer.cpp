@@ -31,7 +31,7 @@ namespace Gadgetron {
     }
     
     std::vector<size_t> dims = to_std_vector(this->matrix_size_);
-    boost::shared_ptr< cuNDArray<_complext> > image( new cuNDArray<_complext>(&dims) );
+    boost::shared_ptr< cuNDArray<_complext> > image( new cuNDArray<_complext>(dims) );
 
     E_->set_csm(this->csm_);
     E_->mult_csm_conj_sum( this->acc_image_.get(), image.get() );

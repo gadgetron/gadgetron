@@ -62,7 +62,7 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 	dims.push_back(num_projections_to_use_);       // number of radial profiles
 	dims.push_back(image_space_dimensions_3D_[2]); // number of slices
 
-	buffer_ = boost::shared_ptr< cuNDArray< complext<float> > >( new cuNDArray< complext<float> >(&dims) );
+	buffer_ = boost::shared_ptr< cuNDArray< complext<float> > >( new cuNDArray< complext<float> >(dims) );
 
 	// Calculate trajectories and dcw for the radial NFFTs
 	//
@@ -164,7 +164,7 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	if( images_used_ == num_projections_to_use_ ){
 
 		auto traj = calculate_trajectory(tot_images_);
-		E_->preprocess( traj.get() );
+		E_->preprocess( *traj );
 		GDEBUG("\n\nPerforming reconstruction\n");
 
 		std::vector<size_t> dims;
@@ -172,7 +172,7 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 		dims.push_back(image_space_dimensions_3D_[1]);
 		dims.push_back(image_space_dimensions_3D_[2]);
 
-		cuNDArray< complext<float> > result(&dims);
+		cuNDArray< complext<float> > result(dims);
 
 		E_->mult_MH( buffer_.get(), &result );
 

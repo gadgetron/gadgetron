@@ -337,7 +337,7 @@ namespace Gadgetron {
           dims.push_back(in.get_size(d));
       }
 
-      if (!out.dimensions_equal(&dims)){
+      if (!out.dimensions_equal(dims)){
           out.create(dims);
       }
 
@@ -593,11 +593,11 @@ namespace Gadgetron {
           dims.push_back(in.get_size(d));
       }
 
-      if (!out.dimensions_equal(&dims)){
+      if (!out.dimensions_equal(dims)){
           out.create(dims);
       }
 
-      if (in.dimensions_equal(&dims)){
+      if (in.dimensions_equal(dims)){
           memcpy(out.begin(), in.begin(), in.get_number_of_bytes());
           return;
       }

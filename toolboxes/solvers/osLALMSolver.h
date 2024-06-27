@@ -11,7 +11,9 @@
 #include <boost/make_shared.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <initializer_list>
+
 namespace Gadgetron{
+
 template <class ARRAY_TYPE> class osLALMSolver : public solver< ARRAY_TYPE,ARRAY_TYPE> {
 	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
 	typedef typename realType<ELEMENT_TYPE>::Type REAL;
@@ -75,14 +77,14 @@ public:
 		}
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > subsets = this->encoding_operator_->projection_subsets(in);
 
-		ARRAY_TYPE tmp_projection(in->get_dimensions());
+		ARRAY_TYPE tmp_projection(*in->get_dimensions());
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > tmp_projections = this->encoding_operator_->projection_subsets(&tmp_projection);
 
 		boost::shared_ptr<ARRAY_TYPE> precon_image;
 		if (preconditioning_image_)
 			precon_image = preconditioning_image_;
 		else {
-			precon_image = boost::make_shared<ARRAY_TYPE>(image_dims.get());
+			precon_image = boost::make_shared<ARRAY_TYPE>(*image_dims);
 			fill(precon_image.get(),ELEMENT_TYPE(1));
 			this->encoding_operator_->mult_M(precon_image.get(),&tmp_projection,false);
 			GINFO(std::string("Tmp proj norm " + std::to_string(asum(&tmp_projection)) + "\n").c_str());
@@ -94,8 +96,8 @@ public:
 			GINFO_STREAM("Precon Image norm " << asum(precon_image.get()) << std::endl);
 			//ones_image *= (ELEMENT_TYPE) this->encoding_operator_->get_number_of_subsets();
 		}
-		ARRAY_TYPE s(image_dims.get());
-		ARRAY_TYPE g(image_dims);
+		ARRAY_TYPE s(*image_dims);
+		ARRAY_TYPE g(*image_dims);
 		clear(&g);
 
 
@@ -199,12 +201,12 @@ protected:
 		REAL L = 4; //Hmm.. this seems a little..well... guessy?
 		REAL tau = tau0;
 		REAL sigma = 1/(tau*L*L);
-		ARRAY_TYPE g(x.get_dimensions());
+		ARRAY_TYPE g(*x.get_dimensions());
 
 		for (auto it = 0u; it < inner_iterations; it++){
 			clear(&g);
 			for (auto reg_op : regularization_operators){
-				ARRAY_TYPE data(reg_op->get_codomain_dimensions());
+				ARRAY_TYPE data(*reg_op->get_codomain_dimensions());
 				reg_op->mult_M(&x,&data);
 				data *= sigma*reg_op->get_weight()/avg_lambda;
 				//updateF is the resolvent operator on the regularization
@@ -218,7 +220,7 @@ protected:
 				REAL val = 0;
 				REAL reg_val = 0;
 				for (auto i = 0u; i < reg_group.size(); i++){
-					datas[i] = ARRAY_TYPE(reg_group[i]->get_codomain_dimensions());
+					datas[i] = ARRAY_TYPE(*reg_group[i]->get_codomain_dimensions());
 					reg_group[i]->mult_M(&x,&datas[i]);
 					reg_val += asum(&datas[i])*reg_group[i]->get_weight();
 					datas[i] *= sigma*reg_group[i]->get_weight()/avg_lambda;

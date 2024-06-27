@@ -12,7 +12,7 @@ namespace Gadgetron
 
         try
         {
-            GADGET_CHECK_RETURN_FALSE(a.dimensions_equal(&b));
+            GADGET_CHECK_RETURN_FALSE(a.dimensions_equal(b));
 
             r = -1;
 

@@ -76,7 +76,7 @@ struct test_amin_functor : public thrust::binary_function<vector_td<T,D>, vector
 };
 
 template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amin(cuNDArray< vector_td<T,D> >* data1, cuNDArray< vector_td<T,D> >* data2){
-	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(*data1->get_dimensions()));
 	thrust::transform(data1->begin(),data1->end(),data2->begin(),out->begin(),test_amin_functor<T,D>());
 	return out;
 }
@@ -90,7 +90,7 @@ struct test_amax_functor : public thrust::binary_function<vector_td<T,D>, vector
 };
 
 template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amax(cuNDArray< vector_td<T,D> >* data1, cuNDArray< vector_td<T,D> >* data2){
-	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(*data1->get_dimensions()));
 	thrust::transform(data1->begin(),data1->end(),data2->begin(),out->begin(),test_amax_functor<T,D>());
 	return out;
 }
@@ -105,7 +105,7 @@ public:
 };
 
 template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amin2(cuNDArray< vector_td<T,D> >* data1, T val){
-	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(*data1->get_dimensions()));
 	thrust::transform(data1->begin(),data1->end(),out->begin(),test_amin2_functor<T,D>(val));
 	return out;
 }
@@ -121,7 +121,7 @@ public:
 };
 
 template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amax2(cuNDArray< vector_td<T,D> >* data1, T val){
-	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(*data1->get_dimensions()));
 	thrust::transform(data1->begin(),data1->end(),out->begin(),test_amax2_functor<T,D>(val));
 	return out;
 }

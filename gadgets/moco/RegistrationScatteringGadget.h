@@ -149,7 +149,7 @@ namespace Gadgetron{
         reg_dims.push_back(num_images-1); // this many registrations 
         reg_dims.push_back(2); // 2d flow vectors
         reg_dims.push_back(this->number_of_phases_);
-        ARRAY_TYPE reg_field(&reg_dims);
+        ARRAY_TYPE reg_field(reg_dims);
         unsigned int num_reg_elements_phase = reg_dims[0]*reg_dims[1]*reg_dims[2]*reg_dims[3];
 
         for( unsigned int phase=0; phase < this->number_of_phases_; phase++ ){
@@ -160,7 +160,7 @@ namespace Gadgetron{
 	
           std::vector< GadgetContainerMessage<ISMRMRD::ImageHeader>*> headers;
 
-          ARRAY_TYPE fixed_image(&fixed_dims);
+          ARRAY_TYPE fixed_image(fixed_dims);
           ARRAY_TYPE moving_image;
 	
           for( unsigned int image=0; image<num_images; image++ ){
@@ -193,7 +193,7 @@ namespace Gadgetron{
               // Assign this image as the 'image-1'th frame in the moving image
               //
 
-              ARRAY_TYPE tmp_fixed(&image_dimensions_, fixed_image.get_data_ptr()+(image-1)*num_image_elements);
+              ARRAY_TYPE tmp_fixed(image_dimensions_, fixed_image.get_data_ptr()+(image-1)*num_image_elements);
               tmp_fixed = *m2->getObjectPtr(); // Copy as for the moving image
               headers.push_back(m1);
 
@@ -225,8 +225,8 @@ namespace Gadgetron{
             
             {              
               std::vector<size_t> phase_reg_dims = reg_dims; phase_reg_dims.pop_back();
-              ARRAY_TYPE tmp_in( &phase_reg_dims, deformations->get_data_ptr() ); // the vector field has an extra dimension for CK (to be discarded)
-              ARRAY_TYPE tmp_out( &phase_reg_dims, reg_field.get_data_ptr()+phase*num_reg_elements_phase );
+              ARRAY_TYPE tmp_in(phase_reg_dims, deformations->get_data_ptr() ); // the vector field has an extra dimension for CK (to be discarded)
+              ARRAY_TYPE tmp_out(phase_reg_dims, reg_field.get_data_ptr()+phase*num_reg_elements_phase );
               tmp_out = tmp_in;
             }
 
@@ -255,7 +255,7 @@ namespace Gadgetron{
               }
               else{                
                 std::vector<size_t> moving_dims = *moving_image.get_dimensions();
-                cuNDArray<float> subimage( &moving_dims, deformed_moving->get_data_ptr()+(i-1)*num_image_elements);
+                cuNDArray<float> subimage( moving_dims, deformed_moving->get_data_ptr()+(i-1)*num_image_elements);
                 
                 if( set_continuation( headers[i], &subimage ) < 0 ) {
                   GDEBUG("Failed to set continuation\n");

@@ -16,18 +16,18 @@ ho2DArray<T>::ho2DArray(size_t sx, size_t sy)
 }
 
 template <typename T> 
-ho2DArray<T>::ho2DArray(std::vector<size_t> *dimensions)
+ho2DArray<T>::ho2DArray(const std::vector<size_t>& dimensions)
 : BaseClass(dimensions), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==2);
+    GADGET_CHECK_THROW(dimensions.size()==2);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho2DArray<T>::ho2DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(*dimensions, data, delete_data_on_destruct), accesser_(NULL)
+ho2DArray<T>::ho2DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
+: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==2);
+    GADGET_CHECK_THROW(dimensions.size()==2);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -79,7 +79,9 @@ ho2DArray<T>& ho2DArray<T>::operator=(const ho2DArray<T>& rhs)
         return *this;
     }
 
-    if (this->dimensions_equal(&rhs)) 
+    std::vector<size_t> dim;
+    rhs.get_dimensions(dim);
+    if (this->dimensions_equal(dim)) 
     {
         memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
@@ -98,23 +100,16 @@ ho2DArray<T>& ho2DArray<T>::operator=(const ho2DArray<T>& rhs)
 }
 
 template <typename T> 
-void ho2DArray<T>::create(std::vector<size_t>& dimensions)
+void ho2DArray<T>::create(const std::vector<size_t>& dimensions)
 {
     BaseClass::create(dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-void ho2DArray<T>::create(std::vector<size_t> *dimensions)
+void ho2DArray<T>::create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 {
-    BaseClass::create(*dimensions);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-void ho2DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-{
-    BaseClass::create(*dimensions, data, delete_data_on_destruct);
+    BaseClass::create(dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -127,9 +122,9 @@ bool ho2DArray<T>::createArray(size_t sx, size_t sy)
         dim[0] = sx;
         dim[1] = sy;
 
-        if ( !this->dimensions_equal(&dim) )
+        if ( !this->dimensions_equal(dim) )
         {
-            this->create(&dim);
+            this->create(dim);
             GADGET_CHECK_RETURN_FALSE(init_accesser());
         }
         else
@@ -155,7 +150,7 @@ bool ho2DArray<T>::createArray(size_t sx, size_t sy, T* data, bool delete_data_o
         dim[0] = sx;
         dim[1] = sy;
 
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
         GADGET_CHECK_RETURN_FALSE(init_accesser());
     }
     catch(...)

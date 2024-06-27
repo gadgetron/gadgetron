@@ -81,7 +81,7 @@ public:
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > subsets = this->encoding_operator_->projection_subsets(in);
 
 		GINFO("DEBUG DINGO 2\n");
-		ARRAY_TYPE tmp_projection(in->get_dimensions());
+		ARRAY_TYPE tmp_projection(*in->get_dimensions());
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > tmp_projections = this->encoding_operator_->projection_subsets(&tmp_projection);
 
 		GINFO("DEBUG DINGO 3\n");
@@ -89,7 +89,7 @@ public:
 		if (preconditioning_image_)
 			precon_image = preconditioning_image_;
 		else {
-			precon_image = boost::make_shared<ARRAY_TYPE>(image_dims.get());
+			precon_image = boost::make_shared<ARRAY_TYPE>(*image_dims);
 			fill(precon_image.get(),ELEMENT_TYPE(1));
 			this->encoding_operator_->mult_M(precon_image.get(),&tmp_projection,false);
 			this->encoding_operator_->mult_MH(&tmp_projection,precon_image.get(),false);
@@ -97,7 +97,7 @@ public:
 			reciprocal_inplace(precon_image.get());
 			//ones_image *= (ELEMENT_TYPE) this->encoding_operator_->get_number_of_subsets();
 		}
-		ARRAY_TYPE tmp_image(image_dims.get());
+		ARRAY_TYPE tmp_image(*image_dims);
 
 
 		GINFO("DEBUG DINGO 4\n");

@@ -107,7 +107,7 @@ int main( int argc, char** argv)
   
   // Upload host image to device, normalize, and convert to complex type
   timer = new GPUTimer("Uploading, normalizing and converting to complex");
-  cuNDArray<_real> _image(host_image.get());
+  cuNDArray<_real> _image(*host_image);
   normalize( &_image, 1.0f );
   boost::shared_ptr< cuNDArray<_complext> > image = real_to_complex<_complext>( &_image );
   delete timer;
@@ -115,7 +115,7 @@ int main( int argc, char** argv)
   // Setup resulting samples array
   vector<size_t> samples_dims; 
   samples_dims.push_back( samples_per_profile ); samples_dims.push_back( profiles_per_frame ); samples_dims.push_back(frames_per_reconstruction);
-  cuNDArray<_complext> samples(&samples_dims);
+  cuNDArray<_complext> samples(samples_dims);
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");
@@ -129,7 +129,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  plan.preprocess( traj.get(),NFFT_prep_mode::C2NC );
+  plan.preprocess( *traj, NFFT_prep_mode::C2NC );
   delete timer;
 
   // Gridder

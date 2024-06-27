@@ -12,8 +12,8 @@ public:
 
     ho5DArray();
     ho5DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp);
-    explicit ho5DArray(std::vector<size_t> *dimensions);
-    ho5DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    explicit ho5DArray(const std::vector<size_t>& dimensions);
+    ho5DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
     ho5DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, T* data, bool delete_data_on_destruct = false);
     ho5DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
     ho5DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
@@ -23,9 +23,8 @@ public:
     ho5DArray(const ho5DArray<T>& a);
     ho5DArray<T>& operator=(const ho5DArray<T>& rhs);
 
-    virtual void create(std::vector<size_t>& dimensions);
-    virtual void create(std::vector<size_t> *dimensions);
-    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(const std::vector<size_t>& dimensions);
+    virtual void create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual bool createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp);
     virtual bool createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, T* data, bool delete_data_on_destruct = false);
