@@ -621,8 +621,8 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
         bool fitItself = false;
         if (&dataSrc != &dataDst) fitItself = true;
 
-        GADGET_CHECK_THROW(dataSrc.dimensions_equal(&dataMask));
-        GADGET_CHECK_THROW(dataDst.dimensions_equal(&dataMask));
+        GADGET_CHECK_THROW(dataSrc.dimensions_equal(dataMask));
+        GADGET_CHECK_THROW(dataDst.dimensions_equal(dataMask));
 
         // find the fully sampled region
         size_t RO = dataMask.get_size(0);
@@ -708,7 +708,7 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
 
         std::vector<size_t> dimUnmixing(3);
         dimUnmixing[0] = RO; dimUnmixing[1] = E1; dimUnmixing[2] = srcCHA;
-        if (!unmixCoeff.dimensions_equal(&dimUnmixing))
+        if (!unmixCoeff.dimensions_equal(dimUnmixing))
         {
             unmixCoeff.create(RO, E1, srcCHA);
         }
@@ -716,7 +716,7 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
 
         std::vector<size_t> dimGFactor(2);
         dimGFactor[0] = RO; dimGFactor[1] = E1;
-        if (!gFactor.dimensions_equal(&dimGFactor))
+        if (!gFactor.dimensions_equal(dimGFactor))
         {
             gFactor.create(RO, E1);
         }
@@ -816,7 +816,7 @@ void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedI
         std::vector<size_t> dimIm(dim);
         dimIm[2] = dstCHA;
 
-        if (!complexIm.dimensions_equal(&dimIm))
+        if (!complexIm.dimensions_equal(dimIm))
         {
             complexIm.create(dimIm);
         }
@@ -877,7 +877,7 @@ void apply_unmix_coeff_kspace(const hoNDArray<T>& kspace, const hoNDArray<T>& un
         kspace.get_dimensions(dim);
         dim[2] = 1;
 
-        if (!complexIm.dimensions_equal(&dim))
+        if (!complexIm.dimensions_equal(dim))
         {
             complexIm.create(dim);
         }
@@ -909,7 +909,7 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
         aliasedIm.get_dimensions(dim);
         dim[2] = 1;
 
-        if (!complexIm.dimensions_equal(&dim))
+        if (!complexIm.dimensions_equal(dim))
         {
             complexIm.create(dim);
         }
@@ -1349,8 +1349,8 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 {
     try
     {
-        GADGET_CHECK_THROW(dataSrc.dimensions_equal(&dataMask));
-        GADGET_CHECK_THROW(dataDst.dimensions_equal(&dataMask));
+        GADGET_CHECK_THROW(dataSrc.dimensions_equal(dataMask));
+        GADGET_CHECK_THROW(dataDst.dimensions_equal(dataMask));
 
         // find the fully sampled region
         size_t RO = dataMask.get_size(0);
@@ -1586,7 +1586,7 @@ void grappa3d_image_domain_unwrapping(const hoNDArray<T>& convKer, const hoNDArr
         std::vector<size_t> dimRes(dim);
         dimRes[3] = dstCHA;
 
-        if (!complexIm.dimensions_equal(&dimRes))
+        if (!complexIm.dimensions_equal(dimRes))
         {
             complexIm.create(dim);
         }
@@ -1679,7 +1679,7 @@ void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, 
         std::vector<size_t> dimRes(dim);
         dimRes[3] = dstCHA;
 
-        if (!complexIm.dimensions_equal(&dimRes))
+        if (!complexIm.dimensions_equal(dimRes))
         {
             complexIm.create(dim);
         }

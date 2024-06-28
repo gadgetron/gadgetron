@@ -19,7 +19,7 @@ public:
     typedef typename BaseClass::REAL REAL;
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
 
-    hoSPIRIT2DTDataFidelityOperator(std::vector<size_t>* dims);
+    hoSPIRIT2DTDataFidelityOperator(const std::vector<size_t>& dims);
     virtual ~hoSPIRIT2DTDataFidelityOperator();
 
     // x is the kspace, including acquired and unacquired points

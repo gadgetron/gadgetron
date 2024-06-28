@@ -17,20 +17,20 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> >* in, cu
   if( !in || !out ){
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted");
   }
-  if ( !in->dimensions_equal(&this->domain_dims_) || !out->dimensions_equal(&this->codomain_dims_)){
+  if ( !in->dimensions_equal(this->domain_dims_) || !out->dimensions_equal(this->codomain_dims_)){
 	  throw std::runtime_error("cuNonCartesianSenseOperator::mult_H: input/output arrays do not match specified domain/codomains");
   }
 
-  std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> full_dimensions = this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
-  cuNDArray< complext<REAL> > tmp(&full_dimensions);  
+  cuNDArray< complext<REAL> > tmp(full_dimensions);  
   this->mult_csm( in, &tmp );
   
   // Forwards NFFT
 
   if( accumulate ){
     cuNDArray< complext<REAL> > tmp_out(out->get_dimensions());
-    plan_->compute( &tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC );
+    plan_->compute( tmp, tmp_out, dcw_.get(), NFFT_comp_mode::FORWARDS_C2NC );
     *out += tmp_out;
   }
   else
@@ -44,12 +44,12 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted");
   }
 
-  if ( !in->dimensions_equal(&this->codomain_dims_) || !out->dimensions_equal(&this->domain_dims_)){
+  if ( !in->dimensions_equal(this->codomain_dims_) || !out->dimensions_equal(this->domain_dims_)){
 	  throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: input/output arrays do not match specified domain/codomains");
   }
-  std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> tmp_dimensions = this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
-  cuNDArray< complext<REAL> > tmp(&tmp_dimensions);
+  cuNDArray< complext<REAL> > tmp(tmp_dimensions);
 
  // Do the NFFT
   plan_->compute( *in, tmp, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C );
@@ -75,11 +75,11 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
     throw std::runtime_error( "cuNonCartesianSenseOperator: cannot preprocess 0x0 trajectory.");
   }
   
-  boost::shared_ptr< std::vector<size_t> > domain_dims = this->get_domain_dimensions();
-  if( domain_dims.get() == 0x0 || domain_dims->empty() ){
+  std::vector<size_t> domain_dims = this->get_domain_dimensions();
+  if( domain_dims.empty() ){
     throw std::runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set");
   }
-  plan_->preprocess( trajectory, NFFT_prep_mode::ALL );
+  plan_->preprocess( *trajectory, NFFT_prep_mode::ALL );
   is_preprocessed_ = true;
 }
 

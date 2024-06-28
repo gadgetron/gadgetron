@@ -14,9 +14,6 @@
 #include <array>
 #include <algorithm>
 #include <stdint.h>
-
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
 #include <numeric>
 #include "TypeTraits.h"
 
@@ -36,18 +33,11 @@ namespace Gadgetron{
         virtual ~NDArray() {}
 
         virtual void create(const std::vector<size_t> &dimensions);
-        virtual void create(const std::vector<size_t> *dimensions);
-        virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
-
         virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
-        virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
-        virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
         void squeeze();
 
-        void reshape(const std::vector<size_t> *dims);
-        void reshape(const std::vector<size_t> & dims){ this->reshape(&dims);}
-        void reshape(boost::shared_ptr< std::vector<size_t> > dims);
+        void reshape(const std::vector<size_t>& dims);
 
         /**
          * Reshapes the array to the given dimensions.
@@ -62,13 +52,14 @@ namespace Gadgetron{
             this->reshape(std::initializer_list<std::int64_t>{std::int64_t(ind)...});
         }
 
-        bool dimensions_equal(const std::vector<size_t> *d) const;
+        bool dimensions_equal(const std::vector<size_t>* d) const { return this->dimensions_equal(*d); }
         bool dimensions_equal(const std::vector<size_t>& d) const;
 
-        template<class S> bool dimensions_equal(const NDArray<S> *a) const
+        template<class S> bool dimensions_equal(const NDArray<S>* a) const { return this->dimensions_equal(*a); }
+        template<class S> bool dimensions_equal(const NDArray<S>& a) const
         {
             std::vector<size_t> dim;
-            a->get_dimensions(dim);
+            a.get_dimensions(dim);
 
             if ( this->dimensions_.size() != dim.size() ) return false;
 
@@ -85,7 +76,7 @@ namespace Gadgetron{
 
         size_t get_size(size_t dimension) const;
 
-        boost::shared_ptr< std::vector<size_t> > get_dimensions() const;
+        std::vector<size_t> get_dimensions() const;
         void get_dimensions(std::vector<size_t>& dim) const;
 
         std::vector<size_t> const &dimensions() const;
@@ -120,7 +111,7 @@ namespace Gadgetron{
 
         size_t get_offset_factor(size_t dim) const;
         void get_offset_factor(std::vector<size_t>& offset) const;
-        boost::shared_ptr< std::vector<size_t> > get_offset_factor() const;
+        std::vector<size_t> get_offset_factor() const;
 
         size_t get_offset_factor_lastdim() const;
 
@@ -132,8 +123,6 @@ namespace Gadgetron{
         static void calculate_index( size_t offset, const std::vector<size_t>& offsetFactors, std::vector<size_t>& index );
 
         void clear();
-
-    
 
         /// whether a point is within the array range
         bool point_in_range(const std::vector<size_t>& ind) const;
@@ -162,40 +151,10 @@ namespace Gadgetron{
     };
 
     template <typename T> 
-    inline void NDArray<T>::create(const std::vector<size_t> *dimensions)
-    {
-        if(!dimensions) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");
-        dimensions_ = *dimensions;
-        allocate_memory();
-        calculate_offset_factors(dimensions_);
-    }
-
-    template <typename T> 
     inline void NDArray<T>::create(const std::vector<size_t>& dimensions)
     {
         dimensions_ = dimensions;
         allocate_memory();
-        calculate_offset_factors(dimensions_);
-    }
-
-    template <typename T> 
-    inline void NDArray<T>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
-    {
-        this->create(dimensions.get());
-    }
-
-    template <typename T> 
-    void NDArray<T>::create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-    {
-        if (!dimensions) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");
-        if (!data) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");    
-        dimensions_ = *dimensions;
-        this->data_ = data;
-        this->delete_data_on_destruct_ = delete_data_on_destruct;
-        this->elements_ = 1;
-        for (size_t i = 0; i < this->dimensions_.size(); i++){
-            this->elements_ *= this->dimensions_[i];
-        }
         calculate_offset_factors(dimensions_);
     }
 
@@ -214,13 +173,6 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline void NDArray<T>::create(boost::shared_ptr<std::vector<size_t>  > dimensions, 
-        T* data, bool delete_data_on_destruct)
-    {
-        this->create(dimensions.get(), data, delete_data_on_destruct);
-    }
-
-    template <typename T> 
     inline void NDArray<T>::squeeze()
     {
         std::vector<size_t> new_dimensions;
@@ -234,18 +186,18 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline void NDArray<T>::reshape(const std::vector<size_t> *dims)
+    inline void NDArray<T>::reshape(const std::vector<size_t>& dims)
     {
         size_t new_elements = 1;
-        for (size_t i = 0; i < dims->size(); i++){
-            new_elements *= (*dims)[i];
+        for (size_t i = 0; i < dims.size(); i++){
+            new_elements *= dims[i];
         }
 
         if (new_elements != elements_)
             throw std::runtime_error("NDArray<T>::reshape : Number of elements cannot change during reshape");    
 
         // Copy the input dimensions array
-        dimensions_ = *dims;
+        dimensions_ = dims;
         this->calculate_offset_factors(dimensions_);
     }
 
@@ -264,11 +216,6 @@ namespace Gadgetron{
         auto new_dims = std::vector<size_t>(dim_vec.begin(), dim_vec.end());
         this->reshape(new_dims);
     }
-    template <typename T> 
-    inline void NDArray<T>::reshape( boost::shared_ptr< std::vector<size_t> > dims )
-    {
-        this->reshape(dims.get());
-    }
 
     template <typename T> 
     inline bool NDArray<T>::dimensions_equal(const std::vector<size_t>& d) const
@@ -284,11 +231,6 @@ namespace Gadgetron{
         return true;
     }
 
-    template <typename T>
-    inline bool NDArray<T>::dimensions_equal(const std::vector<size_t>* d) const
-    {
-        return this->dimensions_equal(*d);
-    }
     template <typename T>
     inline size_t NDArray<T>::get_number_of_dimensions() const
     {
@@ -307,12 +249,9 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline boost::shared_ptr< std::vector<size_t> > NDArray<T>::get_dimensions() const
+    inline std::vector<size_t> NDArray<T>::get_dimensions() const
     {
-        // Make copy to ensure that the receiver cannot alter the array dimensions
-        std::vector<size_t> *tmp = new std::vector<size_t>;
-        *tmp=dimensions_;
-        return boost::shared_ptr< std::vector<size_t> >(tmp); 
+        return this->dimensions_;
     }
 
     template <typename T> 
@@ -488,10 +427,12 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline boost::shared_ptr< std::vector<size_t> > NDArray<T>::get_offset_factor() const
+    inline std::vector<size_t> NDArray<T>::get_offset_factor() const
     {
-
-        return boost::make_shared<std::vector<size_t>>(offsetFactors_.begin(),offsetFactors_.end());
+        size_t NDim = this->dimensions_.size();
+        std::vector<size_t> res(NDim, 0);
+        for (auto i = 0; i < NDim; i++) res[i] = this->offsetFactors_[i];
+        return res;
     }
 
     template <typename T> 
@@ -577,7 +518,6 @@ namespace Gadgetron{
         this->elements_ = 0;
         this->dimensions_.clear();
     }
-
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(const std::vector<size_t>& ind) const

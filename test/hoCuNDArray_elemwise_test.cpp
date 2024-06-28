@@ -11,8 +11,8 @@ protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    Array = hoCuNDArray<T>(&dims);
-    Array2 = hoCuNDArray<T>(&dims);
+    Array = hoCuNDArray<T>(dims);
+    Array2 = hoCuNDArray<T>(dims);
   }
   std::vector<unsigned int> dims;
   hoCuNDArray<T> Array;
@@ -74,8 +74,8 @@ protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49}; //Using prime numbers for setup because they are messy
     dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    Array = hoCuNDArray<T>(&dims);
-    Array2 = hoCuNDArray<T>(&dims);
+    Array = hoCuNDArray<T>(dims);
+    Array2 = hoCuNDArray<T>(dims);
   }
   std::vector<unsigned int> dims;
   hoCuNDArray<T> Array;

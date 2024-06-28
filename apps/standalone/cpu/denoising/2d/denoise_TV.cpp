@@ -76,19 +76,19 @@ int main(int argc, char** argv)
   // Setup regularization operators
   boost::shared_ptr< hoPartialDerivativeOperator<_real,2> > Rx( new hoPartialDerivativeOperator<_real,2>(0) );
   Rx->set_weight( lambda );
-  Rx->set_domain_dimensions(data->get_dimensions().get());
-  Rx->set_codomain_dimensions(data->get_dimensions().get());
+  Rx->set_domain_dimensions(data->get_dimensions());
+  Rx->set_codomain_dimensions(data->get_dimensions());
   
   boost::shared_ptr< hoPartialDerivativeOperator<_real,2> > Ry( new hoPartialDerivativeOperator<_real,2>(1) );
   Ry->set_weight( lambda );
-  Ry->set_domain_dimensions(data->get_dimensions().get());
-  Ry->set_codomain_dimensions(data->get_dimensions().get());
+  Ry->set_domain_dimensions(data->get_dimensions());
+  Ry->set_codomain_dimensions(data->get_dimensions());
   
   // Define encoding operator (identity)
   boost::shared_ptr< identityOperator<hoNDArray<_real> > > E( new identityOperator<hoNDArray<_real> >() );
   E->set_weight( mu );
-  E->set_domain_dimensions(data->get_dimensions().get());
-  E->set_codomain_dimensions(data->get_dimensions().get());
+  E->set_domain_dimensions(data->get_dimensions());
+  E->set_codomain_dimensions(data->get_dimensions());
   
   // Setup split-Bregman solver
   hoSbCgSolver<_real> sb;

@@ -28,7 +28,7 @@ public:
 	virtual ~CMRTOperator(){};
 
 	virtual void mult_MH(cuNDArray<COMPLEX>* in, cuNDArray<COMPLEX>* out, bool accumulate = false){
-		cuNDArray<COMPLEX> projections(&projection_dims);
+		cuNDArray<COMPLEX> projections(projection_dims);
 		E_.mult_MH(in,&projections);
 		std::vector<size_t> permute_dims;
 		permute_dims.push_back(0);
@@ -54,7 +54,7 @@ public:
 
 	virtual void mult_M(cuNDArray<COMPLEX>* in, cuNDArray<COMPLEX>* out, bool accumulate = false){
 
-		cuNDArray<COMPLEX> projections(&projection_dims_permuted);
+		cuNDArray<COMPLEX> projections(projection_dims_permuted);
 
 		COMPLEX* proj_ptr = projections.get_data_ptr();
 		std::vector<size_t> proj_dim3d(projection_dims.begin(),projection_dims.end()-1);
@@ -83,7 +83,7 @@ public:
 		E_.setup( uint64d2(projection_dims[0], projection_dims[1]),
 				uint64d2(projection_dims[0], projection_dims[1])*size_t(2), // !! <-- alpha_
 				W_ );
-		E_.preprocess(traj.get());
+		E_.preprocess(*traj);
 
 		this->projection_dims = projection_dims;
 		projection_dims_permuted = projection_dims;
@@ -120,7 +120,7 @@ public:
 			}
 
 
-			backprojection->preprocess(traj2.get());
+			backprojection->preprocess(*traj2);
 			backprojections.push_back(backprojection);
 			time_offset += projection_dims[2];
 		}

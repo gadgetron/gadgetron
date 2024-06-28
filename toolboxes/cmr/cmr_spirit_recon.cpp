@@ -52,7 +52,7 @@ namespace Gadgetron {
 
             hoNDArray<T> kspace_initial_Shifted;
             bool hasInitial = false;
-            if ( kspaceInitial.dimensions_equal(&kspace) )
+            if ( kspaceInitial.dimensions_equal(kspace) )
             {
                 kspace_initial_Shifted = kspaceInitial;
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspaceInitial, kspace_initial_Shifted);
@@ -76,7 +76,7 @@ namespace Gadgetron {
 
 #pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, startE1, endE1, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1)
             {
-                boost::shared_ptr< hoSPIRIT2DOperator< T > > oper(new hoSPIRIT2DOperator< T >(&dim));
+                boost::shared_ptr< hoSPIRIT2DOperator< T > > oper(new hoSPIRIT2DOperator< T >(dim));
                 hoSPIRIT2DOperator< T >& spirit = *oper;
                 spirit.use_non_centered_fft_ = true;
                 spirit.no_null_space_ = false;
@@ -267,12 +267,12 @@ namespace Gadgetron {
                 // parallel imaging term
                 std::vector<size_t> dims;
                 acq->get_dimensions(dims);
-                hoSPIRIT2DTDataFidelityOperator< T > spirit(&dims);
+                hoSPIRIT2DTDataFidelityOperator< T > spirit(dims);
                 spirit.set_forward_kernel(*ker, false);
                 spirit.set_acquired_points(*acq);
 
                 // image reg term
-                hoWavelet2DTOperator< T > wav3DOperator(&dims);
+                hoWavelet2DTOperator< T > wav3DOperator(dims);
                 wav3DOperator.set_acquired_points(*acq);
                 wav3DOperator.scale_factor_first_dimension_ = 1;
                 wav3DOperator.scale_factor_second_dimension_ = 1;
@@ -323,7 +323,7 @@ namespace Gadgetron {
                 std::vector<size_t> dims;
                 acq->get_dimensions(dims);
 
-                hoSPIRIT2DTOperator< T > spirit(&dims);
+                hoSPIRIT2DTOperator< T > spirit(dims);
                 spirit.set_forward_kernel(*ker, false);
                 spirit.set_acquired_points(*acq);
                 spirit.no_null_space_ = true;
@@ -333,7 +333,7 @@ namespace Gadgetron {
                 std::vector<size_t> dim;
                 acq->get_dimensions(dim);
 
-                hoWavelet2DTOperator< T > wav3DOperator(&dim);
+                hoWavelet2DTOperator< T > wav3DOperator(dim);
                 wav3DOperator.set_acquired_points(*acq);
                 wav3DOperator.scale_factor_first_dimension_ = 1;
                 wav3DOperator.scale_factor_second_dimension_ = 1;

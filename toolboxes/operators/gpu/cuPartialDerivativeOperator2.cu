@@ -127,7 +127,7 @@ cuPartialDerivativeOperator2<T,D>::mult_MH(cuNDArray<T> *in, cuNDArray<T> *out,
 	  throw std::runtime_error( "partialDerivativeOperator2::mult_MH  : dimensionality mismatch" );
   }
 
-  typename uintd<D>::Type _dims = vector_td<unsigned int,D>(from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+  typename uintd<D>::Type _dims = vector_td<unsigned int,D>(from_std_vector<size_t,D>( in->get_dimensions()) );
   typename intd<D>::Type dims;
   for( unsigned int i=0; i<D; i++ ){
     dims.vec[i] = (int)_dims.vec[i];
@@ -163,7 +163,7 @@ cuPartialDerivativeOperator2<T,D>::mult_M(cuNDArray<T> *in, cuNDArray<T> *out,
 	  throw std::runtime_error( "partialDerivativeOperator2::mult_M  : dimensionality mismatch" );
   }
 
-  typename uintd<D>::Type _dims = vector_td<unsigned int,D>(from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+  typename uintd<D>::Type _dims = vector_td<unsigned int,D>(from_std_vector<size_t,D>( in->get_dimensions()) );
   typename intd<D>::Type dims;
   for( unsigned int i=0; i<D; i++ ){
     dims.vec[i] = (int)_dims.vec[i];

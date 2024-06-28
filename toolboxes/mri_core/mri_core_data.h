@@ -117,18 +117,6 @@ namespace Gadgetron
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
 
     SamplingDescription sampling_;
-
-    [[deprecated]]
-    void clear()
-    {
-        if (this->data_.delete_data_on_destruct()) this->data_.clear();
-        if (this->trajectory_)
-        {
-            if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
-        }
-
-        if (this->headers_.delete_data_on_destruct()) headers_.clear();
-    }
   };
   
 

@@ -21,7 +21,7 @@ public:
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
     typedef typename realType<T>::Type value_type;
 
-    hoWavelet3DOperator(std::vector<size_t> *dims);
+    hoWavelet3DOperator(const std::vector<size_t>& dims);
     virtual ~hoWavelet3DOperator();
 
     /// if no_null_space_ == true

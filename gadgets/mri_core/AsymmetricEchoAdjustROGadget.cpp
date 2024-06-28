@@ -39,7 +39,7 @@ namespace Gadgetron {
                 // adjust the center echo
                 int az = addPrePostZeros(centre_column, samples);
                 if (az != 0 && samples < maxRO_[encoding_ref]) {
-                    std::vector<size_t> data_out_dims = *acq.get_dimensions();
+                    std::vector<size_t> data_out_dims = acq.get_dimensions();
                     data_out_dims[0] = maxRO_[encoding_ref];
                     hoNDArray<std::complex<float>> temp;
                     try {

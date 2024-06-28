@@ -93,12 +93,12 @@ int main( int argc, char** argv)
 
   // Upload host data to device
   timer = new GPUTimer("Uploading samples to device");
-  cuNDArray<_complext> samples(host_samples.get());
+  cuNDArray<_complext> samples(*host_samples);
   delete timer;
   
   // Setup resulting image array
   vector<size_t> image_dims = to_std_vector(matrix_size);
-  cuNDArray<_complext> image(&image_dims);
+  cuNDArray<_complext> image(image_dims);
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");
@@ -112,7 +112,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  plan.preprocess( traj.get(), NFFT_prep_mode::NC2C );
+  plan.preprocess( *traj, NFFT_prep_mode::NC2C );
   delete timer;
 
   // Compute density compensation weights

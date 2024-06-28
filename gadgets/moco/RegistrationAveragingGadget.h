@@ -92,7 +92,7 @@ namespace Gadgetron{
       
       if( this->phase_images_.empty() ){
       
-        this->image_dimensions_ = *m2->getObjectPtr()->get_dimensions();
+        this->image_dimensions_ = m2->getObjectPtr()->get_dimensions();
         this->phase_images_ =  decltype(this->phase_images_){};
 	
         size_t bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*this->number_of_phases_;

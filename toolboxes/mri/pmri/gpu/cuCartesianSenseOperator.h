@@ -21,11 +21,11 @@ namespace Gadgetron{
     virtual void set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> > idx) 
     {
       if (idx.get()) {
-	idx_ = idx;
-	std::vector<size_t> tmp_dims;
-	tmp_dims.push_back(idx_->get_number_of_elements());
-	tmp_dims.push_back(this->ncoils_);
-	this->set_codomain_dimensions(&tmp_dims);
+        idx_ = idx;
+        std::vector<size_t> tmp_dims;
+        tmp_dims.push_back(idx_->get_number_of_elements());
+        tmp_dims.push_back(this->ncoils_);
+        this->set_codomain_dimensions(tmp_dims);
       }
     }
     

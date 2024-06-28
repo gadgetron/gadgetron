@@ -93,13 +93,6 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_csm     = read_nd_array<_complext> ((char*)parms.get_parameter('c')->get_string_value());
   boost::shared_ptr< hoNDArray<_complext> > host_reg     = read_nd_array<_complext> ((char*)parms.get_parameter('g')->get_string_value());
   delete timer;
-   
-  /* {
-    std::vector<size_t> dims;
-    dims.push_back(host_traj->get_size(0));
-    dims.push_back(host_samples->get_number_of_elements()/dims[0]);
-    host_samples->reshape(&dims);
-    } */
 
   if( !(host_samples->get_number_of_dimensions() == 2 && host_traj->get_number_of_dimensions() == 2) ){
     GINFO_STREAM(endl << "Samples/trajectory arrays must be two-dimensional: (dim 0: samples/profile x #profiles/frame; dim 1: #frames). Quitting.\n" << endl);
@@ -132,19 +125,19 @@ int main( int argc, char** argv)
   recon_dims.push_back(num_frames);
 
   // Upload arrays to device
-  cuNDArray<_complext> samples(host_samples.get());
-  cuNDArray<_reald2> trajectory(host_traj.get());
-  boost::shared_ptr< cuNDArray<_complext> > csm( new cuNDArray<_complext>(host_csm.get()));
-  boost::shared_ptr< cuNDArray<_complext> > reg_image( new cuNDArray<_complext>(host_reg.get()));
-  boost::shared_ptr< cuNDArray<_real> > dcw( new cuNDArray<_real>(host_dcw.get()));
+  cuNDArray<_complext> samples(*host_samples);
+  cuNDArray<_reald2> trajectory(*host_traj);
+  boost::shared_ptr< cuNDArray<_complext> > csm( new cuNDArray<_complext>(*host_csm));
+  boost::shared_ptr< cuNDArray<_complext> > reg_image( new cuNDArray<_complext>(*host_reg));
+  boost::shared_ptr< cuNDArray<_real> > dcw( new cuNDArray<_real>(*host_dcw));
 
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->setup( matrix_size, matrix_size_os, kernel_width );
   E->set_dcw(dcw) ;
   E->set_csm(csm);
-  E->set_domain_dimensions(&recon_dims);
-  E->set_codomain_dimensions(samples.get_dimensions().get());
+  E->set_domain_dimensions(recon_dims);
+  E->set_codomain_dimensions(samples.get_dimensions());
   E->preprocess(&trajectory);
   
   // Define regularization operator

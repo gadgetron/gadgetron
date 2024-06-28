@@ -94,10 +94,10 @@ int gpuBufferSensePrepGadget::process(
 
 		if (buffer->headers_[0].trajectory_dimensions == 3){
 			auto traj_dcw = separate_traj_and_dcw(&trajectory);
-			dcw = boost::make_shared<cuNDArray<float>>(std::get<1>(traj_dcw).get());
-			traj = boost::make_shared<cuNDArray<floatd2>>(std::get<0>(traj_dcw).get());
+			dcw = boost::make_shared<cuNDArray<float>>(*std::get<1>(traj_dcw).get());
+			traj = boost::make_shared<cuNDArray<floatd2>>(*std::get<0>(traj_dcw).get());
 		} else if (buffer->headers_[0].trajectory_dimensions == 2){
-			auto old_traj_dims = *trajectory.get_dimensions();
+			auto old_traj_dims = trajectory.get_dimensions();
 			std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
 			hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
 			traj = boost::make_shared<cuNDArray<floatd2>>(tmp_traj);
@@ -106,7 +106,7 @@ int gpuBufferSensePrepGadget::process(
 		}
 	}
 	{
-		auto tmpdim = *buffer->data_.get_dimensions();
+		auto tmpdim = buffer->data_.get_dimensions();
 		std::stringstream stream; 
 		for (auto dim : tmpdim)
 			stream << dim << " ";
@@ -122,7 +122,7 @@ int gpuBufferSensePrepGadget::process(
 		auto reg_images = reconstruct_regularization(&data,traj.get(),dcw.get(),ncoils);
 		//reg_images->squeeze();
 
-		auto csm = estimate_b1_map<float,2>(reg_images.get());
+		auto csm = estimate_b1_map<float,2>(*reg_images);
 		*reg_images *= csm;
 		auto combined = sum(reg_images.get(),reg_images->get_number_of_dimensions()-1);
 
@@ -145,7 +145,7 @@ int gpuBufferSensePrepGadget::process(
 			job.tra_host_ = std::get<0>(traj_dcw);
 			job.dcw_host_ = std::get<1>(traj_dcw);
 		} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
-			auto old_traj_dims = *trajectory.get_dimensions();
+			auto old_traj_dims = trajectory.get_dimensions();
 			std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
 			hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
 			job.tra_host_ = boost::make_shared<hoNDArray<floatd2>>(tmp_traj);
@@ -162,14 +162,14 @@ int gpuBufferSensePrepGadget::process(
 		*job.dcw_host_  *= scale_factor;
 	}
 
-	auto data_dims = *job.dat_host_->get_dimensions();
+	auto data_dims = job.dat_host_->get_dimensions();
 	//Sense gadgets expect only 1 dimension for encoding, so collapse the first
 	size_t elements = std::accumulate(data_dims.begin(),data_dims.end()-1,1,std::multiplies<size_t>());
 	std::vector<size_t> new_data_dims = {elements,data_dims.back()};
-	job.dat_host_->reshape(&new_data_dims);
+	job.dat_host_->reshape(new_data_dims);
 
 	size_t traj_elements = job.tra_host_->get_number_of_elements();
-	auto traj_dims = *job.tra_host_->get_dimensions();
+	auto traj_dims = job.tra_host_->get_dimensions();
 
 	size_t kpoints_per_frame = traj_dims[0]*profiles_per_frame_;
 	if (traj_elements%kpoints_per_frame){
@@ -179,8 +179,8 @@ int gpuBufferSensePrepGadget::process(
 	}
 	std::vector<size_t> new_traj_dims ={kpoints_per_frame,traj_elements/kpoints_per_frame};
 
-	job.tra_host_->reshape(&new_traj_dims);
-	job.dcw_host_->reshape(&new_traj_dims);
+	job.tra_host_->reshape(new_traj_dims);
+	job.dcw_host_->reshape(new_traj_dims);
 
 
 	//Let's invent some image headers!
@@ -225,9 +225,9 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 		GDEBUG("traj: %i data %i\n",traj->get_number_of_elements(),data->get_number_of_elements());
 		GDEBUG("Preprocessing\n\n");
-		plan.preprocess(&flat_traj,NFFT_prep_mode::NC2C);
+		plan.preprocess(flat_traj,NFFT_prep_mode::NC2C);
 		GDEBUG("Computing\n\n");
-		plan.compute(data,*result,dcw,NFFT_comp_mode::BACKWARDS_NC2C);
+		plan.compute(*data,*result,dcw,NFFT_comp_mode::BACKWARDS_NC2C);
 
 		return boost::shared_ptr<cuNDArray<float_complext>>(result);
 
@@ -241,13 +241,13 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
-		E->set_domain_dimensions(&csm_dims);
+		E->set_domain_dimensions(csm_dims);
 		cuCgSolver<float_complext> solver;
 		solver.set_max_iterations(0);
 		solver.set_encoding_operator(E);
 		solver.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
-		E->set_codomain_dimensions(data->get_dimensions().get());
-		E->preprocess(&flat_traj);
+		E->set_codomain_dimensions(data->get_dimensions());
+		E->preprocess(flat_traj);
 		auto res = solver.solve(data);
 		return res;
 	}
@@ -255,7 +255,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> gpuBufferSensePrepGadget::separate_traj_and_dcw(
 		hoNDArray<float >* traj_dcw) {
-	std::vector<size_t> dims = *traj_dcw->get_dimensions();
+	std::vector<size_t> dims = traj_dcw->get_dimensions();
 	std::vector<size_t> reduced_dims(dims.begin()+1,dims.end()); //Copy vector, but leave out first dim
 	auto  dcw = boost::make_shared<hoNDArray<float>>(reduced_dims);
 

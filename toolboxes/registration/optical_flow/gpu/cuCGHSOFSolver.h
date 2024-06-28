@@ -25,18 +25,18 @@ public:
 
 	virtual void compute( cuNDArray<T> *fixed_image, cuNDArray<T> *moving_image, cuNDArray<T> *stencil_image, boost::shared_ptr<cuNDArray<T> > &result )
   {
-		std::vector<size_t> dims = *fixed_image->get_dimensions();
-		OF->set_codomain_dimensions(&dims);    
+		std::vector<size_t> dims = fixed_image->get_dimensions();
+		OF->set_codomain_dimensions(dims);    
 		OF->set_images(fixed_image,moving_image);
 
 		for (int i = 0; i < ops.size(); i++){
-				ops[i]->set_domain_dimensions(&dims);
-				ops[i]->set_codomain_dimensions(&dims);
+				ops[i]->set_domain_dimensions(dims);
+				ops[i]->set_codomain_dimensions(dims);
 				ops[i]->set_weight(_alpha);
 		}
 
 		dims.push_back(D);
-		OF->set_domain_dimensions(&dims);
+		OF->set_domain_dimensions(dims);
 		cuNDArray<T> It(*fixed_image);
 		It -= *moving_image;
 		boost::shared_ptr<cuNDArray<T> > resOp = solver->solve(&It);

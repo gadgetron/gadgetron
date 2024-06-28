@@ -19,7 +19,7 @@ public:
     typedef typename BaseClass::REAL REAL;
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
 
-    hoSPIRIT3DOperator(std::vector<size_t> *dims);
+    hoSPIRIT3DOperator(const std::vector<size_t>& dims);
     virtual ~hoSPIRIT3DOperator();
 
     using BaseClass::use_non_centered_fft_;

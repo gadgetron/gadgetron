@@ -93,7 +93,7 @@ TYPED_TEST(cuNFFT_test, cuNFFT_ATOMIC) {
     auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
 
     {
-        this->nfft_plan_->compute(&this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+        this->nfft_plan_->compute(this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
     }
     EXPECT_TRUE(this->timer_.stop()<2e6);// Test should take less than 2 sec
 }
@@ -111,7 +111,7 @@ TYPED_TEST(cuNFFT_test, cuNFFT_STANDARD) {
 
     auto temp = boost::make_shared<cuNDArray<float_complext>>(this->recon_dims);
     {
-        this->nfft_plan_->compute(&this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+        this->nfft_plan_->compute(this->fake_data, *temp, &this->fake_dcw, NFFT_comp_mode::BACKWARDS_NC2C);
     }
     EXPECT_TRUE(this->timer_.stop()<20e6); // Test should take less than 20 sec
 }

@@ -63,18 +63,18 @@ public:
 		// Get image space dimensions from the encoding operator
 		//
 
-		boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
-		if( image_dims->size() == 0 ){
+		std::vector<size_t> image_dims = this->encoding_operator_->get_domain_dimensions();
+		if( image_dims.empty() ){
 			throw std::runtime_error("Error: lbfgsSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
-		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims.get()); //The image. Will be returned inside a shared_ptr
+		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims); //The image. Will be returned inside a shared_ptr
 
-		ARRAY_TYPE g(image_dims.get()); //Contains the gradient of the current step
-		ARRAY_TYPE g_old(image_dims.get()); //Contains the gradient of the previous step
+		ARRAY_TYPE g(image_dims); //Contains the gradient of the current step
+		ARRAY_TYPE g_old(image_dims); //Contains the gradient of the previous step
 
 
-		ARRAY_TYPE g_linear(image_dims.get()); //Contains the linear part of the gradient;
+		ARRAY_TYPE g_linear(image_dims); //Contains the linear part of the gradient;
 
 		//If a prior image was given, use it for the initial guess.
 		if (this->x0_.get()){
@@ -97,14 +97,14 @@ public:
 		}
 		std::vector<ARRAY_TYPE> regEnc2 = regEnc;
 
-		ARRAY_TYPE d(image_dims.get()); //Search direction.
+		ARRAY_TYPE d(image_dims); //Search direction.
 		clear(&d);
 
-		ARRAY_TYPE encoding_space(in->get_dimensions().get()); //Contains the encoding space, or, equivalently, the residual vector
+		ARRAY_TYPE encoding_space(in->get_dimensions()); //Contains the encoding space, or, equivalently, the residual vector
 
-		ARRAY_TYPE g_step(image_dims.get()); //Linear part of the gradient of the step d will be stored here
+		ARRAY_TYPE g_step(image_dims); //Linear part of the gradient of the step d will be stored here
 
-		ARRAY_TYPE encoding_space2(in->get_dimensions().get());
+		ARRAY_TYPE encoding_space2(in->get_dimensions());
 		REAL reg_res,data_res;
 
 

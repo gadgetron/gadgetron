@@ -63,11 +63,11 @@ public:
 		// Iterate over the coils
 		//
 		for( unsigned int i=0; i<num_phases_out; i++ ){
-			boost::shared_ptr< cuNDArray< complext<REAL> > > tmp_kernel( new cuNDArray< complext<REAL> >(&dim_coils, kernels_->get_data_ptr()+i*num_elements_coils ));
+			boost::shared_ptr< cuNDArray< complext<REAL> > > tmp_kernel( new cuNDArray< complext<REAL> >(dim_coils, kernels_->get_data_ptr()+i*num_elements_coils ));
 			D_->set_diagonal(tmp_kernel);
 			for (unsigned int k=0; k < num_frames; k++){
-				cuNDArray<complext<REAL>> tmp_in(&dim_image,in->get_data_ptr()+k*num_elements_image);
-				cuNDArray< complext<REAL> > tmp_out( &dim_image, out->get_data_ptr()+i*num_elements_image*num_frames+k*num_elements_image );
+				cuNDArray<complext<REAL>> tmp_in(dim_image,in->get_data_ptr()+k*num_elements_image);
+				cuNDArray< complext<REAL> > tmp_out(dim_image, out->get_data_ptr()+i*num_elements_image*num_frames+k*num_elements_image );
 				D_->mult_M( &tmp_in, &tmp_out, accumulate );
 			}
 		}
@@ -113,11 +113,11 @@ const unsigned int num_coils_squared = kernels_->get_size(2);
 		//
 
 		for( unsigned int i=0; i<num_phases_in; i++ ){
-			boost::shared_ptr< cuNDArray< complext<REAL> > > tmp_kernel( new cuNDArray< complext<REAL> >(&dim_coils, kernels_->get_data_ptr()+i*num_elements_coils ));
+			boost::shared_ptr< cuNDArray< complext<REAL> > > tmp_kernel( new cuNDArray< complext<REAL> >(dim_coils, kernels_->get_data_ptr()+i*num_elements_coils ));
 
 			D_->set_diagonal(tmp_kernel);
 			for (unsigned int k=0; i<num_frames; k++){
-			cuNDArray< complext<REAL> > tmp_in( &dim_image, in->get_data_ptr()+i*num_elements_image*num_frames+k*num_elements_image );
+			cuNDArray< complext<REAL> > tmp_in(dim_image, in->get_data_ptr()+i*num_elements_image*num_frames+k*num_elements_image );
 			cuNDArray<complext<REAL> > tmp_out(dim_image,out->get_data_ptr()+k*num_elements_image);
 			if( i==0 && !accumulate )
 				D_->mult_MH( &tmp_in, &tmp_out, false );

@@ -21,7 +21,7 @@ public:
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
     typedef typename realType<T>::Type value_type;
 
-    hoWavelet1DBaseOperator(std::vector<size_t> *dims);
+    hoWavelet1DBaseOperator(const std::vector<size_t>& dims);
     virtual ~hoWavelet1DBaseOperator();
 
     /// perform operation 1 ||WF'x||1,    if input_in_kspace_==true and no_null_space_ is false
@@ -121,7 +121,7 @@ public:
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
     typedef float value_type;
 
-    hoWavelet1DOperator(std::vector<size_t> *dims);
+    hoWavelet1DOperator(const std::vector<size_t>& dims);
     virtual ~hoWavelet1DOperator();
 
     /// forward wavelet transform
@@ -184,7 +184,7 @@ public:
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
     typedef float value_type;
 
-    hoWavelet1DREALOperator(std::vector<size_t> *dims);
+    hoWavelet1DREALOperator(const std::vector<size_t>& dims);
     virtual ~hoWavelet1DREALOperator();
 
     /// forward wavelet transform

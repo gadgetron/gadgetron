@@ -18,11 +18,11 @@ namespace Gadgetron{
     typedef typename realType<ELEMENT_TYPE>::Type REAL;
   linearOperator() : generalOperator<ARRAY_TYPE>() {}
 
-  linearOperator(std::vector<size_t> *dims) : generalOperator<ARRAY_TYPE>(dims) {
+  linearOperator(const std::vector<size_t>& dims) : generalOperator<ARRAY_TYPE>(dims) {
       set_codomain_dimensions(dims);
     }
 
-  linearOperator(std::vector<size_t> *dims, std::vector<size_t> *codims)
+  linearOperator(const std::vector<size_t>& dims, const std::vector<size_t>& codims)
     : generalOperator<ARRAY_TYPE>(dims) {
       set_codomain_dimensions(codims);
     }
@@ -58,19 +58,16 @@ namespace Gadgetron{
       this->mult_M(in,&tmp);
       return std::sqrt(this->get_weight())*real(dot(&tmp,&tmp));
     }
-    virtual void set_codomain_dimensions( const std::vector<size_t> *dims )
+
+    virtual void set_codomain_dimensions( const std::vector<size_t>& dims )
     {
-      if( dims == 0x0 )
-	throw std::runtime_error("linearOperator::set_codomain_dimensions: illegal dimensions array provided");
-      codomain_dims_ = *dims;
+      codomain_dims_ = dims;
     }
 
-    virtual boost::shared_ptr< std::vector<size_t> > get_codomain_dimensions()
-      {
-	std::vector<size_t> *dims = new std::vector<size_t>();
-	*dims = codomain_dims_;
-	return boost::shared_ptr< std::vector<size_t> >(dims);
-      }
+    virtual std::vector<size_t> get_codomain_dimensions()
+    {
+      return this->codomain_dims_;
+    }
 
     virtual void mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
     virtual void mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;

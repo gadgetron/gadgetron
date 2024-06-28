@@ -75,7 +75,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::gradient(ARRAY_TYPE* x, ARRA
         // 1 ./ ( (Mx)'(Mx)+mu )^1/2
         Gadgetron::abs(moco_im_, moco_im_Norm_);
 
-        if (!moco_im_Norm_approx_.dimensions_equal(&moco_im_Norm_))
+        if (!moco_im_Norm_approx_.dimensions_equal(moco_im_Norm_))
         {
             moco_im_Norm_approx_.create(moco_im_Norm_.dimensions());
         }

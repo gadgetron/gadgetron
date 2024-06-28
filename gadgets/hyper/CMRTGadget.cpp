@@ -138,9 +138,9 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 			}
 			boost::shared_ptr<cuNDArray<float_complext> > data = get_combined_frames();
 			auto data_dims = data->get_dimensions();
-			size_t ntimeframes = data_dims->back()/projections_per_recon_;
-			data_dims->back() = projections_per_recon_;
-			data_dims->push_back(ntimeframes);
+			size_t ntimeframes = data_dims.back()/projections_per_recon_;
+			data_dims.back() = projections_per_recon_;
+			data_dims.push_back(ntimeframes);
 			data->reshape(data_dims);
 			// Initialize plan
 			//
@@ -161,8 +161,8 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 
 			auto image_space_dimensions_4D = image_space_dimensions_3D_;
 			image_space_dimensions_4D.push_back(ntimeframes);
-			E->set_domain_dimensions(&image_space_dimensions_4D);
-			E->set_codomain_dimensions(data->get_dimensions().get());
+			E->set_domain_dimensions(image_space_dimensions_4D);
+			E->set_codomain_dimensions(data->get_dimensions());
 
 
 			boost::shared_ptr<cuNDArray<float_complext> > result;
@@ -183,17 +183,17 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 
 				auto Rt1_ = boost::make_shared< cuPartialDerivativeOperator2<float_complext,4> >();
 
-				Rx1_->set_domain_dimensions(&image_space_dimensions_4D);
-				Rx1_->set_codomain_dimensions(&image_space_dimensions_4D);
+				Rx1_->set_domain_dimensions(image_space_dimensions_4D);
+				Rx1_->set_codomain_dimensions(image_space_dimensions_4D);
 
-				Ry1_->set_domain_dimensions(&image_space_dimensions_4D);
-				Ry1_->set_codomain_dimensions(&image_space_dimensions_4D);
+				Ry1_->set_domain_dimensions(image_space_dimensions_4D);
+				Ry1_->set_codomain_dimensions(image_space_dimensions_4D);
 
-				Rz1_->set_domain_dimensions(&image_space_dimensions_4D);
-				Rz1_->set_codomain_dimensions(&image_space_dimensions_4D);
+				Rz1_->set_domain_dimensions(image_space_dimensions_4D);
+				Rz1_->set_codomain_dimensions(image_space_dimensions_4D);
 
-				Rt1_->set_domain_dimensions(&image_space_dimensions_4D);
-				Rt1_->set_codomain_dimensions(&image_space_dimensions_4D);
+				Rt1_->set_domain_dimensions(image_space_dimensions_4D);
+				Rt1_->set_codomain_dimensions(image_space_dimensions_4D);
 				float lambda = 2000;
 				float mu = 1000;
 				Rx1_ ->set_weight(lambda);
@@ -411,8 +411,8 @@ void CMRTGadget::extract_trajectory_and_dcw_from_queue
 	dims_2d.push_back(traj->get_number_of_elements());
 	dims_2d.push_back(1); // Number of frames
 
-	traj->reshape(&dims_2d);
-	if( num_trajectory_dims_ == 3 ) dcw->reshape(&dims_2d);
+	traj->reshape(dims_2d);
+	if( num_trajectory_dims_ == 3 ) dcw->reshape(dims_2d);
 }
 
 boost::shared_ptr<cuNDArray<float_complext> > CMRTGadget::get_combined_frames(){
@@ -424,7 +424,7 @@ boost::shared_ptr<cuNDArray<float_complext> > CMRTGadget::get_combined_frames(){
                     throw std::runtime_error("CMRTGadget: Frames received do not have equal size");
     }
     //Get data dimensions. Assume all frames have the same dimensions
-    std::vector<size_t> dims = *frames[0]->get_dimensions();
+    std::vector<size_t> dims = frames[0]->get_dimensions();
     dims.push_back(frames.size());
 
     boost::shared_ptr<cuNDArray<float_complext> > combined(new cuNDArray<float_complext>(dims));

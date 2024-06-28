@@ -60,9 +60,9 @@ namespace Gadgetron{
     unsigned int ncoils = data_in.get_size(D);
 
     // Make a copy of input data, but only the target coils
-      std::vector<size_t> odims = *(data_in.get_dimensions().get());
+      std::vector<size_t> odims = data_in.get_dimensions();
       odims[D] = target_coils_int;
-      auto data_out = cuNDArray<complext<REAL> >(&odims);
+      auto data_out = cuNDArray<complext<REAL> >(odims);
 
       //Now copy one coil at a time
       unsigned int elements_per_coil = data_in.get_number_of_elements()/ncoils;
@@ -82,13 +82,15 @@ namespace Gadgetron{
     data_out.clear();
 
     // Smooth (onto copy of corrm)
-    auto corrm_smooth = boost::make_shared<cuNDArray<complext<REAL>>>(corrm->get_dimensions());
+    std::vector<size_t> dim;
+    corrm->get_dimensions(dim);
+    auto corrm_smooth = boost::make_shared<cuNDArray<complext<REAL>>>(dim);
 
     smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
     corrm.reset();
 
     // Get the dominant eigenvector for each correlation matrix.
-    auto csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
+    auto csm = extract_csm<REAL>( *corrm_smooth, ncoils, pixels_per_coil );
     corrm_smooth.reset();
   
     // Set phase according to reference (coil 0)
@@ -203,9 +205,9 @@ namespace Gadgetron{
     dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
     // Invoke kernel
-    std::vector<size_t> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
+    std::vector<size_t> dims = in->get_dimensions(); dims.push_back(number_of_batches);
     boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T> );
-    out->create(&dims);
+    out->create(dims);
 
     correlation_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
     
@@ -755,12 +757,12 @@ namespace Gadgetron{
     }
   
     // Allocate output
-    cuNDArray<complext<REAL> > out = cuNDArray<complext<REAL> >(&image_dims);
+    cuNDArray<complext<REAL> > out = cuNDArray<complext<REAL> >(image_dims);
 
     dim3 blockDim(256);
     dim3 gridDim((unsigned int) std::ceil((double)number_of_elements/blockDim.x));
 
-    cuNDArray<complext<REAL> > tmp_v = cuNDArray<complext<REAL> >(&image_dims);
+    cuNDArray<complext<REAL> > tmp_v = cuNDArray<complext<REAL> >(image_dims);
 
       extract_csm_kernel<REAL><<< gridDim, blockDim >>>
 	( corrm_in.get_data_ptr(), out.get_data_ptr(), number_of_batches, number_of_elements, tmp_v.get_data_ptr() );

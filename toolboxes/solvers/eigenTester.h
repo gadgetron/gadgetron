@@ -117,7 +117,7 @@ public:
 		  ELEMENT_TYPE norm_old = ELEMENT_TYPE(2);
 
 		  ARRAY_TYPE* in = new ARRAY_TYPE;
-		  std::vector<size_t> image_dims = *this->encoding_operator_->get_domain_dimensions();
+		  std::vector<size_t> image_dims = this->encoding_operator_->get_domain_dimensions();
 
 		  in->create(&image_dims);
 

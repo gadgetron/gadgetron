@@ -33,7 +33,7 @@ upload_data( unsigned int reconstruction, unsigned int samples_per_reconstructio
 	     hoNDArray<_complext> *host_data )
 {
   vector<size_t> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
-  cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
+  cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
 		host_data->get_data_ptr()+i*total_samples_per_coil+reconstruction*samples_per_reconstruction, 
@@ -201,7 +201,7 @@ int main(int argc, char** argv)
   vector<size_t> image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
 
-  cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
+  cuNDArray<_complext> result = cuNDArray<_complext>(image_dims);
   
   // Define shutter for training data
   _real shutter_radius = ((_real)matrix_size_os[0]/(_real)matrix_size[0])*(_real)profiles_per_frame/(_real)M_PI;
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
 
   vector<size_t> image_os_dims = to_std_vector(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(&image_os_dims);
+  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(image_os_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction.");
   
@@ -226,7 +226,7 @@ int main(int argc, char** argv)
     
     // Preprocess
     image_dims.pop_back(); image_dims.push_back(frames_per_reconstruction); 
-    E->set_domain_dimensions(&image_dims);
+    E->set_domain_dimensions(image_dims);
     E->preprocess( traj.get() );
     
     // Upload data
@@ -235,7 +235,7 @@ int main(int argc, char** argv)
               (reconstruction, samples_per_reconstruction, num_profiles * samples_per_profile, num_coils,
                host_data.get());
 
-    E->set_codomain_dimensions(data->get_dimensions().get());
+    E->set_codomain_dimensions(data->get_dimensions());
 
     {
       auto data_view = data;
@@ -255,12 +255,12 @@ int main(int argc, char** argv)
 
     // Remove oversampling
     image_dims.push_back(num_coils);
-    cuNDArray<_complext> *image = new cuNDArray<_complext>(&image_dims);
+    cuNDArray<_complext> *image = new cuNDArray<_complext>(image_dims);
     crop<_complext,2>( (matrix_size_os-matrix_size)>>1, matrix_size, *image_os, *image );
     image_dims.pop_back();
 
     // Compute regularization image
-    cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(&image_dims);
+    cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(image_dims);
 
     E->mult_csm_conj_sum( image, reg_image );
     cuNDFFT<_real>::instance()->ifft( reg_image, 2, true );
@@ -299,7 +299,7 @@ int main(int argc, char** argv)
     cuNDFFT<_real>::instance()->fft( cgresult.get(), 2 ,true);
     
     // Copy cgresult to result
-    cuNDArray<_complext> tmp(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);    
+    cuNDArray<_complext> tmp(image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);    
     tmp = *(cgresult.get());  
   }
   

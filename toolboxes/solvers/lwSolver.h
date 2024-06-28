@@ -47,7 +47,7 @@ namespace Gadgetron{
       // Initial validity checks
       //
 
-      std::vector<unsigned int> image_dims = *this->encoding_operator_->get_domain_dimensions();
+      std::vector<unsigned int> image_dims = this->encoding_operator_->get_domain_dimensions();
 
       if( image_dims.size() == 0 ){
 	throw std::runtime_error("Error: lwSolver::solve : domain dimensions not set on encoding operator" );
@@ -143,7 +143,7 @@ namespace Gadgetron{
       //
 
       // Memory allocation
-      std::vector<unsigned int> image_dims = *this->encoding_operator_->get_domain_dimensions();
+      std::vector<unsigned int> image_dims = this->encoding_operator_->get_domain_dimensions();
       boost::shared_ptr<ARRAY_TYPE> res = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(&image_dims ));
     
       // Handle 0th order   
@@ -175,7 +175,7 @@ namespace Gadgetron{
     void apply_shape_matrix_mult_MH_M( ARRAY_TYPE *r, ARRAY_TYPE *acc, REAL w )
     {
       // Temporary storage
-      std::vector<unsigned int> image_dims = *this->encoding_operator_->get_domain_dimensions();
+      std::vector<unsigned int> image_dims = this->encoding_operator_->get_domain_dimensions();
       ARRAY_TYPE tmp_MH_M(&image_dims), tmp_acc(&image_dims);
     
       // Apply encoding operator

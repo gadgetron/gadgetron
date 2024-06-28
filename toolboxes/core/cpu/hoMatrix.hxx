@@ -19,7 +19,7 @@ hoMatrix<T>::hoMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_des
     std::vector<size_t> dim(2);
     dim[0] = rows;
     dim[1] = cols;
-    this->create(&dim,data,delete_data_on_destruct);
+    this->create(dim,data,delete_data_on_destruct);
     GADGET_CHECK_THROW(this->init_accesser());
 }
 
@@ -379,7 +379,7 @@ bool hoMatrix<T>::normalize()
 template <typename T> 
 bool hoMatrix<T>::operator == (const Self& m) const
 {
-    GADGET_CHECK_RETURN_FALSE(this->dimensions_equal(&m));
+    GADGET_CHECK_RETURN_FALSE(this->dimensions_equal(m));
     for ( size_t i=0; i<elements_; i++ )
     { 
         if (std::abs(data_[i]-m.data_[i])>DBL_EPSILON)

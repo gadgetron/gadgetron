@@ -227,14 +227,14 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		//If there is image data (i.e. reconbit isn't only map data), then we reconstruct and deblur
 		if(host_data.get_number_of_elements() > 0){
 
-			cuNDArray<complext<float>> gpu_data((hoNDArray<float_complext>*)&host_data);
-			nfft_plan_->compute( &gpu_data, image, &gpu_weights, NFFT_comp_mode::BACKWARDS_NC2C );
-			csm_ = estimate_b1_map<float,2>( &image );
+			cuNDArray<complext<float>> gpu_data((hoNDArray<float_complext>&)host_data);
+			nfft_plan_->compute( gpu_data, image, &gpu_weights, NFFT_comp_mode::BACKWARDS_NC2C );
+			csm_ = estimate_b1_map<float,2>( image );
 			csm_mult_MH<float,2>(&image, &reg_image, &csm_);
 			host_image = *(reg_image.to_host());
 
 			gpu_traj = host_traj;
-			if(MFI.prepare(nfft_plan_, gpu_traj, *host_data.get_dimensions(), image_dimensions_recon_,
+			if(MFI.prepare(nfft_plan_, gpu_traj, host_data.get_dimensions(), image_dimensions_recon_,
                                 image_dimensions_recon_os_, sample_time, .001)){
 				output_image = MFI.MFI_apply(host_image, B0_map);
 			}
@@ -339,14 +339,14 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		}
 		//Recon B0 images
 		hoNDArray<std::complex<float>>* B0_data_1 = new hoNDArray<std::complex<float>>(R0,E1,E2,CHA,B0_data.get_data_ptr());
-		cuNDArray<complext<float>> gpu_B0_data((hoNDArray<float_complext>*)B0_data_1);
-		nfft_plan_B0_->compute( &gpu_B0_data, image, &gpu_weights_B0, NFFT_comp_mode::BACKWARDS_NC2C );
-		csm_ = estimate_b1_map<float,2>( &image );
+		cuNDArray<complext<float>> gpu_B0_data((hoNDArray<float_complext>&)(*B0_data_1));
+		nfft_plan_B0_->compute( gpu_B0_data, image, &gpu_weights_B0, NFFT_comp_mode::BACKWARDS_NC2C );
+		csm_ = estimate_b1_map<float,2>( image );
 		csm_mult_MH<float,2>(&image, &reg_image, &csm_);
 		hoNDArray<complext<float>> B0_temp_0 = *reg_image.to_host();
 		hoNDArray<std::complex<float>>* B0_data_2 = new hoNDArray<std::complex<float>>(R0,E1,E2,CHA,B0_data.get_data_ptr()+R0*E1*E2*CHA);//Start at index N = 1
 		gpu_B0_data = *((hoNDArray<float_complext>*)B0_data_2);
-		nfft_plan_B0_->compute( &gpu_B0_data, image, &gpu_weights_B0, NFFT_comp_mode::BACKWARDS_NC2C );
+		nfft_plan_B0_->compute( gpu_B0_data, image, &gpu_weights_B0, NFFT_comp_mode::BACKWARDS_NC2C );
 		csm_mult_MH<float,2>(&image, &reg_image, &csm_);
 		hoNDArray<complext<float>> B0_temp_1 = *reg_image.to_host();
 		//Compute map
@@ -370,9 +370,9 @@ typedef cuNFFT_impl<_real,2> plan_type;
 
 			//Setup image arrays
 			image_dimensions_recon_.push_back(CHA);
-			image.create(&image_dimensions_recon_);
+			image.create(image_dimensions_recon_);
 			image_dimensions_recon_.pop_back();
-			reg_image.create(&image_dimensions_recon_);
+			reg_image.create(image_dimensions_recon_);
 
 			host_traj.create(R0*E1);
 			host_weights.create(R0*E1);
@@ -419,7 +419,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		//pre-process
 		nfft_plan_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
 
-		nfft_plan_->preprocess(&gpu_traj, NFFT_prep_mode::ALL);
+		nfft_plan_->preprocess(gpu_traj, NFFT_prep_mode::ALL);
 		prepared_ = true;
 	}
 
@@ -478,7 +478,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		//pre-process
 		nfft_plan_B0_ = NFFT<cuNDArray,_real,2>::make_plan( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
 
-		nfft_plan_B0_->preprocess(&gpu_traj, NFFT_prep_mode::NC2C);
+		nfft_plan_B0_->preprocess(gpu_traj, NFFT_prep_mode::NC2C);
 		prepared_B0_= true;
 	}
 

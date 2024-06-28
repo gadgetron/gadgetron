@@ -42,36 +42,36 @@ namespace Gadgetron{
     virtual void mult_MH_M( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out, bool accumulate = false )
     {    
       if( !kernel_.get() ){
-	throw std::runtime_error( "convolutionOperator::mult_MH_M failed : kernel is not set");
+            throw std::runtime_error( "convolutionOperator::mult_MH_M failed : kernel is not set");
       }
     
       if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    	throw std::runtime_error( "convolutionOperator::mult_MH_M failed : in/out image dimensions mismatch");
+            throw std::runtime_error( "convolutionOperator::mult_MH_M failed : in/out image dimensions mismatch");
       }
       
       bool use_oversampling;
       if( in->get_number_of_elements() == kernel_->get_number_of_elements() )
-	use_oversampling = false;
+            use_oversampling = false;
       else if( (in->get_number_of_elements()<<D) == kernel_->get_number_of_elements() )
-	use_oversampling = true;
+            use_oversampling = true;
       else{
-	throw std::runtime_error( "convolutionOperator::mult_MH_M failed : in/out image dimensions mismatch the kernel");
+            throw std::runtime_error( "convolutionOperator::mult_MH_M failed : in/out image dimensions mismatch the kernel");
       }
       
       // Intermediate variables
       COMPLEX_ARRAY_TYPE *tmp_out;
 
       if( use_oversampling ){
-	boost::shared_ptr< std::vector<size_t> > osdims = kernel_->get_dimensions();
-	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
+      std::vector<size_t> osdims = kernel_->get_dimensions();
+    tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
+    pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
-	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
+    tmp_out = new COMPLEX_ARRAY_TYPE(*in);
       }
       else{ 
-	*out = *in;
-	tmp_out = out;
+    *out = *in;
+    tmp_out = out;
       } 
 
       // Forwards fft
@@ -85,12 +85,12 @@ namespace Gadgetron{
       operator_fft( false, tmp_out );
 
       if( use_oversampling ) {
-	operator_crop( tmp_out, out );
-	delete tmp_out;
+    operator_crop( tmp_out, out );
+    delete tmp_out;
       }    
       else if( accumulate ){
-    	*out += *tmp_out;
-	delete tmp_out;
+        *out += *tmp_out;
+    delete tmp_out;
       }    
     }
     
@@ -98,36 +98,36 @@ namespace Gadgetron{
     virtual void mult_M( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out, bool accumulate = false )
     {
       if( !kernel_.get() ){
-    	throw std::runtime_error("convolutionOperator::mult_M failed : kernel is not set");
+        throw std::runtime_error("convolutionOperator::mult_M failed : kernel is not set");
       }
     
       if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    	throw std::runtime_error( "convolutionOperator::mult_M failed : in/out image dimensions mismatch");
+        throw std::runtime_error( "convolutionOperator::mult_M failed : in/out image dimensions mismatch");
       }
 
       bool use_oversampling;
       if( in->get_number_of_elements() == kernel_->get_number_of_elements() )
-	use_oversampling = false;
+    use_oversampling = false;
       else if( (in->get_number_of_elements()<<D) == kernel_->get_number_of_elements() )
-	use_oversampling = true;
+    use_oversampling = true;
       else{
-	throw std::runtime_error( "convolutionOperator::mult_M failed : in/out image dimensions mismatch the kernel");
+    throw std::runtime_error( "convolutionOperator::mult_M failed : in/out image dimensions mismatch the kernel");
       }
     
       // Intermediate variables
       COMPLEX_ARRAY_TYPE *tmp_out;
 
       if( use_oversampling ){
-	boost::shared_ptr< std::vector<size_t> > osdims = kernel_->get_dimensions();
-	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
+            std::vector<size_t> osdims = kernel_->get_dimensions();
+            tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
+            pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
-	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
+    tmp_out = new COMPLEX_ARRAY_TYPE(*in);
       }
       else{ 
-	*out = *in;
-	tmp_out = out;
+    *out = *in;
+    tmp_out = out;
       } 
 
       // Forwards fft
@@ -140,48 +140,48 @@ namespace Gadgetron{
       operator_fft( false, tmp_out );
 
       if( use_oversampling ) {
-	operator_crop( tmp_out, out );
-	delete tmp_out;
+    operator_crop( tmp_out, out );
+    delete tmp_out;
       }    
       else if( accumulate ){
-    	*out += *tmp_out;
-	delete tmp_out;
+        *out += *tmp_out;
+    delete tmp_out;
       }    
     }
   
     virtual void mult_MH( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out, bool accumulate = false )
     {
       if( !adjoint_kernel_.get() ){
-	throw std::runtime_error("convolutionOperator::mult_MH failed : kernel is not set");
+    throw std::runtime_error("convolutionOperator::mult_MH failed : kernel is not set");
       }
       
       if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-	throw std::runtime_error("convolutionOperator::mult_MH failed : in/out image dimensions mismatch");
+    throw std::runtime_error("convolutionOperator::mult_MH failed : in/out image dimensions mismatch");
       }
 
       bool use_oversampling;
       if( in->get_number_of_elements() == adjoint_kernel_->get_number_of_elements() )
-	use_oversampling = false;
+    use_oversampling = false;
       else if( (in->get_number_of_elements()<<D) == adjoint_kernel_->get_number_of_elements() )
-	use_oversampling = true;
+    use_oversampling = true;
       else{
-    	throw std::runtime_error( "convolutionOperator::mult_MH failed : in/out image dimensions mismatch the kernel");
+        throw std::runtime_error( "convolutionOperator::mult_MH failed : in/out image dimensions mismatch the kernel");
       }
       
       // Intermediate variables
       COMPLEX_ARRAY_TYPE *tmp_out;
 
       if( use_oversampling ){
-	boost::shared_ptr< std::vector<size_t> > osdims = adjoint_kernel_->get_dimensions();
-	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	pad<ELEMENT_TYPE,D>( *in, *tmp_out );
+    std::vector<size_t> osdims = adjoint_kernel_->get_dimensions();
+    tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
+    pad<ELEMENT_TYPE,D>( *in, *tmp_out );
       }
       else if( accumulate ){
-	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
+    tmp_out = new COMPLEX_ARRAY_TYPE(*in);
       }
       else{ 
-	*out = *in;
-	tmp_out = out;
+    *out = *in;
+    tmp_out = out;
       } 
       
       // Forwards fft
@@ -194,12 +194,12 @@ namespace Gadgetron{
       operator_fft( false, tmp_out );
 
       if( use_oversampling ) {
-	operator_crop( tmp_out, out );
-	delete tmp_out;
+    operator_crop( tmp_out, out );
+    delete tmp_out;
       }    
       else if( accumulate ){
-    	*out += *tmp_out;
-	delete tmp_out;
+        *out += *tmp_out;
+    delete tmp_out;
       }
     }
 
@@ -209,8 +209,8 @@ namespace Gadgetron{
     virtual void origin_mirror( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out ) = 0;
 
     virtual void operator_crop( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out ){
-      typename uint64d<D>::Type offset = from_std_vector<size_t,D>(*(in->get_dimensions().get()))>>2;
-       typename uint64d<D>::Type size = from_std_vector<size_t,D>(*(out->get_dimensions().get()))>>2;
+      typename uint64d<D>::Type offset = from_std_vector<size_t,D>(in->get_dimensions())>>2;
+       typename uint64d<D>::Type size = from_std_vector<size_t,D>(out->get_dimensions())>>2;
       crop<ELEMENT_TYPE,D>( offset,size, *in, *out );
     }
     

@@ -124,7 +124,7 @@ namespace {
 
 
             template<class T> std::vector<size_t> calculate_strides(const hoNDArray<T>& array) {
-        auto dims = *array.get_dimensions();
+        auto dims = array.get_dimensions();
         auto strides = std::vector<size_t>(dims.size(),1);
 
         std::partial_sum(dims.begin(),dims.end()-1,strides.begin()+1,std::multiplies<size_t>());
@@ -135,7 +135,7 @@ namespace {
     template<class RANGE, int DIMS> auto combine_arrays_along(RANGE &input_arrays,size_t combine_dim) {
 
         using T = typename decltype(*input_arrays.begin())::value_type;
-        auto output_dims = *input_arrays.front().get_dimensions();
+        auto output_dims = input_arrays.front().get_dimensions();
         output_dims[combine_dim] = 0;
 
         for (const auto & array : input_arrays) output_dims[combine_dim] += array.get_size(combine_dim);
@@ -147,7 +147,7 @@ namespace {
         T* output_data = out.get_data_ptr();
 
         for (const auto & array : input_arrays) {
-            auto dims = *array.get_dimensions();
+            auto dims = array.get_dimensions();
             auto in_strides = calculate_strides(array);
             combiner<T,DIMS-1>::combine_along(output_data,array.get_data_ptr(),dims,out_strides,in_strides,combine_dim);
             output_data += out_strides[combine_dim-1]*dims[combine_dim];

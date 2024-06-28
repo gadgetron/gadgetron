@@ -12,20 +12,17 @@ public:
 
     ho4DArray();
     ho4DArray(size_t sx, size_t sy, size_t sz, size_t ss);
-    explicit ho4DArray(std::vector<size_t> *dimensions);
-    ho4DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    explicit ho4DArray(const std::vector<size_t>& dimensions);
+    ho4DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
     ho4DArray(size_t sx, size_t sy, size_t sz, size_t ss, T* data, bool delete_data_on_destruct = false);
-    ho4DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
-    ho4DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual ~ho4DArray();
 
     ho4DArray(const ho4DArray<T>& a);
     ho4DArray<T>& operator=(const ho4DArray<T>& rhs);
 
-    virtual void create(std::vector<size_t>& dimensions);
-    virtual void create(std::vector<size_t> *dimensions);
-    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(const std::vector<size_t>& dimensions);
+    virtual void create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual bool createArray(size_t sx, size_t sy, size_t sz, size_t ss);
     virtual bool createArray(size_t sx, size_t sy, size_t sz, size_t ss, T* data, bool delete_data_on_destruct = false);

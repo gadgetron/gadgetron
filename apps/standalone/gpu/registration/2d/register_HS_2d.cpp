@@ -74,8 +74,8 @@ int main(int argc, char** argv)
   // Upload host data to device
   //
 
-  cuNDArray<_real> fixed_image(host_fixed.get());
-  cuNDArray<_real> moving_image(host_moving.get());
+  cuNDArray<_real> fixed_image(*host_fixed);
+  cuNDArray<_real> moving_image(*host_moving);
   
   _real alpha = (_real) parms.get_parameter('a')->get_float_value();
 

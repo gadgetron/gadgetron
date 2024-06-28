@@ -59,7 +59,7 @@ template<class REAL, class T, unsigned int D> static __global__ void tvGradient_
 template<class T, unsigned int D> void cuTv1DOperator<T,D>::gradient (cuNDArray<T> * in,cuNDArray<T> * out, bool accumulate){
 	if (!accumulate) clear(out);
 
-	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
+	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(in->get_dimensions()));
 	int elements = in->get_number_of_elements();
 
 	int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());
@@ -89,7 +89,7 @@ template<class REAL, class T, unsigned int D> static __global__ void tvMagnitude
 template<class T, unsigned int D> typename realType<T>::Type cuTv1DOperator<T,D>::magnitude (cuNDArray<T> * in){
 
 	cuNDArray<T> out(*in);
-	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
+	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(in->get_dimensions()));
 	int elements = in->get_number_of_elements();
 
 	int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());

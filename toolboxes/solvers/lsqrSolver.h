@@ -38,21 +38,21 @@ public:
     {
         try
         {
-            boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
+            std::vector<size_t> image_dims = this->encoding_operator_->get_domain_dimensions();
 
             GADGET_CHECK_THROW(x != NULL);
             GADGET_CHECK_THROW(b != NULL);
 
-            GADGET_CHECK_THROW(b->dimensions_equal(image_dims.get()));
+            GADGET_CHECK_THROW(b->dimensions_equal(image_dims));
 
             if (this->x0_ != NULL)
             {
-                GADGET_CHECK_THROW(this->x0_->dimensions_equal(image_dims.get()));
+                GADGET_CHECK_THROW(this->x0_->dimensions_equal(image_dims));
                 *x = *(this->x0_);
             }
             else
             {
-                x->create(*image_dims);
+                x->create(image_dims);
                 Gadgetron::clear(*x);
             }
 

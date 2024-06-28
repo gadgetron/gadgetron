@@ -12,20 +12,8 @@ namespace Gadgetron {
     hoNDArray<T>::hoNDArray() : Gadgetron::NDArray<T>::NDArray() {}
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions) : Gadgetron::NDArray<T>::NDArray() {
-        assert(dimensions != nullptr);
-        this->create(*dimensions);
-    }
-
-    template<typename T>
     hoNDArray<T>::hoNDArray(const std::vector<size_t> &dimensions) : Gadgetron::NDArray<T>::NDArray() {
         this->create(dimensions);
-    }
-
-    template<typename T>
-    hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions) : Gadgetron::NDArray<T>::NDArray() {
-        assert(dimensions.get() != nullptr);
-        this->create(*dimensions);
     }
 
     template<class T>
@@ -125,21 +113,9 @@ namespace Gadgetron {
     }
 
     template<typename T>
-    hoNDArray<T>::hoNDArray(const std::vector<size_t> *dimensions, T *data, bool delete_data_on_destruct)
-            : Gadgetron::NDArray<T>::NDArray() {
-        this->create(*dimensions, data, delete_data_on_destruct);
-    }
-
-    template<typename T>
     hoNDArray<T>::hoNDArray(const std::vector<size_t> &dimensions, T *data, bool delete_data_on_destruct)
             : Gadgetron::NDArray<T>::NDArray() {
         this->create(dimensions, data, delete_data_on_destruct);
-    }
-
-    template<typename T>
-    hoNDArray<T>::hoNDArray(boost::shared_ptr<std::vector<size_t>> dimensions, T *data, bool delete_data_on_destruct)
-            : Gadgetron::NDArray<T>::NDArray() {
-        this->create(*dimensions, data, delete_data_on_destruct);
     }
 
     template<typename T>
@@ -199,27 +175,13 @@ namespace Gadgetron {
         dim[5] = sq;
         dim[6] = sr;
         dim[7] = ss;
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
     }
 
     template<typename T>
     hoNDArray<T>::~hoNDArray() {
         if (this->delete_data_on_destruct_) {
             deallocate_memory();
-        }
-    }
-
-    template <typename T> hoNDArray<T>::hoNDArray(const hoNDArray<T>* a) {
-        if (!a)
-            throw std::runtime_error("hoNDArray<T>::hoNDArray(): 0x0 pointer provided");
-        this->data_       = 0;
-        this->dimensions_ = a->dimensions_;
-        offsetFactors_    = a->offsetFactors_;
-        if (!this->dimensions_.empty()) {
-            this->allocate_memory();
-            std::copy(a->begin(), a->end(), this->begin());
-        } else {
-            this->elements_ = 0;
         }
     }
 
@@ -272,7 +234,7 @@ namespace Gadgetron {
         }
 
         // Are the dimensions the same? Then we can just memcpy
-        if (!this->dimensions_equal(&rhs)) {
+        if (!this->dimensions_equal(rhs)) {
             deallocate_memory();
             this->data_ = 0;
             this->dimensions_ = rhs.dimensions_;
@@ -308,54 +270,12 @@ namespace Gadgetron {
 
     template<typename T>
     void hoNDArray<T>::create(const std::vector<size_t> &dimensions) {
-        if (this->dimensions_equal(&dimensions)) {
-            return;
-        }
-
-        this->clear();
-        BaseClass::create(dimensions);
-    }
-
-    template<typename T>
-    void hoNDArray<T>::create(const std::vector<size_t> *dimensions) {
         if (this->dimensions_equal(dimensions)) {
             return;
         }
+
         this->clear();
         BaseClass::create(dimensions);
-    }
-
-    template<typename T>
-    void hoNDArray<T>::create(boost::shared_ptr<std::vector<size_t>> dimensions) {
-        if (this->dimensions_equal(dimensions.get())) {
-            return;
-        }
-        this->clear();
-        BaseClass::create(dimensions);
-    }
-
-    template<typename T>
-    void hoNDArray<T>::create(const std::vector<size_t> *dimensions, T *data, bool delete_data_on_destruct) {
-        if (!dimensions)
-            throw std::runtime_error("hoNDArray<T>::create(): 0x0 pointer provided");
-        if (!data)
-            throw std::runtime_error("hoNDArray<T>::create(): 0x0 pointer provided");
-
-        if (this->dimensions_equal(dimensions)) {
-            if (this->delete_data_on_destruct_) {
-                this->deallocate_memory();
-            }
-
-            this->data_ = data;
-            this->delete_data_on_destruct_ = delete_data_on_destruct;
-        } else {
-            if (this->delete_data_on_destruct_) {
-                this->deallocate_memory();
-                this->data_ = NULL;
-            }
-
-            BaseClass::create(dimensions, data, delete_data_on_destruct);
-        }
     }
 
     template<typename T>
@@ -363,7 +283,7 @@ namespace Gadgetron {
         if (!data)
             throw std::runtime_error("hoNDArray<T>::create(): 0x0 pointer provided");
 
-        if (this->dimensions_equal(&dimensions)) {
+        if (this->dimensions_equal(dimensions)) {
             if (this->delete_data_on_destruct_) {
                 this->deallocate_memory();
             }
@@ -379,13 +299,6 @@ namespace Gadgetron {
             BaseClass::create(dimensions, data, delete_data_on_destruct);
         }
     }
-
-    template<typename T>
-    inline void hoNDArray<T>::create(
-            boost::shared_ptr<std::vector<size_t>> dimensions, T *data, bool delete_data_on_destruct) {
-        this->create(*dimensions, data, delete_data_on_destruct);
-    }
-
 
     template<class T>
     void hoNDArray<T>::create(std::initializer_list<size_t> dimensions) {
