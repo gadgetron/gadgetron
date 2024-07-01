@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <iomanip>
 #include <thread>
+#include <fstream>
 
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
@@ -201,25 +202,33 @@ void IsmrmrdDumpGadget::process(Core::InputChannel<Core::variant<Core::Acquisiti
 
         std::string ismrmrd_filename = this->create_ismrmrd_dataset_name();
 
-        boost::interprocess::file_lock f_lock(ismrmrd_filename.c_str());
+        std::fstream fid;
+        fid.open(ismrmrd_filename, std::fstream::binary	| std::fstream::in | std::fstream::app );
+        if (fid.is_open())
         {
-            boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-            try
-            {
-                auto dataset = ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset", true);
-                auto stream = std::stringstream();
-                ISMRMRD::serialize(header, stream);
-                dataset.writeHeader(stream.str());
-                GDEBUG_STREAM("IsmrmrdDumpGadget, save ismrmrd xml header ... ");
+            fid.close();
 
-                for (;;)
-                {
-                    Core::visit([&dataset](const auto& item) { append_to_dataset(item, dataset); }, data_buffer.pop());
-                }
-            } 
-            catch (const Core::ChannelClosed& closed)
+            // boost file lock requires the lock file exists
+            boost::interprocess::file_lock f_lock(ismrmrd_filename.c_str());
             {
-                GDEBUG_STREAM("IsmrmrdDumpGadget, exceptions happened in process, append_to_dataset ... ");
+                boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
+                try
+                {
+                    auto dataset = ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset", true);
+                    auto stream = std::stringstream();
+                    ISMRMRD::serialize(header, stream);
+                    dataset.writeHeader(stream.str());
+                    GDEBUG_STREAM("IsmrmrdDumpGadget, save ismrmrd xml header ... ");
+
+                    for (;;)
+                    {
+                        Core::visit([&dataset](const auto& item) { append_to_dataset(item, dataset); }, data_buffer.pop());
+                    }
+                } 
+                catch (...)
+                {
+                    GDEBUG_STREAM("IsmrmrdDumpGadget, exceptions happened in process, append_to_dataset ... ");
+                }
             }
         }
     });
