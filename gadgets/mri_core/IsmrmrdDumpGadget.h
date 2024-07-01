@@ -13,27 +13,6 @@
 
 namespace Gadgetron {
 
-    class DumpFileLock
-    {
-        public:
-            DumpFileLock(const std::string& fname);
-            ~DumpFileLock();
-
-            enum DUMPFLOCKSTATUS {
-                OK = 0,
-                FAILED_TO_OPEN,
-                LOCKED,
-                FAILED_TO_LOCK,
-                FAILED_TO_UNLOCK
-                };
-
-            DUMPFLOCKSTATUS lock();
-            DUMPFLOCKSTATUS unlock();
-
-            int fd_;
-            std::string fname_;
-    };
-
     class IsmrmrdDumpGadget : public Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>>
     {
     public:

@@ -4,80 +4,12 @@
 #include <iomanip>
 #include <thread>
 
-#include <sys/stat.h>
-#include <sys/file.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 
 namespace bf = boost::filesystem;
 
 namespace Gadgetron {
-
-DumpFileLock::DumpFileLock(const std::string& fname) : fd_(-1)
-{
-    this->fname_ = fname;
-}
-
-DumpFileLock::~DumpFileLock()
-{
-    this->unlock();
-}
-
-DumpFileLock::DUMPFLOCKSTATUS DumpFileLock::lock()
-{
-    struct flock fl;
-    fl.l_type = F_WRLCK;
-    fl.l_start = 0;
-    fl.l_whence = SEEK_SET;
-    fl.l_len = 0;
-
-    this->fd_ = open(this->fname_.c_str(), O_WRONLY | O_CREAT, 0666);
-    if (this->fd_ == -1)
-    {
-        GDEBUG_STREAM("DumpFileLock, file cannot be opened, " << this->fname_);
-        return DumpFileLock::DUMPFLOCKSTATUS::FAILED_TO_OPEN;
-    }
-
-    if (fcntl(this->fd_, F_SETLK, &fl) == -1)
-    {
-        close(this->fd_);
-        if (errno == EACCES || errno == EAGAIN)
-        {
-            GDEBUG_STREAM("DumpFileLock, file is already locked, " << this->fname_);
-            return DumpFileLock::DUMPFLOCKSTATUS::LOCKED;
-        }
-
-        return DumpFileLock::DUMPFLOCKSTATUS::FAILED_TO_LOCK;
-    }
-
-    GDEBUG_STREAM("DumpFileLock, file is locked, " << this->fname_);
-    return DumpFileLock::DUMPFLOCKSTATUS::OK;
-}
-
-DumpFileLock::DUMPFLOCKSTATUS DumpFileLock::unlock()
-{
-    if (this->fd_ != -1)
-    {
-        struct flock fl;
-        fl.l_type = F_UNLCK;
-        fl.l_start = 0;
-        fl.l_whence = SEEK_SET;
-        fl.l_len = 0;
-
-        if (fcntl(this->fd_, F_SETLKW, &fl) == -1)
-        {
-            close(this->fd_);
-            GDEBUG_STREAM("DumpFileLock, file cannot be unlocked, " << this->fname_);
-            return DumpFileLock::DUMPFLOCKSTATUS::FAILED_TO_UNLOCK;
-        }
-
-        close(this->fd_);
-        this->fd_ = -1;
-    }
-
-    GDEBUG_STREAM("DumpFileLock, file is unlocked, " << this->fname_);
-    return DumpFileLock::DUMPFLOCKSTATUS::OK;
-}
 
 // ---------------------------------------------------------
 
@@ -269,10 +201,9 @@ void IsmrmrdDumpGadget::process(Core::InputChannel<Core::variant<Core::Acquisiti
 
         std::string ismrmrd_filename = this->create_ismrmrd_dataset_name();
 
-        DumpFileLock f_lock(ismrmrd_filename);
-        int status = f_lock.lock();
-        if (status == DumpFileLock::DUMPFLOCKSTATUS::OK)
+        boost::interprocess::file_lock f_lock(ismrmrd_filename.c_str());
         {
+            boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
             try
             {
                 auto dataset = ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset", true);
