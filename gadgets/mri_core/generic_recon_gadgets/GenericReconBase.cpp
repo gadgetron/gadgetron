@@ -41,6 +41,55 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
         }
 
+        // find the buffer names if they are set
+        if (this->context.parameters.find(GENERIC_RECON_UNDERSAMPLED_KSPACE) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_UNDERSAMPLED_KSPACE] = this->context.parameters.at(GENERIC_RECON_UNDERSAMPLED_KSPACE);
+            GDEBUG_STREAM("Buffer to store the undersampled kspace is " << buffer_names_[GENERIC_RECON_UNDERSAMPLED_KSPACE]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_REF_KSPACE) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_REF_KSPACE] = this->context.parameters.at(GENERIC_RECON_REF_KSPACE);
+            GDEBUG_STREAM("Buffer to store the reference kspace is " << buffer_names_[GENERIC_RECON_REF_KSPACE]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_REF_KSPACE_FOR_COILMAP) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_REF_KSPACE_FOR_COILMAP] = this->context.parameters.at(GENERIC_RECON_REF_KSPACE_FOR_COILMAP);
+            GDEBUG_STREAM("Buffer to store the prepared reference kspace used for the coil map estimation is " << buffer_names_[GENERIC_RECON_REF_KSPACE_FOR_COILMAP]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_COILMAP) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_COILMAP] = this->context.parameters.at(GENERIC_RECON_COILMAP);
+            GDEBUG_STREAM("Buffer to store the coil maps is " << buffer_names_[GENERIC_RECON_COILMAP]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_GFACTOR_MAP) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_GFACTOR_MAP] = this->context.parameters.at(GENERIC_RECON_GFACTOR_MAP);
+            GDEBUG_STREAM("Buffer to store the gfactor maps is " << buffer_names_[GENERIC_RECON_GFACTOR_MAP]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_RECONED_KSPACE) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_RECONED_KSPACE] = this->context.parameters.at(GENERIC_RECON_RECONED_KSPACE);
+            GDEBUG_STREAM("Buffer to store the reconstructed kspace is " << buffer_names_[GENERIC_RECON_RECONED_KSPACE]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_RECONED_COMPLEX_IMAGE) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE] = this->context.parameters.at(GENERIC_RECON_RECONED_COMPLEX_IMAGE);
+            GDEBUG_STREAM("Buffer to store the complex images after recon is " << buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE]);
+        }
+
+        if (this->context.parameters.find(GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING) != this->context.parameters.end())
+        {
+            buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING] = this->context.parameters.at(GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING);
+            GDEBUG_STREAM("Buffer to store the complex images after recon and further post-processing is " << buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING]);
+        }
+
         return GADGET_OK;
     }
 

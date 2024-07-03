@@ -101,6 +101,10 @@ namespace Gadgetron {
         // utility functions
         void set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in, IsmrmrdImageArray& res);
 
+        // --------------------------------------------------
+        // recon record functions
+        // --------------------------------------------------
+
         // scan info
         float system_field_strength_T_;
 

@@ -118,6 +118,8 @@ namespace Gadgetron {
             recon_res_->headers_(n).matrix_size[2] = recon_res_->data_.get_size(2);
         }
 
+        this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING, recon_res_->data_, recon_res_->headers_, recon_res_->meta_);
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconFieldOfViewAdjustmentGadget::process(...) ends ... ");
 
         // ----------------------------------------------------------

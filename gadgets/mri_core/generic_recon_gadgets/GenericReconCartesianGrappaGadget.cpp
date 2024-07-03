@@ -79,22 +79,24 @@ namespace Gadgetron {
 
             // ---------------------------------------------------------------
             // export incoming data
-
-            if (!debug_folder_full_path_.empty()) {
-                gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_,
-                                                  debug_folder_full_path_ + "data" + os.str());
+            if (!debug_folder_full_path_.empty())
+            {
+                gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
             }
 
-            if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_) {
-                if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0) {
-                    gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_),
-                                              debug_folder_full_path_ + "data_traj" + os.str());
+            if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
+            {
+                if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0)
+                {
+                    gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
                 }
             }
 
             // ---------------------------------------------------------------
 
             if (recon_bit_->rbit_[e].ref_) {
+                this->stream_to_array_buffer(GENERIC_RECON_REF_KSPACE, recon_bit_->rbit_[e].ref_->data_);
+
                 if (!debug_folder_full_path_.empty()) {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_,
                                                       debug_folder_full_path_ + "ref" + os.str());
@@ -138,6 +140,8 @@ namespace Gadgetron {
                                                                     recon_obj_[e].ref_calib_dst_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
+                this->stream_to_array_buffer(GENERIC_RECON_REF_KSPACE_FOR_COILMAP, recon_obj_[e].ref_coil_map_);
+
                 if (!debug_folder_full_path_.empty()) {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_dst_,
                         debug_folder_full_path_ + "ref_calib_dst" + os.str());
@@ -171,6 +175,9 @@ namespace Gadgetron {
             }
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0) {
+
+                this->stream_to_array_buffer(GENERIC_RECON_UNDERSAMPLED_KSPACE, recon_bit_->rbit_[e].data_.data_);
+
                 if (!debug_folder_full_path_.empty()) {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_,
                                                       debug_folder_full_path_ + "data_before_unwrapping" + os.str());
@@ -267,9 +274,14 @@ namespace Gadgetron {
                         debug_folder_full_path_ + "recon_res" + os.str());
                 }
 
+                this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+
                 if (perform_timing.value()) {
                     gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array");
                 }
+
                 this->send_out_image_array(recon_obj_[e].recon_res_, e,
                     image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
