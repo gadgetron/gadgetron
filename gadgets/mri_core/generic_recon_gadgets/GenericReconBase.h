@@ -26,15 +26,7 @@
 
 #include "gadgetron_sha1.h"
 
-#define GENERIC_RECON_ISMRMRD_HEADER "recon_header"
-#define GENERIC_RECON_UNDERSAMPLED_KSPACE "undersampled_kspace"
-#define GENERIC_RECON_REF_KSPACE "ref_kspace"
-#define GENERIC_RECON_REF_KSPACE_FOR_COILMAP "ref_kspace_for_coil_map"
-#define GENERIC_RECON_COILMAP "coil_map"
-#define GENERIC_RECON_GFACTOR_MAP "gfactor"
-#define GENERIC_RECON_RECONED_KSPACE "reconed_kspace"
-#define GENERIC_RECON_RECONED_COMPLEX_IMAGE "reconed_images"
-#define GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING "reconed_images_after_post_processing"
+#include "GenericReconStreamDef.h"
 
 namespace Gadgetron {
 
@@ -160,8 +152,7 @@ namespace Gadgetron {
 
                             ISMRMRD::ImageHeader hd = headers(n, s, slc);
                             hd.data_type = Gadgetron::Core::IO::ismrmrd_data_type<DataType>();
-
-                            a_img.setHead(headers(n, s, slc));
+                            a_img.setHead(hd);
 
                             std::ostringstream str;
                             ISMRMRD::serialize(meta[ind], str);
