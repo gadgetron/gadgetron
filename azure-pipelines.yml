@@ -42,7 +42,7 @@ jobs:
         sudo apt-get install -y nvidia-container-toolkit
         sudo nvidia-ctk runtime configure --runtime=docker
         sudo systemctl restart docker
-        docker run --rm --gpus all ghcr.io/gadgetron/gadgetron/cuda:12.3.0-base-ubuntu22.04 nvidia-smi
+        docker run --rm --gpus all nvidia/cuda:12.3.0-base-ubuntu22.04 nvidia-smi
     displayName: 'Check GPU availability'
   - script: |
         set -e
