@@ -3,7 +3,7 @@ ARG USERNAME="vscode"
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-FROM ubuntu:20.04 AS gadgetron_baseimage
+FROM ubuntu:22.04 AS gadgetron_baseimage
 LABEL org.opencontainers.image.source=https://github.com/gadgetron/gadgetron
 
 ARG USERNAME
