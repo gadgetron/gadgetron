@@ -26,6 +26,7 @@
 
 #include "gadgetron_sha1.h"
 
+#define GENERIC_RECON_ISMRMRD_HEADER "recon_header"
 #define GENERIC_RECON_UNDERSAMPLED_KSPACE "undersampled_kspace"
 #define GENERIC_RECON_REF_KSPACE "ref_kspace"
 #define GENERIC_RECON_REF_KSPACE_FOR_COILMAP "ref_kspace_for_coil_map"
@@ -91,28 +92,32 @@ namespace Gadgetron {
         // --------------------------------------------------
         // data stream functions
         // --------------------------------------------------
+
+        void stream_ismrmrd_header(const ISMRMRD::IsmrmrdHeader& hdr);
+
         // stream of ND array buffer
         template <typename DataType> 
         void stream_to_array_buffer(const std::string& name, const hoNDArray<DataType>& data)
         {
             if (this->buffer_names_.find(name)!=this->buffer_names_.end())
             {
-                std::ofstream os(name, std::ios::out | std::ios::binary | std::ios::app);
+                std::string buf_name = this->buffer_names_[name];
+                std::ofstream os(buf_name, std::ios::out | std::ios::binary | std::ios::app);
                 if (os.is_open())
                 {
-                    GDEBUG_STREAM("Generic recon, stream the data to the array buffer " << name);
+                    GDEBUG_STREAM("Generic recon, stream the data to the array buffer " << buf_name);
                     Gadgetron::Core::IO::write(os, data);
                     os.flush();
                     os.close();
                 }
                 else
                 {
-                    GERROR_STREAM("Generic recon, unable to open the array buffer " << name << " to stream out the data ... ");
+                    GERROR_STREAM("Generic recon, unable to open the array buffer " << buf_name << " to stream out the data ... ");
                 }
             }
             else
             {
-                GWARN_STREAM("Generic reconstruction chain, the pre-set buffer names do not include " << name << "; the data will not be saved into the buffer ...");
+                GWARN_CONDITION_STREAM(this->verbose.value(), "Generic reconstruction chain, the pre-set buffer names do not include " << name << "; the data will not be saved into the buffer ...");
             }
         }
 
@@ -122,9 +127,9 @@ namespace Gadgetron {
         {
             if (this->buffer_names_.find(name)!=this->buffer_names_.end())
             {
-                // convert images to one or more ismrmrd images
-                GDEBUG_STREAM("Generic recon, convert recon images to ismrmd images for " << name);
+                std::string buf_name = this->buffer_names_[name];
 
+                // convert images to one or more ismrmrd images
                 std::vector< ISMRMRD::Image<DataType> > ismrmrd_images;
 
                 size_t RO = img.get_size(0);
@@ -135,6 +140,8 @@ namespace Gadgetron {
                 size_t N = img.get_size(4);
                 size_t S = img.get_size(5);
                 size_t SLC = img.get_size(6);
+
+                GDEBUG_STREAM("Generic recon, convert recon images to ismrmd images for " << name << " [RO E1 E2 CHA N S SLC] = [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "] - " << buf_name);
 
                 ismrmrd_images.resize(N*S*SLC);
 
@@ -151,6 +158,9 @@ namespace Gadgetron {
                             a_img.resize(RO, E1, E2, CHA);
                             memcpy(a_img.getDataPtr(), &img(0, 0, 0, 0, n, s, slc), sizeof(DataType)*RO*E1*E2*CHA);
 
+                            ISMRMRD::ImageHeader hd = headers(n, s, slc);
+                            hd.data_type = Gadgetron::Core::IO::ismrmrd_data_type<DataType>();
+
                             a_img.setHead(headers(n, s, slc));
 
                             std::ostringstream str;
@@ -160,13 +170,13 @@ namespace Gadgetron {
                     }
                 }
 
-                std::ofstream os(name, std::ios::out | std::ios::binary | std::ios::app);
+                std::ofstream os(buf_name, std::ios::out | std::ios::binary | std::ios::app);
                 if (os.is_open())
                 {
                     ISMRMRD::OStreamView ws(os);
                     ISMRMRD::ProtocolSerializer serializer(ws);
 
-                    GDEBUG_STREAM("Generic recon, stream the data to the ismrmrd image buffer " << name);
+                    GDEBUG_STREAM("Generic recon, stream the data to the ismrmrd image buffer " << buf_name);
                     for (auto im : ismrmrd_images)
                     {
                         serializer.serialize(im);
@@ -183,7 +193,7 @@ namespace Gadgetron {
             }
             else
             {
-                GWARN_STREAM("Generic reconstruction chain, the pre-set buffer names do not include " << name << "; the data will not be saved into the buffer ...");
+                GWARN_CONDITION_STREAM(this->verbose.value(), "Generic reconstruction chain, the pre-set buffer names do not include " << name << "; the data will not be saved into the buffer ...");
             }
         }
     };

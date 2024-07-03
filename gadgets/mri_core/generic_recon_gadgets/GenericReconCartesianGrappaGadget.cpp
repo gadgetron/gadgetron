@@ -40,8 +40,9 @@ namespace Gadgetron {
 
         recon_obj_.resize(NE);
 
-
         GDEBUG("PATHNAME %s 'n",this->context.paths.gadgetron_home.c_str());
+
+        this->stream_ismrmrd_header(h);
 
         return GADGET_OK;
     }
@@ -64,6 +65,14 @@ namespace Gadgetron {
             if (verbose.value())
             {
                 GDEBUG_STREAM("Incoming recon_bit with " << wav->getObjectPtr()->size() << " wave form samples ");
+            }
+        }
+
+        if (verbose.value())
+        {
+            for(auto key : this->buffer_names_)
+            {
+                GDEBUG_STREAM("buffer_names_ has " << key.first << " - " << key.second);
             }
         }
 
@@ -275,7 +284,7 @@ namespace Gadgetron {
                 }
 
                 this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
-                this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                if (recon_obj_[e].gfactor_.get_number_of_elements() > 0) this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
                 this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
 
                 if (perform_timing.value()) {
