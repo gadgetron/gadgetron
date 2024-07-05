@@ -9,13 +9,11 @@
 #include <ismrmrd/xml.h>
 #include <ismrmrd/waveform.h>
 #include <set>
-
 #include <complex>
 
-
-
 namespace Gadgetron {
-       class IsmrmrdDumpGadget : public Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>>
+
+    class IsmrmrdDumpGadget : public Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>>
     {
     public:
       
@@ -42,18 +40,13 @@ namespace Gadgetron {
         // TODO: remove this option
         NODE_PROPERTY(pass_waveform_downstream, bool, "If true, waveform data is passed downstream", true);
 
-
         void process(Core::InputChannel<Core::variant<Core::Acquisition,Core::Waveform>>& input, Core::OutputChannel& output) override;
-
 
     private:
 
         const bool save_ismrmrd_data_;
 
-        ISMRMRD::Dataset create_ismrmrd_dataset() const;
-        bool  is_ip_on_blacklist() const ; 
+        std::string create_ismrmrd_dataset_name() const;
+        bool is_ip_on_blacklist() const ; 
     };
-
-
-
 }
