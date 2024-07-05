@@ -72,7 +72,7 @@ namespace Gadgetron {
         {
             for(auto key : this->buffer_names_)
             {
-                GDEBUG_STREAM("buffer_names_ has " << key.first << " - " << key.second);
+                GDEBUG_STREAM("buffer_names_ has " << key.first << " - " << key.second.first);
             }
         }
 

@@ -42,61 +42,27 @@ namespace Gadgetron {
         }
 
         // find the buffer names if they are set
-        if (this->context.parameters.find(GENERIC_RECON_ISMRMRD_HEADER) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_ISMRMRD_HEADER] = this->context.parameters.at(GENERIC_RECON_ISMRMRD_HEADER);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the ismrmrd header is " << buffer_names_[GENERIC_RECON_ISMRMRD_HEADER]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_UNDERSAMPLED_KSPACE) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_UNDERSAMPLED_KSPACE] = this->context.parameters.at(GENERIC_RECON_UNDERSAMPLED_KSPACE);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the undersampled kspace is " << buffer_names_[GENERIC_RECON_UNDERSAMPLED_KSPACE]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_REF_KSPACE) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_REF_KSPACE] = this->context.parameters.at(GENERIC_RECON_REF_KSPACE);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the reference kspace is " << buffer_names_[GENERIC_RECON_REF_KSPACE]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_REF_KSPACE_FOR_COILMAP) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_REF_KSPACE_FOR_COILMAP] = this->context.parameters.at(GENERIC_RECON_REF_KSPACE_FOR_COILMAP);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the prepared reference kspace used for the coil map estimation is " << buffer_names_[GENERIC_RECON_REF_KSPACE_FOR_COILMAP]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_COILMAP) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_COILMAP] = this->context.parameters.at(GENERIC_RECON_COILMAP);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the coil maps is " << buffer_names_[GENERIC_RECON_COILMAP]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_GFACTOR_MAP) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_GFACTOR_MAP] = this->context.parameters.at(GENERIC_RECON_GFACTOR_MAP);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the gfactor maps is " << buffer_names_[GENERIC_RECON_GFACTOR_MAP]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_RECONED_KSPACE) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_RECONED_KSPACE] = this->context.parameters.at(GENERIC_RECON_RECONED_KSPACE);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the reconstructed kspace is " << buffer_names_[GENERIC_RECON_RECONED_KSPACE]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_RECONED_COMPLEX_IMAGE) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE] = this->context.parameters.at(GENERIC_RECON_RECONED_COMPLEX_IMAGE);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the complex images after recon is " << buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE]);
-        }
-
-        if (this->context.parameters.find(GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING) != this->context.parameters.end())
-        {
-            buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING] = this->context.parameters.at(GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING);
-            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store the complex images after recon and further post-processing is " << buffer_names_[GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING]);
-        }
+        this->initialize_stream_name_buffer(GENERIC_RECON_ISMRMRD_HEADER);
+        this->initialize_stream_name_buffer(GENERIC_RECON_UNDERSAMPLED_KSPACE);
+        this->initialize_stream_name_buffer(GENERIC_RECON_REF_KSPACE);
+        this->initialize_stream_name_buffer(GENERIC_RECON_REF_KSPACE_FOR_COILMAP);
+        this->initialize_stream_name_buffer(GENERIC_RECON_COILMAP);
+        this->initialize_stream_name_buffer(GENERIC_RECON_GFACTOR_MAP);
+        this->initialize_stream_name_buffer(GENERIC_RECON_RECONED_KSPACE);
+        this->initialize_stream_name_buffer(GENERIC_RECON_RECONED_COMPLEX_IMAGE);
+        this->initialize_stream_name_buffer(GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING);
 
         return GADGET_OK;
+    }
+
+    template <typename T> 
+    void GenericReconBase<T>::initialize_stream_name_buffer(const std::string& name)
+    {
+        if (this->context.parameters.find(name) != this->context.parameters.end())
+        {
+            buffer_names_[name].first = this->context.parameters.at(name);
+            GDEBUG_CONDITION_STREAM(this->verbose.value(), "Buffer to store " << name << " is " << buffer_names_[name].first);
+        }
     }
 
     template <typename T>
@@ -110,14 +76,18 @@ namespace Gadgetron {
     {
         if (this->buffer_names_.find(GENERIC_RECON_ISMRMRD_HEADER)!=this->buffer_names_.end())
         {
-            std::string buf_name = this->buffer_names_[GENERIC_RECON_ISMRMRD_HEADER];
-            std::ofstream os(buf_name, std::ios::out );
+            std::string buf_name = this->buffer_names_[GENERIC_RECON_ISMRMRD_HEADER].first;
+            if (!this->buffer_names_[GENERIC_RECON_ISMRMRD_HEADER].second)
+            {
+                this->buffer_names_[GENERIC_RECON_ISMRMRD_HEADER].second = std::make_shared<std::ofstream>(std::ofstream(buf_name, std::ios::out ));
+            }
+
+            std::ofstream& os = *this->buffer_names_[GENERIC_RECON_ISMRMRD_HEADER].second;
             if (os.is_open())
             {
                 GDEBUG_STREAM("Generic recon, stream the ismrmrd header to the array buffer " << buf_name);
                 ISMRMRD::serialize(hdr, os);
                 os.flush();
-                os.close();
             }
             else
             {
