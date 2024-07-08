@@ -304,6 +304,14 @@ namespace Gadgetron {
     }
 
 
+    int GenericReconFieldOfViewAdjustmentGadget::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconFieldOfViewAdjustmentGadget - close(flags) : " << flags);
+        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
+        this->close_stream_buffer();
+        return GADGET_OK;
+    }
+
     // ----------------------------------------------------------------------------------------
 
     GADGET_FACTORY_DECLARE(GenericReconFieldOfViewAdjustmentGadget)

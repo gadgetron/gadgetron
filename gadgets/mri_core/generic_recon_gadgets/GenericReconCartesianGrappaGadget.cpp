@@ -15,10 +15,12 @@
 
 namespace Gadgetron {
 
-    GenericReconCartesianGrappaGadget::GenericReconCartesianGrappaGadget() : BaseClass() {
+    GenericReconCartesianGrappaGadget::GenericReconCartesianGrappaGadget() : BaseClass()
+    {
     }
 
-    GenericReconCartesianGrappaGadget::~GenericReconCartesianGrappaGadget() {
+    GenericReconCartesianGrappaGadget::~GenericReconCartesianGrappaGadget()
+    {
     }
 
     int GenericReconCartesianGrappaGadget::process_config(ACE_Message_Block *mb) {
@@ -743,7 +745,13 @@ namespace Gadgetron {
 
     }
 
-
+    int GenericReconCartesianGrappaGadget::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconCartesianGrappaGadget - close(flags) : " << flags);
+        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
+        this->close_stream_buffer();
+        return GADGET_OK;
+    }
 
     GADGET_FACTORY_DECLARE(GenericReconCartesianGrappaGadget)
 }

@@ -65,9 +65,55 @@ namespace Gadgetron {
         }
     }
 
+    template <typename T> 
+    void GenericReconBase<T>::close_stream_buffer()
+    {
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T>::close_stream_buffer ");
+
+        // put the close message to all opened streams for the images into the ismrmrd format
+        // the hoNDArray stream is not in ismrmrd format for now, which may be changed in the future
+        for (auto const& x : this->buffer_names_)
+        {
+            GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T>::close_stream_buffer, stream is for " << x.first << " - " << this->buffer_names_[x.first].first);
+
+            if ( (x.first == GENERIC_RECON_ISMRMRD_HEADER)  
+                | (x.first == GENERIC_RECON_COILMAP) 
+                | (x.first == GENERIC_RECON_GFACTOR_MAP)
+                | (x.first == GENERIC_RECON_RECONED_COMPLEX_IMAGE)
+                | (x.first == GENERIC_RECON_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING)
+            )
+            {
+                if(this->buffer_names_[x.first].second)
+                {
+                    std::ofstream& os = *this->buffer_names_[x.first].second;
+                    if (os.is_open())
+                    {
+                        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T>::close_stream_buffer, stream is open for " << x.first << "; put in the close message ... ");
+                        ISMRMRD::OStreamView ws(os);
+                        ISMRMRD::ProtocolSerializer serializer(ws);
+                        serializer.close();
+                        os.flush();
+                    }
+                    else
+                    {
+                        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T>::close_stream_buffer, stream is not open for " << x.first << " ... ");
+                    }
+                }
+            }
+        }
+    }
+
     template <typename T>
     int GenericReconBase<T>::process(GadgetContainerMessage<T>* m1)
     {
+        return GADGET_OK;
+    }
+
+    template <typename T> 
+    int GenericReconBase<T>::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T> - close(flags) : " << flags);
+        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
         return GADGET_OK;
     }
 
