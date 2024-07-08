@@ -1,4 +1,7 @@
 #include <complex>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <io/primitives.h>
 #include <time.h>
@@ -10,9 +13,6 @@
 #include "ismrmrd/meta.h"
 
 // DCMTK includes
-#define INCLUDE_CSTDLIB
-#define INCLUDE_CSTDIO
-#define INCLUDE_CSTRING
 #define NOGDI
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"
