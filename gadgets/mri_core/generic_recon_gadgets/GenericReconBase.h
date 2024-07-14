@@ -80,7 +80,7 @@ namespace Gadgetron {
         // --------------------------------------------------
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(GadgetContainerMessage<T>* m1);
-        virtual int close(unsigned long flags = 1);
+        virtual int close(unsigned long flags);
 
         // --------------------------------------------------
         // data stream functions
@@ -217,7 +217,7 @@ namespace Gadgetron {
 
         GenericReconKSpaceReadoutBase();
         virtual ~GenericReconKSpaceReadoutBase();
-        virtual int close(unsigned long flags = 1) { return BaseClass::close(flags); }
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 
     class EXPORTGADGETSMRICORE GenericReconDataBase :public GenericReconBase < IsmrmrdReconData >
@@ -229,7 +229,7 @@ namespace Gadgetron {
 
         GenericReconDataBase();
         virtual ~GenericReconDataBase();
-        virtual int close(unsigned long flags = 1) { return BaseClass::close(flags); }
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 
     class EXPORTGADGETSMRICORE GenericReconImageBase :public GenericReconBase < IsmrmrdImageArray >
@@ -241,7 +241,7 @@ namespace Gadgetron {
 
         GenericReconImageBase();
         virtual ~GenericReconImageBase();
-        virtual int close(unsigned long flags = 1) { return BaseClass::close(flags); }
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 
     class EXPORTGADGETSMRICORE GenericReconImageHeaderBase :public GenericReconBase < ISMRMRD::ImageHeader >
@@ -253,6 +253,6 @@ namespace Gadgetron {
 
         GenericReconImageHeaderBase();
         virtual ~GenericReconImageHeaderBase();
-        virtual int close(unsigned long flags = 1) { return BaseClass::close(flags); }
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 }

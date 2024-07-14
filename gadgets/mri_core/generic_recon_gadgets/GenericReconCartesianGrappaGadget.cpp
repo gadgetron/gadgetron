@@ -88,6 +88,8 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(),
                                     "======================================================================");
 
+            if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements()==0) continue;
+
             // ---------------------------------------------------------------
             // export incoming data
             if (!debug_folder_full_path_.empty())
