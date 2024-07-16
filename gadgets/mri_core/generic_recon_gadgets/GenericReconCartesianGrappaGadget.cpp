@@ -44,7 +44,7 @@ namespace Gadgetron {
 
         GDEBUG("PATHNAME %s 'n",this->context.paths.gadgetron_home.c_str());
 
-        this->stream_ismrmrd_header(h);
+        this->gt_streamer_.stream_ismrmrd_header(h);
 
         return GADGET_OK;
     }
@@ -67,14 +67,6 @@ namespace Gadgetron {
             if (verbose.value())
             {
                 GDEBUG_STREAM("Incoming recon_bit with " << wav->getObjectPtr()->size() << " wave form samples ");
-            }
-        }
-
-        if (verbose.value())
-        {
-            for(auto key : this->buffer_names_)
-            {
-                GDEBUG_STREAM("buffer_names_ has " << key.first << " - " << key.second.first);
             }
         }
 
@@ -108,7 +100,7 @@ namespace Gadgetron {
             // ---------------------------------------------------------------
 
             if (recon_bit_->rbit_[e].ref_) {
-                this->stream_to_array_buffer(GENERIC_RECON_REF_KSPACE, recon_bit_->rbit_[e].ref_->data_);
+                this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_REF_KSPACE, recon_bit_->rbit_[e].ref_->data_);
 
                 if (!debug_folder_full_path_.empty()) {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_,
@@ -153,7 +145,7 @@ namespace Gadgetron {
                                                                     recon_obj_[e].ref_calib_dst_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                this->stream_to_array_buffer(GENERIC_RECON_REF_KSPACE_FOR_COILMAP, recon_obj_[e].ref_coil_map_);
+                this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP, recon_obj_[e].ref_coil_map_);
 
                 if (!debug_folder_full_path_.empty()) {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_dst_,
@@ -189,7 +181,7 @@ namespace Gadgetron {
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0) {
 
-                this->stream_to_array_buffer(GENERIC_RECON_UNDERSAMPLED_KSPACE, recon_bit_->rbit_[e].data_.data_);
+                this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_UNDERSAMPLED_KSPACE, recon_bit_->rbit_[e].data_.data_);
 
                 if (!debug_folder_full_path_.empty()) {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_,
@@ -287,9 +279,9 @@ namespace Gadgetron {
                         debug_folder_full_path_ + "recon_res" + os.str());
                 }
 
-                this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
-                if (recon_obj_[e].gfactor_.get_number_of_elements() > 0) this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
-                this->stream_to_ismrmrd_image_buffer(GENERIC_RECON_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                if (recon_obj_[e].gfactor_.get_number_of_elements() > 0) this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
 
                 if (perform_timing.value()) {
                     gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array");
@@ -751,7 +743,7 @@ namespace Gadgetron {
     {
         GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconCartesianGrappaGadget - close(flags) : " << flags);
         if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
-        this->close_stream_buffer();
+        this->gt_streamer_.close_stream_buffer();
         return GADGET_OK;
     }
 
