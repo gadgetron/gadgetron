@@ -17,7 +17,7 @@ void fill_random(hoNDArray<std::complex<float>>& data, int seed = 35879)
     std::generate(data.begin(), data.end(), [&distribution, &generator]() { return distribution(generator); });
 }
 
-void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< ISMRMRD::ImageHeader > headers, std::vector< ISMRMRD::MetaContainer > meta)
+void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< ISMRMRD::ImageHeader >& headers, std::vector< ISMRMRD::MetaContainer >& meta)
 {
     size_t RO = imgs.get_size(0);
     size_t E1 = imgs.get_size(1);
@@ -34,7 +34,7 @@ void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< ISM
     {
         for (s=0; s<S; s++)
         {
-            for (n=0; n<N; N++)
+            for (n=0; n<N; n++)
             {
                 headers(n, s, slc).image_index = n+s*N+slc*N*S;
                 headers(n, s, slc).data_type = Gadgetron::Core::IO::ismrmrd_data_type<std::complex<float>>();
@@ -67,7 +67,7 @@ void remove_parameter_files(const std::map<std::string, std::string>& parameters
     }
 }
 
-TEST(TypeTests, GenericReconIsmrmrdStreamerTest)
+TEST(GenericReconIsmrmrdStreamerTest, test_streamer)
 {
     std::string tmp_path = std::string(std::filesystem::temp_directory_path());
 
@@ -88,6 +88,7 @@ TEST(TypeTests, GenericReconIsmrmrdStreamerTest)
         gt_streamer.verbose_ = true;
 
         ISMRMRD::IsmrmrdHeader hdr;
+        hdr.encoding.resize(1);
         gt_streamer.stream_ismrmrd_header(hdr);
 
         hoNDArray<std::complex<float>> data;
@@ -98,23 +99,25 @@ TEST(TypeTests, GenericReconIsmrmrdStreamerTest)
         gt_streamer.stream_to_array_buffer(GENERIC_RECON_STREAM_RECONED_KSPACE, data);
 
         hoNDArray<std::complex<float>> ref;
-        ref.create(64, 32, 32, 8, 12, 6);
+        ref.create(64, 32, 32, 8, 2, 1);
         fill_random(ref);
         gt_streamer.stream_to_array_buffer(GENERIC_RECON_STREAM_REF_KSPACE, ref);
         gt_streamer.stream_to_array_buffer(GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP, ref);
 
         hoNDArray<std::complex<float>> imgs;
 
-        size_t RO=256, E1=192, E2=3, CHA=32;
-        size_t N=12, S=35, SLC=10;
+        size_t RO=32, E1=16, E2=1, CHA=4;
+        size_t N=3, S=2, SLC=2;
 
         imgs.create(RO, E1, E2, CHA, N, S, SLC);
         fill_random(imgs);
+        GDEBUG_STREAM("fill in imgs ...");
 
         hoNDArray< ISMRMRD::ImageHeader > headers;
         std::vector< ISMRMRD::MetaContainer > meta;
 
         fill_image_array(imgs, headers, meta);
+        GDEBUG_STREAM("fill_image_array ...");
 
         gt_streamer.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, imgs, headers, meta);
         gt_streamer.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING, imgs, headers, meta);
@@ -145,16 +148,17 @@ TEST(TypeTests, GenericReconIsmrmrdStreamerTest)
         int ind = 0;
         while (deserializer.peek() != ISMRMRD::ISMRMRD_MESSAGE_CLOSE)
         {
+            int n, s, slc;
+            slc = ind / (N*S);
+            s = (ind - slc*N*S) / N;
+            n = ind - s*N - slc*N*S;
+            GDEBUG_STREAM("ProtocolDeserializer for image " << ind << " - " << n << " " << s << " " << slc);
+
             ASSERT_EQ(deserializer.peek(), ISMRMRD::ISMRMRD_MESSAGE_IMAGE);
             ASSERT_EQ(deserializer.peek_image_data_type(), ISMRMRD::ISMRMRD_CXFLOAT);
 
             ISMRMRD::Image<std::complex<float> > img;
             deserializer.deserialize(img);
-
-            int n, s, slc;
-            slc = ind / (N*S);
-            s = (ind%(N*S)) / N;
-            n = ind - s*S - slc*N*S;
 
             hoNDArray<std::complex<float>> a_img, a_img_deserialized;
             a_img.create(RO, E1, E2, CHA, &imgs(0, 0, 0, 0, n, s, slc));

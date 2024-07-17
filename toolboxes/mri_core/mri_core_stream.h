@@ -150,7 +150,7 @@ namespace Gadgetron
 
                 if (this->buffer_names_[name].second->is_open())
                 {
-                    GDEBUG_STREAM("Generic recon, continue streaming the data to the ismrmrd image buffer " << buf_name);
+                    GDEBUG_STREAM("Generic recon, continue streaming the data to the ismrmrd image buffer " << buf_name << " for " << ismrmrd_images.size() << " images ...");
                     stream_images(*this->buffer_names_[name].second, ismrmrd_images);
                 }
                 else
