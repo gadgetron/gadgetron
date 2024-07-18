@@ -7,7 +7,7 @@
 
     The images and headers are streamed out as  the ISMRMRD image and header.
 
-    The waveforms are streamed out as the ISMRMRD waveform. 
+    ToBeImplemented: The waveforms are streamed out as the ISMRMRD waveform. 
 
     All ismrmrd structures follow the convention to use the ISMRMRD::ProtocolSerializer and ProtocolDeserializer.
 
