@@ -21,7 +21,6 @@ channels=(
   conda-forge
   bioconda
   defaults
-  intel
 )
 
 channel_directives=$(printf -- "-c %s " "${channels[@]}")
