@@ -101,6 +101,7 @@ namespace Gadgetron {
         // default interface function
         virtual int process_config(ACE_Message_Block* mb) override;
         virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1) override;
+        virtual int close(unsigned long flags);
 
         // --------------------------------------------------
         // recon step functions

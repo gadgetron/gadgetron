@@ -62,7 +62,6 @@ requirements:
     - libblas=*=*mkl
     - libcurl=7.86.0
     - libxml2=2.9.14
-    - memkind=1.10.1
     - mkl>=2024.1.0
     - mrd-storage-server=0.0.12
     - numpy=1.26.4

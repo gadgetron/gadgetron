@@ -61,7 +61,7 @@ namespace Gadgetron
             }
         }
 
-        if (input_array->get_number_of_dimensions() == 2)
+        if (input_array->get_number_of_elements() == RO*E1)
         {
             typedef hoNDImage<ValueType, 2> ImageType;
             ImageType input_image(RO, E1, input_array->begin()), output_image;
@@ -73,7 +73,7 @@ namespace Gadgetron
 
             output_array = output_image;
         }
-        else if (input_array->get_number_of_dimensions() == 3)
+        else if (input_array->get_number_of_elements() == RO*E1*E2)
         {
             typedef hoNDImage<ValueType, 3> ImageType;
             ImageType input_image(RO, E1, E2, input_array->begin()), output_image;
@@ -88,6 +88,11 @@ namespace Gadgetron
         else 
         {
             GERROR_STREAM("ImageResizingGadget, only support 2D or 3D input images ... ");
+            std::ostringstream ostr;
+            ostr << "[";
+            for (auto i=0; i<dims.size(); i++) ostr << " " << dims[i];
+            ostr << "]";
+            GERROR_STREAM("ImageResizingGadget, image size is " << ostr.str());
 
             if (this->next()->putq(m1) < 0)
             {

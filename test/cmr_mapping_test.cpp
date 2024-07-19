@@ -29,7 +29,7 @@ class cmr_mapping_test : public ::testing::Test
 
             if(!gt_ut_folder_.empty())
             {
-                GDEBUG_STREAM("Unit Test for Gadgetron hoNFFT");
+                GDEBUG_STREAM("Unit Test for Gadgetron cmr_mapping");
                 gt_ut_data_folder_ = gt_ut_folder_;
                 gt_ut_res_folder_ = gt_ut_folder_ + "/../result/";
                 GDEBUG_STREAM("gt_ut_data_folder_ is " << gt_ut_data_folder_);

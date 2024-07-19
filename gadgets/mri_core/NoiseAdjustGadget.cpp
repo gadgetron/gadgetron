@@ -12,29 +12,23 @@
 #include "omp.h"
 #endif // USE_OMP
 
-
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <typeinfo>
 
-
-
 using namespace std::string_literals;
 namespace bf = boost::filesystem;
+
 namespace Gadgetron {
     namespace {
-
 
         template <class T> T value_or(const ISMRMRD::Optional<T>& opt, T default_value) {
             return opt ? *opt : default_value;
         }
 
-
         float bandwidth_from_header(const ISMRMRD::IsmrmrdHeader& header) {
             return value_or(header.acquisitionSystemInformation->relativeReceiverNoiseBandwidth, 0.793f);
         }
-
-
 
         void normalize_covariance(NoiseGatherer& ng){
             if (ng.total_number_of_samples > 1) {
@@ -323,7 +317,6 @@ namespace Gadgetron {
             }
         } else {
             this->measurement_storage->store("noise_covariance", noise_covariance);
-
         }
     }
 
@@ -359,7 +352,6 @@ namespace Gadgetron {
         if (ng.total_number_of_samples == 0)
             return std::move(ng);
 
-
         this->save_noisedata(ng);
 
         auto masked_covariance = mask_channels(ng.tmp_covariance, scale_only_channels);
@@ -386,8 +378,6 @@ namespace Gadgetron {
         NoiseHandler nh, Core::Acquisition& acq) {
         return Core::visit([&](auto var) { return this->handle_acquisition<decltype(var)>(std::move(var), acq); }, std::move(nh));
     }
-
-
 
     void NoiseAdjustGadget::process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) {
 

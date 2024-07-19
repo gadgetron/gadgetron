@@ -41,12 +41,24 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
         }
 
+        // find the buffer names if they are set
+        this->gt_streamer_.initialize_stream_name_buffer(this->context.parameters);
+        this->gt_streamer_.verbose_ = this->verbose.value();
+
         return GADGET_OK;
     }
 
     template <typename T>
     int GenericReconBase<T>::process(GadgetContainerMessage<T>* m1)
     {
+        return GADGET_OK;
+    }
+
+    template <typename T> 
+    int GenericReconBase<T>::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T> - close(flags) : " << flags);
+        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
         return GADGET_OK;
     }
 

@@ -845,7 +845,7 @@ public:
     {
         im.setHead(h);
 
-        std::cout << "Receiving image : " << h.image_series_index << " - " << h.image_index << std::endl;
+        std::cout << "Receiving image : " << h.image_series_index << " - " << h.image_index << " - [" << h.matrix_size[0] << " " << h.matrix_size[1] << " " << h.matrix_size[2] << "]" << std::endl;
 
         typedef unsigned long long size_t_type;
 

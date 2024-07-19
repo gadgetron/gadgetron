@@ -6,6 +6,10 @@
 #pragma once
 
 #include "FFDBase.h"
+#include "ho2DArray.h"
+#include "ho3DArray.h"
+#include "ho4DArray.h"
+#include "ho5DArray.h"
 
 namespace Gadgetron { 
 

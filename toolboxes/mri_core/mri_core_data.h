@@ -128,8 +128,6 @@ namespace Gadgetron
   public:
     IsmrmrdDataBuffered data_;
     Core::optional<IsmrmrdDataBuffered> ref_;
-
-
   };
 
   /**
@@ -141,7 +139,6 @@ namespace Gadgetron
     std::vector<IsmrmrdReconBit> rbit_;
   };
 
-  
   /**
      This class is used to store an array of reconstructed data. 
    */
@@ -162,16 +159,11 @@ namespace Gadgetron
 
     // acquisition header, [Y, Z, N, S, LOC]
     Core::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
-
   };
-
 
   using ReconData = IsmrmrdReconData;
   using ImageArray = IsmrmrdImageArray;
   using DataBuffered = IsmrmrdDataBuffered;
-
-
-
 }
 
 GADGETRON_ADAPT_STRUCT(Gadgetron::ImageArray, GADGETRON_ACCESS_ELEMENT(data_), GADGETRON_ACCESS_ELEMENT(headers_), GADGETRON_ACCESS_ELEMENT(meta_), GADGETRON_ACCESS_ELEMENT(waveform_), GADGETRON_ACCESS_ELEMENT(acq_headers_))

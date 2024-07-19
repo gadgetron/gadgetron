@@ -118,6 +118,8 @@ namespace Gadgetron {
             recon_res_->headers_(n).matrix_size[2] = recon_res_->data_.get_size(2);
         }
 
+        this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING, recon_res_->data_, recon_res_->headers_, recon_res_->meta_);
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconFieldOfViewAdjustmentGadget::process(...) ends ... ");
 
         // ----------------------------------------------------------
@@ -301,6 +303,14 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
+
+    int GenericReconFieldOfViewAdjustmentGadget::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconFieldOfViewAdjustmentGadget - close(flags) : " << flags);
+        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
+        this->gt_streamer_.close_stream_buffer();
+        return GADGET_OK;
+    }
 
     // ----------------------------------------------------------------------------------------
 

@@ -32,6 +32,7 @@ include(GoogleTest)
             #lapack_test.cpp
             hoSDC_test.cpp
             nhlbi_compression_tests.cpp
+            mri_core_stream_test.cpp
             gadgets/setup_gadget.h 
             gadgets/AcquisitionAccumulateTrigget_test.cpp 
             gadgets/FlagTriggerParsing_test.cpp  

@@ -110,6 +110,8 @@ namespace Gadgetron {
 
             hoNDArray< std::complex<float> >& data = recon_bit_->rbit_[e].data_.data_;
 
+            if (data.get_number_of_elements()==0) continue;
+
             size_t RO = data.get_size(0);
             size_t E1 = data.get_size(1);
             size_t E2 = data.get_size(2);
