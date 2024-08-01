@@ -30,6 +30,9 @@
 
 namespace Gadgetron 
 {
+    template <typename T> 
+    void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray<T>& ho_arr, ISMRMRD::NDArray<T>& arr);
+
     class GenericReconIsmrmrdStreamer
     {
     public:
@@ -48,35 +51,23 @@ namespace Gadgetron
 
         void stream_ismrmrd_header(const ISMRMRD::IsmrmrdHeader& hdr);
 
+        void stream_ismrmrd_waveform(const std::vector< ISMRMRD::Waveform>& wav);
+
         // stream of ND array buffer
         template <typename DataType> 
         void stream_to_array_buffer(const std::string& name, const hoNDArray<DataType>& data)
         {
-            if (this->buffer_names_.find(name)!=this->buffer_names_.end())
+            std::string buf_name;
+            std::shared_ptr<std::ofstream> os = this->find_and_open_stream(name, buf_name);
+            if (os && os->is_open())
             {
-                std::string buf_name = this->buffer_names_[name].first;
+                GDEBUG_STREAM("Generic recon, continue streaming the array data to the buffer " << buf_name);
+                ISMRMRD::NDArray<DataType> arr;
+                convert_hoNDArray_to_ismrmrd_ndarray(data, arr);
 
-                if (!this->buffer_names_[name].second)
-                {
-                    GDEBUG_STREAM("Generic recon, create the stream for the first time - " << buf_name);
-                    this->buffer_names_[name].second = std::make_shared<std::ofstream>(std::ofstream(buf_name, std::ios::out | std::ios::binary | std::ios::app));
-                }
-
-                std::ofstream& os = *this->buffer_names_[name].second;
-                if (os.is_open())
-                {
-                    GDEBUG_STREAM("Generic recon, continue streaming the data to the buffer " << buf_name);
-                    Gadgetron::Core::IO::write(os, data);
-                    os.flush();
-                }
-                else
-                {
-                    GERROR_STREAM("Generic recon, already created stream is not in open status - " << buf_name << " ... ");
-                }
-            }
-            else
-            {
-                GWARN_CONDITION_STREAM(this->verbose_, "Generic reconstruction chain, the pre-set buffer names do not include " << name << "; the data will not be saved into the buffer ...");
+                ISMRMRD::OStreamView ws(*os);
+                ISMRMRD::ProtocolSerializer serializer(ws);
+                serializer.serialize(arr);
             }
         }
 
@@ -98,10 +89,10 @@ namespace Gadgetron
         template <typename DataType> 
         void stream_to_ismrmrd_image_buffer(const std::string& name, const hoNDArray<DataType>& img, const hoNDArray< ISMRMRD::ImageHeader >& headers, const std::vector< ISMRMRD::MetaContainer >& meta)
         {
-            if (this->buffer_names_.find(name)!=this->buffer_names_.end())
+            std::string buf_name;
+            std::shared_ptr<std::ofstream> os = this->find_and_open_stream(name, buf_name);
+            if (os && os->is_open())
             {
-                std::string buf_name = this->buffer_names_[name].first;
-
                 // convert images to one or more ismrmrd images
                 std::vector< ISMRMRD::Image<DataType> > ismrmrd_images;
 
@@ -142,29 +133,14 @@ namespace Gadgetron
                     }
                 }
 
-                if (!this->buffer_names_[name].second)
-                {
-                    GDEBUG_STREAM("Generic recon, create the ismrmrd image stream for the first time - " << buf_name);
-                    this->buffer_names_[name].second = std::make_shared<std::ofstream>(std::ofstream(buf_name, std::ios::out | std::ios::binary | std::ios::app));
-                }
-
-                if (this->buffer_names_[name].second->is_open())
-                {
-                    GDEBUG_STREAM("Generic recon, continue streaming the data to the ismrmrd image buffer " << buf_name << " for " << ismrmrd_images.size() << " images ...");
-                    stream_images(*this->buffer_names_[name].second, ismrmrd_images);
-                }
-                else
-                {
-                    GERROR_STREAM("Generic recon, already created ismrmrd image stream is not in open status - " << buf_name << " ... ");
-                }
-            }
-            else
-            {
-                GWARN_CONDITION_STREAM(this->verbose_, "Generic reconstruction chain, the pre-set buffer names do not include " << name << "; the data will not be saved into the buffer ...");
+                GDEBUG_STREAM("Generic recon, continue streaming the data to the ismrmrd image buffer " << buf_name << " for " << ismrmrd_images.size() << " images ...");
+                stream_images(*os, ismrmrd_images);
             }
         }
 
     protected:
         std::map<std::string, std::pair<std::string, std::shared_ptr<std::ofstream> > > buffer_names_;
+
+        std::shared_ptr<std::ofstream> find_and_open_stream(const std::string& name, std::string& buf_name);
     };
 }

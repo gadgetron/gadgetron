@@ -148,4 +148,5 @@ namespace Gadgetron
     #define GENERIC_RECON_STREAM_RECONED_KSPACE             "reconed_kspace"
     #define GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE      "reconed_images"
     #define GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING "reconed_images_after_post_processing"
+    #define GENERIC_RECON_STREAM_WAVEFORM                   "waveform"
 }
