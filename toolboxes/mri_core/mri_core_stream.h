@@ -33,6 +33,9 @@ namespace Gadgetron
     template <typename T> 
     void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray<T>& ho_arr, ISMRMRD::NDArray<T>& arr);
 
+    template <typename T> 
+    void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<T>& arr, hoNDArray<T>& ho_arr);
+
     class GenericReconIsmrmrdStreamer
     {
     public:

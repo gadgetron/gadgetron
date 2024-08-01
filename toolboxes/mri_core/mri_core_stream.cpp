@@ -131,7 +131,7 @@ namespace Gadgetron
         ho_arr.get_dimensions(dims);
 
         arr.resize(dims);
-        memcpy(arr.begin(), ho_arr.begin(), ho_arr.get_number_of_bytes());
+        memcpy(arr.getDataPtr(), ho_arr.get_data_ptr(), ho_arr.get_number_of_bytes());
     }
 
     template void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray<short>& ho_arr, ISMRMRD::NDArray<short>& arr);
@@ -142,4 +142,25 @@ namespace Gadgetron
     template void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray<double>& ho_arr, ISMRMRD::NDArray<double>& arr);
     template void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray< std::complex<float> >& ho_arr, ISMRMRD::NDArray< std::complex<float> >& arr);
     template void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray< std::complex<double> >& ho_arr, ISMRMRD::NDArray< std::complex<double> >& arr);
+
+    template <typename T> 
+    void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<T>& arr, hoNDArray<T>& ho_arr)
+    {
+        size_t NDim = arr.getNDim();
+
+        std::vector<size_t> dim(NDim);
+        for (auto i=0; i<NDim; i++) dim[i] = arr.getDims()[i];
+
+        ho_arr.create(dim);
+        memcpy(ho_arr.get_data_ptr(), arr.getDataPtr(), ho_arr.get_number_of_bytes());
+    }
+
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<short>& arr, hoNDArray<short>& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<unsigned short>& arr, hoNDArray<unsigned short>& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<int>& arr, hoNDArray<int>& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<unsigned int>& arr, hoNDArray<unsigned int>& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<float>& arr, hoNDArray<float>& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray<double>& arr, hoNDArray<double>& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray< std::complex<float> >& arr, hoNDArray< std::complex<float> >& ho_arr);
+    template void convert_ismrmrd_ndarray_to_hoNDArray(const ISMRMRD::NDArray< std::complex<double> >& arr, hoNDArray< std::complex<double> >& ho_arr);
 }
