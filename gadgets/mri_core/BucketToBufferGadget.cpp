@@ -321,6 +321,35 @@ namespace Gadgetron {
         sampling.recon_FOV_      = xyz_to_vector(encoding.reconSpace.fieldOfView_mm);
         sampling.recon_matrix_   = xyz_to_vector(encoding.reconSpace.matrixSize);
 
+        sampling.sampling_limits_[0].min_ = 0;
+        sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples-1;
+        sampling.sampling_limits_[0].center_ = acqhdr.number_of_samples/2;
+
+        sampling.sampling_limits_[1].min_ = encoding.encodingLimits.kspace_encoding_step_1->minimum;
+        sampling.sampling_limits_[1].max_ = encoding.encodingLimits.kspace_encoding_step_1->maximum;
+        sampling.sampling_limits_[1].center_ = encoding.encodingLimits.kspace_encoding_step_1->center;
+
+        sampling.sampling_limits_[2].min_ = encoding.encodingLimits.kspace_encoding_step_2->minimum;
+        sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum;
+        sampling.sampling_limits_[2].center_ = encoding.encodingLimits.kspace_encoding_step_2->center;
+
+        if (verbose) {
+            GDEBUG_STREAM("Encoding space : " << acqhdr.encoding_space_ref << " - "
+                          << int(encoding.trajectory) << " - FOV : [ " << encoding.encodedSpace.fieldOfView_mm.x << " "
+                          << encoding.encodedSpace.fieldOfView_mm.y << " " << encoding.encodedSpace.fieldOfView_mm.z
+                          << " ] "
+                          << " - Matris size : [ " << encoding.encodedSpace.matrixSize.x << " "
+                          << encoding.encodedSpace.matrixSize.y << " " << encoding.encodedSpace.matrixSize.z << " ] ");
+
+            GDEBUG_STREAM("Sampling limits : "
+                          << "- RO : [ " << sampling.sampling_limits_[0].min_ << " "
+                          << sampling.sampling_limits_[0].center_ << " " << sampling.sampling_limits_[0].max_
+                          << " ] - E1 : [ " << sampling.sampling_limits_[1].min_ << " "
+                          << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_
+                          << " ] - E2 : [ " << sampling.sampling_limits_[2].min_ << " "
+                          << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_ << " ]");
+        }
+
         // For cartesian trajectories, assume that any oversampling has been removed.
         if (encoding.trajectory == ISMRMRD::TrajectoryType::CARTESIAN) {
             sampling.encoded_FOV_[0]    = encoding.reconSpace.fieldOfView_mm.x;
@@ -391,22 +420,6 @@ namespace Gadgetron {
             sampling.sampling_limits_[2].center_ = encoding.encodingLimits.kspace_encoding_step_2->center;
         }
 
-        if (verbose) {
-            GDEBUG_STREAM("Encoding space : "
-                          << int(encoding.trajectory) << " - FOV : [ " << encoding.encodedSpace.fieldOfView_mm.x << " "
-                          << encoding.encodedSpace.fieldOfView_mm.y << " " << encoding.encodedSpace.fieldOfView_mm.z
-                          << " ] "
-                          << " - Matris size : [ " << encoding.encodedSpace.matrixSize.x << " "
-                          << encoding.encodedSpace.matrixSize.y << " " << encoding.encodedSpace.matrixSize.z << " ] ");
-
-            GDEBUG_STREAM("Sampling limits : "
-                          << "- RO : [ " << sampling.sampling_limits_[0].min_ << " "
-                          << sampling.sampling_limits_[0].center_ << " " << sampling.sampling_limits_[0].max_
-                          << " ] - E1 : [ " << sampling.sampling_limits_[1].min_ << " "
-                          << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_
-                          << " ] - E2 : [ " << sampling.sampling_limits_[2].min_ << " "
-                          << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_ << " ]");
-        }
         return sampling;
     }
 
