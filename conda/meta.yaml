@@ -65,7 +65,7 @@ requirements:
     - mkl>=2024.1.0
     - mrd-storage-server=0.0.12
     - numpy=1.26.4
-    - onnxruntime=1.18.0
+    - onnxruntime=1.18.1
     - pugixml=1.12.1
     - pyfftw=0.13.1
     - python=3.10
