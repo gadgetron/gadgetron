@@ -28,7 +28,7 @@ requirements:
     - h5py=3.7.0
     - hdf5=1.10.6
     - howardhinnant_date=3.0.1
-    - ismrmrd=1.13.7
+    - ismrmrd=1.14.1
     - ismrmrd-python=1.14.0
     - libblas=*=*mkl
     - libcurl=7.86.0
@@ -56,7 +56,7 @@ requirements:
     - gadgetron-python>=1.4.1
     - h5py=3.7.0
     - hdf5=1.10.6
-    - ismrmrd=1.13.7
+    - ismrmrd=1.14.1
     - ismrmrd-python=1.14.0
     - jq=1.7.1
     - libblas=*=*mkl
