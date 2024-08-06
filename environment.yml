@@ -66,7 +66,7 @@ dependencies:
   - recommonmark=0.7.1                      # dev
   - scipy=1.13.1
   - shellcheck=0.10.0                       # dev
-  - siemens_to_ismrmrd=1.2.11
+  - siemens_to_ismrmrd=1.2.12
   - sphinx=7.3.7                            # dev
   - sphinx_rtd_theme=2.0.0                  # dev
   - sysroot_linux-64=2.12

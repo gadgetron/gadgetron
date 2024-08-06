@@ -74,7 +74,7 @@ requirements:
 
 test:
   requires:
-    - siemens_to_ismrmrd=1.2.11
+    - siemens_to_ismrmrd=1.2.12
 
 about:
   home: https://github.com/gadgetron/gadgetron
