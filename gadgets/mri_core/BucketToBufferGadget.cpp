@@ -227,6 +227,7 @@ namespace Gadgetron {
         }
         return NLOC;
     }
+
     uint16_t BucketToBufferGadget::getNE2(
         const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, bool forref) const {
         uint16_t NE2;
@@ -259,6 +260,7 @@ namespace Gadgetron {
         }
         return NE2;
     }
+
     uint16_t BucketToBufferGadget::getNE1(
         const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, bool forref) const {
         uint16_t NE1;
@@ -290,6 +292,7 @@ namespace Gadgetron {
         }
         return NE1;
     }
+
     uint16_t BucketToBufferGadget::getNE0(
         const ISMRMRD::AcquisitionHeader& acqhdr, const ISMRMRD::Encoding& encoding) const {
         uint16_t NE0;
