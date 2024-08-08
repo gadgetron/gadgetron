@@ -30,10 +30,9 @@ namespace Gadgetron {
     struct BufferKey {
         uint16_t average,slice,contrast,phase,repetition,set,segment;
         BufferKey(const BufferKey&) = default;
-        BufferKey(const ISMRMRD::EncodingCounters& idx) : average{idx.average}, slice{idx.slice},contrast{idx.contrast}, phase{idx.phase},repetition{idx.repetition},set{idx.set},segment{idx.segment}{
-            
-        }
+        BufferKey(const ISMRMRD::EncodingCounters& idx) : average{idx.average}, slice{idx.slice},contrast{idx.contrast}, phase{idx.phase},repetition{idx.repetition},set{idx.set},segment{idx.segment} {}
     };
+
     protected:
         NODE_PROPERTY(N_dimension, Dimension, "N-Dimensions", Dimension::none);
         NODE_PROPERTY(S_dimension, Dimension, "S-Dimensions", Dimension::none);
@@ -47,17 +46,16 @@ namespace Gadgetron {
         void process(Core::InputChannel<AcquisitionBucket>& in, Core::OutputChannel& out) override;
         BufferKey getKey(const ISMRMRD::EncodingCounters& idx) const;
 
+        IsmrmrdDataBuffered makeDataBuffer(const ISMRMRD::AcquisitionHeader& acqhdr, ISMRMRD::Encoding encoding, const AcquisitionBucketStats& stats, bool forref) const;
 
-        IsmrmrdDataBuffered makeDataBuffer(const ISMRMRD::AcquisitionHeader& acqhdr, ISMRMRD::Encoding encoding,
-            const AcquisitionBucketStats& stats, bool forref) const;
-        SamplingDescription createSamplingDescription(const ISMRMRD::Encoding& encoding,
-            const AcquisitionBucketStats& stats, const ISMRMRD::AcquisitionHeader& acqhdr, bool forref) const ;
-        void add_acquisition(IsmrmrdDataBuffered& dataBuffer, const Core::Acquisition& acq, ISMRMRD::Encoding encoding,
-            const AcquisitionBucketStats& stats, bool forref);
-        uint16_t getNE0(const ISMRMRD::AcquisitionHeader& acqhdr, const ISMRMRD::Encoding& encoding) const;
-        uint16_t getNE1(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, bool forref) const;
-        uint16_t getNE2(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, bool forref) const;
-        uint16_t getNLOC(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats) const;
+        virtual SamplingDescription createSamplingDescription(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, const ISMRMRD::AcquisitionHeader& acqhdr, bool forref) const ;
+
+        void add_acquisition(IsmrmrdDataBuffered& dataBuffer, const Core::Acquisition& acq, ISMRMRD::Encoding encoding, const AcquisitionBucketStats& stats, bool forref);
+
+        virtual uint16_t getNE0(const ISMRMRD::AcquisitionHeader& acqhdr, const ISMRMRD::Encoding& encoding) const;
+        virtual uint16_t getNE1(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, bool forref) const;
+        virtual uint16_t getNE2(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats, bool forref) const;
+        virtual uint16_t getNLOC(const ISMRMRD::Encoding& encoding, const AcquisitionBucketStats& stats) const;
     };
 
     void from_string(const std::string&, BucketToBufferGadget::Dimension&);
