@@ -9,11 +9,13 @@
 #include "readers/ImageReader.h"
 #include "readers/IsmrmrdImageArrayReader.h"
 #include "readers/AcquisitionBucketReader.h"
+#include "readers/TextReader.h"
 #include "writers/BufferWriter.h"
 #include "writers/GadgetIsmrmrdWriter.h"
 #include "writers/ImageWriter.h"
 #include "writers/IsmrmrdImageArrayWriter.h"
 #include "writers/AcquisitionBucketWriter.h"
+#include "writers/TextWriter.h"
 #include <gtest/gtest.h>
 #include <mri_core_acquisition_bucket.h>
 #include <random>
@@ -127,6 +129,7 @@ TEST(ReadWriteTest, ImageArrayTest) {
 
     ASSERT_EQ(img_array.data_, value.data_);
 }
+
 TEST(ReadWriteTest, ImageTest) {
     using namespace Gadgetron;
     using namespace Gadgetron::Core;
@@ -169,7 +172,6 @@ TEST(ReadWriteTest, BucketTest) {
     std::default_random_engine engine(4242);
     for (size_t i = 0; i < 127; i++) bucket.data_.push_back(generate_acquisition(engine));
 
-
     auto stream = std::stringstream();
     auto message= Core::Message(bucket);
     auto reader = Core::Readers::AcquisitionBucketReader();
@@ -186,7 +188,27 @@ TEST(ReadWriteTest, BucketTest) {
     auto value = *unpacked;
 
     ASSERT_EQ(bucket.data_,value.data_);
+}
 
+TEST(ReadWriteTest, TextTest) {
+    using namespace Gadgetron;
+    using namespace Gadgetron::Core;
+    std::string text_msg("this is a test message.%&^*()_");
 
+    auto stream = std::stringstream();
+    auto message= Core::Message(text_msg);
+    auto reader = Core::Readers::TextReader();
+    auto writer = Core::Writers::TextWriter();
 
+    ASSERT_TRUE(writer.accepts(message));
+
+    writer.write(stream, std::move(message));
+
+    ASSERT_EQ(Core::IO::read<uint16_t>(stream), TEXT);
+    auto unpacked = Core::unpack<std::string>(reader.read(stream));
+
+    EXPECT_TRUE(bool(unpacked));
+    auto value = *unpacked;
+
+    ASSERT_EQ(value, text_msg);
 }

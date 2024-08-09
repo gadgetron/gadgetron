@@ -60,7 +60,8 @@ namespace Gadgetron::Server::Connection {
                     Config::Reader { "gadgetron_core_readers", "ImageReader", Core::none },
                     Config::Reader { "gadgetron_core_readers", "BufferReader", Core::none },
                     Config::Reader { "gadgetron_core_readers", "IsmrmrdImageArrayReader", Core::none },
-                    Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", Core::none }
+                    Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", Core::none },
+                    Config::Reader { "gadgetron_core_readers", "TextReader", Core::none }
             };
 
             if (config.readers.empty())

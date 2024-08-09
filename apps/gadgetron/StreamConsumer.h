@@ -19,9 +19,11 @@
 #include "readers/ImageReader.h"
 #include "readers/IsmrmrdImageArrayReader.h"
 #include "readers/WaveformReader.h"
+#include "readers/TextReader.h"
 #include "writers/AcquisitionBucketWriter.h"
 #include "writers/ImageWriter.h"
 #include "writers/IsmrmrdImageArrayWriter.h"
+#include "writers/TextWriter.h"
 
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server;
@@ -177,6 +179,7 @@ public:
         auto img_reader = Readers::ImageReader();
         auto img_array_reader = Readers::IsmrmrdImageArrayReader();
         auto acq_bucket_reader = Readers::AcquisitionBucketReader();
+        auto text_reader = Readers::TextReader();
         bool closed = false;
 
         while (!input_stream.eof() && !closed)
@@ -211,6 +214,17 @@ public:
                     input_channel.output.push_message(acq_bucket_reader.read(input_stream));
                     break;
                 }
+                case MessageID::TEXT:
+                {
+                    //Gadgetron::Core::Message msg = text_reader.read(input_stream);
+                    // if (convertible_to<std::string>(msg))
+                    // {
+                    //     std::string str = Gadgetron::Core::force_unpack<std::string>(std::move(msg));
+                    //     GDEBUG_STREAM("Receive text message : " << str);
+                    // }
+                    input_channel.output.push_message(text_reader.read(input_stream));
+                    break;
+                }
                 case MessageID::ERROR:
                 {
                     throw std::runtime_error("Got error while processing input stream");
@@ -234,6 +248,7 @@ public:
         auto writer = Writers::ImageWriter();
         auto img_array_writer = Writers::IsmrmrdImageArrayWriter();
         auto acq_bucket_writer = Writers::AcquisitionBucketWriter();
+        auto text_writer = Writers::TextWriter();
 
         while (true)
         {
@@ -248,6 +263,10 @@ public:
                 else if (convertible_to<Gadgetron::IsmrmrdImageArray>(message) )
                 {
                     img_array_writer.write(output_stream, std::move(message));
+                }
+                else if (convertible_to<std::string>(message) )
+                {
+                    text_writer.write(output_stream, std::move(message));
                 }
                 else
                 {
