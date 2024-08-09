@@ -216,12 +216,6 @@ public:
                 }
                 case MessageID::TEXT:
                 {
-                    //Gadgetron::Core::Message msg = text_reader.read(input_stream);
-                    // if (convertible_to<std::string>(msg))
-                    // {
-                    //     std::string str = Gadgetron::Core::force_unpack<std::string>(std::move(msg));
-                    //     GDEBUG_STREAM("Receive text message : " << str);
-                    // }
                     input_channel.output.push_message(text_reader.read(input_stream));
                     break;
                 }
