@@ -358,5 +358,9 @@
   {
     "file": "simple_gre/ismrmrd_dump_output_20240809.h5",
     "md5": "b3d46770a1fae6a5223de09bd21d1299"
-  }
+  },
+  {
+    "file": "simple_gre/ref_20240810.mrd",
+    "md5": "152dd0ee1b259756107c9fd36965fadb"
+  } 
 ]
