@@ -7,7 +7,9 @@ add_library(gadgetron_core_readers SHARED
         BufferReader.cpp BufferReader.h
         IsmrmrdImageArrayReader.cpp IsmrmrdImageArrayReader.h
         ImageReader.cpp ImageReader.h
-        AcquisitionBucketReader.cpp AcquisitionBucketReader.h)
+        AcquisitionBucketReader.cpp AcquisitionBucketReader.h
+        TextReader.h TextReader.cpp
+        )
 
 target_link_libraries(gadgetron_core_readers
         gadgetron_core
