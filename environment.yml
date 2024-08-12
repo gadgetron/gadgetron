@@ -38,7 +38,7 @@ dependencies:
   - h5py=3.7.0
   - hdf5=1.10.6
   - howardhinnant_date=3.0.1                # dev
-  - ismrmrd=1.13.7
+  - ismrmrd=1.14.1
   - ismrmrd-python=1.14.0
   - junitparser=3.1.2
   - jupyter=1.0.0                           # dev
@@ -54,7 +54,7 @@ dependencies:
   - ninja=1.12.1                            # dev
   - nlohmann_json=3.11.3                    # dev
   - numpy=1.26.4
-  - onnxruntime=1.18.0
+  - onnxruntime=1.18.1
   - pyyaml=6.0.1                            # dev
   - pip=24.0                                # dev
   - packaging=24.0
@@ -66,7 +66,7 @@ dependencies:
   - recommonmark=0.7.1                      # dev
   - scipy=1.13.1
   - shellcheck=0.10.0                       # dev
-  - siemens_to_ismrmrd=1.2.11
+  - siemens_to_ismrmrd=1.2.12
   - sphinx=7.3.7                            # dev
   - sphinx_rtd_theme=2.0.0                  # dev
   - sysroot_linux-64=2.12

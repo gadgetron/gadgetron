@@ -213,7 +213,11 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
                 // pass down waveform
-                if (wav) this->set_wave_form_to_image_array(*wav->getObjectPtr(), recon_obj_[e].recon_res_);
+                if (wav)
+                {
+                    this->set_wave_form_to_image_array(*wav->getObjectPtr(), recon_obj_[e].recon_res_);
+                    this->gt_streamer_.stream_ismrmrd_waveform(*recon_obj_[e].recon_res_.waveform_);
+                }
                 recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
                 // ---------------------------------------------------------------

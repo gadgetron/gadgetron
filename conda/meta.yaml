@@ -28,7 +28,7 @@ requirements:
     - h5py=3.7.0
     - hdf5=1.10.6
     - howardhinnant_date=3.0.1
-    - ismrmrd=1.13.7
+    - ismrmrd=1.14.1
     - ismrmrd-python=1.14.0
     - libblas=*=*mkl
     - libcurl=7.86.0
@@ -56,7 +56,7 @@ requirements:
     - gadgetron-python>=1.4.1
     - h5py=3.7.0
     - hdf5=1.10.6
-    - ismrmrd=1.13.7
+    - ismrmrd=1.14.1
     - ismrmrd-python=1.14.0
     - jq=1.7.1
     - libblas=*=*mkl
@@ -65,7 +65,7 @@ requirements:
     - mkl>=2024.1.0
     - mrd-storage-server=0.0.12
     - numpy=1.26.4
-    - onnxruntime=1.18.0
+    - onnxruntime=1.18.1
     - pugixml=1.12.1
     - pyfftw=0.13.1
     - python=3.10
@@ -74,7 +74,7 @@ requirements:
 
 test:
   requires:
-    - siemens_to_ismrmrd=1.2.11
+    - siemens_to_ismrmrd=1.2.12
 
 about:
   home: https://github.com/gadgetron/gadgetron

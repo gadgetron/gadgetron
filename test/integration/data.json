@@ -354,5 +354,13 @@
   {
     "file": "cmr/RTCine/CH4/ref_20220124_173736.mrd",
     "md5": "b5e9c37bbd3eb4be076d89fd7dd7db6d"
-  }
+  },
+  {
+    "file": "simple_gre/ismrmrd_dump_output_20240811.h5",
+    "md5": "d4dbdd40f7becc4cf5aae3e21eef26b4"
+  },
+  {
+    "file": "simple_gre/ref_20240810.mrd",
+    "md5": "152dd0ee1b259756107c9fd36965fadb"
+  } 
 ]
