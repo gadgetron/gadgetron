@@ -38,6 +38,7 @@ namespace Gadgetron::Server::Connection {
 
         template<class FACTORY>
         FACTORY& load_factory(const std::string &prefix, const std::string &classname, const std::string &dll) {
+            GINFO_STREAM("loading " << prefix << " - " << classname << " from the dll " << dll);
             auto library = load_library(dll);
             return library.get_alias<FACTORY>(prefix + classname);
         }
@@ -59,7 +60,8 @@ namespace Gadgetron::Server::Connection {
                     Config::Reader { "gadgetron_core_readers", "ImageReader", Core::none },
                     Config::Reader { "gadgetron_core_readers", "BufferReader", Core::none },
                     Config::Reader { "gadgetron_core_readers", "IsmrmrdImageArrayReader", Core::none },
-                    Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", Core::none }
+                    Config::Reader { "gadgetron_core_readers", "AcquisitionBucketReader", Core::none },
+                    Config::Reader { "gadgetron_core_readers", "TextReader", Core::none }
             };
 
             if (config.readers.empty())

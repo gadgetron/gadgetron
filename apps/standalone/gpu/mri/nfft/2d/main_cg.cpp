@@ -75,7 +75,7 @@ int main( int argc, char** argv)
 
   // Upload host data to device
   timer = new GPUTimer("Uploading samples to device");
-  cuNDArray<_complext> samples(host_samples.get());
+  cuNDArray<_complext> samples(*host_samples);
   delete timer;
   
   // Compute trajectories
@@ -102,11 +102,11 @@ int main( int argc, char** argv)
   
   // Set image dimensions
   vector<size_t> image_dims = to_std_vector(matrix_size);
-  E->set_domain_dimensions(&image_dims);
+  E->set_domain_dimensions(image_dims);
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  E->preprocess( traj.get() );
+  E->preprocess( *traj );
   delete timer;
 
   // Setup conjugate gradient solver

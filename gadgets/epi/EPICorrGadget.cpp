@@ -522,7 +522,7 @@ namespace Gadgetron {
         }
 
         // The dimensions of the weights array should be the same as the parameter array:
-        if (!nav_corr_param_array.dimensions_equal(&weights_array)) {
+        if (!nav_corr_param_array.dimensions_equal(weights_array)) {
             GERROR("cbi_EPICorrGadget::filter_nav_correction_parameter, dimensions of the parameter and weights arrays don't match.\n");
             return -1;
         }

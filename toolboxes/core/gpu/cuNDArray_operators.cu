@@ -34,7 +34,7 @@ using namespace Gadgetron;
   //
   template<class T,class S,class F>  
   static void equals_transform(cuNDArray<T> &x, const cuNDArray<S> &y){
-    if (x.dimensions_equal(&y)){
+    if (x.dimensions_equal(y)){
       thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), F());
     } else if (compatible_dimensions(x,y))
       {

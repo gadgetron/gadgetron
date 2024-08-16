@@ -21,7 +21,7 @@ namespace Gadgetron{
 
   public:
 
-    virtual void set_domain_dimensions(std::vector<size_t> *dims ){
+    virtual void set_domain_dimensions(const std::vector<size_t>& dims ){
       for (int i = 0;  i < operators.size(); i++) operators[i]->set_domain_dimensions(dims);
     }
     virtual ~gpSolver(){}
@@ -205,10 +205,10 @@ namespace Gadgetron{
       }
 
 
-      virtual void set_domain_dimensions(std::vector<size_t> *dims){
+      virtual void set_domain_dimensions(const std::vector<size_t>& dims){
         generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
         op->set_domain_dimensions(dims);
-        if (op->get_codomain_dimensions()->size() == 0){
+        if (op->get_codomain_dimensions().empty()){
           GDEBUG_STREAM("WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl);
           op->set_codomain_dimensions(dims);
         }
@@ -243,7 +243,7 @@ namespace Gadgetron{
 
         for (int i = 0; i < group.size(); i++ ){
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
-          boost::shared_ptr<ARRAY_TYPE> tmp(new ARRAY_TYPE(op->get_codomain_dimensions().get()));
+          boost::shared_ptr<ARRAY_TYPE> tmp(new ARRAY_TYPE(op->get_codomain_dimensions()));
           op->mult_M(x2,tmp.get());
           data.push_back(tmp);
           ARRAY_TYPE tmp2 = *tmp;
@@ -280,7 +280,7 @@ namespace Gadgetron{
         }
         for (int i = 0; i < group.size(); i++ ){
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
-          ARRAY_TYPE tmp(op->get_codomain_dimensions().get());
+          ARRAY_TYPE tmp(op->get_codomain_dimensions());
           op->mult_M(x2,&tmp);
           tmp *= tmp;
           gData += tmp;
@@ -299,12 +299,12 @@ namespace Gadgetron{
       std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > > group;
       REAL threshold;
 
-      virtual void set_domain_dimensions(std::vector<size_t> *dims){
+      virtual void set_domain_dimensions(const std::vector<size_t>& dims){
         generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
         for (int i = 0; i < group.size(); i++ ){
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
           op->set_domain_dimensions(dims);
-          if (op->get_codomain_dimensions()->size() == 0){
+          if (op->get_codomain_dimensions().empty()){
             GDEBUG_STREAM("WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl);
             op->set_codomain_dimensions(dims);
           }

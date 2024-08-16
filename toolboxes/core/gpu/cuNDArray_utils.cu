@@ -197,7 +197,7 @@ namespace {
     setup_grid( number_of_elements_out, &blockDim, &gridDim );
 
     // Find element stride
-    std::vector<size_t> dims = *in.get_dimensions();
+    std::vector<size_t> dims = in.get_dimensions();
     dims.push_back(new_dim_size);
 
     // Invoke kernel
@@ -237,8 +237,8 @@ namespace {
       out.create(out_dims);
 
 
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in.get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( out.get_dimensions() );
 
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in.get_number_of_dimensions(); d++ ){
@@ -312,8 +312,8 @@ namespace {
       throw std::runtime_error(ss.str());
     }
 
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in.get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( out.get_dimensions() );
 
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in.get_number_of_dimensions(); d++ ){
@@ -343,7 +343,7 @@ namespace {
     for( unsigned int d=D; d<in.get_number_of_dimensions(); d++ ){
       dims.push_back(in.get_size(d));
     }
-    cuNDArray<T>  result( &dims );
+    cuNDArray<T>  result( dims );
     pad<T,D>(in, result, val);
     return result;
   }
@@ -371,7 +371,7 @@ namespace {
   template<class T, unsigned int D> 
   void fill_border( const vector_td<size_t,D>& matrix_size_in, cuNDArray<T>&in_out, T val )
   { 
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *in_out.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( in_out.get_dimensions() );
 
     if( weak_greater(matrix_size_in, matrix_size_out) ){
       throw std::runtime_error("fill_border: size mismatch, cannot zero fill");
@@ -417,7 +417,7 @@ namespace {
   template<class T, unsigned int D>
   void fill_border( typename realType<T>::Type radius, cuNDArray<T>&in_out, T val )
   {
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *in_out.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( in_out.get_dimensions() );
 
 
     unsigned int number_of_batches = 1;
@@ -487,17 +487,17 @@ namespace {
   template<class T, unsigned int D>  cuNDArray<T> upsample( const cuNDArray<T>& in )
 	{
 
-    std::vector<size_t> dims_out = *in.get_dimensions();
+    std::vector<size_t> dims_out = in.get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] <<= 1;
-    cuNDArray<T> out(&dims_out);
+    cuNDArray<T> out(dims_out);
     upsample<T,D>( in, out );
     return out;
 	}
 
   template<class T, unsigned int D> void upsample( const cuNDArray<T>&in, cuNDArray<T>&out )
   {
-    typename uint64d<D>::Type matrix_size_in  = from_std_vector<size_t,D>( *in.get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in  = from_std_vector<size_t,D>( in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( out.get_dimensions() );
 
     if( (matrix_size_in<<1) != matrix_size_out ){
       throw std::runtime_error("upsample: arrays do not correspond to upsampling by a factor of two");
@@ -585,9 +585,9 @@ namespace {
   template<class T, unsigned int D>  cuNDArray<T> downsample( const cuNDArray<T>& in )
   {
     
-    std::vector<size_t> dims_out = *in.get_dimensions();
+    std::vector<size_t> dims_out = in.get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] >>= 1;
-    cuNDArray<T> out(&dims_out);
+    cuNDArray<T> out(dims_out);
     downsample<T,D>( in, out );
     return out;
   }
@@ -595,8 +595,8 @@ namespace {
   template<class T, unsigned int D> void downsample(const  cuNDArray<T>& in, cuNDArray<T>& out )
   {
 
-    typename uint64d<D>::Type matrix_size_in  = from_std_vector<size_t,D>( *in.get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in  = from_std_vector<size_t,D>( in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( out.get_dimensions() );
 
     if( (matrix_size_in>>1) != matrix_size_out ){
       throw std::runtime_error("downsample: arrays do not correspond to downsampling by a factor of two");

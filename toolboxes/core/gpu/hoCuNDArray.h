@@ -39,22 +39,10 @@ namespace Gadgetron{
       this->create(dimensions);
     }
   
-    hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions) : Gadgetron::hoNDArray<T>::hoNDArray() {
-      this->create(dimensions);
-    }
-  
-    hoCuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false) : Gadgetron::hoNDArray<T>::hoNDArray() {
-      this->create(dimensions, data, delete_data_on_destruct);
-    }
-
     hoCuNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false) : Gadgetron::hoNDArray<T>::hoNDArray() {
       this->create(dimensions, data, delete_data_on_destruct);
     }
   
-    hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false) : Gadgetron::hoNDArray<T>::hoNDArray() {
-      this->create(dimensions.get(), data, delete_data_on_destruct);
-    }
-
     // Copy constructors
     hoCuNDArray(const hoNDArray<T> &a): Gadgetron::hoNDArray<T>::hoNDArray(){
       this->create(a.get_dimensions());
@@ -108,7 +96,7 @@ namespace Gadgetron{
         }
 
         // Are the dimensions the same? Then we can just memcpy
-        if (this->dimensions_equal(&rhs)){
+        if (this->dimensions_equal(rhs)){
             memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
         }
         else{
@@ -132,7 +120,7 @@ namespace Gadgetron{
         }
 
         // Are the dimensions the same? Then we can just memcpy
-        if (!this->dimensions_equal(&rhs)){
+        if (!this->dimensions_equal(rhs)){
             this->create(rhs.get_dimensions());
         }
 

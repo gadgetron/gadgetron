@@ -29,7 +29,7 @@ flavors=()
 flavors_default=("cuda" "nocuda")
 
 image_tag="latest"
-base_name="ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu"
+base_name="ghcr.io/gadgetron/gadgetron/ubuntu22.04"
 
 while [[ $# -gt 0 ]]; do
   key="$1"

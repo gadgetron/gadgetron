@@ -400,7 +400,7 @@ namespace Gadgetron {
         // pad the ref_coil_map into the data array
         Gadgetron::pad(recon_RO, recon_E1, recon_E2, ref_recon_buf, ref_coil_map);
 
-        std::vector<size_t> dim = *ref_data.get_dimensions();
+        std::vector<size_t> dim = ref_data.get_dimensions();
         ref_calib.create(dim, ref_data.begin());
 
         if (!debug_folder_full_path_.empty()) {
@@ -758,16 +758,16 @@ namespace Gadgetron {
         this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(res));
     }
 
-    std::vector<ISMRMRD::Waveform> GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in) {
-        
-        std::vector<ISMRMRD::Waveform> waveforms;
-        waveforms.reserve(w_in.size());
-        for (const auto& [header, data]: w_in) {
-            ISMRMRD::Waveform& a_w = waveforms.emplace_back(header.number_of_samples,header.channels);
-            a_w.head = header;
-            std::copy_n(data.data(),data.size(), a_w.data);
+    void GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in,
+                                                          IsmrmrdImageArray& res) {
+        res.waveform_ = std::vector<ISMRMRD::Waveform>();
+        for (auto w : w_in) {
+            ISMRMRD::WaveformHeader& h = std::get<0>(w);
+            ISMRMRD::Waveform a_w(h.number_of_samples, h.channels);
+            a_w.head = std::get<0>(w);
+            memcpy(a_w.data, std::get<1>(w).begin(), std::get<1>(w).get_number_of_bytes());
+            res.waveform_->push_back(a_w);
         }
-        return waveforms;
     }
 
     GADGET_FACTORY_DECLARE(GenericReconGadget)

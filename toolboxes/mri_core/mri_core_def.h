@@ -137,4 +137,16 @@ namespace Gadgetron
     /// if this flag is 0, this image is a stored image by the accummulator
     /// whether to pass a stored image to the next gadget is determined by the processing gadget itself
     #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
+
+    /// data stream key
+    #define GENERIC_RECON_STREAM_ISMRMRD_HEADER             "recon_header"
+    #define GENERIC_RECON_STREAM_UNDERSAMPLED_KSPACE        "undersampled_kspace"
+    #define GENERIC_RECON_STREAM_REF_KSPACE                 "ref_kspace"
+    #define GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP     "ref_kspace_for_coil_map"
+    #define GENERIC_RECON_STREAM_COILMAP                    "coil_map"
+    #define GENERIC_RECON_STREAM_GFACTOR_MAP                "gfactor"
+    #define GENERIC_RECON_STREAM_RECONED_KSPACE             "reconed_kspace"
+    #define GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE      "reconed_images"
+    #define GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING "reconed_images_after_post_processing"
+    #define GENERIC_RECON_STREAM_WAVEFORM                   "waveform"
 }

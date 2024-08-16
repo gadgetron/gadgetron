@@ -139,6 +139,7 @@ set(gadgetron_mricore_generic_recon_gadgets_header_files
         generic_recon_gadgets/GenericImageReconArrayToImageGadget.h
         generic_recon_gadgets/GenericReconReferenceKSpaceDelayedBufferGadget.h
         generic_recon_gadgets/GenericReconImageToImageArrayGadget.h
+        generic_recon_gadgets/GenericReconStreamDef.h
 )
 
 set(gadgetron_mricore_generic_recon_gadgets_src_files

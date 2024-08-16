@@ -15,14 +15,19 @@
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/xml.h"
 #include "ismrmrd/meta.h"
+#include "ismrmrd/serialization.h"
+#include "ismrmrd/serialization_iostream.h"
 
 #include "mri_core_def.h"
 #include "mri_core_data.h"
 #include "mri_core_utility.h"
+#include "mri_core_stream.h"
 
 #include "ImageIOAnalyze.h"
 
 #include "gadgetron_sha1.h"
+
+#include "GenericReconStreamDef.h"
 
 namespace Gadgetron {
 
@@ -69,10 +74,16 @@ namespace Gadgetron {
         Gadgetron::ImageIOAnalyze gt_exporter_;
 
         // --------------------------------------------------
+        // data stream
+        // --------------------------------------------------
+        GenericReconIsmrmrdStreamer gt_streamer_;
+
+        // --------------------------------------------------
         // gadget functions
         // --------------------------------------------------
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(GadgetContainerMessage<T>* m1);
+        virtual int close(unsigned long flags);
     };
 
     class EXPORTGADGETSMRICORE GenericReconKSpaceReadoutBase :public GenericReconBase < ISMRMRD::AcquisitionHeader >
@@ -84,6 +95,7 @@ namespace Gadgetron {
 
         GenericReconKSpaceReadoutBase();
         virtual ~GenericReconKSpaceReadoutBase();
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 
     class EXPORTGADGETSMRICORE GenericReconDataBase :public GenericReconBase < IsmrmrdReconData >
@@ -95,6 +107,7 @@ namespace Gadgetron {
 
         GenericReconDataBase();
         virtual ~GenericReconDataBase();
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 
     class EXPORTGADGETSMRICORE GenericReconImageBase :public GenericReconBase < IsmrmrdImageArray >
@@ -106,6 +119,7 @@ namespace Gadgetron {
 
         GenericReconImageBase();
         virtual ~GenericReconImageBase();
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 
     class EXPORTGADGETSMRICORE GenericReconImageHeaderBase :public GenericReconBase < ISMRMRD::ImageHeader >
@@ -117,5 +131,6 @@ namespace Gadgetron {
 
         GenericReconImageHeaderBase();
         virtual ~GenericReconImageHeaderBase();
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
     };
 }

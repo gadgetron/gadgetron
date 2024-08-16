@@ -51,7 +51,7 @@ void Gadgetron::CSI_dft(cuNDArray<complext<T> >* kspace,
 	int totalBlocksPerGrid = (elements+threadsPerBlock-1)/threadsPerBlock;
 	dim3 dimGrid(totalBlocksPerGrid);
 
-	std::vector<size_t> dims = *tspace->get_dimensions();
+	std::vector<size_t> dims = tspace->get_dimensions();
 	if (totalBlocksPerGrid > cudaDeviceManager::Instance()->max_griddim())
 		throw std::runtime_error("CSIOperator: Input dimensions too large");
 
@@ -89,7 +89,7 @@ void Gadgetron::CSI_dftH(cuNDArray<complext<T> >* kspace,
 	//size_t batchSize = dimGrid.x*dimBlock.x;
 	cudaFuncSetCacheConfig(dftH_kernel<T>,cudaFuncCachePreferL1);
 
-	std::vector<size_t> dims = *tspace->get_dimensions();
+	std::vector<size_t> dims = tspace->get_dimensions();
 
 	for (int i =0; i< batches; i++){
 		// Invoke kernel
@@ -107,11 +107,11 @@ boost::shared_ptr<cuNDArray<complext<T> > > Gadgetron::calculate_frequency_calib
 
 	cuNDArray<complext<T> >* time2 = time_track;
 	if (csm){
-		std::vector<size_t> csm_dims = *csm->get_dimensions();
+		std::vector<size_t> csm_dims = csm->get_dimensions();
 		int coils = csm_dims.back();
 		csm_dims.pop_back();
 
-		std::vector<size_t> time_dims = *time_track->get_dimensions();
+		std::vector<size_t> time_dims = time_track->get_dimensions();
 
 		if (time_dims.back() != coils)
 			throw std::runtime_error("Number of coils in time data does not match number of coils in CSM");
@@ -149,7 +149,7 @@ template<class T> static __global__ void mult_freq_kernel(complext<T>* in_out, c
 template< class T>
 void Gadgetron::mult_freq(cuNDArray<complext<T> >* in_out, cuNDArray<complext<T> >* freqs, bool conjugate){
 
-	std::vector<size_t> dims = *in_out->get_dimensions();
+	std::vector<size_t> dims = in_out->get_dimensions();
 
 	if (dims.back() != freqs->get_number_of_elements()){
 		throw std::runtime_error("Input image dimensions do not match frequencies");

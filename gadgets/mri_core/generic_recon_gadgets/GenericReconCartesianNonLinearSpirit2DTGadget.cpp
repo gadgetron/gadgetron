@@ -540,12 +540,12 @@ namespace Gadgetron {
                     // parallel imaging term
                     std::vector<size_t> dims;
                     acq->get_dimensions(dims);
-                    hoSPIRIT2DTDataFidelityOperator< std::complex<float> > spirit(&dims);
+                    hoSPIRIT2DTDataFidelityOperator< std::complex<float> > spirit(dims);
                     spirit.set_forward_kernel(*ker, false);
                     spirit.set_acquired_points(*acq);
 
                     // image reg term
-                    hoWavelet2DTOperator< std::complex<float> > wav3DOperator(&dims);
+                    hoWavelet2DTOperator< std::complex<float> > wav3DOperator(dims);
                     wav3DOperator.set_acquired_points(*acq);
                     wav3DOperator.scale_factor_first_dimension_ = this->spirit_reg_RO_weighting_ratio.value();
                     wav3DOperator.scale_factor_second_dimension_ = this->spirit_reg_E1_weighting_ratio.value();
@@ -609,7 +609,7 @@ namespace Gadgetron {
                     std::vector<size_t> dims;
                     acq->get_dimensions(dims);
 
-                    hoSPIRIT2DTOperator< std::complex<float> > spirit(&dims);
+                    hoSPIRIT2DTOperator< std::complex<float> > spirit(dims);
                     spirit.set_forward_kernel(*ker, false);
                     spirit.set_acquired_points(*acq);
                     spirit.no_null_space_ = true;
@@ -619,7 +619,7 @@ namespace Gadgetron {
                     std::vector<size_t> dim;
                     acq->get_dimensions(dim);
 
-                    hoWavelet2DTOperator< std::complex<float> > wav3DOperator(&dim);
+                    hoWavelet2DTOperator< std::complex<float> > wav3DOperator(dim);
                     wav3DOperator.set_acquired_points(*acq);
                     wav3DOperator.scale_factor_first_dimension_ = this->spirit_reg_RO_weighting_ratio.value();
                     wav3DOperator.scale_factor_second_dimension_ = this->spirit_reg_E1_weighting_ratio.value();

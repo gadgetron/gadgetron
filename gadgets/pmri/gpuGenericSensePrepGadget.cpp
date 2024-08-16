@@ -407,7 +407,7 @@ namespace Gadgetron{
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
         extract_samples_from_queue( frame_readout_queue_[idx], false, set, slice );
             
-      cuNDArray<float_complext> samples( host_samples.get() );
+      cuNDArray<float_complext> samples( *host_samples );
 
       // Extract this frame's trajectory and dcw.
       //
@@ -423,7 +423,7 @@ namespace Gadgetron{
       // Add this frame to the buffer
       //
 
-      acc_buffer->set_dcw(boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(&dcw)));
+      acc_buffer->set_dcw(boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(dcw)));
       buffer_update_needed_[idx] |= acc_buffer->add_frame_data( &samples, &traj );
     }
 
@@ -540,25 +540,25 @@ namespace Gadgetron{
           float scale_factor = float(prod(image_dimensions_recon_os_))/asum(&dcw);
           dcw *= scale_factor;
 
-          dims = *traj.get_dimensions();
+          dims = traj.get_dimensions();
 
           std::vector<size_t> tmp_dims;
           tmp_dims.push_back(dims[0]*dims[1]);
           tmp_dims.push_back(1);
 	  
-          traj.reshape(&tmp_dims);
-          dcw.reshape(&tmp_dims);
+          traj.reshape(tmp_dims);
+          dcw.reshape(tmp_dims);
 	  
           ((cuSenseBufferCg<float,2>*)acc_buffer)->preprocess(&traj);
-          ((cuSenseBufferCg<float,2>*)acc_buffer)->set_dcw_for_rhs(boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(&dcw)));
+          ((cuSenseBufferCg<float,2>*)acc_buffer)->set_dcw_for_rhs(boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(dcw)));
         }
 
         reg_image = acc_buffer->get_combined_coil_image();	
         reg_host_[idx] = *(reg_image->to_host());
 	
         if( buffer_using_solver_ ){
-          traj.reshape(&dims);
-          dcw.reshape(&dims);
+          traj.reshape(dims);
+          dcw.reshape(dims);
         }
 
         buffer_update_needed_[idx] = false;
@@ -816,10 +816,10 @@ namespace Gadgetron{
     order.push_back(1); order.push_back(0);
 
     hoNDArray<float> tmp(dims_2d, host_traj_dcw_shifted.get_data_ptr());
-    cuNDArray<float> __traj(&tmp);
+    cuNDArray<float> __traj(tmp);
     cuNDArray<float> _traj = permute( __traj, order );
     
-    cuNDArray<floatd2> tmp2(&dims_1d, (floatd2*)_traj.get_data_ptr());
+    cuNDArray<floatd2> tmp2(dims_1d, (floatd2*)_traj.get_data_ptr());
     
     *traj = tmp2;
     
@@ -829,8 +829,8 @@ namespace Gadgetron{
     dims_2d.push_back(samples_per_frame);
     dims_2d.push_back(num_frames);
 
-    dcw->reshape(&dims_2d);
-    traj->reshape(&dims_2d);
+    dcw->reshape(dims_2d);
+    traj->reshape(dims_2d);
   }
 
   template<class T> GadgetContainerMessage< hoNDArray<T> >*

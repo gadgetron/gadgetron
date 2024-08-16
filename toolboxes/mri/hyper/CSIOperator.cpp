@@ -29,7 +29,7 @@ template<class T> CSIOperator<T>::~CSIOperator() {
 
 template<class T> void CSIOperator<T>::mult_MH(cuNDArray<complext<T>> *in , cuNDArray<complext<T>> * out, bool accumulate){
 
-	std::vector<size_t> kdim = *in->get_dimensions();
+	std::vector<size_t> kdim = in->get_dimensions();
 	kdim[1] =frequencies.size(); //Set to number of time samples rather than number of frequencies
 	cuNDArray<complext<T>> tmp(kdim);
 	//senseOp->mult_MH(in,out,accumulate);
@@ -48,7 +48,7 @@ template <class T> void CSIOperator<T>::set_frequencies(std::vector<T>& freq) {
 template<class T> void CSIOperator<T>::mult_M(cuNDArray<complext<T>> *in , cuNDArray<complext<T>> * out, bool accumulate){
 	cuNDArray<complext<T>>* out_tmp = out;
 	if (accumulate) out_tmp = new cuNDArray<complext<T>>(out->get_dimensions());
-	std::vector<size_t> kdim = *out->get_dimensions();
+	std::vector<size_t> kdim = out->get_dimensions();
 	kdim[1] =frequencies.size();
 	cuNDArray<complext<T>> tmp(kdim);
 	senseOp->mult_M(in,&tmp,accumulate);

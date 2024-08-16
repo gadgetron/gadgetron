@@ -19,8 +19,8 @@ template <typename T> class cuNDArray_Test : public ::testing::Test {
 	 virtual void SetUp() {
 		 unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
 		 dims= std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-		 Array =cuNDArray<T>(&dims);
-		 Array2 =cuNDArray<T>(&dims);
+		 Array =cuNDArray<T>(dims);
+		 Array2 =cuNDArray<T>(dims);
 
 
 	}

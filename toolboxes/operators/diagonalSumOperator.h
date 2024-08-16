@@ -38,22 +38,22 @@ namespace Gadgetron {
       if( !accumulate ) 
         clear(out);
 
-      std::vector<size_t> dims = *out->get_dimensions();
+      std::vector<size_t> dims = out->get_dimensions();
      
       // Iterate over the last dimension of the provided diagonal image
       //
 
       for( unsigned int i=0; i<num_phases; i++ ){
 
-        ARRAY_TYPE tmp_in( &dims, in->get_data_ptr()+i*elements_per_phase );
-        ARRAY_TYPE tmp_diag( &dims, this->diagonal_->get_data_ptr()+i*elements_per_phase );
+        ARRAY_TYPE tmp_in(dims, in->get_data_ptr()+i*elements_per_phase );
+        ARRAY_TYPE tmp_diag(dims, this->diagonal_->get_data_ptr()+i*elements_per_phase );
 
         if(i==0 && !accumulate){
           *out = tmp_in;
           *out *= tmp_diag;
         }
         else{
-          ARRAY_TYPE tmp(&tmp_in);
+          ARRAY_TYPE tmp(tmp_in);
           tmp *= tmp_diag;
           *out += tmp;
         }
@@ -82,7 +82,7 @@ namespace Gadgetron {
         *out *= *in; // multiplies all phases with the input
       }
       else{
-        ARRAY_TYPE tmp(this->diagonal_conj_.get());
+        ARRAY_TYPE tmp(*this->diagonal_conj_);
         tmp *= *in; // multiplies all phases with the input
         *out += tmp;
       }

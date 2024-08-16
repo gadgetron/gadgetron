@@ -12,7 +12,7 @@ namespace Gadgetron {
     if( E_.get() == 0x0 ){   
       std::vector<size_t> dims = to_std_vector(this->matrix_size_);    
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D> >(new cuNonCartesianSenseOperator<REAL,D>);
-      E_->set_domain_dimensions(&dims);
+      E_->set_domain_dimensions(dims);
       E_->setup( this->matrix_size_, this->matrix_size_os_, W );
     }    
   }
@@ -31,7 +31,7 @@ namespace Gadgetron {
     }
     
     std::vector<size_t> dims = to_std_vector(this->matrix_size_);
-    boost::shared_ptr< cuNDArray<_complext> > image( new cuNDArray<_complext>(&dims) );
+    boost::shared_ptr< cuNDArray<_complext> > image( new cuNDArray<_complext>(dims) );
 
     E_->set_csm(this->csm_);
     E_->mult_csm_conj_sum( this->acc_image_.get(), image.get() );

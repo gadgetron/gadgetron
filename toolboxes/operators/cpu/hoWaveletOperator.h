@@ -29,7 +29,7 @@ public:
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
     typedef typename realType<T>::Type value_type;
 
-    hoWaveletOperator(std::vector<size_t> *dims);
+    hoWaveletOperator(const std::vector<size_t>& dims);
     virtual ~hoWaveletOperator();
 
     /// forward wavelet transform

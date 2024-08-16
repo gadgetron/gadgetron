@@ -41,7 +41,7 @@ namespace Gadgetron{
                   throw std::runtime_error("hoPartialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
               }
 
-              typename int64d<D>::Type dims = vector_td<long long,D>( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+              typename int64d<D>::Type dims = vector_td<long long,D>( from_std_vector<size_t,D>( in->get_dimensions()));
 
 #ifdef USE_OMP
 #pragma omp parallel for
@@ -77,7 +77,7 @@ namespace Gadgetron{
                   throw std::runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
               }
 
-              typename int64d<D>::Type dims = vector_td<long long,D>( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+              typename int64d<D>::Type dims = vector_td<long long,D>( from_std_vector<size_t,D>( in->get_dimensions()) );
 
 #ifdef USE_OMP
 #pragma omp parallel for

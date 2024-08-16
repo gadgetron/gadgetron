@@ -103,7 +103,7 @@ namespace Gadgetron {
         hoNDArray<float> weights;
         std::tie(trajectory,weights) = trajectory_parameters.calculate_trajectories_and_weight(acq_header);
 
-        auto traj_dims = *trajectory.get_dimensions();
+        auto traj_dims = trajectory.get_dimensions();
         std::vector<size_t> dims = {3};
         dims.insert(dims.end(),traj_dims.begin(),traj_dims.end());
 

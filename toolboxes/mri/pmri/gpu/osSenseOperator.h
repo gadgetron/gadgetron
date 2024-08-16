@@ -36,12 +36,12 @@ public:
 	}
 
 	virtual void mult_M(ARRAY* in, ARRAY* out, int subset, bool accumulate) override {
-		auto subsize = *csm->get_dimensions();
+		auto subsize = csm->get_dimensions();
 		subsize.pop_back();
 		subsize.push_back(coils_per_subset);
 		auto num_elements = std::accumulate(subsize.begin(),subsize.end(),1,std::multiplies<size_t>());
 		ARRAY sub_csm(subsize,csm->get_data_ptr()+num_elements*subset);
-		auto in_dims = *in->get_dimensions();
+		auto in_dims = in->get_dimensions();
 		in_dims.push_back(coils_per_subset);
 		ARRAY tmp(in_dims);
 		csm_mult_M<REAL,D>(in,&tmp,&sub_csm);
@@ -64,13 +64,13 @@ public:
 	}
 
 	virtual void mult_MH(ARRAY* in, ARRAY* out, int subset, bool accumulate) override {
-		auto subsize = *csm->get_dimensions();
+		auto subsize = csm->get_dimensions();
 		subsize.pop_back();
 		subsize.push_back(coils_per_subset);
 		auto num_elements = std::accumulate(subsize.begin(),subsize.end(),1,std::multiplies<size_t>());
 		ARRAY sub_csm(subsize,csm->get_data_ptr()+num_elements*subset);
 
-		auto out_dims = *out->get_dimensions();
+		auto out_dims = out->get_dimensions();
 		out_dims.push_back(coils_per_subset);
 		ARRAY tmp(out_dims);
 
@@ -80,9 +80,9 @@ public:
 
 	}
 
-	virtual boost::shared_ptr<std::vector<size_t> > get_codomain_dimensions(int subset) override{
-		auto codom_dims = boost::make_shared<std::vector<size_t>>(this->codomain_dims_);
-		codom_dims->back() = coils_per_subset;
+	virtual std::vector<size_t> get_codomain_dimensions(int subset) override{
+		auto codom_dims = this->codomain_dims_;
+		codom_dims.back() = coils_per_subset;
 		return codom_dims;
 	}
 

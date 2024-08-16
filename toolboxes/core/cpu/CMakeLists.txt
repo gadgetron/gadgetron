@@ -11,7 +11,8 @@ set(header_files ../NDArray.h
                 hoNDArray.h
                 hoNDArray.hxx
                 hoNDArray_converter.h
-				        hoNDArray_iterators.h
+                hoNDArray_iterators.h
+                hoNDObjectArray.h
                 hoNDArray_utils.h
                 hoNDArray_fileio.h
                 ho2DArray.h

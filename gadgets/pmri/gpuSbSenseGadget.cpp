@@ -171,11 +171,11 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (j->tra_host_.get()));
-    boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
+    boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (*j->tra_host_));
+    boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (*j->dcw_host_));
     sqrt_inplace(dcw.get());
-    boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
-    boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
+    boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (*j->csm_host_));
+    boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (*j->dat_host_));
     
     if( !prepared_){
 
@@ -202,42 +202,42 @@ namespace Gadgetron{
       std::vector<size_t> image_dims = to_std_vector(matrix_size_);
       image_dims.push_back(frames);
       
-      E_->set_domain_dimensions(&image_dims);
-      E_->set_codomain_dimensions(device_samples->get_dimensions().get());
+      E_->set_domain_dimensions(image_dims);
+      E_->set_codomain_dimensions(device_samples->get_dimensions());
             
-      reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >(new cuNDArray<float_complext>(&image_dims));
+      reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >(new cuNDArray<float_complext>(image_dims));
       
       // These operators need their domain/codomain set before being added to the solver
       //
 
-      Rx1_->set_domain_dimensions(&image_dims);
-      Rx1_->set_codomain_dimensions(&image_dims);
+      Rx1_->set_domain_dimensions(image_dims);
+      Rx1_->set_codomain_dimensions(image_dims);
       
-      Ry1_->set_domain_dimensions(&image_dims);
-      Ry1_->set_codomain_dimensions(&image_dims);
+      Ry1_->set_domain_dimensions(image_dims);
+      Ry1_->set_codomain_dimensions(image_dims);
       
-      Rz1_->set_domain_dimensions(&image_dims);
-      Rz1_->set_codomain_dimensions(&image_dims);
+      Rz1_->set_domain_dimensions(image_dims);
+      Rz1_->set_codomain_dimensions(image_dims);
       
-      Rt1_->set_domain_dimensions(&image_dims);
-      Rt1_->set_codomain_dimensions(&image_dims);
+      Rt1_->set_domain_dimensions(image_dims);
+      Rt1_->set_codomain_dimensions(image_dims);
 
-      Rx2_->set_domain_dimensions(&image_dims);
-      Rx2_->set_codomain_dimensions(&image_dims);
+      Rx2_->set_domain_dimensions(image_dims);
+      Rx2_->set_codomain_dimensions(image_dims);
       
-      Ry2_->set_domain_dimensions(&image_dims);
-      Ry2_->set_codomain_dimensions(&image_dims);
+      Ry2_->set_domain_dimensions(image_dims);
+      Ry2_->set_codomain_dimensions(image_dims);
 
-      Rt2_->set_domain_dimensions(&image_dims);
-      Rt2_->set_codomain_dimensions(&image_dims);
+      Rt2_->set_domain_dimensions(image_dims);
+      Rt2_->set_codomain_dimensions(image_dims);
 
-      Rz2_->set_domain_dimensions(&image_dims);
-      Rz2_->set_codomain_dimensions(&image_dims);
+      Rz2_->set_domain_dimensions(image_dims);
+      Rz2_->set_codomain_dimensions(image_dims);
 
-      W_->set_domain_dimensions(&image_dims);
-      W_->set_codomain_dimensions(&image_dims);
-      W2_->set_domain_dimensions(&image_dims);
-      W2_->set_codomain_dimensions(&image_dims);
+      W_->set_domain_dimensions(image_dims);
+      W_->set_codomain_dimensions(image_dims);
+      W2_->set_domain_dimensions(image_dims);
+      W2_->set_codomain_dimensions(image_dims);
       W2_->set_shift(2);
       
       // Add "TV" regularization
@@ -327,7 +327,7 @@ namespace Gadgetron{
     // 
 
     if( alpha_ > 0.0 ){
-      cuNDArray<float_complext> gpureg(j->reg_host_.get());
+      cuNDArray<float_complext> gpureg(*j->reg_host_);
       boost::shared_ptr< cuNDArray<float_complext> > gpurec = sum(sbresult.get(),2);
       *gpurec /= float(sbresult->get_size(2));
       float scale = abs(dot(gpurec.get(), gpurec.get())/dot(gpurec.get(),&gpureg));

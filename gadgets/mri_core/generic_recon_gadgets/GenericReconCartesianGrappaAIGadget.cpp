@@ -90,7 +90,7 @@ namespace Gadgetron {
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaAIGadget::make_ref_coil_map"); }
-                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_, *recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
+                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_, recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ----------------------------------------------------------
@@ -160,8 +160,8 @@ namespace Gadgetron {
                 // pass down waveform
                 if (wav)
                 {
-                    recon_obj_[e].recon_res_.waveform_ = this->set_wave_form_to_image_array(*wav->getObjectPtr());
-                    this->recon_res_grappa_ai_[e].waveform_ = this->set_wave_form_to_image_array(*wav->getObjectPtr());
+                    this->set_wave_form_to_image_array(*wav->getObjectPtr(), recon_obj_[e].recon_res_);
+                    this->set_wave_form_to_image_array(*wav->getObjectPtr(), this->recon_res_grappa_ai_[e]);
                 }
 
                 recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;

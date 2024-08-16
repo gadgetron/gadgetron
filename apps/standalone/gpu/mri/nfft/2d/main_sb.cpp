@@ -80,7 +80,7 @@ int main( int argc, char** argv)
   
   // Upload host data to device
   timer = new GPUTimer("Uploading samples to device");
-  cuNDArray<_complext> samples(host_samples.get());
+  cuNDArray<_complext> samples(*host_samples);
   delete timer;
 
   // Reshape the data array to a one-dimensional array (we have no batch dimension)
@@ -114,25 +114,25 @@ int main( int argc, char** argv)
   
   // Set image dimensions
   vector<size_t> image_dims = to_std_vector(matrix_size);
-  E->set_domain_dimensions(&image_dims);
-  E->set_codomain_dimensions(&sample_dims);
+  E->set_domain_dimensions(image_dims);
+  E->set_codomain_dimensions(sample_dims);
 
   // Setup regularization operators
   boost::shared_ptr< cuPartialDerivativeOperator<_complext,2> >
     Rx( new cuPartialDerivativeOperator<_complext,2>(0) );
   Rx->set_weight( lambda );
-  Rx->set_domain_dimensions(&image_dims);
-  Rx->set_codomain_dimensions(&image_dims);
+  Rx->set_domain_dimensions(image_dims);
+  Rx->set_codomain_dimensions(image_dims);
 
   boost::shared_ptr< cuPartialDerivativeOperator<_complext,2> >
     Ry( new cuPartialDerivativeOperator<_complext,2>(1) );
   Ry->set_weight( lambda );
-  Ry->set_domain_dimensions(&image_dims);
-  Ry->set_codomain_dimensions(&image_dims);
+  Ry->set_domain_dimensions(image_dims);
+  Ry->set_codomain_dimensions(image_dims);
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  E->preprocess( traj.get() );
+  E->preprocess( *traj );
   delete timer;
 
   // Setup split bregman solver

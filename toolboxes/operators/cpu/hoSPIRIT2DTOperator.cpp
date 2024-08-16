@@ -7,7 +7,7 @@ namespace Gadgetron
 {
 
 template <typename T> 
-hoSPIRIT2DTOperator<T>::hoSPIRIT2DTOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoSPIRIT2DTOperator<T>::hoSPIRIT2DTOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 
@@ -415,8 +415,8 @@ void hoSPIRIT2DTOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& i
         }
         else
         {
-            bool inSrc = fft_im_buffer_.dimensions_equal(&x);
-            bool inDst = fft_im_buffer_dst_.dimensions_equal(&x);
+            bool inSrc = fft_im_buffer_.dimensions_equal(x);
+            bool inDst = fft_im_buffer_dst_.dimensions_equal(x);
 
             if (inSrc)
             {
@@ -450,8 +450,8 @@ void hoSPIRIT2DTOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE&
         }
         else
         {
-            bool inSrc = fft_kspace_buffer_.dimensions_equal(&x);
-            bool inDst = fft_kspace_buffer_dst_.dimensions_equal(&x);
+            bool inSrc = fft_kspace_buffer_.dimensions_equal(x);
+            bool inDst = fft_kspace_buffer_dst_.dimensions_equal(x);
 
             if (inSrc)
             {

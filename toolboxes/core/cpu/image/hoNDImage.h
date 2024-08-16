@@ -55,7 +55,6 @@ namespace Gadgetron
         /// constructors
         hoNDImage ();
         hoNDImage (const std::vector<size_t>& dimensions);
-        hoNDImage (boost::shared_ptr< std::vector<size_t> > dimensions);
         hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize);
         hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin);
         hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis);
@@ -96,7 +95,6 @@ namespace Gadgetron
 
         /// create the image, called by constructors
         virtual void create(const std::vector<size_t>& dimensions);
-        virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
         virtual void create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize);
         virtual void create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin);
         virtual void create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis);

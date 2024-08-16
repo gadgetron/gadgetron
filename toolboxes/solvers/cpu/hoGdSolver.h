@@ -227,13 +227,13 @@ solve(const Array_Type& b, Array_Type& x)
 
                 oper_reg_->mult_M(&diffx, &WATb);
 
-                if (!proximal_WATb.dimensions_equal(&WATb))
+                if (!proximal_WATb.dimensions_equal(WATb))
                 {
                     proximal_WATb.create(WATb.dimensions());
                     Gadgetron::clear(proximal_WATb);
                 }
 
-                if (!proximal_WTATb.dimensions_equal(&WATb))
+                if (!proximal_WTATb.dimensions_equal(WATb))
                 {
                     proximal_WTATb.create(WATb.dimensions());
                     Gadgetron::clear(proximal_WTATb);

@@ -81,6 +81,7 @@ namespace Gadgetron {
         // default interface function
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int close(unsigned long flags) { return BaseClass::close(flags); }
 
         // --------------------------------------------------
         // recon step functions
@@ -97,6 +98,13 @@ namespace Gadgetron {
 
         // compute snr scaling factor from effective acceleration rate and sampling region
         void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
+
+        // utility functions
+        void set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in, IsmrmrdImageArray& res);
+
+        // --------------------------------------------------
+        // recon record functions
+        // --------------------------------------------------
 
         // scan info
         float system_field_strength_T_;
@@ -118,8 +126,5 @@ namespace Gadgetron {
         std::string measurement_id_;
         // vendor name
         std::string vendor_;
-
-        // utility functions
-        std::vector<ISMRMRD::Waveform> set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in);
     };
 }

@@ -221,13 +221,13 @@ def main():
 
     def pass_handler(test):
         passed.append(test)
-        with open('test/stats.json') as f:
+        with open(os.path.join(args.test_folder, 'stats.json')) as f:
             stats.append(json.loads(f.read()))
 
     def ignore_failure(test):
         args.echo_log()
         failed.append(test)
-        with open('test/stats.json') as f:
+        with open(os.path.join(args.test_folder, 'stats.json')) as f:
             stats.append(json.loads(f.read()))
 
     def exit_on_failure(_):

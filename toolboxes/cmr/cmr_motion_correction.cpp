@@ -661,7 +661,7 @@ void concatenate_deform_fields_2DT(const hoNDArray<T>& dx, const hoNDArray<T>& d
         size_t E1 = dx.get_size(1);
         size_t N = dx.get_size(2);
 
-        GADGET_CHECK_THROW(dx.dimensions_equal(&dy));
+        GADGET_CHECK_THROW(dx.dimensions_equal(dy));
         GADGET_CHECK_THROW(key_frame >= 0);
         GADGET_CHECK_THROW(key_frame < N);
 

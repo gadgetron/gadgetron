@@ -146,22 +146,22 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
 
 		auto idOp = boost::make_shared<identityOperator<cuNDArray<float_complext>>>();
-		idOp->set_domain_dimensions(&img_dims_);
-		idOp->set_codomain_dimensions(&img_dims_);
+		idOp->set_domain_dimensions(img_dims_);
+		idOp->set_codomain_dimensions(img_dims_);
 		idOp->set_weight(2*mu_);
 		solver_.add_regularization_operator(idOp);
 
 		auto dX = boost::make_shared<cuPartialDerivativeOperator<float_complext,3>>(0);
-		dX->set_domain_dimensions(&img_dims_);
-		dX->set_codomain_dimensions(&img_dims_);
+		dX->set_domain_dimensions(img_dims_);
+		dX->set_codomain_dimensions(img_dims_);
 		dX->set_weight(2*mu_);
 		auto dY = boost::make_shared<cuPartialDerivativeOperator<float_complext,3>>(1);
-		dY->set_domain_dimensions(&img_dims_);
-		dY->set_codomain_dimensions(&img_dims_);
+		dY->set_domain_dimensions(img_dims_);
+		dY->set_codomain_dimensions(img_dims_);
 		dY->set_weight(2*mu_);
 		auto dZ = boost::make_shared<cuPartialDerivativeOperator<float_complext,3>>(2);
-		dZ->set_domain_dimensions(&img_dims_);
-		dZ->set_codomain_dimensions(&img_dims_);
+		dZ->set_domain_dimensions(img_dims_);
+		dZ->set_codomain_dimensions(img_dims_);
 		dZ->set_weight(2*mu_);
 
 
@@ -172,15 +172,15 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		solver_.add_group();
 /*
 		auto W = boost::make_shared<cuDWTOperator<float_complext,3>>();
-		W->set_domain_dimensions(&img_dims_);
-		W->set_codomain_dimensions(&img_dims_);
+		W->set_domain_dimensions(img_dims_);
+		W->set_codomain_dimensions(img_dims_);
 		W->set_weight(2*mu_);
 
 
 		auto W2 = boost::make_shared<cuDWTOperator<float_complext,3>>();
 		W2->set_shift(2);
-		W2->set_domain_dimensions(&img_dims_);
-		W2->set_codomain_dimensions(&img_dims_);
+		W2->set_domain_dimensions(img_dims_);
+		W2->set_codomain_dimensions(img_dims_);
 		W2->set_weight(2*mu_);
 		solver_.add_regularization_operator(W);
 		solver_.add_regularization_operator(W2);
@@ -228,61 +228,23 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 		sqrt_inplace(dcw.get());
 
 
-	E_->set_domain_dimensions(&img_dims_);
-	E_->set_codomain_dimensions(data->get_dimensions().get());
+	E_->set_domain_dimensions(img_dims_);
+	E_->set_codomain_dimensions(data->get_dimensions());
 
-	std::vector<size_t> sense_dims = *data->get_dimensions();
+	std::vector<size_t> sense_dims = data->get_dimensions();
 	sense_dims[1] = img_dims_[2];
 
 
 
-	S_->set_domain_dimensions(&img_dims_);
-	S_->set_codomain_dimensions(&sense_dims);
-/*
-	{
-		GDEBUG("Removing CSM maps");
-		auto csm_dims = *csm->get_dimensions();
-		csm_dims.pop_back();
-		cuNDArray<float_complext> csm_view(csm_dims,csm->get_data_ptr());
-		fill(&csm_view,complext<float>(1,0));
-		size_t nelements = csm_view.get_number_of_elements();
-		for (int  i = 1; i< csm->get_size(2); i++){
-			cuNDArray<float_complext> csm_view2(csm_dims,csm->get_data_ptr()+i*nelements);
-			clear(&csm_view2);
-		}
-	}
-*/
+	S_->set_domain_dimensions(img_dims_);
+	S_->set_codomain_dimensions(sense_dims);
 	S_->set_csm(csm);
 	S_->set_dcw(dcw);
 	S_->setup( matrix_size_, matrix_size_os_, kernel_width_ );
 	S_->preprocess(&traj2);
 
 	GDEBUG("Setup done, solving....\n");
-	/*
-	eigenTester<cuNDArray<float_complext>> tester;
-	std::vector<float> freqs{  -575.1223,-450.1223,-360.1223,  -183.1223,140.8777};
-	auto T_ = boost::make_shared<CSfreqOperator>(E_->get_pointtime(),E_->get_echotime());
-	T_->set_frequencies(freqs);
-	T_->set_codomain_dimensions(data->get_dimensions().get());
 
-	std::vector<size_t> tim_dims = *data->get_dimensions();
-	tim_dims[2] = freqs.size();
-	T_->set_domain_dimensions(&tim_dims);
-
-	tester.add_encoding_operator(E_);
-
-	float_complext eigVal = tester.get_smallest_eigenvalue();
-
-	GDEBUG("Smallest eigenvalue: %f %f /n",real(eigVal),imag(eigVal));
-*/
-	/*
-	cuNlcgSolver<float_complext> solv;
-	//cuCgSolver<float_complext> solv;
-	solv.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
-	solv.set_max_iterations(10);
-	solv.set_encoding_operator(E_);
-	solv.set_tc_tolerance(1e-8f);
-	*/
 	boost::shared_ptr<cuNDArray<float_complext>> result;
 	if (use_compressed_sensing_)
 		result = solver_.solve(data.get());
@@ -292,9 +254,6 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 		cgsolver.set_encoding_operator(E_);
 		result = cgsolver.solve(data.get());
 	}
-	//auto result = solv.solve(data.get());
-
-	//E_->mult_MH(data.get(),result.get(),false);
 
 	GDEBUG("Image sum: %f \n",asum(result.get()));
 	m1->release();

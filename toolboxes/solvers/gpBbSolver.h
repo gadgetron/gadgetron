@@ -41,20 +41,20 @@ public:
 		// Get image space dimensions from the encoding operator
 		//
 
-		boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
-		if( image_dims->size() == 0 ){
+		std::vector<size_t> image_dims = this->encoding_operator_->get_domain_dimensions();
+		if( image_dims.empty() ){
 			throw std::runtime_error("Error: gpBbSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
 		ARRAY_TYPE * x = new ARRAY_TYPE;
-		x->create(image_dims.get());
+		x->create(image_dims);
 
-		ARRAY_TYPE x_old(image_dims.get());
+		ARRAY_TYPE x_old(image_dims);
 
 		ARRAY_TYPE * g = new ARRAY_TYPE;
-		g->create(image_dims.get());
+		g->create(image_dims);
 		ARRAY_TYPE *  g_old = new ARRAY_TYPE;
-		g_old->create(image_dims.get());
+		g_old->create(image_dims);
 
 		if (this->x0_.get()){
 			*x = *(this->x0_.get());
@@ -64,7 +64,7 @@ public:
 
 		ARRAY_TYPE encoding_space;
 		REAL reg_res,data_res;
-		encoding_space.create(in->get_dimensions().get());
+		encoding_space.create(in->get_dimensions());
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 			GDEBUG_STREAM("Iterating..." << std::endl);
 		}

@@ -95,10 +95,10 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 			
 			if (buffer->headers_[0].trajectory_dimensions == 3){
 				auto traj_dcw = separate_traj_and_dcw(&trajectory);
-				dcw = boost::make_shared<ARRAY<float>>(std::get<1>(traj_dcw).get());
-				traj = boost::make_shared<ARRAY<floatd2>>(std::get<0>(traj_dcw).get());
+				dcw = boost::make_shared<ARRAY<float>>(*std::get<1>(traj_dcw).get());
+				traj = boost::make_shared<ARRAY<floatd2>>(*std::get<0>(traj_dcw).get());
 			} else if (buffer->headers_[0].trajectory_dimensions == 2){
-				auto old_traj_dims = *trajectory.get_dimensions();
+				auto old_traj_dims = trajectory.get_dimensions();
 				std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
 				hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
 				traj = boost::make_shared<ARRAY<floatd2>>(tmp_traj);
@@ -120,12 +120,11 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 			//Calculate coil sensitivity map
 			auto csm = estimate_b1_map<float,2>(*images);
 
-                        //Coil combine
+            //Coil combine
 			*images *= *conj(&csm);
 			auto combined = sum(images.get(),images->get_number_of_dimensions()-1);
-				
-			auto host_img = as_hoNDArray(combined);
 
+			auto host_img = as_hoNDArray(combined);
 
 			IsmrmrdImageArray imarray;
 
@@ -133,25 +132,19 @@ template<template<class> class ARRAY> 	int GriddingReconGadgetBase<ARRAY>::proce
 			imarray.data_ = std::move(*boost::reinterpret_pointer_cast<decltype(imarray.data_)>(host_img));
 //			memcpy(imarray.data_.get_data_ptr(), host_img->get_data_ptr(), host_img->get_number_of_bytes());
 
-
-
 			NonCartesian::append_image_header(imarray,recon_bit_->rbit_[e], e);
 			this->prepare_image_array(imarray, e, ((int)e + 1), GADGETRON_IMAGE_REGULAR);
 
-                        this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(std::move(imarray)));
+            this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(std::move(imarray)));
 
 
-                    //Is this where we measure SNR?
+            //Is this where we measure SNR?
 			if (replicas.value() > 0 && snr_frame.value() == process_called_times) {
-
 				pseudo_replica(buffer->data_,*traj,*dcw,csm,recon_bit_->rbit_[e],e,CHA);
 			}
 		}
-		
+
 		m1->release();
-
-
-
 		return GADGET_OK;
 	}
 
@@ -197,13 +190,13 @@ template<template<class> class ARRAY> 	boost::shared_ptr<ARRAY<float_complext> >
 			std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 			ARRAY<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
-			E->set_domain_dimensions(&recon_dims);
+			E->set_domain_dimensions(recon_dims);
 			cgSolver<ARRAY<float_complext>> solver;
 			solver.set_max_iterations(iteration_max.value());
 			solver.set_encoding_operator(E);
 			solver.set_tc_tolerance(iteration_tol.value());
 			solver.set_output_mode(decltype(solver)::OUTPUT_SILENT);
-			E->set_codomain_dimensions(data->get_dimensions().get());
+			E->set_codomain_dimensions(data->get_dimensions());
 			E->preprocess(flat_traj);
 			auto res = solver.solve(data_cpy);
 
@@ -216,7 +209,7 @@ template<template<class> class ARRAY> 	boost::shared_ptr<ARRAY<float_complext> >
 
 template<template<class> class ARRAY> 	std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> GriddingReconGadgetBase<ARRAY>::separate_traj_and_dcw(
 		hoNDArray<float >* traj_dcw) {
-		std::vector<size_t> dims = *traj_dcw->get_dimensions();
+		std::vector<size_t> dims = traj_dcw->get_dimensions();
 		std::vector<size_t> reduced_dims(dims.begin()+1,dims.end()); //Copy vector, but leave out first dim
 		auto  dcw = boost::make_shared<hoNDArray<float>>(reduced_dims);
 

@@ -59,12 +59,11 @@ namespace Gadgetron {
             ReconObjType  recon_obj;
             if (recon_bit_->rbit_[e].ref_)
             {
-                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_,*recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj.ref_calib_, recon_obj.ref_coil_map_, e);
-                this->perform_coil_map_estimation(recon_obj.ref_coil_map_,recon_obj.coil_map_,e);
+                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_, recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj.ref_calib_, recon_obj.ref_coil_map_, e);
+                this->perform_coil_map_estimation(recon_obj.ref_coil_map_, recon_obj.coil_map_,e);
             } else {
                 this->perform_coil_map_estimation(recon_bit_->rbit_[e].data_.data_,recon_obj.coil_map_,e);
             }
-
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {

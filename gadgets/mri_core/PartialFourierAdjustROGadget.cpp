@@ -72,7 +72,7 @@ int PartialFourierAdjustROGadget
                 return GADGET_FAIL;
             }
 
-            std::vector<size_t> data_out_dims = *m2->getObjectPtr()->get_dimensions();
+            std::vector<size_t> data_out_dims = m2->getObjectPtr()->get_dimensions();
             data_out_dims[0] = maxRO_;
             try
             {

@@ -12,7 +12,7 @@ namespace Gadgetron
 {
 
 template <typename T>
-hoWavelet2DTOperator<T>::hoWavelet2DTOperator(std::vector<size_t> *dims) : BaseClass(dims)
+hoWavelet2DTOperator<T>::hoWavelet2DTOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
     scale_factor_first_dimension_ = 1;
     scale_factor_second_dimension_ = 1;
@@ -29,7 +29,7 @@ hoWavelet2DTOperator<T>::~hoWavelet2DTOperator()
 template <typename T>
 void hoWavelet2DTOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im)
 {
-    if (!complexIm_fft_.dimensions_equal(&x))
+    if (!complexIm_fft_.dimensions_equal(x))
     {
         complexIm_fft_.create(x.dimensions());
     }
@@ -40,7 +40,7 @@ void hoWavelet2DTOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<
 template <typename T>
 void hoWavelet2DTOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x)
 {
-    if (!kspace_fft_.dimensions_equal(&im))
+    if (!kspace_fft_.dimensions_equal(im))
     {
         kspace_fft_.create(im.dimensions());
     }
@@ -75,7 +75,7 @@ void hoWavelet2DTOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y
             dimR[n + 1] = dims[n];
         }
 
-        if (!y.dimensions_equal(&dimR))
+        if (!y.dimensions_equal(dimR))
         {
             y.create(dimR);
         }
@@ -158,7 +158,7 @@ void hoWavelet2DTOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y
             dimR[n] = dims[n + 1];
         }
 
-        if (!y.dimensions_equal(&dimR))
+        if (!y.dimensions_equal(dimR))
         {
             y.create(dimR);
         }
@@ -362,7 +362,7 @@ void hoWavelet2DTOperator<T>::mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
         dimMOCO[2] = N;
 
         bool hasMOCO = false;
-        if (mocoer_.dx_.dimensions_equal(&dimMOCO) && mocoer_.dy_.dimensions_equal(&dimMOCO))
+        if (mocoer_.dx_.dimensions_equal(dimMOCO) && mocoer_.dy_.dimensions_equal(dimMOCO))
         {
             hasMOCO = true;
         }
@@ -456,12 +456,12 @@ void hoWavelet2DTOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumul
         dimMOCO[2] = N;
 
         bool hasMOCO = false;
-        if (mocoer_.adj_dx_.dimensions_equal(&dimMOCO) && mocoer_.adj_dy_.dimensions_equal(&dimMOCO))
+        if (mocoer_.adj_dx_.dimensions_equal(dimMOCO) && mocoer_.adj_dy_.dimensions_equal(dimMOCO))
         {
             hasMOCO = true;
         }
 
-        if (!y->dimensions_equal(&dimR))
+        if (!y->dimensions_equal(dimR))
         {
             y->create(dimR);
         }
@@ -643,7 +643,7 @@ void hoWavelet2DTOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres
             Gadgetron::abs(wavCoeff, wav_coeff_norm_mag_);
         }
 
-        if (!mask_.dimensions_equal(&wavCoeff))
+        if (!mask_.dimensions_equal(wavCoeff))
         {
             mask_.create(wavCoeff.dimensions());
         }
@@ -683,7 +683,7 @@ void hoWavelet2DTOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<val
         auto dimR = dims;
         dimR[4] = 1;
 
-        if (!wavCoeffNorm.dimensions_equal(&dimR))
+        if (!wavCoeffNorm.dimensions_equal(dimR))
         {
             wavCoeffNorm.create(dimR);
         }
@@ -696,7 +696,7 @@ void hoWavelet2DTOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<val
 
         if (CHA > 1)
         {
-            if (!complexIm_norm_.dimensions_equal(&wavCoeff))
+            if (!complexIm_norm_.dimensions_equal(wavCoeff))
             {
                 complexIm_norm_.create(wavCoeff.dimensions());
             }
@@ -816,7 +816,7 @@ void hoWavelet2DTOperator<T>::divide_wav_coeff_by_norm(hoNDArray<T>& wavCoeff, c
 
         long long CHA_NORM = (long long)wavCoeffNorm.get_size(4);
 
-        if (!wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm))
+        if (!wav_coeff_norm_approx_.dimensions_equal(wavCoeffNorm))
         {
             wav_coeff_norm_approx_.create(wavCoeffNorm.dimensions());
         }

@@ -177,21 +177,21 @@ namespace Gadgetron{
       // Get image space dimensions from the encoding operator
       //
 
-      boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
-      if( image_dims->size() == 0 ){
+      std::vector<size_t> image_dims = this->encoding_operator_->get_domain_dimensions();
+      if( image_dims.empty() ){
       	throw std::runtime_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
       }
 
       // Create result array and clear
       //
 
-      boost::shared_ptr<ARRAY_TYPE> result = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(*image_dims));
+      boost::shared_ptr<ARRAY_TYPE> result = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(image_dims));
       clear(result.get());
     
       // Create temporary array
       //
 
-      ARRAY_TYPE tmp( *image_dims );
+      ARRAY_TYPE tmp(image_dims);
 
       // Compute operator adjoint
       //

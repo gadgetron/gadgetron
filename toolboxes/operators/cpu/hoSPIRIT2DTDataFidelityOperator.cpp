@@ -5,7 +5,7 @@ namespace Gadgetron
 {
 
 template <typename T>
-hoSPIRIT2DTDataFidelityOperator<T>::hoSPIRIT2DTDataFidelityOperator(std::vector<size_t>* dims) : BaseClass(dims)
+hoSPIRIT2DTDataFidelityOperator<T>::hoSPIRIT2DTDataFidelityOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
     this->use_non_centered_fft_ = false;
     this->no_null_space_ = true;

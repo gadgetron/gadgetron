@@ -156,7 +156,7 @@ namespace Gadgetron {
                 continue;
             }
 
-            if (!rbit.ref_) continue;
+            if ((!rbit.ref_) || (rbit.ref_->data_.get_number_of_elements()==0)) continue;
 
             if (!debug_folder_full_path_.empty())
             {

@@ -58,8 +58,8 @@ int main(int argc, char** argv)
   }
 
   // Upload host data to device
-  cuNDArray<_complext> data(host_data.get());
-  cuNDArray<_complext> kernel(host_kernel.get());
+  cuNDArray<_complext> data(*host_data);
+  cuNDArray<_complext> kernel(*host_kernel);
   
   _real kappa = (_real) parms.get_parameter('K')->get_float_value();
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   // Define encoding matrix
   boost::shared_ptr< cuConvolutionOperator<_real,2> > E( new cuConvolutionOperator<_real,2>() );
   E->set_kernel( &kernel );
-  E->set_domain_dimensions(data.get_dimensions().get());
+  E->set_domain_dimensions(data.get_dimensions());
 
   // Setup conjugate gradient solver
   cuCgSolver< _complext> cg;

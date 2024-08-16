@@ -38,11 +38,11 @@ namespace Gadgetron{
     // - when removing the temporal gradient component (replacing D+1 with D)
     //
   
-    boost::shared_ptr< std::vector<size_t> > disp_dims = gradient_image->get_dimensions();
-    disp_dims->pop_back(); disp_dims->push_back(D);
+    std::vector<size_t> disp_dims = gradient_image->get_dimensions();
+    disp_dims.pop_back(); disp_dims.push_back(D);
 
-    boost::shared_ptr< cuNDArray<T> > displacements_ping(new cuNDArray<T>(disp_dims.get()));
-    boost::shared_ptr< cuNDArray<T> > displacements_pong(new cuNDArray<T>(disp_dims.get()));
+    boost::shared_ptr< cuNDArray<T> > displacements_ping(new cuNDArray<T>(disp_dims));
+    boost::shared_ptr< cuNDArray<T> > displacements_pong(new cuNDArray<T>(disp_dims));
   
     clear(displacements_ping.get());
     clear(displacements_pong.get());
@@ -50,7 +50,7 @@ namespace Gadgetron{
     // Setup grid
     //
 
-    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *gradient_image->get_dimensions() );  
+    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( gradient_image->get_dimensions() );  
     unsigned int number_of_elements = prod(matrix_size);
     unsigned int number_of_batches = 1;
   

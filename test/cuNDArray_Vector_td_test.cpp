@@ -19,7 +19,7 @@ template <typename T> class cuNDArray_vector_td_Test : public ::testing::Test {
 	 virtual void SetUp() {
 		 unsigned int vdims[] = {37}; //Using prime numbers for setup because they are messy
 		 dims= std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-		 cuData = cuNDArray<vector_td<T,3> >(&dims);
+		 cuData = cuNDArray<vector_td<T,3> >(dims);
 		 cuData.clear();
 	}
 	 cuNDArray<vector_td<T,3> > cuData;

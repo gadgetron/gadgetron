@@ -5,7 +5,7 @@
 
 #include <vector> //For mask fields
 
-#include <sstream> //For deprecated macros
+#include <sstream>
 #include <mutex>
 
 #define GADGETRON_LOG_MASK_ENVIRONMENT "GADGETRON_LOG_MASK"
@@ -173,15 +173,15 @@ namespace Gadgetron
     #pragma message ("Use matlab definition for GDEBUG stream ... ")
 
     #ifdef _DEBUG
-        #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+        #define GDEBUG_STREAM(message) { std::ostringstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str().c_str()); }
     #else
-        #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+        #define GDEBUG_STREAM(message) { std::ostringstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str().c_str()); }
     #endif // _DEBUG
 
     #ifdef _DEBUG
-        #define GWARN_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+        #define GWARN_STREAM(message) { std::ostringstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str().c_str()); }
     #else
-        #define GWARN_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+        #define GWARN_STREAM(message) { std::ostringstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str().c_str()); }
     #endif // _DEBUG
 
     #define GERROR_STREAM(message) GDEBUG_STREAM(message) 

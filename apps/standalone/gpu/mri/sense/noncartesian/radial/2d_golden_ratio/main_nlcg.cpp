@@ -31,7 +31,7 @@ boost::shared_ptr< cuNDArray<_complext> >
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
 {
 	vector<size_t> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
-	cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
+	cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( dims );
 	for( unsigned int i=0; i<num_coils; i++ )
 		cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction,
 				host_data->get_data_ptr()+i*total_samples_per_coil+reconstruction*samples_per_reconstruction,
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
 	E->set_csm(csm);
 
 	std::vector<size_t> reg_dims = to_std_vector(matrix_size);
-	cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
+	cuNDArray<_complext> _reg_image = cuNDArray<_complext>(reg_dims);
 	E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
 
 	// Duplicate the regularization image to 'frames_per_reconstruction' frames
@@ -189,8 +189,9 @@ int main(int argc, char** argv)
 	//precon_weights.reset();
 	csm.reset();
 
-	boost::shared_ptr< std::vector<size_t> > recon_dims( new std::vector<size_t> );
-	*recon_dims = to_std_vector(matrix_size); recon_dims->push_back(frames_per_reconstruction);
+	std::vector<size_t> recon_dims;
+	recon_dims = to_std_vector(matrix_size);
+	recon_dims.push_back(frames_per_reconstruction);
 
 	delete timer;
 
@@ -201,8 +202,8 @@ int main(int argc, char** argv)
 	vector<size_t> data_dims;
 	data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
 
-	E->set_domain_dimensions(recon_dims.get());
-	E->set_codomain_dimensions(&data_dims);
+	E->set_domain_dimensions(recon_dims);
+	E->set_codomain_dimensions(data_dims);
 
 	// Setup split-Bregman solver
 	cuNlcgSolver<_complext> solver;
@@ -214,38 +215,38 @@ int main(int argc, char** argv)
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
 	Rx->set_weight( (1.0f-alpha)*lambda );
-	Rx->set_domain_dimensions(recon_dims.get());
-	Rx->set_codomain_dimensions(recon_dims.get());
+	Rx->set_domain_dimensions(recon_dims);
+	Rx->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
 	Ry->set_weight( (1.0f-alpha)*lambda );
-	Ry->set_domain_dimensions(recon_dims.get());
-	Ry->set_codomain_dimensions(recon_dims.get());
+	Ry->set_domain_dimensions(recon_dims);
+	Ry->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rz( new cuPartialDerivativeOperator<_complext,3>(2) );
 	Rz->set_weight( (1.0f-alpha)*lambda );
-	Rz->set_domain_dimensions(recon_dims.get());
-	Rz->set_codomain_dimensions(recon_dims.get());
+	Rz->set_domain_dimensions(recon_dims);
+	Rz->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rx2( new cuPartialDerivativeOperator<_complext,3>(0) );
 	Rx2->set_weight( alpha*lambda );
-	Rx2->set_domain_dimensions(recon_dims.get());
-	Rx2->set_codomain_dimensions(recon_dims.get());
+	Rx2->set_domain_dimensions(recon_dims);
+	Rx2->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Ry2( new cuPartialDerivativeOperator<_complext,3>(1) );
 	Ry2->set_weight( alpha*lambda );
-	Ry2->set_domain_dimensions(recon_dims.get());
-	Ry2->set_codomain_dimensions(recon_dims.get());
+	Ry2->set_domain_dimensions(recon_dims);
+	Ry2->set_codomain_dimensions(recon_dims);
 
 	boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
 	Rz2( new cuPartialDerivativeOperator<_complext,3>(2) );
 	Rz2->set_weight( alpha*lambda );
-	Rz2->set_domain_dimensions(recon_dims.get());
-	Rz2->set_codomain_dimensions(recon_dims.get());
+	Rz2->set_domain_dimensions(recon_dims);
+	Rz2->set_codomain_dimensions(recon_dims);
 
 
 	// Add "TV" regularization
@@ -288,7 +289,7 @@ int main(int argc, char** argv)
 	// Allocate space for result
 	std::vector<size_t> res_dims = to_std_vector(matrix_size);
 	res_dims.push_back(frames_per_reconstruction*num_reconstructions);
-	cuNDArray<_complext> result = cuNDArray<_complext>(&res_dims);
+	cuNDArray<_complext> result = cuNDArray<_complext>(res_dims);
 
 	timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
@@ -317,7 +318,7 @@ int main(int argc, char** argv)
 		}
 
 		vector<size_t> tmp_dims = to_std_vector(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
-		cuNDArray<_complext> tmp(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
+		cuNDArray<_complext> tmp(tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
 
 		// Copy sbresult to result (pointed to by tmp)
 		tmp = *solve_result;

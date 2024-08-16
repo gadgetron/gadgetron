@@ -36,12 +36,6 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (boost::shared_ptr< std::vector<size_t> > dimensions) : BaseClass( dimensions )
-    {
-        this->create( *dimensions );
-    }
-
-    template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, 
         const std::vector<coord_type>& pixelSize) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
@@ -157,25 +151,25 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, axis, data, delete_data_on_destruct);
     }
@@ -274,8 +268,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage(const hoNDArray<T>& a) : BaseClass(a)
     {
-         boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
-         this->create(*dim);
+         this->create(a.get_dimensions());
          memcpy(this->data_, a.begin(), this->get_number_of_bytes());
     }
 
@@ -397,12 +390,6 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
-    }
-
-    template <typename T, unsigned int D> 
-    void hoNDImage<T, D>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
-    {
-        this->create(*dimensions);
     }
 
     template <typename T, unsigned int D> 
@@ -726,16 +713,16 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::from_NDArray(const hoNDArray<T>& a)
     {
-        boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
+        std::vector<size_t> dim = a.get_dimensions();
 
         size_t ii;
 
-        if ( dim->size() < D )
+        if ( dim.size() < D )
         {
             std::vector<size_t> dimUsed(D, 1);
-            for ( ii=0; ii<dim->size(); ii++ )
+            for ( ii=0; ii<dim.size(); ii++ )
             {
-                dimUsed[ii] = (*dim)[ii];
+                dimUsed[ii] = dim[ii];
             }
 
             if ( !this->dimensions_equal(dimUsed) )
@@ -743,12 +730,12 @@ namespace Gadgetron
                 this->create(dimUsed);
             }
         }
-        else if ( dim->size() > D )
+        else if ( dim.size() > D )
         {
             std::vector<size_t> dimUsed(D, 1);
             for ( ii=0; ii<D; ii++ )
             {
-                dimUsed[ii] = (*dim)[ii];
+                dimUsed[ii] = dim[ii];
             }
 
             if ( !this->dimensions_equal(dimUsed) )
@@ -758,9 +745,9 @@ namespace Gadgetron
         }
         else
         {
-            if ( !this->dimensions_equal(*dim) )
+            if ( !this->dimensions_equal(dim) )
             {
-                this->create(*dim);
+                this->create(dim);
             }
         }
 
@@ -773,9 +760,9 @@ namespace Gadgetron
         std::vector<size_t> dim;
         this->get_dimensions(dim);
 
-        if ( !a.dimensions_equal(&dim) )
+        if ( !a.dimensions_equal(dim) )
         {
-            a.create(&dim);
+            a.create(dim);
         }
 
         memcpy(a.begin(), this->data_, a.get_number_of_bytes());

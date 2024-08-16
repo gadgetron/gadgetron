@@ -63,7 +63,7 @@ namespace Gadgetron{
 
     // Allocate space for result
     vector<size_t> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
-    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
+    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(dims) );
   
     if(!co.get()){
       GINFO_STREAM(endl << "Error:: compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl);
@@ -126,7 +126,7 @@ namespace Gadgetron{
     dims.push_back( number_of_samples_per_frame );
     dims.push_back( num_frames );
 
-    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
+    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(dims) );
 
     // Set dimensions of grid/blocks.
     dim3 dimBlock( num_samples_per_profile );
@@ -184,7 +184,7 @@ namespace Gadgetron{
     dims.push_back( number_of_samples_per_frame ); 
     dims.push_back( num_frames );
   
-    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
+    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(dims) );
   
     // Set dimensions of grid/blocks.
     dim3 dimBlock( num_samples_per_profile );
@@ -412,7 +412,7 @@ namespace Gadgetron{
   
     // Allocate space for result
     vector<size_t> dims; dims.push_back( number_of_samples );
-    boost::shared_ptr< cuNDArray<REAL> > dcw( new cuNDArray<REAL>(&dims) );
+    boost::shared_ptr< cuNDArray<REAL> > dcw( new cuNDArray<REAL>(dims) );
   
     if(!dcw.get()){
       GINFO_STREAM(endl << "Error:: compute_radial_dcw_<*>_2d: memory allocation failed." << endl);

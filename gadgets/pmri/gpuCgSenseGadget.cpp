@@ -124,11 +124,11 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (j->tra_host_.get()));
-    boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
+    boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (*j->tra_host_));
+    boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (*j->dcw_host_));
     sqrt_inplace(dcw.get()); //Take square root to use for weighting
-    boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
-    boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
+    boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (*j->csm_host_));
+    boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (*j->dat_host_));
     
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
@@ -153,15 +153,15 @@ namespace Gadgetron{
     std::vector<size_t> image_dims = to_std_vector(matrix_size_);
     image_dims.push_back(frames);
     
-    E_->set_domain_dimensions(&image_dims);
-    E_->set_codomain_dimensions(device_samples->get_dimensions().get());
+    E_->set_domain_dimensions(image_dims);
+    E_->set_codomain_dimensions(device_samples->get_dimensions());
     E_->set_dcw(dcw);
     E_->set_csm(csm);
 
     E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );
     E_->preprocess(traj.get());
 
-    boost::shared_ptr< cuNDArray<float_complext> > reg_image(new cuNDArray<float_complext> (j->reg_host_.get()));
+    boost::shared_ptr< cuNDArray<float_complext> > reg_image(new cuNDArray<float_complext> (*j->reg_host_));
     R_->compute(reg_image.get());
 
     // Define preconditioning weights

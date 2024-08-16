@@ -165,39 +165,24 @@ template<typename T> inline T next_power2(T value)
 }
 
 
-template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::set_domain_dimensions(std::vector<size_t>* dims){
+template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::set_domain_dimensions(const std::vector<size_t>& dims){
 
 	linearOperator<cuNDArray<T> >::set_domain_dimensions(dims);
 	std::vector<size_t> newdims;
-	for (int i = 0; i < dims->size(); i++){
-		if (isPowerOfTwo(dims->at(i)))
-			newdims.push_back(dims->at(i));
+	for (int i = 0; i < dims.size(); i++){
+		if (isPowerOfTwo(dims.at(i)))
+			newdims.push_back(dims.at(i));
 		else
-			newdims.push_back(next_power2(dims->at(i)));
+			newdims.push_back(next_power2(dims.at(i)));
 	}
 
-	//BAD BAD BAD IDEAS are going here. This is a dirty dirty hack
-	/*
-	unsigned int m=0;
-	for (int i =0; i < dims->size(); i++)
-		if (dims->at(i) > m) m = dims->at(i);
-
-	if (!isPowerOfTwo(m))
-		m = next_power2(m);
-
-	std::vector<unsigned int> newdims;
-
-	for (int i =0; i < dims->size(); i++)
-		newdims.push_back(m);
-*/
-	linearOperator<cuNDArray<T> >::set_codomain_dimensions(&newdims);
-
+	linearOperator<cuNDArray<T> >::set_codomain_dimensions(newdims);
 }
 
 template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate ){
-	if (! in->dimensions_equal(this->get_domain_dimensions().get()))
+	if (! in->dimensions_equal(this->get_domain_dimensions()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_M: size of input array does not match operator domain size.");
-	if (! out->dimensions_equal(this->get_codomain_dimensions().get()))
+	if (! out->dimensions_equal(this->get_codomain_dimensions()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_M: size of output array does not match operator codomain size.");
 
 
@@ -215,7 +200,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 	else
 		tmp_out = out;
 
-	typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(tmp_in->get_dimensions())));
+	typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(tmp_in->get_dimensions()));
 
 	typename intd<D>::Type dims2;
 	for (int i = 0; i < D; i++) dims2[i] = 2;
@@ -253,7 +238,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 		default:
 			throw std::logic_error("cuHaarWaveletOperator::mult_M: Illegal number of input dimensions given");
 		}
-		smallWave->set_domain_dimensions(smallArray.get_dimensions().get());
+		smallWave->set_domain_dimensions(smallArray.get_dimensions());
 		smallWave->mult_M(&smallTmp,&smallArray,false);
 		delete smallWave;
 	}
@@ -270,16 +255,16 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate ){
 
 
-	if (! out->dimensions_equal(this->get_domain_dimensions().get()))
+	if (! out->dimensions_equal(this->get_domain_dimensions()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_MH: size of output array does not match operator domain size.");
-	if (! in->dimensions_equal(this->get_codomain_dimensions().get()))
+	if (! in->dimensions_equal(this->get_codomain_dimensions()))
 		throw std::runtime_error("cuHaarWaveletOperator::mult_MH: size of input array does not match operator codomain size.");
 	cuNDArray<T>* tmp_out = new cuNDArray<T>(*in);
 
 	cuNDArray<T>* tmp_in = new cuNDArray<T>(*in);
 
 
-	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
+	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(in->get_dimensions()));
 
 	typename intd<D>::Type cur_dims = dims/min(dims);
 
@@ -305,7 +290,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDA
 		default:
 			throw std::logic_error("cuHaarWaveletOperator::mult_M: 5D wavelets are currently considered overly ambitious.");
 		}
-		smallWave->set_domain_dimensions(smallIn.get_dimensions().get());
+		smallWave->set_domain_dimensions(smallIn.get_dimensions());
 		smallWave->mult_MH(&smallIn,&smallOut,false);
 		smallIn = smallOut;
 		delete smallWave;
@@ -324,9 +309,9 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDA
 		*tmp_in = *tmp_out;
 	}
 
-	if (!in->dimensions_equal(&this->domain_dims_)){
+	if (!in->dimensions_equal(this->domain_dims_)){
 		delete tmp_in;
-		tmp_in = new cuNDArray<T>(&this->domain_dims_);
+		tmp_in = new cuNDArray<T>(this->domain_dims_);
 		vector_td<size_t,D> offset;
 		for (int i = 0; i < D; i++ ) offset[i] = (this->codomain_dims_[i]-this->domain_dims_[i])/2;
 		crop<T,D>(offset,tmp_out,tmp_in);

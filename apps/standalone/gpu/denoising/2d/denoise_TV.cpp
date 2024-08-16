@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   }
   
   // Upload host data to device
-  cuNDArray<_real> data(host_data.get());
+  cuNDArray<_real> data(*host_data);
   
   _real mu = (_real) parms.get_parameter('m')->get_float_value();
   _real lambda = (_real)parms.get_parameter('l')->get_float_value();
@@ -84,8 +84,8 @@ int main(int argc, char** argv)
  // Define encoding operator (identity)
   boost::shared_ptr< identityOperator<cuNDArray<_real> > > E( new identityOperator<cuNDArray<_real> >() );
   E->set_weight( mu );
-  E->set_domain_dimensions(data.get_dimensions().get());
-  E->set_codomain_dimensions(data.get_dimensions().get());
+  E->set_domain_dimensions(data.get_dimensions());
+  E->set_codomain_dimensions(data.get_dimensions());
 
   // Setup split-Bregman solver
   cuSbCgSolver<_real> sb;
@@ -98,13 +98,13 @@ int main(int argc, char** argv)
   if (lambda > 0){
   boost::shared_ptr< cuPartialDerivativeOperator<_real,2> > Rx( new cuPartialDerivativeOperator<_real,2>(0) );
   Rx->set_weight( lambda );
-  Rx->set_domain_dimensions(data.get_dimensions().get());
-  Rx->set_codomain_dimensions(data.get_dimensions().get());
+  Rx->set_domain_dimensions(data.get_dimensions());
+  Rx->set_codomain_dimensions(data.get_dimensions());
 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,2> > Ry( new cuPartialDerivativeOperator<_real,2>(1) );
   Ry->set_weight( lambda );
-  Ry->set_domain_dimensions(data.get_dimensions().get());
-  Ry->set_codomain_dimensions(data.get_dimensions().get());
+  Ry->set_domain_dimensions(data.get_dimensions());
+  Ry->set_codomain_dimensions(data.get_dimensions());
   //sb.add_regularization_operator( Rx ); // Anisotropic denoising
   //sb.add_regularization_operator( Ry ); // Anisotropic denoising
   sb.add_regularization_group_operator( Rx ); // Isotropic denoising
@@ -118,8 +118,8 @@ int main(int argc, char** argv)
 	  dwt->set_levels(3);
 	  dwt->set_weight(wavelet);
 	  sb.add_regularization_operator(dwt);
-	  dwt->set_domain_dimensions(data.get_dimensions().get());
-	  dwt->set_codomain_dimensions(data.get_dimensions().get());
+	  dwt->set_domain_dimensions(data.get_dimensions());
+	  dwt->set_codomain_dimensions(data.get_dimensions());
 	  dwt->use_random(true);
   }
 

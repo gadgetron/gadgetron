@@ -22,7 +22,7 @@ std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
                                           const vector_td<size_t, D>& matrix_size, REAL os_factor,
                                           unsigned int num_iterations, REAL kernelWidth) {
     // Initialize weights to 1.
-    ARRAY<REAL> dcw(*traj.get_dimensions());
+    ARRAY<REAL> dcw(traj.get_dimensions());
     fill(&dcw, (REAL)1);
 
     // Compute density compensation weights.
@@ -62,7 +62,7 @@ std::shared_ptr<ARRAY<REAL>> estimate_dcw(const ARRAY<vector_td<REAL, D>>& traj,
     // Working arrays.
     ARRAY<REAL> dcw(initial_dcw);
     ARRAY<REAL> grid(to_std_vector(conv->get_matrix_size_os()));
-    ARRAY<REAL> tmp(*dcw.get_dimensions());
+    ARRAY<REAL> tmp(dcw.get_dimensions());
 
     // Iteration loop.
     for (size_t i = 0; i < num_iterations; i++) {

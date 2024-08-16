@@ -6,7 +6,14 @@ namespace Gadgetron {
                                     Core::OutputChannel& out) {
 
         for (auto message : in) {
-            out.push_message(std::move(message));
+            // since we don't really do anything with text messages, received texts are printed out for the record
+            if (Gadgetron::Core::convertible_to<std::string>(message))
+            {
+                std::string str = Gadgetron::Core::force_unpack<std::string>(std::move(message));
+                GDEBUG_STREAM("Receive text message : " << str);
+            }
+            else
+                out.push_message(std::move(message));
         }
     }
 

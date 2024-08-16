@@ -16,23 +16,23 @@ ho3DArray<T>::ho3DArray(size_t sx, size_t sy, size_t sz)
     dim[1] = sy;
     dim[2] = sz;
 
-    this->create(&dim);
+    this->create(dim);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho3DArray<T>::ho3DArray(std::vector<size_t> *dimensions)
+ho3DArray<T>::ho3DArray(const std::vector<size_t>& dimensions)
 : BaseClass(dimensions), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==3);
+    GADGET_CHECK_THROW(dimensions.size()==3);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-ho3DArray<T>::ho3DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
+ho3DArray<T>::ho3DArray(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 : BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(dimensions->size()==3);
+    GADGET_CHECK_THROW(dimensions.size()==3);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -40,22 +40,6 @@ template <typename T>
 ho3DArray<T>::ho3DArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct)
 : BaseClass(sx, sy, sz, data, delete_data_on_destruct), accesser_(NULL)
 {
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-ho3DArray<T>::ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions)
-: BaseClass(dimensions), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==3);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-ho3DArray<T>::ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct)
-: BaseClass(dimensions, data, delete_data_on_destruct), accesser_(NULL)
-{
-    GADGET_CHECK_THROW(dimensions->size()==3);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -84,7 +68,7 @@ ho3DArray<T>& ho3DArray<T>::operator=(const ho3DArray& rhs)
         return *this;
     }
 
-    if (this->dimensions_equal(&rhs)) 
+    if (this->dimensions_equal(rhs)) 
     {
         memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
@@ -103,23 +87,16 @@ ho3DArray<T>& ho3DArray<T>::operator=(const ho3DArray& rhs)
 }
 
 template <typename T> 
-void ho3DArray<T>::create(std::vector<size_t>& dimensions)
+void ho3DArray<T>::create(const std::vector<size_t>& dimensions)
 {
     BaseClass::create(dimensions);
     GADGET_CHECK_THROW(init_accesser());
 }
 
 template <typename T> 
-void ho3DArray<T>::create(std::vector<size_t> *dimensions)
+void ho3DArray<T>::create(const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct)
 {
-    BaseClass::create(*dimensions);
-    GADGET_CHECK_THROW(init_accesser());
-}
-
-template <typename T> 
-void ho3DArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
-{
-    BaseClass::create(*dimensions, data, delete_data_on_destruct);
+    BaseClass::create(dimensions, data, delete_data_on_destruct);
     GADGET_CHECK_THROW(init_accesser());
 }
 
@@ -133,9 +110,9 @@ bool ho3DArray<T>::createArray(size_t sx, size_t sy, size_t sz)
         dim[1] = sy;
         dim[2] = sz;
 
-        if ( !this->dimensions_equal(&dim) )
+        if ( !this->dimensions_equal(dim) )
         {
-            this->create(&dim);
+            this->create(dim);
             GADGET_CHECK_RETURN_FALSE(init_accesser());
         }
         else
@@ -162,7 +139,7 @@ bool ho3DArray<T>::createArray(size_t sx, size_t sy, size_t sz, T* data, bool de
         dim[1] = sy;
         dim[2] = sz;
 
-        this->create(&dim, data, delete_data_on_destruct);
+        this->create(dim, data, delete_data_on_destruct);
         GADGET_CHECK_RETURN_FALSE(init_accesser());
     }
     catch(...)

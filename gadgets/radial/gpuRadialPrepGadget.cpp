@@ -376,7 +376,7 @@ namespace Gadgetron{
         return GADGET_FAIL;
       }
       
-      cuNDArray<float_complext> samples( host_samples.get() );
+      cuNDArray<float_complext> samples( *host_samples );
       
       long profile_offset = profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0);
       boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_frame(profile_offset, set, slice);

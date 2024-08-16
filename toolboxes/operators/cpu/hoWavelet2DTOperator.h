@@ -22,7 +22,7 @@ public:
     typedef typename BaseClass::ELEMENT_TYPE ELEMENT_TYPE;
     typedef typename realType<T>::Type value_type;
 
-    hoWavelet2DTOperator(std::vector<size_t> *dims);
+    hoWavelet2DTOperator(const std::vector<size_t>& dims);
     virtual ~hoWavelet2DTOperator();
 
     /// if motion componsenation is not used

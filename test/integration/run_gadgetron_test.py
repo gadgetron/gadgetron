@@ -619,8 +619,9 @@ def stdout_compliance(args, config):
         files.append(os.path.join(args.test_folder, 'gadgetron.log.out'))
 
         for file in files:
-            if os.stat(file).st_size != 0:
-                raise RuntimeError(f"stdout is not empty as indicated by {file}")
+            if os.path.isfile(file): 
+                if os.stat(file).st_size != 0:
+                    raise RuntimeError(f"stdout is not empty as indicated by {file}")
 
         return cont(**state)
 
@@ -740,7 +741,7 @@ def output_stats(args, config):
         stats = {
             'test': state.get('name'),
             'processing_time': state.get('processing_time'),
-            'status': state.get('status')[0]
+            'status': None if "status" not in state else state.get('status')[0]
         }
 
         with open(os.path.join(args.test_folder, 'stats.json'), 'w') as f:
