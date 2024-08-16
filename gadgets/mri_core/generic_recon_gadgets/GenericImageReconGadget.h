@@ -215,7 +215,7 @@ namespace Gadgetron {
         GenericImageReconGadget();
         ~GenericImageReconGadget();
 
-        virtual int close(unsigned long flags);
+        virtual int close(unsigned long flags) override;
 
         GADGET_PROPERTY(image_series_num, int, "Image series number", 100);
         GADGET_PROPERTY(add_original_series_num, bool, "If true, the original image series index is added to the set seriesNum", false);
@@ -238,7 +238,7 @@ namespace Gadgetron {
         // read in parameters
         bool readParameters();
 
-        virtual int process_config(ACE_Message_Block* mb);
+        virtual int process_config(ACE_Message_Block* mb) override;
 
         int process(ACE_Message_Block* mb) override;
 
