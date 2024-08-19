@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef __clang__
-   #define  unary_function  __unary_function
-#endif
-
 #include <mutex>
 #include <boost/process.hpp>
 

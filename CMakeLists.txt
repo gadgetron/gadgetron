@@ -111,6 +111,8 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
 
+add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
+
 if (DISABLE_FORK)
     add_definitions(-DGADGETRON_DISABLE_FORK)
 endif()

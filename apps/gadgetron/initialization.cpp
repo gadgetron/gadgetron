@@ -5,10 +5,6 @@
 #include <cstdlib>
 #include <string>
 
-#ifdef __clang__
-    #define unary_function  __unary_function
-#endif
-
 #include <boost/algorithm/string.hpp>
 
 #ifdef FORCE_LIMIT_OPENBLAS_NUM_THREADS

@@ -3,10 +3,6 @@
 //
 #include "from_string.h"
 
-#ifdef __clang__
-   #define  unary_function  __unary_function
-#endif
-
 #include <boost/spirit/include/qi.hpp>
 #include <boost/filesystem/path.hpp>
 namespace {
