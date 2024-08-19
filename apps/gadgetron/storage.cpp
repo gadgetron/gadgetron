@@ -6,6 +6,9 @@
 #include <utility>
 #include <thread>
 
+#include <boost/process.hpp>
+#include <boost/program_options.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include "IsmrmrdContextVariables.h"
