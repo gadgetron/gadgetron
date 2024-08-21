@@ -78,6 +78,20 @@ namespace Gadgetron {
         GADGET_PROPERTY(grappa_reg_lamda, double, "Grappa regularization threshold", 0.0005);
         GADGET_PROPERTY(grappa_calib_over_determine_ratio, double, "Grappa calibration overdermination ratio", 45);
 
+        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > gfactors_E1_for_augmentation{"gfactors_E1_for_augmentation",
+                                                                                                            "unsigned int",
+                                                                                                            "E1, Compute extra gfactor maps for gfactor augmentation, mainly for AI training purposes; if empty, only computing the gfactor with the protocol acceleration",
+                                                                                                            this,
+                                                                                                            {},
+                                                                                                            GadgetPropertyLimitsNoLimits<std::vector<unsigned int> >()};
+
+        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > gfactors_E2_for_augmentation{"gfactors_E2_for_augmentation",
+                                                                                                            "unsigned int",
+                                                                                                            "E2, extra gfactor for the 2nd encoding dimension",
+                                                                                                            this,
+                                                                                                            {},
+                                                                                                            GadgetPropertyLimitsNoLimits<std::vector<unsigned int> >()};
+
         /// ------------------------------------------------------------------------------------
         /// down stream coil compression
         /// if downstream_coil_compression==true, down stream coil compression is used
@@ -119,5 +133,16 @@ namespace Gadgetron {
         // compute snr map
         virtual void compute_snr_map(ReconObjType& recon_obj, hoNDArray< std::complex<float> >& snr_map);
 
+        // compute grappa kernel, unmixing coefficients and g-factor
+        virtual void compute_kernel_2d(const hoNDArray<std::complex<float> >& acsSrc, const hoNDArray<std::complex<float> >& acsDst, 
+                            hoNDArray<std::complex<float>>& ker, hoNDArray<std::complex<float>>& kIm, hoNDArray<std::complex<float>>& coilMap, size_t acceFactorE1, 
+                            hoNDArray<std::complex<float>>& unmixC, hoNDArray<float>& gFactor);
+
+        virtual void compute_kernel_3d(const hoNDArray<std::complex<float> >& acsSrc, const hoNDArray<std::complex<float> >& acsDst, 
+                            hoNDArray<std::complex<float>>& ker, hoNDArray<std::complex<float>>& coilMap, size_t acceFactorE1, size_t acceFactorE2, 
+                            hoNDArray<std::complex<float>>& unmixC, hoNDArray<float>& gFactor);
+
+        // compute grappa kernel size
+        void compute_kernel_size(size_t acceFactorE1, size_t acceFactorE2, size_t& convKRO, size_t& convKE1, size_t& convKE2);
     };
 }
