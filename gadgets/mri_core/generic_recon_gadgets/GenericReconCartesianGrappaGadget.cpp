@@ -291,7 +291,10 @@ namespace Gadgetron {
 
                 if(recon_obj_[e].gfactor_augmented_.get_number_of_elements() > 0){
                     if (!debug_folder_full_path_.empty()) {
-                            this->gt_exporter_.export_array(recon_obj_[e].gfactor_augmented_, debug_folder_full_path_ + "gfactor_augmented" + os.str());
+                            hoNDArray<float> gmaps;
+                            gmaps = recon_obj_[e].gfactor_augmented_;
+                            gmaps.squeeze();
+                            this->gt_exporter_.export_array(gmaps, debug_folder_full_path_ + "gfactor_augmented" + os.str());
                         }
 
                     this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION, recon_obj_[e].gfactor_augmented_);
