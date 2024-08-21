@@ -495,6 +495,9 @@ namespace Gadgetron {
         if (num_gfactors_E1_for_augmentation == 0) num_gfactors_E1_for_augmentation = 1;
         if (num_gfactors_E2_for_augmentation == 0) num_gfactors_E2_for_augmentation = 1;
 
+        GDEBUG_STREAM("num_gfactors_E1_for_augmentation is " << num_gfactors_E1_for_augmentation);
+        GDEBUG_STREAM("num_gfactors_E2_for_augmentation is " << num_gfactors_E2_for_augmentation);
+
         recon_obj.gfactor_augmented_.create(RO, E1, E2, 1, ref_N, ref_S, ref_SLC, num_gfactors_E1_for_augmentation, num_gfactors_E2_for_augmentation);
 
         Gadgetron::clear(recon_obj.unmixing_coeff_);
@@ -562,7 +565,7 @@ namespace Gadgetron {
 
                     if (!this->gfactors_E2_for_augmentation.value().empty())
                     {
-                        hoNDArray<std::complex<float> > ker, coilMap, unmixC;
+                        hoNDArray<std::complex<float> > ker, unmixC;
 
                         std::vector<unsigned int> E1s = this->gfactors_E1_for_augmentation.value();
                         if (E1s.empty()) E1s.push_back(1);
@@ -573,6 +576,7 @@ namespace Gadgetron {
                         {
                             for (size_t e1=0; e1<E1s.size(); e1++)
                             {
+                                GDEBUG_STREAM("Compute gfactor augmentation, 3d, for R - E1 = " << E1s[e1] << ", R - E2 = " << E2s[e2]);
                                 hoNDArray<float> gFactor(RO, E1, E2, 1, &(recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, e2)));
                                 this->compute_kernel_3d(ref_src, ref_dst,  ker, coilMap, E1s[e1], E2s[e2], unmixC, gFactor);
                             }
@@ -597,12 +601,13 @@ namespace Gadgetron {
 
                     if (!this->gfactors_E1_for_augmentation.value().empty())
                     {
-                        hoNDArray<std::complex<float> > ker, kIm, coilMap, unmixC;
+                        hoNDArray<std::complex<float> > ker, kIm, unmixC;
+                        hoNDArray<float> gFactor;
 
                         std::vector<unsigned int> E1s = this->gfactors_E1_for_augmentation.value();
                         for (size_t e1=0; e1<E1s.size(); e1++)
                         {
-                            hoNDArray<float> gFactor;
+                            GDEBUG_STREAM("Compute gfactor augmentation, 2d, for R = " << E1s[e1]);
                             this->compute_kernel_2d(acsSrc, acsDst, ker, kIm, coilMap, E1s[e1], unmixC, gFactor);
                             memcpy(&recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, 0), gFactor.begin(), gFactor.get_number_of_bytes());
                         }
