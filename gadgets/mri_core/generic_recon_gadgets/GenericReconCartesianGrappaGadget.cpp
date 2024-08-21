@@ -284,9 +284,18 @@ namespace Gadgetron {
                 }
 
                 this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+
                 if (recon_obj_[e].gfactor_.get_number_of_elements() > 0) this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+
                 this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
-                if(recon_obj_[e].gfactor_augmented_.get_number_of_elements() > 0) this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION, recon_obj_[e].gfactor_augmented_);
+
+                if(recon_obj_[e].gfactor_augmented_.get_number_of_elements() > 0){
+                    if (!debug_folder_full_path_.empty()) {
+                            this->gt_exporter_.export_array_complex(recon_obj_[e].gfactor_augmented_, debug_folder_full_path_ + "gfactor_augmented" + os.str());
+                        }
+
+                    this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION, recon_obj_[e].gfactor_augmented_);
+                } 
 
                 if (perform_timing.value()) {
                     gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array");
