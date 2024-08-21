@@ -145,6 +145,7 @@ namespace Gadgetron
     #define GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP     "ref_kspace_for_coil_map"
     #define GENERIC_RECON_STREAM_COILMAP                    "coil_map"
     #define GENERIC_RECON_STREAM_GFACTOR_MAP                "gfactor"
+    #define GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION   "gmap_augmentation"
     #define GENERIC_RECON_STREAM_RECONED_KSPACE             "reconed_kspace"
     #define GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE      "reconed_images"
     #define GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING "reconed_images_after_post_processing"

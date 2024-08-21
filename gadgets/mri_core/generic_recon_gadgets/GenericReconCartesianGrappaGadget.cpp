@@ -286,6 +286,7 @@ namespace Gadgetron {
                 this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
                 if (recon_obj_[e].gfactor_.get_number_of_elements() > 0) this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
                 this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+                if(recon_obj_[e].gfactor_augmented_.get_number_of_elements() > 0) this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION, recon_obj_[e].gfactor_augmented_);
 
                 if (perform_timing.value()) {
                     gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array");
@@ -479,6 +480,14 @@ namespace Gadgetron {
         recon_obj.unmixing_coeff_.create(RO, E1, E2, srcCHA, ref_N, ref_S, ref_SLC);
         recon_obj.gfactor_.create(RO, E1, E2, 1, ref_N, ref_S, ref_SLC);
 
+        size_t num_gfactors_E1_for_augmentation = this->gfactors_E1_for_augmentation.value().size();
+        size_t num_gfactors_E2_for_augmentation = this->gfactors_E2_for_augmentation.value().size();
+
+        if (num_gfactors_E1_for_augmentation == 0) num_gfactors_E1_for_augmentation = 1;
+        if (num_gfactors_E2_for_augmentation == 0) num_gfactors_E2_for_augmentation = 1;
+
+        recon_obj.gfactor_augmented_.create(RO, E1, E2, 1, ref_N, ref_S, ref_SLC, num_gfactors_E1_for_augmentation, num_gfactors_E2_for_augmentation);
+
         Gadgetron::clear(recon_obj.unmixing_coeff_);
         Gadgetron::clear(recon_obj.gfactor_);
 
@@ -541,6 +550,24 @@ namespace Gadgetron {
 
                     this->compute_kernel_3d(ref_src, ref_dst,  ker, coilMap, (size_t) acceFactorE1_[e], (size_t) acceFactorE2_[e], unmixC, gFactor);
 
+                    if (!this->gfactors_E2_for_augmentation.value().empty())
+                    {
+                        hoNDArray<std::complex<float> > ker, coilMap, unmixC;
+
+                        std::vector<unsigned int> E1s = this->gfactors_E1_for_augmentation.value();
+                        if (E1s.empty()) E1s.push_back(1);
+
+                        std::vector<unsigned int> E2s = this->gfactors_E2_for_augmentation.value();
+
+                        for (size_t e2=0; e2<E2s.size(); e2++)
+                        {
+                            for (size_t e1=0; e1<E1s.size(); e1++)
+                            {
+                                hoNDArray<float> gFactor(RO, E1, E2, 1, &(recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, e2)));
+                                this->compute_kernel_3d(ref_src, ref_dst,  ker, coilMap, E1s[e1], E2s[e2], unmixC, gFactor);
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -557,6 +584,19 @@ namespace Gadgetron {
                     this->compute_kernel_2d(acsSrc, acsDst, ker, kIm, coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
 
                     memcpy(&recon_obj.gfactor_(0, 0, 0, 0, n, s, slc), gFactor.begin(), gFactor.get_number_of_bytes());
+
+                    if (!this->gfactors_E1_for_augmentation.value().empty())
+                    {
+                        hoNDArray<std::complex<float> > ker, kIm, coilMap, unmixC;
+
+                        std::vector<unsigned int> E1s = this->gfactors_E1_for_augmentation.value();
+                        for (size_t e1=0; e1<E1s.size(); e1++)
+                        {
+                            hoNDArray<float> gFactor;
+                            this->compute_kernel_2d(acsSrc, acsDst, ker, kIm, coilMap, E1s[e1], unmixC, gFactor);
+                            memcpy(&recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, 0), gFactor.begin(), gFactor.get_number_of_bytes());
+                        }
+                    }
                 }
                 // -----------------------------------
             }

@@ -45,6 +45,9 @@ namespace Gadgetron {
 
         /// coil sensitivity map, [RO E1 E2 dstCHA - uncombinedCHA Nor1 Sor1 SLC]
         hoNDArray<T> coil_map_;
+
+        /// gfactor_augmented, [RO E1 E2 uncombinedCHA+1 N S SLC NumOfAccelerationE1 NumOfAccelerationE2]
+        hoNDArray<typename realType<T>::Type> gfactor_augmented_;
     };
 }
 
