@@ -401,24 +401,24 @@ namespace Gadgetron {
 
     }
 
-    void GenericReconCartesianGrappaGadget::compute_kernel_size(size_t acceFactorE1, size_t acceFactorE2, size_t& convKRO, size_t& convKE1, size_t& convKE2)
+    void GenericReconCartesianGrappaGadget::compute_kernel_size(bool is_3D, size_t acceFactorE1, size_t acceFactorE2, size_t& convKRO, size_t& convKE1, size_t& convKE2)
     {
         size_t kRO = grappa_kSize_RO.value();
         size_t kNE1 = grappa_kSize_E1.value();
         size_t kNE2 = grappa_kSize_E2.value();
         bool fitItself = this->downstream_coil_compression.value();
 
-        if (acceFactorE2==1)
+        if (is_3D)
         {
             std::vector<int> kE1, oE1;
             std::vector<int> kE2, oE2;
             grappa3d_kerPattern(kE1, oE1, kE2, oE2, convKRO, convKE1, convKE2, acceFactorE1, acceFactorE2, kRO, kNE1, kNE2, fitItself);
-            convKE2 = 1;
         }
         else
         {
             std::vector<int> kE1, oE1;
             Gadgetron::grappa2d_kerPattern(kE1, oE1, convKRO, convKE1, acceFactorE1, kRO, kNE1, fitItself);
+            convKE2 = 1;
         }
     }
 
@@ -492,7 +492,8 @@ namespace Gadgetron {
         Gadgetron::clear(recon_obj.gfactor_);
 
         size_t convKRO(1), convKE1(1), convKE2(1);
-        this->compute_kernel_size((size_t) acceFactorE1_[e], (size_t) acceFactorE2_[e], convKRO, convKE1, convKE2);
+        bool is_3D = E2>1;
+        this->compute_kernel_size(is_3D, (size_t) acceFactorE1_[e], (size_t) acceFactorE2_[e], convKRO, convKE1, convKE2);
 
         if (acceFactorE1_[e] <= 1 && acceFactorE2_[e] <= 1)
         {
@@ -505,7 +506,7 @@ namespace Gadgetron {
             size_t kNE1 = grappa_kSize_E1.value();
             size_t kNE2 = grappa_kSize_E2.value();
 
-            if (E2 == 1)
+            if (!is_3D)
             {
                 recon_obj.kernelIm_.create(RO, E1, 1, srcCHA, dstCHA, ref_N, ref_S, ref_SLC);
             }
@@ -520,7 +521,7 @@ namespace Gadgetron {
             long long ii;
 
             // only allow this for loop openmp if num>1 and 2D recon
-#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, kRO, kNE1, kNE2, convKRO, convKE1, convKE2) if(num>1)
+#pragma omp parallel for default(none) private(ii) shared(is_3D, src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, kRO, kNE1, kNE2, convKRO, convKE1, convKE2) if(num>1)
             for (ii = 0; ii < num; ii++) {
                 size_t slc = ii / (ref_N * ref_S);
                 size_t s = (ii - slc * ref_N * ref_S) / (ref_N);
@@ -538,7 +539,7 @@ namespace Gadgetron {
 
                 // -----------------------------------
 
-                if (E2 > 1)
+                if (is_3D)
                 {
                     hoNDArray<std::complex<float> > ker(convKRO, convKE1, convKE2, srcCHA, dstCHA, &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
 

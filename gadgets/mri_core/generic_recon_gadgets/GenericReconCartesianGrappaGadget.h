@@ -146,6 +146,6 @@ namespace Gadgetron {
                             hoNDArray<std::complex<float>>& unmixC, hoNDArray<float>& gFactor);
 
         // compute grappa kernel size
-        void compute_kernel_size(size_t acceFactorE1, size_t acceFactorE2, size_t& convKRO, size_t& convKE1, size_t& convKE2);
+        void compute_kernel_size(bool is_3D, size_t acceFactorE1, size_t acceFactorE2, size_t& convKRO, size_t& convKE1, size_t& convKE2);
     };
 }
