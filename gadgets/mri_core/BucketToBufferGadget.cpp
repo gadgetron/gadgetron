@@ -519,11 +519,6 @@ namespace Gadgetron {
             }
 
             if (e1 < 0 || e1 >= (int16_t)NE1) {
-                // if the incoming line is outside the encoding limits, something is wrong
-                GADGET_CHECK_THROW(
-                    acqhdr.idx.kspace_encode_step_1 >= encoding.encodingLimits.kspace_encoding_step_1->minimum
-                    && acqhdr.idx.kspace_encode_step_1 <= encoding.encodingLimits.kspace_encoding_step_1->maximum);
-
                 // if the incoming line is inside encoding limits but outside the encoded matrix, do not include the
                 // data
                 GWARN_STREAM(
@@ -531,19 +526,26 @@ namespace Gadgetron {
                     << acqhdr.scan_counter
                     << " is inside the encoding limits, but outside the encoded matrix for kspace_encode_step_1 : "
                     << e1 << " out of " << NE1);
+
+                // if the incoming line is outside the encoding limits, something is wrong
+                GADGET_CHECK_THROW(
+                    acqhdr.idx.kspace_encode_step_1 >= encoding.encodingLimits.kspace_encoding_step_1->minimum
+                    && acqhdr.idx.kspace_encode_step_1 <= encoding.encodingLimits.kspace_encoding_step_1->maximum);
+
                 return;
             }
 
             if (e2 < 0 || e2 >= (int16_t)NE2) {
-                GADGET_CHECK_THROW(
-                    acqhdr.idx.kspace_encode_step_2 >= encoding.encodingLimits.kspace_encoding_step_2->minimum
-                    && acqhdr.idx.kspace_encode_step_2 <= encoding.encodingLimits.kspace_encoding_step_2->maximum);
-
                 GWARN_STREAM(
                     "incoming readout "
                     << acqhdr.scan_counter
                     << " is inside the encoding limits, but outside the encoded matrix for kspace_encode_step_2 : "
                     << e2 << " out of " << NE2);
+
+                GADGET_CHECK_THROW(
+                    acqhdr.idx.kspace_encode_step_2 >= encoding.encodingLimits.kspace_encoding_step_2->minimum
+                    && acqhdr.idx.kspace_encode_step_2 <= encoding.encodingLimits.kspace_encoding_step_2->maximum);
+
                 return;
             }
         }
@@ -567,6 +569,7 @@ namespace Gadgetron {
             std::copy(fromptr, fromptr + npts_to_copy * acqhdr.trajectory_dimensions, trajptr);
         }
     }
+
     BucketToBufferGadget::BucketToBufferGadget(const Core::Context& context, const Core::GadgetProperties& props)
         : ChannelGadget(context, props), header{ context.header } {}
 

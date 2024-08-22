@@ -43,7 +43,7 @@ namespace Gadgetron {
 
         ISMRMRD::IsmrmrdHeader header;
 
-        void process(Core::InputChannel<AcquisitionBucket>& in, Core::OutputChannel& out) override;
+        virtual void process(Core::InputChannel<AcquisitionBucket>& in, Core::OutputChannel& out) override;
         BufferKey getKey(const ISMRMRD::EncodingCounters& idx) const;
 
         IsmrmrdDataBuffered makeDataBuffer(const ISMRMRD::AcquisitionHeader& acqhdr, ISMRMRD::Encoding encoding, const AcquisitionBucketStats& stats, bool forref) const;
