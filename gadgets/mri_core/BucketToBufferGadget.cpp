@@ -527,11 +527,6 @@ namespace Gadgetron {
                     << " is inside the encoding limits, but outside the encoded matrix for kspace_encode_step_1 : "
                     << e1 << " out of " << NE1);
 
-                // if the incoming line is outside the encoding limits, something is wrong
-                GADGET_CHECK_THROW(
-                    acqhdr.idx.kspace_encode_step_1 >= encoding.encodingLimits.kspace_encoding_step_1->minimum
-                    && acqhdr.idx.kspace_encode_step_1 <= encoding.encodingLimits.kspace_encoding_step_1->maximum);
-
                 return;
             }
 
@@ -541,10 +536,6 @@ namespace Gadgetron {
                     << acqhdr.scan_counter
                     << " is inside the encoding limits, but outside the encoded matrix for kspace_encode_step_2 : "
                     << e2 << " out of " << NE2);
-
-                GADGET_CHECK_THROW(
-                    acqhdr.idx.kspace_encode_step_2 >= encoding.encodingLimits.kspace_encoding_step_2->minimum
-                    && acqhdr.idx.kspace_encode_step_2 <= encoding.encodingLimits.kspace_encoding_step_2->maximum);
 
                 return;
             }
