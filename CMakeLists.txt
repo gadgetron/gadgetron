@@ -41,6 +41,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)
         message(FATAL_ERROR "Gadgetron requires Clang version >= 3.5")
     endif ()
+    add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
         message(FATAL_ERROR "Gadgetron requires MSVC 2013 or above ")
@@ -110,8 +111,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # whether to install dependencies
 option(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 option(DISABLE_FORK "Disables forking in release mode, causing Gadgetron to always run in a single process" Off)
-
-add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
 
 if (DISABLE_FORK)
     add_definitions(-DGADGETRON_DISABLE_FORK)
