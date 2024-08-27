@@ -127,6 +127,10 @@ namespace Gadgetron
 
                             ISMRMRD::ImageHeader hd = headers(n, s, slc);
                             hd.data_type = Gadgetron::Core::IO::ismrmrd_data_type<DataType>();
+                            hd.matrix_size[0] = RO;
+                            hd.matrix_size[1] = E1;
+                            hd.matrix_size[2] = E2;
+                            hd.channels = CHA;
                             a_img.setHead(hd);
 
                             std::ostringstream str;
