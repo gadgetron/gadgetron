@@ -24,6 +24,7 @@ namespace Gadgetron
         this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP);
         this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_COILMAP);
         this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_GFACTOR_MAP);
+        this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION);
         this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_RECONED_KSPACE);
         this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE);
         this->initialize_stream_name_buffer(parameters, GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING);
@@ -120,18 +121,27 @@ namespace Gadgetron
     template <typename T> 
     void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray<T>& ho_arr, ISMRMRD::NDArray<T>& arr)
     {
+        std::vector<size_t> dims;
+
         size_t NDim = ho_arr.get_number_of_dimensions();
         if (NDim > ISMRMRD::ISMRMRD_NDARRAY_MAXDIM)
         {
-            GWARN_STREAM("convert_hoNDArray_to_ismrmrd_ndarray, ho_arr, number of dimensions > ISMRMRD_NDARRAY_MAXDIM" << NDim << " > " << ISMRMRD::ISMRMRD_NDARRAY_MAXDIM);
-            return;
+            GWARN_STREAM("convert_hoNDArray_to_ismrmrd_ndarray, ho_arr, number of dimensions > ISMRMRD_NDARRAY_MAXDIM, " << NDim << " > " << ISMRMRD::ISMRMRD_NDARRAY_MAXDIM);
+            hoNDArray<T> ho_arr_squeezed(ho_arr);
+            ho_arr_squeezed.squeeze();
+            ho_arr_squeezed.get_dimensions(dims);
+            NDim = ho_arr_squeezed.get_number_of_dimensions();
+            GWARN_STREAM("convert_hoNDArray_to_ismrmrd_ndarray, ho_arr_squeezed, number of dimensions is " << NDim);
+            if (NDim > ISMRMRD::ISMRMRD_NDARRAY_MAXDIM) return;
+            arr.resize(dims);
+            memcpy(arr.getDataPtr(), ho_arr_squeezed.get_data_ptr(), ho_arr_squeezed.get_number_of_bytes());
         }
-
-        std::vector<size_t> dims;
-        ho_arr.get_dimensions(dims);
-
-        arr.resize(dims);
-        memcpy(arr.getDataPtr(), ho_arr.get_data_ptr(), ho_arr.get_number_of_bytes());
+        else
+        {
+            ho_arr.get_dimensions(dims);
+            arr.resize(dims);
+            memcpy(arr.getDataPtr(), ho_arr.get_data_ptr(), ho_arr.get_number_of_bytes());
+        }
     }
 
     template void convert_hoNDArray_to_ismrmrd_ndarray(const hoNDArray<short>& ho_arr, ISMRMRD::NDArray<short>& arr);

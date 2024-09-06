@@ -64,9 +64,11 @@ namespace Gadgetron
             std::shared_ptr<std::ofstream> os = this->find_and_open_stream(name, buf_name);
             if (os && os->is_open())
             {
-                GDEBUG_STREAM("Generic recon, continue streaming the array data to the buffer " << buf_name);
                 ISMRMRD::NDArray<DataType> arr;
                 convert_hoNDArray_to_ismrmrd_ndarray(data, arr);
+
+                GDEBUG_STREAM("Generic recon, continue streaming the array data to the buffer " << buf_name << " - [" 
+                            << arr.getDims()[0] << " "<< arr.getDims()[1] << " "<< arr.getDims()[2] << " "<< arr.getDims()[3] << " "<< arr.getDims()[4] << " "<< arr.getDims()[5] << " "<< arr.getDims()[6] << "]");
 
                 ISMRMRD::OStreamView ws(*os);
                 ISMRMRD::ProtocolSerializer serializer(ws);
@@ -127,6 +129,10 @@ namespace Gadgetron
 
                             ISMRMRD::ImageHeader hd = headers(n, s, slc);
                             hd.data_type = Gadgetron::Core::IO::ismrmrd_data_type<DataType>();
+                            hd.matrix_size[0] = RO;
+                            hd.matrix_size[1] = E1;
+                            hd.matrix_size[2] = E2;
+                            hd.channels = CHA;
                             a_img.setHead(hd);
 
                             std::ostringstream str;
