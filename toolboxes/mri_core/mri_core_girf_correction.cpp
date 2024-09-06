@@ -9,7 +9,6 @@
 #include "hoNDArray_math.h"
 #include <boost/filesystem.hpp>
 #include <cpu/hoNDArray_fileio.h>
-
 #include <boost/math/constants/constants.hpp>
 
 #include <boost/config/warning_disable.hpp>
