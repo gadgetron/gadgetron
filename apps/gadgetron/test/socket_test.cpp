@@ -88,7 +88,7 @@ TEST_F(SocketTest, stringstream_test) {
 TEST_F(SocketTest, nulltest) {
     auto data =  std::vector<char>(1u << 22,0);
     std::mt19937_64 engine;
-    std::uniform_int_distribution<uint8_t> distribution(0);
+    std::uniform_int_distribution<int8_t> distribution(0);
     for (auto& d : data) d = distribution(engine);
 
     GINFO_STREAM(std::to_string(data.size()) << std::endl);
