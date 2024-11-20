@@ -55,7 +55,7 @@ jobs:
           ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag "${{github.run_number}}"
           cd test/integration && python3 get_data.py && cd ../../
           fullImageName="${{env.imageBaseName}}_rt_${{matrix.flavor}}:${{github.run_number}}"
-          ./docker/integration-test-image.sh --image "${fullImageName}" --ignore-requirements ${{matrix.requirements}} --gpus=all --cases cases/*
+          ./docker/integration-test-image.sh --image "${fullImageName}" --ignore-requirements ${{matrix.requirements}} --gpus all --cases cases/*
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
