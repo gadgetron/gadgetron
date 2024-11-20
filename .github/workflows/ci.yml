@@ -14,7 +14,6 @@ permissions:
 
 env:
   imageBaseName: ghcr.io/gadgetron/gadgetron/ubuntu22.04
-  YARDL_VERSION: 0.6.2
   CONDA_CACHE_NUMBER: 1
 
 defaults:
@@ -58,6 +57,19 @@ jobs:
           fullImageName="${{env.imageBaseName}}_rt_${{matrix.flavor}}:${{github.run_number}}"
           ./docker/integration-test-image.sh --image "${fullImageName}" --ignore-requirements ${{matrix.requirements}} --gpus all --cases cases/*
 
+  publish-docker-images:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-and-test]
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-gadgetron-NC6s_v3"]
+    strategy:
+      matrix:
+        flavor: [cuda, nocuda]
+    permissions:
+      packages: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
       - name: Log into ghcr.io
         uses: docker/login-action@v3
         with:
@@ -67,7 +79,12 @@ jobs:
 
       - name: Publish Docker images
         run: |-
-          ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag "${{github.run_number}}" --push
+          GADGETRON_VERSION_MAJOR=$(grep -Po '(?<=set\(GADGETRON_VERSION_MAJOR )([^\)]+)' CMakeLists.txt)
+          GADGETRON_VERSION_MINOR=$(grep -Po '(?<=set\(GADGETRON_VERSION_MINOR )([^\)]+)' CMakeLists.txt)
+          GADGETRON_VERSION_PATCH=$(grep -Po '(?<=set\(GADGETRON_VERSION_PATCH )([^\)]+)' CMakeLists.txt)
+          GADGETRON_VERSION="${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH}"
+
+          ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag "${GADGETRON_VERSION}" --push
           ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag latest --push
 
   build-conda-package:
@@ -93,8 +110,9 @@ jobs:
           path: conda/build_pkg/**/gadgetron*.tar.bz2
 
   publish-conda-package:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-conda-package]
     runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-gadgetron-NC6s_v3"]
-    needs: [build-and-test, build-conda-package]
     steps:
       - name: checkout
         uses: actions/checkout@v4.1.0
