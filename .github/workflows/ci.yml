@@ -1,0 +1,141 @@
+name: Gadgetron CI
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  imageBaseName: ghcr.io/gadgetron/gadgetron/ubuntu22.04
+  CONDA_CACHE_NUMBER: 1
+
+defaults:
+  run:
+    # See https://github.com/marketplace/actions/setup-miniconda#important
+    shell: bash -el {0}
+
+jobs:
+
+  build-and-test:
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-gadgetron-NC6s_v3"]
+    strategy:
+      matrix:
+        include:
+          - flavor: cuda
+            requirements: python,cuda
+          - flavor: nocuda
+            requirements: python
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Check GPU availability
+        run: docker run --rm --gpus all ghcr.io/gadgetron/gadgetron/cuda:12.3.0-base-ubuntu22.04 nvidia-smi
+
+      - name: Build and Unit Test
+        run: |-
+          # First build a dev image and run unit tests
+          stage_name="gadgetron_${{matrix.flavor}}build"
+          docker build --target ${stage_name} -t ${stage_name} .
+          test_command=". /opt/conda/etc/profile.d/conda.sh \
+              && conda activate gadgetron \
+              && /opt/code/gadgetron/build/test/test_all \
+              && /opt/code/gadgetron/build/apps/gadgetron/test/server_tests"
+          docker run --gpus=all ${stage_name} /bin/bash -c "$test_command"
+
+      - name: Integration Test
+        run: |-
+          ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag "${{github.run_number}}"
+          cd test/integration && python3 get_data.py && cd ../../
+          fullImageName="${{env.imageBaseName}}_rt_${{matrix.flavor}}:${{github.run_number}}"
+          ./docker/integration-test-image.sh --image "${fullImageName}" --ignore-requirements ${{matrix.requirements}} --gpus all --cases cases/*
+
+  publish-docker-images:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-and-test]
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-gadgetron-NC6s_v3"]
+    strategy:
+      matrix:
+        flavor: [cuda, nocuda]
+    permissions:
+      packages: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Log into ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Docker images
+        run: |-
+          GADGETRON_VERSION_MAJOR=$(grep -Po '(?<=set\(GADGETRON_VERSION_MAJOR )([^\)]+)' CMakeLists.txt)
+          GADGETRON_VERSION_MINOR=$(grep -Po '(?<=set\(GADGETRON_VERSION_MINOR )([^\)]+)' CMakeLists.txt)
+          GADGETRON_VERSION_PATCH=$(grep -Po '(?<=set\(GADGETRON_VERSION_PATCH )([^\)]+)' CMakeLists.txt)
+          GADGETRON_VERSION="${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH}"
+
+          ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag "${GADGETRON_VERSION}" --push
+          ./build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag latest --push
+
+  build-conda-package:
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-gadgetron-NC6s_v3"]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          environment-file: conda/environment.yml
+          activate-environment: gadgetron-build
+
+      - name: Build Conda package
+        run: ./conda/package.sh
+
+      - name: Upload Conda package
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages
+          path: conda/build_pkg/**/gadgetron*.tar.bz2
+
+  publish-conda-package:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-conda-package]
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-gadgetron-NC6s_v3"]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          environment-file: conda/environment.yml
+          activate-environment: gadgetron-build
+
+      - name: Download Conda package
+        uses: actions/download-artifact@v4
+        with:
+          name: conda-packages
+          path: conda/build_pkg/
+
+      - name: Publish conda package
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          for p in $(find conda/build_pkg -name gadgetron*.tar.bz2)
+          do
+            ./conda/publish_package.sh -u gadgetron -t "$ANACONDA_TOKEN" -p "$p"
+          done
+
