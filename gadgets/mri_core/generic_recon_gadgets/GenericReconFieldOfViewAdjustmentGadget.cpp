@@ -223,14 +223,14 @@ namespace Gadgetron {
             else if ((encodingFOV_E1 >= reconFOV_E1) && (encodingFOV_E2 >= reconFOV_E2))
             {
                 size_t encodingE1 = reconSizeE1;
-                if (encodingFOV_E1 > reconFOV_E1)
+                if (encodingFOV_E1 >= reconFOV_E1)
                 {
                     double spacingE1 = reconFOV_E1 / reconSizeE1;
                     encodingE1 = (size_t)2*std::lround(encodingFOV_E1 / (2*spacingE1));
                 }
 
                 size_t encodingE2 = reconSizeE2;
-                if (encodingFOV_E2 > reconFOV_E2)
+                if (encodingFOV_E2 >= reconFOV_E2)
                 {
                     double spacingE2 = reconFOV_E2 / reconSizeE2;
                     encodingE2 = (size_t)2*std::lround(encodingFOV_E2 / (2*spacingE2));

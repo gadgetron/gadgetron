@@ -284,8 +284,21 @@ namespace Gadgetron {
                 }
 
                 this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_COILMAP, recon_obj_[e].coil_map_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+
                 if (recon_obj_[e].gfactor_.get_number_of_elements() > 0) this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP, recon_obj_[e].gfactor_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+
                 this->gt_streamer_.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, recon_obj_[e].recon_res_.data_, recon_obj_[e].recon_res_.headers_, recon_obj_[e].recon_res_.meta_);
+
+                if(recon_obj_[e].gfactor_augmented_.get_number_of_elements() > 0){
+                    if (!debug_folder_full_path_.empty()) {
+                            hoNDArray<float> gmaps;
+                            gmaps = recon_obj_[e].gfactor_augmented_;
+                            gmaps.squeeze();
+                            this->gt_exporter_.export_array(gmaps, debug_folder_full_path_ + "gfactor_augmented" + os.str());
+                        }
+
+                    this->gt_streamer_.stream_to_array_buffer(GENERIC_RECON_STREAM_GFACTOR_MAP_AUGMENTATION, recon_obj_[e].gfactor_augmented_);
+                } 
 
                 if (perform_timing.value()) {
                     gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array");
@@ -400,6 +413,62 @@ namespace Gadgetron {
 
     }
 
+    void GenericReconCartesianGrappaGadget::compute_kernel_size(bool is_3D, size_t acceFactorE1, size_t acceFactorE2, size_t& convKRO, size_t& convKE1, size_t& convKE2)
+    {
+        size_t kRO = grappa_kSize_RO.value();
+        size_t kNE1 = grappa_kSize_E1.value();
+        size_t kNE2 = grappa_kSize_E2.value();
+        bool fitItself = this->downstream_coil_compression.value();
+
+        if (is_3D)
+        {
+            std::vector<int> kE1, oE1;
+            std::vector<int> kE2, oE2;
+            grappa3d_kerPattern(kE1, oE1, kE2, oE2, convKRO, convKE1, convKE2, acceFactorE1, acceFactorE2, kRO, kNE1, kNE2, fitItself);
+        }
+        else
+        {
+            std::vector<int> kE1, oE1;
+            Gadgetron::grappa2d_kerPattern(kE1, oE1, convKRO, convKE1, acceFactorE1, kRO, kNE1, fitItself);
+            convKE2 = 1;
+        }
+    }
+
+    void GenericReconCartesianGrappaGadget::compute_kernel_2d(const hoNDArray<std::complex<float> >& acsSrc, const hoNDArray<std::complex<float> >& acsDst, 
+                            hoNDArray<std::complex<float>>& ker, hoNDArray<std::complex<float>>& kIm, hoNDArray<std::complex<float>>& coilMap, size_t acceFactorE1, 
+                            hoNDArray<std::complex<float>>& unmixC, hoNDArray<float>& gFactor)
+    {
+        size_t RO = coilMap.get_size(0);
+        size_t E1 = coilMap.get_size(1);
+
+        size_t kRO = grappa_kSize_RO.value();
+        size_t kNE1 = grappa_kSize_E1.value();
+
+        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, acceFactorE1, grappa_reg_lamda.value(), kRO, kNE1, ker);
+        Gadgetron::grappa2d_image_domain_kernel(ker, RO, E1, kIm);
+        Gadgetron::grappa2d_unmixing_coeff(kIm, coilMap, acceFactorE1, unmixC, gFactor);
+    }
+
+
+    void GenericReconCartesianGrappaGadget::compute_kernel_3d(const hoNDArray<std::complex<float> >& acsSrc, const hoNDArray<std::complex<float> >& acsDst, 
+                            hoNDArray<std::complex<float>>& ker, hoNDArray<std::complex<float>>& coilMap, size_t acceFactorE1, size_t acceFactorE2, 
+                            hoNDArray<std::complex<float>>& unmixC, hoNDArray<float>& gFactor)
+    {
+        size_t kRO = grappa_kSize_RO.value();
+        size_t kNE1 = grappa_kSize_E1.value();
+        size_t kNE2 = grappa_kSize_E2.value();
+
+        Gadgetron::grappa3d_calib_convolution_kernel(acsSrc, acsDst, 
+                                                    acceFactorE1, acceFactorE2, 
+                                                    grappa_reg_lamda.value(),
+                                                    grappa_calib_over_determine_ratio.value(), 
+                                                    kRO, kNE1, kNE2, 
+                                                    ker);
+
+        Gadgetron::grappa3d_unmixing_coeff(ker, coilMap, acceFactorE1, acceFactorE2, unmixC, gFactor);
+    }
+
+
     void
     GenericReconCartesianGrappaGadget::perform_calib(IsmrmrdReconBit &recon_bit, ReconObjType &recon_obj, size_t e) {
 
@@ -423,30 +492,37 @@ namespace Gadgetron {
         recon_obj.unmixing_coeff_.create(RO, E1, E2, srcCHA, ref_N, ref_S, ref_SLC);
         recon_obj.gfactor_.create(RO, E1, E2, 1, ref_N, ref_S, ref_SLC);
 
+        size_t num_gfactors_E1_for_augmentation = this->gfactors_E1_for_augmentation.value().size();
+        size_t num_gfactors_E2_for_augmentation = this->gfactors_E2_for_augmentation.value().size();
+
+        if (num_gfactors_E1_for_augmentation == 0) num_gfactors_E1_for_augmentation = 1;
+        if (num_gfactors_E2_for_augmentation == 0) num_gfactors_E2_for_augmentation = 1;
+
+        GDEBUG_STREAM("num_gfactors_E1_for_augmentation is " << num_gfactors_E1_for_augmentation);
+        GDEBUG_STREAM("num_gfactors_E2_for_augmentation is " << num_gfactors_E2_for_augmentation);
+
+        recon_obj.gfactor_augmented_.create(RO, E1, E2, 1, ref_N, ref_S, ref_SLC, num_gfactors_E1_for_augmentation, num_gfactors_E2_for_augmentation);
+
         Gadgetron::clear(recon_obj.unmixing_coeff_);
         Gadgetron::clear(recon_obj.gfactor_);
 
-        if (acceFactorE1_[e] <= 1 && acceFactorE2_[e] <= 1) {
+        size_t convKRO(1), convKE1(1), convKE2(1);
+        bool is_3D = E2>1;
+        this->compute_kernel_size(is_3D, (size_t) acceFactorE1_[e], (size_t) acceFactorE2_[e], convKRO, convKE1, convKE2);
+
+        if (acceFactorE1_[e] <= 1 && acceFactorE2_[e] <= 1)
+        {
             Gadgetron::conjugate(recon_obj.coil_map_, recon_obj.unmixing_coeff_);
-        } else {
+        } 
+        else
+        {
             // allocate buffer for kernels
             size_t kRO = grappa_kSize_RO.value();
             size_t kNE1 = grappa_kSize_E1.value();
             size_t kNE2 = grappa_kSize_E2.value();
 
-            size_t convKRO(1), convKE1(1), convKE2(1);
-
-            bool fitItself = this->downstream_coil_compression.value();
-
-            if (E2 > 1) {
-                std::vector<int> kE1, oE1;
-                std::vector<int> kE2, oE2;
-                grappa3d_kerPattern(kE1, oE1, kE2, oE2, convKRO, convKE1, convKE2, (size_t) acceFactorE1_[e],
-                                    (size_t) acceFactorE2_[e], kRO, kNE1, kNE2, fitItself);
-            } else {
-                std::vector<int> kE1, oE1;
-                Gadgetron::grappa2d_kerPattern(kE1, oE1, convKRO, convKE1, (size_t) acceFactorE1_[e], kRO, kNE1,
-                                               fitItself);
+            if (!is_3D)
+            {
                 recon_obj.kernelIm_.create(RO, E1, 1, srcCHA, dstCHA, ref_N, ref_S, ref_SLC);
             }
 
@@ -460,7 +536,7 @@ namespace Gadgetron {
             long long ii;
 
             // only allow this for loop openmp if num>1 and 2D recon
-#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2, fitItself) if(num>1)
+#pragma omp parallel for default(none) private(ii) shared(is_3D, src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, kRO, kNE1, kNE2, convKRO, convKE1, convKE2) if(num>1)
             for (ii = 0; ii < num; ii++) {
                 size_t slc = ii / (ref_N * ref_S);
                 size_t s = (ii - slc * ref_N * ref_S) / (ref_N);
@@ -478,105 +554,71 @@ namespace Gadgetron {
 
                 // -----------------------------------
 
-                if (E2 > 1) {
-                    hoNDArray<std::complex<float> > ker(convKRO, convKE1, convKE2, srcCHA, dstCHA,
-                                                        &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
+                if (is_3D)
+                {
+                    hoNDArray<std::complex<float> > ker(convKRO, convKE1, convKE2, srcCHA, dstCHA, &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
 
-                    if (fitItself)
-                    {
-                        Gadgetron::grappa3d_calib_convolution_kernel(ref_src, ref_dst, (size_t)acceFactorE1_[e],
-                            (size_t)acceFactorE2_[e], grappa_reg_lamda.value(),
-                            grappa_calib_over_determine_ratio.value(), kRO, kNE1,
-                            kNE2, ker);
-                    }
-                    else
-                    {
-                        Gadgetron::grappa3d_calib_convolution_kernel(ref_src, ref_src, (size_t)acceFactorE1_[e],
-                            (size_t)acceFactorE2_[e], grappa_reg_lamda.value(),
-                            grappa_calib_over_determine_ratio.value(), kRO, kNE1,
-                            kNE2, ker);
-                    }
+                    hoNDArray<std::complex<float> > coilMap(RO, E1, E2, dstCHA, &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
 
-                    //if (!debug_folder_full_path_.empty())
-                    //{
-                    //    gt_exporter_.export_array_complex(ker, debug_folder_full_path_ + "convKer3D_" + suffix);
-                    //}
+                    hoNDArray<std::complex<float> > unmixC(RO, E1, E2, srcCHA, &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc)));
 
-                    hoNDArray<std::complex<float> > coilMap(RO, E1, E2, dstCHA,
-                                                            &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
-                    hoNDArray<std::complex<float> > unmixC(RO, E1, E2, srcCHA,
-                                                           &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc)));
                     hoNDArray<float> gFactor(RO, E1, E2, 1, &(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)));
-                    Gadgetron::grappa3d_unmixing_coeff(ker, coilMap, (size_t) acceFactorE1_[e],
-                                                       (size_t) acceFactorE2_[e], unmixC, gFactor);
 
-                    //if (!debug_folder_full_path_.empty())
-                    //{
-                    //    gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_3D_" + suffix);
-                    //}
+                    this->compute_kernel_3d(ref_src, ref_dst,  ker, coilMap, (size_t) acceFactorE1_[e], (size_t) acceFactorE2_[e], unmixC, gFactor);
 
-                    //if (!debug_folder_full_path_.empty())
-                    //{
-                    //    gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_3D_" + suffix);
-                    //}
-                } else {
-                    hoNDArray<std::complex<float> > acsSrc(ref_RO, ref_E1, srcCHA,
-                                                           const_cast< std::complex<float> *>(ref_src.begin()));
-                    hoNDArray<std::complex<float> > acsDst(ref_RO, ref_E1, dstCHA,
-                                                           const_cast< std::complex<float> *>(ref_dst.begin()));
-
-                    hoNDArray<std::complex<float> > convKer(convKRO, convKE1, srcCHA, dstCHA,
-                                                            &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
-                    hoNDArray<std::complex<float> > kIm(RO, E1, srcCHA, dstCHA,
-                                                        &(recon_obj.kernelIm_(0, 0, 0, 0, 0, n, s, slc)));
-
-                    if (fitItself)
+                    if (!this->gfactors_E2_for_augmentation.value().empty())
                     {
-                        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)acceFactorE1_[e],
-                            grappa_reg_lamda.value(), kRO, kNE1, convKer);
+                        hoNDArray<std::complex<float> > ker, unmixC;
+
+                        std::vector<unsigned int> E1s = this->gfactors_E1_for_augmentation.value();
+                        if (E1s.empty()) E1s.push_back(1);
+
+                        std::vector<unsigned int> E2s = this->gfactors_E2_for_augmentation.value();
+
+                        for (size_t e2=0; e2<E2s.size(); e2++)
+                        {
+                            for (size_t e1=0; e1<E1s.size(); e1++)
+                            {
+                                GDEBUG_STREAM("Compute gfactor augmentation, 3d, for R - E1 = " << E1s[e1] << ", R - E2 = " << E2s[e2]);
+                                hoNDArray<float> gFactor(RO, E1, E2, 1, &(recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, e2)));
+                                this->compute_kernel_3d(ref_src, ref_dst,  ker, coilMap, E1s[e1], E2s[e2], unmixC, gFactor);
+                            }
+                        }
                     }
-                    else
-                    {
-                        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsSrc, (size_t)acceFactorE1_[e],
-                            grappa_reg_lamda.value(), kRO, kNE1, convKer);
-                    }
-                    Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
+                }
+                else
+                {
+                    hoNDArray<std::complex<float> > acsSrc(ref_RO, ref_E1, srcCHA, const_cast< std::complex<float> *>(ref_src.begin()));
+                    hoNDArray<std::complex<float> > acsDst(ref_RO, ref_E1, dstCHA, const_cast< std::complex<float> *>(ref_dst.begin()));
 
-                    /*if (!debug_folder_full_path_.empty())
-                    {
-                        gt_exporter_.export_array_complex(convKer, debug_folder_full_path_ + "convKer_" + suffix);
-                    }
+                    hoNDArray<std::complex<float> > ker(convKRO, convKE1, srcCHA, dstCHA, &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
+                    hoNDArray<std::complex<float> > kIm(RO, E1, srcCHA, dstCHA, &(recon_obj.kernelIm_(0, 0, 0, 0, 0, n, s, slc)));
 
-                    if (!debug_folder_full_path_.empty())
-                    {
-                        gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "kIm_" + suffix);
-                    }*/
-
-                    hoNDArray<std::complex<float> > coilMap(RO, E1, dstCHA,
-                                                            &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
-                    hoNDArray<std::complex<float> > unmixC(RO, E1, srcCHA,
-                                                           &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc)));
+                    hoNDArray<std::complex<float> > coilMap(RO, E1, dstCHA, &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
+                    hoNDArray<std::complex<float> > unmixC(RO, E1, srcCHA, &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc)));
                     hoNDArray<float> gFactor;
 
-                    Gadgetron::grappa2d_unmixing_coeff(kIm, coilMap, (size_t) acceFactorE1_[e], unmixC, gFactor);
-                    memcpy(&(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)), gFactor.begin(),
-                           gFactor.get_number_of_bytes());
+                    this->compute_kernel_2d(acsSrc, acsDst, ker, kIm, coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
 
-                    // if (!debug_folder_full_path_.empty())
-                    // {
-                    //     gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "unmixC_" + suffix);
-                    // }
+                    memcpy(&recon_obj.gfactor_(0, 0, 0, 0, n, s, slc), gFactor.begin(), gFactor.get_number_of_bytes());
 
-                    // if (!debug_folder_full_path_.empty())
-                    // {
-                    //     gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "gFactor_" + suffix);
-                    // }
+                    if (!this->gfactors_E1_for_augmentation.value().empty())
+                    {
+                        hoNDArray<std::complex<float> > ker, kIm, unmixC;
+                        hoNDArray<float> gFactor;
+
+                        std::vector<unsigned int> E1s = this->gfactors_E1_for_augmentation.value();
+                        for (size_t e1=0; e1<E1s.size(); e1++)
+                        {
+                            GDEBUG_STREAM("Compute gfactor augmentation, 2d, for R = " << E1s[e1]);
+                            this->compute_kernel_2d(acsSrc, acsDst, ker, kIm, coilMap, E1s[e1], unmixC, gFactor);
+                            memcpy(&recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, 0), gFactor.begin(), gFactor.get_number_of_bytes());
+                        }
+                    }
                 }
-
                 // -----------------------------------
             }
         }
-
     }
 
     void GenericReconCartesianGrappaGadget::perform_unwrapping(IsmrmrdReconBit &recon_bit, ReconObjType &recon_obj,

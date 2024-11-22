@@ -288,7 +288,10 @@ namespace Gadgetron {
 
     template <> void NoiseAdjustGadget::save_noisedata(NoiseGatherer& ng) {
         if (ng.tmp_covariance.empty())
+        {
+            GDEBUG_STREAM("ng.tmp_covariance.empty()");
             return;
+        }
 
         normalize_covariance(ng);
 
@@ -305,6 +308,7 @@ namespace Gadgetron {
             ng.noise_dwell_time_us,
             receiver_noise_bandwidth);
 
+        GDEBUG_STREAM("noise_covariance_out is " << noise_covariance_out);
         if (!noise_covariance_out.empty()) {
             std::ofstream os(noise_covariance_out, std::ios::out | std::ios::binary);
             if (os.is_open()) {
@@ -316,6 +320,7 @@ namespace Gadgetron {
                 GERROR("Unable to open file %s for writing noise covariance\n", noise_covariance_out.c_str());
             }
         } else {
+            GDEBUG_STREAM("STORE noise_covariance_out into the measurement_storage ... ");
             this->measurement_storage->store("noise_covariance", noise_covariance);
         }
     }
@@ -396,6 +401,7 @@ namespace Gadgetron {
             output.push(std::move(acq));
         }
 
+        GDEBUG_STREAM("Save noise matrix ... ");
         this->save_noisedata(noisehandler);
     }
 
@@ -423,6 +429,7 @@ namespace Gadgetron {
 
             auto noise_dependency = *val;
             GDEBUG("Measurement ID of noise dependency is %s\n", noise_dependency.measurementID.c_str());
+            GDEBUG_STREAM("LOAD noise_covariance_out from the measurement_storage ... ");
             return measurement_storage->get_latest<NoiseCovariance>(noise_dependency.measurementID, "noise_covariance");
         }
     }
