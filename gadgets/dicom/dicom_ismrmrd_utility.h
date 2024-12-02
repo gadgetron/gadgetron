@@ -8,15 +8,15 @@
 #include <string>
 #include <map>
 #include <complex>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"
-#define INCLUDE_CSTDLIB
-#define INCLUDE_CSTDIO
-#define INCLUDE_CSTRING
 #include "dcmtk/dcmdata/dctk.h"
 #include "dcmtk/dcmdata/dcostrmb.h"
 
