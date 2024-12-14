@@ -3,8 +3,7 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd/ismrmrd.h"
-#include "gadgetron_debugging_export.h"
+
 #include <random>
 
 namespace Gadgetron
@@ -37,12 +36,9 @@ protected:
 };
 
 /// add white noise to the kspace data
-class EXPORTGADGETSDEBUGGING WhiteNoiseInjectorGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+class WhiteNoiseInjectorGadget : public Gadgetron::Gadget1<mrd::Acquisition>
 {
 public:
-
-    GADGET_DECLARE(WhiteNoiseInjectorGadget);
-
     typedef Gadgetron::RandNormGenerator<double> RandGenType;
 
     WhiteNoiseInjectorGadget();
@@ -53,10 +49,9 @@ protected:
     GADGET_PROPERTY(noise_std, float, "Noise standard deviation", 0.0);
     GADGET_PROPERTY(add_noise_ref, bool, "Add noise to reference scans", false);
 
-    virtual int process_config(ACE_Message_Block* mb);
+    virtual int process_config(const mrd::Header& header);
 
-    virtual int process(Gadgetron::GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-        Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray< std::complex<float> > >* m2);
+    virtual int process(Gadgetron::GadgetContainerMessage<mrd::Acquisition>* m1);
 
     /// whether to add noise to ref acquisition
     bool add_noise_ref_;

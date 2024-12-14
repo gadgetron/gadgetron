@@ -1,63 +1,37 @@
-/*
- * PseudoReplicator.cpp
- *
- *  Created on: Jun 23, 2015
- *      Author: u051747
- */
-
 #include "PseudoReplicatorGadget.h"
 #include <random>
+
 namespace Gadgetron {
 
-PseudoReplicatorGadget::PseudoReplicatorGadget() : Gadget1<IsmrmrdReconData>() {
-	// TODO Auto-generated constructor stub
-
+PseudoReplicatorGadget::PseudoReplicatorGadget(const Core::Context& context, const Core::GadgetProperties& props)
+    : Core::ChannelGadget<mrd::ReconData>(context, props)
+{
 }
 
-PseudoReplicatorGadget::~PseudoReplicatorGadget() {
-	// TODO Auto-generated destructor stub
-}
-
-int PseudoReplicatorGadget::process_config(ACE_Message_Block*) {
-
-	repetitions_ = repetitions.value();
-	return GADGET_OK;
-}
-
-int PseudoReplicatorGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m) {
-
+void PseudoReplicatorGadget::process(Core::InputChannel<mrd::ReconData>& input, Core::OutputChannel& output)
+{
 	std::mt19937 engine(5489UL);
 	std::normal_distribution<float> distribution;
 
-	auto m_copy = *m->getObjectPtr();
-	//First just send the normal data to obtain standard image
-	if (this->next()->putq(m) == GADGET_FAIL)
-			return GADGET_FAIL;
+	for (auto reconData : input) {
+		// First just send the normal data to obtain standard image
+		output.push(reconData);
 
-	//Now for the noisy projections
-	for (int i =0; i < repetitions_; i++){
+		for (int i = 0; i < repetitions; i++) {
 
-		auto cm = new GadgetContainerMessage<IsmrmrdReconData>();
-		*cm->getObjectPtr() = m_copy;
-		auto & datasets = cm->getObjectPtr()->rbit_;
-
-		for (auto & buffer : datasets){
-			auto & data = buffer.data_.data_;
-			auto dataptr = data.get_data_ptr();
-			for (size_t k =0; k <  data.get_number_of_elements(); k++){
-				dataptr[k] += std::complex<float>(distribution(engine),distribution(engine));
+			for (auto& rbit : reconData.buffers) {
+				auto& data = rbit.data.data;
+				auto dataptr = data.data();
+				for (size_t k = 0; k < data.size(); k++) {
+					dataptr[k] += std::complex<float>(distribution(engine), distribution(engine));
+				}
 			}
+
+			GDEBUG("Sending out Pseudoreplica\n");
+			output.push(reconData);
 		}
-		GDEBUG("Sending out Pseudoreplica\n");
-
-		if (this->next()->putq(cm) == GADGET_FAIL)
-			return GADGET_FAIL;
-
 	}
-	return GADGET_OK;
-
 }
 
-GADGET_FACTORY_DECLARE(PseudoReplicatorGadget)
-
-} /* namespace Gadgetron */
+GADGETRON_GADGET_EXPORT(PseudoReplicatorGadget)
+} // namespace Gadgetron

@@ -4,12 +4,10 @@
 #include "cuNDArray_blas.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
-#include "GadgetMRIHeaders.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd/xml.h"
 #include <boost/thread/mutex.hpp>
 
 namespace Gadgetron{
@@ -30,7 +28,7 @@ namespace Gadgetron{
 
   gpuNlcgSenseGadget::~gpuNlcgSenseGadget() {}
 
-  int gpuNlcgSenseGadget::process_config( ACE_Message_Block* mb )
+  int gpuNlcgSenseGadget::process_config(const mrd::Header& header)
   {
     GDEBUG("gpuNlcgSenseGadget::process_config\n");
 
@@ -76,31 +74,26 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    // Get the Ismrmrd header
-    //
-    ISMRMRD::IsmrmrdHeader h;
-    ISMRMRD::deserialize(mb->rd_ptr(),h);
-    
-    
+    auto& h = header;
     if (h.encoding.size() != 1) {
       GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
     // Get the encoding space and trajectory description
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+    mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+    mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+    mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
 
-    matrix_size_seq_ = uint64d2( r_space.matrixSize.x, r_space.matrixSize.y );
+    matrix_size_seq_ = uint64d2( r_space.matrix_size.x, r_space.matrix_size.y );
 
     if (!is_configured_) {
 
-      if (h.acquisitionSystemInformation) {
-	channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 1;
-      } else {
-	channels_ = 1;
-      }
+        if (h.acquisition_system_information) {
+            channels_ = h.acquisition_system_information->receiver_channels.value_or(1);
+        } else {
+            channels_ = 1;
+        }
 
       // Allocate encoding operator for non-Cartesian Sense
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
@@ -131,12 +124,12 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  int gpuNlcgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
+  int gpuNlcgSenseGadget::process(GadgetContainerMessage<mrd::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
   {
     // Is this data for this gadget's set/slice?
     //
 
-    if( m1->getObjectPtr()->set != set_number_ || m1->getObjectPtr()->slice != slice_number_ ) {
+    if( m1->getObjectPtr()->set.value_or(0) != set_number_ || m1->getObjectPtr()->slice.value_or(0) != slice_number_ ) {
       // No, pass it downstream...
       return this->next()->putq(m1);
     }
@@ -315,17 +308,17 @@ namespace Gadgetron{
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm =
         new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m =
-        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      GadgetContainerMessage<mrd::ImageHeader> *m =
+        new GadgetContainerMessage<mrd::ImageHeader>();
 
       *m->getObjectPtr() = j->image_headers_[frame];
-      m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-      m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
       m->cont(cm);
 
-      std::vector<size_t> img_dims(2);
+      std::vector<size_t> img_dims(4);
       img_dims[0] = matrix_size_seq_[0];
       img_dims[1] = matrix_size_seq_[1];
+      img_dims[2] = 1;
+      img_dims[3] = 1;
 
       cm->getObjectPtr()->create(img_dims);
 
@@ -343,10 +336,6 @@ namespace Gadgetron{
         return GADGET_FAIL;
       }
 
-      m->getObjectPtr()->matrix_size[0] = img_dims[0];
-      m->getObjectPtr()->matrix_size[1] = img_dims[1];
-      m->getObjectPtr()->matrix_size[2] = 1;
-      m->getObjectPtr()->channels       = 1;
       m->getObjectPtr()->image_index    = frame_counter_ + frame;
 
       if (this->next()->putq(m) < 0) {

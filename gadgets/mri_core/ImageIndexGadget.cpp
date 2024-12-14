@@ -2,29 +2,25 @@
 #include "ImageIndexGadget.h"
 
 #include "Node.h"
-#include "Types.h"
 
 #include "log.h"
 
 
-using namespace Gadgetron::Core;
-
 namespace {
 
     template<class T, class F>
-    Image<T> update_image_index(Image<T> image, F &index) {
-        auto &header = std::get<ISMRMRD::ImageHeader>(image);
-        header.image_index = index(header.image_series_index);
+    mrd::Image<T> update_image_index(mrd::Image<T> image, F &index) {
+        image.head.image_index = index(image.head.image_series_index.value_or(0));
         return image;
     }
 }
 
 namespace Gadgetron {
 
-    ImageIndexGadget::ImageIndexGadget(const Context &context, const GadgetProperties &properties)
+    ImageIndexGadget::ImageIndexGadget(const Core::Context &context, const Core::GadgetProperties &properties)
         : ChannelGadget(context, properties) {}
 
-    void ImageIndexGadget::process(InputChannel<Core::AnyImage> &input, OutputChannel &output) {
+    void ImageIndexGadget::process(Core::InputChannel<mrd::AnyImage> &input, Core::OutputChannel &output) {
 
         std::map<uint16_t, uint16_t> indices{};
 

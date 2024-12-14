@@ -9,17 +9,12 @@ namespace Gadgetron {
 
     GenericReconGadget::~GenericReconGadget() {}
 
-    int GenericReconGadget::process_config(ACE_Message_Block* mb) {
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+    int GenericReconGadget::process_config(const mrd::Header& header) {
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
-        ISMRMRD::IsmrmrdHeader h;
-        try {
-            deserialize(mb->rd_ptr(), h);
-        } catch (...) {
-            GDEBUG("Error parsing ISMRMRD Header");
-        }
+        auto& h = header;
 
-        if (!h.acquisitionSystemInformation) {
+        if (!h.acquisition_system_information) {
             GDEBUG("acquisitionSystemInformation not found in header. Bailing out");
             return GADGET_FAIL;
         }
@@ -33,7 +28,7 @@ namespace Gadgetron {
 
         acceFactorE1_.resize(NE, 1);
         acceFactorE2_.resize(NE, 1);
-        calib_mode_.resize(NE, ISMRMRD_noacceleration);
+        calib_mode_.resize(NE, mrd::CalibrationMode::kNoacceleration);
 
         space_matrix_offset_E1_.resize(NE, 0);
         space_matrix_offset_E2_.resize(NE, 0);
@@ -41,96 +36,72 @@ namespace Gadgetron {
         size_t e;
         for (e = 0; e < h.encoding.size(); e++) {
 
-            if (!h.encoding[e].parallelImaging) {
+            if (!h.encoding[e].parallel_imaging) {
                 GDEBUG_STREAM("Parallel Imaging section not found in header for encoding space " << e);
-                calib_mode_[e]   = ISMRMRD_noacceleration;
+                calib_mode_[e]   = mrd::CalibrationMode::kNoacceleration;
                 acceFactorE1_[e] = 1;
                 acceFactorE2_[e] = 1;
             } else {
-                ISMRMRD::ParallelImaging p_imaging = *h.encoding[e].parallelImaging;
+                mrd::ParallelImagingType p_imaging = *h.encoding[e].parallel_imaging;
 
-                acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
-                acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
+                acceFactorE1_[e] = p_imaging.acceleration_factor.kspace_encoding_step_1;
+                acceFactorE2_[e] = p_imaging.acceleration_factor.kspace_encoding_step_2;
                 GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << acceFactorE1_[e]);
                 GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << acceFactorE2_[e]);
 
-                std::string calib = *p_imaging.calibrationMode;
-
-                bool separate    = (calib.compare("separate") == 0);
-                bool embedded    = (calib.compare("embedded") == 0);
-                bool external    = (calib.compare("external") == 0);
-                bool interleaved = (calib.compare("interleaved") == 0);
-                bool other       = (calib.compare("other") == 0);
-
-                calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
+                calib_mode_[e] = mrd::CalibrationMode::kNoacceleration;
                 if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1) {
-                    if (interleaved)
-                        calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
-                    else if (embedded)
-                        calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
-                    else if (separate)
-                        calib_mode_[e] = Gadgetron::ISMRMRD_separate;
-                    else if (external)
-                        calib_mode_[e] = Gadgetron::ISMRMRD_external;
-                    else if (other)
-                        calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                    calib_mode_[e] = p_imaging.calibration_mode.value_or(mrd::CalibrationMode::kNoacceleration);
                 }
             }
 
             // -------------------------------------------------
 
-            bool is_cartesian_sampling = (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::CARTESIAN);
-            bool is_epi_sampling       = (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::EPI);
+            bool is_cartesian_sampling = (h.encoding[e].trajectory == mrd::Trajectory::kCartesian);
+            bool is_epi_sampling       = (h.encoding[e].trajectory == mrd::Trajectory::kEpi);
             if (is_cartesian_sampling || is_epi_sampling) {
-                if (h.encoding[e].encodingLimits.kspace_encoding_step_1.is_present()) {
-                    space_matrix_offset_E1_[e] = (int)h.encoding[e].encodedSpace.matrixSize.y / 2
-                                                 - (int)h.encoding[e].encodingLimits.kspace_encoding_step_1->center;
+                if (h.encoding[e].encoding_limits.kspace_encoding_step_1.has_value()) {
+                    space_matrix_offset_E1_[e] = (int)h.encoding[e].encoded_space.matrix_size.y / 2
+                                                 - (int)h.encoding[e].encoding_limits.kspace_encoding_step_1->center;
                 }
 
-                if (h.encoding[e].encodingLimits.kspace_encoding_step_2.is_present()
-                    && h.encoding[e].encodedSpace.matrixSize.z > 1) {
-                    space_matrix_offset_E2_[e] = (int)h.encoding[e].encodedSpace.matrixSize.z / 2
-                                                 - (int)h.encoding[e].encodingLimits.kspace_encoding_step_2->center;
+                if (h.encoding[e].encoding_limits.kspace_encoding_step_2.has_value()
+                    && h.encoding[e].encoded_space.matrix_size.z > 1) {
+                    space_matrix_offset_E2_[e] = (int)h.encoding[e].encoded_space.matrix_size.z / 2
+                                                 - (int)h.encoding[e].encoding_limits.kspace_encoding_step_2->center;
                 }
             }
         }
 
-        if (!h.acquisitionSystemInformation->systemFieldStrength_T)
-        {
-            system_field_strength_T_ = 1.5;
-        }
-        else
-        {
-            system_field_strength_T_ = h.acquisitionSystemInformation.get().systemFieldStrength_T.get();
-        }
+        system_field_strength_T_ = h.acquisition_system_information->system_field_strength_t.value_or(1.5);
 
         protocol_name_ = "Unknown";
 
-        if (!h.measurementInformation)
+        if (!h.measurement_information)
         {
             GDEBUG("measurementInformation not found in header");
         }
         else
         {
-            if (!h.measurementInformation->protocolName)
+            if (!h.measurement_information->protocol_name)
             {
                 GDEBUG("measurementInformation->protocolName not found in header");
             }
             else
             {
-                protocol_name_ = h.measurementInformation.get().protocolName.get();
+                protocol_name_ = h.measurement_information->protocol_name.value();
             }
         }
 
         std::string measurement_id = "";
-        if (h.measurementInformation)
+        if (h.measurement_information)
         {
-            if (h.measurementInformation->measurementID)
+            if (h.measurement_information->measurement_id)
             {
-                measurement_id = *h.measurementInformation->measurementID;
+                measurement_id = *h.measurement_information->measurement_id;
             }
 
-            patient_position_ = h.measurementInformation->patientPosition;
+            patient_position_ = h.measurement_information->patient_position;
         }
 
         this->measurement_id_ = measurement_id;
@@ -161,28 +132,25 @@ namespace Gadgetron {
             }
         }
 
-        if (h.acquisitionSystemInformation)
+        if (h.acquisition_system_information->system_vendor)
         {
-            if (h.acquisitionSystemInformation->systemVendor)
-            {
-                vendor_ = *h.acquisitionSystemInformation->systemVendor;
-            }
+            vendor_ = h.acquisition_system_information->system_vendor.value();
         }
 
         return GADGET_OK;
     }
 
-    int GenericReconGadget::process(Gadgetron::GadgetContainerMessage<IsmrmrdReconData>* m1) {
+    int GenericReconGadget::process(Gadgetron::GadgetContainerMessage<mrd::ReconData>* m1) {
         process_called_times_++;
 
-        IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
-        if (recon_bit_->rbit_.size() > num_encoding_spaces_) {
+        mrd::ReconData* recon_data = m1->getObjectPtr();
+        if (recon_data->buffers.size() > num_encoding_spaces_) {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : "
-                         << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
+                         << recon_data->buffers.size() << " instead of " << num_encoding_spaces_);
         }
 
         // for every encoding space
-        for (size_t e = 0; e < recon_bit_->rbit_.size(); e++) {
+        for (size_t e = 0; e < recon_data->buffers.size(); e++) {
             std::stringstream os;
             os << "_encoding_" << e;
 
@@ -247,23 +215,23 @@ namespace Gadgetron {
 
     // ----------------------------------------------------------------------------------------
 
-    void GenericReconGadget::make_ref_coil_map(IsmrmrdDataBuffered& ref_, std::vector<size_t> recon_dims,
-        hoNDArray<std::complex<float>>& ref_calib, hoNDArray<std::complex<float>>& ref_coil_map, size_t encoding) {
-
-        hoNDArray<std::complex<float>>& ref_data = ref_.data_;
+    void GenericReconGadget::make_ref_coil_map(mrd::ReconBuffer& ref, std::vector<size_t> recon_dims,
+        hoNDArray<std::complex<float>>& ref_calib, hoNDArray<std::complex<float>>& ref_coil_map, size_t encoding)
+    {
+        hoNDArray<std::complex<float>>& ref_data = ref.data;
 
         // sampling limits
-        size_t sRO = ref_.sampling_.sampling_limits_[0].min_;
-        size_t eRO = ref_.sampling_.sampling_limits_[0].max_;
-        size_t cRO = ref_.sampling_.sampling_limits_[0].center_;
+        size_t sRO = ref.sampling.sampling_limits.kspace_encoding_step_0.minimum;
+        size_t eRO = ref.sampling.sampling_limits.kspace_encoding_step_0.maximum;
+        size_t cRO = ref.sampling.sampling_limits.kspace_encoding_step_0.center;
 
-        size_t sE1 = ref_.sampling_.sampling_limits_[1].min_;
-        size_t eE1 = ref_.sampling_.sampling_limits_[1].max_;
-        size_t cE1 = ref_.sampling_.sampling_limits_[1].center_;
+        size_t sE1 = ref.sampling.sampling_limits.kspace_encoding_step_1.minimum;
+        size_t eE1 = ref.sampling.sampling_limits.kspace_encoding_step_1.maximum;
+        size_t cE1 = ref.sampling.sampling_limits.kspace_encoding_step_1.center;
 
-        size_t sE2 = ref_.sampling_.sampling_limits_[2].min_;
-        size_t eE2 = ref_.sampling_.sampling_limits_[2].max_;
-        size_t cE2 = ref_.sampling_.sampling_limits_[2].center_;
+        size_t sE2 = ref.sampling.sampling_limits.kspace_encoding_step_2.minimum;
+        size_t eE2 = ref.sampling.sampling_limits.kspace_encoding_step_2.maximum;
+        size_t cE2 = ref.sampling.sampling_limits.kspace_encoding_step_2.center;
 
         // recon size
         size_t recon_RO = recon_dims[0];
@@ -291,8 +259,8 @@ namespace Gadgetron {
         size_t E2 = eE2 - sE2 + 1;
 
         // cut the center region for ref coil map
-        if ((calib_mode_[encoding] == Gadgetron::ISMRMRD_interleaved)
-            || (calib_mode_[encoding] == Gadgetron::ISMRMRD_noacceleration)) {
+        if ((calib_mode_[encoding] == mrd::CalibrationMode::kInterleaved)
+            || (calib_mode_[encoding] == mrd::CalibrationMode::kNoacceleration)) {
             E1 = 2 * std::min(cE1 - sE1, eE1 - cE1 + 1) - 1;
             if (E1 > recon_E1)
                 E1 = recon_E1;
@@ -343,8 +311,8 @@ namespace Gadgetron {
 
         // filter the ref_coil_map
         if (filter_RO_ref_coi_map_.get_size(0) != RO) {
-            Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), ref_.sampling_.sampling_limits_[0].min_,
-                ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
+            Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), ref.sampling.sampling_limits.kspace_encoding_step_0.minimum,
+                ref.sampling.sampling_limits.kspace_encoding_step_0.maximum, filter_RO_ref_coi_map_);
 
             if (!debug_folder_full_path_.empty()) {
                 std::stringstream os;
@@ -413,7 +381,8 @@ namespace Gadgetron {
     }
 
     void GenericReconGadget::perform_coil_map_estimation(
-        const hoNDArray<std::complex<float>>& ref_coil_map, hoNDArray<std::complex<float>>& coil_map, size_t e) {
+        const hoNDArray<std::complex<float>>& ref_coil_map, hoNDArray<std::complex<float>>& coil_map, size_t e)
+    {
         try {
             coil_map = ref_coil_map;
             Gadgetron::clear(coil_map);
@@ -459,72 +428,77 @@ namespace Gadgetron {
         }
     }
 
-    void GenericReconGadget::compute_image_header(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t e) {
+    void GenericReconGadget::compute_image_header(mrd::ReconAssembly& recon_bit, mrd::ImageArray& res, size_t e)
+    {
+        size_t RO  = res.data.get_size(0);
+        size_t E1  = res.data.get_size(1);
+        size_t E2  = res.data.get_size(2);
+        size_t CHA = res.data.get_size(3);
+        size_t N   = res.data.get_size(4);
+        size_t S   = res.data.get_size(5);
+        size_t SLC = res.data.get_size(6);
 
-        size_t RO  = res.data_.get_size(0);
-        size_t E1  = res.data_.get_size(1);
-        size_t E2  = res.data_.get_size(2);
-        size_t CHA = res.data_.get_size(3);
-        size_t N   = res.data_.get_size(4);
-        size_t S   = res.data_.get_size(5);
-        size_t SLC = res.data_.get_size(6);
+        GADGET_CHECK_THROW(N == recon_bit.data.headers.get_size(2));
+        GADGET_CHECK_THROW(S == recon_bit.data.headers.get_size(3));
+        GADGET_CHECK_THROW(SLC == recon_bit.data.headers.get_size(4));
 
-        GADGET_CHECK_THROW(N == recon_bit.data_.headers_.get_size(2));
-        GADGET_CHECK_THROW(S == recon_bit.data_.headers_.get_size(3));
-
-        res.headers_.create(N, S, SLC);
-        res.meta_.resize(N * S * SLC);
+        res.headers.create(N, S, SLC);
+        res.meta.create(N, S, SLC);
 
         size_t n, s, slc;
 
         for (slc = 0; slc < SLC; slc++) {
             for (s = 0; s < S; s++) {
                 for (n = 0; n < N; n++) {
-                    size_t header_E1 = recon_bit.data_.headers_.get_size(0);
-                    size_t header_E2 = recon_bit.data_.headers_.get_size(1);
+                    size_t header_E1 = recon_bit.data.headers.get_size(0);
+                    size_t header_E2 = recon_bit.data.headers.get_size(1);
 
                     // for every kspace, find the recorded header which is closest to the kspace center [E1/2 E2/2]
-                    ISMRMRD::AcquisitionHeader acq_header;
+                    mrd::AcquisitionHeader acq_header;
 
                     // for every kspace, find the min and max of acquisition time, find the min and max of physio time
                     uint32_t min_acq_time(std::numeric_limits<uint32_t>::max()),
                         max_acq_time(0);
 
-                    uint32_t min_physio_time[ISMRMRD::ISMRMRD_PHYS_STAMPS], max_physio_time[ISMRMRD::ISMRMRD_PHYS_STAMPS];
-                    for (size_t ii = 0; ii < ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++) {
-                        min_physio_time[ii] = std::numeric_limits<uint32_t>::max();
-                        max_physio_time[ii] = 0;
-                    }
+                    // Only the first three physio timestamps are saved in the ImageMeta
+                    const size_t MAX_PHYSIO_TIMESTAMPS = 3;
+                    std::vector<size_t> min_physio_time(MAX_PHYSIO_TIMESTAMPS, std::numeric_limits<uint32_t>::max());
+                    std::vector<size_t> max_physio_time(MAX_PHYSIO_TIMESTAMPS, 0);
 
                     long long bestE1 = E1 + 1;
                     long long bestE2 = E2 + 1;
 
-                    size_t e1, e2;
-                    for (e2 = 0; e2 < header_E2; e2++) {
-                        for (e1 = 0; e1 < header_E1; e1++) {
-                            ISMRMRD::AcquisitionHeader& curr_header = recon_bit.data_.headers_(e1, e2, n, s, slc);
+                    for (size_t e2 = 0; e2 < header_E2; e2++) {
+                        for (size_t e1 = 0; e1 < header_E1; e1++) {
+                            mrd::AcquisitionHeader& curr_header = recon_bit.data.headers(e1, e2, n, s, slc);
 
                             if (curr_header.acquisition_time_stamp>0) {
                                 if (min_acq_time > curr_header.acquisition_time_stamp)
-                                    min_acq_time = curr_header.acquisition_time_stamp;
+                                    min_acq_time = curr_header.acquisition_time_stamp.value_or(0);
 
                                 if (max_acq_time < curr_header.acquisition_time_stamp)
-                                    max_acq_time = curr_header.acquisition_time_stamp;
+                                    max_acq_time = curr_header.acquisition_time_stamp.value_or(0);
 
-                                for (size_t ii = 0; ii < ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++) {
-                                    if (min_physio_time[ii] > curr_header.physiology_time_stamp[ii])
+                                for (size_t ii = 0; ii < MAX_PHYSIO_TIMESTAMPS; ii++) {
+                                    if (ii >= curr_header.physiology_time_stamp.size()) {
+                                        break;
+                                    }
+
+                                    if (min_physio_time[ii] > curr_header.physiology_time_stamp[ii]) {
                                         min_physio_time[ii] = curr_header.physiology_time_stamp[ii];
+                                    }
 
-                                    if (max_physio_time[ii] < curr_header.physiology_time_stamp[ii])
+                                    if (max_physio_time[ii] < curr_header.physiology_time_stamp[ii]) {
                                         max_physio_time[ii] = curr_header.physiology_time_stamp[ii];
+                                    }
                                 }
                             }
 
-                            long long e1_in_bucket = curr_header.idx.kspace_encode_step_1 + space_matrix_offset_E1_[e];
+                            long long e1_in_bucket = curr_header.idx.kspace_encode_step_1.value_or(0) + space_matrix_offset_E1_[e];
 
                             if (E2 > 1) {
                                 long long e2_in_bucket
-                                    = curr_header.idx.kspace_encode_step_2 + space_matrix_offset_E2_[e];
+                                    = curr_header.idx.kspace_encode_step_2.value_or(0) + space_matrix_offset_E2_[e];
 
                                 if (std::abs(e1_in_bucket - (long long)(E1 / 2)) < bestE1
                                     && std::abs(e2_in_bucket - (long long)(E2 / 2)) < bestE2) {
@@ -543,42 +517,25 @@ namespace Gadgetron {
                         }
                     }
 
-                    ISMRMRD::ImageHeader& im_header = res.headers_(n, s, slc);
-                    ISMRMRD::MetaContainer& meta    = res.meta_[n + s * N + slc * N * S];
+                    mrd::ImageHeader& im_header = res.headers(n, s, slc);
+                    mrd::ImageMeta& meta = res.meta(n, s, slc);
+                    mrd::SamplingDescription& sampling = recon_bit.data.sampling;
 
-                    im_header.version         = acq_header.version;
-                    im_header.data_type       = ISMRMRD::ISMRMRD_CXFLOAT;
                     im_header.measurement_uid = acq_header.measurement_uid;
 
-                    im_header.matrix_size[0] = (uint16_t)RO;
-                    im_header.matrix_size[1] = (uint16_t)E1;
-                    im_header.matrix_size[2] = (uint16_t)E2;
+                    im_header.field_of_view[0] = sampling.recon_fov.x;
+                    im_header.field_of_view[1] = sampling.recon_fov.y;
+                    im_header.field_of_view[2] = sampling.recon_fov.z;
 
-                    im_header.field_of_view[0] = recon_bit.data_.sampling_.recon_FOV_[0];
-                    im_header.field_of_view[1] = recon_bit.data_.sampling_.recon_FOV_[1];
-                    im_header.field_of_view[2] = recon_bit.data_.sampling_.recon_FOV_[2];
+                    im_header.position = acq_header.position;
 
-                    im_header.channels = (uint16_t)CHA;
+                    im_header.col_dir = acq_header.read_dir;
 
-                    im_header.position[0] = acq_header.position[0];
-                    im_header.position[1] = acq_header.position[1];
-                    im_header.position[2] = acq_header.position[2];
+                    im_header.line_dir = acq_header.phase_dir;
 
-                    im_header.read_dir[0] = acq_header.read_dir[0];
-                    im_header.read_dir[1] = acq_header.read_dir[1];
-                    im_header.read_dir[2] = acq_header.read_dir[2];
+                    im_header.slice_dir = acq_header.slice_dir;
 
-                    im_header.phase_dir[0] = acq_header.phase_dir[0];
-                    im_header.phase_dir[1] = acq_header.phase_dir[1];
-                    im_header.phase_dir[2] = acq_header.phase_dir[2];
-
-                    im_header.slice_dir[0] = acq_header.slice_dir[0];
-                    im_header.slice_dir[1] = acq_header.slice_dir[1];
-                    im_header.slice_dir[2] = acq_header.slice_dir[2];
-
-                    im_header.patient_table_position[0] = acq_header.patient_table_position[0];
-                    im_header.patient_table_position[1] = acq_header.patient_table_position[1];
-                    im_header.patient_table_position[2] = acq_header.patient_table_position[2];
+                    im_header.patient_table_position = acq_header.patient_table_position;
 
                     im_header.average    = acq_header.idx.average;
                     im_header.slice      = acq_header.idx.slice;
@@ -589,124 +546,84 @@ namespace Gadgetron {
 
                     im_header.acquisition_time_stamp = acq_header.acquisition_time_stamp;
 
-                    im_header.physiology_time_stamp[0] = acq_header.physiology_time_stamp[0];
-                    im_header.physiology_time_stamp[1] = acq_header.physiology_time_stamp[1];
-                    im_header.physiology_time_stamp[2] = acq_header.physiology_time_stamp[2];
+                    im_header.physiology_time_stamp = acq_header.physiology_time_stamp;
 
-                    im_header.image_type         = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-                    im_header.image_index        = (uint16_t)(n + s * N + slc * N * S);
+                    im_header.image_type         = mrd::ImageType::kMagnitude;
+                    im_header.image_index        = n + s * N + slc * N * S;
                     im_header.image_series_index = 0;
 
-                    memcpy(im_header.user_int, acq_header.user_int, sizeof(int32_t) * ISMRMRD::ISMRMRD_USER_INTS);
-                    memcpy(im_header.user_float, acq_header.user_float, sizeof(float) * ISMRMRD::ISMRMRD_USER_FLOATS);
+                    im_header.user_int = acq_header.user_int;
+                    im_header.user_float = acq_header.user_float;
 
-                    im_header.attribute_string_len = 0;
+                    meta["encoding"] = {(long)e};
 
-                    meta.set("encoding", (long)e);
+                    meta["encoding_FOV"] = {sampling.encoded_fov.x, sampling.encoded_fov.y, sampling.encoded_fov.z};
 
-                    meta.set("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[0]);
-                    meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[1]);
-                    meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[2]);
+                    meta["recon_FOV"] = {sampling.recon_fov.x, sampling.recon_fov.y, sampling.recon_fov.z};
 
-                    meta.set("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[0]);
-                    meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[1]);
-                    meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[2]);
+                    meta["encoded_matrix"] = {(long)sampling.encoded_matrix.x, (long)sampling.encoded_matrix.y, (long)sampling.encoded_matrix.z};
 
-                    meta.set("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[0]);
-                    meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[1]);
-                    meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[2]);
+                    meta["recon_matrix"] = {(long)sampling.recon_matrix.x, (long)sampling.recon_matrix.y, (long)sampling.recon_matrix.z};
 
-                    meta.set("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[0]);
-                    meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[1]);
-                    meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[2]);
+                    meta["sampling_limits_RO"] = {(long)sampling.sampling_limits.kspace_encoding_step_0.minimum, (long)sampling.sampling_limits.kspace_encoding_step_0.center, (long)sampling.sampling_limits.kspace_encoding_step_0.maximum};
 
-                    meta.set("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].min_);
-                    meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].center_);
-                    meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].max_);
+                    meta["sampling_limits_E1"] = {(long)sampling.sampling_limits.kspace_encoding_step_1.minimum, (long)sampling.sampling_limits.kspace_encoding_step_1.center, (long)sampling.sampling_limits.kspace_encoding_step_1.maximum};
 
-                    meta.set("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].min_);
-                    meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].center_);
-                    meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].max_);
+                    meta["sampling_limits_E2"] = {(long)sampling.sampling_limits.kspace_encoding_step_2.minimum, (long)sampling.sampling_limits.kspace_encoding_step_2.center, (long)sampling.sampling_limits.kspace_encoding_step_2.maximum};
 
-                    meta.set("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
-                    meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
-                    meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
+                    meta["PatientPosition"] = {im_header.position[0], im_header.position[1], im_header.position[2]};
 
-                    meta.set("PatientPosition", (double)res.headers_(n, s, slc).position[0]);
-                    meta.append("PatientPosition", (double)res.headers_(n, s, slc).position[1]);
-                    meta.append("PatientPosition", (double)res.headers_(n, s, slc).position[2]);
+                    meta["read_dir"] = {im_header.col_dir[0], im_header.col_dir[1], im_header.col_dir[2]};
 
-                    meta.set("read_dir", (double)res.headers_(n, s, slc).read_dir[0]);
-                    meta.append("read_dir", (double)res.headers_(n, s, slc).read_dir[1]);
-                    meta.append("read_dir", (double)res.headers_(n, s, slc).read_dir[2]);
+                    meta["phase_dir"] = {im_header.line_dir[0], im_header.line_dir[1], im_header.line_dir[2]};
 
-                    meta.set("phase_dir", (double)res.headers_(n, s, slc).phase_dir[0]);
-                    meta.append("phase_dir", (double)res.headers_(n, s, slc).phase_dir[1]);
-                    meta.append("phase_dir", (double)res.headers_(n, s, slc).phase_dir[2]);
+                    meta["slice_dir"] = {im_header.slice_dir[0], im_header.slice_dir[1], im_header.slice_dir[2]};
 
-                    meta.set("slice_dir", (double)res.headers_(n, s, slc).slice_dir[0]);
-                    meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[1]);
-                    meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[2]);
+                    meta["patient_table_position"] = {im_header.patient_table_position[0], im_header.patient_table_position[1], im_header.patient_table_position[2]};
 
-                    meta.set("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[0]);
-                    meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[1]);
-                    meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[2]);
+                    meta["acquisition_time_stamp"] = {(long)im_header.acquisition_time_stamp.value_or(0)};
 
-                    meta.set("acquisition_time_stamp", (long)res.headers_(n, s, slc).acquisition_time_stamp);
+                    std::transform(im_header.physiology_time_stamp.begin(), im_header.physiology_time_stamp.end(), std::back_inserter(meta["physiology_time_stamp"]), [](const auto& i) { return (long)i; });
 
-                    meta.set("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[0]);
-                    meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
-                    meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
+                    meta["acquisition_time_range"] = {(long)min_acq_time, (long)max_acq_time};
 
-                    meta.set("acquisition_time_range", (long)min_acq_time);
-                    meta.append("acquisition_time_range", (long)max_acq_time);
+                    meta["physiology_time_range"] = {(long)min_physio_time[0], (long)max_physio_time[0], (long)min_physio_time[1], (long)max_physio_time[1], (long)min_physio_time[2], (long)max_physio_time[2]};
 
-                    meta.set("physiology_time_range", (long)min_physio_time[0]);
-                    meta.append("physiology_time_range", (long)max_physio_time[0]);
-                    meta.append("physiology_time_range", (long)min_physio_time[1]);
-                    meta.append("physiology_time_range", (long)max_physio_time[1]);
-                    meta.append("physiology_time_range", (long)min_physio_time[2]);
-                    meta.append("physiology_time_range", (long)max_physio_time[2]);
-
-                    size_t ui;
-                    for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_INTS; ui++)
-                    {
-                        std::ostringstream str;
-                        str << "user_int_" << ui;
-                        meta.append(str.str().c_str(), (long)res.headers_(n, s, slc).user_int[ui]);
+                    for (size_t i = 0; i < im_header.user_int.size(); i++) {
+                        std::stringstream str;
+                        str << "user_int_" << i;
+                        meta[str.str()] = {(long)im_header.user_int[i]};
                     }
 
-                    for (ui = 0; ui < ISMRMRD::ISMRMRD_USER_FLOATS; ui++)
-                    {
-                        std::ostringstream str;
-                        str << "user_float_" << ui;
-                        meta.append(str.str().c_str(), (long)res.headers_(n, s, slc).user_float[ui]);
+                    for (size_t i = 0; i < im_header.user_float.size(); i++) {
+                        std::stringstream str;
+                        str << "user_float_" << i;
+                        meta[str.str()] = {im_header.user_float[i]};
                     }
 
-                    meta.set("gadgetron_sha1", GADGETRON_SHA1);
+                    meta["gadgetron_sha1"] = {PINGVIN_SHA1};
 
-                    meta.set("measurementID", this->measurement_id_.c_str());
-                    meta.set("protocolName", this->protocol_name_.c_str());
-                    meta.set("patientID", this->patient_.c_str());
-                    meta.set("studyID", this->study_.c_str());
-                    meta.set("measurementNumber", this->measurement_.c_str());
-                    meta.set("deviceID", this->device_.c_str());
-                    meta.set("patient_position", this->patient_position_.c_str());
+                    meta["measurementID"] = {this->measurement_id_};
+                    meta["protocolName"] = {this->protocol_name_};
+                    meta["patientID"] = {this->patient_};
+                    meta["studyID"] = {this->study_};
+                    meta["measurementNumber"] = {this->measurement_};
+                    meta["deviceID"] = {this->device_};
+                    meta["patient_position"] = {(long)this->patient_position_};
                 }
             }
         }
     }
 
-    void GenericReconGadget::compute_snr_scaling_factor(
-        IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio) {
-
-        size_t RO     = recon_bit.data_.data_.get_size(0);
-        size_t E1     = recon_bit.data_.data_.get_size(1);
-        size_t E2     = recon_bit.data_.data_.get_size(2);
-        size_t dstCHA = recon_bit.data_.data_.get_size(3);
-        size_t N      = recon_bit.data_.data_.get_size(4);
-        size_t S      = recon_bit.data_.data_.get_size(5);
-        size_t SLC    = recon_bit.data_.data_.get_size(6);
+    void GenericReconGadget::compute_snr_scaling_factor(mrd::ReconAssembly& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio)
+    {
+        size_t RO     = recon_bit.data.data.get_size(0);
+        size_t E1     = recon_bit.data.data.get_size(1);
+        size_t E2     = recon_bit.data.data.get_size(2);
+        size_t dstCHA = recon_bit.data.data.get_size(3);
+        size_t N      = recon_bit.data.data.get_size(4);
+        size_t S      = recon_bit.data.data.get_size(5);
+        size_t SLC    = recon_bit.data.data.get_size(6);
 
         effective_acce_factor = 1;
         snr_scaling_ratio     = 1;
@@ -717,7 +634,7 @@ namespace Gadgetron {
             for (n = 0; n < N; n++) {
                 for (e2 = 0; e2 < E2; e2++) {
                     for (e1 = 0; e1 < E1; e1++) {
-                        if (std::abs(recon_bit.data_.data_(RO / 2, e1, e2, 0, n, 0, 0)) > 0) {
+                        if (std::abs(recon_bit.data.data(RO / 2, e1, e2, 0, n, 0, 0)) > 0) {
                             num_readout_lines++;
                         }
                     }
@@ -728,8 +645,8 @@ namespace Gadgetron {
         if (num_readout_lines > 0) {
             float lenRO = RO;
 
-            size_t start_RO = recon_bit.data_.sampling_.sampling_limits_[0].min_;
-            size_t end_RO   = recon_bit.data_.sampling_.sampling_limits_[0].max_;
+            size_t start_RO = recon_bit.data.sampling.sampling_limits.kspace_encoding_step_0.minimum;
+            size_t end_RO   = recon_bit.data.sampling.sampling_limits.kspace_encoding_step_0.maximum;
 
             if ((start_RO < RO) && (end_RO < RO) && (end_RO - start_RO + 1 < RO)) {
                 lenRO = (end_RO - start_RO + 1);
@@ -752,22 +669,10 @@ namespace Gadgetron {
         }
     }
 
-    void GenericReconGadget::send_out_image_array(
-        IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role) {
+    void GenericReconGadget::send_out_image_array(mrd::ImageArray& res, size_t encoding, int series_num, const std::string& data_role)
+    {
         this->prepare_image_array(res, encoding, series_num, data_role);
-        this->next()->putq(new GadgetContainerMessage<IsmrmrdImageArray>(res));
-    }
-
-    void GenericReconGadget::set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in,
-                                                          IsmrmrdImageArray& res) {
-        res.waveform_ = std::vector<ISMRMRD::Waveform>();
-        for (auto w : w_in) {
-            ISMRMRD::WaveformHeader& h = std::get<0>(w);
-            ISMRMRD::Waveform a_w(h.number_of_samples, h.channels);
-            a_w.head = std::get<0>(w);
-            memcpy(a_w.data, std::get<1>(w).begin(), std::get<1>(w).get_number_of_bytes());
-            res.waveform_->push_back(a_w);
-        }
+        this->next()->putq(new GadgetContainerMessage<mrd::ImageArray>(res));
     }
 
     GADGET_FACTORY_DECLARE(GenericReconGadget)

@@ -2,14 +2,14 @@
     \brief Cuda implementation of the non-Cartesian FFT
 
     Reference information on the CUDA/GPU implementation of the NFFT can be found in the papers
-    
+
     Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-    T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
+    T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen.
     IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
-    
+
     Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
     T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
-    IEEE Transactions on Medical Imaging 2009; 28(12):1974-1985. 
+    IEEE Transactions on Medical Imaging 2009; 28(12):1974-1985.
 */
 
 #pragma once
@@ -95,10 +95,10 @@ namespace Gadgetron
         boost::shared_ptr<cuNDArray<complext<REAL>>> compute_deapodization_filter(bool FFTed = false);
 
         // Inverse fourier transformed deapodization filter.
-        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filter; 
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filter;
 
         // Fourier transformed deapodization filter.
-        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT; 
+        boost::shared_ptr<cuNDArray<complext<REAL>>> deapodization_filterFFT;
 
         int device_;
     };
@@ -111,7 +111,7 @@ namespace Gadgetron
     };
 
     template<class REAL, unsigned int D>
-    struct NFFT<cuNDArray,REAL,D> 
+    struct NFFT<cuNDArray,REAL,D>
     {
         static boost::shared_ptr<cuNFFT_plan<REAL,D>> make_plan(
             const vector_td<size_t,D>& matrix_size,

@@ -5,19 +5,19 @@ usage()
 {
   cat << EOF
 
-Builds the gadgetron conda package.
+Builds the pingvin conda package.
 
 Usage: $0
 EOF
 }
 
-output_path="$(dirname "$0")/build_pkg"
+conda_path=$(dirname "$0")
+output_path="${conda_path}/build_pkg"
 
 # Build up channel directives
 channels=(
   nvidia/label/cuda-12.3.0
   ismrmrd
-  gadgetron
   conda-forge
   bioconda
   defaults
@@ -25,6 +25,7 @@ channels=(
 
 channel_directives=$(printf -- "-c %s " "${channels[@]}")
 
+python3 "${conda_path}"/validate_versions.py
+
 mkdir -p "$output_path"
-bash -c "conda config --set solver libmamba"
-bash -c "conda build --no-anaconda-upload --output-folder $output_path $channel_directives $(dirname "$0")"
+bash -c "conda build --no-anaconda-upload --output-folder $output_path $channel_directives ${conda_path}"

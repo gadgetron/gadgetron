@@ -1,29 +1,27 @@
-
-set(image_header_fiels 
-        image_export.h
+set(image_header_files
         morphology.h )
 
-set(image_src_fiels morphology.cpp )
-  
-add_library(gadgetron_toolbox_cpu_image SHARED 
-    ${image_header_fiels} ${image_src_fiels} )
+set(image_src_files morphology.cpp )
 
-set_target_properties(gadgetron_toolbox_cpu_image PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+add_library(pingvin_toolbox_cpu_image SHARED
+    ${image_header_files} ${image_src_files} )
 
-target_link_libraries(gadgetron_toolbox_cpu_image
-    gadgetron_toolbox_log
-    gadgetron_toolbox_cpucore 
-    gadgetron_toolbox_cpucore_math 
+set_target_properties(pingvin_toolbox_cpu_image PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
+
+target_link_libraries(pingvin_toolbox_cpu_image
+    pingvin_toolbox_log
+    pingvin_toolbox_cpucore
+    pingvin_toolbox_cpucore_math
     )
 
-target_include_directories(gadgetron_toolbox_cpu_image
+target_include_directories(pingvin_toolbox_cpu_image
         PUBLIC
-        $<INSTALL_INTERFACE:include/gadgetron>
+        $<INSTALL_INTERFACE:${PINGVIN_INSTALL_INCLUDE_PATH}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         )
 
-install(TARGETS gadgetron_toolbox_cpu_image
-		EXPORT gadgetron-export
+install(TARGETS pingvin_toolbox_cpu_image
+		EXPORT pingvin-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
@@ -32,7 +30,5 @@ install(TARGETS gadgetron_toolbox_cpu_image
 
 
 install(FILES
-  ${image_header_fiels} 
-  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+  ${image_header_files}
+  DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)

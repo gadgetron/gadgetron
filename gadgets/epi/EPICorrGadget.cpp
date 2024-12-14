@@ -7,7 +7,6 @@
 //           - Test the case that more repetitions are sent than the number specified in the xml header.
 
 #include "EPICorrGadget.h"
-#include "ismrmrd/xml.h"
 #include "hoNDArray_fileio.h"
 
 namespace Gadgetron {
@@ -18,9 +17,8 @@ namespace Gadgetron {
 
     EPICorrGadget::~EPICorrGadget() {}
 
-    int EPICorrGadget::process_config(ACE_Message_Block *mb) {
-        ISMRMRD::IsmrmrdHeader h;
-        ISMRMRD::deserialize(mb->rd_ptr(), h);
+    int EPICorrGadget::process_config(const mrd::Header& header) {
+        auto& h = header;
 
         if (h.encoding.size() == 0) {
             GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
@@ -29,13 +27,13 @@ namespace Gadgetron {
         }
 
         // Get the encoding space and trajectory description
-        ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-        ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-        ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-        ISMRMRD::TrajectoryDescription traj_desc;
+        mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+        mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+        mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
+        mrd::TrajectoryDescriptionType traj_desc;
 
-        if (h.encoding[0].trajectoryDescription) {
-            traj_desc = *h.encoding[0].trajectoryDescription;
+        if (h.encoding[0].trajectory_description) {
+            traj_desc = *h.encoding[0].trajectory_description;
         } else {
             GDEBUG("Trajectory description missing");
             return GADGET_FAIL;
@@ -47,8 +45,8 @@ namespace Gadgetron {
         }
 
 
-        for (std::vector<ISMRMRD::UserParameterLong>::iterator i(traj_desc.userParameterLong.begin());
-             i != traj_desc.userParameterLong.end(); ++i) {
+        for (std::vector<mrd::UserParameterLongType>::iterator i(traj_desc.user_parameter_long.begin());
+             i != traj_desc.user_parameter_long.end(); ++i) {
             if (i->name == "numberOfNavigators") {
                 numNavigators_ = i->value;
             } else if (i->name == "etl") {
@@ -79,11 +77,11 @@ namespace Gadgetron {
     }
 
     int EPICorrGadget::process(
-            GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-            GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2) {
+            GadgetContainerMessage<mrd::Acquisition> *m1) {
 
          // Get a reference to the acquisition header
-        ISMRMRD::AcquisitionHeader &hdr = *m1->getObjectPtr();
+        auto& hdr = m1->getObjectPtr()->head;
+        auto& data = m1->getObjectPtr()->data;
 
         // Pass on the non-EPI data (e.g. FLASH Calibration)
         if (hdr.encoding_space_ref > 0) {
@@ -101,42 +99,34 @@ namespace Gadgetron {
         // Make an armadillo matrix of the data
 
         // Check to see if the data is a navigator line or an imaging line
-        if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA)) {
-
-            arma::cx_fmat adata = as_arma_matrix(*m2->getObjectPtr());
+        if (hdr.flags.HasFlags(mrd::AcquisitionFlags::kIsPhasecorrData)) {
+            arma::cx_fmat adata = as_arma_matrix(data);
             process_phase_correction_data(hdr, adata);
             m1->release();
 
         } else {
 
-            unprocessed_data.emplace_back(m1,m2);
+            unprocessed_messages_.emplace_back(m1);
             if (corrComputed_) {
+                for (auto msg : unprocessed_messages_) {
 
+                    arma::cx_fmat adata = as_arma_matrix(msg->getObjectPtr()->data);
 
-                for (auto data : unprocessed_data) {
-
-                    arma::cx_fmat adata = as_arma_matrix(*data.second->getObjectPtr());
-
-                    ISMRMRD::AcquisitionHeader &hdr = *data.first->getObjectPtr();
+                    mrd::AcquisitionHeader &hdr = msg->getObjectPtr()->head;
                     apply_epi_correction(hdr, adata);
-                    if (this->next()->putq(data.first) == -1) {
-                        data.first->release();
+                    if (this->next()->putq(msg) == -1) {
+                        msg->release();
                         GERROR("EPICorrGadget::process, passing data on to next gadget");
                         return -1;
                     }
                 }
-                unprocessed_data.clear();
+                unprocessed_messages_.clear();
             }
-
-
         }
-
-
-
         return 0;
     }
 
-    void EPICorrGadget::apply_epi_correction(ISMRMRD::AcquisitionHeader &hdr, arma::cx_fmat &adata) {// Increment the echo number
+    void EPICorrGadget::apply_epi_correction(mrd::AcquisitionHeader &hdr, arma::cx_fmat &adata) {// Increment the echo number
         epiEchoNumber_ += 1;
 
         if (epiEchoNumber_ == 0) {
@@ -153,13 +143,13 @@ namespace Gadgetron {
 
         // Apply the correction
 // We use the armadillo notation that loops over all the columns
-        if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
+        if (hdr.flags.HasFlags(mrd::AcquisitionFlags::kIsReverse)) {
                 // Negative readout
                 for (int p = 0; p < adata.n_cols; p++) {
                     adata.col(p) %= (pow(corrB0_, epiEchoNumber_ + RefNav_to_Echo0_time_ES_) % corrneg_);
                 }
                 // Now that we have corrected we set the readout direction to positive
-                hdr.clearFlag(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE);
+                hdr.flags.UnsetFlags(mrd::AcquisitionFlags::kIsReverse);
             } else {
                 // Positive readout
                 for (int p = 0; p < adata.n_cols; p++) {
@@ -168,7 +158,7 @@ namespace Gadgetron {
             }
     }
 
-    void EPICorrGadget::process_phase_correction_data(ISMRMRD::AcquisitionHeader &hdr,
+    void EPICorrGadget::process_phase_correction_data(mrd::AcquisitionHeader &hdr,
                                                       arma::cx_fmat &adata) {// Increment the navigator counter
         navNumber_ += 1;
         
@@ -189,10 +179,10 @@ namespace Gadgetron {
             corrB0_.set_size(Nx_);
             corrpos_.set_size(Nx_);
             corrneg_.set_size(Nx_);
-            navdata_.set_size(Nx_, hdr.active_channels, numNavigators_);
+            navdata_.set_size(Nx_, hdr.channel_order.size(), numNavigators_);
             navdata_.zeros();
             // Store the first navigator's polarity
-            startNegative_ = hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE);
+            startNegative_ = hdr.flags.HasFlags(mrd::AcquisitionFlags::kIsReverse);
         }
 
         // Store the navigator data
@@ -211,10 +201,8 @@ namespace Gadgetron {
             std::complex<float> navMean = mean(vectorise(navdata_.slice(referenceNavigatorNumber.value())));
     
             // for clarity, we'll use the following when filtering navigator parameters:
-            size_t set(hdr.idx.set), slc(hdr.idx.slice), exc(0);
+            size_t set(hdr.idx.set.value_or(0)), slc(hdr.idx.slice.value_or(0)), exc(0);
             if (navigatorParameterFilterLength.value() > 1) {
-                set = hdr.idx.set;
-                slc = hdr.idx.slice;
                 // Careful: kspace_encode_step_2 for a navigator is always 0, and at this point we
                 //          don't have access to the kspace_encode_step_2 for the next line.  Instead,
                 //          keep track of the excitation number for this set and slice:
@@ -447,7 +435,7 @@ namespace Gadgetron {
 //    function to initialize the arrays that will be used for the navigator parameters filtering
 //    - e_limits: encoding limits
 
-    void EPICorrGadget::init_arrays_for_nav_parameter_filtering(ISMRMRD::EncodingLimits e_limits) {
+    void EPICorrGadget::init_arrays_for_nav_parameter_filtering(mrd::EncodingLimitsType e_limits) {
         // TO DO: Take into account the acceleration along E2:
 
         E2_ = e_limits.kspace_encoding_step_2 ? e_limits.kspace_encoding_step_2->maximum -

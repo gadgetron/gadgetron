@@ -1,13 +1,4 @@
-if (WIN32)
-    add_definitions(-D__BUILD_GADGETRON_CPUCORE__)
-endif ()
-
-
-set(header_files ../NDArray.h
-                ../complext.h
-                ../GadgetronException.h
-                ../GadgetronTimer.h
-                cpucore_export.h 
+set(header_files
                 hoNDArray.h
                 hoNDArray.hxx
                 hoNDArray_converter.h
@@ -26,7 +17,7 @@ set(header_files ../NDArray.h
                 ho6DArray.h
                 ho6DArray.hxx
                 ho7DArray.h
-                ho7DArray.hxx 
+                ho7DArray.hxx
                 hoMatrix.h
                 hoMatrix.hxx
                 hoNDPoint.h
@@ -37,8 +28,8 @@ set(header_files ../NDArray.h
                 hoNDInterpolatorLinear.hxx
                 hoNDInterpolatorBSpline.hxx )
 
-set(image_files image/hoNDImage.h 
-            image/hoNDImage.hxx 
+set(image_files image/hoNDImage.h
+            image/hoNDImage.hxx
             image/hoNDImageContainer2D.h )
 
 set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx )
@@ -46,15 +37,18 @@ set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx )
 source_group(algorithm FILES ${algorithm_files})
 source_group(image FILES ${image_files})
 
-add_library(gadgetron_toolbox_cpucore SHARED
-                    hoMatrix.cpp 
-                    ${header_files} 
-                    ${image_files}  
-                    ${algorithm_files} )
-
+add_library(pingvin_toolbox_cpucore SHARED
+                hoMatrix.cpp
+                ../NDArray.h
+                ../complext.h
+                ../GadgetronTimer.h
+                ${header_files}
+                ${image_files}
+                ${algorithm_files}
+)
 
 target_include_directories(
-        gadgetron_toolbox_cpucore
+        pingvin_toolbox_cpucore
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/core>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core>
@@ -62,25 +56,22 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/apps/gadgetron>
-    $<INSTALL_INTERFACE:include/gadgetron>
+    $<INSTALL_INTERFACE:${PINGVIN_INSTALL_INCLUDE_PATH}>
 )
 
-set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(pingvin_toolbox_cpucore  PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
 target_link_libraries(
-  gadgetron_toolbox_cpucore
-  gadgetron_toolbox_log
-  ISMRMRD::ISMRMRD
+  pingvin_toolbox_cpucore
+  pingvin_toolbox_log
 	Boost::boost
     Boost::system
     Boost::filesystem
   )
 
-install(TARGETS gadgetron_toolbox_cpucore
-		EXPORT gadgetron-export
+install(TARGETS pingvin_toolbox_cpucore
+		EXPORT pingvin-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
@@ -89,14 +80,8 @@ install(TARGETS gadgetron_toolbox_cpucore
 
 install(FILES
         ${header_files}
-        image/hoNDImage.h 
-        image/hoNDImage.hxx 
-        image/hoNDImageContainer2D.h 
-        algorithm/hoNDBSpline.h
-        algorithm/hoNDBSpline.hxx 
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+        ${image_files}
+        ${algorithm_files}
+        DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(math)
-add_subdirectory(hostutils)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

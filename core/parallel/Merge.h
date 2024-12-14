@@ -23,6 +23,7 @@ namespace Gadgetron::Core::Parallel {
 std::unique_ptr<Gadgetron::Core::Parallel::Merge>                               \
 merge_factory_##MergeClass(                                                     \
         const Gadgetron::Core::Context &context,                                \
+        const std::string& name,                                                \
         const Gadgetron::Core::GadgetProperties &props                          \
 ) {                                                                             \
     return std::make_unique<MergeClass>(context, props);                        \

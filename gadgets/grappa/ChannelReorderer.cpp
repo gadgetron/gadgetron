@@ -9,7 +9,6 @@
 #include "hoNDArray_utils.h"
 
 namespace {
-    using namespace Gadgetron::Core;
 
     template<class T>
     std::vector<T> reorder(std::vector<T> v, const std::vector<uint64_t> &reordering) {
@@ -18,18 +17,11 @@ namespace {
         return reordered;
     }
 
-    ISMRMRD::AcquisitionHeader reorder(const ISMRMRD::AcquisitionHeader &header, const std::vector<uint64_t> &reordering) {
+    mrd::AcquisitionHeader reorder(const mrd::AcquisitionHeader &header, const std::vector<uint64_t> &reordering) {
         auto reordered_header = header;
 
         for (uint16_t out_idx = 0; out_idx < reordering.size(); out_idx++) {
             auto in_idx = uint16_t(reordering[out_idx]);
-
-            if (header.isChannelActive(in_idx)) {
-                reordered_header.setChannelActive(out_idx);
-            }
-            else {
-                reordered_header.setChannelNotActive(out_idx);
-            }
         }
 
         return reordered_header;
@@ -41,18 +33,18 @@ namespace Gadgetron::Grappa
     ChannelReorderer::ChannelReorderer(
             const Gadgetron::Core::Context &context,
             const std::unordered_map<std::string, std::string> &props
-    ) : PureGadget<AnnotatedAcquisition, Acquisition>(context,props),
+    ) : PureGadget<AnnotatedAcquisition, mrd::Acquisition>(context,props),
             context(context),
             channel_labels(build_channel_label_map()),
             uncombined_indices(parse_uncombined_channels()) {}
 
-    AnnotatedAcquisition ChannelReorderer::process_function(Core::Acquisition acquisition) const {
+    AnnotatedAcquisition ChannelReorderer::process_function(mrd::Acquisition acquisition) const {
 
-        auto header     = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
-        auto trajectory = std::get<optional<hoNDArray<float>>>(acquisition);
-        auto data       = std::get<hoNDArray<std::complex<float>>>(acquisition);
+        auto header = acquisition.head;
+        auto trajectory = acquisition.trajectory;
+        auto data = acquisition.data;
 
-        auto reordering = create_reordering(header.active_channels);
+        auto reordering = create_reordering(acquisition.Coils());
 
         auto channels = spans(data, 1);
         auto reordered_channels = reorder(
@@ -60,26 +52,19 @@ namespace Gadgetron::Grappa
                 reordering
         );
 
-        return AnnotatedAcquisition{
-            reorder(header, reordering),
-            trajectory,
-            concat(reordered_channels),
-            ChannelAnnotation{
-                header.active_channels - uncombined_indices.size(),
-                uncombined_indices.size(),
-                std::move(reordering)
-            }
-        };
+        acquisition.head = reorder(header, reordering);
+        acquisition.data = concat(reordered_channels);
+        return AnnotatedAcquisition{acquisition, ChannelAnnotation{acquisition.Coils() - uncombined_indices.size(), uncombined_indices.size(), std::move(reordering)}};
     }
 
     std::map<std::string, size_t> ChannelReorderer::build_channel_label_map() {
 
-        if (!context.header.userParameters) return std::map<std::string, size_t>{};
+        if (!context.header.user_parameters) return std::map<std::string, size_t>{};
 
         std::map<std::string, size_t> labels{};
         std::regex pattern{"COIL_(.*)"}; std::smatch match;
 
-        for (auto &pair : context.header.userParameters->userParameterString) {
+        for (auto &pair : context.header.user_parameters->user_parameter_string) {
             if (std::regex_search(pair.name, match, pattern)) {
                 labels[match[0]] = size_t(std::stoi(pair.value));
             }

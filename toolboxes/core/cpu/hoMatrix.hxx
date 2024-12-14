@@ -2,18 +2,18 @@
 namespace Gadgetron
 {
 
-template <typename T> 
+template <typename T>
 hoMatrix<T>::hoMatrix() : BaseClass(1, 1)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoMatrix<T>::hoMatrix(size_t rows, size_t cols) : BaseClass(rows, cols)
 {
     this->fill(T(0));
 }
 
-template <typename T> 
+template <typename T>
 hoMatrix<T>::hoMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct)
 {
     std::vector<size_t> dim(2);
@@ -23,18 +23,18 @@ hoMatrix<T>::hoMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_des
     GADGET_CHECK_THROW(this->init_accesser());
 }
 
-template <typename T> 
+template <typename T>
 hoMatrix<T>::~hoMatrix()
 {
 
 }
 
-template <typename T> 
+template <typename T>
 hoMatrix<T>::hoMatrix(const hoMatrix<T>& a) : BaseClass(a)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoMatrix<T>& hoMatrix<T>::operator=(const hoMatrix& rhs)
 {
     if ( this == &rhs ) return *this;
@@ -42,47 +42,47 @@ hoMatrix<T>& hoMatrix<T>::operator=(const hoMatrix& rhs)
     return *this;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::createMatrix(size_t rows, size_t cols)
 {
     return this->createArray(rows, cols);
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::createMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct)
 {
     return this->createArray(rows, cols, data, delete_data_on_destruct);
 }
 
-template <typename T> 
+template <typename T>
 inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 {
     GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<dimensions_[0] && c<dimensions_[1]);
     return accesser_[c][r];
 }
 
-template <typename T> 
+template <typename T>
 inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
     GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<dimensions_[0] && c<dimensions_[1]);
     return accesser_[c][r];
 }
 
-template <typename T> 
+template <typename T>
 inline size_t hoMatrix<T>::rows() const
 {
     if ( dimensions_.empty() ) return 0;
     return dimensions_[0];
 }
 
-template <typename T> 
+template <typename T>
 inline size_t hoMatrix<T>::cols() const
 {
     if ( dimensions_.empty() ) return 0;
     return dimensions_[1];
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::upperTri(const T& v)
 {
     try
@@ -104,7 +104,7 @@ bool hoMatrix<T>::upperTri(const T& v)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::lowerTri(const T& v)
 {
     try
@@ -126,7 +126,7 @@ bool hoMatrix<T>::lowerTri(const T& v)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::copyUpperTriToLower()
 {
     try
@@ -150,7 +150,7 @@ bool hoMatrix<T>::copyUpperTriToLower()
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::copyLowerTriToUpper()
 {
     try
@@ -174,7 +174,7 @@ bool hoMatrix<T>::copyLowerTriToUpper()
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::sumOverRow(hoNDArray<T>& res) const
 {
     try
@@ -214,7 +214,7 @@ bool hoMatrix<T>::sumOverRow(hoNDArray<T>& res) const
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::sumOverCol(hoNDArray<T>& res) const
 {
     try
@@ -281,7 +281,7 @@ bool hoMatrix<T>::sumOverCol(hoNDArray<T>& res) const
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC, size_t endC) const
 {
     try
@@ -316,7 +316,7 @@ bool hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::setIdentity()
 {
     try
@@ -343,7 +343,7 @@ bool hoMatrix<T>::setIdentity()
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::normalize()
 {
     try
@@ -376,12 +376,12 @@ bool hoMatrix<T>::normalize()
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::operator == (const Self& m) const
 {
     GADGET_CHECK_RETURN_FALSE(this->dimensions_equal(m));
     for ( size_t i=0; i<elements_; i++ )
-    { 
+    {
         if (std::abs(data_[i]-m.data_[i])>DBL_EPSILON)
         {
             return false;
@@ -390,13 +390,13 @@ bool hoMatrix<T>::operator == (const Self& m) const
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrix<T>::operator != (const Self& m) const
 {
     return !(*this==m);
 }
 
-template <typename T> 
+template <typename T>
 void hoMatrix<T>::print(std::ostream& os) const
 {
     using namespace std;
@@ -404,45 +404,45 @@ void hoMatrix<T>::print(std::ostream& os) const
 
     os << "hoMatrix (row X col): " << this->rows() << " X " << this->cols() << " : " << std::string(typeid(T).name()) << endl;
     size_t r, c;
-    for (r=0; r<dimensions_[0]; r++) 
+    for (r=0; r<dimensions_[0]; r++)
     {
         os << "r " << r << ":\t";
         for (c=0; c<dimensions_[1]; c++)
         {
             os << setprecision(10) << (*this)(r,c) << "\t";
         }
-        os << endl; 
+        os << endl;
     }
 }
 
 // --------------------------------------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 hoMatrixReal<T>::hoMatrixReal() : BaseClass()
 {
 }
 
-template <typename T> 
+template <typename T>
 hoMatrixReal<T>::hoMatrixReal(size_t rows, size_t cols) : BaseClass(rows, cols)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoMatrixReal<T>::hoMatrixReal(size_t rows, size_t cols, T* data, bool delete_data_on_destruct) : BaseClass(rows, cols, delete_data_on_destruct)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoMatrixReal<T>::~hoMatrixReal()
 {
 }
 
-template <typename T> 
+template <typename T>
 hoMatrixReal<T>::hoMatrixReal(const hoMatrixReal<T>& a) : BaseClass(a)
 {
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrixReal<T>::sort_ascending_along_row()
 {
     try
@@ -451,7 +451,7 @@ bool hoMatrixReal<T>::sort_ascending_along_row()
         size_t C = this->cols();
 
         size_t col;
-        for(col=0; col<C; col++) 
+        for(col=0; col<C; col++)
         {
             std::sort(data_+col*R, data_+(col+1)*R);
         }
@@ -464,7 +464,7 @@ bool hoMatrixReal<T>::sort_ascending_along_row()
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool hoMatrixReal<T>::sort_ascending_along_column()
 {
     try
@@ -475,7 +475,7 @@ bool hoMatrixReal<T>::sort_ascending_along_column()
         std::vector<T> buf(C);
 
         size_t col, row;
-        for(row=0; row<R; row++) 
+        for(row=0; row<R; row++)
         {
             for(col=0; col<C; col++)
             {
@@ -500,7 +500,7 @@ bool hoMatrixReal<T>::sort_ascending_along_column()
 
 // --------------------------------------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 bool copyL2U(hoMatrix<T>& A)
 {
     try
@@ -510,7 +510,7 @@ bool copyL2U(hoMatrix<T>& A)
         size_t R = A.rows();
 
         size_t row, col;
-        for(row=0; row<R; row++) 
+        for(row=0; row<R; row++)
         {
             for(col=0; col<row; col++ )
             {
@@ -526,7 +526,7 @@ bool copyL2U(hoMatrix<T>& A)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool copyL2U(hoMatrix<T>& A, bool conj)
 {
     try
@@ -538,7 +538,7 @@ bool copyL2U(hoMatrix<T>& A, bool conj)
 
         if ( conj )
         {
-            for(row=0; row<R; row++) 
+            for(row=0; row<R; row++)
             {
                 for(col=0; col<row; col++ )
                 {
@@ -548,7 +548,7 @@ bool copyL2U(hoMatrix<T>& A, bool conj)
         }
         else
         {
-            for(row=0; row<R; row++) 
+            for(row=0; row<R; row++)
             {
                 for(col=0; col<row; col++ )
                 {
@@ -565,7 +565,7 @@ bool copyL2U(hoMatrix<T>& A, bool conj)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool copyU2L(hoMatrix<T>& A)
 {
     try
@@ -576,7 +576,7 @@ bool copyU2L(hoMatrix<T>& A)
         size_t C = A.cols();
 
         size_t row, col;
-        for(row=0; row<R; row++) 
+        for(row=0; row<R; row++)
         {
             for(col=row+1; col<C; col++ )
             {
@@ -592,7 +592,7 @@ bool copyU2L(hoMatrix<T>& A)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool copyU2L(hoMatrix<T>& A, bool conj)
 {
     try
@@ -606,7 +606,7 @@ bool copyU2L(hoMatrix<T>& A, bool conj)
 
         if ( conj )
         {
-            for(row=0; row<R; row++) 
+            for(row=0; row<R; row++)
             {
                 for(col=row+1; col<C; col++ )
                 {
@@ -616,7 +616,7 @@ bool copyU2L(hoMatrix<T>& A, bool conj)
         }
         else
         {
-            for(row=0; row<R; row++) 
+            for(row=0; row<R; row++)
             {
                 for(col=row+1; col<C; col++ )
                 {
@@ -633,7 +633,7 @@ bool copyU2L(hoMatrix<T>& A, bool conj)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT)
 {
     try
@@ -663,7 +663,7 @@ bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH)
 {
     try
@@ -704,12 +704,12 @@ inline bool conjugatetrans(const hoMatrix<double>& A, hoMatrix<double>& AH)
 }
 
 // C = A*B
-EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB);
-EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB);
-EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB);
-EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB);
+bool GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB);
+bool GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB);
+bool GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB);
+bool GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB);
 
-template<typename T> 
+template<typename T>
 bool GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB)
 {
     try

@@ -5,9 +5,9 @@
 
 using namespace Gadgetron;
 
-template<class REAL> __global__ void 
+template<class REAL> __global__ void
 sample_array_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * __restrict__ out,
-		     unsigned int *idx, 
+		     unsigned int *idx,
 		     unsigned int image_elements,
 		     unsigned int samples,
 		     unsigned int coils )
@@ -21,9 +21,9 @@ sample_array_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * __
   }
 }
 
-template<class REAL> __global__ void 
+template<class REAL> __global__ void
 insert_samples_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * __restrict__ out,
-		       unsigned int *idx, 
+		       unsigned int *idx,
 		       unsigned int image_elements,
 		       unsigned int samples,
 		       unsigned int coils )
@@ -43,7 +43,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
   if (!(in->dimensions_equal(this->get_domain_dimensions())) || !(out->dimensions_equal(this->get_codomain_dimensions())) ) {
     throw std::runtime_error("cuCartesianSenseOperator::mult_M dimensions mismatch");
   }
-  
+
   std::vector<size_t> full_dimensions = this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(full_dimensions);
@@ -56,8 +56,8 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
    }
 
    cuNDFFT<REAL>::instance()->fft(&tmp, &ft_dims);
-   
-  if (!accumulate) 
+
+  if (!accumulate)
     clear(out);
 
   dim3 blockDim(512,1,1);
@@ -76,7 +76,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
 template<class REAL, unsigned int D> void
 cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate)
 {
-  if (!(out->dimensions_equal(this->get_domain_dimensions())) || 
+  if (!(out->dimensions_equal(this->get_domain_dimensions())) ||
       !(in->dimensions_equal(this->get_codomain_dimensions())) ) {
     throw std::runtime_error( "cuCartesianSenseOperator::mult_MH dimensions mismatch");
 
@@ -93,7 +93,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
   insert_samples_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), tmp.get_data_ptr(),
 							idx_->get_data_ptr(),out->get_number_of_elements(),
 							idx_->get_number_of_elements(), this->ncoils_);
-  
+
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
     std::stringstream ss;
@@ -110,9 +110,9 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
 
   cuNDFFT<REAL>::instance()->ifft(&tmp, &ft_dims);
 
-  if (!accumulate) 
+  if (!accumulate)
     clear(out);
-  
+
   this->mult_csm_conj_sum(&tmp,out);
 }
 
@@ -120,13 +120,13 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
 // Instantiations
 //
 
-template class EXPORTGPUPMRI cuCartesianSenseOperator<float,1>;
-template class EXPORTGPUPMRI cuCartesianSenseOperator<float,2>;
-template class EXPORTGPUPMRI cuCartesianSenseOperator<float,3>;
-template class EXPORTGPUPMRI cuCartesianSenseOperator<float,4>;
+template class cuCartesianSenseOperator<float,1>;
+template class cuCartesianSenseOperator<float,2>;
+template class cuCartesianSenseOperator<float,3>;
+template class cuCartesianSenseOperator<float,4>;
 
-template class EXPORTGPUPMRI cuCartesianSenseOperator<double,1>;
-template class EXPORTGPUPMRI cuCartesianSenseOperator<double,2>;
-template class EXPORTGPUPMRI cuCartesianSenseOperator<double,3>;
-template class EXPORTGPUPMRI cuCartesianSenseOperator<double,4>;
+template class cuCartesianSenseOperator<double,1>;
+template class cuCartesianSenseOperator<double,2>;
+template class cuCartesianSenseOperator<double,3>;
+template class cuCartesianSenseOperator<double,4>;
 

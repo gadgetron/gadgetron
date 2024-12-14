@@ -1,26 +1,20 @@
-if (WIN32)
-  add_definitions(-D__BUILD_GADGETRON_GPUGADGET__)
-endif ()
-
-add_library(gadgetron_gpugadget SHARED
+add_library(pingvin_gpugadget SHARED
         cuFFTGadget.h
         cuFFTGadget.cpp)
 
-set_target_properties(gadgetron_gpugadget PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(pingvin_gpugadget PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-target_link_libraries(gadgetron_gpugadget
-        gadgetron_core
-        gadgetron_toolbox_gpu)
+target_link_libraries(pingvin_gpugadget
+        pingvin_core
+        pingvin_toolbox_gpu)
 
 install(FILES
         cuFFTGadget.h
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+        DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(TARGETS gadgetron_gpugadget
+install(TARGETS pingvin_gpugadget
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	COMPONENT main
 )
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

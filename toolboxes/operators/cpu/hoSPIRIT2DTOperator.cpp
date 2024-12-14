@@ -3,20 +3,20 @@
 #include "hoNDFFT.h"
 #include "mri_core_spirit.h"
 
-namespace Gadgetron 
+namespace Gadgetron
 {
 
-template <typename T> 
+template <typename T>
 hoSPIRIT2DTOperator<T>::hoSPIRIT2DTOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoSPIRIT2DTOperator<T>::~hoSPIRIT2DTOperator()
 {
 }
 
-template <typename T> 
+template <typename T>
 void hoSPIRIT2DTOperator<T>::set_forward_kernel(ARRAY_TYPE& forward_kernel, bool compute_adjoint_forward_kernel)
 {
     try
@@ -126,7 +126,7 @@ void hoSPIRIT2DTOperator<T>::mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulat
 {
     try
     {
-        if (accumulate) 
+        if (accumulate)
         {
             kspace_dst_ = *y;
         }
@@ -147,7 +147,7 @@ void hoSPIRIT2DTOperator<T>::mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulat
         // apply kernel and sum
         this->apply_forward_kernel(complexIm_);
 
-        // go back to kspace 
+        // go back to kspace
         this->convert_to_kspace(res_after_apply_kernel_sum_over_, *y);
 
         if(accumulate)
@@ -222,7 +222,7 @@ void hoSPIRIT2DTOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
         // apply adjoint kernel and sum
         this->apply_adjoint_kernel(complexIm_dst_);
 
-        // go back to kspace 
+        // go back to kspace
         this->convert_to_kspace(res_after_apply_kernel_sum_over_dst_, *y);
 
         if (!no_null_space_)
@@ -264,7 +264,7 @@ void hoSPIRIT2DTOperator<T>::compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_T
             // apply kernel and sum
             this->apply_forward_kernel(complexIm_);
 
-            // go back to kspace 
+            // go back to kspace
             this->convert_to_kspace(res_after_apply_kernel_sum_over_, b);
 
             // multiply by -1
@@ -348,7 +348,7 @@ void hoSPIRIT2DTOperator<T>::gradient(ARRAY_TYPE* x, ARRAY_TYPE* g, bool accumul
         // apply kernel and sum
         this->apply_adjoint_forward_kernel(complexIm_);
 
-        // go back to kspace 
+        // go back to kspace
         this->convert_to_kspace(res_after_apply_kernel_sum_over_dst_, *g);
 
         // apply Dc
@@ -478,7 +478,7 @@ void hoSPIRIT2DTOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE&
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoSPIRIT2DTOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoSPIRIT2DTOperator< std::complex<double> >;
+template class hoSPIRIT2DTOperator< std::complex<float> >;
+template class hoSPIRIT2DTOperator< std::complex<double> >;
 
 }

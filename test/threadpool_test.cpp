@@ -6,6 +6,7 @@
 #include "ThreadPool.h"
 
 using namespace Gadgetron::Core;
+
 TEST(ThreadPoolTest,VoidTest){
     ThreadPool pool{4};
     auto return_value = pool.async([](){});

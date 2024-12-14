@@ -1,30 +1,24 @@
 /**
-    \brief  Separates IsmrmrdReconData into separate images and performs FFT
+    \brief  Separates ReconData into separate images and performs FFT
     \test   Tested by: epi_2d.cfg
 */
 
 #pragma once
 #include "Node.h"
-#include "gadgetron_mricore_export.h"
 #include "hoNDArray.h"
 
-#include "mri_core_acquisition_bucket.h"
-#include "mri_core_data.h"
 #include <complex>
-#include <ismrmrd/ismrmrd.h>
-#include <ismrmrd/xml.h>
 #include "hoNDFFT.h"
 
 namespace Gadgetron{
 
-    class FFTGadget : public Core::ChannelGadget<IsmrmrdReconData> {
+    class FFTGadget : public Core::ChannelGadget<mrd::ReconData> {
     public:
         FFTGadget(const Core::Context& context, const Core::GadgetProperties& props);
-        void process(Core::InputChannel<IsmrmrdReconData>& input, Core::OutputChannel& out) override;
+        void process(Core::InputChannel<mrd::ReconData>& input, Core::OutputChannel& out) override;
 
     protected:
-        ISMRMRD::IsmrmrdHeader header;
-        long long image_counter_;      
+        long long image_counter_;
 
     };
 }

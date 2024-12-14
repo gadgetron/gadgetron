@@ -1,9 +1,9 @@
-{% set major = load_file_regex(load_file='CMakeLists.txt', regex_pattern='(?<=set\(GADGETRON_VERSION_MAJOR )([^\)]+)') %}
-{% set minor = load_file_regex(load_file='CMakeLists.txt', regex_pattern='(?<=set\(GADGETRON_VERSION_MINOR )([^\)]+)') %}
-{% set patch = load_file_regex(load_file='CMakeLists.txt', regex_pattern='(?<=set\(GADGETRON_VERSION_PATCH )([^\)]+)') %}
+{% set major = load_file_regex(load_file='CMakeLists.txt', regex_pattern='(?<=set\(PINGVIN_VERSION_MAJOR )([^\)]+)') %}
+{% set minor = load_file_regex(load_file='CMakeLists.txt', regex_pattern='(?<=set\(PINGVIN_VERSION_MINOR )([^\)]+)') %}
+{% set patch = load_file_regex(load_file='CMakeLists.txt', regex_pattern='(?<=set\(PINGVIN_VERSION_PATCH )([^\)]+)') %}
 
 package:
-  name: gadgetron
+  name: pingvin
   version: {{ major.group(1) }}.{{ minor.group(1) }}.{{ patch.group(1) }}
 
 source:
@@ -16,71 +16,74 @@ requirements:
     - cmake=3.25.1
     - cuda-libraries-dev=12.3.0                  # [linux64]
     - cuda-libraries=12.3.0                      # [linux64]
-    - cuda-runtime=12.3.0                        # [linux64]
     - cuda-nvcc=12.3.52                          # [linux64]
-    - dcmtk=3.6.1
+    - cuda-runtime=12.3.0                        # [linux64]
     - fftw=3.3.9
     - gcc_linux-64=9.4.0                         # [linux64]
-    - gadgetron-python>=1.4.1
     - gmock=1.14.0
     - gxx_linux-64=9.4.0                         # [linux64]
     - gtest=1.14.0
     - h5py=3.7.0
     - hdf5=1.10.6
     - howardhinnant_date=3.0.1
-    - ismrmrd=1.14.1
+    - imagemagick=7.0.11_13                   # dev
+    - ismrmrd=1.14.2
     - ismrmrd-python=1.14.0
+    - just=1.31.0                             # dev
     - libblas=*=*mkl
     - libcurl=7.86.0
     - libxml2=2.9.14
     - mkl>=2024.1.0
     - mkl-include>=2024.1.0
-    - mrd-storage-server=0.0.12
     - ninja=1.12.1
     - nlohmann_json=3.11.3
     - numpy=1.26.4
     - packaging=24.0
     - pugixml=1.12.1
     - pyfftw=0.13.1
+    - pytest=8.3.3                            # dev
     - pyyaml=6.0.1
     - python=3.10
-    - range-v3>=0.11.0
+    - range-v3=0.12.0
     - sysroot_linux-64=2.12
+    - xtensor=0.24.2
   run:
     - armadillo=12.8.4
     - boost=1.80.0
     - cuda-libraries=12.3.0                      # [linux64]
     - cuda-runtime=12.3.0                        # [linux64]
-    - dcmtk=3.6.1
     - fftw=3.3.9
-    - gadgetron-python>=1.4.1
     - h5py=3.7.0
     - hdf5=1.10.6
-    - ismrmrd=1.14.1
+    - ismrmrd=1.14.2
     - ismrmrd-python=1.14.0
     - jq=1.7.1
     - libblas=*=*mkl
     - libcurl=7.86.0
     - libxml2=2.9.14
     - mkl>=2024.1.0
-    - mrd-storage-server=0.0.12
+    - mrd-python=2.1.1
     - numpy=1.26.4
     - onnxruntime=1.18.1
     - pugixml=1.12.1
     - pyfftw=0.13.1
     - python=3.10
+    - pyyaml=6.0.1
     - scipy=1.13.1
     - sysroot_linux-64=2.12                     # [linux64]
+    - xtensor=0.24.2
 
 test:
+  source_files:
+    - test/e2e
   requires:
-    - siemens_to_ismrmrd=1.2.12
+    - pytest=8.3.3
 
 about:
-  home: https://github.com/gadgetron/gadgetron
-  summary: 'Gadgetron Image Reconstruction Framework'
+  home: https://github.com/gadgetron/pingvin
+  summary: 'Streaming Image Reconstruction Framework'
   description: |
-    Gadgetron reconstruction server with support libraries and example pipelines.
-  dev_url: https://github.com/gadgetron/gadgetron
-  doc_url: https://github.com/gadgetron/gadgetron
-  doc_source_url: https://github.com/gadgetron/gadgetron/blob/master/README.md
+    Pingvin reconstruction engine with support libraries and example pipelines.
+  dev_url: https://github.com/gadgetron/pingvin
+  doc_url: https://github.com/gadgetron/pingvin
+  doc_source_url: https://github.com/gadgetron/pingvin/blob/master/README.md

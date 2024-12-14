@@ -41,7 +41,7 @@ void initialize_python(void)
     }
 }
 
-void  initialize_numpy(void)
+void initialize_numpy(void)
 {
     // lock here so only one thread can initialize NumPy
     boost::mutex::scoped_lock lock(numpy_initialize_mtx);
@@ -82,23 +82,21 @@ void add_python_path(const std::string& path)
 
 }
 
+
 /// Adapted from http://stackoverflow.com/a/6576177/1689220
 std::string pyerr_to_string(void)
 {
     PyObject *exc, *val, *tb;
     bp::object formatted_list, formatted;
     PyErr_Fetch(&exc, &val, &tb);
+    PyErr_NormalizeException(&exc, &val, &tb);
+
     // wrap exception, value, traceback with bp::handle for auto memory management
     bp::handle<> hexc(exc), hval(bp::allow_null(val)), htb(bp::allow_null(tb));
-    // import "traceback" module
+
     bp::object traceback(bp::import("traceback"));
-    if (!tb) {
-        bp::object format_exception_only(traceback.attr("format_exception_only"));
-        formatted_list = format_exception_only(hexc, hval);
-    } else {
-        bp::object format_exception(traceback.attr("format_exception"));
-        formatted_list = format_exception(hexc, hval, htb);
-    }
+    bp::object format_exception(traceback.attr("format_exception"));
+    formatted_list = format_exception(hexc, hval, htb);
     formatted = bp::str("").join(formatted_list);
     return bp::extract<std::string>(formatted);
 }
@@ -129,6 +127,7 @@ npy_intp* NumPyArray_STRIDES(PyObject* obj)
 PyObject* NumPyArray_FromAny(PyObject* op, PyArray_Descr* dtype, int min_depth, int max_depth, int requirements, PyObject* context){
   return PyArray_FromAny(op, dtype, min_depth, max_depth, requirements, context);
 }
+
 /// Wraps PyArray_ITEMSIZE
 int NumPyArray_ITEMSIZE(PyObject* obj)
 {
@@ -146,15 +145,10 @@ PyObject* NumPyArray_SimpleNew(int nd, npy_intp* dims, int typenum)
     return PyArray_SimpleNew(nd, dims, typenum);
 }
 
-
 /// Wraps PyArray_SimpleNew
 PyObject* NumPyArray_EMPTY(int nd, npy_intp* dims, int typenum, int fortran)
 {
     return PyArray_EMPTY(nd, dims, typenum,fortran);
 }
 
-}
-
-bool boost::python::hasattr(object o, const char* name) {
-    return PyObject_HasAttrString(o.ptr(), name);
-}
+} // namespace Gadgetron

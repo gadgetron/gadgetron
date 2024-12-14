@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Types.h"
 #include <condition_variable>
 #include <list>
 #include <mutex>
+#include <optional>
 
 namespace Gadgetron::Core {
 
@@ -16,7 +16,7 @@ namespace Gadgetron::Core {
         template <class... ARGS> void emplace(ARGS&&... args);
 
         T pop();
-        optional<T> try_pop();
+        std::optional<T> try_pop();
 
         void close();
 
@@ -50,10 +50,10 @@ namespace Gadgetron::Core {
         return pop_impl(std::move(lock));
     }
 
-    template <class T> optional<T> MPMCChannel<T>::try_pop() {
+    template <class T> std::optional<T> MPMCChannel<T>::try_pop() {
         std::unique_lock<std::mutex> lock(m);
         if (queue.empty()) {
-            return none;
+            return std::nullopt;
         }
         return pop_impl(std::move(lock));
     }

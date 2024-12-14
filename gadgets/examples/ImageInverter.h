@@ -1,12 +1,11 @@
 #pragma once
 
 #include "PureGadget.h"
-#include "Types.h"
 
 namespace Gadgetron::Examples {
-    class ImageInverter : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
+    class ImageInverter : public Core::PureGadget<mrd::AnyImage, mrd::AnyImage> {
     public:
-      using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
-        Core::AnyImage process_function(Core::AnyImage image) const override;
+      using Core::PureGadget<mrd::AnyImage, mrd::AnyImage>::PureGadget;
+        mrd::AnyImage process_function(mrd::AnyImage image) const override;
     };
 }

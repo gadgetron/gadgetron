@@ -1,7 +1,6 @@
 // This file is not to be included by anyone else than hoNDArray.h
 // Contains the "private" implementation of the container
 //
-#include "Types.hpp"
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
 #include <cstring>
@@ -584,11 +583,11 @@ namespace Gadgetron {
     void hoNDArray<T>::get_sub_array(
             const std::vector<size_t> &start, std::vector<size_t> &size, hoNDArray<T> &out) const {
         if (start.size() != size.size()) {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray<>::get_sub_array failed"));
+            BOOST_THROW_EXCEPTION(std::runtime_error("hoNDArray<>::get_sub_array failed"));
         }
 
         if (start.size() != dimensions_.size()) {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray<>::get_sub_array failed"));
+            BOOST_THROW_EXCEPTION(std::runtime_error("hoNDArray<>::get_sub_array failed"));
         }
 
         out.create(&size);
@@ -604,7 +603,7 @@ namespace Gadgetron {
         for (ii = 0; ii < start.size(); ii++) {
             end[ii] = start[ii] + size[ii] - 1;
             if (end[ii] >= dimensions_[ii]) {
-                BOOST_THROW_EXCEPTION(runtime_error("hoNDArray<>::get_sub_array failed"));
+                BOOST_THROW_EXCEPTION(std::runtime_error("hoNDArray<>::get_sub_array failed"));
             }
         }
 
@@ -696,7 +695,7 @@ namespace Gadgetron {
                 this->_allocate_memory(this->elements_, &this->data_);
 
                 if (this->data_ == 0x0) {
-                    BOOST_THROW_EXCEPTION(bad_alloc("hoNDArray<>::allocate memory failed"));
+                    BOOST_THROW_EXCEPTION(std::runtime_error("hoNDArray<>::allocate memory failed"));
                 }
 
                 this->delete_data_on_destruct_ = true;
@@ -718,55 +717,6 @@ namespace Gadgetron {
             this->_deallocate_memory(this->data_);
             this->data_ = 0x0;
         }
-    }
-
-
-    template<typename T>
-
-    bool hoNDArray<T>::serialize(char *&buf, size_t &len) const {
-        if (!Gadgetron::Core::is_trivially_copyable_v<T> ) throw std::runtime_error("Serialize only works for trivial types");
-
-        if (buf != NULL)
-            delete[] buf;
-
-        size_t NDim = dimensions_.size();
-
-        // number of dimensions + dimension vector + contents
-        len = sizeof(size_t) + sizeof(size_t) * NDim + sizeof(T) * elements_;
-
-        buf = new char[len];
-
-
-        memcpy(buf, &NDim, sizeof(size_t));
-        if (NDim > 0) {
-            memcpy(buf + sizeof(size_t), &(dimensions_[0]), sizeof(size_t) * NDim);
-            memcpy(buf + sizeof(size_t) + sizeof(size_t) * NDim, this->data_, sizeof(T) * elements_);
-        }
-
-        return true; // Temporary. Should not be a boolean function.
-    }
-
-    template<typename T>
-    bool hoNDArray<T>::deserialize(char *buf, size_t &len) {
-        if (!Gadgetron::Core::is_trivially_copyable_v<T> ) throw std::runtime_error("deserialize only works for trivial types");
-        size_t NDim;
-        memcpy(&NDim, buf, sizeof(size_t));
-
-        if (NDim > 0) {
-            std::vector<size_t> dimensions(NDim);
-            memcpy(&dimensions[0], buf + sizeof(size_t), sizeof(size_t) * NDim);
-
-            // allocate memory
-            this->create(dimensions);
-
-            // copy the content
-            memcpy(this->data_, buf + sizeof(size_t) + sizeof(size_t) * NDim, sizeof(T) * elements_);
-        } else {
-            this->clear();
-        }
-
-        len = sizeof(size_t) + sizeof(size_t) * NDim + sizeof(T) * elements_;
-        return true; // Temporary. Should not be a boolean function.
     }
 
     template<typename T>
@@ -1051,7 +1001,7 @@ namespace Gadgetron {
         auto strides = hondarray_detail::calculate_strides(*this, indices...);
         auto dims = hondarray_detail::calculate_dimensions(*this, indices...);
 
-        T *offset = Core::apply([this](auto &&... indices) -> T * { return &this->operator()(indices...); },
+        T *offset = std::apply([this](auto &&... indices) -> T * { return &this->operator()(indices...); },
                                 std::make_tuple(hondarray_detail::slice_start_index(indices)...));
 
         return hoNDArrayView<T, dims.size(), gadgetron_detail::is_contiguous_index<INDICES...>::value>{strides, dims,
@@ -1066,7 +1016,7 @@ namespace Gadgetron {
         auto strides = hondarray_detail::calculate_strides(*this, indices...);
         auto dims = hondarray_detail::calculate_dimensions(*this, indices...);
 
-        const T *offset = Core::apply([this](auto &&... indices) -> const T * { return &this->operator()(indices...); },
+        const T *offset = std::apply([this](auto &&... indices) -> const T * { return &this->operator()(indices...); },
                                       std::make_tuple(hondarray_detail::slice_start_index(indices)...));
 
         return hoNDArrayView<T, dims.size(), gadgetron_detail::is_contiguous_index<INDICES...>::value>{strides, dims,
@@ -1133,7 +1083,7 @@ namespace Gadgetron {
 
     template<class T, size_t D, bool C>
     template<class... INDICES>
-    std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES, size_t>...> && (sizeof...(INDICES) == D), T &>
+    std::enable_if_t<std::conjunction_v<std::is_convertible<INDICES, size_t>...> && (sizeof...(INDICES) == D), T &>
     hoNDArrayView<T, D, C>::operator()(INDICES... indices) {
         auto index_vector = make_vector_td<size_t>(indices...);
         size_t offset = sum(index_vector * this->strides);
@@ -1142,7 +1092,7 @@ namespace Gadgetron {
 
     template<class T, size_t D, bool C>
     template<class... INDICES>
-    std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES, size_t>...> && (sizeof...(INDICES) == D), const T &>
+    std::enable_if_t<std::conjunction_v<std::is_convertible<INDICES, size_t>...> && (sizeof...(INDICES) == D), const T &>
     hoNDArrayView<T, D, C>::operator()(INDICES... indices) const {
         auto index_vector = make_vector_td<size_t>(indices...);
         size_t offset = sum(index_vector * this->strides);

@@ -578,10 +578,10 @@ void hoWavelet1DREALOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accu
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoWavelet1DREALOperator< float >;
-template class EXPORTCPUOPERATOR hoWavelet1DREALOperator< double >;
+template class hoWavelet1DREALOperator< float >;
+template class hoWavelet1DREALOperator< double >;
 
-template class EXPORTCPUOPERATOR hoWavelet1DOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoWavelet1DOperator< std::complex<double> >;
+template class hoWavelet1DOperator< std::complex<float> >;
+template class hoWavelet1DOperator< std::complex<double> >;
 
 }

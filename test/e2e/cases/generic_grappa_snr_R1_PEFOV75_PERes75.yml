@@ -1,0 +1,19 @@
+dependency:
+  data: generic/meas_MID00394_FID114596_R1_PEFOV75_PERes75/meas_MID00394_FID114596_R1_PEFOV75_PERes75_meas1.mrd
+  checksum: d43bf8c9efa72ffe5fdaa911f6cafb4f
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: generic/meas_MID00394_FID114596_R1_PEFOV75_PERes75/meas_MID00394_FID114596_R1_PEFOV75_PERes75_meas2.mrd
+  checksum: 64c38da334dc8e6eae0dee8648bd3afe
+  run:
+  - args: --config Generic_Cartesian_Grappa_SNR.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: generic/meas_MID00394_FID114596_R1_PEFOV75_PERes75/ref_20160401_Generic_Cartesian_Grappa_SNR.xml.mrd
+  checksum: 27bf23e391b2885437b8f7a8518e26fa
+  tests:
+  - image_series: 300
+requirements:
+  system_memory: 4096
+tags:
+- fast
+- generic

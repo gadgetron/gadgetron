@@ -53,14 +53,6 @@ namespace Gadgetron
                         output(slc, phs).header_ = input(slc, phs).header_;
                         output(slc, phs).attrib_ = input(slc, phs).attrib_;
                     }
-
-                    output(slc, phs).header_.matrix_size[0] = dim_out[0];
-                    if (D > 1) output(slc, phs).header_.matrix_size[1] = dim_out[1];
-
-                    if (D > 2)
-                    {
-                        output(slc, phs).header_.matrix_size[2] = dim_out[2];
-                    }
                 }
             }
         }
@@ -70,17 +62,17 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<float, 2> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<double, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<float, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<double, 2> > & output);
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<float, 3> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<double, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<float, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<double, 3> > & output);
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & output);
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & input, const std::vector<size_t>& dim_out, hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & output);
 
     // -------------------------------------------------------------------------
 
@@ -131,14 +123,6 @@ namespace Gadgetron
 
                     output(slc, phs).header_ = input(slc, phs).header_;
                     output(slc, phs).attrib_ = input(slc, phs).attrib_;
-
-                    output(slc, phs).header_.matrix_size[0] = dim_out[0];
-                    if (D > 1) output(slc, phs).header_.matrix_size[1] = dim_out[1];
-
-                    if (D > 2)
-                    {
-                        output(slc, phs).header_.matrix_size[2] = dim_out[2];
-                    }
                 }
             }
         }
@@ -148,17 +132,17 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<float, 2> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<double, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<float, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<double, 2> > & output);
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<float, 3> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<double, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<float, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<float, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<double, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<double, 3> > & output);
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & output);
 
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & output);
-    template EXPORTCMR void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & output);
+    template void resample_image_container(const hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & input, double scale_ratio, hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & output);
 
     // -------------------------------------------------------------------------
 
@@ -197,10 +181,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void convert_4D_array_to_container(const hoNDArray<float>& input, hoNDImageContainer2D < hoMRImage<float, 2> > & output);
-    template EXPORTCMR void convert_4D_array_to_container(const hoNDArray<double>& input, hoNDImageContainer2D < hoMRImage<double, 2> > & output);
-    template EXPORTCMR void convert_4D_array_to_container(const hoNDArray<std::complex<float> >& input, hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & output);
-    template EXPORTCMR void convert_4D_array_to_container(const hoNDArray<std::complex<double> >& input, hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & output);
+    template void convert_4D_array_to_container(const hoNDArray<float>& input, hoNDImageContainer2D < hoMRImage<float, 2> > & output);
+    template void convert_4D_array_to_container(const hoNDArray<double>& input, hoNDImageContainer2D < hoMRImage<double, 2> > & output);
+    template void convert_4D_array_to_container(const hoNDArray<std::complex<float> >& input, hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & output);
+    template void convert_4D_array_to_container(const hoNDArray<std::complex<double> >& input, hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & output);
 
     // -------------------------------------------------------------------------
 
@@ -236,10 +220,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<float, 2> > & input, hoNDArray<float>& output);
-    template EXPORTCMR void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<double, 2> > & input, hoNDArray<double>& output);
-    template EXPORTCMR void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & input, hoNDArray<std::complex<float> >& output);
-    template EXPORTCMR void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & input, hoNDArray<std::complex<double> >& output);
+    template void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<float, 2> > & input, hoNDArray<float>& output);
+    template void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<double, 2> > & input, hoNDArray<double>& output);
+    template void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & input, hoNDArray<std::complex<float> >& output);
+    template void convert_container_to_4D_array(const hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & input, hoNDArray<std::complex<double> >& output);
 
     // -------------------------------------------------------------------------
 
@@ -267,10 +251,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void sort_4D_array(const hoNDArray<float>& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<float>& output);
-    template EXPORTCMR void sort_4D_array(const hoNDArray<double>& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<double>& output);
-    template EXPORTCMR void sort_4D_array(const hoNDArray<std::complex<float> >& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<std::complex<float> >& output);
-    template EXPORTCMR void sort_4D_array(const hoNDArray<std::complex<double> >& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<std::complex<double> >& output);
+    template void sort_4D_array(const hoNDArray<float>& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<float>& output);
+    template void sort_4D_array(const hoNDArray<double>& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<double>& output);
+    template void sort_4D_array(const hoNDArray<std::complex<float> >& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<std::complex<float> >& output);
+    template void sort_4D_array(const hoNDArray<std::complex<double> >& input, const std::vector<size_t> basal_to_apex_slices, hoNDArray<std::complex<double> >& output);
 
     // -------------------------------------------------------------------------
 
@@ -299,93 +283,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTCMR void sort_image_container(const hoNDImageContainer2D < hoMRImage<float, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<float, 2> > & output);
-    template EXPORTCMR void sort_image_container(const hoNDImageContainer2D < hoMRImage<double, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<double, 2> > & output);
-    template EXPORTCMR void sort_image_container(const hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & output);
-    template EXPORTCMR void sort_image_container(const hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & output);
-
-    // -------------------------------------------------------------------------
-
-    template <typename ImageType>
-    void serialize_contrainer_meta_attributes(hoNDImageContainer2D<ImageType>& input, std::vector<std::vector<std::string> >& attribs)
-    {
-        try
-        {
-            std::vector<size_t> cols = input.cols();
-
-            size_t R = cols.size();
-            attribs.resize(R);
-
-            size_t r, c;
-
-            for (r = 0; r < R; r++)
-            {
-                for (c = 0; c < cols[r]; c++)
-                {
-                    std::stringstream xml_ss;
-                    ISMRMRD::serialize(input(r, c).attrib_, xml_ss);
-                    std::string xml_str = xml_ss.str();
-
-                    attribs[r].push_back(xml_str);
-                }
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Exceptions happened in serialize_contrainer_meta_attributes(...) ...");
-        }
-    }
-
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<float, 2> >& input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<double, 2> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<short, 2> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<unsigned short, 2> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<std::complex<float>, 2> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<std::complex<double>, 2> > & input, std::vector<std::vector<std::string> >& attribs);
-
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<float, 3> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<double, 3> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<short, 3> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<unsigned short, 3> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<std::complex<float>, 3> > & input, std::vector<std::vector<std::string> >& attribs);
-    template EXPORTCMR void serialize_contrainer_meta_attributes(hoNDImageContainer2D<hoMRImage<std::complex<double>, 3> > & input, std::vector<std::vector<std::string> >& attribs);
-
-    // -------------------------------------------------------------------------
-
-    void write_contrainer_meta_attributes(const std::vector<std::vector<std::string> >& attribs, const std::string& prefix)
-    {
-        try
-        {
-            size_t R = attribs.size();
-
-            size_t r, c;
-
-            for (r = 0; r < R; r++)
-            {
-                for (c = 0; c < attribs[r].size(); c++)
-                {
-                    std::stringstream filename;
-                    filename << prefix << "_row_" << r << "_col_" << c << ".attrib";
-
-                    std::string xml_str = attribs[r][c];
-                    uint32_t xml_length = static_cast<uint32_t>(xml_str.size());
-
-                    std::ofstream outfile;
-                    outfile.open(filename.str().c_str(), std::ios::out | std::ios::binary);
-
-                    if (outfile.good())
-                    {
-                        outfile.write(xml_str.c_str(), xml_length);
-                        outfile.close();
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Exceptions happened in write_contrainer_meta_attributes(...) ...");
-        }
-    }
+    template void sort_image_container(const hoNDImageContainer2D < hoMRImage<float, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<float, 2> > & output);
+    template void sort_image_container(const hoNDImageContainer2D < hoMRImage<double, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<double, 2> > & output);
+    template void sort_image_container(const hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<std::complex<float>, 2> > & output);
+    template void sort_image_container(const hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & input, const std::vector<size_t> basal_to_apex_slices, hoNDImageContainer2D < hoMRImage<std::complex<double>, 2> > & output);
 
     // -------------------------------------------------------------------------
 }

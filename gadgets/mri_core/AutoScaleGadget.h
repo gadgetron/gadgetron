@@ -6,15 +6,14 @@
 #pragma once
 
 #include "PureGadget.h"
-#include "Types.h"
 #include "hoNDArray_math.h"
 #include <algorithm>
 
 namespace Gadgetron{
-    class AutoScaleGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
+    class AutoScaleGadget : public Core::PureGadget<mrd::AnyImage, mrd::AnyImage> {
     public:
-        using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
-        Core::AnyImage process_function(Core::AnyImage image) const override;
+        using Core::PureGadget<mrd::AnyImage, mrd::AnyImage>::PureGadget;
+        mrd::AnyImage process_function(mrd::AnyImage image) const override;
     protected:
         NODE_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
         NODE_PROPERTY(histogram_bins, unsigned int, "Number of Histogram Bins", 100);

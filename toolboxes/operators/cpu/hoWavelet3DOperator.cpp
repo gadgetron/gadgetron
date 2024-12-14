@@ -281,7 +281,7 @@ void hoWavelet3DOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoWavelet3DOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoWavelet3DOperator< std::complex<double> >;
+template class hoWavelet3DOperator< std::complex<float> >;
+template class hoWavelet3DOperator< std::complex<double> >;
 
 }

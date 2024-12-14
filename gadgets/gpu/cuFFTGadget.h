@@ -2,7 +2,6 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 #include <boost/make_shared.hpp>
@@ -11,11 +10,11 @@
 namespace Gadgetron{
 
   class cuFFTGadget :
-    public Core::ChannelGadget<Core::Image<std::complex<float>>>
+    public Core::ChannelGadget<mrd::Image<std::complex<float>>>
     {
     public:
-      using Core::ChannelGadget<Core::Image<std::complex<float>>>::ChannelGadget;
+      using Core::ChannelGadget<mrd::Image<std::complex<float>>>::ChannelGadget;
       ~cuFFTGadget() override = default;
-      void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
+      void process(Core::InputChannel<mrd::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
   };
 }

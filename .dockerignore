@@ -6,15 +6,18 @@
 !apps/
 !cmake/
 !core/
+!doc/
 !docker/
 !gadgets/
+!justfile
+!libmrd/
 !test/
 !toolboxes/
 !environment.yml
-!chroot/
-!doc/
+!.devcontainer/devcontainer.bashrc
 
 # but also ignore:
 test/integration/data/
+test/e2e/data/
 *.Dockerfile
 docker/integration-test-image.sh

@@ -16,10 +16,10 @@
 #include "hoGdSolver.h"
 #include <boost/make_shared.hpp>
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-    template <typename T> 
-    void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray<T>& kerIm, 
+    template <typename T>
+    void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray<T>& kerIm,
                                 const Gadgetron::hoNDArray<T>& kspaceInitial, Gadgetron::hoNDArray<T>& res, size_t iter_max, double iter_thres, bool print_iter)
     {
         try
@@ -173,12 +173,12 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCMR void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray< std::complex<float> >& kerIm, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res, size_t iter_max, double iter_thres, bool print_iter);
-    template EXPORTCMR void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray< std::complex<double> >& kerIm, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res, size_t iter_max, double iter_thres, bool print_iter);
+    template void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray< std::complex<float> >& kerIm, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res, size_t iter_max, double iter_thres, bool print_iter);
+    template void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray< std::complex<double> >& kerIm, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res, size_t iter_max, double iter_thres, bool print_iter);
 
     // ---------------------------------------------------------------------
 
-    template <typename T> 
+    template <typename T>
     class sCB : public hoGdSolverCallBack< hoNDArray< T >, hoWavelet2DTOperator< T > >
     {
     public:
@@ -195,10 +195,10 @@ namespace Gadgetron {
         }
     };
 
-    template <typename T> 
-    void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, const Gadgetron::hoNDArray<T>& kerIm, 
-                                            const Gadgetron::hoNDArray<T>& coil_map, const Gadgetron::hoNDArray<T>& kspaceLinear, Gadgetron::hoNDArray<T>& res, 
-                                            size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio, 
+    template <typename T>
+    void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, const Gadgetron::hoNDArray<T>& kerIm,
+                                            const Gadgetron::hoNDArray<T>& coil_map, const Gadgetron::hoNDArray<T>& kspaceLinear, Gadgetron::hoNDArray<T>& res,
+                                            size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio,
                                             bool reg_use_coil_sen_map, bool reg_with_approx_coeff, const std::string& wav_name, bool print_iter)
     {
         size_t RO = kspace.get_size(0);
@@ -372,13 +372,13 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCMR void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, const Gadgetron::hoNDArray< std::complex<float> >& kerIm, 
-        const Gadgetron::hoNDArray< std::complex<float> >& coilMap, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res, 
-        size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio, 
+    template void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, const Gadgetron::hoNDArray< std::complex<float> >& kerIm,
+        const Gadgetron::hoNDArray< std::complex<float> >& coilMap, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res,
+        size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio,
         bool reg_use_coil_sen_map, bool reg_with_approx_coeff, const std::string& wav_name, bool print_iter);
 
-    template EXPORTCMR void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, const Gadgetron::hoNDArray< std::complex<double> >& kerIm, 
-        const Gadgetron::hoNDArray< std::complex<double> >& coilMap, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res, 
-        size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio, 
+    template void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, const Gadgetron::hoNDArray< std::complex<double> >& kerIm,
+        const Gadgetron::hoNDArray< std::complex<double> >& coilMap, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res,
+        size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio,
         bool reg_use_coil_sen_map, bool reg_with_approx_coeff, const std::string& wav_name, bool print_iter);
 }

@@ -1,7 +1,7 @@
 /** \file       hoMRImage.h
     \brief      N-dimensional image class for gadgetron MRI
 
-                This image class is derived from the hoMRImage and attached with ISMRMRD header and attributes
+                This image class is derived from the hoMRImage and attached with MRD header and attributes
                 The purpose of this class is to provide an easy-to-use image class for MR recon and image processing
 
     \author     Hui Xue
@@ -9,11 +9,9 @@
 
 #pragma once
 
-#include "mri_image_export.h"
 #include "hoNDImage.h"
-#include "ismrmrd/ismrmrd.h"
-#include "ismrmrd/meta.h"
 #include "io/primitives.h"
+#include "mrd/types.h"
 
 namespace Gadgetron
 {
@@ -84,7 +82,7 @@ namespace Gadgetron
 
         /// create the image from another image
         /// not copy its content
-        template<typename T2> 
+        template<typename T2>
         void createFrom(const hoMRImage<T2, D>& im)
         {
             BaseClass::createFrom(im);
@@ -95,7 +93,7 @@ namespace Gadgetron
 
         /// create the image from another image
         /// copy its content
-        template<typename T2> 
+        template<typename T2>
         void create(const hoMRImage<T2, D>& im)
         {
             this->createFrom(im);
@@ -108,19 +106,19 @@ namespace Gadgetron
             }
         }
 
-        template<typename T2> 
+        template<typename T2>
         inline void copyImageInfo(const hoMRImage<T2, D>& im)
         {
             this->createFrom(im);
         }
 
-        template<typename T2> 
+        template<typename T2>
         inline void copyImageInfoAndContent(const hoMRImage<T2, D>& im)
         {
             this->create(im);
         }
 
-        template<typename T2> 
+        template<typename T2>
         inline void copyImageInfoWithoutImageSize(const hoMRImage<T2, D>& im)
         {
             BaseClass::copyImageInfoWithoutImageSize(im);
@@ -130,28 +128,28 @@ namespace Gadgetron
         }
 
         virtual void create(const std::vector<size_t>& dimensions,
-                            T* data, 
+                            T* data,
                             bool delete_data_on_destruct = false);
 
-        virtual void create(const std::vector<size_t>& dimensions, 
-                            const std::vector<coord_type>& pixelSize, 
-                            T* data, 
+        virtual void create(const std::vector<size_t>& dimensions,
+                            const std::vector<coord_type>& pixelSize,
+                            T* data,
                             bool delete_data_on_destruct = false);
 
-        virtual void create(const std::vector<size_t>& dimensions, 
-                            const std::vector<coord_type>& pixelSize, 
-                            const std::vector<coord_type>& origin, 
-                            T* data, 
+        virtual void create(const std::vector<size_t>& dimensions,
+                            const std::vector<coord_type>& pixelSize,
+                            const std::vector<coord_type>& origin,
+                            T* data,
                             bool delete_data_on_destruct = false);
 
-        virtual void create(const std::vector<size_t>& dimensions, 
-                            const std::vector<coord_type>& pixelSize, 
-                            const std::vector<coord_type>& origin, 
-                            const axis_type& axis, 
-                            T* data, 
+        virtual void create(const std::vector<size_t>& dimensions,
+                            const std::vector<coord_type>& pixelSize,
+                            const std::vector<coord_type>& origin,
+                            const axis_type& axis,
+                            T* data,
                             bool delete_data_on_destruct = false);
 
-        template<typename T2> 
+        template<typename T2>
         void copyFrom(const hoMRImage<T2, D>& aIm)
         {
             this->create(aIm);
@@ -160,11 +158,11 @@ namespace Gadgetron
         /// get the sub image
         void get_sub_image(const std::vector<size_t>& start, std::vector<size_t>& size, Self& out);
 
-        /// ismrmrd image header structure
-        ISMRMRD::ImageHeader header_;
+        /// mrd image header structure
+        mrd::ImageHeader header_;
 
         /// meta attributes
-        ISMRMRD::MetaContainer attrib_;
+        mrd::ImageMeta attrib_;
 
         /// print out the image information
         virtual void printContent(std::ostream& os) const;
@@ -185,22 +183,6 @@ namespace Gadgetron
         using BaseClass::image_position_patient_;
         using BaseClass::image_orientation_patient_;
     };
-}
-
-namespace Gadgetron::Core::IO {
-
-    template<class T, unsigned int D>
-    void read(std::istream &stream, Gadgetron::hoMRImage<T, D> &image);
-
-    template<class T, unsigned int D>
-    void read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image);
-
-    template<class T, unsigned int D>
-    void write(std::ostream &stream, const Gadgetron::hoMRImage<T, D> &image);
-
-    template<class T, unsigned int D>
-    void write(std::ostream &stream, const Gadgetron::hoNDArray< Gadgetron::hoMRImage<T, D> > &image);
-
 }
 
 #include "hoMRImage.hxx"

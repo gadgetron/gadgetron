@@ -19,64 +19,60 @@ namespace {
 } // namespace
 
 namespace Gadgetron {
-    AsymmetricEchoAdjustROGadget::AsymmetricEchoAdjustROGadget(const Core::Context& context, const Core::GadgetProperties& props): Core::ChannelGadget<Core::Acquisition>(context, props) {
-        auto current_ismrmrd_header = (context.header);
-        maxRO_.resize(current_ismrmrd_header.encoding.size());
-        for (size_t e = 0; e < current_ismrmrd_header.encoding.size(); e++) {
-            ISMRMRD::EncodingSpace e_space = current_ismrmrd_header.encoding[e].encodedSpace;
-            maxRO_[e] = e_space.matrixSize.x;
+    AsymmetricEchoAdjustROGadget::AsymmetricEchoAdjustROGadget(const Core::Context& context, const Core::GadgetProperties& props)
+        : Core::ChannelGadget<mrd::Acquisition>(context, props)
+    {
+        auto current_mrd_header = (context.header);
+        maxRO_.resize(current_mrd_header.encoding.size());
+        for (size_t e = 0; e < current_mrd_header.encoding.size(); e++) {
+            mrd::EncodingSpaceType e_space = current_mrd_header.encoding[e].encoded_space;
+            maxRO_[e] = e_space.matrix_size.x;
             GDEBUG_STREAM("max RO for encoding space  " << e << " : " << maxRO_[e]);
         }
     }
-    void AsymmetricEchoAdjustROGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
-        for (auto [header, acq, traj] : in) {
-            bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(header.flags);
-            long long channels = (long long)header.active_channels;
-            size_t samples = header.number_of_samples;
-            size_t centre_column = header.center_sample;
+    void AsymmetricEchoAdjustROGadget::process(Core::InputChannel<mrd::Acquisition>& in, Core::OutputChannel& out) {
+        for (auto acq : in) {
+            bool is_noise = acq.head.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
+            size_t channels = acq.Coils();
+            size_t samples = acq.Samples();
+            size_t centre_column = acq.head.center_sample.value_or(samples / 2);
             if (!is_noise) {
-                unsigned int encoding_ref = header.encoding_space_ref;
+                unsigned int encoding_ref = acq.head.encoding_space_ref.value_or(0);
                 // adjust the center echo
                 int az = addPrePostZeros(centre_column, samples);
                 if (az != 0 && samples < maxRO_[encoding_ref]) {
-                    std::vector<size_t> data_out_dims = acq.get_dimensions();
-                    data_out_dims[0] = maxRO_[encoding_ref];
-                    hoNDArray<std::complex<float>> temp;
-                    try {
-                        temp = hoNDArray<std::complex<float>>(data_out_dims);
-                    } catch (...) {
-                        GDEBUG("Unable to create new data array for downsampled data\n");
-                    }
-                    temp.fill(0);
-                    std::complex<float>* pM3 = temp.get_data_ptr();
-                    std::complex<float>* pM2 = acq.get_data_ptr();
-                    long long c;
+                    auto original_data = acq.data;
+
+                    acq.data.create(maxRO_[encoding_ref], channels);
+                    acq.data.fill(0);
+
+                    auto pAdjusted = acq.data.data();
+                    auto pOrig = original_data.data();
+
                     size_t numOfBytes = sizeof(std::complex<float>) * samples;
                     if (az == 1) // pre zeros
                     {
-                        //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
-                        for (c = 0; c < channels; c++) {
-                            memcpy(pM3 + c * maxRO_[encoding_ref] + maxRO_[encoding_ref] - samples, pM2 + c * samples,
+                        //#pragma omp parallel for default(none) private(c) shared(channels, pAdjusted, pOrig, samples, numOfBytes)
+                        for (size_t c = 0; c < channels; c++) {
+                            memcpy(pAdjusted + c * maxRO_[encoding_ref] + maxRO_[encoding_ref] - samples, pOrig + c * samples,
                                 numOfBytes);
                         }
-                        header.discard_pre = maxRO_[encoding_ref] - samples;
-                        header.discard_post = 0;
+                        acq.head.discard_pre = maxRO_[encoding_ref] - samples;
+                        acq.head.discard_post = 0;
                     }
                     if (az == 2) // post zeros
                     {
-                        //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
-                        for (c = 0; c < channels; c++) {
-                            memcpy(pM3 + c * maxRO_[encoding_ref], pM2 + c * samples, numOfBytes);
+                        //#pragma omp parallel for default(none) private(c) shared(channels, pAdjusted, pOrig, samples, numOfBytes)
+                        for (size_t c = 0; c < channels; c++) {
+                            memcpy(pAdjusted + c * maxRO_[encoding_ref], pOrig + c * samples, numOfBytes);
                         }
-                        header.discard_pre = 0;
-                        header.discard_post = maxRO_[encoding_ref] - samples;
+                        acq.head.discard_pre = 0;
+                        acq.head.discard_post = maxRO_[encoding_ref] - samples;
                     }
-                    acq = temp;
-                    header.number_of_samples = (uint16_t)data_out_dims[0];
-                    header.center_sample = header.number_of_samples / 2;
+                    acq.head.center_sample = acq.Samples() / 2;
                 }
             }
-            out.push(Core::Acquisition{std::move(header), std::move(acq), std::move(traj)});
+            out.push(std::move(acq));
         }
     }
     GADGETRON_GADGET_EXPORT(AsymmetricEchoAdjustROGadget)

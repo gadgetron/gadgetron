@@ -10,11 +10,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericImageReconArrayToImageGadget : public GenericImageReconGadget
+    class GenericImageReconArrayToImageGadget : public GenericImageReconGadget
     {
     public:
-        GADGET_DECLARE(GenericImageReconArrayToImageGadget);
-
         typedef GenericImageReconGadget BaseClass;
 
         typedef BaseClass::ValueType ValueType;

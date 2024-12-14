@@ -1,34 +1,53 @@
 #pragma once
 
 #include <string>
-#include "Message.h"
-#include "LegacyACE.h"
 #include <typeinfo>
 #include "log.h"
 
 namespace Gadgetron {
 
+    namespace Core {
+        class MessageChunk;
 
-    class GadgetContainerMessageBase : public ACE_Message_Block {
+        template <typename T>
+        class TypedMessageChunk;
+    }
+
+    class GadgetContainerMessageBase {
     public:
+        GadgetContainerMessageBase() = default;
+
+        virtual ~GadgetContainerMessageBase() {
+            if (cont_element) {
+                cont_element->release();
+            }
+        };
+
+        virtual void *release() {
+            delete (this); // Seppuku
+            return nullptr;
+        }
+
+        GadgetContainerMessageBase *cont() { return cont_element; }
+
+        void cont(GadgetContainerMessageBase *ptr) { cont_element = ptr; }
+
         virtual std::unique_ptr<Core::MessageChunk> take_message() = 0;
-        virtual ~GadgetContainerMessageBase() = default;
+
+    private:
+        GadgetContainerMessageBase *cont_element = nullptr;
     };
-
-
 
     template<class T>
     class GadgetContainerMessage : public GadgetContainerMessageBase {
-
     public:
-
         template<class... ARGS>
         explicit GadgetContainerMessage(ARGS&&... xs){
             message = std::make_unique<Core::TypedMessageChunk<T>>(std::forward<ARGS>(xs)...);
             data = &message->data;
         }
 
-         ~GadgetContainerMessage() override = default;
+        ~GadgetContainerMessage() override = default;
 
         std::unique_ptr<Core::MessageChunk> take_message() override {
             data = nullptr;
@@ -54,8 +73,7 @@ namespace Gadgetron {
 
 
     template<class T>
-    GadgetContainerMessage<T> *AsContainerMessage(ACE_Message_Block *mb) {
-
+    GadgetContainerMessage<T> *AsContainerMessage(GadgetContainerMessageBase *mb) {
         if (mb && typeid(*mb) == typeid(GadgetContainerMessage<T>)){
             return reinterpret_cast<GadgetContainerMessage<T>*>(mb);
         }

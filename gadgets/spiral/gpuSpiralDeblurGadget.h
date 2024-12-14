@@ -2,30 +2,23 @@
 #define gpuSpiralDeblurGadget_H
 #pragma once
 
-#include "gadgetron_spiral_export.h"
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
 #include "cuNFFT.h"
 #include "hoNDArray.h"
 #include "vector_td.h"
-#include "mri_core_data.h"
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include "MFIOperator.h"
-#include <ismrmrd/xml.h>
 using namespace std;
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_SPIRAL gpuSpiralDeblurGadget :
-    public Gadget1< IsmrmrdReconData >
+  class gpuSpiralDeblurGadget :
+    public Gadget1< mrd::ReconData >
   {
 
   public:
-    GADGET_DECLARE(gpuSpiralDeblurGadget);
-
     gpuSpiralDeblurGadget();
     virtual ~gpuSpiralDeblurGadget();
 
@@ -38,9 +31,9 @@ namespace Gadgetron{
 	GADGET_PROPERTY(do_deblurring, bool, "Deblurring ON/Off", true);
 	cuNDArray<float_complext> reg_image0;
 
-    virtual int process_config(ACE_Message_Block* mb);
+    virtual int process_config(const mrd::Header& header);
 
-    virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+    virtual int process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1);
 
 
 
@@ -108,10 +101,10 @@ namespace Gadgetron{
 	hoNDArray<float_complext> MFI_C;
 	hoNDArray<float_complext> phase_mask;
 
-  GadgetContainerMessage<ISMRMRD::ImageHeader>* get_image_header(ISMRMRD::AcquisitionHeader& curr_header, int series_index);
+  mrd::ImageHeader get_image_header(mrd::AcquisitionHeader& curr_header, int series_index);
   void Calc_B0Map(hoNDArray<std::complex<float>>& B0_data, hoNDArray<float>* B0_map);
-  void Prepare_Plan(IsmrmrdDataBuffered& data);
-  void Prepare_B0_Plan(IsmrmrdDataBuffered& data);
+  void Prepare_Plan(mrd::ReconBuffer& data);
+  void Prepare_B0_Plan(mrd::ReconBuffer& data);
   };
 }
 #endif //gpuSpiralDeblurGadget_H

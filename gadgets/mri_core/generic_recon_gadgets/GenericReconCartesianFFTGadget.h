@@ -11,7 +11,7 @@ namespace Gadgetron {
 
     /// define the recon status
     template <typename T>
-    class EXPORTGADGETSMRICORE GenericReconCartesianFFTObj
+    class GenericReconCartesianFFTObj
     {
     public:
 
@@ -42,11 +42,9 @@ namespace Gadgetron {
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconCartesianFFTGadget : public GenericReconGadget
+    class GenericReconCartesianFFTGadget : public GenericReconGadget
     {
     public:
-        GADGET_DECLARE(GenericReconCartesianFFTGadget);
-
         typedef GenericReconGadget BaseClass;
         typedef Gadgetron::GenericReconCartesianFFTObj< std::complex<float> > ReconObjType;
 
@@ -68,6 +66,6 @@ namespace Gadgetron {
 
 	// fft and coil combination
         void perform_fft_combine(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
-       
+
     };
 }

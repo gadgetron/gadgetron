@@ -18,21 +18,21 @@
 #include "cmr_spirit_recon.h"
 #include <boost/math/special_functions/sign.hpp>
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
+template <typename T>
 KSpaceBinningObj<T>::KSpaceBinningObj()
 {
 }
 
-template <typename T> 
+template <typename T>
 KSpaceBinningObj<T>::~KSpaceBinningObj()
 {
 }
 
 // --------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 void simple_line_fit(const std::vector<T>& x, const std::vector<T>& y, T& a, T& b)
 {
     try
@@ -75,7 +75,7 @@ void simple_line_fit(const std::vector<T>& x, const std::vector<T>& y, T& a, T& 
     }
 }
 
-template <typename T> 
+template <typename T>
 CmrKSpaceBinning<T>::CmrKSpaceBinning()
 {
     time_tick_ = 2.5;
@@ -139,12 +139,12 @@ CmrKSpaceBinning<T>::CmrKSpaceBinning()
     gt_timer_local_.set_timing_in_destruction(false);
 }
 
-template <typename T> 
+template <typename T>
 CmrKSpaceBinning<T>::~CmrKSpaceBinning()
 {
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::process_binning_recon()
 {
     try
@@ -239,7 +239,7 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         if(binning_obj_.full_kspace_raw_.delete_data_on_destruct()) binning_obj_.full_kspace_raw_.clear();
 
         // -----------------------------------------------------
-        // perform recon on the binned kspace 
+        // perform recon on the binned kspace
         // -----------------------------------------------------
         this->perform_recon_binned_kspace(slices_not_processing);
     }
@@ -249,7 +249,7 @@ void CmrKSpaceBinning<T>::process_binning_recon()
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::perform_raw_data_recon()
 {
     try
@@ -336,11 +336,11 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         // estimate coil map
         // ------------------------------------------------
 
-        size_t start_RO = binning_obj_.sampling_.sampling_limits_[0].min_;
-        size_t end_RO = binning_obj_.sampling_.sampling_limits_[0].max_;
+        size_t start_RO = binning_obj_.sampling_.sampling_limits.kspace_encoding_step_0.minimum;
+        size_t end_RO = binning_obj_.sampling_.sampling_limits.kspace_encoding_step_0.maximum;
 
-        size_t start_E1 = binning_obj_.sampling_.sampling_limits_[1].min_;
-        size_t end_E1 = binning_obj_.sampling_.sampling_limits_[1].max_;
+        size_t start_E1 = binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.minimum;
+        size_t end_E1 = binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.maximum;
 
         size_t lenRO = RO;
         if ((start_RO<RO) && (end_RO<RO) && (end_RO - start_RO + 1 < RO))
@@ -460,7 +460,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::estimate_time_stamps()
 {
     try
@@ -473,12 +473,12 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
         size_t S = kspace.get_size(4);
 
         size_t startE1, endE1;
-        startE1 = this->binning_obj_.sampling_.sampling_limits_[1].min_;
-        endE1 = this->binning_obj_.sampling_.sampling_limits_[1].max_;
+        startE1 = this->binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.minimum;
+        endE1 = this->binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.maximum;
 
         size_t rE1 = endE1-startE1+1;
 
-        hoNDArray< ISMRMRD::AcquisitionHeader >& header = binning_obj_.headers_;
+        hoNDArray< mrd::AcquisitionHeader >& header = binning_obj_.headers_;
         GADGET_CHECK_THROW(header.get_size(0)==E1);
         GADGET_CHECK_THROW(header.get_size(1)==N);
         GADGET_CHECK_THROW(header.get_size(2)==S);
@@ -501,9 +501,10 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
             {
                 for (e1=0; e1<E1; e1++)
                 {
-                    if(header(e1,n,s).number_of_samples>0)
-                    {
-                        binning_obj_.time_stamp_(e1, n, s) = header(e1, n, s).acquisition_time_stamp * this->time_tick_;
+                    /** TODO: number_of_samples is not available in mrd::AcquisitionHeader... */
+                    // if(header(e1,n,s).number_of_samples>0)
+                    if (header(e1, n, s).physiology_time_stamp.size() > this->trigger_time_index_) {
+                        binning_obj_.time_stamp_(e1, n, s) = header(e1, n, s).acquisition_time_stamp.value_or(0) * this->time_tick_;
                         binning_obj_.cpt_time_stamp_(e1, n, s) = header(e1, n, s).physiology_time_stamp[this->trigger_time_index_] * this->time_tick_;
                     }
                 }
@@ -568,8 +569,8 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
             {
                 if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str() + suffix_);
 
-                this->process_time_stamps(time_stamp, cpt_time_stamp, 
-                                cpt_time_ratio, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio, 
+                this->process_time_stamps(time_stamp, cpt_time_stamp,
+                                cpt_time_ratio, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio,
                                 ind_heart_beat, startingHB, endingHB, meanRR);
             }
             else
@@ -580,8 +581,8 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
 
                 hoNDArray<float> cpt_time_ratio_tmp(E1, N);
 
-                this->process_time_stamps(time_stamp, cpt_time_stamp_flipped, 
-                                cpt_time_ratio_tmp, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio, 
+                this->process_time_stamps(time_stamp, cpt_time_stamp_flipped,
+                                cpt_time_ratio_tmp, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio,
                                 ind_heart_beat, startingHB, endingHB, meanRR);
 
                 if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio_tmp, debug_folder_+"cpt_time_ratio_tmp" + os.str() + suffix_);
@@ -701,7 +702,7 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
 {
     try
@@ -888,7 +889,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
             roi[s].second[0] = starting_pos_RO[regionInd[0]]+patch_size_RO;
             roi[s].second[1] = starting_pos_E1[regionInd[1]]+patch_size_E1;
 
-            GDEBUG_CONDITION_STREAM(this->verbose_, "Respiratory ROI - RO - E1 [" 
+            GDEBUG_CONDITION_STREAM(this->verbose_, "Respiratory ROI - RO - E1 ["
                 << roi[s].first(0) << "," << roi[s].first(1) << "]; [" << roi[s].second(0) << " -- " << roi[s].second(1) << "]");
 
             for ( n=0; n<N; n++ )
@@ -915,7 +916,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::find_best_heart_beat(std::vector<size_t>& bestHB)
 {
     try
@@ -978,7 +979,7 @@ void CmrKSpaceBinning<T>::find_best_heart_beat(std::vector<size_t>& bestHB)
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::reject_irregular_heart_beat()
 {
     try
@@ -1042,7 +1043,7 @@ void CmrKSpaceBinning<T>::reject_irregular_heart_beat()
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::detect_and_flip_alternating_order(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, hoNDArray<float>& cpt_time_stamp_flipped, std::vector<bool>& ascending)
 {
     try
@@ -1112,11 +1113,11 @@ void CmrKSpaceBinning<T>::detect_and_flip_alternating_order(const hoNDArray<floa
     }
 }
 
-template <typename T> 
-void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoNDArray<float>& cpt_time_stamp, 
-                                            hoNDArray<float>& cpt_time_ratio, hoNDArray<float>& phs_time_stamp, 
-                                            hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio, 
-                                            hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB, 
+template <typename T>
+void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoNDArray<float>& cpt_time_stamp,
+                                            hoNDArray<float>& cpt_time_ratio, hoNDArray<float>& phs_time_stamp,
+                                            hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio,
+                                            hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB,
                                             HeartBeatIndexType& endingHB, float& meanRRInterval)
 {
     try
@@ -1125,8 +1126,8 @@ void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoND
         size_t N = time_stamp.get_size(1);
 
         size_t startE1, endE1;
-        startE1 = this->binning_obj_.sampling_.sampling_limits_[1].min_;
-        endE1 = this->binning_obj_.sampling_.sampling_limits_[1].max_;
+        startE1 = this->binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.minimum;
+        endE1 = this->binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.maximum;
 
         size_t rE1 = endE1-startE1+1;
 
@@ -1181,8 +1182,8 @@ void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoND
             endingHB[ind].first = end_e1_hb[ind];
             endingHB[ind].second = end_n_hb[ind];
 
-            GDEBUG_CONDITION_STREAM(verbose_, "Heart beat " << ind 
-                << " - start " << " [" << startingHB[ind].first << " " << startingHB[ind].second 
+            GDEBUG_CONDITION_STREAM(verbose_, "Heart beat " << ind
+                << " - start " << " [" << startingHB[ind].first << " " << startingHB[ind].second
                 << "] - end  " << " [" << endingHB[ind].first << " " << endingHB[ind].second << "]");
         }
 
@@ -1303,7 +1304,7 @@ void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoND
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::compute_RRInterval(size_t s, size_t HB, float& RRInterval )
 {
     try
@@ -1335,7 +1336,7 @@ void CmrKSpaceBinning<T>::compute_RRInterval(size_t s, size_t HB, float& RRInter
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::compute_metrics_navigator_heart_beat(size_t s, size_t HB, float& mean_resp, float& var_resp, float& min_resp, float& max_resp)
 {
     try
@@ -1367,7 +1368,7 @@ void CmrKSpaceBinning<T>::compute_metrics_navigator_heart_beat(size_t s, size_t 
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& bestHB, std::vector<size_t>& slices_not_processing)
 {
     try
@@ -1707,8 +1708,8 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
 
                     for (ii=0; ii<num_of_images; ii++)
                     {
-                        memcpy(warpped_complex_images_multi_channel.begin()+ii*RO*E1*CHA, 
-                            warpped_complex_images_multi_channel_wider.begin()+loc_in_wider[n][ii]*RO*E1*CHA, 
+                        memcpy(warpped_complex_images_multi_channel.begin()+ii*RO*E1*CHA,
+                            warpped_complex_images_multi_channel_wider.begin()+loc_in_wider[n][ii]*RO*E1*CHA,
                             sizeof(std::complex<T>)*RO*E1*CHA);
                     }
 
@@ -1741,7 +1742,7 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& cpt_time_ratio_bestHB, const hoNDArray<T>& mag_bestHB, const std::vector<float>& desired_cpt, hoNDArray<T>& mag_bestHB_at_desired_cpt)
 {
     try
@@ -1842,7 +1843,7 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::select_images_with_navigator(float desired_cpt_time_ratio, float accepted_nav[2], size_t n, size_t s, std::vector<size_t>& selected)
 {
     try
@@ -1946,7 +1947,7 @@ void CmrKSpaceBinning<T>::select_images_with_navigator(float desired_cpt_time_ra
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(const std::vector < std::vector<size_t> >& selected_images, const hoNDArray<T>& mag_s, const hoNDArray<T>& mag_bestHB_at_desired_cpt, DeformationFieldContinerType& dx, DeformationFieldContinerType& dy)
 {
     try
@@ -2010,7 +2011,7 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
         bool warp_image = false;
         if ( !debug_folder_.empty() ) warp_image = true;
 
-        Gadgetron::perform_moco_fixed_key_frame_2DT(input, key_frame, 
+        Gadgetron::perform_moco_fixed_key_frame_2DT(input, key_frame,
             this->kspace_binning_moco_reg_strength_, this->kspace_binning_moco_iters_, false, warp_image, reg);
 
         dx.copyFrom(reg.deformation_field_[0]);
@@ -2039,7 +2040,7 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::perform_moco_warp_on_selected_images( const std::vector < std::vector<size_t> >& selected_images, const ArrayType& complex_image, DeformationFieldContinerType deform[2], std::vector<ArrayType>& warpped_complex_images)
 {
     try
@@ -2103,7 +2104,7 @@ void CmrKSpaceBinning<T>::perform_moco_warp_on_selected_images( const std::vecto
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::vector<size_t>& selected_images, const ArrayType& warpped_kspace, ArrayType& kspace_filled, hoNDArray<float>& hit_count)
 {
     try
@@ -2175,8 +2176,8 @@ void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::
                     accepted_cpt_time_ratio[0] -= diff;
                     accepted_cpt_time_ratio[1] += diff;
 
-                    GDEBUG_CONDITION_STREAM(true, "accepted cardiac phase ratio is increased to " 
-                        << minimal_cpt_time_ratio << " - meanRR - " << meanRR << " - minimal temporal window - " 
+                    GDEBUG_CONDITION_STREAM(true, "accepted cardiac phase ratio is increased to "
+                        << minimal_cpt_time_ratio << " - meanRR - " << meanRR << " - minimal temporal window - "
                         << this->kspace_binning_minimal_cardiac_phase_width_/1000);
                 }
             }
@@ -2260,7 +2261,7 @@ void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::
                 {
                     for ( cha=0; cha<CHA; cha++ )
                     {
-                        memcpy(readOut1.begin()+cha*RO, 
+                        memcpy(readOut1.begin()+cha*RO,
                             kspace_filled.begin()+cha*RO*E1+e1*RO,
                             sizeof(std::complex<T>)*RO);
                     }
@@ -2269,7 +2270,7 @@ void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::
 
                     for ( cha=0; cha<CHA; cha++ )
                     {
-                        memcpy(kspace_filled.begin()+cha*RO*E1+e1*RO, 
+                        memcpy(kspace_filled.begin()+cha*RO*E1+e1*RO,
                             readOut1.begin()+cha*RO, sizeof(std::complex<T>)*RO);
                     }
                 }
@@ -2284,7 +2285,7 @@ void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>& slices_not_processing)
 {
     try
@@ -2477,7 +2478,7 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>&
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::perform_linear_recon_on_kspace_binning(const ArrayType& kspace, const ArrayType& kspaceInitial, const ArrayType& coilMap, ArrayType& resKSpace, ArrayType& resIm, ArrayType& kernel, ArrayType& kernelIm)
 {
     try
@@ -2491,8 +2492,8 @@ void CmrKSpaceBinning<T>::perform_linear_recon_on_kspace_binning(const ArrayType
         size_t N = kspace.get_size(3);
 
         size_t startE1, endE1;
-        startE1 = this->binning_obj_.sampling_.sampling_limits_[1].min_;
-        endE1 = this->binning_obj_.sampling_.sampling_limits_[1].max_;
+        startE1 = this->binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.minimum;
+        endE1 = this->binning_obj_.sampling_.sampling_limits.kspace_encoding_step_1.maximum;
 
         // average all N
         ArrayType acs;
@@ -2544,7 +2545,7 @@ void CmrKSpaceBinning<T>::perform_linear_recon_on_kspace_binning(const ArrayType
     }
 }
 
-template <typename T> 
+template <typename T>
 void CmrKSpaceBinning<T>::perform_non_linear_recon_on_kspace_binning(const ArrayType& kspace, const ArrayType& kspaceLinear, const ArrayType& coilMap, const ArrayType& kernel, const ArrayType& kernelIm, ArrayType& resKSpace, ArrayType& resIm)
 {
     try
@@ -2556,15 +2557,15 @@ void CmrKSpaceBinning<T>::perform_non_linear_recon_on_kspace_binning(const Array
 
         if ( this->perform_timing_ ) { timer.start("spirit non linear recon ... "); }
 
-        Gadgetron::perform_spirit_recon_non_linear_2DT(kspace, kernelIm, coilMap, kspaceLinear, resKSpace, 
-                                                    kspace_binning_nonlinear_iter_max_, 
-                                                    kspace_binning_nonlinear_iter_thres_, 
-                                                    kspace_binning_nonlinear_data_fidelity_lamda_, 
-                                                    kspace_binning_nonlinear_image_reg_lamda_, 
-                                                    kspace_binning_nonlinear_reg_N_weighting_ratio_, 
-                                                    kspace_binning_nonlinear_reg_use_coil_sen_map_, 
-                                                    kspace_binning_nonlinear_reg_with_approx_coeff_, 
-                                                    kspace_binning_nonlinear_reg_wav_name_, 
+        Gadgetron::perform_spirit_recon_non_linear_2DT(kspace, kernelIm, coilMap, kspaceLinear, resKSpace,
+                                                    kspace_binning_nonlinear_iter_max_,
+                                                    kspace_binning_nonlinear_iter_thres_,
+                                                    kspace_binning_nonlinear_data_fidelity_lamda_,
+                                                    kspace_binning_nonlinear_image_reg_lamda_,
+                                                    kspace_binning_nonlinear_reg_N_weighting_ratio_,
+                                                    kspace_binning_nonlinear_reg_use_coil_sen_map_,
+                                                    kspace_binning_nonlinear_reg_with_approx_coeff_,
+                                                    kspace_binning_nonlinear_reg_wav_name_,
                                                     print_iter);
 
         if ( this->perform_timing_ ) { timer.stop(); }
@@ -2585,6 +2586,6 @@ void CmrKSpaceBinning<T>::perform_non_linear_recon_on_kspace_binning(const Array
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCMR CmrKSpaceBinning< float >;
+template class CmrKSpaceBinning< float >;
 
 }

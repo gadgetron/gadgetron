@@ -1,0 +1,20 @@
+dependency:
+  data: generic/meas_MID836_1slice_FID22517/meas_MID836_1slice_FID22517_meas1.mrd
+  checksum: 597bebf9348947443f18012d88805c2d
+  args: --config default_measurement_dependencies.xml
+reconstruction:
+  data: generic/meas_MID836_1slice_FID22517/meas_MID836_1slice_FID22517_meas2.mrd
+  checksum: 7744e379a2433bf279219d60b5eb927b
+  run:
+  - args: --config Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+validation:
+  reference: generic/meas_MID836_1slice_FID22517/ref_20220817_klk_Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml.mrd
+  checksum: c89fd653df87cba4f28c05c28540826d
+  tests:
+  - image_series: 1
+    value_comparison_threshold: 0.005
+    scale_comparison_threshold: 0.001
+requirements:
+  system_memory: 16384
+tags:
+- slow

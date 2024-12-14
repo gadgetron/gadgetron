@@ -49,7 +49,7 @@ TYPED_TEST(cuNDArray_utils_TestReal,permuteTest){
 
   std::vector<size_t> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
-  
+
   TypeParam tmp(2);
   CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[37], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
 
@@ -125,12 +125,12 @@ TYPED_TEST(cuNDArray_utils_TestCplx,meanTest){
 }
 
 TYPED_TEST(cuNDArray_utils_TestCplx,permuteTest){
-  
+
   fill(&this->Array,TypeParam(1,1));
 
   std::vector<size_t> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
-  
+
   TypeParam tmp(2,3);
   CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[37], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
 
@@ -223,7 +223,7 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
 }
 
 
-TEST(padTest,largeSize){
+TEST(cuNDArray_utils_TestCplx, padTest_largeSize){
 // So, this test is mainly here because pad apparently fails for large sized arrays.
 	size_t vdims[] = {192,192,50};
 	std::vector<size_t> dims(vdims,vdims+sizeof(vdims)/sizeof(size_t));

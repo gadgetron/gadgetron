@@ -2,41 +2,31 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "GadgetMRIHeaders.h"
-#include "gadgetron_interventional_mri_export.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{
 
-  template <typename T> class EXPORTGADGETSINTERVENTIONAL_MRI DeviceChannelSplitterGadget : 
-  public Gadget2<ISMRMRD::ImageHeader,hoNDArray< T > >
+  template <typename T> class DeviceChannelSplitterGadget :
+  public Gadget1<mrd::Image<T>>
   {
   protected:
-    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, 
-			GadgetContainerMessage< hoNDArray< T > >* m2);
+    virtual int process(GadgetContainerMessage<mrd::Image<T>>* m1);
   };
-  
-  class EXPORTGADGETSINTERVENTIONAL_MRI DeviceChannelSplitterGadgetUSHORT :
+
+  class DeviceChannelSplitterGadgetUSHORT :
   public DeviceChannelSplitterGadget<uint16_t>
   {
-  public:
-    GADGET_DECLARE(DeviceChannelSplitterGadgetUSHORT);
   };
 
-  class EXPORTGADGETSINTERVENTIONAL_MRI DeviceChannelSplitterGadgetFLOAT :
+  class DeviceChannelSplitterGadgetFLOAT :
   public DeviceChannelSplitterGadget<float>
   {
-  public:
-    GADGET_DECLARE(DeviceChannelSplitterGadgetFLOAT);
   };
 
-  class EXPORTGADGETSINTERVENTIONAL_MRI DeviceChannelSplitterGadgetCPLX :
+  class DeviceChannelSplitterGadgetCPLX :
   public DeviceChannelSplitterGadget< std::complex<float> >
   {
-  public:
-    GADGET_DECLARE(DeviceChannelSplitterGadgetCPLX);
   };
 }
 

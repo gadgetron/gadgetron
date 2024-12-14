@@ -50,13 +50,13 @@ namespace Gadgetron{
 
     vector<unsigned int> image_dims, dims_to_xform;
     unsigned int pixels_per_coil = 1;
-  
+
     for( unsigned int i=0; i<D; i++ ){
       image_dims.push_back(data_in.get_size(i));
       dims_to_xform.push_back(i);
       pixels_per_coil *= data_in.get_size(i);
     }
-  
+
     unsigned int ncoils = data_in.get_size(D);
 
     // Make a copy of input data, but only the target coils
@@ -76,7 +76,7 @@ namespace Gadgetron{
 
     // Normalize by the RSS of the coils
     rss_normalize( &data_out, D );
-  
+
     // Now calculate the correlation matrices
     boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = correlation( &data_out );
     data_out.clear();
@@ -92,10 +92,10 @@ namespace Gadgetron{
     // Get the dominant eigenvector for each correlation matrix.
     auto csm = extract_csm<REAL>( *corrm_smooth, ncoils, pixels_per_coil );
     corrm_smooth.reset();
-  
+
     // Set phase according to reference (coil 0)
     set_phase_reference<REAL>( &csm, ncoils, pixels_per_coil );
-  
+
     return csm;
   }
 
@@ -110,49 +110,49 @@ namespace Gadgetron{
 	*stride *= in->get_size(i);
     }
   }
-  
+
   template<class REAL, class T> __inline__  __device__ static REAL
   _rss( unsigned int idx, T *in, unsigned int stride, unsigned int number_of_batches )
   {
     unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
     REAL rss = REAL(0);
-    
-    for( unsigned int i=0; i<number_of_batches; i++ ) 
+
+    for( unsigned int i=0; i<number_of_batches; i++ )
       rss += norm(in[i*stride+in_idx]);
-    
-    rss = std::sqrt(rss); 
-    
+
+    rss = std::sqrt(rss);
+
     return rss;
   }
-  
+
   template<class T> __global__ static void
   rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     typedef typename realType<T>::Type REAL;
 
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-    
+
     if( idx < number_of_elements ){
-      
+
       REAL reciprocal_rss = 1/(_rss<REAL,T>(idx, in_out, stride, number_of_batches));
-      
+
       unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
-      
+
       for( unsigned int i=0; i<number_of_batches; i++ ) {
 	T out = in_out[i*stride+in_idx];
 	out *= reciprocal_rss; // complex-scalar multiplication (element-wise operator)
-	in_out[i*stride+in_idx] = out; 
-      } 
+	in_out[i*stride+in_idx] = out;
+      }
     }
   }
-  
+
   // Normalized RSS
   template<class T> static
   void rss_normalize( cuNDArray<T> *in_out, unsigned int dim )
   {
     unsigned int number_of_batches = in_out->get_size(dim);
     unsigned int number_of_elements = in_out->get_number_of_elements()/number_of_batches;
-    
+
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;
     setup_grid( number_of_elements, &blockDim, &gridDim );
@@ -163,8 +163,8 @@ namespace Gadgetron{
 
     // Invoke kernel
     rss_normalize_kernel<T><<< gridDim, blockDim >>>( in_out->get_data_ptr(), stride, number_of_batches, number_of_elements );
- 
-    CHECK_FOR_CUDA_ERROR();    
+
+    CHECK_FOR_CUDA_ERROR();
   }
 
   template<class REAL, class T> __global__ static void
@@ -172,7 +172,7 @@ namespace Gadgetron{
   {
     const unsigned int p = blockIdx.x*blockDim.x + threadIdx.x;
     const unsigned int i = threadIdx.y;
-    
+
     if( p < num_elements ){
       for( unsigned int j=0; j<i; j++){
 	T tmp = in[i*num_elements+p]*conj(in[j*num_elements+p]);
@@ -183,7 +183,7 @@ namespace Gadgetron{
       corrm[(i*num_batches+i)*num_elements+p] = tmp*conj(tmp);
     }
   }
-  
+
   // Build correlation matrix
   template<class T> static boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in )
   {
@@ -201,7 +201,7 @@ namespace Gadgetron{
     if( blockDim.x == 0 ){
       throw std::runtime_error("correlation: correlation dimension exceeds device capacity.");
     }
-  
+
     dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
     // Invoke kernel
@@ -210,9 +210,9 @@ namespace Gadgetron{
     out->create(dims);
 
     correlation_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
-    
+
     CHECK_FOR_CUDA_ERROR();
-    
+
     return out;
   }
 
@@ -226,25 +226,25 @@ namespace Gadgetron{
     const int num_image_elements = prod(image_dims);
 
     if( idx < num_image_elements ){
-    
-      const int co = idx;    
+
+      const int co = idx;
       const int x = co;
-    
+
       const int size_x = image_dims.vec[0];
-    
+
       const REAL scale = REAL(1)/((REAL)kernel_width);
-    
+
       complext<REAL> result = complext<REAL>(0);
-    
+
       for (int kx = 0; kx < kernel_width; kx++) {
-      
+
 	if ((x-(kernel_width>>1)+kx) >= 0 &&
 	    (x-(kernel_width>>1)+kx) < size_x)
-	  {	    
-	    int source_offset = 
+	  {
+	    int source_offset =
 	      batch*num_image_elements +
 	      (x-(kernel_width>>1)+kx);
-	  
+
 	    result += corrm[source_offset];
 	  }
       }
@@ -262,15 +262,15 @@ namespace Gadgetron{
     const int num_image_elements = prod(image_dims);
 
     if( idx < num_image_elements ){
-    
+
       const intd2 co = idx_to_co(idx, image_dims);
-    
+
       const int x = co.vec[0];
       const int y = co.vec[1];
-    
+
       const int size_x = image_dims.vec[0];
       const int size_y = image_dims.vec[1];
-    
+
       const int half_width = kernel_width>>1;
 
       const int yminus = y-half_width;
@@ -279,9 +279,9 @@ namespace Gadgetron{
       const int xplus = x+half_width;
 
       const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width));
-    
+
       complext<REAL> result = complext<REAL>(0);
-   
+
       if( (yminus >=0) ){
 	if( yplus < size_y ){
 	  if( xminus >= 0 ){
@@ -291,10 +291,10 @@ namespace Gadgetron{
 	      for (int ky = 0; ky < kernel_width; ky++){
 #pragma unroll
 		for (int kx = 0; kx < kernel_width; kx++) {
-		
+
 		  int cy = yminus+ky;
 		  int cx = xminus+kx;
-		
+
 		  int source_offset = batch*num_image_elements + cy*size_x + cx;
 		  result += corrm[source_offset];
 		}
@@ -317,38 +317,38 @@ namespace Gadgetron{
     const int num_image_elements = prod(image_dims);
 
     if( idx < num_image_elements ){
-    
+
       const intd3 co = idx_to_co(idx, image_dims);
-    
+
       const int x = co.vec[0];
       const int y = co.vec[1];
       const int z = co.vec[2];
-    
+
       const int size_x = image_dims.vec[0];
       const int size_y = image_dims.vec[1];
       const int size_z = image_dims.vec[2];
-    
+
       const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width*kernel_width));
-    
+
       complext<REAL> result = complext<REAL>(0);
-    
+
       for (int kz = 0; kz < kernel_width; kz++) {
 	for (int ky = 0; ky < kernel_width; ky++) {
 	  for (int kx = 0; kx < kernel_width; kx++) {
-	
+
 	    if ((z-(kernel_width>>1)+kz) >= 0 &&
 		(z-(kernel_width>>1)+kz) < size_z &&
 		(y-(kernel_width>>1)+ky) >= 0 &&
 		(y-(kernel_width>>1)+ky) < size_y &&
 		(x-(kernel_width>>1)+kx) >= 0 &&
-		(x-(kernel_width>>1)+kx) < size_x) 
-	      {	    
-		int source_offset = 
+		(x-(kernel_width>>1)+kx) < size_x)
+	      {
+		int source_offset =
 		  batch*num_image_elements +
 		  (z-(kernel_width>>1)+kz)*size_x*size_y +
 		  (y-(kernel_width>>1)+ky)*size_x +
 		  (x-(kernel_width>>1)+kx);
-	    
+
 		result += corrm[source_offset];
 	      }
 	  }
@@ -368,28 +368,28 @@ namespace Gadgetron{
     const int num_image_elements = prod(image_dims);
 
     if( idx < num_image_elements ){
-    
+
       const intd4 co = idx_to_co(idx, image_dims);
-    
+
       const int x = co.vec[0];
       const int y = co.vec[1];
       const int z = co.vec[2];
       const int w = co.vec[3];
-    
+
       const int size_x = image_dims.vec[0];
       const int size_y = image_dims.vec[1];
-      const int size_z = image_dims.vec[2];    
+      const int size_z = image_dims.vec[2];
       const int size_w = image_dims.vec[3];
-    
+
       const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width*kernel_width*kernel_width));
-    
+
       complext<REAL> result = complext<REAL>(0);
-    
+
       for (int kw = 0; kw < kernel_width; kw++) {
 	for (int kz = 0; kz < kernel_width; kz++) {
 	  for (int ky = 0; ky < kernel_width; ky++) {
 	    for (int kx = 0; kx < kernel_width; kx++) {
-	
+
 	      if ((w-(kernel_width>>1)+kw) >= 0 &&
 		  (w-(kernel_width>>1)+kw) < size_w &&
 		  (z-(kernel_width>>1)+kz) >= 0 &&
@@ -397,15 +397,15 @@ namespace Gadgetron{
 		  (y-(kernel_width>>1)+ky) >= 0 &&
 		  (y-(kernel_width>>1)+ky) < size_y &&
 		  (x-(kernel_width>>1)+kx) >= 0 &&
-		  (x-(kernel_width>>1)+kx) < size_x) 
-		{	    
-		  int source_offset = 
+		  (x-(kernel_width>>1)+kx) < size_x)
+		{
+		  int source_offset =
 		    batch*num_image_elements +
 		    (w-(kernel_width>>1)+kw)*size_x*size_y*size_z +
 		    (z-(kernel_width>>1)+kz)*size_x*size_y +
 		    (y-(kernel_width>>1)+ky)*size_x +
 		    (x-(kernel_width>>1)+kx);
-	    
+
 		  result += corrm[source_offset];
 		}
 	    }
@@ -430,13 +430,13 @@ namespace Gadgetron{
     const int num_image_elements = prod(image_dims);
 
     if( idx < number_of_border_threads ){
-    
+
       intd2 co;
       const int half_width = kernel_width>>1;
 
       co.vec[1] = idx/image_dims.vec[0];
       co.vec[1] = _min(co.vec[1], half_width );
-    
+
       if( co.vec[1] == half_width ){
         int new_idx = idx-half_width*image_dims.vec[0];
         int num_skips = new_idx/half_width;
@@ -455,35 +455,35 @@ namespace Gadgetron{
       else{
 	      co.vec[0] = idx%image_dims.vec[0];
       }
-    
+
       const int x = co.vec[0];
       const int y = co.vec[1];
-    
+
       const int size_x = image_dims.vec[0];
       const int size_y = image_dims.vec[1];
-      
+
       const int yminus = y-half_width;
       const int xminus = x-half_width;
 
       const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width));
-    
+
       complext<REAL> result = complext<REAL>(0);
- 
+
 #pragma unroll
       for (int ky = 0; ky < kernel_width; ky++) {
 #pragma unroll
 	      for (int kx = 0; kx < kernel_width; kx++) {
-	
+
           if( (yminus+ky >=0) ){
             if( yminus+ky < size_y ){
               if( xminus+kx >= 0 ){
                 if( xminus+kx < size_x ){
-          
-                int source_offset = 
+
+                int source_offset =
                   batch*num_image_elements +
                   (yminus+ky)*size_x +
                   (xminus+kx);
-          
+
                 result += corrm[source_offset];
                 }
               }
@@ -491,7 +491,7 @@ namespace Gadgetron{
           }
         }
       }
-      corrm_smooth[batch*num_image_elements+co_to_idx(co,image_dims)] = scale*result;  
+      corrm_smooth[batch*num_image_elements+co_to_idx(co,image_dims)] = scale*result;
     }
   }
 
@@ -509,12 +509,12 @@ namespace Gadgetron{
     const int num_slice_border_elements = num_slice_elements - (image_dims.vec[0] - (half_width << 1)) * (image_dims.vec[1] - (half_width << 1));
 
     if (idx < number_of_border_threads) {
-    
+
       intd3 co;
-      
+
       co.vec[2] = idx / num_slice_elements;
       co.vec[2] = _min(co.vec[2], half_width);
-      
+
       if (co.vec[2] == half_width) {
         int new_idx = idx - half_width * num_slice_elements;
         int skips = new_idx / (num_slice_border_elements >> 1);
@@ -531,13 +531,13 @@ namespace Gadgetron{
           new_idx %= num_slice_border_elements;
           co.vec[1] = new_idx / image_dims.vec[0];
           co.vec[1] = _min(co.vec[1], half_width);
-          
+
           if (co.vec[1] == half_width) {
             new_idx -= half_width * image_dims.vec[0];
             skips = new_idx / half_width;
             offset = _min(skips >> 1, image_dims.vec[1] - (half_width << 1));
             co.vec[1] += offset;
-            
+
             if (co.vec[1] == image_dims.vec[1] - half_width) {
               new_idx -= ((image_dims.vec[1] - (half_width << 1)) * (half_width << 1));
               co.vec[1] += new_idx / image_dims.vec[0];
@@ -560,17 +560,17 @@ namespace Gadgetron{
       const int x = co.vec[0];
       const int y = co.vec[1];
       const int z = co.vec[2];
-    
+
       const int size_x = image_dims.vec[0];
       const int size_y = image_dims.vec[1];
       const int size_z = image_dims.vec[2];
-      
+
       const int zminus = z-half_width;
       const int yminus = y-half_width;
       const int xminus = x-half_width;
 
       const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width*kernel_width));
-    
+
       complext<REAL> result = complext<REAL>(0);
 
 #pragma unroll
@@ -585,13 +585,13 @@ namespace Gadgetron{
                   if (yminus+ky < size_y) {
                     if (xminus+kx >= 0) {
                       if (xminus+kx < size_x) {
-                
-                        int source_offset = 
+
+                        int source_offset =
                           batch*num_image_elements +
                           (zminus+kz)*size_x*size_y +
                           (yminus+ky)*size_x +
                           (xminus+kx);
-                  
+
                         result += corrm[source_offset];
                       }
                     }
@@ -602,7 +602,7 @@ namespace Gadgetron{
           }
         }
       }
-      corrm_smooth[batch*num_image_elements+co_to_idx(co,image_dims)] = scale*result;  
+      corrm_smooth[batch*num_image_elements+co_to_idx(co,image_dims)] = scale*result;
     }
   }
 
@@ -614,13 +614,13 @@ namespace Gadgetron{
     for( unsigned int i=0; i<D; i++ ){
       image_dims.vec[i] = corrm->get_size(i);
     }
-  
+
     unsigned int number_of_batches = 1;
-  
+
     for( unsigned int i=D; i<corrm->get_number_of_dimensions(); i++ ){
       number_of_batches *= corrm->get_size(i);
     }
-  
+
     int device; cudaGetDevice( &device );
     cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
 
@@ -629,12 +629,12 @@ namespace Gadgetron{
 
     smooth_correlation_matrices_kernel<REAL><<<gridDim, blockDim>>>
       ( corrm->get_data_ptr(), corrm_smooth->get_data_ptr(), image_dims );
-  
+
     CHECK_FOR_CUDA_ERROR();
     unsigned int number_of_border_threads = prod(image_dims) - prod(image_dims-((kernel_width>>1)<<1));
     blockDim = dim3(128);
     gridDim = dim3((unsigned int) std::ceil((double)number_of_border_threads/blockDim.x), number_of_batches);
-  
+
     smooth_correlation_matrices_border_kernel<REAL><<<gridDim, blockDim>>>
       ( corrm->get_data_ptr(), corrm_smooth->get_data_ptr(), image_dims, number_of_border_threads );
 
@@ -649,49 +649,49 @@ namespace Gadgetron{
   {
     const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const unsigned int i = threadIdx.x;
-  
-    if( idx < num_elements ){    
-    
+
+    if( idx < num_elements ){
+
       // Get the dominant eigenvector for each correlation matrix.
       // Copying Peter Kellman's approach we use the power method:
       //  b_k+1 = A*b_k / ||A*b_k||
-    
+
       complext<REAL> *data_out = (complext<REAL>*) shared_mem;
       complext<REAL> *tmp_v = &(((complext<REAL>*) shared_mem)[num_batches*blockDim.x]);
-    
+
       const unsigned int iterations = 2;
-    
+
       for( unsigned int c=0; c<num_batches; c++){
 	data_out[c*blockDim.x+i] = complext<REAL>(1);
       }
-    
+
       for( unsigned int it=0; it<iterations; it++ ){
-      
+
 	for( unsigned int c=0; c<num_batches; c++){
 	  tmp_v[c*blockDim.x+i] = complext<REAL>(0);
 	}
-      
+
 	for( unsigned j=0; j<num_batches; j++){
 	  for( unsigned int k=0; k<num_batches; k++){
 	    tmp_v[j*blockDim.x+i] += corrm[(k*num_batches+j)*num_elements+idx]*data_out[k*blockDim.x+i];
 	  }
 	}
-      
+
 	REAL tmp = REAL(0);
-      
+
 	for (unsigned int c=0; c<num_batches; c++){
 	  tmp += norm(tmp_v[c*blockDim.x+i]);
 	}
-      
+
 	tmp = 1/std::sqrt(tmp);
 
-      
+
 	for (unsigned int c=0; c<num_batches; c++){
 	  complext<REAL> res = tmp*tmp_v[c*blockDim.x+i];
 	  data_out[c*blockDim.x+i] = res;
 	}
       }
-    
+
       for (unsigned int c=0; c<num_batches; c++){
 	csm[c*num_elements+idx] = data_out[c*blockDim.x+i];
       }
@@ -704,24 +704,24 @@ namespace Gadgetron{
   {
     const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-    if( idx < num_elements ){    
-    
+    if( idx < num_elements ){
+
       // Get the dominant eigenvector for each correlation matrix.
       // Copying Peter Kellman's approach we use the power method:
       //  b_k+1 = A*b_k / ||A*b_k||
-    
+
       const unsigned int iterations = 2;
 
       for( unsigned int c=0; c<num_batches; c++){
 	csm[c*num_elements+idx] = complext<REAL>(1);
       }
-    
+
       for( unsigned int it=0; it<iterations; it++ ){
 
 	for( unsigned int c=0; c<num_batches; c++){
 	  tmp_v[c*num_elements+idx] = complext<REAL>(0);
 	}
-      
+
 	for( unsigned j=0; j<num_batches; j++){
 	  for( unsigned int k=0; k<num_batches; k++){
 	    typedef complext<REAL> T;
@@ -730,14 +730,14 @@ namespace Gadgetron{
 	}
 
 	REAL tmp = REAL(0);
-      
+
 	for (unsigned int c=0; c<num_batches; c++){
 	  tmp += norm(tmp_v[c*num_elements+idx]);
 	}
-      
+
 	tmp = 1/std::sqrt(tmp);
 
-      
+
 	for (unsigned int c=0; c<num_batches; c++){
 	  complext<REAL> res = tmp*tmp_v[c*num_elements+idx];
 	  csm[c*num_elements+idx] = res;
@@ -755,7 +755,7 @@ namespace Gadgetron{
     for( unsigned int i=0; i<corrm_in.get_number_of_dimensions()-1; i++ ){
       image_dims.push_back(corrm_in.get_size(i));
     }
-  
+
     // Allocate output
     cuNDArray<complext<REAL> > out = cuNDArray<complext<REAL> >(image_dims);
 
@@ -768,7 +768,7 @@ namespace Gadgetron{
 	( corrm_in.get_data_ptr(), out.get_data_ptr(), number_of_batches, number_of_elements, tmp_v.get_data_ptr() );
 
     CHECK_FOR_CUDA_ERROR();
-  
+
     return out;
   }
 
@@ -794,16 +794,16 @@ namespace Gadgetron{
       }
     }
   }
-  
+
   // Set reference phase
   template<class REAL> __host__ static
   void set_phase_reference(cuNDArray<complext<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     dim3 blockDim(128);
     dim3 gridDim((unsigned int) std::ceil((double)number_of_elements/blockDim.x));
-  
+
     set_phase_reference_kernel<REAL><<< gridDim, blockDim >>>( csm->get_data_ptr(), number_of_batches, number_of_elements );
-  
+
     CHECK_FOR_CUDA_ERROR();
   }
 
@@ -813,13 +813,13 @@ namespace Gadgetron{
   // Template instantiation
   //
 
-  //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,1>(cuNDArray<complext<float> >*, int);
-  template EXPORTGPUPMRI  cuNDArray<complext<float>> estimate_b1_map<float,2>(const cuNDArray<complext<float> >&, int);
-  template EXPORTGPUPMRI  cuNDArray<complext<float>> estimate_b1_map<float,3>(const cuNDArray<complext<float> >&, int);
+  //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,1>(cuNDArray<complext<float> >*, int);
+  template cuNDArray<complext<float>> estimate_b1_map<float,2>(const cuNDArray<complext<float> >&, int);
+  template cuNDArray<complext<float>> estimate_b1_map<float,3>(const cuNDArray<complext<float> >&, int);
   //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,4>(cuNDArray<complext<float> >*, int);
 
-  //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,1>(cuNDArray<complext<double> >*, int);
-  template EXPORTGPUPMRI cuNDArray<complext<double>> estimate_b1_map<double,2>(const cuNDArray<complext<double>>&, int);
-  template EXPORTGPUPMRI cuNDArray<complext<double>> estimate_b1_map<double,3>(const cuNDArray<complext<double>>&, int);
-  //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,4>(cuNDArray<complext<double> >*, int);
+  //template boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,1>(cuNDArray<complext<double> >*, int);
+  template cuNDArray<complext<double>> estimate_b1_map<double,2>(const cuNDArray<complext<double>>&, int);
+  template cuNDArray<complext<double>> estimate_b1_map<double,3>(const cuNDArray<complext<double>>&, int);
+  //template boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,4>(cuNDArray<complext<double> >*, int);
 }

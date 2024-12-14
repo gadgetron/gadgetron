@@ -1,10 +1,10 @@
 {
-	"name": "Gadgetron",
+	"name": "Pingvin",
 	"build": {
 		"dockerfile": "../Dockerfile",
-		"target": "gadgetron_dev_cuda",
+		"target": "pingvin_dev_cuda",
 		"context": "../",
-		"cacheFrom": "ghcr.io/gadgetron/gadgetron/gadgetron_ubuntu_dev_cuda:latest",
+		"cacheFrom": "ghcr.io/gadgetron/pingvin/ubuntu22.04_dev_cuda:latest",
 	},
 	"containerEnv": {
 		"DOCKER_BUILDKIT": "1",
@@ -21,11 +21,11 @@
 					"Ninja",
 					"Unix Makefiles"
 				],
-				"cmake.cmakePath": "/opt/conda/envs/gadgetron/bin/cmake",
+				"cmake.cmakePath": "/opt/conda/envs/pingvin/bin/cmake",
 				"cmake.configureSettings": {
 					"USE_CUDA": "ON",
 					"USE_MKL": "ON",
-					"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron",
+					"CMAKE_INSTALL_PREFIX": "/opt/conda/envs/pingvin",
 					"BUILD_DOCUMENTATION": "OFF"
 				},
 				"indentRainbow.includedLanguages": [ "yaml", "python" ]
@@ -34,6 +34,7 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-extension-pack",
 				"ms-vscode.cmake-tools",
 				"ms-vscode.live-server",
 				"eamodio.gitlens",
@@ -48,10 +49,8 @@
 		}
 	},
 
-	"runArgs": ["--init", "--network=host"],
-	
 	// To enable your local GPUs in container if they are on enabled by default devcontainer will fail to start on hosts without GPU
-	// "runArgs": ["--init", "--network=host", "--gpus=all"],
+	"runArgs": ["--init", "--network=host", "--gpus=all"],
 
 	"mounts": [
 	],

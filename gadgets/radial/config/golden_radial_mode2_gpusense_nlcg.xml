@@ -2,45 +2,29 @@
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-         
-    <reader>
-      <slot>1008</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
-    </reader>
-    <reader>
-        <slot>1026</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
-    </reader>
-    <writer>
-      <slot>1022</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriter</classname>
-    </writer>
 
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
     </gadget>
 
     <gadget>
       <name>PCA</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>PCACoilGadget</classname>
     </gadget>
 
     <gadget>
       <name>CoilReduction</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
-    
+
     <gadget>
       <name>gpuRadialSensePrepGadget</name>
-      <dll>gadgetron_gpuradial</dll>
+      <dll>pingvin_gpuradial</dll>
       <classname>gpuRadialSensePrepGadget</classname>
       <property><name>deviceno</name><value>0</value></property>
       <property><name>mode</name><value>2</value></property>
@@ -54,12 +38,11 @@
       <property><name>reconstruction_os_factor_x</name><value>1.5</value></property>
       <property><name>reconstruction_os_factor_y</name><value>1.5</value></property>
     </gadget>
-    
+
       <gadget>
       <name>gpuNlcgSenseGadget_slice0</name>
-      <dll>gadgetron_gpuparallelmri</dll>
+      <dll>pingvin_gpuparallelmri</dll>
       <classname>gpuNlcgSenseGadget</classname>
-      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>0</value></property>
       <property><name>number_of_cg_iterations</name> <value>50</value></property>
@@ -72,9 +55,8 @@
     </gadget>
       <gadget>
       <name>gpuNlcgSenseGadget_slice1</name>
-      <dll>gadgetron_gpuparallelmri</dll>
+      <dll>pingvin_gpuparallelmri</dll>
       <classname>gpuNlcgSenseGadget</classname>
-      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>0</value></property>
       <property><name>number_of_cg_iterations</name> <value>50</value></property>
@@ -88,9 +70,8 @@
 
        <gadget>
       <name>gpuNlcgSenseGadget_slice2</name>
-      <dll>gadgetron_gpuparallelmri</dll>
+      <dll>pingvin_gpuparallelmri</dll>
       <classname>gpuNlcgSenseGadget</classname>
-      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>0</value></property>
       <property><name>number_of_cg_iterations</name> <value>50</value></property>
@@ -104,34 +85,20 @@
 
      <gadget>
       <name>Extract</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>
 
-    <!--
-	<gadget>
-	<name>ImageWrite</name>
-	<dll>gadgetron_mricore</dll>
-	<classname>ImageWriterGadgetFLOAT</classname>
-	</gadget>
-    -->
-    
     <gadget>
       <name>AutoScale</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>AutoScaleGadget</classname>
-    </gadget>
-        
-    <gadget>
-      <name>FloatToShort</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>FloatToUShortGadget</classname>
     </gadget>
 
     <gadget>
-      <name>ImageFinish</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadget</classname>
+      <name>FloatToShort</name>
+      <dll>pingvin_mricore</dll>
+      <classname>FloatToUShortGadget</classname>
     </gadget>
-    
+
 </gadgetronStreamConfiguration>

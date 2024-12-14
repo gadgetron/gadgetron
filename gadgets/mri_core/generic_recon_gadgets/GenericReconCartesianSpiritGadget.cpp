@@ -16,21 +16,13 @@ namespace Gadgetron {
     {
     }
 
-    int GenericReconCartesianSpiritGadget::process_config(ACE_Message_Block* mb)
+    int GenericReconCartesianSpiritGadget::process_config(const mrd::Header& header)
     {
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
         // -------------------------------------------------
 
-        ISMRMRD::IsmrmrdHeader h;
-        try
-        {
-            deserialize(mb->rd_ptr(), h);
-        }
-        catch (...)
-        {
-            GDEBUG("Error parsing ISMRMRD Header");
-        }
+        auto& h = header;
 
         size_t NE = h.encoding.size();
         num_encoding_spaces_ = NE;
@@ -90,19 +82,19 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericReconCartesianSpiritGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
+    int GenericReconCartesianSpiritGadget::process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1)
     {
         if (perform_timing.value()) { gt_timer_local_.start("GenericReconCartesianSpiritGadget::process"); }
 
         process_called_times_++;
 
-        IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
-        if (recon_bit_->rbit_.size() > num_encoding_spaces_)
+        mrd::ReconData* recon_bit_ = m1->getObjectPtr();
+        if (recon_bit_->buffers.size() > num_encoding_spaces_)
         {
-            GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
+            GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->buffers.size() << " instead of " << num_encoding_spaces_);
         }
 
-        GadgetContainerMessage<std::vector<Core::Waveform>>* wav = AsContainerMessage<std::vector<Core::Waveform>>(m1->cont());
+        GadgetContainerMessage<std::vector<mrd::WaveformUint32>>* wav = AsContainerMessage<std::vector<mrd::WaveformUint32>>(m1->cont());
         if (wav)
         {
             if (verbose.value())
@@ -112,7 +104,7 @@ namespace Gadgetron {
         }
 
         // for every encoding space
-        for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
+        for (size_t e = 0; e < recon_bit_->buffers.size(); e++)
         {
             std::stringstream os;
             os << "_encoding_" << e;
@@ -122,14 +114,14 @@ namespace Gadgetron {
 
             // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str()); }
 
-            if (recon_bit_->rbit_[e].ref_)
+            if (recon_bit_->buffers[e].ref)
             {
                 // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str()); }
 
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::make_ref_coil_map"); }
-                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_, recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
+                this->make_ref_coil_map(*recon_bit_->buffers[e].ref, recon_bit_->buffers[e].data.data.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str()); }
@@ -148,30 +140,29 @@ namespace Gadgetron {
 
                 // after this step, recon_obj_[e].kernel_, recon_obj_[e].kernelIm_ or recon_obj_[e].kernelIm3D_ are filled
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::perform_calib"); }
-                this->perform_calib(recon_bit_->rbit_[e], recon_obj_[e], e);
+                this->perform_calib(recon_bit_->buffers[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
-                // recon_bit_->rbit_[e].ref_ = Core::none;
+                // recon_bit_->rbit_[e].ref_ = std::nullopt;
             }
 
-            if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
+            if (recon_bit_->buffers[e].data.data.get_number_of_elements() > 0)
             {
                 // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str()); }
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::perform_unwrapping"); }
-                this->perform_unwrapping(recon_bit_->rbit_[e], recon_obj_[e], e);
+                this->perform_unwrapping(recon_bit_->buffers[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::compute_image_header"); }
-                this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
+                this->compute_image_header(recon_bit_->buffers[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                if (wav) this->set_wave_form_to_image_array(*wav->getObjectPtr(), recon_obj_[e].recon_res_);
-                recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
+                if (wav) recon_obj_[e].recon_res_.waveforms = *wav->getObjectPtr();
 
                 // ---------------------------------------------------------------
 
@@ -182,11 +173,10 @@ namespace Gadgetron {
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
 
-//            recon_bit_->rbit_[e].ref_->clear();
-            recon_bit_->rbit_[e].ref_ = Core::none;
-            recon_obj_[e].recon_res_.data_.clear();
-            recon_obj_[e].recon_res_.headers_.clear();
-            recon_obj_[e].recon_res_.meta_.clear();
+            recon_bit_->buffers[e].ref = std::nullopt;
+            recon_obj_[e].recon_res_.data.clear();
+            recon_obj_[e].recon_res_.headers.clear();
+            recon_obj_[e].recon_res_.meta.clear();
         }
 
         m1->release();
@@ -196,13 +186,13 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void GenericReconCartesianSpiritGadget::perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
+    void GenericReconCartesianSpiritGadget::perform_calib(mrd::ReconAssembly& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
         {
-            size_t RO = recon_bit.data_.data_.get_size(0);
-            size_t E1 = recon_bit.data_.data_.get_size(1);
-            size_t E2 = recon_bit.data_.data_.get_size(2);
+            size_t RO = recon_bit.data.data.get_size(0);
+            size_t E1 = recon_bit.data.data.get_size(1);
+            size_t E2 = recon_bit.data.data.get_size(2);
 
             hoNDArray< std::complex<float> >& src = recon_obj.ref_calib_;
             hoNDArray< std::complex<float> >& dst = recon_obj.ref_calib_;
@@ -318,19 +308,19 @@ namespace Gadgetron {
         }
     }
 
-    void GenericReconCartesianSpiritGadget::perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
+    void GenericReconCartesianSpiritGadget::perform_unwrapping(mrd::ReconAssembly& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
         {
             typedef std::complex<float> T;
 
-            size_t RO = recon_bit.data_.data_.get_size(0);
-            size_t E1 = recon_bit.data_.data_.get_size(1);
-            size_t E2 = recon_bit.data_.data_.get_size(2);
-            size_t dstCHA = recon_bit.data_.data_.get_size(3);
-            size_t N = recon_bit.data_.data_.get_size(4);
-            size_t S = recon_bit.data_.data_.get_size(5);
-            size_t SLC = recon_bit.data_.data_.get_size(6);
+            size_t RO = recon_bit.data.data.get_size(0);
+            size_t E1 = recon_bit.data.data.get_size(1);
+            size_t E2 = recon_bit.data.data.get_size(2);
+            size_t dstCHA = recon_bit.data.data.get_size(3);
+            size_t N = recon_bit.data.data.get_size(4);
+            size_t S = recon_bit.data.data.get_size(5);
+            size_t SLC = recon_bit.data.data.get_size(6);
 
             hoNDArray< std::complex<float> >& src = recon_obj.ref_calib_;
 
@@ -346,9 +336,9 @@ namespace Gadgetron {
             size_t convkE1 = recon_obj.kernel_.get_size(1);
             size_t convkE2 = recon_obj.kernel_.get_size(2);
 
-            recon_obj.recon_res_.data_.create(RO, E1, E2, 1, N, S, SLC);
-            Gadgetron::clear(recon_obj.recon_res_.data_);
-            recon_obj.full_kspace_ = recon_bit.data_.data_;
+            recon_obj.recon_res_.data.create(RO, E1, E2, 1, N, S, SLC);
+            Gadgetron::clear(recon_obj.recon_res_.data);
+            recon_obj.full_kspace_ = recon_bit.data.data;
             Gadgetron::clear(recon_obj.full_kspace_);
 
             std::stringstream os;
@@ -364,7 +354,7 @@ namespace Gadgetron {
             this->compute_snr_scaling_factor(recon_bit, effective_acce_factor, snr_scaling_ratio);
             if (effective_acce_factor > 1)
             {
-                Gadgetron::scal(snr_scaling_ratio, recon_bit.data_.data_);
+                Gadgetron::scal(snr_scaling_ratio, recon_bit.data.data);
             }
 
             Gadgetron::GadgetronTimer timer(false);
@@ -377,11 +367,11 @@ namespace Gadgetron {
 
             if(this->acceFactorE1_[e]<=1 && this->acceFactorE2_[e]<=1)
             {
-                recon_obj.full_kspace_ = recon_bit.data_.data_;
+                recon_obj.full_kspace_ = recon_bit.data.data;
             }
             else
             {
-                hoNDArray< std::complex<float> >& kspace = recon_bit.data_.data_;
+                hoNDArray< std::complex<float> >& kspace = recon_bit.data.data;
                 hoNDArray< std::complex<float> >& res = recon_obj.full_kspace_;
                 size_t iter_max = this->spirit_iter_max.value();
                 double iter_thres = this->spirit_iter_thres.value();
@@ -616,7 +606,7 @@ namespace Gadgetron {
             {
                 hoNDArray< std::complex<float> > complexImBuf(RO, E1, E2, dstCHA);
 
-#pragma omp for 
+#pragma omp for
                 for (ii = 0; ii < num; ii++)
                 {
                     size_t slc = ii / (N*S);
@@ -631,7 +621,7 @@ namespace Gadgetron {
 
                     hoNDArray< std::complex<float> > complexIm(RO, E1, E2, dstCHA, &(complex_im_recon_buf_(0, 0, 0, 0, n, s, slc)));
                     hoNDArray< std::complex<float> > coilMap(RO, E1, E2, dstCHA, &(recon_obj.coil_map_(0, 0, 0, 0, coilMapN, coilMapS, slc)));
-                    hoNDArray< std::complex<float> > combined(RO, E1, E2, 1, &(recon_obj.recon_res_.data_(0, 0, 0, 0, n, s, slc)));
+                    hoNDArray< std::complex<float> > combined(RO, E1, E2, 1, &(recon_obj.recon_res_.data(0, 0, 0, 0, n, s, slc)));
 
                     Gadgetron::multiplyConj(complexIm, coilMap, complexImBuf);
                     Gadgetron::sum_over_dimension(complexImBuf, combined, 3);
@@ -684,7 +674,7 @@ namespace Gadgetron {
             dim[1] = E1;
             dim[2] = CHA;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1)
             {
                 boost::shared_ptr< hoSPIRIT2DOperator< std::complex<float> > > oper(new hoSPIRIT2DOperator< std::complex<float> >(dim));
                 hoSPIRIT2DOperator< std::complex<float> >& spirit = *oper;
@@ -706,7 +696,7 @@ namespace Gadgetron {
                 hoNDArray< std::complex<float> > b(RO, E1, CHA);
                 hoNDArray< std::complex<float> > unwarppedKSpace(RO, E1, CHA);
 
-#pragma omp for 
+#pragma omp for
                 for (ii = 0; ii < num; ii++)
                 {
                     size_t slc = ii / (N*S);

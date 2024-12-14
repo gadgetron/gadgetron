@@ -3,10 +3,8 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_epi_export.h"
 #include "hoArmadillo.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 #include "EPIReconXObjectFlat.h"
@@ -14,8 +12,8 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_EPI EPIReconXGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  class EPIReconXGadget : 
+  public Gadget1<mrd::Acquisition>
     {
     public:
       EPIReconXGadget();
@@ -24,9 +22,8 @@ namespace Gadgetron{
     protected:
       GADGET_PROPERTY(verboseMode, bool, "Verbose output", false);
 
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+      virtual int process_config(const mrd::Header& header);
+      virtual int process(GadgetContainerMessage<mrd::Acquisition>* m1);
 
       // in verbose mode, more info is printed out
       bool verboseMode_;

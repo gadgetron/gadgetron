@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "cpuOperatorExport.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
 #include "linearOperator.h"
@@ -13,10 +12,10 @@
 //#include "GadgetronTimer.h"
 //#include "ImageIOAnalyze.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoSPIRITOperator : public linearOperator< hoNDArray<T> >
+template <typename T>
+class hoSPIRITOperator : public linearOperator< hoNDArray<T> >
 {
 public:
 

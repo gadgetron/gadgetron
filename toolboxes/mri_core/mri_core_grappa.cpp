@@ -90,7 +90,7 @@ void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t& c
 
 // ------------------------------------------------------------------------
 
-template <typename T> EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& A_mem, hoNDArray<T>& B_mem)
+template <typename T> void grappa2d_prepare_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& A_mem, hoNDArray<T>& B_mem)
 {
     try
     {
@@ -186,12 +186,12 @@ template <typename T> EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray<
     }
 }
 
-template EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& A_mem, hoNDArray< std::complex<float> >& B_mem);
-template EXPORTMRICORE void grappa2d_prepare_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& A_mem, hoNDArray< std::complex<double> >& B_mem);
+template void grappa2d_prepare_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& A_mem, hoNDArray< std::complex<float> >& B_mem);
+template void grappa2d_prepare_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& A_mem, hoNDArray< std::complex<double> >& B_mem);
 
 // ------------------------------------------------------------------------
 
-template <typename T> EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray<T>& A, const hoNDArray<T>& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray<T>& ker)
+template <typename T> void grappa2d_perform_calib(const hoNDArray<T>& A, const hoNDArray<T>& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray<T>& ker)
 {
     try
     {
@@ -238,8 +238,8 @@ template <typename T> EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray<
     }
 }
 
-template EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray< std::complex<float> >& ker);
-template EXPORTMRICORE void grappa2d_perform_calib(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray< std::complex<double> >& ker);
+template void grappa2d_perform_calib(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray< std::complex<float> >& ker);
+template void grappa2d_perform_calib(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& B, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, double thres, hoNDArray< std::complex<double> >& ker);
 
 // ------------------------------------------------------------------------
 
@@ -262,8 +262,8 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
     }
 }
 
-template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& ker);
-template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& ker);
+template void grappa2d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& ker);
+template void grappa2d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& ker);
 
 // ------------------------------------------------------------------------
 
@@ -397,8 +397,8 @@ void grappa2d_prepare_recon(const hoNDArray<T>& kspace, size_t kRO, const std::v
     }
 }
 
-template EXPORTMRICORE void grappa2d_prepare_recon(const hoNDArray< std::complex<float> >& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<float> >& A, hoNDArray<unsigned short>& AInd);
-template EXPORTMRICORE void grappa2d_prepare_recon(const hoNDArray< std::complex<double> >& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<double> >& A, hoNDArray<unsigned short>& AInd);
+template void grappa2d_prepare_recon(const hoNDArray< std::complex<float> >& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<float> >& A, hoNDArray<unsigned short>& AInd);
+template void grappa2d_prepare_recon(const hoNDArray< std::complex<double> >& kspace, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<double> >& A, hoNDArray<unsigned short>& AInd);
 
 // ------------------------------------------------------------------------
 
@@ -426,8 +426,8 @@ void grappa2d_perform_recon(const hoNDArray<T>& A, const hoNDArray<T>& ker, cons
     }
 }
 
-template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
-template EXPORTMRICORE void grappa2d_perform_recon(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
+template void grappa2d_perform_recon(const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
+template void grappa2d_perform_recon(const hoNDArray< std::complex<double> >& A, const hoNDArray< std::complex<double> >& ker, const hoNDArray<unsigned short>& AInd, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
 
 // ------------------------------------------------------------------------
 
@@ -473,8 +473,8 @@ void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const h
     }
 }
 
-template EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<float> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
-template EXPORTMRICORE void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<double> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
+template void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<float> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<float> >& res);
+template void grappa2d_fill_reconed_kspace(const hoNDArray<unsigned short>& AInd, const hoNDArray< std::complex<double> >& recon, const std::vector<int>& oE1, size_t RO, size_t E1, hoNDArray< std::complex<double> >& res);
 
 // ------------------------------------------------------------------------
 
@@ -494,8 +494,8 @@ void grappa2d_recon(const hoNDArray<T>& kspace, const hoNDArray<T>& ker, size_t 
     }
 }
 
-template EXPORTMRICORE void grappa2d_recon(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<float> >& res);
-template EXPORTMRICORE void grappa2d_recon(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<double> >& res);
+template void grappa2d_recon(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<float> >& res);
+template void grappa2d_recon(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, bool periodic_boundary_condition, hoNDArray< std::complex<double> >& res);
 
 // ------------------------------------------------------------------------
 
@@ -568,8 +568,8 @@ void grappa2d_convert_to_convolution_kernel(const hoNDArray<T>& ker, size_t kRO,
     return;
 }
 
-template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<double> >& convKer);
+template void grappa2d_convert_to_convolution_kernel(const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<float> >& convKer);
+template void grappa2d_convert_to_convolution_kernel(const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -591,8 +591,8 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
         grappa2d_convert_to_convolution_kernel(ker, kRO, kE1, oE1, convKer);
 }
 
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& convKer);
+template void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer);
+template void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& convKer);
 
 
 // ------------------------------------------------------------------------
@@ -608,8 +608,8 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     grappa2d_calib_convolution_kernel(acsSrc, acsDst, accelFactor, thres, kRO, kNE1, startRO, endRO, startE1, endE1, convKer);
 }
 
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<double> >& convKer);
+template void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
+template void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -660,8 +660,8 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
     }
 }
 
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<double> >& convKer);
+template void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
+template void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -683,8 +683,8 @@ void grappa2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
     return;
 }
 
-template EXPORTMRICORE void grappa2d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<float> >& kIm);
-template EXPORTMRICORE void grappa2d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<double> >& kIm);
+template void grappa2d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<float> >& kIm);
+template void grappa2d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<double> >& kIm);
 
 // ------------------------------------------------------------------------
 
@@ -770,8 +770,8 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
     }
 }
 
-template EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray< std::complex<float> >& kerIm, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray<float>& gFactor);
-template EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray< std::complex<double> >& kerIm, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray<double>& gFactor);
+template void grappa2d_unmixing_coeff(const hoNDArray< std::complex<float> >& kerIm, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray<float>& gFactor);
+template void grappa2d_unmixing_coeff(const hoNDArray< std::complex<double> >& kerIm, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray<double>& gFactor);
 
 // ------------------------------------------------------------------------
 
@@ -791,8 +791,8 @@ void grappa2d_image_domain_unwrapping(const hoNDArray<T>& kspace, const hoNDArra
     }
 }
 
-template EXPORTMRICORE void grappa2d_image_domain_unwrapping(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void grappa2d_image_domain_unwrapping(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& kerIm, hoNDArray< std::complex<double> >& complexIm);
+template void grappa2d_image_domain_unwrapping(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& complexIm);
+template void grappa2d_image_domain_unwrapping(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& kerIm, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -856,8 +856,8 @@ void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedI
     }
 }
 
-template EXPORTMRICORE void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& kerIm, hoNDArray< std::complex<double> >& complexIm);
+template void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& complexIm);
+template void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& kerIm, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -891,8 +891,8 @@ void apply_unmix_coeff_kspace(const hoNDArray<T>& kspace, const hoNDArray<T>& un
     }
 }
 
-template EXPORTMRICORE void apply_unmix_coeff_kspace(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void apply_unmix_coeff_kspace(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
+template void apply_unmix_coeff_kspace(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
+template void apply_unmix_coeff_kspace(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -925,8 +925,8 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
     }
 }
 
-template EXPORTMRICORE void apply_unmix_coeff_aliased_image(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void apply_unmix_coeff_aliased_image(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
+template void apply_unmix_coeff_aliased_image(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
+template void apply_unmix_coeff_aliased_image(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -1137,8 +1137,8 @@ void grappa3d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst,
     return;
 }
 
-template EXPORTMRICORE void grappa3d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<float> >& ker);
-template EXPORTMRICORE void grappa3d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<double> >& ker);
+template void grappa3d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<float> >& ker);
+template void grappa3d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<double> >& ker);
 
 // ------------------------------------------------------------------------
 
@@ -1242,8 +1242,8 @@ void grappa3d_convert_to_convolution_kernel(const hoNDArray<T>& ker,
     return;
 }
 
-template EXPORTMRICORE void grappa3d_convert_to_convolution_kernel(const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa3d_convert_to_convolution_kernel(const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<double> >& convKer);
+template void grappa3d_convert_to_convolution_kernel(const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<float> >& convKer);
+template void grappa3d_convert_to_convolution_kernel(const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, const std::vector<int>& kE2, const std::vector<int>& oE2, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -1298,8 +1298,8 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     return;
 }
 
-template EXPORTMRICORE void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<double> >& convKer);
+template void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<float> >& convKer);
+template void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -1335,8 +1335,8 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     return;
 }
 
-template EXPORTMRICORE void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<double> >& convKer);
+template void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<float> >& convKer);
+template void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -1398,8 +1398,8 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
     return;
 }
 
-template EXPORTMRICORE void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<double> >& convKer);
+template void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<float> >& convKer);
+template void grappa3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactorE1, size_t accelFactorE2, double thres, double overDetermineRatio, size_t kRO, size_t kNE1, size_t kNE2, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
@@ -1449,8 +1449,8 @@ void grappa3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
     }
 }
 
-template EXPORTMRICORE void grappa3d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm, bool preset_kIm_with_zeros);
-template EXPORTMRICORE void grappa3d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm, bool preset_kIm_with_zeros);
+template void grappa3d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm, bool preset_kIm_with_zeros);
+template void grappa3d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm, bool preset_kIm_with_zeros);
 
 // ------------------------------------------------------------------------
 
@@ -1549,8 +1549,8 @@ void grappa3d_unmixing_coeff(const hoNDArray<T>& convKer, const hoNDArray<T>& co
     }
 }
 
-template EXPORTMRICORE void grappa3d_unmixing_coeff(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< float >& gFactor);
-template EXPORTMRICORE void grappa3d_unmixing_coeff(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< double >& gFactor);
+template void grappa3d_unmixing_coeff(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< float >& gFactor);
+template void grappa3d_unmixing_coeff(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< double >& gFactor);
 
 // ------------------------------------------------------------------------
 
@@ -1649,8 +1649,8 @@ void grappa3d_image_domain_unwrapping(const hoNDArray<T>& convKer, const hoNDArr
     }
 }
 
-template EXPORTMRICORE void grappa3d_image_domain_unwrapping(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void grappa3d_image_domain_unwrapping(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& complexIm);
+template void grappa3d_image_domain_unwrapping(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& complexIm);
+template void grappa3d_image_domain_unwrapping(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& complexIm);
 
 template <typename T>
 void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, const hoNDArray<T>& aliasedIm,
@@ -1735,8 +1735,8 @@ void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, 
     }
 }
 
-template EXPORTMRICORE void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& complexIm);
+template void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& complexIm);
+template void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& kspace, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -1786,8 +1786,8 @@ void apply_unmix_coeff_kspace_3D(const hoNDArray<T>& kspace, const hoNDArray<T>&
     }
 }
 
-template EXPORTMRICORE void apply_unmix_coeff_kspace_3D(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void apply_unmix_coeff_kspace_3D(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
+template void apply_unmix_coeff_kspace_3D(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
+template void apply_unmix_coeff_kspace_3D(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -1835,8 +1835,8 @@ void apply_unmix_coeff_aliased_image_3D(const hoNDArray<T>& aliasedIm, const hoN
     }
 }
 
-template EXPORTMRICORE void apply_unmix_coeff_aliased_image_3D(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
-template EXPORTMRICORE void apply_unmix_coeff_aliased_image_3D(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
+template void apply_unmix_coeff_aliased_image_3D(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
+template void apply_unmix_coeff_aliased_image_3D(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 

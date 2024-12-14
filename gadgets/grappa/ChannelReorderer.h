@@ -6,15 +6,15 @@
 #include "common/AnnotatedAcquisition.h"
 
 #include "PureGadget.h"
-#include "Types.h"
 
 namespace Gadgetron::Grappa {
 
-    class ChannelReorderer : public Core::PureGadget<AnnotatedAcquisition, Core::Acquisition> {
+    /** TODO: This Gadget is not used anywhere anymore... */
+    class ChannelReorderer : public Core::PureGadget<AnnotatedAcquisition, mrd::Acquisition> {
     public:
         ChannelReorderer(const Core::Context &, const std::unordered_map<std::string, std::string> &);
 
-        AnnotatedAcquisition process_function(Core::Acquisition acquisition) const override;
+        AnnotatedAcquisition process_function(mrd::Acquisition acquisition) const override;
 
         NODE_PROPERTY(
                 uncombined_channels, std::string,

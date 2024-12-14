@@ -1,25 +1,20 @@
 #pragma once
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
 
 namespace Gadgetron{
-  
-    class FlowPhaseSubtractionGadget : public Core::ChannelGadget<Core::Image<std::complex<float>>>
+
+    class FlowPhaseSubtractionGadget : public Core::ChannelGadget<mrd::Image<std::complex<float>>>
     {
 
     public:
-        using Core::ChannelGadget<Core::Image<std::complex<float>>>::ChannelGadget;
+        using Core::ChannelGadget<mrd::Image<std::complex<float>>>::ChannelGadget;
 
         ~FlowPhaseSubtractionGadget() override = default;
 
-        void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
+        void process(Core::InputChannel<mrd::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
     };
 }
 

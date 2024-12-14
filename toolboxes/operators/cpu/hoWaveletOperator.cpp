@@ -112,10 +112,10 @@ namespace Gadgetron
     // Instantiation
     // ------------------------------------------------------------
 
-    template class EXPORTCPUOPERATOR hoWaveletOperator< float >;
-    template class EXPORTCPUOPERATOR hoWaveletOperator< double >;
+    template class hoWaveletOperator< float >;
+    template class hoWaveletOperator< double >;
 
-    template class EXPORTCPUOPERATOR hoWaveletOperator< std::complex<float> >;
-    template class EXPORTCPUOPERATOR hoWaveletOperator< std::complex<double> >;
+    template class hoWaveletOperator< std::complex<float> >;
+    template class hoWaveletOperator< std::complex<double> >;
 
 }

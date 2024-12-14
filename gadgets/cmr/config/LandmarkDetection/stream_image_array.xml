@@ -6,19 +6,19 @@
     <!-- ImageArray to images -->
     <gadget>
         <name>ImageArraySplit</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>ImageArraySplitGadget</classname>
     </gadget>
 
     <gadget>
         <name>ComplexToFloatAttrib</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>ComplexToFloatGadget</classname>
     </gadget>
 
     <gadget>
         <name>FloatToShortAttrib</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>FloatToUShortGadget</classname>
     </gadget>
 

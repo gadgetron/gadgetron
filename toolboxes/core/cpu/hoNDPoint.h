@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "GadgetronException.h"
-
 #include <new>
 #include <vector>
 #include <iostream>
@@ -50,7 +48,7 @@ namespace Gadgetron
         bool operator==(const Self& p) const;
         bool operator!=(const Self& p) const;
 
-        template<typename T2> 
+        template<typename T2>
         void copyFrom(const hoNDPoint<T2, D>& aArray)
         {
             unsigned int ii;

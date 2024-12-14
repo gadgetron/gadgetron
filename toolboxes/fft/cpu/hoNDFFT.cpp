@@ -880,8 +880,8 @@ namespace Gadgetron {
     // Instantiation
     //
 
-    template class EXPORTCPUFFT hoNDFFT<float>;
-    template class EXPORTCPUFFT hoNDFFT<double>;
+    template class hoNDFFT<float>;
+    template class hoNDFFT<double>;
 
 
     template void FFT::fft<std::complex<float>>(hoNDArray<std::complex<float>>& data, std::vector<size_t> dimensions);

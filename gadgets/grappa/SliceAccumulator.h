@@ -4,7 +4,6 @@
 
 #include "ChannelReorderer.h"
 
-#include "Types.h"
 #include "Node.h"
 
 namespace Gadgetron::Grappa {

@@ -5,7 +5,7 @@
 
     <gadget>
         <name>ComplexToFloatAttrib</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>ComplexToFloatGadget</classname>
     </gadget>
 

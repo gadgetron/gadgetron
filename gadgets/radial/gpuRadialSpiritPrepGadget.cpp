@@ -10,9 +10,9 @@ namespace Gadgetron{
   gpuRadialSpiritPrepGadget::gpuRadialSpiritPrepGadget() : gpuRadialPrepGadget() {}
 
   int 
-  gpuRadialSpiritPrepGadget::process_config(ACE_Message_Block* mb)
+  gpuRadialSpiritPrepGadget::process_config(const mrd::Header& header)
   {
-    return gpuRadialPrepGadget::process_config(mb);
+    return gpuRadialPrepGadget::process_config(header);
   }
   
   boost::shared_ptr< hoNDArray<float_complext> > 

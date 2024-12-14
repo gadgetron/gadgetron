@@ -1,0 +1,20 @@
+dependency:
+  data: spiral/meas_MID00080_FID16005_MiniIRT_B0_meas1.mrd
+  checksum: de499effa696d08ea73cfaf2ef4f415d
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: spiral/meas_MID00080_FID16005_MiniIRT_B0_meas2.mrd
+  checksum: a1e50347fc431c57e83fd8a868f0f799
+  run:
+  - args: --config deblurring_recon_acctrig.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: spiral/spiral_rt_deblurring_out_deblurring_recon_acctrig.xml.mrd
+  checksum: 2013a99c4e6aa372857d20e1aaaf950c
+  tests:
+  - image_series: 1
+requirements:
+  system_memory: 2048
+  gpu_support: 1
+  gpu_memory: 1024
+tags:
+- fast

@@ -1,0 +1,21 @@
+dependency:
+  data: generic/meas_MID00427_FID114629_R3_tpat__PEFOV100_PERes120/meas_MID00427_FID114629_R3_tpat__PEFOV100_PERes120_meas1.mrd
+  checksum: d43bf8c9efa72ffe5fdaa911f6cafb4f
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: generic/meas_MID00427_FID114629_R3_tpat__PEFOV100_PERes120/meas_MID00427_FID114629_R3_tpat__PEFOV100_PERes120_meas2.mrd
+  checksum: 560b4c0dfcb3d4b69f8b4bf1852b346b
+  run:
+  - args: --config Generic_Cartesian_Grappa_SNR.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: generic/meas_MID00427_FID114629_R3_tpat__PEFOV100_PERes120/ref_20210923_klk_Generic_Cartesian_Grappa_SNR.xml.mrd
+  checksum: 01cd4b56de5042c8c14e52d7744d604e
+  tests:
+  - image_series: 300
+    value_comparison_threshold: 0.02
+    scale_comparison_threshold: 0.02
+requirements:
+  system_memory: 4096
+tags:
+- fast
+- generic

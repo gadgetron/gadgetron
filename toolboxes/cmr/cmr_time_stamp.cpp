@@ -8,9 +8,9 @@
 #include "hoNDArray_elemwise.h"
 #include <boost/math/special_functions/sign.hpp>
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-    template <typename T> 
+    template <typename T>
     void simple_line_fit(const std::vector<T>& x, const std::vector<T>& y, T& a, T& b)
     {
         try
@@ -114,8 +114,8 @@ namespace Gadgetron {
         }
     }
 
-    void detect_heart_beat_with_time_stamp(hoNDArray<float>& cpt_time_stamp, hoNDArray<int>& ind_hb, 
-                                        std::vector<size_t>& start_e1_hb, std::vector<size_t>& end_e1_hb, 
+    void detect_heart_beat_with_time_stamp(hoNDArray<float>& cpt_time_stamp, hoNDArray<int>& ind_hb,
+                                        std::vector<size_t>& start_e1_hb, std::vector<size_t>& end_e1_hb,
                                         std::vector<size_t>& start_n_hb, std::vector<size_t>& end_n_hb )
     {
         try
@@ -237,8 +237,8 @@ namespace Gadgetron {
         }
     }
 
-    void correct_heart_beat_time_stamp_with_fitting(hoNDArray<float>& cpt_time_stamp, hoNDArray<int>& ind_hb, size_t startE1, size_t endE1, 
-                                                const std::vector<size_t>& start_e1_hb, const std::vector<size_t>& end_e1_hb, 
+    void correct_heart_beat_time_stamp_with_fitting(hoNDArray<float>& cpt_time_stamp, hoNDArray<int>& ind_hb, size_t startE1, size_t endE1,
+                                                const std::vector<size_t>& start_e1_hb, const std::vector<size_t>& end_e1_hb,
                                                 const std::vector<size_t>& start_n_hb, const std::vector<size_t>& end_n_hb )
     {
         try
@@ -369,7 +369,7 @@ namespace Gadgetron {
         }
     }
 
-    void compute_phase_time_stamp(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, size_t startE1, size_t endE1, 
+    void compute_phase_time_stamp(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, size_t startE1, size_t endE1,
         hoNDArray<float>& phs_time_stamp, hoNDArray<float>& phs_cpt_time_stamp)
     {
         try
@@ -416,7 +416,7 @@ namespace Gadgetron {
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void resample_cardiac_phase_cmr_array(const hoNDArray<T>& data, size_t output_N, hoNDArray<T>& res, size_t spline_degree)
     {
         try
@@ -453,7 +453,7 @@ namespace Gadgetron {
 
                 std::vector<size_t> ind;
 
-                #pragma omp for 
+                #pragma omp for
                 for (n=0; n<num; n++)
                 {
                     ind = data.calculate_index(n);
@@ -482,8 +482,8 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray<float>& data, size_t output_N, hoNDArray<float>& res, size_t spline_degree);
-    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray<double>& data, size_t output_N, hoNDArray<double>& res, size_t spline_degree);
-    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray< std::complex<float> >& data, size_t output_N, hoNDArray< std::complex<float> >& res, size_t spline_degree);
-    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray< std::complex<double> >& data, size_t output_N, hoNDArray< std::complex<double> >& res, size_t spline_degree);
+    template void resample_cardiac_phase_cmr_array(const hoNDArray<float>& data, size_t output_N, hoNDArray<float>& res, size_t spline_degree);
+    template void resample_cardiac_phase_cmr_array(const hoNDArray<double>& data, size_t output_N, hoNDArray<double>& res, size_t spline_degree);
+    template void resample_cardiac_phase_cmr_array(const hoNDArray< std::complex<float> >& data, size_t output_N, hoNDArray< std::complex<float> >& res, size_t spline_degree);
+    template void resample_cardiac_phase_cmr_array(const hoNDArray< std::complex<double> >& data, size_t output_N, hoNDArray< std::complex<double> >& res, size_t spline_degree);
 }

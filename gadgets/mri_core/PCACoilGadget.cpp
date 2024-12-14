@@ -7,7 +7,6 @@
 
 #include "PCACoilGadget.h"
 #include "hoNDArray_elemwise.h"
-#include "ismrmrd/xml.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDKLT.h"
 #include "hoNDArray_linalg.h"
@@ -17,10 +16,52 @@
 
 namespace Gadgetron {
 
-    PCACoilGadget::PCACoilGadget()
-        : max_buffered_profiles_(100)
-        , samples_to_use_(16)
+    namespace {
+        int get_location(const mrd::Acquisition& acq)
+        {
+            return acq.head.idx.slice.value_or(0);
+        }
+    }
+
+    PCACoilGadget::PCACoilGadget(const Core::Context& context, const Core::GadgetProperties& props)
+        : Core::ChannelGadget<mrd::Acquisition>(context, props)
     {
+        std::vector<std::string> uncomb;
+        if (uncombined_channels_by_name.size()) {
+            GDEBUG("uncomb_str: %s\n", uncombined_channels_by_name.c_str());
+            boost::split(uncomb, uncombined_channels_by_name, boost::is_any_of(","));
+            for (unsigned int i = 0; i < uncomb.size(); i++) {
+                std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+                if (context.header.acquisition_system_information) {
+                    for (size_t i = 0; i < context.header.acquisition_system_information->coil_label.size(); i++) {
+                        if (ch == context.header.acquisition_system_information->coil_label[i].coil_name) {
+                            uncombined_channels_.push_back(i);//This assumes that the channels are sorted in the header
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        /** NOTE:
+         *
+         * This PCACoilGadget used to have a GADGET_PROPERTY "present_uncombined_channels" that was
+         * updated here to `uncombined_channels_.size()`, then later referenced by the NoiseAdjustGadget
+         * **only** in the `interventional_mri/grappa_device.xml` chain, which is untested.
+         *
+         * However, ChannelGadgets don't seem to support a non-const GADGET_PROPERTY. They only support
+         * NODE_PROPERTY, which declares a const member variable.
+         *
+         * Since the grappa_device chains is not tested anywhere, I think this is a "dead" feature.
+         *
+         */
+        // present_uncombined_channels.value((int)uncombined_channels_.size());
+        // GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
+
+#ifdef USE_OMP
+        omp_set_num_threads(1);
+#endif // USE_OMP
+
     }
 
     PCACoilGadget::~PCACoilGadget()
@@ -36,227 +77,162 @@ namespace Gadgetron {
         }
     }
 
-    int PCACoilGadget::process_config(ACE_Message_Block *mb)
-    {
-        ISMRMRD::IsmrmrdHeader h;
-        ISMRMRD::deserialize(mb->rd_ptr(), h);
 
-        std::string uncomb_str = uncombined_channels_by_name.value();
-        std::vector<std::string> uncomb;
-        if (uncomb_str.size()) {
-            GDEBUG("uncomb_str: %s\n", uncomb_str.c_str());
-            boost::split(uncomb, uncomb_str, boost::is_any_of(","));
-            for (unsigned int i = 0; i < uncomb.size(); i++) {
-                std::string ch = boost::algorithm::trim_copy(uncomb[i]);
-                if (h.acquisitionSystemInformation) {
-                    for (size_t i = 0; i < h.acquisitionSystemInformation->coilLabel.size(); i++) {
-                        if (ch == h.acquisitionSystemInformation->coilLabel[i].coilName) {
-                            uncombined_channels_.push_back(i);//This assumes that the channels are sorted in the header
-                            break;
-                        }
+    void PCACoilGadget::process(Core::InputChannel<mrd::Acquisition>& input, Core::OutputChannel& output)
+    {
+        for (auto acq : input) {
+            bool is_noise = acq.head.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
+
+            //We should not be receiving noise here
+            if (is_noise) {
+                GERROR("Received noise in PCACoilGadget\n");
+                continue;
+            }
+
+            int location = get_location(acq);
+
+            // We will always start in buffering mode for a given location.
+            buffering_mode_.try_emplace(location, true);
+            bool is_buffering = buffering_mode_[location];
+
+            if (is_buffering)
+            {
+                buffer_[location].push_back(acq);
+
+                bool is_last_scan_in_slice = acq.head.flags.HasFlags(mrd::AcquisitionFlags::kLastInSlice);
+                size_t profiles_available = buffer_[location].size();
+
+                //Are we ready for calculating PCA
+                if (is_last_scan_in_slice || (profiles_available >= max_buffered_profiles_))
+                {
+                    calculate_coefficients(location);
+
+                    //Now we should pump all the profiles that we have buffered back through the system
+                    for (size_t p = 0; p < profiles_available; p++) {
+                        auto& acq = buffer_[location][p];
+                        do_pca(acq);
+                        output.push(std::move(acq));
                     }
+
+                    //Switch off buffering for this slice
+                    buffering_mode_[location] = false;
+                    //Remove references in this buffer
+                    buffer_[location].clear();
                 }
             }
+            else {
+                // GDEBUG_STREAM("Not buffering location " << location << " anymore");
+                do_pca(acq);
+                output.push(std::move(acq));
+            }
         }
-
-        present_uncombined_channels.value((int)uncombined_channels_.size());
-        GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
-
-#ifdef USE_OMP
-        omp_set_num_threads(1);
-#endif // USE_OMP
-
-        return GADGET_OK;
     }
 
-    int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
+    void PCACoilGadget::calculate_coefficients(int location)
     {
-        bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+        size_t profiles_available = buffer_[location].size();
 
-        //We should not be receiving noise here
-        if (is_noise) {
-            m1->release();
-            return GADGET_OK;
+        mrd::Acquisition& ref = buffer_[location][0];
+        size_t samples_per_profile = ref.Samples();
+        size_t channels = ref.Coils();
+
+        GDEBUG("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
+        size_t samples_to_use = samples_per_profile > samples_to_use_ ? samples_to_use_ : samples_per_profile;
+
+        //For some sequences there is so little data, we should just use it all.
+        if (profiles_available < 16) {
+            samples_to_use = samples_per_profile;
         }
 
+        size_t total_samples = samples_to_use*profiles_available;
 
-        std::map<int, bool>::iterator it;
-        int location = m1->getObjectPtr()->idx.slice;
-        bool is_last_scan_in_slice = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
-        int samples_per_profile = m1->getObjectPtr()->number_of_samples;
-        int channels = m1->getObjectPtr()->active_channels;
+        std::vector<size_t> dims{total_samples, channels};
+        hoNDArray<std::complex<float>> A(dims);
 
-        it = buffering_mode_.find(location);
+        size_t sample_counter = 0;
 
-        bool is_buffering = true;
-        //Do we have an entry for this location
-        if (it != buffering_mode_.end()) {
-            is_buffering = it->second;
-        }
-        else {
-            //else make an entry. We will always start in buffering mode for a given location.
-            buffering_mode_[location] = is_buffering;
+        size_t data_offset = 0;
+        auto center_sample = ref.head.center_sample.value_or(0);
+        if (center_sample >= (samples_to_use >> 1)) {
+            data_offset = center_sample - (samples_to_use >> 1);
         }
 
-        if (is_buffering)
-        {
-            buffer_[location].push_back(m1);
-            int profiles_available = buffer_[location].size();
+        //GDEBUG("Data offset = %d\n", data_offset);
 
-            //Are we ready for calculating PCA
-            if (is_last_scan_in_slice || (profiles_available >= max_buffered_profiles_))
-            {
+        std::vector<size_t> means_dims{channels};
+        hoNDArray<std::complex<float> > means(means_dims);
+        means.fill(std::complex<float>(0.0f, 0.0f));
 
-                //GDEBUG("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
-                int samples_to_use = samples_per_profile > samples_to_use_ ? samples_to_use_ : samples_per_profile;
+        GDEBUG_STREAM("Finished setting up arrays");
 
-                //For some sequences there is so little data, we should just use it all.
-                if (profiles_available < 16) {
-                    samples_to_use = samples_per_profile;
-                }
+        for (size_t p = 0; p < profiles_available; p++) {
+            mrd::Acquisition& tmp = buffer_[location][p];
 
-                int total_samples = samples_to_use*profiles_available;
-
-                std::vector<size_t> dims(2);
-                dims[0] = total_samples; dims[1] = channels;
-
-                hoNDArray< std::complex<float> > A;
-                try{ A.create(dims); }
-                catch (std::runtime_error & err){
-                    GDEBUG("Unable to create array for PCA calculation\n");
-                    return GADGET_FAIL;
-                }
-
-                std::complex<float>* A_ptr = A.get_data_ptr();
-                size_t sample_counter = 0;
-
-                size_t data_offset = 0;
-                if (m1->getObjectPtr()->center_sample >= (samples_to_use >> 1)) {
-                    data_offset = m1->getObjectPtr()->center_sample - (samples_to_use >> 1);
-                }
-
-                //GDEBUG("Data offset = %d\n", data_offset);
-
-                hoNDArray<std::complex<float> > means;
-                std::vector<size_t> means_dims; means_dims.push_back(channels);
-
-                try{ means.create(means_dims); }
-                catch (std::runtime_error& err){
-                    GDEBUG("Unable to create temporary stoorage for mean values\n");
-                    return GADGET_FAIL;
-                }
-
-                means.fill(std::complex<float>(0.0f, 0.0f));
-
-                std::complex<float>* means_ptr = means.get_data_ptr();
-
-                for (size_t p = 0; p < profiles_available; p++) {
-                    GadgetContainerMessage<hoNDArray<std::complex<float> > >* m_tmp =
-                        AsContainerMessage<hoNDArray< std::complex<float> > >(buffer_[location][p]->cont());
-
-                    if (!m_tmp) {
-                        GDEBUG("Fatal error, unable to recover data from data buffer (%d,%d)\n", p, profiles_available);
-                        return GADGET_FAIL;
-                    }
-
-                    std::complex<float>* d = m_tmp->getObjectPtr()->get_data_ptr();
-
-                    for (unsigned s = 0; s < samples_to_use; s++) {
-                        for (size_t c = 0; c < channels; c++) {
-                            bool uncombined_channel = std::find(uncombined_channels_.begin(), uncombined_channels_.end(), c) != uncombined_channels_.end();
-                            if (uncombined_channel) {
-                                A_ptr[sample_counter + c *total_samples] = std::complex<float>(0.0, 0.0);
-                            }
-                            else {
-                                A_ptr[sample_counter + c *total_samples] = d[c*samples_per_profile + data_offset + s];
-                                means_ptr[c] += d[c*samples_per_profile + data_offset + s];
-                            }
-                        }
-
-                        sample_counter++;
-                        //GDEBUG("Sample counter = %d/%d\n", sample_counter, total_samples);
-                    }
-                }
-
-                //Subtract off mean
+            for (size_t s = 0; s < samples_to_use; s++) {
                 for (size_t c = 0; c < channels; c++) {
-                    for (size_t s = 0; s < total_samples; s++) {
-                        A_ptr[s + c *total_samples] -= means_ptr[c] / std::complex<float>(total_samples, 0);
+                    bool uncombined_channel = std::find(uncombined_channels_.begin(), uncombined_channels_.end(), c) != uncombined_channels_.end();
+                    if (uncombined_channel) {
+                        A(sample_counter, c) = std::complex<float>(0.0, 0.0);
+                    } else {
+                        A(sample_counter, c) = tmp.data(data_offset + s, c);
+                        means(c) += tmp.data(data_offset + s, c);
                     }
                 }
 
-                //Collected data for temp matrix, now let's calculate SVD coefficients
-
-                std::vector<size_t> VT_dims;
-                VT_dims.push_back(channels);
-                VT_dims.push_back(channels);
-                pca_coefficients_[location] = new hoNDKLT < std::complex<float> > ;
-                hoNDKLT< std::complex<float> >* VT = pca_coefficients_[location];
-
-                //We will create a new matrix that explicitly preserves the uncombined channels
-                if (uncombined_channels_.size())
-                {
-                    std::vector<size_t> untransformed(uncombined_channels_.size());
-                    for (size_t un = 0; un < uncombined_channels_.size(); un++)
-                    {
-                        untransformed[un] = uncombined_channels_[un];
-                    }
-
-                    VT->prepare(A, (size_t)1, untransformed, (size_t)0, false);
-
-                }
-                else
-                {
-                    VT->prepare(A, (size_t)1, (size_t)0, false);
-                }
-
-                //Switch off buffering for this slice
-                buffering_mode_[location] = false;
-
-                //Now we should pump all the profiles that we have buffered back through the system
-                for (size_t p = 0; p < profiles_available; p++) {
-                    ACE_Message_Block* mb = buffer_[location][p];
-                    if (inherited::process(mb) != GADGET_OK) {
-                        GDEBUG("Failed to reprocess buffered data\n");
-                        return GADGET_FAIL;
-                    }
-                }
-                //Remove references in this buffer
-                buffer_[location].clear();
+                sample_counter++;
+                //GDEBUG("Sample counter = %d/%d\n", sample_counter, total_samples);
             }
         }
-        else {
-            //GDEBUG("Not buffering anymore\n");
-            GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
-                new GadgetContainerMessage < hoNDArray< std::complex<float> > > ;
 
-            try{ m3->getObjectPtr()->create(m2->getObjectPtr()->dimensions()); }
-            catch (std::runtime_error& err){
-                GEXCEPTION(err, "Unable to create storage for PCA coils\n");
-                m3->release();
-                return GADGET_FAIL;
+        GDEBUG_STREAM("Finished calculating A and means");
+
+        //Subtract off mean
+        for (size_t c = 0; c < channels; c++) {
+            for (size_t s = 0; s < total_samples; s++) {
+                A(s, c) -= means(c) / std::complex<float>(total_samples, 0);
             }
+        }
 
-            if (pca_coefficients_[location] != 0)
+        GDEBUG_STREAM("Finished subtracting mean");
+
+        //Collected data for temp matrix, now let's calculate SVD coefficients
+
+        pca_coefficients_[location] = new hoNDKLT < std::complex<float> > ;
+        hoNDKLT< std::complex<float> >* VT = pca_coefficients_[location];
+
+        GDEBUG_STREAM("Preparing VT");
+        //We will create a new matrix that explicitly preserves the uncombined channels
+        if (uncombined_channels_.size())
+        {
+            std::vector<size_t> untransformed(uncombined_channels_.size());
+            for (size_t un = 0; un < uncombined_channels_.size(); un++)
             {
-                pca_coefficients_[location]->transform(*(m2->getObjectPtr()), *(m3->getObjectPtr()), 1);
+                untransformed[un] = uncombined_channels_[un];
             }
 
-            m1->cont(m3);
+            VT->prepare(A, (size_t)1, untransformed, (size_t)0, false);
 
-            //In case there are trajectories attached. 
-            m3->cont(m2->cont());
-            m2->cont(0);
-
-            m2->release();
-
-            if (this->next()->putq(m1) < 0) {
-                GDEBUG("Unable to put message on Q");
-                return GADGET_FAIL;
-            }
         }
-        return GADGET_OK;
+        else
+        {
+            VT->prepare(A, (size_t)1, (size_t)0, false);
+        }
+        GDEBUG_STREAM("Finished VT->prepare")
     }
 
-    GADGET_FACTORY_DECLARE(PCACoilGadget)
+    void PCACoilGadget::do_pca(mrd::Acquisition& acq)
+    {
+        auto location = get_location(acq);
+
+        hoNDArray<std::complex<float>> data_out(acq.data.dimensions());
+
+        if (pca_coefficients_[location] != 0)
+        {
+            pca_coefficients_[location]->transform(acq.data, data_out, 1);
+        }
+
+        acq.data = data_out;
+    }
+
+    GADGETRON_GADGET_EXPORT(PCACoilGadget)
 }

@@ -5,14 +5,13 @@
 #pragma once
 
 #include "linearOperator.h"
-#include "gpupmri_export.h"
 
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 
 namespace Gadgetron{
 
-  template<class ARRAY_TYPE, unsigned int D> class EXPORTGPUPMRI senseOperator : public linearOperator<ARRAY_TYPE>
+  template<class ARRAY_TYPE, unsigned int D> class senseOperator : public linearOperator<ARRAY_TYPE>
   {
 
   public:
@@ -22,16 +21,16 @@ namespace Gadgetron{
 
     inline unsigned int get_number_of_coils() { return ncoils_; }
     inline boost::shared_ptr<ARRAY_TYPE> get_csm() { return csm_; }
-    
+
     virtual void set_csm( boost::shared_ptr<ARRAY_TYPE> csm )
     {
       if( csm.get() && csm->get_number_of_dimensions() == D+1 ) {
-	csm_ = csm;      
+	csm_ = csm;
 	ncoils_ = csm_->get_size(D);
       }
       else{
 	throw std::runtime_error("Error: senseOperator::set_csm : unexpected csm dimensionality");
-      }    
+      }
     }
 
     virtual void mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;

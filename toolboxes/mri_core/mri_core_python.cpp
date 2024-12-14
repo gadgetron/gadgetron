@@ -18,7 +18,7 @@ const std::string hello() {
     return std::string("hello, gadgetron");
 }
 
-BOOST_PYTHON_MODULE(gadgetron_toolbox_mri_core_python)
+BOOST_PYTHON_MODULE(pingvin_toolbox_mri_core_python)
 {
     // for test purpose
     def("hello", hello);

@@ -3,57 +3,38 @@
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <!-- 
+    <!--
         GT Plus configuration file for general 2D epi reconstruction
 
         Author: Souheil Inati
         Email: souheil.inati@nih.gov
     -->
 
-    <!-- reader -->
-    <reader>
-        <slot>1008</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
-    </reader>
-    <reader>
-        <slot>1026</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
-    </reader>
-
-    <!-- writer -->
-    <writer>
-        <slot>1022</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>MRIImageWriter</classname>
-    </writer>
-
     <!-- Noise prewhitening -->
     <gadget>
         <name>NoiseAdjust</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>NoiseAdjustGadget</classname>
     </gadget>
 
     <!-- Recon in X -->
     <gadget>
         <name>ReconX</name>
-        <dll>gadgetron_epi</dll>
+        <dll>pingvin_epi</dll>
         <classname>EPIReconXGadget</classname>
     </gadget>
 
     <!-- EPI Corr -->
     <gadget>
         <name>EPICorr</name>
-        <dll>gadgetron_epi</dll>
+        <dll>pingvin_epi</dll>
         <classname>EPICorrGadget</classname>
     </gadget>
 
     <!-- FFT in X back to k -->
     <gadget>
         <name>FFTX</name>
-        <dll>gadgetron_epi</dll>
+        <dll>pingvin_epi</dll>
         <classname>FFTXGadget</classname>
     </gadget>
 
@@ -192,7 +173,7 @@
             <value>-1</value>
         </property>
 
-        <!-- parameters for coil map estimation 
+        <!-- parameters for coil map estimation
             enum ISMRMRDCOILMAPALGO
             {
                 ISMRMRD_SOUHEIL,
@@ -426,20 +407,14 @@
     <!-- after recon processing -->
     <gadget>
         <name>ComplexToFloatAttrib</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>ComplexToFloatGadget</classname>
     </gadget>
 
     <gadget>
         <name>FloatToShortAttrib</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>FloatToUShortGadget</classname>
-    </gadget>
-
-    <gadget>
-        <name>ImageFinish</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>ImageFinishGadget</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>

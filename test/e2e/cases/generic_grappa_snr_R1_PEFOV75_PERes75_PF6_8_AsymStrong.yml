@@ -1,0 +1,19 @@
+dependency:
+  data: generic/meas_MID00396_FID114598_R1_PEFOV75_PERes75_PF6_8_AsymStrong/meas_MID00396_FID114598_R1_PEFOV75_PERes75_PF6_8_AsymStrong_meas1.mrd
+  checksum: d43bf8c9efa72ffe5fdaa911f6cafb4f
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: generic/meas_MID00396_FID114598_R1_PEFOV75_PERes75_PF6_8_AsymStrong/meas_MID00396_FID114598_R1_PEFOV75_PERes75_PF6_8_AsymStrong_meas2.mrd
+  checksum: 71e2a767bc3943f8d7ab24f6bd9f2177
+  run:
+  - args: --config Generic_Cartesian_Grappa_SNR.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: generic/meas_MID00396_FID114598_R1_PEFOV75_PERes75_PF6_8_AsymStrong/ref_20160401_Generic_Cartesian_Grappa_SNR.xml.mrd
+  checksum: 423491521cc2e636f0bc7f75875fa48c
+  tests:
+  - image_series: 300
+requirements:
+  system_memory: 4096
+tags:
+- fast
+- generic

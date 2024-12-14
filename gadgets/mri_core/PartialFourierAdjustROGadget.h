@@ -4,7 +4,6 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-#include "gadgetron_mricore_export.h"
 
 namespace Gadgetron
 {
@@ -12,7 +11,7 @@ namespace Gadgetron
 /// for incoming readout
 /// if not the noise scan and the partial fourier along readout is detected
 /// the readout data will be realigned with center of echo at the centre of incoming 1D array
-class EXPORTGADGETSMRICORE PartialFourierAdjustROGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+class PartialFourierAdjustROGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 public:
 

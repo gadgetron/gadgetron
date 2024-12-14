@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cpucore_export.h"
 #include "ho2DArray.h"
 #include "complext.h"
 #include <algorithm>
@@ -69,7 +68,7 @@ protected:
     using BaseClass::elements_;
     using BaseClass::delete_data_on_destruct_;
     using BaseClass::accesser_;
-    
+
 };
 
 /// for real matrix

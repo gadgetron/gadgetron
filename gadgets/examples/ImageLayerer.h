@@ -2,7 +2,6 @@
 
 #include "parallel/Merge.h"
 #include "Gadget.h"
-#include "Types.h"
 
 namespace Gadgetron::Examples {
 

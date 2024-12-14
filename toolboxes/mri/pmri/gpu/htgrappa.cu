@@ -769,7 +769,7 @@ namespace Gadgetron {
   }
 
   //Template instanciation
-  template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
+  template int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
                                                                 cuNDArray<complext<float> >* b1,
                                                                 unsigned int acceleration_factor,
                                                                 std::vector<unsigned int> *kernel_size,
@@ -777,7 +777,7 @@ namespace Gadgetron {
                                                                 std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
                                                                 std::list< unsigned int >* uncombined_channels);
 
-  template EXPORTGPUPMRI int inverse_clib_matrix(cuNDArray<complext<float> >* A,
+  template int inverse_clib_matrix(cuNDArray<complext<float> >* A,
                                                  cuNDArray<complext<float> >* b,
                                                  cuNDArray<complext<float> >* coeff,
                                                  double lamda);

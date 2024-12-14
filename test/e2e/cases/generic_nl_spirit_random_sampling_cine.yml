@@ -1,0 +1,16 @@
+reconstruction:
+  data: generic/meas_MID01095_FID40115/meas_MID01095_FID40115.mrd
+  checksum: 91b2560e7e1ecce9416de870884adaa6
+  run:
+  - args: --config Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
+validation:
+  reference: generic/meas_MID01095_FID40115/ref_20210923_klk_Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml.mrd
+  checksum: 4b0ea481e7f3f7ada0ef9c6642baa47d
+  tests:
+  - image_series: 1
+    value_comparison_threshold: 0.01
+    scale_comparison_threshold: 0.001
+requirements:
+  system_memory: 16384
+tags:
+- slow

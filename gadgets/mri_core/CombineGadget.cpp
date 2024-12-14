@@ -1,41 +1,30 @@
 #include "CombineGadget.h"
 
 using namespace Gadgetron;
-using namespace Gadgetron::Core;
 
 namespace {
-    template <class T> Image<T> combine(Image<T>& image) {
+    template <class T> mrd::Image<T> combine(mrd::Image<T>& image) {
         GDEBUG("CombineGadget is not well defined for real-valued images. Doing nothing.");
         return image;
     }
 
     template <class T>
-    Image<std::complex<T>> combine(Image<std::complex<T>>& image) {
-        auto& header = std::get<ISMRMRD::ImageHeader>(image);
-        auto& data = std::get<hoNDArray<std::complex<T>>>(image);
-        auto& meta = std::get<optional<ISMRMRD::MetaContainer>>(image);
-        
+    mrd::Image<std::complex<T>> combine(mrd::Image<std::complex<T>>& image) {
         // Get the dimensions
-        size_t nx = data.get_size(0);
-        size_t ny = data.get_size(1);
-        size_t nz = data.get_size(2);
-        size_t nc = data.get_size(3);
+        size_t nx = image.data.get_size(0);
+        size_t ny = image.data.get_size(1);
+        size_t nz = image.data.get_size(2);
+        size_t nc = image.data.get_size(3);
 
-        // Create a new hoNDArray for the combined image data
-        hoNDArray<std::complex<T>> combinedData = hoNDArray<std::complex<T>>();
-
-        std::vector<size_t> dimensions(3);
+        std::vector<size_t> dimensions(4);
         dimensions[0] = nx;
         dimensions[1] = ny;
         dimensions[2] = nz;
+        dimensions[3] = 1;
 
-        try {
-            combinedData.create(dimensions);
-        } catch (std::runtime_error& err) {
-            GEXCEPTION(err, "CombineGadget, failed to allocate new array\n");
-        }
+        hoNDArray<std::complex<T>> combinedData(dimensions);
 
-        std::complex<T>* source = data.get_data_ptr();
+        std::complex<T>* source = image.data.get_data_ptr();
         std::complex<T>* combined = combinedData.get_data_ptr();
 
         size_t img_block = nx * ny * nz;
@@ -56,15 +45,14 @@ namespace {
             }
         }
 
-        // Modify header to match the size and change the type to real
-        header.channels = 1;
-        return Image<std::complex<T>>(header, combinedData, meta);
+        image.data = combinedData;
+        return image;
     }
 } // namespace
 
 namespace Gadgetron {
-    AnyImage CombineGadget::process_function(AnyImage image) const {
-        return visit([&](auto& image) -> AnyImage { return combine(image); }, image);
+    mrd::AnyImage CombineGadget::process_function(mrd::AnyImage image) const {
+        return visit([&](auto& image) -> mrd::AnyImage { return combine(image); }, image);
     }
     GADGETRON_GADGET_EXPORT(CombineGadget);
 } // namespace Gadgetron

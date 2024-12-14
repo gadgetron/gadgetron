@@ -2,29 +2,23 @@
 #define gpuCgSenseGadget_H
 #pragma once
 
-#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
-#include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include "gpuSenseGadget.h"
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUPMRI gpuCgSenseGadget : public gpuSenseGadget
+  class gpuCgSenseGadget : public gpuSenseGadget
    {
 
   public:
-
-    GADGET_DECLARE(gpuCgSenseGadget);
-
     gpuCgSenseGadget();
     virtual ~gpuCgSenseGadget();
 
@@ -33,8 +27,8 @@ namespace Gadgetron{
     GADGET_PROPERTY(number_of_iterations, int, "Max number of iterations in CG solver", 5);
     GADGET_PROPERTY(cg_limit, float, "Residual limit for CG convergence", 1e-6);
 
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
-    virtual int process_config( ACE_Message_Block* mb );
+    virtual int process( GadgetContainerMessage< mrd::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
+    virtual int process_config(const mrd::Header& header);
 
     unsigned int number_of_iterations_;
     double cg_limit_;

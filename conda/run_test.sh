@@ -1,9 +1,9 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 set -euo pipefail
-export LANG=C
 
-cd "${PREFIX}/share/gadgetron/test/integration" || exit 1
+cd test/e2e/
 
-python get_data.py
-python run_tests.py --ignore-requirements python,cuda cases/*
+test -d cases
+test -f conftest.py
+
+pytest

@@ -1,0 +1,15 @@
+reconstruction:
+  data: spiral/meas_MID1132_MiniIRT_spiral_16int_tr500_acc1_10reps_FID13142_meas1.mrd
+  checksum: 1b010d3f9dc7c1961d103a46ba8e2be0
+  run:
+  - args: --config spiral_flow_gpusense_sb.xml
+validation:
+  reference: spiral/simple_spiral_out_sb_v2_spiral_flow_gpusense_sb.xml.mrd
+  checksum: b43a8813317e555dddfd499fafe8c387
+  tests:
+  - image_series: 0
+requirements:
+  system_memory: 2048
+  gpu_support: 1
+  gpu_memory: 1024
+tags: []

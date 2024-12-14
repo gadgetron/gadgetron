@@ -2,48 +2,38 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#include <ismrmrd/ismrmrd.h>
-#include <ismrmrd/xml.h>
-#include "StorageSetup.h"
+#include <mrd/types.h>
 
 namespace Gadgetron::Core {
 
     struct Context {
-        using Header = ISMRMRD::IsmrmrdHeader;
+        using Header = mrd::Header;
 
         struct Paths {
             boost::filesystem::path gadgetron_home;
-            boost::filesystem::path working_folder;
         };
 
         Header header;
         Paths  paths;
-        StorageSpaces storage;
         std::map<std::string, std::string> parameters;
     };
 
     struct StreamContext : Context {
         using Args = boost::program_options::variables_map;
-        using StorageAddress = std::string;
 
         StreamContext(
-            ISMRMRD::IsmrmrdHeader header,
+            mrd::Header header,
             const Paths paths,
-            const Args args,
-            const StorageAddress storage_address,
-            StorageSpaces storage
+            const Args args
         ) : Context{
                 std::move(header),
                 paths,
-                storage,
                 GetParameters(args)
             },
-            args{args},
-            storage_address{storage_address} {}
+            args{args} {}
 
-    
+
         Args args;
-        StorageAddress storage_address;
 
         private:
         static std::map<std::string, std::string> GetParameters(const boost::program_options::variables_map& args) {
@@ -53,7 +43,7 @@ namespace Gadgetron::Core {
                 for (auto &arg : params) {
                     parameters[arg.first] = arg.second;
                 }
-            } 
+            }
             return parameters;
         }
 

@@ -327,13 +327,13 @@ __global__ void CorneliusKanade_kernel(const REAL* __restrict__ gradient_image, 
 // Template instantiation
 //
 
-template class EXPORTGPUREG cuCKOpticalFlowSolver<float, 1>;
-template class EXPORTGPUREG cuCKOpticalFlowSolver<float, 2>;
-template class EXPORTGPUREG cuCKOpticalFlowSolver<float, 3>;
-template class EXPORTGPUREG cuCKOpticalFlowSolver<float, 4>;
+template class cuCKOpticalFlowSolver<float, 1>;
+template class cuCKOpticalFlowSolver<float, 2>;
+template class cuCKOpticalFlowSolver<float, 3>;
+template class cuCKOpticalFlowSolver<float, 4>;
 
-template class EXPORTGPUREG cuCKOpticalFlowSolver<double, 1>;
-template class EXPORTGPUREG cuCKOpticalFlowSolver<double, 2>;
-template class EXPORTGPUREG cuCKOpticalFlowSolver<double, 3>;
-template class EXPORTGPUREG cuCKOpticalFlowSolver<double, 4>;
+template class cuCKOpticalFlowSolver<double, 1>;
+template class cuCKOpticalFlowSolver<double, 2>;
+template class cuCKOpticalFlowSolver<double, 3>;
+template class cuCKOpticalFlowSolver<double, 4>;
 } // namespace Gadgetron

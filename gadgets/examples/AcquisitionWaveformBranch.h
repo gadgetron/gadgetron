@@ -4,7 +4,7 @@
 
 namespace Gadgetron::Examples {
 
-    using AcquisitionOrWaveform = Core::variant<Core::Acquisition, Core::Waveform>;
+    using AcquisitionOrWaveform = std::variant<mrd::Acquisition, mrd::WaveformUint32>;
 
     class AcquisitionWaveformBranch : public Core::Parallel::TypedBranch<AcquisitionOrWaveform> {
     public:

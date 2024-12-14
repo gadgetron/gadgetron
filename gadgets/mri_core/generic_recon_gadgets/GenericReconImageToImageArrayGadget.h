@@ -6,7 +6,6 @@
 #pragma once
 
 #include <complex>
-#include "gadgetron_mricore_export.h"
 #include "Gadget.h"
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/meta.h"
@@ -14,15 +13,12 @@
 #include "hoNDArray.h"
 
 #include "mri_core_def.h"
-#include "mri_core_data.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-class EXPORTGADGETSMRICORE GenericReconImageToImageArrayGadget : public Gadget3<ISMRMRD::ImageHeader, hoNDArray<std::complex<float>>, ISMRMRD::MetaContainer>
+class GenericReconImageToImageArrayGadget : public Gadget3<ISMRMRD::ImageHeader, hoNDArray<std::complex<float>>, ISMRMRD::MetaContainer>
 {
 public:
-    GADGET_DECLARE(GenericReconImageToImageArrayGadget);
-
     typedef std::complex<float> ValueType;
     typedef Gadget3< ISMRMRD::ImageHeader, hoNDArray< ValueType >, ISMRMRD::MetaContainer > BaseClass;
 
