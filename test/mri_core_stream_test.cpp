@@ -17,7 +17,7 @@ void fill_random(hoNDArray<std::complex<float>>& data, int seed = 35879)
     std::generate(data.begin(), data.end(), [&distribution, &generator]() { return distribution(generator); });
 }
 
-void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< ISMRMRD::ImageHeader >& headers, std::vector< ISMRMRD::MetaContainer >& meta)
+void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< mrd::ImageHeader >& headers, hoNDArray< mrd::ImageMeta >& meta)
 {
     size_t RO = imgs.get_size(0);
     size_t E1 = imgs.get_size(1);
@@ -28,6 +28,7 @@ void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< ISM
     size_t SLC = imgs.get_size(6);
 
     headers.create(N, S, SLC);
+    meta.create(N, S, SLC);
 
     size_t n, s, slc;
     for (slc=0; slc<SLC; slc++)
@@ -37,29 +38,19 @@ void fill_image_array(const hoNDArray<std::complex<float>>& imgs, hoNDArray< ISM
             for (n=0; n<N; n++)
             {
                 headers(n, s, slc).image_index = n+s*N+slc*N*S;
-                headers(n, s, slc).data_type = Gadgetron::Core::IO::ismrmrd_data_type<std::complex<float>>();
-                headers(n, s, slc).matrix_size[0] = RO;
-                headers(n, s, slc).matrix_size[1] = E1;
-                headers(n, s, slc).matrix_size[2] = E2;
-                headers(n, s, slc).channels = CHA;
                 headers(n, s, slc).field_of_view[0] = RO;
                 headers(n, s, slc).field_of_view[1] = E1;
                 headers(n, s, slc).field_of_view[2] = E2;
+
+                meta(n, s, slc)["META_Field_1"] = {3.0};
+                meta(n, s, slc)["META_Field_2"] = {13.0};
+                meta(n, s, slc)["META_Field_3"] = {125.2, 56.4};
             }
         }
     }
-
-    meta.resize(N*S*SLC);
-    for (auto &m : meta)
-    {
-        m.set("META_Field_1", 3.0);
-        m.set("META_Field_2", 13.0);
-        m.set("META_Field_3", 125.2);
-        m.append("META_Field_3", 56.4);
-    }
 }
 
-void remove_parameter_files(const std::map<std::string, std::string>& parameters) 
+void remove_parameter_files(const std::map<std::string, std::string>& parameters)
 {
     for (auto &m : parameters)
     {
@@ -67,12 +58,12 @@ void remove_parameter_files(const std::map<std::string, std::string>& parameters
     }
 }
 
-TEST(GenericReconIsmrmrdStreamerTest, test_streamer)
+TEST(GenericReconMrdStreamerTest, test_streamer)
 {
     std::string tmp_path = std::string(std::filesystem::temp_directory_path());
 
     std::map<std::string, std::string> parameters;
-    parameters[GENERIC_RECON_STREAM_ISMRMRD_HEADER] = tmp_path + "/recon_header.dat";
+    parameters[GENERIC_RECON_STREAM_MRD_HEADER] = tmp_path + "/recon_header.dat";
     parameters[GENERIC_RECON_STREAM_UNDERSAMPLED_KSPACE] = tmp_path + "/undersampled_kspace.dat";
     parameters[GENERIC_RECON_STREAM_REF_KSPACE] = tmp_path + "/ref_kspace.dat";
     parameters[GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP] = tmp_path + "/ref_kspace_for_coil_map.dat";
@@ -85,15 +76,15 @@ TEST(GenericReconIsmrmrdStreamerTest, test_streamer)
 
     try
     {
-        GenericReconIsmrmrdStreamer gt_streamer(parameters);
+        GenericReconMrdStreamer gt_streamer(parameters);
         gt_streamer.verbose_ = true;
 
-        ISMRMRD::IsmrmrdHeader hdr;
+        mrd::Header hdr;
         hdr.encoding.resize(1);
-        hdr.encoding[0].reconSpace.matrixSize.x = 323;
-        hdr.encoding[0].reconSpace.matrixSize.y = 458;
-        hdr.encoding[0].reconSpace.matrixSize.z = 7;
-        gt_streamer.stream_ismrmrd_header(hdr);
+        hdr.encoding[0].recon_space.matrix_size.x = 323;
+        hdr.encoding[0].recon_space.matrix_size.y = 458;
+        hdr.encoding[0].recon_space.matrix_size.z = 7;
+        gt_streamer.stream_mrd_header(hdr);
 
         // kspace data
         hoNDArray<std::complex<float>> data;
@@ -119,22 +110,22 @@ TEST(GenericReconIsmrmrdStreamerTest, test_streamer)
         fill_random(imgs);
         GDEBUG_STREAM("fill in imgs ...");
 
-        hoNDArray< ISMRMRD::ImageHeader > headers;
-        std::vector< ISMRMRD::MetaContainer > meta;
+        hoNDArray< mrd::ImageHeader > headers;
+        hoNDArray< mrd::ImageMeta > meta;
 
         fill_image_array(imgs, headers, meta);
         GDEBUG_STREAM("fill_image_array ...");
 
-        gt_streamer.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, imgs, headers, meta);
-        gt_streamer.stream_to_ismrmrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING, imgs, headers, meta);
+        gt_streamer.stream_to_mrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE, imgs, headers, meta);
+        gt_streamer.stream_to_mrd_image_buffer(GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING, imgs, headers, meta);
 
         // waveform
-        std::vector<ISMRMRD::Waveform> wavs(12);
-
+        std::vector<mrd::WaveformUint32> wavs(12);
         uint16_t num_samples=24, cha=4;
-        ISMRMRD::Waveform a_wav(num_samples, cha);
-        uint32_t* p_data = a_wav.begin_data();
-        uint32_t* p_data_end = a_wav.end_data();
+        mrd::WaveformUint32 a_wav;
+        a_wav.data.create(cha, num_samples);
+        uint32_t* p_data = a_wav.data.begin();
+        uint32_t* p_data_end = a_wav.data.end();
 
         std::default_random_engine generator(35554);
         std::normal_distribution<float> distribution(8.0, 47.0);
@@ -142,133 +133,89 @@ TEST(GenericReconIsmrmrdStreamerTest, test_streamer)
 
         for (auto i=0; i<wavs.size(); i++) wavs[i] = a_wav;
 
-        gt_streamer.stream_ismrmrd_waveform(wavs);
+        gt_streamer.stream_mrd_waveforms(wavs);
 
         // close all streams
         gt_streamer.close_stream_buffer();
 
-        // deserialize
-        float v;
-        {
-            std::ifstream fd(parameters[GENERIC_RECON_STREAM_ISMRMRD_HEADER], std::ios::in | std::ios::binary);
+        std::optional<mrd::Header> header_deserialized;
+        mrd::StreamItem item;
+        hoNDArray<std::complex<float>> diff;
 
-            ISMRMRD::IStreamView rs(fd);
-            ISMRMRD::ProtocolDeserializer deserializer(rs);
+        // deserialize and check MRD Header
+        mrd::binary::MrdReader header_reader(parameters[GENERIC_RECON_STREAM_MRD_HEADER]);
+        header_reader.ReadHeader(header_deserialized);
+        while (header_reader.ReadData(item)) {}
+        ASSERT_EQ(hdr.encoding[0].recon_space.matrix_size.x, header_deserialized->encoding[0].recon_space.matrix_size.x);
+        ASSERT_EQ(hdr.encoding[0].recon_space.matrix_size.y, header_deserialized->encoding[0].recon_space.matrix_size.y);
+        ASSERT_EQ(hdr.encoding[0].recon_space.matrix_size.z, header_deserialized->encoding[0].recon_space.matrix_size.z);
 
-            ISMRMRD::IsmrmrdHeader hdr_deserialized;
-            deserializer.deserialize(hdr_deserialized);
-
-            ASSERT_EQ(hdr.encoding[0].reconSpace.matrixSize.x, hdr_deserialized.encoding[0].reconSpace.matrixSize.x);
-            ASSERT_EQ(hdr.encoding[0].reconSpace.matrixSize.y, hdr_deserialized.encoding[0].reconSpace.matrixSize.y);
-            ASSERT_EQ(hdr.encoding[0].reconSpace.matrixSize.z, hdr_deserialized.encoding[0].reconSpace.matrixSize.z);
-        }
-        {
-            std::ifstream fd(parameters[GENERIC_RECON_STREAM_UNDERSAMPLED_KSPACE], std::ios::in | std::ios::binary);
-            ASSERT_EQ(fd.is_open(), true);
-
-            ISMRMRD::IStreamView rs(fd);
-            ISMRMRD::ProtocolDeserializer deserializer(rs);
-
-            ISMRMRD::NDArray<std::complex<float>> arr;
-            deserializer.deserialize(arr);
-
-            hoNDArray<std::complex<float>> data_deserialized, diff;
-            Gadgetron::convert_ismrmrd_ndarray_to_hoNDArray(arr, data_deserialized);
-
-            Gadgetron::subtract(data, data_deserialized, diff);
-            v = Gadgetron::nrm2(diff);
+        // deserialize and check undersampled kspace
+        mrd::binary::MrdReader fd_reader(parameters[GENERIC_RECON_STREAM_UNDERSAMPLED_KSPACE]);
+        fd_reader.ReadHeader(header_deserialized);
+        while (fd_reader.ReadData(item)) {
+            auto dat = std::get<mrd::ArrayComplexFloat>(item);
+            Gadgetron::subtract(data, dat, diff);
+            float v = Gadgetron::nrm2(diff);
             EXPECT_LE(v, 0.001);
         }
-        {
-            std::ifstream fd_ref(parameters[GENERIC_RECON_STREAM_REF_KSPACE], std::ios::in | std::ios::binary);
 
-            ISMRMRD::IStreamView rs(fd_ref);
-            ISMRMRD::ProtocolDeserializer deserializer(rs);
-
-            ISMRMRD::NDArray<std::complex<float>> arr;
-            deserializer.deserialize(arr);
-
-            hoNDArray<std::complex<float>> ref_deserialized, diff;
-            Gadgetron::convert_ismrmrd_ndarray_to_hoNDArray(arr, ref_deserialized);
-
-            Gadgetron::subtract(ref, ref_deserialized, diff);
-            v = Gadgetron::nrm2(diff);
+        // deserialize and check ref kspace
+        mrd::binary::MrdReader fd_ref_reader(parameters[GENERIC_RECON_STREAM_REF_KSPACE]);
+        fd_ref_reader.ReadHeader(header_deserialized);
+        while (fd_ref_reader.ReadData(item)) {
+            auto dat = std::get<mrd::ArrayComplexFloat>(item);
+            Gadgetron::subtract(ref, dat, diff);
+            float v = Gadgetron::nrm2(diff);
             EXPECT_LE(v, 0.001);
         }
-        {
-            std::ifstream is(parameters[GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING].c_str(), std::ios::binary);
-            ASSERT_EQ(is.is_open(), true);
 
-            ISMRMRD::IStreamView rs(is);
-            ISMRMRD::ProtocolDeserializer deserializer(rs);
+        // deserialize and check images
+        mrd::binary::MrdReader img_reader(parameters[GENERIC_RECON_STREAM_RECONED_COMPLEX_IMAGE_AFTER_POSTPROCESSING]);
+        img_reader.ReadHeader(header_deserialized);
+        int ind = 0;
+        while (img_reader.ReadData(item)) {
+            auto img = std::get<mrd::ImageComplexFloat>(item);
 
-            int ind = 0;
-            while (deserializer.peek() != ISMRMRD::ISMRMRD_MESSAGE_CLOSE)
-            {
-                int n, s, slc;
-                slc = ind / (N*S);
-                s = (ind - slc*N*S) / N;
-                n = ind - s*N - slc*N*S;
-                GDEBUG_STREAM("ProtocolDeserializer for image " << ind << " - " << n << " " << s << " " << slc);
+            int slc = ind / (N*S);
+            int s = (ind - slc*N*S) / N;
+            int n = ind - s*N - slc*N*S;
+            GDEBUG_STREAM("ProtocolDeserializer for image " << ind << " - " << n << " " << s << " " << slc);
 
-                ASSERT_EQ(deserializer.peek(), ISMRMRD::ISMRMRD_MESSAGE_IMAGE);
-                ASSERT_EQ(deserializer.peek_image_data_type(), ISMRMRD::ISMRMRD_CXFLOAT);
+            hoNDArray<std::complex<float>> a_img(RO, E1, E2, CHA, &imgs(0, 0, 0, 0, n, s, slc));
 
-                ISMRMRD::Image<std::complex<float> > img;
-                deserializer.deserialize(img);
+            Gadgetron::subtract(a_img, img.data, diff);
+            float v = Gadgetron::nrm2(diff);
+            EXPECT_LE(v, 0.001);
 
-                hoNDArray<std::complex<float>> a_img, a_img_deserialized, diff;
-                a_img.create(RO, E1, E2, CHA, &imgs(0, 0, 0, 0, n, s, slc));
-                a_img_deserialized.create(RO, E1, E2, CHA, img.getDataPtr());
+            ASSERT_EQ(headers(n, s, slc).image_index, img.head.image_index);
+            ASSERT_EQ(headers(n, s, slc).field_of_view, img.head.field_of_view);
 
-                Gadgetron::subtract(a_img, a_img_deserialized, diff);
-                v = Gadgetron::nrm2(diff);
-                EXPECT_LE(v, 0.001);
+            ASSERT_FLOAT_EQ(std::get<double>(meta(n, s, slc)["META_Field_1"][0]), std::get<double>(img.meta["META_Field_1"][0]));
+            ASSERT_FLOAT_EQ(std::get<double>(meta(n, s, slc)["META_Field_2"][0]), std::get<double>(img.meta["META_Field_2"][0]));
+            ASSERT_FLOAT_EQ(std::get<double>(meta(n, s, slc)["META_Field_3"][0]), std::get<double>(img.meta["META_Field_3"][0]));
+            ASSERT_FLOAT_EQ(std::get<double>(meta(n, s, slc)["META_Field_3"][1]), std::get<double>(img.meta["META_Field_3"][1]));
 
-                ASSERT_EQ(headers(n, s, slc).image_index, img.getHead().image_index);
-                ASSERT_EQ(headers(n, s, slc).data_type, img.getHead().data_type);
-                ASSERT_EQ(headers(n, s, slc).matrix_size[0], img.getHead().matrix_size[0]);
-                ASSERT_EQ(headers(n, s, slc).matrix_size[1], img.getHead().matrix_size[1]);
-                ASSERT_EQ(headers(n, s, slc).matrix_size[2], img.getHead().matrix_size[2]);
-                ASSERT_EQ(headers(n, s, slc).channels, img.getHead().channels);
-                ASSERT_EQ(headers(n, s, slc).field_of_view[0], img.getHead().field_of_view[0]);
-                ASSERT_EQ(headers(n, s, slc).field_of_view[1], img.getHead().field_of_view[1]);
-                ASSERT_EQ(headers(n, s, slc).field_of_view[2], img.getHead().field_of_view[2]);
-
-                ISMRMRD::MetaContainer a_meta;
-                ISMRMRD::deserialize(img.getAttributeString(), a_meta);
-                ASSERT_FLOAT_EQ(meta[ind].as_double("META_Field_1"), a_meta.as_double("META_Field_1"));
-                ASSERT_FLOAT_EQ(meta[ind].as_double("META_Field_2"), a_meta.as_double("META_Field_2"));
-                ASSERT_FLOAT_EQ(meta[ind].as_double("META_Field_3"), a_meta.as_double("META_Field_3"));
-                ASSERT_FLOAT_EQ(meta[ind].as_double("META_Field_3", 1), a_meta.as_double("META_Field_3", 1));
-
-                ind++;
-            }
+            ind++;
         }
+
         {
-            std::vector<ISMRMRD::Waveform> wavs_deserialized;
-
-            std::ifstream is(parameters[GENERIC_RECON_STREAM_WAVEFORM].c_str(), std::ios::binary);
-            ASSERT_EQ(is.is_open(), true);
-
-            ISMRMRD::IStreamView rs(is);
-            ISMRMRD::ProtocolDeserializer deserializer(rs);
-
-            while (deserializer.peek() != ISMRMRD::ISMRMRD_MESSAGE_CLOSE)
-            {
-                ISMRMRD::Waveform a_wav;
-                deserializer.deserialize(a_wav);
-                wavs_deserialized.push_back(a_wav);
+            std::vector<mrd::WaveformUint32> wavs_deserialized;
+            mrd::binary::MrdReader wav_reader(parameters[GENERIC_RECON_STREAM_WAVEFORM]);
+            wav_reader.ReadHeader(header_deserialized);
+            while (wav_reader.ReadData(item)) {
+                auto wav = std::get<mrd::WaveformUint32>(item);
+                wavs_deserialized.push_back(wav);
             }
 
             ASSERT_EQ(wavs_deserialized.size(), wavs.size());
 
             for (auto i=0; i<wavs.size(); i++)
             {
-                ASSERT_EQ(wavs_deserialized[i].head.number_of_samples, wavs[i].head.number_of_samples);
-                ASSERT_EQ(wavs_deserialized[i].head.channels, wavs[i].head.channels);
+                ASSERT_EQ(wavs_deserialized[i].NumberOfSamples(), wavs[i].NumberOfSamples());
+                ASSERT_EQ(wavs_deserialized[i].Channels(), wavs[i].Channels());
 
-                size_t N = wavs[i].size();
+                size_t N = wavs[i].data.size();
                 for (auto k=0; k<N; k++)
                 {
                     ASSERT_FLOAT_EQ(wavs_deserialized[i].data[k], wavs[i].data[k]);

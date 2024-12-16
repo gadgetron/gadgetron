@@ -6,7 +6,7 @@
     <!-- ImageArray to images -->
     <gadget>
         <name>ImageArraySplit</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>ImageArraySplitGadget</classname>
     </gadget>
 

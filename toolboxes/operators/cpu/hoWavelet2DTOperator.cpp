@@ -871,7 +871,7 @@ void hoWavelet2DTOperator<T>::divide_wav_coeff_by_norm(hoNDArray<T>& wavCoeff, c
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoWavelet2DTOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoWavelet2DTOperator< std::complex<double> >;
+template class hoWavelet2DTOperator< std::complex<float> >;
+template class hoWavelet2DTOperator< std::complex<double> >;
 
 }

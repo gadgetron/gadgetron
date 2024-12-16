@@ -1,0 +1,18 @@
+dependency:
+  data: cmr/CineBinning/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8_meas1.mrd
+  checksum: 2d1a20b2ae5848b595de2838bc0b4d6d
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./mycov.bin
+reconstruction:
+  data: cmr/CineBinning/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8_meas2.mrd
+  checksum: d36c3f68c11305109e0c71f59d08e546
+  run:
+  - args: --config CMR_2DT_RTCine_KspaceBinning.xml --parameter noisecovariancein=./mycov.bin
+validation:
+  reference: cmr/CineBinning/meas_MID00247_FID39104_PK_realtime_gt_TPAT4_6_8/cmr_cine_binning_ref_20220817_CMR_2DT_RTCine_KspaceBinning.xml.mrd
+  checksum: 2b4c536b5798bcb16915175b6dc18fb0
+  tests:
+  - image_series: 2
+requirements:
+  system_memory: 16384
+tags:
+- slow

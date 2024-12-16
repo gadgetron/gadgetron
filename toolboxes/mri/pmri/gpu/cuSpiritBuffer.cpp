@@ -8,11 +8,11 @@ namespace Gadgetron {
 
   template<class REAL, unsigned int D>
   void cuSpiritBuffer<REAL,D>::
-  setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
+  setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W,
 	 unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
-  {      
+  {
     cuBuffer<REAL,D>::setup( matrix_size, matrix_size_os, W, num_coils, num_cycles, num_sub_cycles );
-    
+
     E_->setup( this->matrix_size_, this->matrix_size_os_, W );
 
     cg_.set_encoding_operator( this->E_ );
@@ -63,22 +63,22 @@ namespace Gadgetron {
         throw std::runtime_error("cuSpiritBuffer::get_combined_coil_image: unable to acquire accumulated coil images");
       }
     }
-    
+
     // Compute RSS
     //
 
     return real_to_complex< complext<REAL> >(sqrt(sum(abs_square(this->acc_image_.get()).get(), 2).get()).get());
   }
-  
+
   //
   // Instantiations
   //
 
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,2>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,3>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,4>;
+  template class cuSpiritBuffer<float,2>;
+  template class cuSpiritBuffer<float,3>;
+  template class cuSpiritBuffer<float,4>;
 
-  template class EXPORTGPUPMRI cuSpiritBuffer<double,2>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<double,3>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<double,4>;
+  template class cuSpiritBuffer<double,2>;
+  template class cuSpiritBuffer<double,3>;
+  template class cuSpiritBuffer<double,4>;
 }

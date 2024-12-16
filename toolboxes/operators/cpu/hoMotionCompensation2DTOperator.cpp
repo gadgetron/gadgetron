@@ -1,14 +1,14 @@
 
 #include "hoMotionCompensation2DTOperator.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T, typename CoordType> 
+template <typename T, typename CoordType>
 hoMotionCompensation2DTOperator<T, CoordType>::hoMotionCompensation2DTOperator() : bg_value_(0), bc_(GT_BOUNDARY_CONDITION_BORDERVALUE)
 {
 }
 
-template <typename T, typename CoordType> 
+template <typename T, typename CoordType>
 hoMotionCompensation2DTOperator<T, CoordType>::~hoMotionCompensation2DTOperator()
 {
 }
@@ -128,7 +128,7 @@ typename hoMotionCompensation2DTOperator<T, CoordType>::value_type hoMotionCompe
     }
 }
 
-template <typename T, typename CoordType> 
+template <typename T, typename CoordType>
 void hoMotionCompensation2DTOperator<T, CoordType>::warp_image(const hoNDArray<T>& im, const hoNDArray<CoordType>& dx, const hoNDArray<CoordType>& dy, hoNDArray<T>& warpped, T bgValue, Gadgetron::GT_BOUNDARY_CONDITION bh)
 {
     try
@@ -230,7 +230,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::warp_image(const hoNDArray<T
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<float>, double >;
-template class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator< std::complex<double>, double >;
+template class hoMotionCompensation2DTOperator< std::complex<float>, double >;
+template class hoMotionCompensation2DTOperator< std::complex<double>, double >;
 
 }

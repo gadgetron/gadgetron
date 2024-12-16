@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/opt/conda/envs/gadgetron/bin/gadgetron",
+            "program": "/opt/conda/envs/pingvin/bin/pingvin",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

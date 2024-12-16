@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "gadgetron_cmr_export.h"
 #include "generic_recon_gadgets/GenericReconBase.h"
 #include "hoMRImage.h"
 #include "hoNDImageContainer2D.h"
@@ -13,11 +12,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSCMR CmrRealTimeLAXCineAIAnalysisGadget : public GenericReconImageBase
+    class CmrRealTimeLAXCineAIAnalysisGadget : public GenericReconImageBase
     {
     public:
-        GADGET_DECLARE(CmrRealTimeLAXCineAIAnalysisGadget);
-
         typedef GenericReconImageBase BaseClass;
         typedef hoNDImageContainer2D < hoMRImage<float, 2> > ImageContainerMagType;
 
@@ -43,7 +40,7 @@ namespace Gadgetron {
         std::string gt_home_;
         std::string gt_model_home_;
 
-        ISMRMRD::EncodingCounters meas_max_idx_;
+        mrd::EncodingCounters meas_max_idx_;
 
         boost::python::object model_;
 
@@ -52,18 +49,18 @@ namespace Gadgetron {
         // --------------------------------------------------
 
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ImageArray >* m1);
 
         // close call
         int close(unsigned long flags);
 
         // function to perform the mapping
-        virtual int perform_LAX_detection_AI(IsmrmrdImageArray& lax, IsmrmrdImageArray& lax_ai);
+        virtual int perform_LAX_detection_AI(mrd::ImageArray& lax, mrd::ImageArray& lax_ai);
 
         // utility functions
-        void convert_array_to_image_container(IsmrmrdImageArray& lax, hoNDImageContainer2D < hoMRImage<float, 2> >& lax_container);
-        void convert_image_container_to_array(hoNDImageContainer2D < hoMRImage<float, 2> >& lax_container, IsmrmrdImageArray& lax);
+        void convert_array_to_image_container(mrd::ImageArray& lax, hoNDImageContainer2D < hoMRImage<float, 2> >& lax_container);
+        void convert_image_container_to_array(hoNDImageContainer2D < hoMRImage<float, 2> >& lax_container, mrd::ImageArray& lax);
         void plot_landmarks_on_images(hoNDImageContainer2D < hoMRImage<float, 2> > & lax_container, const hoNDArray<float>& pts);
         void attach_info_to_report(hoNDImageContainer2D < hoMRImage<float, 2> >& lax_container, const hoNDArray<float>& pts);
     };

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "GadgetronException.h"
 #include "log.h"
 
 #include <new>
@@ -15,7 +14,7 @@
 #include <algorithm>
 #include <stdint.h>
 #include <numeric>
-#include "TypeTraits.h"
+#include <type_traits>
 
 namespace Gadgetron{
 
@@ -47,8 +46,7 @@ namespace Gadgetron{
         void reshape(std::initializer_list<std::int64_t> dims);
 
         template<class... INDICES>
-        std::enable_if_t<Core::all_of_v<std::is_integral_v<INDICES>...>> reshape(INDICES ... ind) {
-            //static_assert(std::is_integral_v<INDICES> && ...);
+        std::enable_if_t<std::conjunction_v<std::is_integral<INDICES>...>> reshape(INDICES ... ind) {
             this->reshape(std::initializer_list<std::int64_t>{std::int64_t(ind)...});
         }
 
@@ -150,7 +148,7 @@ namespace Gadgetron{
         bool delete_data_on_destruct_;
     };
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::create(const std::vector<size_t>& dimensions)
     {
         dimensions_ = dimensions;
@@ -158,10 +156,10 @@ namespace Gadgetron{
         calculate_offset_factors(dimensions_);
     }
 
-    template <typename T> 
+    template <typename T>
     void NDArray<T>::create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct)
     {
-        if (!data) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");    
+        if (!data) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");
         dimensions_ = dimensions;
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
@@ -172,7 +170,7 @@ namespace Gadgetron{
         calculate_offset_factors(dimensions_);
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::squeeze()
     {
         std::vector<size_t> new_dimensions;
@@ -185,7 +183,7 @@ namespace Gadgetron{
         this->calculate_offset_factors(dimensions_);
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::reshape(const std::vector<size_t>& dims)
     {
         size_t new_elements = 1;
@@ -194,7 +192,7 @@ namespace Gadgetron{
         }
 
         if (new_elements != elements_)
-            throw std::runtime_error("NDArray<T>::reshape : Number of elements cannot change during reshape");    
+            throw std::runtime_error("NDArray<T>::reshape : Number of elements cannot change during reshape");
 
         // Copy the input dimensions array
         dimensions_ = dims;
@@ -217,7 +215,7 @@ namespace Gadgetron{
         this->reshape(new_dims);
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::dimensions_equal(const std::vector<size_t>& d) const
     {
         if ( this->dimensions_.size() != d.size() ) return false;
@@ -237,7 +235,7 @@ namespace Gadgetron{
         return (size_t)dimensions_.size();
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::get_size(size_t dimension) const
     {
         if (dimension >= dimensions_.size()){
@@ -248,13 +246,13 @@ namespace Gadgetron{
         }
     }
 
-    template <typename T> 
+    template <typename T>
     inline std::vector<size_t> NDArray<T>::get_dimensions() const
     {
         return this->dimensions_;
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::get_dimensions(std::vector<size_t>& dim) const
     {
         dim = dimensions_;
@@ -266,9 +264,9 @@ namespace Gadgetron{
     }
 
 
-    template <typename T> 
+    template <typename T>
     inline const T* NDArray<T>::get_data_ptr() const
-    { 
+    {
         return data_;
     }
     template <typename T>
@@ -307,25 +305,25 @@ namespace Gadgetron{
         return size();
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::get_number_of_bytes() const
     {
         return elements_*sizeof(T);
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::delete_data_on_destruct() const
     {
         return delete_data_on_destruct_;
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::delete_data_on_destruct(bool d)
     {
         delete_data_on_destruct_ = d;
     }
 
-    template <typename T> 
+    template <typename T>
     size_t NDArray<T>::calculate_offset(const std::vector<size_t>& ind, const std::vector<size_t>& offsetFactors)
     {
         size_t offset = ind[0];
@@ -338,7 +336,7 @@ namespace Gadgetron{
         return offset;
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(const std::vector<size_t>& ind) const
     {
         size_t offset = ind[0];
@@ -347,63 +345,63 @@ namespace Gadgetron{
         return offset;
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==2);
         return x + y * offsetFactors_[1];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==3);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==4);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==5);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==6);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==7);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==8);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6] + q * offsetFactors_[7];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u) const
     {
 //        GADGET_DEBUG_CHECK_THROW(dimensions_.size()==9);
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6] + q * offsetFactors_[7]+ u * offsetFactors_[8];
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::get_offset_factor(size_t dim) const
     {
         if ( dim >= dimensions_.size() )
@@ -411,13 +409,13 @@ namespace Gadgetron{
         return offsetFactors_[dim];
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::get_offset_factor(std::vector<size_t>& offset) const
     {
         offset=std::vector<size_t>(offsetFactors_.begin(),offsetFactors_.end());
     }
 
-    template <typename T> 
+    template <typename T>
     inline size_t NDArray<T>::get_offset_factor_lastdim() const
     {
         if( dimensions_.size() == 0 )
@@ -426,7 +424,7 @@ namespace Gadgetron{
         return get_offset_factor(dimensions_.size()-1);
     }
 
-    template <typename T> 
+    template <typename T>
     inline std::vector<size_t> NDArray<T>::get_offset_factor() const
     {
         size_t NDim = this->dimensions_.size();
@@ -435,7 +433,7 @@ namespace Gadgetron{
         return res;
     }
 
-    template <typename T> 
+    template <typename T>
     void NDArray<T>::calculate_offset_factors(const std::vector<size_t>& dimensions, std::vector<size_t>& offsetFactors)
     {
         offsetFactors.resize(dimensions.size());
@@ -451,7 +449,7 @@ namespace Gadgetron{
         }
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::calculate_offset_factors(const std::vector<size_t>& dimensions)
     {
         std::fill(offsetFactors_.begin(),offsetFactors_.end(),1);
@@ -466,7 +464,7 @@ namespace Gadgetron{
         }
     }
 
-    template <typename T> 
+    template <typename T>
     inline std::vector<size_t> NDArray<T>::calculate_index( size_t offset ) const
     {
         if( dimensions_.size() == 0 )
@@ -480,7 +478,7 @@ namespace Gadgetron{
         return index;
     }
 
-    template <typename T> 
+    template <typename T>
     inline void NDArray<T>::calculate_index( size_t offset, std::vector<size_t>& index ) const
     {
         if( dimensions_.size() == 0 )
@@ -493,7 +491,7 @@ namespace Gadgetron{
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void NDArray<T>::calculate_index( size_t offset, const std::vector<size_t>& offsetFactors, std::vector<size_t>& index )
     {
         index.resize(offsetFactors.size(), 0);
@@ -505,7 +503,7 @@ namespace Gadgetron{
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void NDArray<T>::clear()
     {
         if ( this->delete_data_on_destruct_ ){
@@ -519,7 +517,7 @@ namespace Gadgetron{
         this->dimensions_.clear();
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(const std::vector<size_t>& ind) const
     {
         unsigned int D = dimensions_.size();
@@ -537,63 +535,63 @@ namespace Gadgetron{
         return true;
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==1);
         return (x<dimensions_[0]);
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==2);
         return ((x<dimensions_[0]) && (y<dimensions_[1]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==3);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==4);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==5);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]) && (p<dimensions_[4]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==6);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]) && (p<dimensions_[4]) && (r<dimensions_[5]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==7);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]) && (p<dimensions_[4]) && (r<dimensions_[5]) && (a<dimensions_[6]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==8);
         return ( (x<dimensions_[0]) && (y<dimensions_[1]) && (z<dimensions_[2]) && (s<dimensions_[3]) && (p<dimensions_[4]) && (r<dimensions_[5]) && (a<dimensions_[6]) && (q<dimensions_[7]));
     }
 
-    template <typename T> 
+    template <typename T>
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_.size()==9);

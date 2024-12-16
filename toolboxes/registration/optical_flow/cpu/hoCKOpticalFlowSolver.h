@@ -22,32 +22,32 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTCPUREG hoCKOpticalFlowSolver 
+  template<class T, unsigned int D> class hoCKOpticalFlowSolver
     : public hoOpticalFlowSolver<T, D>
   {
-  
+
   public:
 
     // Constructors / destructors
     //
-  
-    hoCKOpticalFlowSolver() : hoOpticalFlowSolver<T,D>(){ 
-      alpha_ = T(0.05); 
-      beta_ = T(1.0); 
-    } 
-  
+
+    hoCKOpticalFlowSolver() : hoOpticalFlowSolver<T,D>(){
+      alpha_ = T(0.05);
+      beta_ = T(1.0);
+    }
+
     virtual ~hoCKOpticalFlowSolver() {}
-  
+
     // Set the regularization weight
     //
-  
+
     inline void set_alpha( T alpha ) { alpha_ = alpha; }
     inline void set_beta( T beta ) { beta_ = beta; }
-  
-  protected:  
-    virtual boost::shared_ptr< hoNDArray<T> > 
-      core_solver( hoNDArray<T> *gradient_image, hoNDArray<T> *stencil );  
-    
+
+  protected:
+    virtual boost::shared_ptr< hoNDArray<T> >
+      core_solver( hoNDArray<T> *gradient_image, hoNDArray<T> *stencil );
+
   protected:
     T alpha_;
     T beta_;

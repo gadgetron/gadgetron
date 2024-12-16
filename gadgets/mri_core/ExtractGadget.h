@@ -1,16 +1,13 @@
 #pragma once
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
-#include "gadgetron_mricore_export.h"
 #include "hoNDArray.h"
 
 #include <bitset>
 #include <complex>
-#include <ismrmrd/ismrmrd.h>
 
 namespace Gadgetron {
 
-    class ExtractGadget : public Core::ChannelGadget<Core::Image<std::complex<float>>>
+    class ExtractGadget : public Core::ChannelGadget<mrd::Image<std::complex<float>>>
 
     {
 
@@ -27,9 +24,9 @@ namespace Gadgetron {
         NODE_PROPERTY(real_imag_offset, float, "Offset to add to real and imag images", 0.0f);
 
     public:
-        void process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
+        void process(Core::InputChannel<mrd::Image<std::complex<float>>>& in, Core::OutputChannel& out) override;
 
     protected:
-        std::set<ISMRMRD::ISMRMRD_ImageTypes> image_types;
+        std::set<mrd::ImageType> image_types;
     };
 }

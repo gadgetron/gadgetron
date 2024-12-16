@@ -11,17 +11,10 @@
 #include "ismrmrd/meta.h"
 #include <ismrmrd/ismrmrd.h>
 
-#include "gadgetron_mricore_export.h"
-
-
-
-namespace Gadgetron
-{
-    class EXPORTGADGETSMRICORE CoilComputationGadget :public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
+namespace Gadgetron {
+    class CoilComputationGadget :public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
     public:
-        GADGET_DECLARE(CoilComputationGadget);
-
         GADGET_PROPERTY(ks_, size_t, "Correlation matrix size in plane.", 7);
         GADGET_PROPERTY(kz_, size_t, "Correlation matrix size in slice direction.", 5);
         GADGET_PROPERTY(power_, size_t, "Number of iterations to apply power method", 3);

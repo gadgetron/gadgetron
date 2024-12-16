@@ -2,84 +2,66 @@
 <configuration>
     <version>2</version>
 
-    <readers>
-        <reader>
-            <dll>gadgetron_core_readers</dll>
-            <classname>AcquisitionReader</classname>
-        </reader>
-        <reader>
-            <dll>gadgetron_core_readers</dll>
-            <classname>WaveformReader</classname>
-        </reader>
-    </readers>
-
-    <writers>
-        <writer>
-            <dll>gadgetron_core_writers</dll>
-            <classname>ImageWriter</classname>
-        </writer>
-    </writers>
-
     <stream>
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>NoiseAdjustGadget</classname>
         </gadget>
 
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>PCACoilGadget</classname>
         </gadget>
 
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>CoilReductionGadget</classname>
             <property name="coils_out" value="8"/>
         </gadget>
 
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>AsymmetricEchoAdjustROGadget</classname>
         </gadget>
 
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>RemoveROOversamplingGadget</classname>
         </gadget>
 
         <gadget>
-            <dll>gadgetron_grappa</dll>
+            <dll>pingvin_grappa</dll>
             <classname>SliceAccumulator</classname>
         </gadget>
 
         <parallel>
             <branch>
-                <dll>gadgetron_grappa</dll>
+                <dll>pingvin_grappa</dll>
                 <classname>AcquisitionFanout</classname>
             </branch>
 
             <stream key="images">
                 <gadget>
-                    <dll>gadgetron_grappa</dll>
+                    <dll>pingvin_grappa</dll>
                     <classname>ImageAccumulator</classname>
                 </gadget>
             </stream>
 
             <stream key="weights">
                 <gadget>
-                    <dll>gadgetron_grappa</dll>
+                    <dll>pingvin_grappa</dll>
                     <classname>gpuWeightsCalculator</classname>
                 </gadget>
             </stream>
 
             <merge>
-                <dll>gadgetron_grappa</dll>
+                <dll>pingvin_grappa</dll>
                 <classname>Unmixing</classname>
             </merge>
         </parallel>
 
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>ExtractGadget</classname>
         </gadget>
     </stream>

@@ -4,16 +4,16 @@
 
 #include <gtest/gtest.h>
 #include "io/from_string.h"
+
 using namespace Gadgetron::Core;
+
 TEST(FromStringTest,FloatTest){
-
-
     ASSERT_EQ(42.0f, IO::from_string<float>("42"));
     ASSERT_EQ(42.0f, IO::from_string<float>("42.0"));
     ASSERT_EQ(42.0f, IO::from_string<float>("42.0f"));
     ASSERT_EQ(42.0f, IO::from_string<float>("42e0"));
-
 }
+
 TEST(FromStringTest,VectorTest){
 
     std::vector<int> vals = {42,43,44,45};

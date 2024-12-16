@@ -1,4 +1,4 @@
-name: gadgetron-build
+name: pingvin-build
 channels:
   - conda-forge
 dependencies:

@@ -1,16 +1,13 @@
 #include "EPIPackNavigatorGadget.h"
-#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 
   EPIPackNavigatorGadget::EPIPackNavigatorGadget() {}
   EPIPackNavigatorGadget::~EPIPackNavigatorGadget() {}
 
-int EPIPackNavigatorGadget::process_config(ACE_Message_Block* mb)
+int EPIPackNavigatorGadget::process_config(const mrd::Header& header)
 {
-  ISMRMRD::IsmrmrdHeader h;
-  ISMRMRD::deserialize(mb->rd_ptr(),h);
-
+  auto& h = header;
   if (h.encoding.size() == 0) {
     GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
     GDEBUG("This Gadget needs an encoding description\n");
@@ -18,10 +15,10 @@ int EPIPackNavigatorGadget::process_config(ACE_Message_Block* mb)
   }
 
   // Get the encoding space and trajectory description
-  ISMRMRD::TrajectoryDescription traj_desc;
+  mrd::TrajectoryDescriptionType traj_desc;
 
-  if (h.encoding[0].trajectoryDescription) {
-    traj_desc = *h.encoding[0].trajectoryDescription;
+  if (h.encoding[0].trajectory_description) {
+    traj_desc = *h.encoding[0].trajectory_description;
   } else {
     GDEBUG("Trajectory description missing");
     return GADGET_FAIL;
@@ -33,7 +30,7 @@ int EPIPackNavigatorGadget::process_config(ACE_Message_Block* mb)
   }
 
 
-  for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
+  for (std::vector<mrd::UserParameterLongType>::iterator i (traj_desc.user_parameter_long.begin()); i != traj_desc.user_parameter_long.end(); ++i) {
     if (i->name == "numberOfNavigators") {
       numNavigators_ = i->value;
     }
@@ -47,15 +44,13 @@ int EPIPackNavigatorGadget::process_config(ACE_Message_Block* mb)
   return 0;
 }
 
-int EPIPackNavigatorGadget::process(
-          GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+int EPIPackNavigatorGadget::process(GadgetContainerMessage<mrd::Acquisition>* m1)
 {
 
   //GDEBUG_STREAM("Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl);
 
   // Get a reference to the acquisition header
-  ISMRMRD::AcquisitionHeader &hdr = *m1->getObjectPtr();
+  auto& hdr = m1->getObjectPtr()->head;
 
   // Pass on the non-EPI data (e.g. FLASH Calibration)
   if (hdr.encoding_space_ref > 0) {
@@ -71,10 +66,10 @@ int EPIPackNavigatorGadget::process(
   // We have data from encoding space 0.
 
   // Make an armadillo matrix of the data
-  arma::cx_fmat adata = as_arma_matrix(*m2->getObjectPtr());
+  arma::cx_fmat adata = as_arma_matrix(m1->getObjectPtr()->data);
 
   // Check to see if the data is a navigator line or an imaging line
-  if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA))
+  if (hdr.flags.HasFlags(mrd::AcquisitionFlags::kIsPhasecorrData))
   {
 
     // Increment the navigator counter
@@ -86,11 +81,11 @@ int EPIPackNavigatorGadget::process(
       navNumber_ = 0;
       epiEchoNumber_ = -1;
     }
-    
+
     // If we are at the beginning of a shot, then initialize
     if (navNumber_==0) {
       // Set the size of the storage array
-      navdata_.set_size( adata.n_rows, hdr.active_channels, numNavigators_);
+      navdata_.set_size( adata.n_rows, m1->getObjectPtr()->Coils(), numNavigators_);
     }
 
     // Store the navigator data
@@ -117,9 +112,9 @@ int EPIPackNavigatorGadget::process(
 
   // Pass on the imaging data
   // TODO: this should be controlled by a flag
-  if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA)) {
+  if (hdr.flags.HasFlags(mrd::AcquisitionFlags::kIsPhasecorrData)) {
     m1->release();
-  } 
+  }
   else {
     // It is enough to put the first one, since they are linked
     if (this->next()->putq(m1) == -1) {

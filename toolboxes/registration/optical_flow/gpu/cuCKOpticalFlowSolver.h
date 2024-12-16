@@ -22,32 +22,32 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTGPUREG cuCKOpticalFlowSolver 
+  template<class T, unsigned int D> class cuCKOpticalFlowSolver
     : public cuOpticalFlowSolver<T, D>
   {
-  
+
   public:
 
     // Constructors / destructors
     //
-  
-    cuCKOpticalFlowSolver() : cuOpticalFlowSolver<T,D>(){ 
-      alpha_ = T(0.05); 
-      beta_ = T(1.0); 
-    } 
-  
+
+    cuCKOpticalFlowSolver() : cuOpticalFlowSolver<T,D>(){
+      alpha_ = T(0.05);
+      beta_ = T(1.0);
+    }
+
     virtual ~cuCKOpticalFlowSolver() {}
-  
+
     // Set the regularization weight
     //
-  
+
     inline void set_alpha( T alpha ) { alpha_ = alpha; }
     inline void set_beta( T beta ) { beta_ = beta; }
-  
-  protected:  
-    virtual boost::shared_ptr< cuNDArray<T> > 
-      core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image );  
-    
+
+  protected:
+    virtual boost::shared_ptr< cuNDArray<T> >
+      core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image );
+
   protected:
     T alpha_;
     T beta_;

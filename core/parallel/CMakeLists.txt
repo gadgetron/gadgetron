@@ -1,5 +1,5 @@
 
-add_library(gadgetron_core_parallel SHARED
+add_library(pingvin_core_parallel SHARED
         Branch.h
 		Branch.hpp
 		Branch.cpp
@@ -11,15 +11,15 @@ add_library(gadgetron_core_parallel SHARED
 		UnorderedMerge.h
 		UnorderedMerge.cpp)
 
-target_link_libraries(gadgetron_core_parallel
-        gadgetron_core)
+target_link_libraries(pingvin_core_parallel
+        pingvin_core)
 
-set_target_properties(gadgetron_core_parallel PROPERTIES
-        VERSION ${GADGETRON_VERSION_STRING}
-        SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(pingvin_core_parallel PROPERTIES
+        VERSION ${PINGVIN_VERSION_STRING}
+        SOVERSION ${PINGVIN_SOVERSION})
 
-install(TARGETS gadgetron_core_parallel
-		EXPORT gadgetron-export
+install(TARGETS pingvin_core_parallel
+		EXPORT pingvin-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
@@ -32,6 +32,4 @@ install(FILES
         Merge.h
         Fanout.h
         Fanout.hpp
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+        DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)

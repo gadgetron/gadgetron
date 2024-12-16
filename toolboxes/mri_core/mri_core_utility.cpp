@@ -73,10 +73,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< float >& data);
-    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< double >& data);
-    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< std::complex<float> >& data);
-    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< std::complex<double> >& data);
+    template hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< float >& data);
+    template hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< double >& data);
+    template hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< std::complex<float> >& data);
+    template hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 
@@ -125,10 +125,10 @@ namespace Gadgetron
 
     }
 
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<float>& data);
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<double>& data);
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray< std::complex<float> >& data);
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray< std::complex<double> >& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<float>& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<double>& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray< std::complex<float> >& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 
@@ -182,10 +182,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<float>& data);
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<double>& data);
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<float> >& data);
-    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<double> >& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<float>& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<double>& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<float> >& data);
+    template std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<double> >& data);
 
 
     // ------------------------------------------------------------------------
@@ -260,18 +260,22 @@ namespace Gadgetron
                 Gadgetron::scal(scaling, complexImResized);
             }
         }
+        catch (const std::exception& e)
+        {
+            GADGET_THROW(e.what());
+        }
         catch (...)
         {
             GADGET_THROW("Errors in zero_pad_resize(...) ... ");
         }
     }
 
-    template EXPORTMRICORE void zero_pad_resize(const hoNDArray< std::complex<float> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<float> >& complexImResized);
-    template EXPORTMRICORE void zero_pad_resize(const hoNDArray< std::complex<double> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<double> >& complexImResized);
+    template void zero_pad_resize(const hoNDArray< std::complex<float> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<float> >& complexImResized);
+    template void zero_pad_resize(const hoNDArray< std::complex<double> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<double> >& complexImResized);
 
     // ------------------------------------------------------------------------
 
-    template <typename T> 
+    template <typename T>
     void compute_averaged_data_N_S(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray<T>& res)
     {
 
@@ -354,12 +358,12 @@ namespace Gadgetron
 
     }
 
-    template EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<float> >& res);
-    template EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray< std::complex<double> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<double> >& res);
+    template void compute_averaged_data_N_S(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<float> >& res);
+    template void compute_averaged_data_N_S(const hoNDArray< std::complex<double> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<double> >& res);
 
     // ------------------------------------------------------------------------
 
-    template <typename T> 
+    template <typename T>
     void select_data_N_S(const hoNDArray<T>& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray<T>& res)
     {
         try
@@ -450,15 +454,15 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE void select_data_N_S(const hoNDArray< std::complex<float> >& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray< std::complex<float> >& res);
-    template EXPORTMRICORE void select_data_N_S(const hoNDArray< std::complex<double> >& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray< std::complex<double> >& res);
+    template void select_data_N_S(const hoNDArray< std::complex<float> >& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray< std::complex<float> >& res);
+    template void select_data_N_S(const hoNDArray< std::complex<double> >& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray< std::complex<double> >& res);
 
     // ------------------------------------------------------------------------
 
-    template <typename T> 
+    template <typename T>
     void compute_eigen_channel_coefficients(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT)
     {
-        
+
         size_t RO = data.get_size(0);
         size_t E1 = data.get_size(1);
         size_t E2 = data.get_size(2);
@@ -531,15 +535,15 @@ namespace Gadgetron
                 }
             }
         }
-        
+
     }
 
-    template EXPORTMRICORE void compute_eigen_channel_coefficients(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT);
-    template EXPORTMRICORE void compute_eigen_channel_coefficients(const hoNDArray< std::complex<double> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<double> > > > >& KLT);
+    template void compute_eigen_channel_coefficients(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT);
+    template void compute_eigen_channel_coefficients(const hoNDArray< std::complex<double> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<double> > > > >& KLT);
 
     // ------------------------------------------------------------------------
 
-    template <typename T> 
+    template <typename T>
     void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT, hoNDArray<T>& data)
     {
         try
@@ -591,8 +595,8 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT, hoNDArray< std::complex<float> >& data);
-    template EXPORTMRICORE void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT< std::complex<double> > > > >& KLT, hoNDArray< std::complex<double> >& data);
+    template void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT, hoNDArray< std::complex<float> >& data);
+    template void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT< std::complex<double> > > > >& KLT, hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 
@@ -601,11 +605,7 @@ namespace Gadgetron
         char* v = std::getenv("GADGETRON_DEBUG_FOLDER");
         if (v == NULL)
         {
-#ifdef _WIN32
-            debugFolderPath = "c:/temp/gadgetron";
-#else
             debugFolderPath = "/tmp/gadgetron";
-#endif // _WIN32
         }
         else
         {
@@ -619,114 +619,20 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
-    void find_calib_mode(ISMRMRD::IsmrmrdHeader& h, Gadgetron::ismrmrdCALIBMODE& CalibMode, Gadgetron::IsmrmrdDIM& InterleaveDim, double& acceFactorE1, double& acceFactorE2, bool verbose)
+    void find_encoding_limits(mrd::Header& h, mrd::EncodingCounters& meas_max_idx, bool verbose)
     {
         try
         {
-            if (!h.encoding[0].parallelImaging)
-            {
-                GADGET_THROW("Parallel Imaging section not found in header");
-            }
+            mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+            mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+            mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
 
-            ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
-
-            acceFactorE1 = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
-            acceFactorE2 = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
-
-            GDEBUG_CONDITION_STREAM(verbose, "acceFactorE1 is " << acceFactorE1);
-            GDEBUG_CONDITION_STREAM(verbose, "acceFactorE2 is " << acceFactorE2);
-
-            if (!p_imaging.calibrationMode.is_present())
-            {
-                GADGET_THROW("Parallel calibration mode not found in header");
-            }
-
-            std::string calib = *p_imaging.calibrationMode;
-            if (calib.compare("interleaved") == 0)
-            {
-                CalibMode = Gadgetron::ISMRMRD_interleaved;
-                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is interleaved");
-
-                if (p_imaging.interleavingDimension)
-                {
-                    if (p_imaging.interleavingDimension->compare("phase") == 0)
-                    {
-                        InterleaveDim = Gadgetron::DIM_Phase;
-                    }
-                    else if (p_imaging.interleavingDimension->compare("repetition") == 0)
-                    {
-                        InterleaveDim = Gadgetron::DIM_Repetition;
-                    }
-                    else if (p_imaging.interleavingDimension->compare("average") == 0)
-                    {
-                        InterleaveDim = Gadgetron::DIM_Average;
-                    }
-                    else if (p_imaging.interleavingDimension->compare("contrast") == 0)
-                    {
-                        InterleaveDim = Gadgetron::DIM_Contrast;
-                    }
-                    else if (p_imaging.interleavingDimension->compare("other") == 0)
-                    {
-                        InterleaveDim = Gadgetron::DIM_other1;
-                    }
-                    else
-                    {
-                        GADGET_THROW("Unknown interleaving dimension. Bailing out");
-                    }
-                }
-            }
-            else if (calib.compare("embedded") == 0)
-            {
-                CalibMode = Gadgetron::ISMRMRD_embedded;
-                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is embedded");
-            }
-            else if (calib.compare("separate") == 0)
-            {
-                CalibMode = Gadgetron::ISMRMRD_separate;
-                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is separate");
-            }
-            else if (calib.compare("external") == 0)
-            {
-                CalibMode = Gadgetron::ISMRMRD_external;
-            }
-            else if ((calib.compare("other") == 0) && acceFactorE1 == 1 && acceFactorE2 == 1)
-            {
-                CalibMode = Gadgetron::ISMRMRD_noacceleration;
-                acceFactorE1 = 1;
-            }
-            else if ((calib.compare("other") == 0) && (acceFactorE1>1 || acceFactorE2>1))
-            {
-                CalibMode = Gadgetron::ISMRMRD_interleaved;
-                acceFactorE1 = 2;
-                InterleaveDim = Gadgetron::DIM_Phase;
-            }
-            else
-            {
-                GADGET_THROW("Failed to process parallel imaging calibration mode");
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Error happened in findCalibMode(...) ... ");
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    void find_encoding_limits(ISMRMRD::IsmrmrdHeader& h, ISMRMRD::EncodingCounters& meas_max_idx, bool verbose)
-    {
-        try
-        {
-            ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-            ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-            ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-
-            meas_max_idx.kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
+            meas_max_idx.kspace_encode_step_1 = (uint16_t)e_space.matrix_size.y - 1;
 
             meas_max_idx.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
             meas_max_idx.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
 
-            meas_max_idx.kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
+            meas_max_idx.kspace_encode_step_2 = (uint16_t)e_space.matrix_size.z - 1;
 
             meas_max_idx.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
 
@@ -747,38 +653,38 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
-    void find_matrix_size_encoding(ISMRMRD::IsmrmrdHeader& h, size_t matrix_size_encoding[3])
+    void find_matrix_size_encoding(mrd::Header& h, size_t matrix_size_encoding[3])
     {
-        matrix_size_encoding[0] = h.encoding[0].encodedSpace.matrixSize.x;
-        matrix_size_encoding[1] = h.encoding[0].encodedSpace.matrixSize.y;
-        matrix_size_encoding[2] = h.encoding[0].encodedSpace.matrixSize.z;
+        matrix_size_encoding[0] = h.encoding[0].encoded_space.matrix_size.x;
+        matrix_size_encoding[1] = h.encoding[0].encoded_space.matrix_size.y;
+        matrix_size_encoding[2] = h.encoding[0].encoded_space.matrix_size.z;
     }
 
     // ------------------------------------------------------------------------
 
-    void find_FOV_encoding(ISMRMRD::IsmrmrdHeader& h, float field_of_view_encoding[3])
+    void find_FOV_encoding(mrd::Header& h, float field_of_view_encoding[3])
     {
-        field_of_view_encoding[0] = h.encoding[0].encodedSpace.fieldOfView_mm.x;
-        field_of_view_encoding[1] = h.encoding[0].encodedSpace.fieldOfView_mm.y;
-        field_of_view_encoding[2] = h.encoding[0].encodedSpace.fieldOfView_mm.z;
+        field_of_view_encoding[0] = h.encoding[0].encoded_space.field_of_view_mm.x;
+        field_of_view_encoding[1] = h.encoding[0].encoded_space.field_of_view_mm.y;
+        field_of_view_encoding[2] = h.encoding[0].encoded_space.field_of_view_mm.z;
     }
 
     // ------------------------------------------------------------------------
 
-    void find_matrix_size_recon(ISMRMRD::IsmrmrdHeader& h, size_t matrix_size_recon[3])
+    void find_matrix_size_recon(mrd::Header& h, size_t matrix_size_recon[3])
     {
-        matrix_size_recon[0] = h.encoding[0].reconSpace.matrixSize.x;
-        matrix_size_recon[1] = h.encoding[0].reconSpace.matrixSize.y;
-        matrix_size_recon[2] = h.encoding[0].reconSpace.matrixSize.z;
+        matrix_size_recon[0] = h.encoding[0].recon_space.matrix_size.x;
+        matrix_size_recon[1] = h.encoding[0].recon_space.matrix_size.y;
+        matrix_size_recon[2] = h.encoding[0].recon_space.matrix_size.z;
     }
 
     // ------------------------------------------------------------------------
 
-    void find_FOV_recon(ISMRMRD::IsmrmrdHeader& h, float field_of_view_recon[3])
+    void find_FOV_recon(mrd::Header& h, float field_of_view_recon[3])
     {
-        field_of_view_recon[0] = h.encoding[0].reconSpace.fieldOfView_mm.x;
-        field_of_view_recon[1] = h.encoding[0].reconSpace.fieldOfView_mm.y;
-        field_of_view_recon[2] = h.encoding[0].reconSpace.fieldOfView_mm.z;
+        field_of_view_recon[0] = h.encoding[0].recon_space.field_of_view_mm.x;
+        field_of_view_recon[1] = h.encoding[0].recon_space.field_of_view_mm.y;
+        field_of_view_recon[2] = h.encoding[0].recon_space.field_of_view_mm.z;
     }
 
     // ------------------------------------------------------------------------
@@ -796,195 +702,88 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
-    void get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v)
+    void set_meta_from_mrd_header(const mrd::ImageHeader& header, mrd::ImageMeta& attrib)
+    {
+        attrib["PatientPosition"] = {header.position[0], header.position[1], header.position[2]};
+
+        attrib["col_dir"] = {header.col_dir[0], header.col_dir[1], header.col_dir[2]};
+
+        attrib["line_dir"] = {header.line_dir[0], header.line_dir[1], header.line_dir[2]};
+
+        attrib["slice_dir"] = {header.slice_dir[0], header.slice_dir[1], header.slice_dir[2]};
+
+        attrib["patient_table_position"] = {header.patient_table_position[0], header.patient_table_position[1], header.patient_table_position[2]};
+
+        attrib["fov"] = {header.field_of_view[0], header.field_of_view[1], header.field_of_view[2]};
+    }
+
+
+    template <typename T>
+    void get_mrd_meta_values(const mrd::ImageMeta& attrib, const std::string& name, std::vector<T>& v)
     {
         try
         {
-            size_t num = attrib.length(name.c_str());
-            if (num == 0)
+            if (attrib.count(name) == 0)
             {
                 v.clear();
-                GWARN_STREAM("get_ismrmrd_meta_values, can not find field : " << name);
+                GWARN_STREAM("get_mrd_meta_values, can not find field : " << name);
                 return;
             }
 
-            v.resize(num);
-
-            size_t ii;
-            for (ii = 0; ii<num; ii++)
-            {
-                v[ii] = attrib.as_long(name.c_str(), ii);
+            auto vs = attrib.at(name);
+            v.resize(vs.size());
+            for (size_t i = 0; i < vs.size(); i++) {
+                v[i] = std::get<T>(vs[i]);
             }
         }
         catch (...)
         {
-            GADGET_THROW("Error happened in get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v) ... ");
+            GADGET_THROW("Error happened in get_mrd_meta_values(const mrd::ImageMeta& attrib, const std::string& name, std::vector<T>& v) ... ");
         }
     }
 
-    void get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v)
-    {
-        try
-        {
-            size_t num = attrib.length(name.c_str());
-            if (num == 0)
-            {
-                v.clear();
-                GWARN_STREAM("get_ismrmrd_meta_values, can not find field : " << name);
-                return;
-            }
-
-            v.resize(num);
-
-            size_t ii;
-            for (ii = 0; ii<num; ii++)
-            {
-                v[ii] = attrib.as_double(name.c_str(), ii);
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Error happened in get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v) ... ");
-        }
-    }
-
-    void get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v)
-    {
-        try
-        {
-            size_t num = attrib.length(name.c_str());
-            if (num == 0)
-            {
-                v.clear();
-                GWARN_STREAM("get_ismrmrd_meta_values, can not find field : " << name);
-                return;
-            }
-
-            v.resize(num);
-
-            size_t ii;
-            for (ii = 0; ii<num; ii++)
-            {
-                v[ii] = std::string(attrib.as_str(name.c_str(), ii));
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Error happened in get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v) ... ");
-        }
-    }
+    template void get_mrd_meta_values(const mrd::ImageMeta& attrib, const std::string& name, std::vector<long>& v);
+    template void get_mrd_meta_values(const mrd::ImageMeta& attrib, const std::string& name, std::vector<double>& v);
+    template void get_mrd_meta_values(const mrd::ImageMeta& attrib, const std::string& name, std::vector<std::string>& v);
 
     // ------------------------------------------------------------------------
 
     template <typename T>
-    void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v)
+    void set_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<T>& v)
     {
         try
         {
-            size_t num = v.size();
-            if (num == 0)
-            {
-                GWARN_STREAM("setISMRMRMetaValues, input vector is empty ... " << name);
-                return;
-            }
-
-            attrib.set(name.c_str(), v[0]);
-
-            size_t ii;
-            for (ii = 1; ii<v.size(); ii++)
-            {
-                attrib.append(name.c_str(), v[ii]);
-            }
+            attrib[name].clear();
+            std::copy(v.begin(), v.end(), std::back_inserter(attrib[name]));
         }
         catch (...)
         {
-            GADGET_THROW("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+            GADGET_THROW("Error happened in set_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<T>& v) ... ");
         }
     }
 
-    template EXPORTMRICORE void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<long>& v);
-    template EXPORTMRICORE void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<double>& v);
-
-    void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v)
-    {
-        try
-        {
-            size_t num = v.size();
-            if (num == 0)
-            {
-                GWARN_STREAM("setISMRMRMetaValues, input vector is empty ... " << name);
-                return;
-            }
-
-            attrib.set(name.c_str(), v[0].c_str());
-
-            size_t ii;
-            for (ii = 1; ii<v.size(); ii++)
-            {
-                attrib.append(name.c_str(), v[ii].c_str());
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
-        }
-    }
+    template void set_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<long>& v);
+    template void set_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<double>& v);
+    template void set_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<std::string>& v);
 
     // ------------------------------------------------------------------------
 
     template <typename T>
-    void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v)
+    void append_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<T>& v)
     {
         try
         {
-            size_t num = v.size();
-            if (num == 0)
-            {
-                GWARN_STREAM("append_ismrmrd_meta_values, input vector is empty ... " << name);
-                return;
-            }
-
-            attrib.append(name.c_str(), v[0]);
-
-            size_t ii;
-            for (ii = 1; ii<v.size(); ii++)
-            {
-                attrib.append(name.c_str(), v[ii]);
-            }
+            std::copy(v.begin(), v.end(), std::back_inserter(attrib[name]));
         }
         catch (...)
         {
-            GADGET_THROW("Error happened in append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+            GADGET_THROW("Error happened in append_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<T>& v) ... ");
         }
     }
 
-    template EXPORTMRICORE void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<long>& v);
-    template EXPORTMRICORE void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<double>& v);
-
-    void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v)
-    {
-        try
-        {
-            size_t num = v.size();
-            if (num == 0)
-            {
-                GWARN_STREAM("append_ismrmrd_meta_values, input vector is empty ... " << name);
-                return;
-            }
-
-            attrib.append(name.c_str(), v[0].c_str());
-
-            size_t ii;
-            for (ii = 1; ii<v.size(); ii++)
-            {
-                attrib.append(name.c_str(), v[ii].c_str());
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Error happened in append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
-        }
-    }
+    template void append_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<long>& v);
+    template void append_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<double>& v);
+    template void append_mrd_meta_values(mrd::ImageMeta& attrib, const std::string& name, const std::vector<std::string>& v);
 
     // ------------------------------------------------------------------------
 
@@ -1110,12 +909,8 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
-    bool check_idential_slice_prescription(ISMRMRD::ISMRMRD_ImageHeader a, ISMRMRD::ISMRMRD_ImageHeader b)
+    bool check_idential_slice_prescription(mrd::ImageHeader a, mrd::ImageHeader b)
     {
-        GADGET_CHECK_RETURN_FALSE(a.matrix_size[0] == b.matrix_size[0]);
-        GADGET_CHECK_RETURN_FALSE(a.matrix_size[1] == b.matrix_size[1]);
-        GADGET_CHECK_RETURN_FALSE(a.matrix_size[2] == b.matrix_size[2]);
-
         GADGET_CHECK_RETURN_FALSE(std::abs(a.field_of_view[0] - b.field_of_view[0])<0.1);
         GADGET_CHECK_RETURN_FALSE(std::abs(a.field_of_view[1] - b.field_of_view[1])<0.1);
         GADGET_CHECK_RETURN_FALSE(std::abs(a.field_of_view[2] - b.field_of_view[2])<0.1);
@@ -1128,109 +923,18 @@ namespace Gadgetron
         GADGET_CHECK_RETURN_FALSE(std::abs(a.position[1] - b.position[1])<0.001);
         GADGET_CHECK_RETURN_FALSE(std::abs(a.position[2] - b.position[2])<0.001);
 
-        GADGET_CHECK_RETURN_FALSE(std::abs(a.read_dir[0] - b.read_dir[0])<0.001);
-        GADGET_CHECK_RETURN_FALSE(std::abs(a.read_dir[1] - b.read_dir[1])<0.001);
-        GADGET_CHECK_RETURN_FALSE(std::abs(a.read_dir[2] - b.read_dir[2])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.col_dir[0] - b.col_dir[0])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.col_dir[1] - b.col_dir[1])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.col_dir[2] - b.col_dir[2])<0.001);
 
-        GADGET_CHECK_RETURN_FALSE(std::abs(a.phase_dir[0] - b.phase_dir[0])<0.001);
-        GADGET_CHECK_RETURN_FALSE(std::abs(a.phase_dir[1] - b.phase_dir[1])<0.001);
-        GADGET_CHECK_RETURN_FALSE(std::abs(a.phase_dir[2] - b.phase_dir[2])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.line_dir[0] - b.line_dir[0])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.line_dir[1] - b.line_dir[1])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.line_dir[2] - b.line_dir[2])<0.001);
 
         return true;
     }
 
     // ------------------------------------------------------------------------
-
-    std::string get_ismrmrd_dim_name(const IsmrmrdDIM& dim)
-    {
-        std::ostringstream os;
-        switch (dim)
-        {
-        case DIM_ReadOut:
-            os << "DIM_ReadOut";
-            break;
-
-        case DIM_Encoding1:
-            os << "DIM_Encoding1";
-            break;
-
-        case DIM_Channel:
-            os << "DIM_Channel";
-            break;
-
-        case DIM_Slice:
-            os << "DIM_Slice";
-            break;
-
-        case DIM_Encoding2:
-            os << "DIM_Encoding2";
-            break;
-
-        case DIM_Contrast:
-            os << "DIM_Contrast";
-            break;
-
-        case DIM_Phase:
-            os << "DIM_Phase";
-            break;
-
-        case DIM_Repetition:
-            os << "DIM_Repetition";
-            break;
-
-        case DIM_Set:
-            os << "DIM_Set";
-            break;
-
-        case DIM_Segment:
-            os << "DIM_Segment";
-            break;
-
-        case DIM_Average:
-            os << "DIM_Average";
-            break;
-
-        case DIM_other1:
-            os << "DIM_other1";
-            break;
-
-        case DIM_other2:
-            os << "DIM_other2";
-            break;
-
-        case DIM_other3:
-            os << "DIM_other3";
-            break;
-
-        default:
-            os << "DIM_NONE";
-        }
-
-        std::string dimStr(os.str());
-        return dimStr;
-    }
-
-    // ------------------------------------------------------------------------
-
-    IsmrmrdDIM get_ismrmrd_dim_from_name(const std::string& name)
-    {
-        if (name == "DIM_ReadOut") return DIM_ReadOut;
-        if (name == "DIM_Encoding1") return DIM_Encoding1;
-        if (name == "DIM_Channel") return DIM_Channel;
-        if (name == "DIM_Slice") return DIM_Slice;
-        if (name == "DIM_Encoding2") return DIM_Encoding2;
-        if (name == "DIM_Contrast") return DIM_Contrast;
-        if (name == "DIM_Phase") return DIM_Phase;
-        if (name == "DIM_Repetition") return DIM_Repetition;
-        if (name == "DIM_Set") return DIM_Set;
-        if (name == "DIM_Segment") return DIM_Segment;
-        if (name == "DIM_Average") return DIM_Average;
-        if (name == "DIM_other1") return DIM_other1;
-        if (name == "DIM_other2") return DIM_other2;
-        if (name == "DIM_other3") return DIM_other3;
-
-        return DIM_NONE;
-    }
 
     namespace {
         template<class T> std::map<std::string, decltype(T::value)> to_map_internal(const std::vector<T>& userparameters){
@@ -1242,56 +946,33 @@ namespace Gadgetron
         }
     }
 
-    std::map<std::string, std::int64_t> to_map(const std::vector<ISMRMRD::UserParameterLong> & userparameters) {
+    std::map<std::string, std::int64_t> to_map(const std::vector<mrd::UserParameterLongType> & userparameters) {
         return to_map_internal(userparameters);
     }
 
-    std::map<std::string, double> to_map(const std::vector<ISMRMRD::UserParameterDouble> & userparameters) {
+    std::map<std::string, double> to_map(const std::vector<mrd::UserParameterDoubleType> & userparameters) {
         return to_map_internal(userparameters);
     }
 
-    std::map<std::string, std::string> to_map(const std::vector<ISMRMRD::UserParameterString> & userparameters) {
+    std::map<std::string, std::string> to_map(const std::vector<mrd::UserParameterStringType> & userparameters) {
         return to_map_internal(userparameters);
     }
 
-    ISMRMRD::ImageHeader image_header_from_acquisition(
-        const ISMRMRD::AcquisitionHeader& acq_header, const ISMRMRD::IsmrmrdHeader& header, const hoNDArray<std::complex<float>>& data) {
+    mrd::ImageHeader image_header_from_acquisition(const mrd::AcquisitionHeader& acq_header, const mrd::Header& header) {
 
-        ISMRMRD::ImageHeader im_header;
+        mrd::ImageHeader im_header;
 
-        im_header.version         = acq_header.version;
-        im_header.data_type       = ISMRMRD::ISMRMRD_CXFLOAT;
         im_header.measurement_uid = acq_header.measurement_uid;
 
-        im_header.matrix_size[0] = (uint16_t)data.get_size(0);
-        im_header.matrix_size[1] = (uint16_t)data.get_size(1);
-        im_header.matrix_size[2] = (uint16_t)data.get_size(2);
+        im_header.field_of_view[0] = header.encoding[0].recon_space.field_of_view_mm.x;
+        im_header.field_of_view[1] = header.encoding[0].recon_space.field_of_view_mm.y;
+        im_header.field_of_view[2] = header.encoding[0].recon_space.field_of_view_mm.z;
 
-        im_header.field_of_view[0] = header.encoding[0].reconSpace.fieldOfView_mm.x;
-        im_header.field_of_view[1] = header.encoding[0].reconSpace.fieldOfView_mm.y;
-        im_header.field_of_view[2] = header.encoding[0].reconSpace.fieldOfView_mm.z;
-
-        im_header.channels = (uint16_t)data.get_size(3);
-
-        im_header.position[0] = acq_header.position[0];
-        im_header.position[1] = acq_header.position[1];
-        im_header.position[2] = acq_header.position[2];
-
-        im_header.read_dir[0] = acq_header.read_dir[0];
-        im_header.read_dir[1] = acq_header.read_dir[1];
-        im_header.read_dir[2] = acq_header.read_dir[2];
-
-        im_header.phase_dir[0] = acq_header.phase_dir[0];
-        im_header.phase_dir[1] = acq_header.phase_dir[1];
-        im_header.phase_dir[2] = acq_header.phase_dir[2];
-
-        im_header.slice_dir[0] = acq_header.slice_dir[0];
-        im_header.slice_dir[1] = acq_header.slice_dir[1];
-        im_header.slice_dir[2] = acq_header.slice_dir[2];
-
-        im_header.patient_table_position[0] = acq_header.patient_table_position[0];
-        im_header.patient_table_position[1] = acq_header.patient_table_position[1];
-        im_header.patient_table_position[2] = acq_header.patient_table_position[2];
+        im_header.position = acq_header.position;
+        im_header.col_dir = acq_header.read_dir;
+        im_header.line_dir = acq_header.phase_dir;
+        im_header.slice_dir = acq_header.slice_dir;
+        im_header.patient_table_position = acq_header.patient_table_position;
 
         im_header.average    = acq_header.idx.average;
         im_header.slice      = acq_header.idx.slice;
@@ -1302,17 +983,195 @@ namespace Gadgetron
 
         im_header.acquisition_time_stamp = acq_header.acquisition_time_stamp;
 
-        im_header.physiology_time_stamp[0] = acq_header.physiology_time_stamp[0];
-        im_header.physiology_time_stamp[1] = acq_header.physiology_time_stamp[1];
-        im_header.physiology_time_stamp[2] = acq_header.physiology_time_stamp[2];
+        im_header.physiology_time_stamp = acq_header.physiology_time_stamp;
 
-        im_header.image_type         = ISMRMRD::ISMRMRD_IMTYPE_COMPLEX;
+        im_header.image_type = mrd::ImageType::kComplex;
+        im_header.image_index = 0;
         im_header.image_series_index = 0;
 
-        memcpy(im_header.user_int, acq_header.user_int, sizeof(int32_t) * ISMRMRD::ISMRMRD_USER_INTS);
-        memcpy(im_header.user_float, acq_header.user_float, sizeof(float) * ISMRMRD::ISMRMRD_USER_FLOATS);
+        im_header.user_int = acq_header.user_int;
+        im_header.user_float = acq_header.user_float;
 
-        im_header.attribute_string_len = 0;
         return im_header;
     }
+
+
+void add_stats_to_bucket(mrd::EncodingLimitsType& stats, const mrd::Acquisition& acq)
+{
+    if (!stats.kspace_encoding_step_0) {
+        auto limit = mrd::LimitType{};
+        limit.minimum = acq.Samples();
+        limit.maximum = acq.Samples();
+        stats.kspace_encoding_step_0 = limit;
+    } else {
+        auto& limit = stats.kspace_encoding_step_0.value();
+        if (acq.Samples() < limit.minimum) limit.minimum = acq.Samples();
+        if (acq.Samples() > limit.maximum) limit.maximum = acq.Samples();
+    }
+
+    auto const& idx = acq.head.idx;
+
+    if (idx.kspace_encode_step_1) {
+        auto ke1 = idx.kspace_encode_step_1.value();
+        if (!stats.kspace_encoding_step_1) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = ke1;
+            limit.maximum = ke1;
+            stats.kspace_encoding_step_1 = limit;
+        } else {
+            auto& limit = stats.kspace_encoding_step_1.value();
+            if (ke1 < limit.minimum) limit.minimum = ke1;
+            if (ke1 > limit.maximum) limit.maximum = ke1;
+        }
+    }
+
+    if (idx.kspace_encode_step_2) {
+        auto ke2 = idx.kspace_encode_step_2.value();
+        if (!stats.kspace_encoding_step_2) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = ke2;
+            limit.maximum = ke2;
+            stats.kspace_encoding_step_2 = limit;
+        } else {
+            auto& limit = stats.kspace_encoding_step_2.value();
+            if (ke2 < limit.minimum) limit.minimum = ke2;
+            if (ke2 > limit.maximum) limit.maximum = ke2;
+        }
+    }
+
+    if (idx.average) {
+        auto average = idx.average.value();
+        if (!stats.average) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = average;
+            limit.maximum = average;
+            stats.average = limit;
+        } else {
+            auto& limit = stats.average.value();
+            if (average < limit.minimum) limit.minimum = average;
+            if (average > limit.maximum) limit.maximum = average;
+        }
+    }
+
+    if (idx.slice) {
+        auto slice = idx.slice.value();
+        if (!stats.slice) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = slice;
+            limit.maximum = slice;
+            stats.slice = limit;
+        } else {
+            auto& limit = stats.slice.value();
+            if (slice < limit.minimum) limit.minimum = slice;
+            if (slice > limit.maximum) limit.maximum = slice;
+        }
+    }
+
+    if (idx.contrast) {
+        auto contrast = idx.contrast.value();
+        if (!stats.contrast) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = contrast;
+            limit.maximum = contrast;
+            stats.contrast = limit;
+        } else {
+            auto& limit = stats.contrast.value();
+            if (contrast < limit.minimum) limit.minimum = contrast;
+            if (contrast > limit.maximum) limit.maximum = contrast;
+        }
+    }
+
+    if (idx.phase) {
+        auto phase = idx.phase.value();
+        if (!stats.phase) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = phase;
+            limit.maximum = phase;
+            stats.phase = limit;
+        } else {
+            auto& limit = stats.phase.value();
+            if (phase < limit.minimum) limit.minimum = phase;
+            if (phase > limit.maximum) limit.maximum = phase;
+        }
+    }
+
+    if (idx.repetition) {
+        auto repetition = idx.repetition.value();
+        if (!stats.repetition) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = repetition;
+            limit.maximum = repetition;
+            stats.repetition = limit;
+        } else {
+            auto& limit = stats.repetition.value();
+            if (repetition < limit.minimum) limit.minimum = repetition;
+            if (repetition > limit.maximum) limit.maximum = repetition;
+        }
+    }
+
+    if (idx.set) {
+        auto set = idx.set.value();
+        if (!stats.set) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = set;
+            limit.maximum = set;
+            stats.set = limit;
+        } else {
+            auto& limit = stats.set.value();
+            if (set < limit.minimum) limit.minimum = set;
+            if (set > limit.maximum) limit.maximum = set;
+        }
+    }
+
+    if (idx.segment) {
+        auto segment = idx.segment.value();
+        if (!stats.segment) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = segment;
+            limit.maximum = segment;
+            stats.segment = limit;
+        } else {
+            auto& limit = stats.segment.value();
+            if (segment < limit.minimum) limit.minimum = segment;
+            if (segment > limit.maximum) limit.maximum = segment;
+        }
+    }
+
+    std::vector<std::pair<uint32_t, std::optional<mrd::LimitType>&>> user_limits;
+    for (auto& user_n : user_limits) {
+        if (!user_n.second) {
+            auto limit = mrd::LimitType{};
+            limit.minimum = user_n.first;
+            limit.maximum = user_n.first;
+            user_n.second = limit;
+        } else {
+            auto& limit = user_n.second.value();
+            if (user_n.first < limit.minimum) limit.minimum = user_n.first;
+            if (user_n.first > limit.maximum) limit.maximum = user_n.first;
+        }
+    }
 }
+
+void add_acquisition_to_bucket(mrd::AcquisitionBucket& bucket, mrd::Acquisition acq)
+{
+    auto espace = size_t{acq.head.encoding_space_ref.value_or(0)};
+
+    if (acq.head.flags.HasFlags(mrd::AcquisitionFlags::kIsParallelCalibration) ||
+        acq.head.flags.HasFlags(mrd::AcquisitionFlags::kIsParallelCalibrationAndImaging)) {
+        bucket.ref.push_back(acq);
+        if (bucket.refstats.size() < (espace + 1)) {
+            bucket.refstats.resize(espace + 1);
+        }
+        add_stats_to_bucket(bucket.refstats[espace], acq);
+    }
+    if (!(acq.head.flags.HasFlags(mrd::AcquisitionFlags::kIsParallelCalibration) ||
+          acq.head.flags.HasFlags(mrd::AcquisitionFlags::kIsPhasecorrData))) {
+        if (bucket.datastats.size() < (espace + 1)) {
+            bucket.datastats.resize(espace + 1);
+        }
+        add_stats_to_bucket(bucket.datastats[espace], acq);
+        bucket.data.emplace_back(std::move(acq));
+    }
+}
+
+} // namespace Gadgetron

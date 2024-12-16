@@ -10,9 +10,9 @@ namespace Gadgetron {
     {
     }
 
-    int OneEncodingGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+    int OneEncodingGadget::process(GadgetContainerMessage< mrd::Acquisition>* m1)
     {
-        m1->getObjectPtr()->encoding_space_ref = 0;
+        m1->getObjectPtr()->head.encoding_space_ref = 0;
 
         if (this->next()->putq(m1) < 0)
         {

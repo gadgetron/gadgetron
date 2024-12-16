@@ -5,7 +5,6 @@
 #ifndef hoNDFFT_H
 #define hoNDFFT_H
 
-#include "cpufft_export.h"
 #include "hoNDArray.h"
 
 #include "complext.h"
@@ -118,7 +117,7 @@ The class' template type is a REAL, ie. float or double.
             Note that scaling is 1/sqrt(N) fir both FFT and IFFT, where N is the number of elements along the FFT
 dimensions Access using e.g. FFT<float>::instance()
 */
-    template <typename T> class EXPORTCPUFFT hoNDFFT {
+    template <typename T> class hoNDFFT {
     public:
         typedef std::complex<T> ComplexType;
 

@@ -1,5 +1,3 @@
-
-
 set(RTGRAPPA_SOURCES
         ImageAccumulator.cpp
         WeightsCalculator.cpp
@@ -21,33 +19,29 @@ if (CUDA_FOUND)
             gpu/WeightsCore.h)
 endif()
 
-add_library(gadgetron_grappa SHARED ${RTGRAPPA_SOURCES})
-#set_target_properties(gadgetron_grappa PROPERTIES
-#        VERSION ${GADGETRON_VERSION_STRING}
-#        SOVERSION ${GADGETRON_SOVERSION})
+add_library(pingvin_grappa SHARED ${RTGRAPPA_SOURCES})
+set_target_properties(pingvin_grappa PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-target_link_libraries(gadgetron_grappa
-        gadgetron_core
-        gadgetron_core_parallel
-        gadgetron_mricore
-        gadgetron_toolbox_cpucore
-        gadgetron_toolbox_cpucore_math
-        gadgetron_toolbox_cpufft)
+target_link_libraries(pingvin_grappa
+        pingvin_core
+        pingvin_core_parallel
+        pingvin_mricore
+        pingvin_toolbox_cpucore
+        pingvin_toolbox_cpucore_math
+        pingvin_toolbox_cpufft)
 
 if (CUDA_FOUND)
-    target_link_libraries(gadgetron_grappa
-            gadgetron_toolbox_gpu
+    target_link_libraries(pingvin_grappa
+            pingvin_toolbox_gpu
     )
 endif()
 
-install(TARGETS gadgetron_grappa
+install(TARGETS pingvin_grappa
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	COMPONENT main
 )
-
-
 
 install(FILES
         config/grappa.xml
@@ -56,6 +50,4 @@ install(FILES
         config/grappa_float_cpu.xml
         config/grappa_unoptimized.xml
         config/grappa_unoptimized_float.xml
-        DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+        DESTINATION ${PINGVIN_INSTALL_CONFIG_PATH} COMPONENT main)

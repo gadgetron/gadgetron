@@ -7,30 +7,27 @@
 
 #pragma once
 
-#include "cmr_export.h"
-
 #include "GadgetronTimer.h"
 
 #include "ImageIOAnalyze.h"
 #include "mri_core_def.h"
-#include "mri_core_data.h"
 #include "mri_core_utility.h"
 #include "hoNDImageContainer2D.h"
 #include "hoMRImage.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
     /// map: the 2D map for hole filling; holes is marked by value 'hole'
     /// hole: this value marks the hole
     /// is_8_connected: whethe to use 8-connection to detect holes; if false, 4-connection is used
     template <typename T>
-    void EXPORTCMR perform_hole_filling(hoNDArray<T>& map, T hole=(T)(0), size_t max_size_of_holes=20, bool is_8_connected=true);
-    /// hole filling on image container 
+    void perform_hole_filling(hoNDArray<T>& map, T hole=(T)(0), size_t max_size_of_holes=20, bool is_8_connected=true);
+    /// hole filling on image container
     template <typename T>
-    void EXPORTCMR perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& maps, T hole = (T)(0), size_t max_size_of_holes = 20, bool is_8_connected = true);
+    void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& maps, T hole = (T)(0), size_t max_size_of_holes = 20, bool is_8_connected = true);
 
     template <typename T>
-    class EXPORTCMR CmrParametricMapping
+    class CmrParametricMapping
     {
     public:
 
@@ -74,7 +71,7 @@ namespace Gadgetron {
         /// parameter for mapping
         // ======================================================================================
 
-        /// parametric times 
+        /// parametric times
         /// inversion/saturation/TE times for every image along N
         std::vector<T> ti_;
 

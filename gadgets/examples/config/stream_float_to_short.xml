@@ -5,7 +5,7 @@
 
     <gadget>
         <name>FloatToShortAttrib</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>FloatToUShortGadget</classname>
 
         <property><name>max_intensity</name><value>32767</value></property>

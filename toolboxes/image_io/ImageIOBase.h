@@ -8,23 +8,20 @@
 #include <iostream>
 #include <typeinfo>
 
-#include "ImageIOExport.h"
-
 #include "NDArray.h"
 #include "complext.h"
-#include "GadgetronException.h"
 
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 
 #include "hoNDArray_fileio.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 struct rgb_type { unsigned char r,g,b; };
 struct rgba_type { unsigned char r,g,b,a; };
 
-class EXPORTIMAGEIO ImageIOWorker
+class ImageIOWorker
 {
 public:
 
@@ -237,7 +234,7 @@ public:
     virtual void import_array(hoNDArray< std::complex<float> >& a, const std::string& filename) = 0;
     virtual void import_array(hoNDArray< std::complex<double> >& a, const std::string& filename) = 0;
 
-    template <typename T> 
+    template <typename T>
     void export_array_complex_real_imag(const hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -275,7 +272,7 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void export_array_complex(const hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -323,7 +320,7 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void import_array_complex(hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -355,7 +352,7 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void import_array_complex(hoNDArray<T>& a, const std::string& filename_real, const std::string& filename_imag)
     {
         try
@@ -382,55 +379,55 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void export_2d_array(const hoNDArray<T>& a, const std::string& filename)
     {
         export_array(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_2d_array(hoNDArray<T>& a, const std::string& filename)
     {
         import_array(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_2d_array_complex(const hoNDArray<T>& a, const std::string& filename)
     {
         export_array_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_2d_array_complex(hoNDArray<T>& a, const std::string& filename)
     {
         import_array_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_3d_array(const hoNDArray<T>& a, const std::string& filename)
     {
         export_array(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_3d_array(hoNDArray<T>& a, const std::string& filename)
     {
         import_array(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_3d_array_complex(const hoNDArray<T>& a, const std::string& filename)
     {
         export_array_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_3d_array_complex(hoNDArray<T>& a, const std::string& filename)
     {
         import_array_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_4d_array(const hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -461,7 +458,7 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void export_4d_array_complex(const hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -704,7 +701,7 @@ protected:
         return analyzeDT;
     }
 
-    template <typename T> 
+    template <typename T>
     void read_data(const std::string& filename, T* data, long long len)
     {
         try
@@ -721,7 +718,7 @@ protected:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void write_data(const std::string& filename, const T* data, long long len)
     {
         try

@@ -1,5 +1,5 @@
 /** \file   GenericReconGadget.h
-    \brief  This serves an optional base class gadget for both 2DT and 3DT reconstruction, working on the IsmrmrdReconData.
+    \brief  This serves an optional base class gadget for both 2DT and 3DT reconstruction, working on the ReconData.
             Some common functionalities are implemented here and can be reused in specific recon gadgets.
     \author Hui Xue
 */
@@ -17,10 +17,8 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconGadget : public ImageArraySendMixin<GenericReconGadget>, public GenericReconDataBase{
+    class GenericReconGadget : public ImageArraySendMixin<GenericReconGadget>, public GenericReconDataBase{
     public:
-        GADGET_DECLARE(GenericReconGadget);
-
         typedef GenericReconDataBase BaseClass;
 
         GenericReconGadget();
@@ -44,7 +42,7 @@ namespace Gadgetron {
 
     protected:
 
-        void send_out_image_array(IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);
+        void send_out_image_array(mrd::ImageArray& res, size_t encoding, int series_num, const std::string& data_role);
         // --------------------------------------------------
         // variables for protocol
         // --------------------------------------------------
@@ -56,7 +54,7 @@ namespace Gadgetron {
         std::vector<double> acceFactorE2_;
 
         // calibration mode
-        std::vector<Gadgetron::ismrmrdCALIBMODE> calib_mode_;
+        std::vector<mrd::CalibrationMode> calib_mode_;
 
         // --------------------------------------------------
         // variable for recon
@@ -66,7 +64,7 @@ namespace Gadgetron {
         hoNDArray< std::complex<float> > complex_im_recon_buf_;
         hoNDArray< std::complex<float> > data_recon_buf_;
 
-        // filter used for ref coil map 
+        // filter used for ref coil map
         hoNDArray< std::complex<float> > filter_RO_ref_coi_map_;
         hoNDArray< std::complex<float> > filter_E1_ref_coi_map_;
         hoNDArray< std::complex<float> > filter_E2_ref_coi_map_;
@@ -79,8 +77,8 @@ namespace Gadgetron {
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1);
         virtual int close(unsigned long flags) { return BaseClass::close(flags); }
 
         // --------------------------------------------------
@@ -88,19 +86,16 @@ namespace Gadgetron {
         // --------------------------------------------------
 
         // make the ref data for coil map estimation
-        virtual void make_ref_coil_map(IsmrmrdDataBuffered& ref_, std::vector<size_t> recon_dims, hoNDArray< std::complex<float> >& ref_calib, hoNDArray< std::complex<float> >& ref_coil_map, size_t encoding);
+        virtual void make_ref_coil_map(mrd::ReconBuffer& ref_, std::vector<size_t> recon_dims, hoNDArray< std::complex<float> >& ref_calib, hoNDArray< std::complex<float> >& ref_coil_map, size_t encoding);
 
         // estimate coil map
         virtual void perform_coil_map_estimation(const hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& coil_map, size_t encoding);
 
         // compute image header
-        virtual void compute_image_header(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding);
+        virtual void compute_image_header(mrd::ReconAssembly& recon_bit, mrd::ImageArray& res, size_t encoding);
 
         // compute snr scaling factor from effective acceleration rate and sampling region
-        void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
-
-        // utility functions
-        void set_wave_form_to_image_array(const std::vector<Core::Waveform>& w_in, IsmrmrdImageArray& res);
+        void compute_snr_scaling_factor(mrd::ReconAssembly& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
 
         // --------------------------------------------------
         // recon record functions
@@ -120,8 +115,8 @@ namespace Gadgetron {
         std::string study_;
         // measurement ID
         std::string measurement_;
-        // patient position string
-        std::string patient_position_;
+        // patient position enum
+        mrd::PatientPosition patient_position_;
         // acquired measurement ID
         std::string measurement_id_;
         // vendor name

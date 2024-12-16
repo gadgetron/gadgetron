@@ -6,13 +6,12 @@
 #pragma once
 
 #include "PureGadget.h"
-#include "Types.h"
 #include "hoNDArray_math.h"
 
 namespace Gadgetron{
-    class CombineGadget : public Core::PureGadget<Core::AnyImage, Core::AnyImage> {
+    class CombineGadget : public Core::PureGadget<mrd::AnyImage, mrd::AnyImage> {
         public:
-        using Core::PureGadget<Core::AnyImage,Core::AnyImage>::PureGadget;
-        Core::AnyImage process_function(Core::AnyImage image) const override;
+        using Core::PureGadget<mrd::AnyImage, mrd::AnyImage>::PureGadget;
+        mrd::AnyImage process_function(mrd::AnyImage image) const override;
     };
 }

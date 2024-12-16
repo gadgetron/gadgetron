@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include "EPIExport.h"
-
-#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 
 namespace Gadgetron { namespace EPI {
@@ -27,7 +24,7 @@ enum EPIReceiverPhaseType
   FULL
 };
 
-template <typename T> class EPIReconXObject 
+template <typename T> class EPIReconXObject
 {
  public:
   EPIReconXObject();
@@ -42,8 +39,8 @@ template <typename T> class EPIReconXObject
 
   virtual int computeTrajectory()=0;
 
-  virtual int apply(ISMRMRD::AcquisitionHeader &hdr_in,  hoNDArray <T> &data_in, 
-		    ISMRMRD::AcquisitionHeader &hdr_out, hoNDArray <T> &data_out)=0;
+  virtual int apply(mrd::AcquisitionHeader &hdr_in,  hoNDArray <T> &data_in,
+		    mrd::AcquisitionHeader &hdr_out, hoNDArray <T> &data_out)=0;
   EPIReceiverPhaseType rcvType_;
 
  protected:

@@ -1,20 +1,9 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 set -euo pipefail
-export LANG=C
 
-cd "${PREFIX}/share/gadgetron/test/integration" || exit 1
+cd test/e2e/
 
-python get_data.py
+test -d cases
+test -f conftest.py
 
-# confirm reported gadgetron configuration
-gadgetron --info
-
-if [[ $(uname) =~ Darwin ]]; then
-   echo "Place for running unit tests on macOS."
-   test_all
-   # echo "Now run integration tests."
-   # python run_tests.py cases/*
-else
-   python run_tests.py --ignore-requirements python,cuda cases/*
-fi
+pytest

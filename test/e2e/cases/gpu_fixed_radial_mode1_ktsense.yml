@@ -1,0 +1,16 @@
+reconstruction:
+  data: radial_phantom/meas_MID00133_FID20080_CV_Radial_Fixed_Angle_128_x8_32phs_meas1.mrd
+  checksum: d61ce30b4c39a08698cc80a611890621
+  run:
+  - args: --config fixed_radial_mode1_gpu_ktsense.xml
+validation:
+  reference: radial_phantom/fixed_radial_mode1_20210923_klk_kt.mrd
+  checksum: d14768eb548f4127ebd79f91f3a6c4d1
+  tests:
+  - image_series: 0
+requirements:
+  system_memory: 2048
+  gpu_support: 1
+  gpu_memory: 1024
+tags:
+- fast

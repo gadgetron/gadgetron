@@ -4,12 +4,10 @@
 #include "cuNDArray_blas.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
-#include "GadgetMRIHeaders.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 
@@ -25,21 +23,16 @@ namespace Gadgetron{
 
   gpuCgSenseGadget::~gpuCgSenseGadget() {}
 
-  int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
+  int gpuCgSenseGadget::process_config(const mrd::Header& header)
   {
-  	gpuSenseGadget::process_config(mb);
+  	gpuSenseGadget::process_config(header);
     //GDEBUG("gpuCgSenseGadget::process_config\n");
     number_of_iterations_ = number_of_iterations.value();
     kappa_ = kappa.value();
     cg_limit_ = cg_limit.value();
 
 
-
-    // Get the Ismrmrd header
-    //
-    ISMRMRD::IsmrmrdHeader h;
-    ISMRMRD::deserialize(mb->rd_ptr(),h);
-    
+    auto& h = header;
     
     if (h.encoding.size() != 1) {
       GDEBUG("This Gadget only supports one encoding space\n");
@@ -47,49 +40,49 @@ namespace Gadgetron{
     }
     
     // Get the encoding space and trajectory description
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+    mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+    mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+    mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
 
-    matrix_size_seq_ = uint64d2( r_space.matrixSize.x, r_space.matrixSize.y );
+    matrix_size_seq_ = uint64d2( r_space.matrix_size.x, r_space.matrix_size.y );
 
     if (!is_configured_) {
+        if (h.acquisition_system_information) {
+            channels_ = h.acquisition_system_information->receiver_channels.value_or(1);
+        } else {
+            channels_ = 1;
+        }
 
-      if (h.acquisitionSystemInformation) {
-	channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 1;
-      } else {
-	channels_ = 1;
-      }
+        // Allocate encoding operator for non-Cartesian Sense
+        E_ = boost::shared_ptr<cuNonCartesianSenseOperator<float, 2>>(new cuNonCartesianSenseOperator<float, 2>());
 
-     // Allocate encoding operator for non-Cartesian Sense
-      E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
+        // Allocate preconditioner
+        D_ = boost::shared_ptr<cuCgPreconditioner<float_complext>>(new cuCgPreconditioner<float_complext>());
 
-      // Allocate preconditioner
-      D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
+        // Allocate regularization image operator
+        R_ = boost::shared_ptr<cuImageOperator<float_complext>>(new cuImageOperator<float_complext>());
+        R_->set_weight(kappa_);
 
-      // Allocate regularization image operator
-      R_ = boost::shared_ptr< cuImageOperator<float_complext> >( new cuImageOperator<float_complext>() );
-      R_->set_weight( kappa_ );
-
-      // Setup solver
-      cg_.set_encoding_operator( E_ );        // encoding matrix
-      cg_.add_regularization_operator( R_ );  // regularization matrix
-      cg_.set_preconditioner( D_ );           // preconditioning matrix
-      cg_.set_max_iterations( number_of_iterations_ );
-      cg_.set_tc_tolerance( cg_limit_ );
-      cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
-      is_configured_ = true;
+        // Setup solver
+        cg_.set_encoding_operator(E_);       // encoding matrix
+        cg_.add_regularization_operator(R_); // regularization matrix
+        cg_.set_preconditioner(D_);          // preconditioning matrix
+        cg_.set_max_iterations(number_of_iterations_);
+        cg_.set_tc_tolerance(cg_limit_);
+        cg_.set_output_mode((output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE
+                                                  : cuCgSolver<float_complext>::OUTPUT_SILENT);
+        is_configured_ = true;
     }
 
     return GADGET_OK;
   }
 
-  int gpuCgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
+  int gpuCgSenseGadget::process(GadgetContainerMessage<mrd::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
   {
     // Is this data for this gadget's set/slice?
     //
     
-    if( m1->getObjectPtr()->set != set_number_ || m1->getObjectPtr()->slice != slice_number_ ) {      
+    if( m1->getObjectPtr()->set.value_or(0) != set_number_ || m1->getObjectPtr()->slice.value_or(0) != slice_number_ ) {
       // No, pass it downstream...
       return this->next()->putq(m1);
     }

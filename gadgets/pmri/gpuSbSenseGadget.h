@@ -2,10 +2,8 @@
 #define gpuSbSenseGadget_H
 #pragma once
 
-#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
-#include "GadgetMRIHeaders.h"
 #include "cuSbcCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgPreconditioner.h"
@@ -13,19 +11,16 @@
 #include "cuPartialDerivativeOperator2.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
-#include "ismrmrd/ismrmrd.h"
 #include "gpuSenseGadget.h"
 #include <complex>
 #include "cuDWTOperator.h"
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUPMRI gpuSbSenseGadget : public gpuSenseGadget
+  class gpuSbSenseGadget : public gpuSenseGadget
   {
 
   public:
-    GADGET_DECLARE(gpuSbSenseGadget);
-
     gpuSbSenseGadget();
     virtual ~gpuSbSenseGadget();
 
@@ -42,8 +37,8 @@ namespace Gadgetron{
     GADGET_PROPERTY(is_cyclic, bool, "Is cyclic", true);
     GADGET_PROPERTY(exclusive_access, bool, "Exclusive access to solver", false);
 
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
-    virtual int process_config( ACE_Message_Block* mb );
+    virtual int process( GadgetContainerMessage< mrd::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
+    virtual int process_config(const mrd::Header& header);
 
 
     unsigned int number_of_cg_iterations_;
@@ -84,7 +79,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> > Rt2_;
     boost::shared_ptr< cuDWTOperator<float_complext,3> > W_;
     boost::shared_ptr< cuDWTOperator<float_complext,3> > W2_;
-	
+
   };
 }
 #endif //gpuSbSenseGadget

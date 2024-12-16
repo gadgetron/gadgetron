@@ -19,21 +19,13 @@ namespace Gadgetron {
     {
     }
 
-    int GenericReconCartesianNonLinearSpirit2DTGadget::process_config(ACE_Message_Block* mb)
+    int GenericReconCartesianNonLinearSpirit2DTGadget::process_config(const mrd::Header& header)
     {
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
         // -------------------------------------------------
 
-        ISMRMRD::IsmrmrdHeader h;
-        try
-        {
-            deserialize(mb->rd_ptr(), h);
-        }
-        catch (...)
-        {
-            GDEBUG("Error parsing ISMRMRD Header");
-        }
+        auto& h = header;
 
         // -------------------------------------------------
         // check the parameters
@@ -94,17 +86,17 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void GenericReconCartesianNonLinearSpirit2DTGadget::perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
+    void GenericReconCartesianNonLinearSpirit2DTGadget::perform_unwrapping(mrd::ReconAssembly& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
         {
-            size_t RO = recon_bit.data_.data_.get_size(0);
-            size_t E1 = recon_bit.data_.data_.get_size(1);
-            size_t E2 = recon_bit.data_.data_.get_size(2);
-            size_t dstCHA = recon_bit.data_.data_.get_size(3);
-            size_t N = recon_bit.data_.data_.get_size(4);
-            size_t S = recon_bit.data_.data_.get_size(5);
-            size_t SLC = recon_bit.data_.data_.get_size(6);
+            size_t RO = recon_bit.data.data.get_size(0);
+            size_t E1 = recon_bit.data.data.get_size(1);
+            size_t E2 = recon_bit.data.data.get_size(2);
+            size_t dstCHA = recon_bit.data.data.get_size(3);
+            size_t N = recon_bit.data.data.get_size(4);
+            size_t S = recon_bit.data.data.get_size(5);
+            size_t SLC = recon_bit.data.data.get_size(6);
 
             hoNDArray< std::complex<float> >& src = recon_obj.ref_calib_;
 
@@ -120,16 +112,16 @@ namespace Gadgetron {
             size_t convkE1 = recon_obj.kernel_.get_size(1);
             size_t convkE2 = recon_obj.kernel_.get_size(2);
 
-            recon_obj.recon_res_.data_.create(RO, E1, E2, 1, N, S, SLC);
-            Gadgetron::clear(recon_obj.recon_res_.data_);
-            recon_obj.full_kspace_ = recon_bit.data_.data_;
+            recon_obj.recon_res_.data.create(RO, E1, E2, 1, N, S, SLC);
+            Gadgetron::clear(recon_obj.recon_res_.data);
+            recon_obj.full_kspace_ = recon_bit.data.data;
             Gadgetron::clear(recon_obj.full_kspace_);
 
             std::stringstream os;
             os << "encoding_" << e;
             std::string suffix = os.str();
 
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit.data.data, debug_folder_full_path_ + "data_src_" + suffix); }
 
             // ------------------------------------------------------------------
             // compute effective acceleration factor
@@ -138,7 +130,7 @@ namespace Gadgetron {
             this->compute_snr_scaling_factor(recon_bit, effective_acce_factor, snr_scaling_ratio);
             if (effective_acce_factor > 1)
             {
-                Gadgetron::scal(snr_scaling_ratio, recon_bit.data_.data_);
+                Gadgetron::scal(snr_scaling_ratio, recon_bit.data.data);
             }
 
             Gadgetron::GadgetronTimer timer(false);
@@ -148,11 +140,11 @@ namespace Gadgetron {
             // ------------------------------------------------------------------
             if(this->acceFactorE1_[e]<=1 && this->acceFactorE2_[e]<=1)
             {
-                recon_obj.full_kspace_ = recon_bit.data_.data_;
+                recon_obj.full_kspace_ = recon_bit.data.data;
             }
             else
             {
-                hoNDArray< std::complex<float> >& kspace = recon_bit.data_.data_;
+                hoNDArray< std::complex<float> >& kspace = recon_bit.data.data;
                 hoNDArray< std::complex<float> >& res = recon_obj.full_kspace_;
                 hoNDArray< std::complex<float> >& ref = recon_obj.ref_calib_;
 
@@ -239,7 +231,7 @@ namespace Gadgetron {
             this->perform_spirit_coil_combine(recon_obj);
             if (this->perform_timing.value()) timer.stop();
 
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_obj.recon_res_.data, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
         }
         catch (...)
         {
@@ -263,7 +255,7 @@ namespace Gadgetron {
         }
     };
 
-    void GenericReconCartesianNonLinearSpirit2DTGadget::perform_nonlinear_spirit_unwrapping(hoNDArray< std::complex<float> >& kspace, 
+    void GenericReconCartesianNonLinearSpirit2DTGadget::perform_nonlinear_spirit_unwrapping(hoNDArray< std::complex<float> >& kspace,
         hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& ref2DT, hoNDArray< std::complex<float> >& coilMap2DT, hoNDArray< std::complex<float> >& res, size_t e)
     {
         try
@@ -354,7 +346,7 @@ namespace Gadgetron {
             // mean over N
             hoNDArray< std::complex<float> > meanKSpace;
 
-            if(calib_mode_[e]==ISMRMRD_interleaved)
+            if(calib_mode_[e] == mrd::CalibrationMode::kInterleaved)
             {
                 Gadgetron::compute_averaged_data_N_S(kspace, true, true, true, meanKSpace);
             }
@@ -483,7 +475,7 @@ namespace Gadgetron {
                     if (this->verbose.value())
                     {
                         GDEBUG_STREAM("SPIRIT Non linear, computes eigen values for all 2D kspaces ... ");
-                        std::stringstream stream; 
+                        std::stringstream stream;
                         eigenValues.print(stream);
                         GDEBUG(stream.str().c_str());
 

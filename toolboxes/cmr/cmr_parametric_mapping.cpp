@@ -20,7 +20,7 @@
 
 #include <boost/math/special_functions/sign.hpp>
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 template <typename T>
 void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, bool is_8_connected)
@@ -143,13 +143,13 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
     }
 }
 
-template EXPORTCMR void perform_hole_filling(hoNDArray<float>& map, float hole, size_t max_size_of_holes, bool is_8_connected);
-template EXPORTCMR void perform_hole_filling(hoNDArray<double>& map, double hole, size_t max_size_of_holes, bool is_8_connected);
+template void perform_hole_filling(hoNDArray<float>& map, float hole, size_t max_size_of_holes, bool is_8_connected);
+template void perform_hole_filling(hoNDArray<double>& map, double hole, size_t max_size_of_holes, bool is_8_connected);
 
 // ---------------------------------------------------------------------
 
 template <typename T>
-void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& maps, T hole, size_t max_size_of_holes, bool is_8_connected) 
+void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& maps, T hole, size_t max_size_of_holes, bool is_8_connected)
 {
     try
     {
@@ -171,12 +171,12 @@ void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& ma
     }
 }
 
-template EXPORTCMR void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<float, 2> >& maps, float hole, size_t max_size_of_holes, bool is_8_connected);
-template EXPORTCMR void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<double, 2> >& maps, double hole, size_t max_size_of_holes, bool is_8_connected);
+template void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<float, 2> >& maps, float hole, size_t max_size_of_holes, bool is_8_connected);
+template void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<double, 2> >& maps, double hole, size_t max_size_of_holes, bool is_8_connected);
 
 // ---------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 CmrParametricMapping<T>::CmrParametricMapping()
 {
     fill_holes_in_maps_ = true;
@@ -199,7 +199,7 @@ CmrParametricMapping<T>::CmrParametricMapping()
     gt_timer_local_.set_timing_in_destruction(false);
 }
 
-template <typename T> 
+template <typename T>
 CmrParametricMapping<T>::~CmrParametricMapping()
 {
 }
@@ -241,7 +241,7 @@ void CmrParametricMapping<T>::perform_parametric_mapping()
 
         if (this->verbose_)
         {
-            std::stringstream stream; 
+            std::stringstream stream;
             this->data_.print(stream);
             GINFO(stream.str().c_str());
 
@@ -296,7 +296,7 @@ void CmrParametricMapping<T>::perform_parametric_mapping()
 
                     T map_v(0), map_sd(0);
 
-#pragma omp for 
+#pragma omp for
                     for (e1 = 0; e1 < E1; e1++)
                     {
                         for (ro = 0; ro < RO; ro++)
@@ -528,6 +528,6 @@ size_t CmrParametricMapping<T>::get_num_of_paras() const
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCMR CmrParametricMapping< float >;
+template class CmrParametricMapping< float >;
 
 }

@@ -1,5 +1,5 @@
 /** \file   GenericReconCartesianGrappaAIGadget.h
-    \brief  This is the class gadget for both 2DT and 3DT cartesian grappa ai reconstruction, working on the IsmrmrdReconData.
+    \brief  This is the class gadget for both 2DT and 3DT cartesian grappa ai reconstruction, working on the mrd::ReconData.
     \author Hui Xue
 */
 
@@ -10,11 +10,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconCartesianGrappaAIGadget : public GenericReconCartesianGrappaGadget
+    class GenericReconCartesianGrappaAIGadget : public GenericReconCartesianGrappaGadget
     {
     public:
-        GADGET_DECLARE(GenericReconCartesianGrappaAIGadget);
-
         typedef GenericReconCartesianGrappaGadget BaseClass;
         typedef typename BaseClass::ReconObjType ReconObjType;
         typedef std::complex<float> T;
@@ -31,20 +29,20 @@ namespace Gadgetron {
         std::vector< std::vector< hoNDArray<T> > > kernels_;
         std::vector< std::vector<boost::python::object> > models_;
         /// [RO E1 E2 1 N S SLC]
-        std::vector<IsmrmrdImageArray> recon_res_grappa_ai_;
+        std::vector<mrd::ImageArray> recon_res_grappa_ai_;
 
         // gadgetron home
         std::string gt_home_;
 
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1);
 
         // calibration, if only one dst channel is prescribed, the GrappaOne is used
-        virtual void perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        virtual void perform_calib(mrd::ReconAssembly& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         // unwrapping or coil combination
-        virtual void perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        virtual void perform_unwrapping(mrd::ReconAssembly& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         virtual int close(unsigned long flags);
     };

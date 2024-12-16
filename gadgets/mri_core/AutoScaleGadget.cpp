@@ -1,18 +1,16 @@
 #include "AutoScaleGadget.h"
 
 using namespace Gadgetron;
-using namespace Gadgetron::Core;
 
 namespace {
 	template<class T>
-	Image<T> autoscale(Image<T> &image, float max_value, unsigned int histogram_bins) {
-		auto &header = std::get<ISMRMRD::ImageHeader>(image);
-		auto &data = std::get<hoNDArray<T>>(image);
-		auto &meta = std::get<optional<ISMRMRD::MetaContainer>>(image);	
-		if (header.image_type == ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE) { //Only scale magnitude images for now
+	mrd::Image<T> autoscale(mrd::Image<T> &image, float max_value, unsigned int histogram_bins) {
+		// Only scale magnitude images for now
+		if (image.head.image_type == mrd::ImageType::kMagnitude) {
+			auto& data = image.data;
 			auto max = *std::max_element(data.begin(), data.end());
 			auto current_scale_ = 1.0;
-			auto histogram_ = std::vector<size_t>(histogram_bins);    
+			auto histogram_ = std::vector<size_t>(histogram_bins);
 			std::fill(histogram_.begin(), histogram_.end(), 0);
 			for (auto& d : data) {
 				size_t bin = static_cast<size_t>(std::floor((d/max)*histogram_bins));
@@ -21,10 +19,10 @@ namespace {
 				}
 				histogram_[bin]++;
 			}
-			//Find 99th percentile
+			// Find 99th percentile
 			long long cumsum = 0;
 			size_t counter = 0;
-			while (cumsum < (0.99*data.get_number_of_elements())) {
+			while (cumsum < (0.99*data.size())) {
 				cumsum += (long long)(histogram_[counter++]);
 			}
 			max = (counter+1)*(max/histogram_bins);
@@ -33,19 +31,19 @@ namespace {
 				d *= current_scale_;
 			}
 		}
-		return Image<T>(header,data,meta);
+		return image;
 	}
 
     template<class T>
-    Image<std::complex<T>> autoscale(Image<std::complex<T>> &image, float max_value, unsigned int histogram_bins) {
+    mrd::Image<std::complex<T>> autoscale(mrd::Image<std::complex<T>> &image, float max_value, unsigned int histogram_bins) {
         GERROR("Autoscaling image is not well defined for complex images.");
 		return image;
     }
 }
 
 namespace Gadgetron {
-	AnyImage AutoScaleGadget::process_function(AnyImage image) const {
-		return visit([&](auto &image) -> AnyImage { return autoscale(image, max_value, histogram_bins); }, image);
+	mrd::AnyImage AutoScaleGadget::process_function(mrd::AnyImage image) const {
+		return visit([&](auto &image) -> mrd::AnyImage { return autoscale(image, max_value, histogram_bins); }, image);
 	}
 	GADGETRON_GADGET_EXPORT(AutoScaleGadget);
 }

@@ -1,0 +1,15 @@
+reconstruction:
+  data: grappa_3d/gre_3D_Grappa2x1.mrd
+  checksum: 3ada3323ee3880837afc45eb73596c9f
+  run:
+  - args: --config Generic_Cartesian_Grappa.xml
+validation:
+  reference: grappa_3d/grappa2x1_ref_20210917_Generic_Cartesian_Grappa.xml.mrd
+  checksum: 1bf4fc3d687131a7f88cb21d32f5e5ce
+  tests:
+  - image_series: 1
+requirements:
+  system_memory: 4096
+tags:
+- slow
+- generic

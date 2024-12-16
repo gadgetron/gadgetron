@@ -8,7 +8,7 @@
 
 namespace Gadgetron{
 
-template<typename T> 
+template<typename T>
 hoNDKLT<T>::hoNDKLT()
 {
 }
@@ -103,10 +103,10 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
         arma::Mat<T> Um;
         arma::Col<value_type> Sv;
 
-		
+
 
         arma::svd_econ(Um, Sv, Vm, Am, 'r');
-		
+
 
         for (n = 0; n < N; n++)
         {
@@ -183,7 +183,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
     GADGET_CHECK_THROW(E_.get_size(0) == N);
 
     M_.create(N, output_length_, V_.begin());
- 
+
 }
 
 template<typename T>
@@ -676,8 +676,8 @@ void hoNDKLT<T>::eigen_value(hoNDArray<T>& E) const
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUKLT hoNDKLT<float>;
-template class EXPORTCPUKLT hoNDKLT<double>;
-template class EXPORTCPUKLT hoNDKLT< std::complex<float> >;
-template class EXPORTCPUKLT hoNDKLT< std::complex<double> >;
+template class hoNDKLT<float>;
+template class hoNDKLT<double>;
+template class hoNDKLT< std::complex<float> >;
+template class hoNDKLT< std::complex<double> >;
 }

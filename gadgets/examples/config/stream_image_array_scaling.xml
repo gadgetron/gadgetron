@@ -6,7 +6,7 @@
     <!-- Image Array Scaling -->
     <gadget>
         <name>Scaling</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>GenericReconImageArrayScalingGadget</classname>
 
         <!-- parameters for debug and timing -->

@@ -5,12 +5,12 @@
   -----------
 
   Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
+  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen.
   IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
 
   Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
   T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
-  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
+  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985.
 */
 
 //
@@ -35,9 +35,9 @@ void NFFT_output(
     unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx,
     bool accumulate)
 {
-    
+
     realType_t<T>* shared_mem = (realType_t<T>*) _shared_mem;
-    
+
     for (unsigned int batch=0; batch<number_of_batches; batch++)
     {
         T sample_value;
@@ -84,7 +84,7 @@ void NFFT_iterate_body(vector_td<unsigned int, D> matrix_size_os, unsigned int n
 {
 
     using namespace thrust::cuda_cub;
-      
+
     // Calculate the distance between current sample and the grid cell
     vector_td<realType_t<T>,D> grid_position_real = vector_td<realType_t<T>,D>(grid_position);
     const vector_td<realType_t<T>,D> delta = abs(sample_position-grid_position_real);
@@ -107,7 +107,7 @@ void NFFT_iterate_body(vector_td<unsigned int, D> matrix_size_os, unsigned int n
     {
         // Read the grid cell value from global memory
         const T grid_value = cub::ThreadLoad<cub::LOAD_LDG>(image+image_idx+batch );
-        
+
         // Add 'weight*grid_value' to the samples in shared memory
         if constexpr (is_complex_type_v<T>)
         {
@@ -135,9 +135,9 @@ void NFFT_iterate(vector_td<unsigned int,1> matrix_size_os, unsigned int number_
 {
   // Iterate through all grid cells influencing the corresponding sample
   for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
-    
+
     const intd<1>::Type grid_position(x);
-    
+
     NFFT_iterate_body<T, 1>(matrix_size_os, number_of_batches, image, warp_size_power,
              sharedMemFirstSampleIdx,
              sample_position, grid_position, kernel);
@@ -159,10 +159,10 @@ void NFFT_iterate(vector_td<unsigned int,2> matrix_size_os, unsigned int number_
   // Iterate through all grid cells influencing the corresponding sample
   for( int y = lower_limit.vec[1]; y<=upper_limit.vec[1]; y++ ){
     for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
-      
+
       const intd<2>::Type grid_position(x,y);
-      
-      NFFT_iterate_body<T, 2>(matrix_size_os, number_of_batches, image, warp_size_power,  
+
+      NFFT_iterate_body<T, 2>(matrix_size_os, number_of_batches, image, warp_size_power,
          sharedMemFirstSampleIdx,
          sample_position, grid_position, kernel);
     }
@@ -185,10 +185,10 @@ void NFFT_iterate(vector_td<unsigned int,3> matrix_size_os, unsigned int number_
   for( int z = lower_limit.vec[2]; z<=upper_limit.vec[2]; z++ ){
     for( int y = lower_limit.vec[1]; y<=upper_limit.vec[1]; y++ ){
       for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
-	
+
 	const intd<3>::Type grid_position(x,y,z);
-	
-	NFFT_iterate_body<T, 3>(matrix_size_os, number_of_batches, image, warp_size_power,  
+
+	NFFT_iterate_body<T, 3>(matrix_size_os, number_of_batches, image, warp_size_power,
            sharedMemFirstSampleIdx,
            sample_position, grid_position, kernel);
       }
@@ -213,10 +213,10 @@ void NFFT_iterate(vector_td<unsigned int,4> matrix_size_os, unsigned int number_
     for( int z = lower_limit.vec[2]; z<=upper_limit.vec[2]; z++ ){
       for( int y = lower_limit.vec[1]; y<=upper_limit.vec[1]; y++ ){
 	for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
-	  
+
 	  const intd<4>::Type grid_position(x,y,z,w);
-	  
-	  NFFT_iterate_body<T, 4>(matrix_size_os, number_of_batches, image, warp_size_power,  
+
+	  NFFT_iterate_body<T, 4>(matrix_size_os, number_of_batches, image, warp_size_power,
              sharedMemFirstSampleIdx,
              sample_position, grid_position, kernel);
 	}
@@ -228,27 +228,27 @@ void NFFT_iterate(vector_td<unsigned int,4> matrix_size_os, unsigned int number_
 template<class T, unsigned int D, template<class, unsigned int> class K>
 __inline__ __device__
 void NFFT_convolve(vector_td<unsigned int, D> matrix_size_os,
-         vector_td<unsigned int, D> matrix_size_wrap, 
+         vector_td<unsigned int, D> matrix_size_wrap,
 	       unsigned int number_of_samples, unsigned int number_of_batches, const vector_td<realType_t<T>,D> * __restrict__ traj_positions, const T* __restrict__ image,
 	       unsigned int warp_size_power,
          unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx,
          const ConvolutionKernel<realType_t<T>, D, K>* kernel)
 {
-  
+
     // Sample position to convolve onto
     // Computed in preprocessing, which included a wrap zone. Remove this wrapping.
     const vector_td<realType_t<T>,D> half_wrap_real = vector_td<realType_t<T>,D>(matrix_size_wrap>>1);
     const vector_td<realType_t<T>,D> sample_position = traj_positions[globalThreadId+blockIdx.y*number_of_samples]-half_wrap_real;
-    
+
     // Half the kernel width
     const vector_td<realType_t<T>,D> radius_vec(kernel->get_radius());
-    
+
     // Limits of the subgrid to consider
     const vector_td<int, D> lower_limit(ceil(sample_position - radius_vec));
     const vector_td<int, D> upper_limit(floor(sample_position + radius_vec));
 
     // Accumulate contributions from the grid
-    NFFT_iterate<T>(matrix_size_os, number_of_batches, image, warp_size_power, 
+    NFFT_iterate<T>(matrix_size_os, number_of_batches, image, warp_size_power,
                   sharedMemFirstSampleIdx,
                   sample_position, lower_limit, upper_limit, kernel);
 }
@@ -260,7 +260,7 @@ void NFFT_convolve(vector_td<unsigned int, D> matrix_size_os,
 template<class T, unsigned int D, template<class, unsigned int> class K>
 __global__
 void NFFT_convolve_kernel(vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap,
-		      unsigned int number_of_samples, unsigned int number_of_batches, 
+		      unsigned int number_of_samples, unsigned int number_of_batches,
 		      const vector_td<realType_t<T>,D>* __restrict__ traj_positions, const T* __restrict__ image,  T* __restrict__ samples,
           unsigned int warp_size_power, bool accumulate,
           const ConvolutionKernel<realType_t<T>, D, K>* kernel)
@@ -271,7 +271,7 @@ void NFFT_convolve_kernel(vector_td<unsigned int, D> matrix_size_os, vector_td<u
     // Check if we are within bounds.
     if (globalThreadId >= number_of_samples)
         return;
-  
+
     // Number of reals to compute per thread.
     const unsigned int num_reals = is_complex_type_v<T> ?
         number_of_batches << 1 : number_of_batches;
@@ -281,10 +281,10 @@ void NFFT_convolve_kernel(vector_td<unsigned int, D> matrix_size_os, vector_td<u
     {
         warp_size_power += 1;
     }
-  
+
     // All shared memory reals corresponding to domain 'threadIdx.x' are located in bank threadIdx.x%warp_size to limit bank conflicts
     const unsigned int scatterSharedMemStart = (threadIdx.x/warpSize)*warpSize;
-    const unsigned int scatterSharedMemStartOffset = threadIdx.x&(warpSize-1); // a faster way of saying (threadIdx.x%warpSize) 
+    const unsigned int scatterSharedMemStartOffset = threadIdx.x&(warpSize-1); // a faster way of saying (threadIdx.x%warpSize)
     const unsigned int sharedMemFirstSampleIdx = scatterSharedMemStart*num_reals + scatterSharedMemStartOffset;
 
     // printf("kernel beta: %f\n", kernel->get_beta()[0]);
@@ -294,13 +294,13 @@ void NFFT_convolve_kernel(vector_td<unsigned int, D> matrix_size_os, vector_td<u
     const realType_t<T> zero = realType_t<T>(0);
     for (unsigned int i = 0; i < num_reals; i++)
         shared_mem[sharedMemFirstSampleIdx + warpSize * i] = zero;
-  
+
     // Compute NFFT using arbitrary sample trajectories
     NFFT_convolve<T, D>(matrix_size_os, matrix_size_wrap,
-        number_of_samples, number_of_batches, 
+        number_of_samples, number_of_batches,
         traj_positions, image, warp_size_power,
         globalThreadId, sharedMemFirstSampleIdx, kernel);
-    
+
     // Output k-space image to global memory.
     NFFT_output<T>(number_of_samples, number_of_batches, samples,
         warp_size_power, globalThreadId, sharedMemFirstSampleIdx, accumulate);

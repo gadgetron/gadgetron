@@ -20,21 +20,13 @@ namespace Gadgetron {
     {
     }
 
-    int CmrParametricT1SRMappingGadget::process_config(ACE_Message_Block* mb)
+    int CmrParametricT1SRMappingGadget::process_config(const mrd::Header& header)
     {
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
-        ISMRMRD::IsmrmrdHeader h;
-        try
-        {
-            deserialize(mb->rd_ptr(), h);
-        }
-        catch (...)
-        {
-            GDEBUG("Error parsing ISMRMRD Header");
-        }
+        auto& h = header;
 
-        if (!h.acquisitionSystemInformation)
+        if (!h.acquisition_system_information)
         {
             GDEBUG("acquisitionSystemInformation not found in header. Bailing out");
             return GADGET_FAIL;
@@ -42,7 +34,7 @@ namespace Gadgetron {
 
         if (this->imaging_prep_time_from_protocol.value())
         {
-            this->prep_times_ = h.sequenceParameters.get().TI.get(); // TI is in the unit of seconds
+            this->prep_times_ = h.sequence_parameters->t_i; // TI is in the unit of seconds
             GDEBUG_STREAM("Read prep times from from protocol : " << this->prep_times_.size() << " [ ");
             for (size_t n = 0; n < this->prep_times_.size(); n++)
             {
@@ -57,7 +49,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int CmrParametricT1SRMappingGadget::perform_mapping(IsmrmrdImageArray& data, IsmrmrdImageArray& map, IsmrmrdImageArray& para, IsmrmrdImageArray& map_sd, IsmrmrdImageArray& para_sd)
+    int CmrParametricT1SRMappingGadget::perform_mapping(mrd::ImageArray& data, mrd::ImageArray& map, mrd::ImageArray& para, mrd::ImageArray& map_sd, mrd::ImageArray& para_sd)
     {
         try
         {
@@ -65,13 +57,13 @@ namespace Gadgetron {
 
             GDEBUG_CONDITION_STREAM(verbose.value(), "CmrParametricT1SRMappingGadget::perform_mapping(...) starts ... ");
 
-            size_t RO = data.data_.get_size(0);
-            size_t E1 = data.data_.get_size(1);
-            size_t E2 = data.data_.get_size(2);
-            size_t CHA = data.data_.get_size(3);
-            size_t N = data.data_.get_size(4);
-            size_t S = data.data_.get_size(5);
-            size_t SLC = data.data_.get_size(6);
+            size_t RO = data.data.get_size(0);
+            size_t E1 = data.data.get_size(1);
+            size_t E2 = data.data.get_size(2);
+            size_t CHA = data.data.get_size(3);
+            size_t N = data.data.get_size(4);
+            size_t S = data.data.get_size(5);
+            size_t SLC = data.data.get_size(6);
 
             size_t ro, e1, s, slc, p;
 
@@ -80,7 +72,7 @@ namespace Gadgetron {
             GADGET_CHECK_RETURN(this->prep_times_.size() >= N, GADGET_FAIL);
 
             hoNDArray<float> mag;
-            Gadgetron::abs(data.data_, mag);
+            Gadgetron::abs(data.data, mag);
 
             if (!debug_folder_full_path_.empty())
             {
@@ -159,9 +151,9 @@ namespace Gadgetron {
                 }
 
                 double scale_factor = 1.0;
-                if (data.meta_[0].length(GADGETRON_IMAGE_SCALE_RATIO) > 0)
+                if (data.meta[0].count(GADGETRON_IMAGE_SCALE_RATIO) > 0)
                 {
-                    scale_factor = data.meta_[0].as_double(GADGETRON_IMAGE_SCALE_RATIO);
+                    scale_factor = std::get<double>(data.meta[0][GADGETRON_IMAGE_SCALE_RATIO].front());
                 }
 
                 GDEBUG_STREAM("CmrParametricT1SRMappingGadget, find incoming image has scale factor of " << scale_factor);
@@ -188,27 +180,27 @@ namespace Gadgetron {
             // -------------------------------------------------------------
             // get the results
 
-            map.data_.create(RO, E1, E2, CHA, 1, S, SLC);
-            Gadgetron::clear(map.data_);
-            map.headers_.create(1, S, SLC);
-            map.meta_.resize(S*SLC);
+            map.data.create(RO, E1, E2, CHA, 1, S, SLC);
+            Gadgetron::clear(map.data);
+            map.headers.create(1, S, SLC);
+            map.meta.create(1, S, SLC);
 
-            para.data_.create(RO, E1, E2, CHA, num_para, S, SLC);
-            Gadgetron::clear(para.data_);
-            para.headers_.create(num_para, S, SLC);
-            para.meta_.resize(num_para*S*SLC);
+            para.data.create(RO, E1, E2, CHA, num_para, S, SLC);
+            Gadgetron::clear(para.data);
+            para.headers.create(num_para, S, SLC);
+            para.meta.create(num_para, S, SLC);
 
             if (need_sd_map)
             {
-                map_sd.data_.create(RO, E1, E2, CHA, 1, S, SLC);
-                Gadgetron::clear(map_sd.data_);
-                map_sd.headers_.create(1, S, SLC);
-                map_sd.meta_.resize(S*SLC);
+                map_sd.data.create(RO, E1, E2, CHA, 1, S, SLC);
+                Gadgetron::clear(map_sd.data);
+                map_sd.headers.create(1, S, SLC);
+                map_sd.meta.create(1, S, SLC);
 
-                para_sd.data_.create(RO, E1, E2, CHA, num_para, S, SLC);
-                Gadgetron::clear(para_sd.data_);
-                para_sd.headers_.create(num_para, S, SLC);
-                para_sd.meta_.resize(num_para*S*SLC);
+                para_sd.data.create(RO, E1, E2, CHA, num_para, S, SLC);
+                Gadgetron::clear(para_sd.data);
+                para_sd.headers.create(num_para, S, SLC);
+                para_sd.meta.create(num_para, S, SLC);
             }
 
             for (slc = 0; slc < SLC; slc++)
@@ -219,54 +211,58 @@ namespace Gadgetron {
                     {
                         for (ro = 0; ro < RO; ro++)
                         {
-                            map.data_(ro, e1, 0, 0, 0, s, slc) = t1_sr.map_(ro, e1, s, slc);
+                            map.data(ro, e1, 0, 0, 0, s, slc) = t1_sr.map_(ro, e1, s, slc);
 
                             if (need_sd_map)
                             {
-                                map_sd.data_(ro, e1, 0, 0, 0, s, slc) = t1_sr.sd_map_(ro, e1, s, slc);
+                                map_sd.data(ro, e1, 0, 0, 0, s, slc) = t1_sr.sd_map_(ro, e1, s, slc);
                             }
 
                             for (p = 0; p < num_para; p++)
                             {
-                                para.data_(ro, e1, 0, 0, p, s, slc) = t1_sr.para_(ro, e1, p, s, slc);
+                                para.data(ro, e1, 0, 0, p, s, slc) = t1_sr.para_(ro, e1, p, s, slc);
 
                                 if (need_sd_map)
                                 {
-                                    para_sd.data_(ro, e1, 0, 0, p, s, slc) = t1_sr.sd_para_(ro, e1, p, s, slc);
+                                    para_sd.data(ro, e1, 0, 0, p, s, slc) = t1_sr.sd_para_(ro, e1, p, s, slc);
                                 }
                             }
                         }
                     }
 
-                    size_t slc_ind = data.headers_(0, s, slc).slice;
+                    size_t slc_ind = data.headers(0, s, slc).slice.value_or(0);
 
-                    map.headers_(0, s, slc) = data.headers_(0, s, slc);
-                    map.headers_(0, s, slc).image_index = 1 + slc_ind;
-                    map.headers_(0, s, slc).image_series_index = 11;
-                    map.meta_[s+slc*S] = data.meta_[s + slc*S];
-                    map.meta_[s + slc*S].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_T1MAP);
-                    map.meta_[s + slc*S].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_T1MAP);
-                    map.meta_[s + slc*S].append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_T1MAP);
+                    map.headers(0, s, slc) = data.headers(0, s, slc);
+                    map.headers(0, s, slc).image_index = 1 + slc_ind;
+                    map.headers(0, s, slc).image_series_index = 11;
+                    map.meta(0, s, slc) = data.meta(0, s, slc);
 
-                    map_sd.headers_(0, s, slc) = data.headers_(0, s, slc);
-                    map_sd.headers_(0, s, slc).image_index = 1 + slc_ind;
-                    map_sd.headers_(0, s, slc).image_series_index = 12;
-                    map_sd.meta_[s + slc*S] = data.meta_[s + slc*S];
-                    map_sd.meta_[s + slc*S].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_T1SDMAP);
-                    map_sd.meta_[s + slc*S].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_T1SDMAP);
-                    map_sd.meta_[s + slc*S].append(GADGETRON_IMAGEPROCESSINGHISTORY, GADGETRON_IMAGE_T1SDMAP);
+                    auto& map_meta = map.meta(0, s, slc);
+                    map_meta[GADGETRON_DATA_ROLE] = { GADGETRON_IMAGE_T1MAP };
+                    map_meta[GADGETRON_SEQUENCEDESCRIPTION].push_back(GADGETRON_IMAGE_T1MAP);
+                    map_meta[GADGETRON_IMAGEPROCESSINGHISTORY].push_back(GADGETRON_IMAGE_T1MAP);
+
+                    map_sd.headers(0, s, slc) = data.headers(0, s, slc);
+                    map_sd.headers(0, s, slc).image_index = 1 + slc_ind;
+                    map_sd.headers(0, s, slc).image_series_index = 12;
+                    map_sd.meta(0, s, slc) = data.meta(0, s, slc);
+
+                    auto& map_sd_meta = map_sd.meta(0, s, slc);
+                    map_sd_meta[GADGETRON_DATA_ROLE] = { GADGETRON_IMAGE_T1SDMAP };
+                    map_sd_meta[GADGETRON_SEQUENCEDESCRIPTION].push_back(GADGETRON_IMAGE_T1SDMAP);
+                    map_sd_meta[GADGETRON_IMAGEPROCESSINGHISTORY].push_back(GADGETRON_IMAGE_T1SDMAP);
 
                     if (need_sd_map)
                     {
                         for (p = 0; p < num_para; p++)
                         {
-                            para.headers_(p, s, slc) = data.headers_(0, s, slc);
-                            para.headers_(p, s, slc).image_index = 1 + p + slc_ind*num_para;
-                            para.meta_[p + s*num_para + slc*num_para*S] = data.meta_[s + slc*S];
+                            para.headers(p, s, slc) = data.headers(0, s, slc);
+                            para.headers(p, s, slc).image_index = 1 + p + slc_ind*num_para;
+                            para.meta(p, s, slc) = data.meta(0, s, slc);
 
-                            para_sd.headers_(p, s, slc) = data.headers_(0, s, slc);
-                            para_sd.headers_(p, s, slc).image_index = 1 + p + slc_ind*num_para;
-                            para_sd.meta_[p + s*num_para + slc*num_para*S] = data.meta_[s + slc*S];
+                            para_sd.headers(p, s, slc) = data.headers(0, s, slc);
+                            para_sd.headers(p, s, slc).image_index = 1 + p + slc_ind*num_para;
+                            para_sd.meta(p, s , slc) = data.meta(0, s, slc);
                         }
                     }
                 }

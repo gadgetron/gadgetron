@@ -8,10 +8,10 @@
 #include "hoWaveletOperator.h"
 #include "hoMotionCompensation2DTOperator.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoWavelet2DTOperator : public hoWaveletOperator<T>
+template <typename T>
+class hoWavelet2DTOperator : public hoWaveletOperator<T>
 {
 public:
 

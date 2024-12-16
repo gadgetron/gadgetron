@@ -1,5 +1,5 @@
 /** \file   GenericReconCartesianReferencePrepGadget.h
-    \brief  This is the class gadget for both 2DT and 3DT cartesian reconstruction to prepare the reference data, working on the IsmrmrdReconData.
+    \brief  This is the class gadget for both 2DT and 3DT cartesian reconstruction to prepare the reference data, working on the ReconData.
     \author Hui Xue
 */
 
@@ -12,11 +12,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconCartesianReferencePrepGadget : public GenericReconDataBase
+    class GenericReconCartesianReferencePrepGadget : public GenericReconDataBase
     {
     public:
-        GADGET_DECLARE(GenericReconCartesianReferencePrepGadget);
-
         typedef GenericReconDataBase BaseClass;
 
         GenericReconCartesianReferencePrepGadget();
@@ -41,9 +39,9 @@ namespace Gadgetron {
         /// some reconstruction will benefit to fill back the ref data into data array for the embedded mode
         GADGET_PROPERTY(ref_fill_into_data_embedded, bool, "If true and calibration is in embedded mode, fill the full sampled data from ref array into the data array", false);
 
-        /// whether to update ref for every incoming IsmrmrdReconData; for some applications, we may want to only compute ref data once
-        /// if false, the ref will only be prepared for the first incoming IsmrmrdReconData
-        GADGET_PROPERTY(prepare_ref_always, bool, "Whether to prepare ref for every incoming IsmrmrdReconData", true);
+        /// whether to update ref for every incoming ReconData; for some applications, we may want to only compute ref data once
+        /// if false, the ref will only be prepared for the first incoming ReconData
+        GADGET_PROPERTY(prepare_ref_always, bool, "Whether to prepare ref for every incoming ReconData", true);
 
     protected:
 
@@ -56,7 +54,7 @@ namespace Gadgetron {
 
         // for every encoding space
         // calibration mode
-        std::vector<Gadgetron::ismrmrdCALIBMODE> calib_mode_;
+        std::vector<mrd::CalibrationMode> calib_mode_;
 
         // --------------------------------------------------
         // variable for recon
@@ -66,7 +64,7 @@ namespace Gadgetron {
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1);
     };
 }

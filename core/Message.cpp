@@ -1,5 +1,4 @@
 #include "Message.h"
-#include "GadgetContainerMessage.h"
 
 Gadgetron::GadgetContainerMessageBase* Gadgetron::Core::Message::to_container_message() {
 

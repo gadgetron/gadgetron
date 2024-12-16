@@ -1,5 +1,0 @@
-// SHA1 of compiled gadgetron software
-
-#pragma once
-
-#define GADGETRON_SHA1 "@GADGETRON_GIT_SHA1@"

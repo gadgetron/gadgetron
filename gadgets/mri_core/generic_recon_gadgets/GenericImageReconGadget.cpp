@@ -1199,13 +1199,13 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericImageReconGadget::process(ACE_Message_Block *mb)
+    int GenericImageReconGadget::process(GadgetContainerMessageBase *mb)
     {
         GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 2> > >* m1 = nullptr;
         GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
         GadgetContainerMessage< ISMRMRD::ImageHeader >* m3 = nullptr;
 
-        ACE_Message_Block* p_wav = mb->cont();
+        GadgetContainerMessageBase* p_wav = mb->cont();
         GadgetContainerMessage<std::vector<ISMRMRD::Waveform>>* m_wav = nullptr;
         if (p_wav != nullptr)
         {

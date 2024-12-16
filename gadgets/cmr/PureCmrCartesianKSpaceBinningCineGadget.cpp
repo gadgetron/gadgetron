@@ -8,18 +8,18 @@
 namespace {
     using namespace Gadgetron;
     void set_time_stamps(
-        IsmrmrdImageArray& res, const hoNDArray<float>& acq_time, const hoNDArray<float>& cpt_time, float time_tick) {
+        mrd::ImageArray& res, const hoNDArray<float>& acq_time, const hoNDArray<float>& cpt_time, float time_tick) {
 
-        size_t N   = res.headers_.get_size(0);
-        size_t S   = res.headers_.get_size(1);
-        size_t SLC = res.headers_.get_size(2);
+        size_t N   = res.headers.get_size(0);
+        size_t S   = res.headers.get_size(1);
+        size_t SLC = res.headers.get_size(2);
 
         size_t n, s, slc;
         for (slc = 0; slc < SLC; slc++) {
             for (s = 0; s < S; s++) {
                 for (n = 0; n < N; n++) {
-                    res.headers_(n, s, slc).acquisition_time_stamp = (uint32_t)lround(acq_time(n, s, slc) / time_tick);
-                    res.headers_(n, s, slc).physiology_time_stamp[0]
+                    res.headers(n, s, slc).acquisition_time_stamp = (uint32_t)lround(acq_time(n, s, slc) / time_tick);
+                    res.headers(n, s, slc).physiology_time_stamp[0]
                         = (uint32_t)lround(cpt_time(n, s, slc) / time_tick);
                 }
             }
@@ -28,14 +28,13 @@ namespace {
 
 }
 
-Gadgetron::IsmrmrdImageArray Gadgetron::PureCmrCartesianKSpaceBinningCineGadget::process_function(
-    Gadgetron::IsmrmrdReconData args) const {
-
-    if (args.rbit_.size() > 1)
+mrd::ImageArray Gadgetron::PureCmrCartesianKSpaceBinningCineGadget::process_function(mrd::ReconData args) const
+{
+    if (args.buffers.size() > 1)
         throw std::runtime_error("Only single encoding space supported");
     size_t encoding = 0;
-    auto result     = perform_binning(args.rbit_[encoding], encoding);
-    set_image_header(args.rbit_[encoding], result.image, encoding);
+    auto result     = perform_binning(args.buffers[encoding], encoding);
+    set_image_header(args.buffers[encoding], result.image, encoding);
     set_time_stamps(result.image, result.acquisition_time, result.capture_time, time_tick);
     prepare_image_array(result.image, 0, 2, GADGETRON_IMAGE_RETRO);
     return std::move(result.image);
@@ -89,20 +88,20 @@ CmrKSpaceBinning<float> PureCmrCartesianKSpaceBinningCineGadget::create_binner()
     return binner;
 }
 PureCmrCartesianKSpaceBinningCineGadget::BinningResult PureCmrCartesianKSpaceBinningCineGadget::perform_binning(
-    IsmrmrdReconBit recon_bit, size_t encoding) const {
-    size_t RO  = recon_bit.data_.data_.get_size(0);
-    size_t E1  = recon_bit.data_.data_.get_size(1);
-    size_t E2  = recon_bit.data_.data_.get_size(2);
-    size_t CHA = recon_bit.data_.data_.get_size(3);
-    size_t N   = recon_bit.data_.data_.get_size(4);
-    size_t S   = recon_bit.data_.data_.get_size(5);
-    size_t SLC = recon_bit.data_.data_.get_size(6);
+    mrd::ReconAssembly recon_bit, size_t encoding) const {
+    size_t RO  = recon_bit.data.data.get_size(0);
+    size_t E1  = recon_bit.data.data.get_size(1);
+    size_t E2  = recon_bit.data.data.get_size(2);
+    size_t CHA = recon_bit.data.data.get_size(3);
+    size_t N   = recon_bit.data.data.get_size(4);
+    size_t S   = recon_bit.data.data.get_size(5);
+    size_t SLC = recon_bit.data.data.get_size(6);
 
     size_t binned_N = number_of_output_phases;
 
     auto binner = create_binner();
     BinningResult result;
-    result.image.data_      = hoNDArray<std::complex<float>>(RO, E1, E2, 1, binned_N, S, SLC);
+    result.image.data      = hoNDArray<std::complex<float>>(RO, E1, E2, 1, binned_N, S, SLC);
     result.acquisition_time = hoNDArray<float>(N, S, SLC);
     result.capture_time     = hoNDArray<float>(N, S, SLC);
 
@@ -111,21 +110,21 @@ PureCmrCartesianKSpaceBinningCineGadget::BinningResult PureCmrCartesianKSpaceBin
 
         // set up the binning object
         binner.binning_obj_.data_.create(
-            RO, E1, CHA, N, S, recon_bit.data_.data_.begin() + slc * RO * E1 * CHA * N * S);
-        binner.binning_obj_.sampling_ = recon_bit.data_.sampling_;
-        binner.binning_obj_.headers_.create(E1, N, S, recon_bit.data_.headers_.begin() + slc * E1 * N * S);
+            RO, E1, CHA, N, S, recon_bit.data.data.begin() + slc * RO * E1 * CHA * N * S);
+        binner.binning_obj_.sampling_ = recon_bit.data.sampling;
+        binner.binning_obj_.headers_.create(E1, N, S, recon_bit.data.headers.begin() + slc * E1 * N * S);
 
         binner.binning_obj_.output_N_        = binned_N;
         binner.binning_obj_.accel_factor_E1_ = acceFactorE1_[encoding];
         binner.binning_obj_.random_sampling_
-            = (calib_mode_[encoding] != ISMRMRD_embedded && calib_mode_[encoding] != ISMRMRD_interleaved
-                && calib_mode_[encoding] != ISMRMRD_separate && calib_mode_[encoding] != ISMRMRD_noacceleration);
+            = (calib_mode_[encoding] != mrd::CalibrationMode::kEmbedded && calib_mode_[encoding] != mrd::CalibrationMode::kInterleaved
+                && calib_mode_[encoding] != mrd::CalibrationMode::kSeparate && calib_mode_[encoding] != mrd::CalibrationMode::kNoacceleration);
 
         binner.process_binning_recon();
 
         std::copy_n(binner.binning_obj_.complex_image_binning_.data(),
             binner.binning_obj_.complex_image_binning_.get_number_of_bytes(),
-            result.image.data_.data() + slc * RO * E1 * N * S * SLC);
+            result.image.data.data() + slc * RO * E1 * N * S * SLC);
 
         for (size_t s = 0; s < S; s++) {
 
@@ -146,57 +145,40 @@ PureCmrCartesianKSpaceBinningCineGadget::PureCmrCartesianKSpaceBinningCineGadget
 
     acceFactorE1_.resize(NE, 1);
     acceFactorE2_.resize(NE, 1);
-    calib_mode_.resize(NE, ISMRMRD_noacceleration);
+    calib_mode_.resize(NE, mrd::CalibrationMode::kNoacceleration);
     space_matrix_offset_E1_.resize(NE, 0);
     space_matrix_offset_E2_.resize(NE, 0);
 
     for (size_t e = 0; e < h.encoding.size(); e++) {
 
-        if (!h.encoding[e].parallelImaging) {
-            calib_mode_[e]   = ISMRMRD_noacceleration;
+        if (!h.encoding[e].parallel_imaging) {
+            calib_mode_[e]   = mrd::CalibrationMode::kNoacceleration;
             acceFactorE1_[e] = 1;
             acceFactorE2_[e] = 1;
         } else {
-            ISMRMRD::ParallelImaging p_imaging = *h.encoding[e].parallelImaging;
+            mrd::ParallelImagingType p_imaging = *h.encoding[e].parallel_imaging;
 
-            acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
-            acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
+            acceFactorE1_[e] = p_imaging.acceleration_factor.kspace_encoding_step_1;
+            acceFactorE2_[e] = p_imaging.acceleration_factor.kspace_encoding_step_2;
 
-            std::string calib = *p_imaging.calibrationMode;
-
-            bool separate    = calib == "separate";
-            bool embedded    = calib == "embedded";
-            bool external    = calib == "external";
-            bool interleaved = calib == "interleaved";
-            bool other       = calib == "other";
-
-            calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
+            calib_mode_[e] = mrd::CalibrationMode::kNoacceleration;
             if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1) {
-                if (interleaved)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
-                else if (embedded)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
-                else if (separate)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_separate;
-                else if (external)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_external;
-                else if (other)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                calib_mode_[e] = *p_imaging.calibration_mode;
             }
         }
 
-        bool is_cartesian_sampling = (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::CARTESIAN);
-        bool is_epi_sampling       = (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::EPI);
+        bool is_cartesian_sampling = (h.encoding[e].trajectory == mrd::Trajectory::kCartesian);
+        bool is_epi_sampling       = (h.encoding[e].trajectory == mrd::Trajectory::kEpi);
         if (is_cartesian_sampling || is_epi_sampling) {
-            if (h.encoding[e].encodingLimits.kspace_encoding_step_1.is_present()) {
-                space_matrix_offset_E1_[e] = (int)h.encoding[e].encodedSpace.matrixSize.y / 2
-                                             - (int)h.encoding[e].encodingLimits.kspace_encoding_step_1->center;
+            if (h.encoding[e].encoding_limits.kspace_encoding_step_1.has_value()) {
+                space_matrix_offset_E1_[e] = (int)h.encoding[e].encoded_space.matrix_size.y / 2
+                                             - (int)h.encoding[e].encoding_limits.kspace_encoding_step_1->center;
             }
 
-            if (h.encoding[e].encodingLimits.kspace_encoding_step_2.is_present()
-                && h.encoding[e].encodedSpace.matrixSize.z > 1) {
-                space_matrix_offset_E2_[e] = (int)h.encoding[e].encodedSpace.matrixSize.z / 2
-                                             - (int)h.encoding[e].encodingLimits.kspace_encoding_step_2->center;
+            if (h.encoding[e].encoding_limits.kspace_encoding_step_2.has_value()
+                && h.encoding[e].encoded_space.matrix_size.z > 1) {
+                space_matrix_offset_E2_[e] = (int)h.encoding[e].encoded_space.matrix_size.z / 2
+                                             - (int)h.encoding[e].encoding_limits.kspace_encoding_step_2->center;
             }
         }
         // -------------------------------------------------
@@ -204,44 +186,44 @@ PureCmrCartesianKSpaceBinningCineGadget::PureCmrCartesianKSpaceBinningCineGadget
 }
 
 void PureCmrCartesianKSpaceBinningCineGadget::set_image_header(
-    const IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t enc) const {
-    size_t RO  = res.data_.get_size(0);
-    size_t E1  = res.data_.get_size(1);
-    size_t E2  = res.data_.get_size(2);
-    size_t CHA = res.data_.get_size(3);
-    size_t N   = res.data_.get_size(4);
-    size_t S   = res.data_.get_size(5);
-    size_t SLC = res.data_.get_size(6);
+    const mrd::ReconAssembly& recon_bit, mrd::ImageArray& res, size_t enc) const {
+    size_t RO  = res.data.get_size(0);
+    size_t E1  = res.data.get_size(1);
+    size_t E2  = res.data.get_size(2);
+    size_t CHA = res.data.get_size(3);
+    size_t N   = res.data.get_size(4);
+    size_t S   = res.data.get_size(5);
+    size_t SLC = res.data.get_size(6);
 
-    GADGET_CHECK_THROW(N == recon_bit.data_.headers_.get_size(2));
-    GADGET_CHECK_THROW(S == recon_bit.data_.headers_.get_size(3));
+    GADGET_CHECK_THROW(N == recon_bit.data.headers.get_size(2));
+    GADGET_CHECK_THROW(S == recon_bit.data.headers.get_size(3));
 
-    res.headers_.create(N, S, SLC);
-    res.meta_.resize(N * S * SLC);
+    res.headers.create(N, S, SLC);
+    res.meta.create(N, S, SLC);
 
     size_t n, s, slc;
 
     for (slc = 0; slc < SLC; slc++) {
         for (s = 0; s < S; s++) {
             for (n = 0; n < N; n++) {
-                size_t header_E1 = recon_bit.data_.headers_.get_size(0);
-                size_t header_E2 = recon_bit.data_.headers_.get_size(1);
+                size_t header_E1 = recon_bit.data.headers.get_size(0);
+                size_t header_E2 = recon_bit.data.headers.get_size(1);
 
                 // for every kspace, find the recorded header which is closest to the kspace center [E1/2 E2/2]
-                ISMRMRD::AcquisitionHeader acq_header;
+                mrd::AcquisitionHeader acq_header;
 
                 long long bestE1 = E1 + 1;
                 long long bestE2 = E2 + 1;
 
                 for (size_t e2 = 0; e2 < header_E2; e2++) {
                     for (size_t e1 = 0; e1 < header_E1; e1++) {
-                        const ISMRMRD::AcquisitionHeader& curr_header = recon_bit.data_.headers_(e1, e2, n, s, slc);
+                        const mrd::AcquisitionHeader& curr_header = recon_bit.data.headers(e1, e2, n, s, slc);
 
-                        long long e1_in_bucket = curr_header.idx.kspace_encode_step_1 + space_matrix_offset_E1_[enc];
+                        long long e1_in_bucket = curr_header.idx.kspace_encode_step_1.value_or(0) + space_matrix_offset_E1_[enc];
 
                         if (E2 > 1) {
                             long long e2_in_bucket
-                                = curr_header.idx.kspace_encode_step_2 + space_matrix_offset_E2_[enc];
+                                = curr_header.idx.kspace_encode_step_2.value_or(0) + space_matrix_offset_E2_[enc];
 
                             if (std::abs(e1_in_bucket - (long long)(E1 / 2)) < bestE1
                                 && std::abs(e2_in_bucket - (long long)(E2 / 2)) < bestE2) {
@@ -260,26 +242,22 @@ void PureCmrCartesianKSpaceBinningCineGadget::set_image_header(
                     }
                 }
 
-                ISMRMRD::ImageHeader& im_header = res.headers_(n, s, slc);
-                ISMRMRD::MetaContainer& meta    = res.meta_[n + s * N + slc * N * S];
+                mrd::ImageHeader& im_header = res.headers(n, s, slc);
+                mrd::ImageMeta& meta    = res.meta(n, s, slc);
 
-                im_header.version         = acq_header.version;
-                im_header.data_type       = ISMRMRD::ISMRMRD_CXFLOAT;
-                im_header.flags           = acq_header.flags;
+                /** TODO: mrd::ImageFlags != mrd::AcquisitionFlags... */
+                // im_header.flags           = acq_header.flags;
                 im_header.measurement_uid = acq_header.measurement_uid;
 
-                boost::copy(std::vector<uint16_t>{ (uint16_t)RO, (uint16_t)E1, (uint16_t)E2 }, im_header.matrix_size);
+                im_header.field_of_view[0] = recon_bit.data.sampling.recon_fov.x;
+                im_header.field_of_view[1] = recon_bit.data.sampling.recon_fov.y;
+                im_header.field_of_view[2] = recon_bit.data.sampling.recon_fov.z;
 
-                boost::copy(recon_bit.data_.sampling_.recon_FOV_, im_header.field_of_view);
-
-                im_header.channels = (uint16_t)CHA;
-
-                boost::copy(acq_header.position, im_header.position);
-                boost::copy(acq_header.read_dir, im_header.read_dir);
-                boost::copy(acq_header.phase_dir, im_header.phase_dir);
-
-                boost::copy(acq_header.slice_dir, im_header.slice_dir);
-                boost::copy(acq_header.patient_table_position, im_header.patient_table_position);
+                im_header.position = acq_header.position;
+                im_header.col_dir = acq_header.read_dir;
+                im_header.line_dir = acq_header.phase_dir;
+                im_header.slice_dir = acq_header.slice_dir;
+                im_header.patient_table_position = acq_header.patient_table_position;
 
                 im_header.average    = acq_header.idx.average;
                 im_header.slice      = acq_header.idx.slice;
@@ -290,72 +268,56 @@ void PureCmrCartesianKSpaceBinningCineGadget::set_image_header(
 
                 im_header.acquisition_time_stamp = acq_header.acquisition_time_stamp;
 
-                boost::copy(acq_header.physiology_time_stamp, im_header.physiology_time_stamp);
+                im_header.physiology_time_stamp = acq_header.physiology_time_stamp;
 
-                im_header.image_type         = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+                im_header.image_type         = mrd::ImageType::kMagnitude;
                 im_header.image_index        = (uint16_t)(n + s * N + slc * N * S);
                 im_header.image_series_index = 0;
 
-                boost::copy(acq_header.user_int, im_header.user_int);
-                boost::copy(acq_header.user_float, im_header.user_float);
+                im_header.user_int = acq_header.user_int;
+                im_header.user_float = acq_header.user_float;
 
-                im_header.attribute_string_len = 0;
+                meta["encoding"] = { (long)enc };
 
-                meta.set("encoding", (long)enc);
+                auto& encoded_fov = recon_bit.data.sampling.encoded_fov;
+                meta["encoding_FOV"] = { encoded_fov.x, encoded_fov.y, encoded_fov.z };
 
-                meta.set("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[0]);
-                meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[1]);
-                meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[2]);
+                auto& recon_fov = recon_bit.data.sampling.recon_fov;
+                meta["recon_FOV"] = { recon_fov.x, recon_fov.y, recon_fov.z };
 
-                meta.set("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[0]);
-                meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[1]);
-                meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[2]);
+                auto& encoded_matrix = recon_bit.data.sampling.encoded_matrix;
+                meta["encoded_matrix"] = { (long)encoded_matrix.x, (long)encoded_matrix.y, (long)encoded_matrix.z };
 
-                meta.set("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[0]);
-                meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[1]);
-                meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[2]);
+                auto& recon_matrix = recon_bit.data.sampling.recon_matrix;
+                meta["recon_matrix"] = { (long)recon_matrix.x, (long)recon_matrix.y, (long)recon_matrix.z };
 
-                meta.set("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[0]);
-                meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[1]);
-                meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[2]);
+                auto& sampling_limits = recon_bit.data.sampling.sampling_limits;
+                meta["sampling_limits_RO"] = { (long)sampling_limits.kspace_encoding_step_0.minimum, (long)sampling_limits.kspace_encoding_step_0.center, (long)sampling_limits.kspace_encoding_step_0.maximum };
 
-                meta.set("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].min_);
-                meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].center_);
-                meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].max_);
+                meta["sampling_limits_E1"] = { (long)sampling_limits.kspace_encoding_step_1.minimum, (long)sampling_limits.kspace_encoding_step_1.center, (long)sampling_limits.kspace_encoding_step_1.maximum };
 
-                meta.set("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].min_);
-                meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].center_);
-                meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].max_);
+                meta["sampling_limits_E2"] = { (long)sampling_limits.kspace_encoding_step_2.minimum, (long)sampling_limits.kspace_encoding_step_2.center, (long)sampling_limits.kspace_encoding_step_2.maximum };
 
-                meta.set("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
-                meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
-                meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
+                auto &hdrsrc = res.headers(n, s, slc);
+                auto& position = hdrsrc.position;
+                meta["PatientPosition"] = { (double)position[0], (double)position[1], (double)position[2] };
 
-                meta.set("PatientPosition", (double)res.headers_(n, s, slc).position[0]);
-                meta.append("PatientPosition", (double)res.headers_(n, s, slc).position[1]);
-                meta.append("PatientPosition", (double)res.headers_(n, s, slc).position[2]);
+                auto& col_dir = hdrsrc.col_dir;
+                meta["read_dir"] = { (double)col_dir[0], (double)col_dir[1], (double)col_dir[2] };
 
-                meta.set("read_dir", (double)res.headers_(n, s, slc).read_dir[0]);
-                meta.append("read_dir", (double)res.headers_(n, s, slc).read_dir[1]);
-                meta.append("read_dir", (double)res.headers_(n, s, slc).read_dir[2]);
+                auto& line_dir = hdrsrc.line_dir;
+                meta["phase_dir"] = { (double)line_dir[0], (double)line_dir[1], (double)line_dir[2] };
 
-                meta.set("phase_dir", (double)res.headers_(n, s, slc).phase_dir[0]);
-                meta.append("phase_dir", (double)res.headers_(n, s, slc).phase_dir[1]);
-                meta.append("phase_dir", (double)res.headers_(n, s, slc).phase_dir[2]);
+                auto& slice_dir = hdrsrc.slice_dir;
+                meta["slice_dir"] = { (double)slice_dir[0], (double)slice_dir[1], (double)slice_dir[2] };
 
-                meta.set("slice_dir", (double)res.headers_(n, s, slc).slice_dir[0]);
-                meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[1]);
-                meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[2]);
+                auto &patient_table_position = hdrsrc.patient_table_position;
+                meta["patient_table_position"] = { (double)patient_table_position[0], (double)patient_table_position[1], (double)patient_table_position[2] };
 
-                meta.set("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[0]);
-                meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[1]);
-                meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[2]);
+                meta["acquisition_time_stamp"] = { (long)hdrsrc.acquisition_time_stamp.value_or(0) };
 
-                meta.set("acquisition_time_stamp", (long)res.headers_(n, s, slc).acquisition_time_stamp);
-
-                meta.set("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[0]);
-                meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
-                meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
+                auto& physio_times = hdrsrc.physiology_time_stamp;
+                meta["physiology_time_stamp"] = { (long)physio_times[0], (long)physio_times[1], (long)physio_times[2] };
             }
         }
     }

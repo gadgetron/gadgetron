@@ -1,0 +1,21 @@
+dependency:
+  data: T2W/meas_MID00057_T2w_meas1.mrd
+  checksum: 5b911eb6764b0fcd83a7982b5a6ba58f
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: T2W/meas_MID00057_T2w_meas2.mrd
+  checksum: 9f62098a12acf87d4c1f132b1338c382
+  run:
+  - args: --config Generic_Cartesian_Grappa_T2W.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: T2W/generic_grappa_T2W_ref_20220817_klk_Generic_Cartesian_Grappa_T2W.xml.mrd
+  checksum: bfb41fe6b7e7684427178330a76be631
+  tests:
+  - image_series: 1
+    value_comparison_threshold: 0.075
+    scale_comparison_threshold: 0.075
+requirements:
+  system_memory: 4096
+tags:
+- fast
+- generic

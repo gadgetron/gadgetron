@@ -7,10 +7,10 @@
 
 #include "hoWaveletOperator.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoWavelet1DBaseOperator : public hoWaveletOperator<T>
+template <typename T>
+class hoWavelet1DBaseOperator : public hoWaveletOperator<T>
 {
 public:
 
@@ -109,8 +109,8 @@ protected:
     //using BaseClass::gt_exporter_;
 };
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoWavelet1DOperator : public hoWavelet1DBaseOperator<T>
+template <typename T>
+class hoWavelet1DOperator : public hoWavelet1DBaseOperator<T>
 {
 public:
 
@@ -173,7 +173,7 @@ protected:
 };
 
 template <typename T>
-class EXPORTCPUOPERATOR hoWavelet1DREALOperator : public hoWavelet1DBaseOperator<T>
+class hoWavelet1DREALOperator : public hoWavelet1DBaseOperator<T>
 {
 public:
 

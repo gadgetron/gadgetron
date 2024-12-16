@@ -48,7 +48,7 @@ namespace Gadgetron::Grappa {
 
         static std::vector<size_t> create_output_image_dimensions(const Core::Context &context);
         static std::vector<float> create_output_image_fov(const Core::Context &context);
-        ISMRMRD::ImageHeader create_image_header(const Image &image, const Weights &weights);
+        mrd::ImageHeader create_image_header(const Image &image, const Weights &weights);
 
         const Core::Context context;
         const std::vector<size_t> image_dimensions;

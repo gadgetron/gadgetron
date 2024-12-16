@@ -20,21 +20,13 @@ namespace Gadgetron {
     {
     }
 
-    int CmrParametricMappingGadget::process_config(ACE_Message_Block* mb)
+    int CmrParametricMappingGadget::process_config(const mrd::Header& header)
     {
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
-        ISMRMRD::IsmrmrdHeader h;
-        try
-        {
-            deserialize(mb->rd_ptr(), h);
-        }
-        catch (...)
-        {
-            GDEBUG("Error parsing ISMRMRD Header");
-        }
+        auto& h = header;
 
-        if (!h.acquisitionSystemInformation)
+        if (!h.acquisition_system_information)
         {
             GDEBUG("acquisitionSystemInformation not found in header. Bailing out");
             return GADGET_FAIL;
@@ -42,7 +34,7 @@ namespace Gadgetron {
 
         // -------------------------------------------------
 
-        float field_strength_T_ = h.acquisitionSystemInformation.get().systemFieldStrength_T();
+        float field_strength_T_ = h.acquisition_system_information->system_field_strength_t.value_or(1.5);
         GDEBUG_CONDITION_STREAM(verbose.value(), "field_strength_T_ is read from protocol : " << field_strength_T_);
 
         if (h.encoding.size() != 1)
@@ -51,14 +43,14 @@ namespace Gadgetron {
         }
 
         size_t e = 0;
-        ISMRMRD::EncodingSpace e_space = h.encoding[e].encodedSpace;
-        ISMRMRD::EncodingSpace r_space = h.encoding[e].reconSpace;
-        ISMRMRD::EncodingLimits e_limits = h.encoding[e].encodingLimits;
+        mrd::EncodingSpaceType e_space = h.encoding[e].encoded_space;
+        mrd::EncodingSpaceType r_space = h.encoding[e].recon_space;
+        mrd::EncodingLimitsType e_limits = h.encoding[e].encoding_limits;
 
-        meas_max_idx_.kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
+        meas_max_idx_.kspace_encode_step_1 = (uint16_t)e_space.matrix_size.y - 1;
         meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
         meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
-        meas_max_idx_.kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
+        meas_max_idx_.kspace_encode_step_2 = (uint16_t)e_space.matrix_size.z - 1;
         meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
         meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
         meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
@@ -68,7 +60,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int CmrParametricMappingGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
+    int CmrParametricMappingGadget::process(Gadgetron::GadgetContainerMessage< mrd::ImageArray >* m1)
     {
         if (perform_timing.value()) { gt_timer_local_.start("CmrParametricMappingGadget::process"); }
 
@@ -80,21 +72,21 @@ namespace Gadgetron {
 
         // -------------------------------------------------------------
 
-        IsmrmrdImageArray* data = m1->getObjectPtr();
+        mrd::ImageArray* data = m1->getObjectPtr();
 
         // print out data info
         if (verbose.value())
         {
             GDEBUG_STREAM("----> CmrParametricMappingGadget::process(...) has been called " << process_called_times_ << " times ...");
             std::stringstream os;
-            data->data_.print(os);
+            data->data.print(os);
             GDEBUG_STREAM(os.str());
         }
 
         // -------------------------------------------------------------
 
         // some images do not need mapping
-        if (data->meta_[0].length(skip_processing_meta_field.value().c_str())>0)
+        if (data->meta[0].count(skip_processing_meta_field.value()) > 0)
         {
             if (this->next()->putq(m1) == -1)
             {
@@ -107,18 +99,18 @@ namespace Gadgetron {
 
         // -------------------------------------------------------------
 
-        size_t encoding = (size_t)data->meta_[0].as_long("encoding", 0);
+        size_t encoding = (size_t)std::get<long>(data->meta[0]["encoding"].front());
         GADGET_CHECK_RETURN(encoding<num_encoding_spaces_, GADGET_FAIL);
 
-        std::string dataRole = std::string(data->meta_[0].as_str(GADGETRON_DATA_ROLE));
+        std::string dataRole = std::get<std::string>(data->meta[0][GADGETRON_DATA_ROLE].front());
 
-        size_t RO = data->data_.get_size(0);
-        size_t E1 = data->data_.get_size(1);
-        size_t E2 = data->data_.get_size(2);
-        size_t CHA = data->data_.get_size(3);
-        size_t N = data->data_.get_size(4);
-        size_t S = data->data_.get_size(5);
-        size_t SLC = data->data_.get_size(6);
+        size_t RO = data->data.get_size(0);
+        size_t E1 = data->data.get_size(1);
+        size_t E2 = data->data.get_size(2);
+        size_t CHA = data->data.get_size(3);
+        size_t N = data->data.get_size(4);
+        size_t S = data->data.get_size(5);
+        size_t SLC = data->data.get_size(6);
 
         std::stringstream os;
         os << "_encoding_" << encoding << "_processing_" << process_called_times_;
@@ -128,7 +120,7 @@ namespace Gadgetron {
 
         if (!debug_folder_full_path_.empty())
         {
-            gt_exporter_.export_array_complex(data->data_, debug_folder_full_path_ + "data" + str);
+            gt_exporter_.export_array_complex(data->data, debug_folder_full_path_ + "data" + str);
         }
 
         // -------------------------------------------------------------
@@ -140,7 +132,7 @@ namespace Gadgetron {
             size_t n;
             for (n = 0; n < N; n++)
             {
-                this->prep_times_[n] = data->headers_(n).user_int[7] * 1e-3; // convert microsecond to ms
+                this->prep_times_[n] = data->headers(n).user_int[7] * 1e-3; // convert microsecond to ms
             }
 
             if (this->verbose.value())
@@ -156,7 +148,7 @@ namespace Gadgetron {
         // -------------------------------------------------------------
 
         // calling the mapping
-        IsmrmrdImageArray map, para, map_sd, para_sd;
+        mrd::ImageArray map, para, map_sd, para_sd;
 
         int status = this->perform_mapping(*data, map, para, map_sd, para_sd);
 
@@ -175,10 +167,10 @@ namespace Gadgetron {
         {
             if (!debug_folder_full_path_.empty())
             {
-                gt_exporter_.export_array_complex(map.data_, debug_folder_full_path_ + "map" + str);
-                gt_exporter_.export_array_complex(para.data_, debug_folder_full_path_ + "para" + str);
-                gt_exporter_.export_array_complex(map_sd.data_, debug_folder_full_path_ + "map_sd" + str);
-                gt_exporter_.export_array_complex(para_sd.data_, debug_folder_full_path_ + "para_sd" + str);
+                gt_exporter_.export_array_complex(map.data, debug_folder_full_path_ + "map" + str);
+                gt_exporter_.export_array_complex(para.data, debug_folder_full_path_ + "para" + str);
+                gt_exporter_.export_array_complex(map_sd.data, debug_folder_full_path_ + "map_sd" + str);
+                gt_exporter_.export_array_complex(para_sd.data, debug_folder_full_path_ + "para_sd" + str);
             }
 
             // sending the incoming images
@@ -194,7 +186,7 @@ namespace Gadgetron {
             // ----------------------------------------------------------
             if ( send_sd_map.value() && (this->fill_sd_header(map_sd) == GADGET_OK) )
             {
-                Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>* cm2 = new Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>();
+                Gadgetron::GadgetContainerMessage<mrd::ImageArray>* cm2 = new Gadgetron::GadgetContainerMessage<mrd::ImageArray>();
                 *(cm2->getObjectPtr()) = map_sd;
                 if (this->next()->putq(cm2) == -1)
                 {
@@ -205,7 +197,7 @@ namespace Gadgetron {
 
             if (send_map.value() && (this->fill_map_header(map) == GADGET_OK))
             {
-                Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>* cm1 = new Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>();
+                Gadgetron::GadgetContainerMessage<mrd::ImageArray>* cm1 = new Gadgetron::GadgetContainerMessage<mrd::ImageArray>();
                 *(cm1->getObjectPtr()) = map;
                 if (this->next()->putq(cm1) == -1)
                 {
@@ -233,17 +225,17 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int CmrParametricMappingGadget::fill_map_header(IsmrmrdImageArray& map)
+    int CmrParametricMappingGadget::fill_map_header(mrd::ImageArray& map)
     {
         try
         {
-            size_t RO  = map.data_.get_size(0);
-            size_t E1  = map.data_.get_size(1);
-            size_t E2  = map.data_.get_size(2);
-            size_t CHA = map.data_.get_size(3);
-            size_t N   = map.data_.get_size(4);
-            size_t S   = map.data_.get_size(5);
-            size_t SLC = map.data_.get_size(6);
+            size_t RO  = map.data.get_size(0);
+            size_t E1  = map.data.get_size(1);
+            size_t E2  = map.data.get_size(2);
+            size_t CHA = map.data.get_size(3);
+            size_t N   = map.data.get_size(4);
+            size_t S   = map.data.get_size(5);
+            size_t SLC = map.data.get_size(6);
 
             size_t e2, cha, n, s, slc;
 
@@ -267,20 +259,20 @@ namespace Gadgetron {
                 {
                     for (n = 0; n < N; n++)
                     {
-                        size_t offset = n + s*N + slc*N*S;
-                        map.meta_[offset].set(GADGETRON_IMAGE_SCALE_RATIO, (double)scaling_factor_map.value());
-                        map.meta_[offset].set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center_map.value()*scaling_factor_map.value()));
-                        map.meta_[offset].set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_width_map.value()*scaling_factor_map.value()));
-                        map.meta_[offset].set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
+                        auto& meta = map.meta(n, s, slc);
+                        meta[GADGETRON_IMAGE_SCALE_RATIO] = {(double)scaling_factor_map.value()};
+                        meta[GADGETRON_IMAGE_WINDOWCENTER] = {(long)(window_center_map.value()*scaling_factor_map.value())};
+                        meta[GADGETRON_IMAGE_WINDOWWIDTH] = {(long)(window_width_map.value()*scaling_factor_map.value())};
+                        meta[GADGETRON_IMAGE_COLORMAP] = {lut};
 
-                        map.meta_[offset].set(GADGETRON_IMAGECOMMENT, map.meta_[offset].as_str(GADGETRON_DATA_ROLE));
-                        map.meta_[offset].append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
-                        map.meta_[offset].append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                        meta[GADGETRON_IMAGECOMMENT] = meta[GADGETRON_DATA_ROLE];
+                        meta[GADGETRON_IMAGECOMMENT].push_back(scalingStr);
+                        meta[GADGETRON_IMAGECOMMENT].push_back(unitStr);
                     }
                 }
             }
 
-            Gadgetron::scal( (float)(scaling_factor_map.value()), map.data_);
+            Gadgetron::scal( (float)(scaling_factor_map.value()), map.data);
         }
         catch (...)
         {
@@ -291,17 +283,17 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int CmrParametricMappingGadget::fill_sd_header(IsmrmrdImageArray& map_sd)
+    int CmrParametricMappingGadget::fill_sd_header(mrd::ImageArray& map_sd)
     {
         try
         {
-            size_t RO = map_sd.data_.get_size(0);
-            size_t E1 = map_sd.data_.get_size(1);
-            size_t E2 = map_sd.data_.get_size(2);
-            size_t CHA = map_sd.data_.get_size(3);
-            size_t N = map_sd.data_.get_size(4);
-            size_t S = map_sd.data_.get_size(5);
-            size_t SLC = map_sd.data_.get_size(6);
+            size_t RO = map_sd.data.get_size(0);
+            size_t E1 = map_sd.data.get_size(1);
+            size_t E2 = map_sd.data.get_size(2);
+            size_t CHA = map_sd.data.get_size(3);
+            size_t N = map_sd.data.get_size(4);
+            size_t S = map_sd.data.get_size(5);
+            size_t SLC = map_sd.data.get_size(6);
 
             std::string lut = color_lut_sd_map.value();
 
@@ -321,20 +313,20 @@ namespace Gadgetron {
                 {
                     for (n = 0; n < N; n++)
                     {
-                        size_t offset = n + s*N + slc*N*S;
-                        map_sd.meta_[offset].set(GADGETRON_IMAGE_SCALE_RATIO, (double)scaling_factor_sd_map.value());
-                        map_sd.meta_[offset].set(GADGETRON_IMAGE_WINDOWCENTER, (long)(window_center_sd_map.value()*scaling_factor_sd_map.value()));
-                        map_sd.meta_[offset].set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(window_width_sd_map.value()*scaling_factor_sd_map.value()));
-                        map_sd.meta_[offset].set(GADGETRON_IMAGE_COLORMAP, lut.c_str());
+                        auto& meta = map_sd.meta(n, s, slc);
+                        meta[GADGETRON_IMAGE_SCALE_RATIO] = {(double)scaling_factor_sd_map.value()};
+                        meta[GADGETRON_IMAGE_WINDOWCENTER] = {(long)(window_center_sd_map.value()*scaling_factor_sd_map.value())};
+                        meta[GADGETRON_IMAGE_WINDOWWIDTH] = {(long)(window_width_sd_map.value()*scaling_factor_sd_map.value())};
+                        meta[GADGETRON_IMAGE_COLORMAP] = {lut};
 
-                        map_sd.meta_[offset].set(GADGETRON_IMAGECOMMENT, map_sd.meta_[offset].as_str(GADGETRON_DATA_ROLE));
-                        map_sd.meta_[offset].append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
-                        map_sd.meta_[offset].append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                        meta[GADGETRON_IMAGECOMMENT] = meta[GADGETRON_DATA_ROLE];
+                        meta[GADGETRON_IMAGECOMMENT].push_back(scalingStr);
+                        meta[GADGETRON_IMAGECOMMENT].push_back(unitStr);
                     }
                 }
             }
 
-            Gadgetron::scal((float)(scaling_factor_map.value()), map_sd.data_);
+            Gadgetron::scal((float)(scaling_factor_map.value()), map_sd.data);
         }
         catch (...)
         {

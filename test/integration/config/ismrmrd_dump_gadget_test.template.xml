@@ -4,18 +4,18 @@
 
     <readers>
         <reader>
-            <dll>gadgetron_core_readers</dll>
+            <dll>pingvin_core_readers</dll>
             <classname>AcquisitionReader</classname>
         </reader>
         <reader>
-            <dll>gadgetron_core_readers</dll>
+            <dll>pingvin_core_readers</dll>
             <classname>WaveformReader</classname>
         </reader>
     </readers>
 
     <writers>
         <writer>
-            <dll>gadgetron_core_writers</dll>
+            <dll>pingvin_core_writers</dll>
             <classname>ImageWriter</classname>
         </writer>
     </writers>
@@ -27,7 +27,7 @@
         </external>
 
         <gadget>
-            <dll>gadgetron_mricore</dll>
+            <dll>pingvin_mricore</dll>
             <classname>IsmrmrdDumpGadget</classname>
             <property name="folder" value="${test_folder}"/>
             <property name="file_prefix" value="ismrmrd_dump_output"/>

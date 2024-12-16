@@ -2,11 +2,11 @@
     \brief      Implement the suppor for the Analzye75 medical image format
     \author     Hui Xue
 
-    The ISMRMRD dimensions are mapped to Analyze75 format.
+    The MRD dimensions are mapped to Analyze75 format.
 
     Ref to:
     http://eeg.sourceforge.net/ANALYZE75.pdf
-    http://ismrmrd.sourceforge.net/
+    http://github.com/ismrmrd/mrd/
 */
 
 #pragma once
@@ -83,12 +83,12 @@ struct dsr
     struct data_history hist;
 };
 
-// to suppor the ISMRMRD format
+// to support the MRD format
 // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-class EXPORTIMAGEIO ImageIOAnalyze : public ImageIOBase<dsr>
+class ImageIOAnalyze : public ImageIOBase<dsr>
 {
 public:
 
@@ -126,7 +126,7 @@ public:
     virtual void import_array(hoNDArray< std::complex<float> >& a, const std::string& filename) { this->import_array_impl(a, filename); }
     virtual void import_array(hoNDArray< std::complex<double> >& a, const std::string& filename) { this->import_array_impl(a, filename); }
 
-    template <typename T> 
+    template <typename T>
     void export_array_impl(const hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -154,7 +154,7 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void import_array_impl(hoNDArray<T>& a, const std::string& filename)
     {
         try
@@ -173,7 +173,7 @@ public:
         }
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D>
     void export_image(const hoNDImage<T,D>& a, const std::string& filename)
     {
         try
@@ -192,7 +192,7 @@ public:
         }
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D>
     void import_image(hoNDImage<T,D>& a, const std::string& filename)
     {
         try
@@ -213,7 +213,7 @@ public:
 
 /// image functions
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D>
     void export_image_complex(const hoNDImage<T,D>& a, const std::string& filename)
     {
         try
@@ -263,7 +263,7 @@ public:
         }
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D>
     void import_image_complex(hoNDImage<T,D>& a, const std::string& filename)
     {
         try
@@ -297,7 +297,7 @@ public:
         }
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D>
     void import_image_complex(hoNDImage<T,D>& a, const std::string& filename_real, const std::string& filename_imag)
     {
         try
@@ -326,55 +326,55 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void export_2d_image(const hoNDImage<T,2>& a, const std::string& filename)
     {
         export_image(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_2d_image(hoNDImage<T,2>& a, const std::string& filename)
     {
         import_image(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_2d_image_complex(const hoNDImage<T,2>& a, const std::string& filename)
     {
         export_image_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_2d_image_complex(hoNDImage<T,2>& a, const std::string& filename)
     {
         import_image_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_3d_image(const hoNDImage<T,3>& a, const std::string& filename)
     {
         export_image(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_3d_image(hoNDImage<T,3>& a, const std::string& filename)
     {
         import_image(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_3d_image_complex(const hoNDImage<T,3>& a, const std::string& filename)
     {
         export_image_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void import_3d_image_complex(hoNDImage<T,3>& a, const std::string& filename)
     {
         import_image_complex(a, filename);
     }
 
-    template <typename T> 
+    template <typename T>
     void export_4d_image(const hoNDImage<T,4>& a, const std::string& filename)
     {
         try
@@ -405,7 +405,7 @@ public:
         }
     }
 
-    template <typename T> 
+    template <typename T>
     void export_4d_image_complex(const hoNDImage<T,4>& a, const std::string& filename)
     {
         try
@@ -449,7 +449,7 @@ protected:
     bool write_header(const std::string& filename, const HeaderType& header);
 };
 
-template <typename T> 
+template <typename T>
 bool ImageIOAnalyze::array_to_header(const hoNDArray<T>& a, HeaderType& header)
 {
     try
@@ -585,7 +585,7 @@ bool ImageIOAnalyze::array_to_header(const hoNDArray<T>& a, HeaderType& header)
     return true;
 }
 
-template <typename T> 
+template <typename T>
 bool ImageIOAnalyze::header_to_array(hoNDArray<T>& a, const HeaderType& header)
 {
     try
@@ -605,7 +605,7 @@ bool ImageIOAnalyze::header_to_array(hoNDArray<T>& a, const HeaderType& header)
             {
                 dim[ii] = header.dime.unused9;
             }
-            else if ( ii == 9 ) 
+            else if ( ii == 9 )
             {
                 dim[ii] = header.dime.unused10;
             }
@@ -635,7 +635,7 @@ bool ImageIOAnalyze::header_to_array(hoNDArray<T>& a, const HeaderType& header)
     return true;
 }
 
-template <typename T, unsigned int D> 
+template <typename T, unsigned int D>
 bool ImageIOAnalyze::image_to_header(const hoNDImage<T,D>& a, HeaderType& header)
 {
     try
@@ -798,7 +798,7 @@ bool ImageIOAnalyze::image_to_header(const hoNDImage<T,D>& a, HeaderType& header
     return true;
 }
 
-template <typename T, unsigned int D> 
+template <typename T, unsigned int D>
 bool ImageIOAnalyze::header_to_image(hoNDImage<T,D>& a, const HeaderType& header)
 {
     try
@@ -821,7 +821,7 @@ bool ImageIOAnalyze::header_to_image(hoNDImage<T,D>& a, const HeaderType& header
             {
                 dim[ii] = header.dime.unused9;
             }
-            else if ( ii == 9 ) 
+            else if ( ii == 9 )
             {
                 dim[ii] = header.dime.unused10;
             }

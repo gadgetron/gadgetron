@@ -2,9 +2,7 @@
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "mri_core_def.h"
-#include "ismrmrd/meta.h"
 #include "hoNDBSpline.h"
-#include "ismrmrd/xml.h"
 
 #include <numeric>
 #include <queue>
@@ -80,14 +78,14 @@ namespace Gadgetron {
 
         auto spline_interpolate_series = [](const auto &buffer, const auto &relative_cycle_time,
                                             const auto &recon_cycle_time,
-                                            std::vector<Core::Image<std::complex<float>>> &output) {
+                                            std::vector<mrd::Image<std::complex<float>>> &output) {
             GadgetronTimer interptime("Interpolation Time");
 
 
             //Let's interpolate the images
             size_t inelem = relative_cycle_time.size();
             size_t outelem = recon_cycle_time.size();
-            size_t imageelem = std::get<1>(buffer.front()).size();
+            size_t imageelem = buffer.front().data.size();
 
 #ifdef USE_OMP
 #pragma omp parallel for
@@ -95,25 +93,25 @@ namespace Gadgetron {
             for (long long p = 0; p < (long long) imageelem; p++) {
                 std::vector<std::complex<float> > data_in(inelem);
                 //Get the input data for this pixel
-                for (size_t i = 0; i < inelem; i++) data_in[i] = std::get<1>(buffer[i])[p];
+                for (size_t i = 0; i < inelem; i++) data_in[i] = buffer[i].data[p];
 
                 //Interpolate the data
                 Spline<float, std::complex<float> > sp(relative_cycle_time, data_in);
                 std::vector<std::complex<float> > data_out = sp[recon_cycle_time];
 
                 //Copy it to the images
-                for (size_t i = 0; i < outelem; i++) get<1>(output[i])[p] = data_out[i];
+                for (size_t i = 0; i < outelem; i++) output[i].data[p] = data_out[i];
             }
         };
 
         auto bspline_interpolate_series = [](const auto &buffer, const auto &relative_cycle_time,
                                              const auto &recon_cycle_time,
-                                             std::vector<Core::Image<std::complex<float>>> &output) {
+                                             std::vector<mrd::Image<std::complex<float>>> &output) {
 
             GadgetronTimer interptime("Interpolation Time using BSpline");
             size_t inelem = relative_cycle_time.size();
             size_t outelem = recon_cycle_time.size();
-            size_t imageelem = std::get<1>(buffer.front()).size();
+            size_t imageelem = buffer.front().data.size();
             size_t SplineDegree = 5;
 
             long long p;
@@ -133,7 +131,7 @@ namespace Gadgetron {
 #pragma omp for
                 for (p = 0; p < (long long) imageelem; p++) {
                     //Get the input data for this pixel
-                    for (i = 0; i < inelem; i++) data_in[i] = std::get<1>(buffer[i])[p];
+                    for (i = 0; i < inelem; i++) data_in[i] = buffer[i].data[p];
 
                     // compute the coefficient
                     interp.computeBSplineCoefficients(data_in, SplineDegree, coeff);
@@ -146,7 +144,7 @@ namespace Gadgetron {
                     }
 
                     //Copy it to the images
-                    for (i = 0; i < outelem; i++) std::get<1>(output[i])[p] = data_out[i];
+                    for (i = 0; i < outelem; i++) output[i].data[p] = data_out[i];
                 }
             }
         };
@@ -154,21 +152,22 @@ namespace Gadgetron {
     }
 
 
-    void PhysioInterpolationGadget::process(Core::InputChannel<Core::Image<std::complex<float>>> &in,
+    void PhysioInterpolationGadget::process(Core::InputChannel<mrd::Image<std::complex<float>>> &in,
                                             Core::OutputChannel &out) {
 
 
-        ISMRMRD::EncodingLimits e_limits = header.encoding[0].encodingLimits;
+        mrd::EncodingLimitsType e_limits = header.encoding[0].encoding_limits;
         auto slc_limit = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
 
 
-        auto buffers = std::map<int, std::vector<Core::Image<std::complex<float>>>>{};
+        auto buffers = std::map<int, std::vector<mrd::Image<std::complex<float>>>>{};
         auto time_stamp_buffer = std::map<int, std::vector<float>>{};
 
-        for (auto[hdr, data, meta]: in) {
-            buffers[hdr.slice].emplace_back(hdr, data, meta);
-            time_stamp_buffer[hdr.slice].push_back((float) (hdr.physiology_time_stamp[physiology_time_index]));
-            out.push(Core::Image<std::complex<float>>{hdr, std::move(data), std::move(meta)});
+        for (auto image: in) {
+            auto slice = image.head.slice.value_or(0);
+            buffers[slice].emplace_back(image);
+            time_stamp_buffer[slice].push_back((float) (image.head.physiology_time_stamp[physiology_time_index]));
+            out.push(std::move(image));
         }
 
         for (auto &key_val: buffers) {
@@ -176,8 +175,6 @@ namespace Gadgetron {
             auto &buffer = key_val.second;
             GDEBUG("Processing slice: %d ... \n", slc);
             GDEBUG("Number of items on Q: %d\n", buffer.size());
-            GDEBUG("Image with attribute flag : %d\n", bool(std::get<2>(buffer.front())));
-
 
             auto time_stamps = time_stamp_buffer[slc];
 
@@ -232,11 +229,10 @@ namespace Gadgetron {
 
             using namespace ranges;
 
-            auto image_generator = [&](float cycle_time) -> Core::Image<std::complex<float>> {
-                const auto&[ref_header, ref_data, ref_meta] = buffer.front();
-                auto header = ref_header;
-                auto data = hoNDArray<std::complex<float>>(ref_data.dimensions());
-                auto meta = ref_meta;
+            auto image_generator = [&](float cycle_time) -> mrd::Image<std::complex<float>> {
+                const auto& ref = buffer.front();
+                auto header = ref.head;
+                auto meta = ref.meta;
 
                 unsigned short current_cycle = static_cast<unsigned short>(std::floor(cycle_time + 0.0001));
                 unsigned short current_phase = static_cast<unsigned short>(
@@ -246,31 +242,35 @@ namespace Gadgetron {
                         (cycle_time + 0.0001 - current_cycle) * cycle_lengths[current_cycle]));
                 header.phase = current_phase;
                 header.image_index = current_phase + 1;
-                header.image_series_index = current_cycle * 10 + header.slice;
+                header.image_series_index = current_cycle * 10 + header.slice.value_or(0);
 
-                if (header.phase + 1 >= time_stamps.size()) header.phase = uint16_t(time_stamps.size() - 1);
-                if (ref_meta) {
-                    meta->set("PHS", long(header.phase));
-                    meta->set(GADGETRON_IMAGENUMBER, long(header.image_index));
-                    meta->append(GADGETRON_DATA_ROLE, "PhysionInterp");
+                if (header.phase.value_or(0) + 1 >= time_stamps.size()) header.phase = uint32_t(time_stamps.size() - 1);
+
+                    meta["PHS"] = {long(header.phase.value_or(0))};
+                    meta[GADGETRON_IMAGENUMBER] = {long(header.image_index.value_or(0))};
+                    meta[GADGETRON_DATA_ROLE].push_back("PhysionInterp");
 
                     double cycle_length_in_ms = time_stamp_resolution_ * cycle_lengths[current_cycle];
                     std::ostringstream ostr;
                     if (slc_limit > 1) {
-                        ostr << "_SLC_" << header.slice << "_RR" << cycle_length_in_ms << "ms";
+                        ostr << "_SLC_" << header.slice.value_or(0) << "_RR" << cycle_length_in_ms << "ms";
                     } else {
                         ostr << "_RR" << cycle_length_in_ms << "ms";
                     }
 
                     std::string imageComment = "PhysioInterp" + ostr.str();
-                    meta->append(GADGETRON_IMAGECOMMENT, imageComment.c_str());
+                    meta[GADGETRON_IMAGECOMMENT].push_back(imageComment.c_str());
 
                     std::string seqDescription = "_PhysioInterp" + ostr.str();
-                    meta->append(GADGETRON_SEQUENCEDESCRIPTION, seqDescription.c_str());
+                    meta[GADGETRON_SEQUENCEDESCRIPTION].push_back(seqDescription.c_str());
 
-                    meta->append(GADGETRON_IMAGEPROCESSINGHISTORY, "Interp");
-                }
-                return {header, data, meta};
+                    meta[GADGETRON_IMAGEPROCESSINGHISTORY].push_back("Interp");
+
+                mrd::Image<std::complex<float>> out;
+                out.head = header;
+                out.data = hoNDArray<std::complex<float>>(ref.data.dimensions());
+                out.meta = meta;
+                return out;
             };
 
             auto output = ranges::transform_view(recon_cycle_time, image_generator) | to<std::vector>;

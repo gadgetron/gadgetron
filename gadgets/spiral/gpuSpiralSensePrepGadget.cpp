@@ -7,7 +7,6 @@
 #include "cuNDArray_reductions.h"
 #include "cuNDArray_utils.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd/xml.h"
 #include "mri_core_girf_correction.h"
 #include "vector_td.h"
 #include "vector_td_operators.h"
@@ -27,14 +26,14 @@ namespace Gadgetron {
 
     gpuSpiralSensePrepGadget::~gpuSpiralSensePrepGadget() {
         for (auto& buffer : this->buffer_) {
-            for (auto& m1m2 : buffer){
-                std::get<0>(m1m2)->release();
+            for (auto& m1 : buffer){
+                m1->release();
             }
         }
 
     }
 
-    int gpuSpiralSensePrepGadget::process_config(ACE_Message_Block *mb) {
+    int gpuSpiralSensePrepGadget::process_config(const mrd::Header& header) {
 
         int number_of_devices = 0;
         if (cudaGetDeviceCount(&number_of_devices) != cudaSuccess) {
@@ -87,12 +86,7 @@ namespace Gadgetron {
             return GADGET_FAIL;
         }
 
-        // Start parsing the ISMRMRD XML header
-        //
-
-        ISMRMRD::IsmrmrdHeader h;
-        ISMRMRD::deserialize(mb->rd_ptr(), h);
-
+        auto& h = header;
 
         if (h.encoding.size() != 1) {
             GDEBUG("This Gadget only supports one encoding space\n");
@@ -101,22 +95,22 @@ namespace Gadgetron {
 
         // Get the encoding space and trajectory description
 
-        ISMRMRD::TrajectoryDescription traj_desc;
+        mrd::TrajectoryDescriptionType traj_desc;
 
 
         // Determine reconstruction matrix sizes
         //
 
-        ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+        mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
 
         kernel_width_ = buffer_convolution_kernel_width.value();
         oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
         image_dimensions_recon_.push_back(
-                ((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x * reconstruction_os_factor_x.value())) +
+                ((static_cast<unsigned int>(std::ceil(e_space.matrix_size.x * reconstruction_os_factor_x.value())) +
                   warp_size - 1) / warp_size) * warp_size);
         image_dimensions_recon_.push_back(
-                ((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y * reconstruction_os_factor_y.value())) +
+                ((static_cast<unsigned int>(std::ceil(e_space.matrix_size.y * reconstruction_os_factor_y.value())) +
                   warp_size - 1) / warp_size) * warp_size);
 
         image_dimensions_recon_os_ = uint64d2
@@ -130,12 +124,12 @@ namespace Gadgetron {
 
 
 
-        ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-        ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+        mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+        mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
 
-        fov_vec_.push_back(r_space.fieldOfView_mm.x);
-        fov_vec_.push_back(r_space.fieldOfView_mm.y);
-        fov_vec_.push_back(r_space.fieldOfView_mm.z);
+        fov_vec_.push_back(r_space.field_of_view_mm.x);
+        fov_vec_.push_back(r_space.field_of_view_mm.y);
+        fov_vec_.push_back(r_space.field_of_view_mm.z);
 
         slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
         sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
@@ -155,13 +149,13 @@ namespace Gadgetron {
 
 
 
-    int gpuSpiralSensePrepGadget::
-    process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-            GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2) {
+    int gpuSpiralSensePrepGadget::process(GadgetContainerMessage<mrd::Acquisition> *m1)
+    {
         // Noise should have been consumed by the noise adjust, but just in case...
         //
-        auto &header = *m1->getObjectPtr();
-        bool is_noise = header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+        auto& acq = *m1->getObjectPtr();
+        auto& header = acq.head;
+        bool is_noise = header.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
         if (is_noise) {
             m1->release();
             return GADGET_OK;
@@ -169,18 +163,18 @@ namespace Gadgetron {
 
 
         if (!prepared_) {
-            prepare_nfft(header);
+            prepare_nfft(acq);
             prepared_ = true;
         }
 
         // Allocate host data buffer if it is NULL
-        setup_buffers(header);
+        setup_buffers(acq);
 
         // Define some utility variables
-        unsigned int samples_to_copy = header.number_of_samples - samples_to_skip_end_;
-        unsigned int interleave = header.idx.kspace_encode_step_1;
-        unsigned int slice = header.idx.slice;
-        unsigned int set = header.idx.set;
+        unsigned int samples_to_copy = acq.Samples() - samples_to_skip_end_;
+        unsigned int interleave = header.idx.kspace_encode_step_1.value_or(0);
+        unsigned int slice = header.idx.slice.value_or(0);
+        unsigned int set = header.idx.set.value_or(0);
         unsigned int samples_per_channel = host_data_buffer_[set * slices_ + slice].get_size(0);
 
         // Some book-keeping to keep track of the frame count
@@ -189,29 +183,29 @@ namespace Gadgetron {
 
         // Duplicate the profile to avoid double deletion in case problems are encountered below.
         // Enqueue profile until all profiles for the reconstruction have been received.
-        buffer_[set * slices_ + slice].push_back(std::make_pair(m1,m2));
+        buffer_[set * slices_ + slice].push_back(m1);
 
         // Copy profile into the accumulation buffer for csm/regularization estimation
 
         if (samples_to_skip_end_ == -1) {
-            samples_to_skip_end_ = header.number_of_samples - samples_per_interleave_;
+            samples_to_skip_end_ = acq.Samples() - samples_per_interleave_;
             GDEBUG("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
         }
 
         {
             auto data_ptr = host_data_buffer_[set * slices_ + slice].get_data_ptr();
 
-            std::complex<float> *profile_ptr = m2->getObjectPtr()->get_data_ptr();
-            for (unsigned int c = 0; c < header.active_channels; c++) {
+            std::complex<float> *profile_ptr = acq.data.get_data_ptr();
+            for (unsigned int c = 0; c < acq.Coils(); c++) {
                 memcpy(data_ptr + c * samples_per_channel + interleave * samples_to_copy,
-                       profile_ptr + c * header.number_of_samples, samples_to_copy * sizeof(std::complex<float>));
+                       profile_ptr + c * acq.Samples(), samples_to_copy * sizeof(std::complex<float>));
             }
         }
 
         // Have we received sufficient data for a new frame?
         //
 
-        bool is_last_scan_in_slice = header.isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+        bool is_last_scan_in_slice = header.flags.HasFlags(mrd::AcquisitionFlags::kLastInSlice);
 
         if (is_last_scan_in_slice) {
 
@@ -227,7 +221,7 @@ namespace Gadgetron {
             //
 
             if (acceleration_factor_ != interleaves_ / interleaves_counter_singleframe_[set * slices_ + slice]) {
-                change_acceleration_factor(header);
+                change_acceleration_factor(acq);
             }
 
             // Prepare an image header for this frame
@@ -240,7 +234,7 @@ namespace Gadgetron {
             if (!use_multiframe_grouping_ ||
                 (use_multiframe_grouping_ && interleaves_counter_multiframe_[set * slices_ + slice] == interleaves_)) {
 
-                unsigned int num_coils = header.active_channels;
+                unsigned int num_coils = acq.Coils();
 
                 //
 
@@ -272,7 +266,7 @@ namespace Gadgetron {
                 }
 
                 m4->getObjectPtr()->image_headers_ =
-                        boost::shared_array<ISMRMRD::ImageHeader>(new ISMRMRD::ImageHeader[frames_per_reconstruction]);
+                        boost::shared_array<mrd::ImageHeader>(new mrd::ImageHeader[frames_per_reconstruction]);
 
                 for (unsigned int i = 0; i < frames_per_reconstruction; i++) {
                     auto m = image_headers_queue_[set*slices_+slice][i];
@@ -283,7 +277,7 @@ namespace Gadgetron {
                 // The Sense Job needs an image header as well.
                 // Let us just copy the initial one...
 
-                GadgetContainerMessage<ISMRMRD::ImageHeader> *m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+                GadgetContainerMessage<mrd::ImageHeader> *m3 = new GadgetContainerMessage<mrd::ImageHeader>;
                 *m3->getObjectPtr() = m4->getObjectPtr()->image_headers_[0];
                 m3->cont(m4);
 
@@ -299,11 +293,10 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void gpuSpiralSensePrepGadget::setup_buffers(const ISMRMRD::AcquisitionHeader &header) {
+    void gpuSpiralSensePrepGadget::setup_buffers(const mrd::Acquisition &acq) {
         if (host_data_buffer_.empty()) {
 
-            std::vector<size_t> data_dimensions = {size_t(samples_per_interleave_ * interleaves_),
-                                                   header.active_channels};
+            std::vector<size_t> data_dimensions = {size_t(samples_per_interleave_ * interleaves_), acq.Coils()};
             host_data_buffer_ = std::vector<hoNDArray<float_complext>>(slices_ * sets_,
                                                                        hoNDArray<float_complext>(data_dimensions));
 
@@ -367,9 +360,9 @@ namespace Gadgetron {
         return reg_image;
     }
 
-    void gpuSpiralSensePrepGadget::change_acceleration_factor(const ISMRMRD::AcquisitionHeader &header) {
+    void gpuSpiralSensePrepGadget::change_acceleration_factor(const mrd::Acquisition &acq) {
         GDEBUG("Change of acceleration factor detected\n");
-        acceleration_factor_ = interleaves_/ interleaves_counter_singleframe_[header.idx.set * slices_ + header.idx.slice];
+        acceleration_factor_ = interleaves_/ interleaves_counter_singleframe_[acq.head.idx.set.value_or(0) * slices_ + acq.head.idx.slice.value_or(0)];
 
         // The encoding operator needs to have its domain/codomain dimensions set accordingly
         if (buffer_using_solver_) {
@@ -377,7 +370,7 @@ namespace Gadgetron {
             std::vector<size_t> domain_dims = image_dimensions_recon_;
 
             std::vector<size_t> codomain_dims = host_traj_.get_dimensions();
-            codomain_dims.push_back(header.active_channels);
+            codomain_dims.push_back(acq.Coils());
 
             E_->set_domain_dimensions(domain_dims);
             E_->set_codomain_dimensions(codomain_dims);
@@ -387,38 +380,29 @@ namespace Gadgetron {
         }
     }
 
-    ISMRMRD::ImageHeader
-    gpuSpiralSensePrepGadget::make_image_header(const ISMRMRD::AcquisitionHeader &acq_header) {
+    mrd::ImageHeader
+    gpuSpiralSensePrepGadget::make_image_header(const mrd::AcquisitionHeader &acq_header) {
 
-        auto header = ISMRMRD::ImageHeader();
+        mrd::ImageHeader header{};
 
-        auto set = acq_header.idx.set;
-        auto slice = acq_header.idx.slice;
+        std::copy(fov_vec_.begin(), fov_vec_.end(), header.field_of_view.begin());
 
-        header.version = acq_header.version;
-
-        header.matrix_size[0] = image_dimensions_recon_[0];
-        header.matrix_size[1] = image_dimensions_recon_[1];
-        header.matrix_size[2] = acceleration_factor_;
-
-        boost::copy(fov_vec_,header.field_of_view);
-
-        header.channels = acq_header.active_channels;
         header.slice = acq_header.idx.slice;
         header.set = acq_header.idx.set;
 
 
         header.acquisition_time_stamp = acq_header.acquisition_time_stamp;
 
-        boost::copy(acq_header.physiology_time_stamp,header.physiology_time_stamp);
-        boost::copy(acq_header.position,header.position);
-        boost::copy(acq_header.read_dir,header.read_dir);
-        boost::copy(acq_header.phase_dir,header.phase_dir);
-        boost::copy(acq_header.slice_dir,header.slice_dir);
-        boost::copy(acq_header.patient_table_position,header.patient_table_position);
+        header.physiology_time_stamp = acq_header.physiology_time_stamp;
+        header.position = acq_header.position;
+        header.col_dir = acq_header.read_dir;
+        header.line_dir = acq_header.phase_dir;
+        header.slice_dir = acq_header.slice_dir;
+        header.patient_table_position = acq_header.patient_table_position;
 
+        auto set = acq_header.idx.set.value_or(0);
+        auto slice = acq_header.idx.slice.value_or(0);
 
-        header.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
         header.image_index = image_counter_[set * slices_ + slice]++;
         header.image_series_index = set * slices_ + slice;
 
@@ -428,14 +412,14 @@ namespace Gadgetron {
         return header;
     }
 
-    void gpuSpiralSensePrepGadget::prepare_nfft( const ISMRMRD::AcquisitionHeader& acq_header) {
+    void gpuSpiralSensePrepGadget::prepare_nfft( const mrd::Acquisition& acq) {
 
 
 
         // Setup the NFFT plan
         //
 
-        std::tie(host_traj_,host_weights_) = trajectoryParameters.calculate_trajectories_and_weight(acq_header);
+        std::tie(host_traj_,host_weights_) = trajectoryParameters.calculate_trajectories_and_weight(acq);
         interleaves_ = host_traj_.get_size(1);
         samples_per_interleave_ = host_traj_.get_size(0);
 
@@ -478,22 +462,6 @@ namespace Gadgetron {
 
     }
 
-    GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *
-    gpuSpiralSensePrepGadget::duplicate_profile(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile) {
-        GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *copy =
-                new GadgetContainerMessage<ISMRMRD::AcquisitionHeader>();
-
-        GadgetContainerMessage<hoNDArray<std::complex<float> > > *cont_copy =
-                new GadgetContainerMessage<hoNDArray<std::complex<float> > >();
-
-        *copy->getObjectPtr() = *profile->getObjectPtr();
-        *(cont_copy->getObjectPtr()) = *(AsContainerMessage<hoNDArray<std::complex<float> > >(
-                profile->cont())->getObjectPtr());
-
-        copy->cont(cont_copy);
-        return copy;
-    }
-
     std::tuple<boost::shared_ptr<hoNDArray<float_complext>>, boost::shared_ptr<hoNDArray<floatd2>>, boost::shared_ptr<hoNDArray<float>>>
     gpuSpiralSensePrepGadget::get_data_from_queues(size_t set, size_t slice, size_t num_coils) {
         unsigned int profiles_buffered = buffer_[set * slices_ + slice].size();
@@ -513,18 +481,14 @@ namespace Gadgetron {
         boost::shared_ptr<hoNDArray<float> > dcw_host(new hoNDArray<float>(ddimensions));
 
         for (unsigned int p = 0; p < profiles_buffered; p++) {
-
-            GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *acq;
-            GadgetContainerMessage<hoNDArray<std::complex<float> > > *daq;
-
-            std::tie(acq,daq) = buffer_[set * slices_ + slice][p];
+            GadgetContainerMessage<mrd::Acquisition> *acq = buffer_[set * slices_ + slice][p];
 
             for (unsigned int c = 0; c < num_coils; c++) {
                 float_complext *data_ptr = data_host->get_data_ptr();
                 data_ptr += c * samples_per_interleave_ * profiles_buffered + p * samples_per_interleave_;
 
-                std::complex<float> *r_ptr = daq->getObjectPtr()->get_data_ptr();
-                r_ptr += c * daq->getObjectPtr()->get_size(0);
+                std::complex<float> *r_ptr = acq->getObjectPtr()->data.get_data_ptr();
+                r_ptr += c * acq->getObjectPtr()->data.get_size(0);
 
                 memcpy(data_ptr, r_ptr, samples_per_interleave_ * sizeof(float_complext));
             }
@@ -533,7 +497,7 @@ namespace Gadgetron {
             traj_ptr += p * samples_per_interleave_;
 
             floatd2 *t_ptr = host_traj_.get_data_ptr();
-            t_ptr += acq->getObjectPtr()->idx.kspace_encode_step_1 * samples_per_interleave_;
+            t_ptr += acq->getObjectPtr()->head.idx.kspace_encode_step_1.value_or(0) * samples_per_interleave_;
 
             memcpy(traj_ptr, t_ptr, samples_per_interleave_ * sizeof(floatd2));
 
@@ -541,7 +505,7 @@ namespace Gadgetron {
             dcw_ptr += p * samples_per_interleave_;
 
             float *d_ptr = host_weights_.get_data_ptr();
-            d_ptr += acq->getObjectPtr()->idx.kspace_encode_step_1 * samples_per_interleave_;
+            d_ptr += acq->getObjectPtr()->head.idx.kspace_encode_step_1.value_or(0) * samples_per_interleave_;
 
             memcpy(dcw_ptr, d_ptr, samples_per_interleave_ * sizeof(float));
 

@@ -17,23 +17,27 @@ namespace {
         data *= scale;
     }
 
-     IsmrmrdImageArray autoscale(IsmrmrdImageArray images, float max_value, float percentile) {
-        percentile_scale(images.data_,max_value,percentile);
-        return images;
+     mrd::ImageArray autoscale(mrd::ImageArray images, float max_value, float percentile) {
+         percentile_scale(images.data, max_value, percentile);
+         return images;
     }
-        Core::Image<float> autoscale(Core::Image<float> image,float max_value, float percentile) {
-            auto& header = std::get<ISMRMRD::ImageHeader>(image);
-            auto& data   = std::get<hoNDArray<float>>(image);
-            if (header.image_type != ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE)
-                return image;
 
-            percentile_scale(data,max_value,percentile);
+    mrd::Image<float> autoscale(mrd::Image<float> image, float max_value, float percentile) {
+        if (image.head.image_type != mrd::ImageType::kMagnitude) {
             return image;
         }
-    }
-    GADGETRON_GADGET_EXPORT(ScaleGadget)
 
-    PercentileScaleImageTypes ScaleGadget::process_function(PercentileScaleImageTypes args) const {
-        return Core::visit([&](auto image){ return PercentileScaleImageTypes(autoscale(image,max_value,percentile));},args);
+        percentile_scale(image.data, max_value, percentile);
+        return image;
     }
+
+} // namespace
+
+GADGETRON_GADGET_EXPORT(ScaleGadget)
+
+PercentileScaleImageTypes ScaleGadget::process_function(PercentileScaleImageTypes args) const {
+    return std::visit([&](auto image) { return PercentileScaleImageTypes(autoscale(image, max_value, percentile)); },
+                      args);
 }
+
+} // namespace Gadgetron

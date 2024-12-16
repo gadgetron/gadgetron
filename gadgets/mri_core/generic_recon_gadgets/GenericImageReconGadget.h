@@ -6,7 +6,6 @@
 #pragma once
 
 #include <complex>
-#include "gadgetron_mricore_export.h"
 
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/xml.h"
@@ -23,7 +22,6 @@
 #include "hoNDObjectArray.h"
 #include "mri_core_def.h"
 #include "mri_core_kspace_filter.h"
-#include "mri_core_data.h"
 #include "mri_core_utility.h"
 #include "ImageIOAnalyze.h"
 #include "GadgetronTimer.h"
@@ -38,7 +36,7 @@ namespace Gadgetron {
     // [Cha Slice Con Phase Rep Set Ave]
     //   0    1    2   3     4   5   6
 
-    class EXPORTGADGETSMRICORE GenericImageReconGadgetBase
+    class GenericImageReconGadgetBase
     {
     public:
         typedef float T;
@@ -204,12 +202,10 @@ namespace Gadgetron {
         std::vector< Image3DType > gfactor_buf_3D_;
     };
 
-    class EXPORTGADGETSMRICORE GenericImageReconGadget : public BasicPropertyGadget, public GenericImageReconGadgetBase
+    class GenericImageReconGadget : public Gadget, public GenericImageReconGadgetBase
     {
     public:
-        GADGET_DECLARE(GenericImageReconGadget);
-
-        typedef BasicPropertyGadget BaseClass;
+        typedef Gadget BaseClass;
         typedef std::vector<ISMRMRD::Waveform> WaveFormType;
 
         GenericImageReconGadget();
@@ -240,7 +236,7 @@ namespace Gadgetron {
 
         virtual int process_config(ACE_Message_Block* mb) override;
 
-        int process(ACE_Message_Block* mb) override;
+        int process(GadgetContainerMessageBase* mb) override;
 
         virtual int process_image(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1);
 

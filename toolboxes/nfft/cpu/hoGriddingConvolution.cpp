@@ -94,9 +94,6 @@ namespace Gadgetron
                 auto &row_indices = matrix.indices[i];
                 auto &weights = matrix.weights[i];
 
-                #ifndef WIN32
-                    #pragma omp simd
-                #endif // WIN32
                 for (size_t n = 0; n < row_indices.size(); n++)
                 {
                     result[i] += vector[row_indices[n]] * weights[n];

@@ -5,12 +5,12 @@
   -----------
 
   Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
+  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen.
   IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
 
   Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
   T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
-  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
+  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985.
 */
 
 #include "ConvolutionKernel.h"
@@ -25,15 +25,15 @@
 template<class REAL, unsigned int D> struct trajectory_scale
 {
     typename reald<REAL,D>::Type matrix, bias;
-    
+
     trajectory_scale( const typename reald<REAL,D>::Type &m, const typename reald<REAL,D>::Type &b )
     {
         matrix = m;
         bias = b;
     }
-    
+
     __host__ __device__
-    typename reald<REAL,D>::Type operator()(const typename reald<REAL,D>::Type &in) const { 
+    typename reald<REAL,D>::Type operator()(const typename reald<REAL,D>::Type &in) const {
         return component_wise_mul<REAL,D>(in,matrix)+bias;
     }
 };
@@ -43,7 +43,7 @@ struct compute_num_cells_per_sample
 {
     __host__ __device__
     compute_num_cells_per_sample(REAL _half_W) : half_W(_half_W) {}
-    
+
     __host__ __device__
     unsigned int operator()(typename reald<REAL,D>::Type p) const
     {
@@ -55,13 +55,13 @@ struct compute_num_cells_per_sample
         }
         return num_cells;
     }
-  
+
     REAL half_W;
 };
 
 template<class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, unsigned int frame, 
-	      typename reald<REAL,1>::Type &p, typename uintd<1>::Type &matrix_size_os, typename uintd<1>::Type &matrix_size_wrap, 
+output_pairs( unsigned int sample_idx, unsigned int frame,
+	      typename reald<REAL,1>::Type &p, typename uintd<1>::Type &matrix_size_os, typename uintd<1>::Type &matrix_size_wrap,
 	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
     unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
@@ -79,8 +79,8 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 }
 
 template<class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, unsigned int frame, 
-	      typename reald<REAL,2>::Type &p, typename uintd<2>::Type &matrix_size_os, typename uintd<2>::Type &matrix_size_wrap, 
+output_pairs( unsigned int sample_idx, unsigned int frame,
+	      typename reald<REAL,2>::Type &p, typename uintd<2>::Type &matrix_size_os, typename uintd<2>::Type &matrix_size_wrap,
 	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
     unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
@@ -102,8 +102,8 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 }
 
 template <class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, unsigned int frame, 
-	      typename reald<REAL,3>::Type &p, typename uintd<3>::Type &matrix_size_os, typename uintd<3>::Type &matrix_size_wrap, 
+output_pairs( unsigned int sample_idx, unsigned int frame,
+	      typename reald<REAL,3>::Type &p, typename uintd<3>::Type &matrix_size_os, typename uintd<3>::Type &matrix_size_wrap,
 	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
     unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
@@ -129,8 +129,8 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 }
 
 template <class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, unsigned int frame, 
-	      typename reald<REAL,4>::Type &p, typename uintd<4>::Type &matrix_size_os, typename uintd<4>::Type &matrix_size_wrap, 
+output_pairs( unsigned int sample_idx, unsigned int frame,
+	      typename reald<REAL,4>::Type &p, typename uintd<4>::Type &matrix_size_os, typename uintd<4>::Type &matrix_size_wrap,
 	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
     unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
@@ -160,7 +160,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 }
 
 template<class REAL, unsigned int D> __global__ void
-write_pairs_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, unsigned int num_samples_per_frame, REAL half_W, 
+write_pairs_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, unsigned int num_samples_per_frame, REAL half_W,
 		   const typename reald<REAL,D>::Type * __restrict__ traj_positions, unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
     // Get sample idx
@@ -175,10 +175,10 @@ write_pairs_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::T
     }
 };
 
-template <class REAL, unsigned int D> void 
-write_pairs( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, unsigned int num_samples_per_frame, unsigned int num_frames, REAL W, 
+template <class REAL, unsigned int D> void
+write_pairs( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, unsigned int num_samples_per_frame, unsigned int num_frames, REAL W,
 	     const typename reald<REAL,D>::Type * __restrict__ traj_positions, unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
-{  
+{
     dim3 blockDim(256);
     dim3 gridDim((int)ceil((double)num_samples_per_frame/(double)blockDim.x), num_frames);
 
@@ -201,11 +201,11 @@ write_pairs( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type mat
 template<class T>
 __inline__ __device__
 void NFFT_H_output(unsigned int number_of_batches, T* __restrict__ image,
-	       unsigned int warp_size_power, unsigned int number_of_domains, 
+	       unsigned int warp_size_power, unsigned int number_of_domains,
 	       unsigned int globalThreadId, unsigned int sharedMemFirstCellIdx)
 {
     realType_t<T> *shared_mem = (realType_t<T>*) _shared_mem;
-    
+
     for (unsigned int batch = 0; batch < number_of_batches; batch++)
     {
         T cell_coefficient;
@@ -244,7 +244,7 @@ void NFFT_H_convolve(
 
     // Cell position as reald
     vector_td<realType_t<T>,D> cell_pos = vector_td<realType_t<T>,D>( domainPos );
-    
+
     // Convolve samples onto the domain (shared memory)
     const unsigned int frame_offset = blockIdx.y*number_of_domains;
     for (unsigned int i = bucket_begin[globalThreadId + frame_offset];
@@ -256,25 +256,25 @@ void NFFT_H_convolve(
 
         // Safety precaution. TODO
         vector_td<realType_t<T>,D> sample_pos = traj_positions[sampleIdx];
-        
+
         // Calculate the distance between the cell and the sample.
         vector_td<realType_t<T>, D> delta = abs(sample_pos-cell_pos);
-        
+
         // Compute convolution weights.
-        float weight = kernel->get(delta);      
+        float weight = kernel->get(delta);
 
         // Safety measure.
         if (!isfinite(weight))
             continue;
-        
+
         // Apply filter to input images.
         for (int batch = 0; batch < number_of_batches; batch++)
         {
             unsigned int idx = sampleIdx * number_of_batches + batch;
-      
+
             // Apply filter to shared memory domain.
             T sample_val  = cub::ThreadLoad<cub::LOAD_CS>(samples + idx);
-          
+
             if constexpr (is_complex_type_v<T>)
             {
                 shared_mem[sharedMemFirstCellIdx + (batch << warp_size_power)] +=
@@ -307,7 +307,7 @@ void NFFT_H_convolve_kernel(vector_td<unsigned int,D> domain_count_grid,
     unsigned int warp_size_power,
     const ConvolutionKernel<realType_t<T>, D, K>* kernel)
 {
-  
+
     // Global thread index.
     const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -317,17 +317,17 @@ void NFFT_H_convolve_kernel(vector_td<unsigned int,D> domain_count_grid,
     // Check if we are within bounds.
     if (index >= number_of_domains)
         return;
-    
+
     // Mapped global thread index (actually we don't use a map currently).
-    const unsigned int domainIdx = index; 
+    const unsigned int domainIdx = index;
 
     // Compute global domain position.
     const vector_td<unsigned int,D> domainPos = idx_to_co(domainIdx, domain_count_grid);
-    
+
     // Number of cells.
     const unsigned int num_reals = is_complex_type_v<T> ?
         number_of_batches << 1 : number_of_batches;
-    
+
     // For complex numbers, we need twice as many real samples per batch.
     if constexpr (is_complex_type_v<T>)
         warp_size_power += 1;
@@ -342,14 +342,14 @@ void NFFT_H_convolve_kernel(vector_td<unsigned int,D> domain_count_grid,
     // Initialize shared memory.
     for (unsigned int i = 0; i < num_reals; i++)
         shared_mem[sharedMemFirstCellIdx+warpSize*i] = realType_t<T>(0);
-    
+
     // Compute NFFT using arbitrary sample trajectories.
     NFFT_H_convolve<T, D>
       (number_of_samples, number_of_batches, number_of_domains,
         traj_positions, samples, tuples_last, bucket_begin, bucket_end,
         warp_size_power, index, domainPos,
         sharedMemFirstCellIdx, kernel);
-    
+
     // Output k-space image to global memory.
     NFFT_H_output<T>( number_of_batches, image, warp_size_power, number_of_domains, index, sharedMemFirstCellIdx );
 }

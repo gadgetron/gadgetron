@@ -7,35 +7,34 @@
 #include "Context.h"
 #include "Node.h"
 #include "PropertyMixin.h"
+#include <mrd/types.h>
 #include <array>
-#include <ismrmrd/ismrmrd.h>
-#include <ismrmrd/xml.h>
 #include <thread>
 
 namespace Gadgetron { namespace Test {
 
-    inline ISMRMRD::EncodingSpace generate_encodingspace(std::array<unsigned short, 3> matrix_size, std::array<float, 3> fov) {
-        return ISMRMRD::EncodingSpace{ { matrix_size[0], matrix_size[1], matrix_size[2] }, { fov[0], fov[1], fov[2] } };
+    inline mrd::EncodingSpaceType generate_encodingspace(std::array<unsigned short, 3> matrix_size, std::array<float, 3> fov) {
+        return mrd::EncodingSpaceType{ { matrix_size[0], matrix_size[1], matrix_size[2] }, { fov[0], fov[1], fov[2] } };
     }
-    inline ISMRMRD::Encoding generate_encoding() {
-        auto encoding         = ISMRMRD::Encoding{};
-        encoding.encodedSpace = generate_encodingspace({ 192, 192, 1 }, { 256, 256, 10 });
-        encoding.encodingLimits.kspace_encoding_step_0 = ISMRMRD::Limit();
-        encoding.encodingLimits.kspace_encoding_step_1 = ISMRMRD::Limit();
-        encoding.encodingLimits.kspace_encoding_step_0->minimum = 0;
-        encoding.encodingLimits.kspace_encoding_step_0->center = 96;
-        encoding.encodingLimits.kspace_encoding_step_0->maximum = 191;
-        encoding.encodingLimits.kspace_encoding_step_1->minimum = 0;
-        encoding.encodingLimits.kspace_encoding_step_1->center = 96;
-        encoding.encodingLimits.kspace_encoding_step_1->maximum = 191;
+    inline mrd::EncodingType generate_encoding() {
+        auto encoding         = mrd::EncodingType{};
+        encoding.encoded_space = generate_encodingspace({ 192, 192, 1 }, { 256, 256, 10 });
+        encoding.encoding_limits.kspace_encoding_step_0 = mrd::LimitType{};
+        encoding.encoding_limits.kspace_encoding_step_1 = mrd::LimitType{};
+        encoding.encoding_limits.kspace_encoding_step_0->minimum = 0;
+        encoding.encoding_limits.kspace_encoding_step_0->center = 96;
+        encoding.encoding_limits.kspace_encoding_step_0->maximum = 191;
+        encoding.encoding_limits.kspace_encoding_step_1->minimum = 0;
+        encoding.encoding_limits.kspace_encoding_step_1->center = 96;
+        encoding.encoding_limits.kspace_encoding_step_1->maximum = 191;
 
-        encoding.reconSpace   = generate_encodingspace({ 128, 128, 1 }, { 256, 256, 10 });
+        encoding.recon_space   = generate_encodingspace({ 128, 128, 1 }, { 256, 256, 10 });
         return encoding;
     }
-    inline ISMRMRD::IsmrmrdHeader generate_header() {
-        auto header                                           = ISMRMRD::IsmrmrdHeader{};
+    inline mrd::Header generate_header() {
+        auto header                                           = mrd::Header{};
         header.encoding                                       = { generate_encoding() };
-        header.experimentalConditions.H1resonanceFrequency_Hz = 63.87 * 1e6;
+        header.experimental_conditions.h1resonance_frequency_hz = 63.87 * 1e6;
         return header;
     }
 
@@ -71,20 +70,14 @@ namespace Gadgetron { namespace Test {
     }
 
 
-    inline Core::Acquisition generate_acquisition(size_t number_of_samples, size_t channels, size_t measurement_uid = 42){
-       auto header = ISMRMRD::AcquisitionHeader();
-       header.number_of_samples = number_of_samples;
-       header.active_channels = channels;
-       header.available_channels = channels;
-       header.center_sample = number_of_samples / 2;
-       header.measurement_uid = measurement_uid;
-
-       hoNDArray<std::complex<float>> data(number_of_samples,channels);
-       std::fill(data.begin(),data.end(),std::complex<float>(1));
-
-       return {header,data,Core::none};
-
-
+    inline mrd::Acquisition generate_acquisition(size_t number_of_samples, size_t channels, size_t measurement_uid = 42){
+        mrd::Acquisition acq;
+        acq.head.channel_order = std::vector<uint32_t>(channels, 1);
+        acq.head.center_sample = number_of_samples / 2;
+        acq.head.measurement_uid = measurement_uid;
+        acq.data.create({number_of_samples, channels});
+        std::fill(acq.data.begin(), acq.data.end(), std::complex<float>(1));
+        return acq;
     }
 
 }}

@@ -181,31 +181,31 @@ template<class T, unsigned int D, unsigned int WD> void Gadgetron::IDWT1( cuNDAr
 
 }
 
-template EXPORTGPUDWT void Gadgetron::DWT1<float,2,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float,2,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float,2,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float,2,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float,2,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float,2,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+template void Gadgetron::DWT1<float,2,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float,2,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float,2,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float,2,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float,2,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float,2,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
 
-template EXPORTGPUDWT void Gadgetron::DWT1<float_complext,2,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float_complext,2,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float_complext,2,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float_complext,2,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float_complext,2,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float_complext,2,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+template void Gadgetron::DWT1<float_complext,2,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float_complext,2,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float_complext,2,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float_complext,2,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float_complext,2,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float_complext,2,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
 
 
-template EXPORTGPUDWT void Gadgetron::DWT1<float,3,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float,3,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float,3,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float,3,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float,3,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float,3,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+template void Gadgetron::DWT1<float,3,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float,3,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float,3,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float,3,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float,3,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float,3,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
 
-template EXPORTGPUDWT void Gadgetron::DWT1<float_complext,3,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float_complext,3,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float_complext,3,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float_complext,3,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
-template EXPORTGPUDWT void Gadgetron::DWT1<float_complext,3,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
-template EXPORTGPUDWT void Gadgetron::IDWT1<float_complext,3,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+template void Gadgetron::DWT1<float_complext,3,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float_complext,3,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float_complext,3,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float_complext,3,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float_complext,3,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float_complext,3,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);

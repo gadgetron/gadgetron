@@ -9,18 +9,16 @@
 #define GPUSENSEGADGET_H_
 
 #include "Gadget.h"
-#include <ismrmrd/ismrmrd.h>
-#include <ismrmrd/xml.h>
 #include "vector_td.h"
 #include "GenericReconJob.h"
 #include "cuNDArray.h"
 namespace Gadgetron {
 
-class gpuSenseGadget: public Gadget2<ISMRMRD::ImageHeader, GenericReconJob>{
+class gpuSenseGadget: public Gadget2<mrd::ImageHeader, GenericReconJob>{
 public:
   gpuSenseGadget();
   virtual ~gpuSenseGadget();
-  virtual int process_config(ACE_Message_Block* mb);
+  virtual int process_config(const mrd::Header& header);
   
 protected:
   GADGET_PROPERTY(deviceno,int,"GPU device number", 0);

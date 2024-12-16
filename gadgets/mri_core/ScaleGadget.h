@@ -1,9 +1,8 @@
 #pragma once
 
 #include "PureGadget.h"
-#include <mri_core_data.h>
 namespace Gadgetron {
-    using PercentileScaleImageTypes = Core::variant<Core::Image<float>, IsmrmrdImageArray>;
+    using PercentileScaleImageTypes = std::variant<mrd::Image<float>, mrd::ImageArray>;
 /***
  * This Gadget rescales magnitude images so that their 99% percentile becomes max_value
  */

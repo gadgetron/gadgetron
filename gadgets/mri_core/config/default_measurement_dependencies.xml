@@ -3,31 +3,14 @@
                   xmlns="http://gadgetron.sf.net/gadgetron"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <reader>
-        <slot>1008</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
-    </reader>
-    <reader>
-        <slot>1026</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
-    </reader>
-
-    <!-- SNR unit noise adjust gadget 
+    <!-- SNR unit noise adjust gadget
          If the scan has asymmetric readout, the center of echo will shifted to the index 0
          Zeros will be filled into the readout data
     -->
     <gadget>
         <name>NoiseAdjust</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>NoiseAdjustGadget</classname>
-
-        <!-- File prefix for stored noise prewhitener matrix -->
-        <property>
-            <name>noise_dependency_prefix</name>
-            <value>GadgetronNoiseCovarianceMatrix</value>
-        </property>
 
         <!-- Whether to pass the nonconformant data without applying the prewhitening -->
         <property>

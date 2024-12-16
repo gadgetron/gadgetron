@@ -2,20 +2,20 @@
 #include "hoSPIRITOperator.h"
 #include "mri_core_spirit.h"
 
-namespace Gadgetron 
+namespace Gadgetron
 {
 
-template <typename T> 
+template <typename T>
 hoSPIRITOperator<T>::hoSPIRITOperator(const std::vector<size_t>& dims) : use_non_centered_fft_(false), no_null_space_(false), BaseClass(dims)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoSPIRITOperator<T>::~hoSPIRITOperator()
 {
 }
 
-template <typename T> 
+template <typename T>
 void hoSPIRITOperator<T>::restore_acquired_kspace(const ARRAY_TYPE& acquired, ARRAY_TYPE& y)
 {
     try
@@ -43,13 +43,13 @@ void hoSPIRITOperator<T>::restore_acquired_kspace(const ARRAY_TYPE& acquired, AR
     }
 }
 
-template <typename T> 
+template <typename T>
 void hoSPIRITOperator<T>::restore_acquired_kspace(ARRAY_TYPE& y)
 {
     this->restore_acquired_kspace(acquired_points_, y);
 }
 
-template <typename T> 
+template <typename T>
 void hoSPIRITOperator<T>::set_acquired_points(ARRAY_TYPE& kspace)
 {
     try
@@ -90,13 +90,13 @@ void hoSPIRITOperator<T>::set_acquired_points(ARRAY_TYPE& kspace)
     }
 }
 
-template <typename T> 
+template <typename T>
 void hoSPIRITOperator<T>::set_coil_sen_map(ARRAY_TYPE& senMap)
 {
     coil_senMap_ = senMap;
 }
 
-template <typename T> 
+template <typename T>
 void hoSPIRITOperator<T>::set_forward_kernel(ARRAY_TYPE& forward_kernel, bool compute_adjoint_forward_kernel)
 {
     try
@@ -185,7 +185,7 @@ void hoSPIRITOperator<T>::mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
 {
     try
     {
-        if (accumulate) 
+        if (accumulate)
         {
             kspace_dst_ = *y;
         }
@@ -209,7 +209,7 @@ void hoSPIRITOperator<T>::mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
 
         this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
-        // go back to kspace 
+        // go back to kspace
         this->convert_to_kspace(res_after_apply_kernel_sum_over_, *y);
 
         if(accumulate)
@@ -242,7 +242,7 @@ void hoSPIRITOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
         Gadgetron::multiply(adjoint_kernel_, complexIm_, res_after_apply_kernel_);
         this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
-        // go back to kspace 
+        // go back to kspace
         this->convert_to_kspace(res_after_apply_kernel_sum_over_, *y);
 
         if (!no_null_space_)
@@ -286,7 +286,7 @@ void hoSPIRITOperator<T>::compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_TYPE
 
             GADGET_CATCH_THROW(this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
-            // go back to kspace 
+            // go back to kspace
             this->convert_to_kspace(res_after_apply_kernel_sum_over_, b);
 
             // multiply by -1
@@ -328,7 +328,7 @@ void hoSPIRITOperator<T>::gradient(ARRAY_TYPE* x, ARRAY_TYPE* g, bool accumulate
         Gadgetron::multiply(adjoint_forward_kernel_, complexIm_, res_after_apply_kernel_);
         this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
-        // go back to kspace 
+        // go back to kspace
         this->convert_to_kspace(res_after_apply_kernel_sum_over_, *g);
 
         // apply Dc
@@ -388,7 +388,7 @@ typename hoSPIRITOperator<T>::REAL hoSPIRITOperator<T>::magnitude(ARRAY_TYPE* x)
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoSPIRITOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoSPIRITOperator< std::complex<double> >;
+template class hoSPIRITOperator< std::complex<float> >;
+template class hoSPIRITOperator< std::complex<double> >;
 
 }

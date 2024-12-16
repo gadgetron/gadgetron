@@ -20,19 +20,11 @@ namespace Gadgetron {
     {
     }
 
-    int GenericReconImageArrayScalingGadget::process_config(ACE_Message_Block* mb)
+    int GenericReconImageArrayScalingGadget::process_config(const mrd::Header& header)
     {
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
-        ISMRMRD::IsmrmrdHeader h;
-        try
-        {
-            deserialize(mb->rd_ptr(),h);
-        }
-        catch (...)
-        {
-            GDEBUG("Error parsing ISMRMRD Header");
-        }
+        auto& h = header;
 
         size_t NE = h.encoding.size();
         num_encoding_spaces_ = NE;
@@ -60,7 +52,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericReconImageArrayScalingGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
+    int GenericReconImageArrayScalingGadget::process(Gadgetron::GadgetContainerMessage< mrd::ImageArray >* m1)
     {
         if (perform_timing.value()) { gt_timer_.start("GenericReconImageArrayScalingGadget::process"); }
 
@@ -68,12 +60,12 @@ namespace Gadgetron {
 
         process_called_times_++;
 
-        IsmrmrdImageArray* recon_res_ = m1->getObjectPtr();
+        mrd::ImageArray* recon_res_ = m1->getObjectPtr();
 
-        size_t encoding = (size_t)recon_res_->meta_[0].as_long("encoding", 0);
+        size_t encoding = (size_t)std::get<long>(recon_res_->meta[0]["encoding"].front());
         GADGET_CHECK_RETURN(encoding<num_encoding_spaces_, GADGET_FAIL);
 
-        std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
+        std::string dataRole = std::get<std::string>(recon_res_->meta[0][GADGETRON_DATA_ROLE].front());
 
         std::string imageInfo;
 
@@ -86,7 +78,7 @@ namespace Gadgetron {
         if (dataRole == GADGETRON_IMAGE_SNR_MAP)
         {
             scale_factor = this->scalingFactor_snr_map.value();
-            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data_);
+            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data);
 
             std::ostringstream ostr_image;
             ostr_image << "x" << std::setprecision(4) << this->scalingFactor_snr_map.value();
@@ -96,7 +88,7 @@ namespace Gadgetron {
         else if (dataRole == GADGETRON_IMAGE_GFACTOR)
         {
             scale_factor = this->scalingFactor_gfactor_map.value();
-            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data_);
+            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data);
 
             std::ostringstream ostr_image;
             ostr_image << "x" << std::setprecision(4) << this->scalingFactor_gfactor_map.value();
@@ -106,17 +98,18 @@ namespace Gadgetron {
         else if (dataRole == GADGETRON_IMAGE_STD_MAP)
         {
             scale_factor = this->scalingFactor_snr_std_map.value();
-            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data_);
+            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data);
 
             std::ostringstream ostr_image;
             ostr_image << "x" << std::setprecision(4) << this->scalingFactor_snr_std_map.value();
             imageInfo = ostr_image.str();
         }
         // if the config file asks to use the specified scaling factor
-        else if (recon_res_->meta_[0].length(use_dedicated_scalingFactor_meta_field.value().c_str())>0)
+        else if (recon_res_->meta[0].count(use_dedicated_scalingFactor_meta_field.value())
+                && recon_res_->meta[0][use_dedicated_scalingFactor_meta_field.value()].size() > 0)
         {
             scale_factor = this->scalingFactor_dedicated.value();
-            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data_);
+            Gadgetron::scal((real_value_type)(scale_factor), recon_res_->data);
 
             std::ostringstream ostr_image;
             ostr_image << "x" << std::setprecision(4) << this->scalingFactor_dedicated.value();
@@ -139,11 +132,11 @@ namespace Gadgetron {
         // ----------------------------------------------------
         // update the image comment
         // ----------------------------------------------------
-        size_t num = recon_res_->meta_.size();
+        size_t num = recon_res_->meta.size();
         for (size_t n = 0; n < num; n++)
         {
-            recon_res_->meta_[n].append(GADGETRON_IMAGECOMMENT, imageInfo.c_str());
-            recon_res_->meta_[n].set(GADGETRON_IMAGE_SCALE_RATIO, scale_factor);
+            recon_res_->meta[n][GADGETRON_IMAGECOMMENT].push_back(imageInfo);
+            recon_res_->meta[n][GADGETRON_IMAGE_SCALE_RATIO] = {scale_factor};
         }
 
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconImageArrayScalingGadget::process(...) ends ... ");
@@ -159,7 +152,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericReconImageArrayScalingGadget::compute_and_apply_scaling_factor(IsmrmrdImageArray& res, size_t encoding)
+    int GenericReconImageArrayScalingGadget::compute_and_apply_scaling_factor(mrd::ImageArray& res, size_t encoding)
     {
         // if the scaling factor for this encoding space has not been set yet (it was initialized negative),
         //   compute it.  If it has already been set (therefore, it will be positive), only compute again if
@@ -167,7 +160,7 @@ namespace Gadgetron {
         if ((scaling_factor_[encoding]<0 || !auto_scaling_only_once.value()) && !use_constant_scalingFactor.value())
         {
             hoNDArray<real_value_type> mag;
-            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::abs(res.data_, mag), GADGET_FAIL);
+            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::abs(res.data, mag), GADGET_FAIL);
 
             // perform the scaling to [0 max_inten_value_]
             size_t ind;
@@ -219,13 +212,14 @@ namespace Gadgetron {
             }
 
             GDEBUG_CONDITION_STREAM(verbose.value(), "Encoding space - " << encoding << ", scaling_factor_ : " << scaling_factor_[encoding]);
-            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::scal((real_value_type)scaling_factor_[encoding], res.data_), GADGET_FAIL);
         }
         else
         {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Encoding space - " << encoding << ", using the fixed intensity scaling factor - scaling factor has been preset to be : " << scaling_factor_[encoding] << " ... ");
-            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::scal((real_value_type)scaling_factor_[encoding], res.data_), GADGET_FAIL);
         }
+
+        // Apply scaling factor
+        GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::scal((real_value_type)scaling_factor_[encoding], res.data), GADGET_FAIL);
 
         return GADGET_OK;
     }

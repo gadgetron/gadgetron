@@ -6,7 +6,6 @@
  */
 
 #include "gpuBufferSensePrepGadget.h"
-#include <ismrmrd/xml.h>
 #include "GenericReconJob.h"
 #include "cuNFFT.h"
 #include "NFFTOperator.h"
@@ -32,11 +31,10 @@ gpuBufferSensePrepGadget::~gpuBufferSensePrepGadget() {
 
 }
 
-int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
-	ISMRMRD::IsmrmrdHeader h;
-	ISMRMRD::deserialize(mb->rd_ptr(),h);
+int gpuBufferSensePrepGadget::process_config(const mrd::Header& header) {
+	auto& h = header;
 
-	auto matrixsize = h.encoding.front().encodedSpace.matrixSize;
+	auto matrixsize = h.encoding.front().encoded_space.matrix_size;
 
 
 	profiles_per_frame_ = profiles_per_frame.value();
@@ -62,41 +60,41 @@ int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
 }
 
 int gpuBufferSensePrepGadget::process(
-		GadgetContainerMessage<IsmrmrdReconData>* m1) {
+		GadgetContainerMessage<mrd::ReconData>* m1) {
 
-	IsmrmrdReconData* recondata= m1->getObjectPtr();
+	mrd::ReconData* recondata= m1->getObjectPtr();
 
-	if (recondata->rbit_.size() != 1){
+	if (recondata->buffers.size() != 1){
 		throw std::runtime_error("gpuBufferSensePrepGadget only support a single encoding space");
 	}
 
-	IsmrmrdReconBit& reconbit = recondata->rbit_[0];
+	mrd::ReconAssembly& reconbit = recondata->buffers[0];
 
 	GenericReconJob job;
 
-	IsmrmrdDataBuffered* buffer = &reconbit.data_;
+	mrd::ReconBuffer* buffer = &reconbit.data;
 
 	//Use reference data if available.
-	if (reconbit.ref_){
+	if (reconbit.ref){
 		GDEBUG("Using Reference data for CSM estimation\n");
-		buffer = &reconbit.ref_.value();
+		buffer = &reconbit.ref.value();
 	}
 
-	size_t ncoils = buffer->headers_[0].active_channels;
-
+	size_t ncoils = buffer->headers[0].channel_order.size();
 
 	std::vector<size_t> new_order = {0,1,2,4,5,6,3};
 
 	boost::shared_ptr<cuNDArray<float>> dcw;
 	boost::shared_ptr<cuNDArray<floatd2>> traj;
-	if (buffer->trajectory_){
-		auto & trajectory = *buffer->trajectory_;
+	if (buffer->trajectory.size() > 0){
+		auto & trajectory = buffer->trajectory;
 
-		if (buffer->headers_[0].trajectory_dimensions == 3){
+		size_t trajectory_dimensions = trajectory.get_size(1);
+		if (trajectory_dimensions == 3){
 			auto traj_dcw = separate_traj_and_dcw(&trajectory);
 			dcw = boost::make_shared<cuNDArray<float>>(*std::get<1>(traj_dcw).get());
 			traj = boost::make_shared<cuNDArray<floatd2>>(*std::get<0>(traj_dcw).get());
-		} else if (buffer->headers_[0].trajectory_dimensions == 2){
+		} else if (trajectory_dimensions == 2){
 			auto old_traj_dims = trajectory.get_dimensions();
 			std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
 			hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
@@ -106,13 +104,13 @@ int gpuBufferSensePrepGadget::process(
 		}
 	}
 	{
-		auto tmpdim = buffer->data_.get_dimensions();
-		std::stringstream stream; 
+		auto tmpdim = buffer->data.get_dimensions();
+		std::stringstream stream;
 		for (auto dim : tmpdim)
 			stream << dim << " ";
 		stream << "\n";
 		GINFO(stream.str().c_str());
-		auto permuted = permute(*(hoNDArray<float_complext>*)&buffer->data_,new_order);
+		auto permuted = permute(*(hoNDArray<float_complext>*)&buffer->data,new_order);
 		cuNDArray<float_complext> data(permuted);
 		if (dcw){
 			float scale_factor = float(prod(image_dims_recon_os_))/asum(dcw.get());
@@ -133,18 +131,20 @@ int gpuBufferSensePrepGadget::process(
 	}
 
 
-	IsmrmrdDataBuffered* mainbuffer = &reconbit.data_;
+	mrd::ReconBuffer* mainbuffer = &reconbit.data;
 
 	//Permute as Sensegadgets expect last dimension to be coils. *Sigh*
-	job.dat_host_ = boost::make_shared<hoNDArray<complext<float>>>(permute(*(hoNDArray<float_complext>*)&mainbuffer->data_,new_order));
+	job.dat_host_ = boost::make_shared<hoNDArray<complext<float>>>(permute(*(hoNDArray<float_complext>*)&mainbuffer->data,new_order));
 
-	if (mainbuffer->trajectory_){
-		auto & trajectory = *mainbuffer->trajectory_;
-		if (mainbuffer->headers_[0].trajectory_dimensions >2 ){
+	if (mainbuffer->trajectory.size() > 0){
+		auto & trajectory = mainbuffer->trajectory;
+
+		size_t trajectory_dimensions = trajectory.get_size(1);
+		if (trajectory_dimensions >2 ){
 			auto traj_dcw = separate_traj_and_dcw(&trajectory);
 			job.tra_host_ = std::get<0>(traj_dcw);
 			job.dcw_host_ = std::get<1>(traj_dcw);
-		} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
+		} else if (trajectory_dimensions == 2){
 			auto old_traj_dims = trajectory.get_dimensions();
 			std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
 			hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
@@ -184,16 +184,16 @@ int gpuBufferSensePrepGadget::process(
 
 
 	//Let's invent some image headers!
-	size_t total_frames = profiles_per_frame_ > 0 ? mainbuffer->headers_.get_number_of_elements()/profiles_per_frame_ : 1 ;
-	job.image_headers_ = boost::shared_array<ISMRMRD::ImageHeader>(new ISMRMRD::ImageHeader[total_frames]);
+	size_t total_frames = profiles_per_frame_ > 0 ? mainbuffer->headers.get_number_of_elements()/profiles_per_frame_ : 1 ;
+	job.image_headers_ = boost::shared_array<mrd::ImageHeader>(new mrd::ImageHeader[total_frames]);
 	for (size_t i = 0; i < total_frames; i++){
-		job.image_headers_[i] = create_image_header(mainbuffer->headers_[i*profiles_per_frame_],mainbuffer->sampling_,i,total_frames);
+		job.image_headers_[i] = create_image_header(mainbuffer->headers[i*profiles_per_frame_],mainbuffer->sampling,i,total_frames);
 	}
 
 
 	m1->release(); //We be done with everything now.
 
-	auto header_message = new GadgetContainerMessage<ISMRMRD::ImageHeader>(job.image_headers_[0]);
+	auto header_message = new GadgetContainerMessage<mrd::ImageHeader>(job.image_headers_[0]);
 
 	auto job_message = new GadgetContainerMessage<GenericReconJob>(job);
 
@@ -275,42 +275,31 @@ std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<
 
 }
 
-ISMRMRD::ImageHeader gpuBufferSensePrepGadget::create_image_header(
-		ISMRMRD::AcquisitionHeader& base_head, const SamplingDescription& samp, size_t idx, size_t num_frames) {
+mrd::ImageHeader gpuBufferSensePrepGadget::create_image_header(
+		mrd::AcquisitionHeader& base_head, const mrd::SamplingDescription& samp, size_t idx, size_t num_frames) {
 
-	ISMRMRD::ImageHeader header;
-	header.version = base_head.version;
+	mrd::ImageHeader header;
 
-	header.matrix_size[0] = image_dims_recon_[0];
-	header.matrix_size[1] = image_dims_recon_[1];
-	header.matrix_size[2] = num_frames;
+	header.field_of_view[0] = samp.recon_fov.x;
+	header.field_of_view[1] = samp.recon_fov.y;
+	header.field_of_view[2] = samp.recon_fov.z;
 
-
-	header.field_of_view[0] = samp.recon_FOV_[0];
-	header.field_of_view[1] = samp.recon_FOV_[1];
-	header.field_of_view[2] = samp.recon_FOV_[2];
-
-	header.channels = 1;
 	header.slice = base_head.idx.slice;
 	header.set = base_head.idx.set;
 
 	header.acquisition_time_stamp = base_head.acquisition_time_stamp;
-	memcpy(header.physiology_time_stamp, base_head.physiology_time_stamp, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
+	header.physiology_time_stamp = base_head.physiology_time_stamp;
 
-	memcpy(header.position, base_head.position, sizeof(float)*3);
-	memcpy(header.read_dir, base_head.read_dir, sizeof(float)*3);
-	memcpy(header.phase_dir, base_head.phase_dir, sizeof(float)*3);
-	memcpy(header.slice_dir, base_head.slice_dir, sizeof(float)*3);
-	memcpy(header.patient_table_position, base_head.patient_table_position, sizeof(float)*3);
+	header.position = base_head.position;
+	header.col_dir = base_head.read_dir;
+	header.line_dir = base_head.phase_dir;
+	header.slice_dir = base_head.slice_dir;
+	header.patient_table_position = base_head.patient_table_position;
 
-	header.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
 	header.image_index = idx;
 	header.image_series_index = 0;
 
 	return header;
-
-
-
 }
 
 GADGET_FACTORY_DECLARE(gpuBufferSensePrepGadget)

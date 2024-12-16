@@ -7,10 +7,10 @@
 
 #include "hoSPIRITOperator.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoSPIRIT2DTOperator : public hoSPIRITOperator<T>
+template <typename T>
+class hoSPIRIT2DTOperator : public hoSPIRITOperator<T>
 {
 public:
 

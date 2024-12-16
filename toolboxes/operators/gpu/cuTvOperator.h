@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "gpuoperators_export.h"
 #include "cuNDArray_math.h"
 #include "generalOperator.h"
 
@@ -12,8 +11,8 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTGPUOPERATORS cuTvOperator 
-    : public generalOperator<cuNDArray<T> > 
+  template<class T, unsigned int D> class cuTvOperator
+    : public generalOperator<cuNDArray<T> >
   {
 
 
@@ -35,7 +34,7 @@ namespace Gadgetron{
 
   protected:
 
-  protected:    
+  protected:
     REAL limit_;
   };
 }

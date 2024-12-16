@@ -9,7 +9,6 @@
 #include "radial_utilities.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd/xml.h"
 
 #include <algorithm>
 #include <vector>
@@ -28,7 +27,7 @@ namespace Gadgetron{
   
   gpuRadialPrepGadget::~gpuRadialPrepGadget() {}
   
-  int gpuRadialPrepGadget::process_config(ACE_Message_Block* mb)
+  int gpuRadialPrepGadget::process_config(const mrd::Header& header)
   {
     //GDEBUG("gpuRadialPrepGadget::process_config\n");
 
@@ -101,11 +100,7 @@ namespace Gadgetron{
     kernel_width_ = buffer_convolution_kernel_width.value();
     oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
-    // Get the Ismrmrd header
-    //
-    ISMRMRD::IsmrmrdHeader h;
-    ISMRMRD::deserialize(mb->rd_ptr(),h);
-    
+    auto& h = header;
     
     if (h.encoding.size() != 1) {
       GDEBUG("This Gadget only supports one encoding space\n");
@@ -113,18 +108,18 @@ namespace Gadgetron{
     }
     
     // Get the encoding space and trajectory description
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-    ISMRMRD::TrajectoryDescription traj_desc;
+    mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+    mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+    mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
+    mrd::TrajectoryDescriptionType traj_desc;
     // Matrix sizes (as a multiple of the GPU's warp size)
     //
     
-    image_dimensions_.push_back(((e_space.matrixSize.x+warp_size-1)/warp_size)*warp_size);
-    image_dimensions_.push_back(((e_space.matrixSize.y+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_.push_back(((e_space.matrix_size.x+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_.push_back(((e_space.matrix_size.y+warp_size-1)/warp_size)*warp_size);
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrix_size.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrix_size.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -139,9 +134,9 @@ namespace Gadgetron{
     GDEBUG("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
-    fov_.push_back(r_space.fieldOfView_mm.x);
-    fov_.push_back(r_space.fieldOfView_mm.y);
-    fov_.push_back(r_space.fieldOfView_mm.z);
+    fov_.push_back(r_space.field_of_view_mm.x);
+    fov_.push_back(r_space.field_of_view_mm.y);
+    fov_.push_back(r_space.field_of_view_mm.z);
 
     slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
     sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
@@ -242,29 +237,28 @@ namespace Gadgetron{
   }
 
   int gpuRadialPrepGadget::
-  process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-          GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
+  process(GadgetContainerMessage<mrd::Acquisition> *m1)
   {
     // Noise should have been consumed by the noise adjust (if in the gadget chain)
     //
     
-    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+    bool is_noise = m1->getObjectPtr()->head.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
     if (is_noise) { 
       m1->release();
       return GADGET_OK;
     }
 
-    unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
-    unsigned int slice = m1->getObjectPtr()->idx.slice;
-    unsigned int set = m1->getObjectPtr()->idx.set;
+    unsigned int profile = m1->getObjectPtr()->head.idx.kspace_encode_step_1.value_or(0);
+    unsigned int slice = m1->getObjectPtr()->head.idx.slice.value_or(0);
+    unsigned int set = m1->getObjectPtr()->head.idx.set.value_or(0);
 
     // Only when the first profile arrives, do we know the #samples/profile
     //
 
     if( samples_per_profile_ == -1 )      
-      samples_per_profile_ = m1->getObjectPtr()->number_of_samples;
+      samples_per_profile_ = m1->getObjectPtr()->Samples();
     
-    if( samples_per_profile_ != m1->getObjectPtr()->number_of_samples ){
+    if( samples_per_profile_ != m1->getObjectPtr()->Samples() ){
       GDEBUG("Unexpected change in the incoming profiles' lengths\n");
       return GADGET_FAIL;
     }
@@ -279,9 +273,9 @@ namespace Gadgetron{
     // - or if the number of coil changes
     // - or if the reconfigure_ flag is set
 
-    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->active_channels ){
+    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->Coils() ){
       GDEBUG("Reconfiguring due to change in the number of coils\n");
-      num_coils_[set*slices_+slice] = m1->getObjectPtr()->active_channels;
+      num_coils_[set*slices_+slice] = m1->getObjectPtr()->Coils();
       reconfigure(set, slice);
     }
 
@@ -298,19 +292,19 @@ namespace Gadgetron{
     // Have the imaging plane changed?
     //
 
-    if( !vec_equal(position_[set*slices_+slice], m1->getObjectPtr()->position) ||
-        !vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->read_dir) || 
-        !vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->phase_dir) ||
-        !vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->slice_dir) ){
+    if( !vec_equal(position_[set*slices_+slice], m1->getObjectPtr()->head.position.data()) ||
+        !vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->head.read_dir.data()) ||
+        !vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->head.phase_dir.data()) ||
+        !vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->head.slice_dir.data()) ){
       
       // Yes indeed, clear the accumulation buffer
       acc_buffer->clear();
       buffer_update_needed_[set*slices_+slice] = true;
       
-      memcpy(position_[set*slices_+slice],m1->getObjectPtr()->position,3*sizeof(float));
-      memcpy(read_dir_[set*slices_+slice],m1->getObjectPtr()->read_dir,3*sizeof(float));
-      memcpy(phase_dir_[set*slices_+slice],m1->getObjectPtr()->phase_dir,3*sizeof(float));
-      memcpy(slice_dir_[set*slices_+slice],m1->getObjectPtr()->slice_dir,3*sizeof(float));
+      memcpy(position_[set*slices_+slice],m1->getObjectPtr()->head.position.data(),3*sizeof(float));
+      memcpy(read_dir_[set*slices_+slice],m1->getObjectPtr()->head.read_dir.data(),3*sizeof(float));
+      memcpy(phase_dir_[set*slices_+slice],m1->getObjectPtr()->head.phase_dir.data(),3*sizeof(float));
+      memcpy(slice_dir_[set*slices_+slice],m1->getObjectPtr()->head.slice_dir.data(),3*sizeof(float));
     }
         
     bool new_frame_detected = false;
@@ -353,8 +347,8 @@ namespace Gadgetron{
     if( !new_frame_detected ) {
       
       // Memory handling is easier if we make copies for our internal queues
-      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
-      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
     }
 
     // If the profile is the last of a "true frame" (ignoring any sliding window profiles)
@@ -401,41 +395,33 @@ namespace Gadgetron{
     if( is_last_profile_in_frame || 
         (is_last_profile_in_reconstruction && image_headers_queue_[set*slices_+slice].empty()) ){
       
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
-      ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
+      GadgetContainerMessage<mrd::ImageHeader> *header = new GadgetContainerMessage<mrd::ImageHeader>();
+      const mrd::AcquisitionHeader& base_head = m1->getObjectPtr()->head;
 
       {
         // Initialize header to all zeroes (there is a few fields we do not set yet)
-        ISMRMRD::ImageHeader tmp;
+        mrd::ImageHeader tmp{};
         *(header->getObjectPtr()) = tmp;
       }
 
-      header->getObjectPtr()->version = base_head->version;
-
-      header->getObjectPtr()->measurement_uid = base_head->measurement_uid;
-
-      header->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
-      header->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
-      header->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
+      header->getObjectPtr()->measurement_uid = base_head.measurement_uid;
 
       header->getObjectPtr()->field_of_view[0] = fov_[0];
       header->getObjectPtr()->field_of_view[1] = fov_[1];
       header->getObjectPtr()->field_of_view[2] = fov_[2];
 
-      header->getObjectPtr()->channels = num_coils_[set*slices_+slice];
-      header->getObjectPtr()->slice = base_head->idx.slice;
-      header->getObjectPtr()->set = base_head->idx.set;
+      header->getObjectPtr()->slice = base_head.idx.slice;
+      header->getObjectPtr()->set = base_head.idx.set;
 
-      header->getObjectPtr()->acquisition_time_stamp = base_head->acquisition_time_stamp;
-      memcpy(header->getObjectPtr()->physiology_time_stamp, base_head->physiology_time_stamp, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
+      header->getObjectPtr()->acquisition_time_stamp = base_head.acquisition_time_stamp;
+      header->getObjectPtr()->physiology_time_stamp = base_head.physiology_time_stamp;
 
-      memcpy(header->getObjectPtr()->position, base_head->position, sizeof(float)*3);
-      memcpy(header->getObjectPtr()->read_dir, base_head->read_dir, sizeof(float)*3);
-      memcpy(header->getObjectPtr()->phase_dir, base_head->phase_dir, sizeof(float)*3);
-      memcpy(header->getObjectPtr()->slice_dir, base_head->slice_dir, sizeof(float)*3);
-      memcpy(header->getObjectPtr()->patient_table_position, base_head->patient_table_position, sizeof(float)*3);
+      header->getObjectPtr()->position = base_head.position;
+      header->getObjectPtr()->col_dir = base_head.read_dir;
+      header->getObjectPtr()->line_dir = base_head.phase_dir;
+      header->getObjectPtr()->slice_dir = base_head.slice_dir;
+      header->getObjectPtr()->patient_table_position = base_head.patient_table_position;
 
-      header->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
       header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
       header->getObjectPtr()->image_series_index = set*slices_+slice;
 
@@ -512,14 +498,14 @@ namespace Gadgetron{
       }
 
       m4->getObjectPtr()->image_headers_ =
-        boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
+        boost::shared_array<mrd::ImageHeader>( new mrd::ImageHeader[frames_per_reconstruction] );
       
       for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
 
         ImageHeaderMessage *mbq = image_headers_queue_[set*slices_+slice].front().release();
         image_headers_queue_[set*slices_+slice].pop();
 
-        GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
+        GadgetContainerMessage<mrd::ImageHeader> *m = AsContainerMessage<mrd::ImageHeader>(mbq);
         m4->getObjectPtr()->image_headers_[i] = *m->getObjectPtr();
 
         // In sliding window mode the header might need to go back at the end of the queue for reuse
@@ -536,7 +522,7 @@ namespace Gadgetron{
       // The Sense Job needs an image header as well. 
       // Let us just copy the initial one...
 
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+      GadgetContainerMessage<mrd::ImageHeader> *m3 = new GadgetContainerMessage<mrd::ImageHeader>;
       *m3->getObjectPtr() = m4->getObjectPtr()->image_headers_[0];
       m3->cont(m4);
       
@@ -560,8 +546,8 @@ namespace Gadgetron{
       // This is the first profile of the next frame, enqueue.
       // We have encountered deadlocks if the same profile is enqueued twice in different queues. Hence the copy.
       
-      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
-      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      frame_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
 
       profiles_counter_frame_[set*slices_+slice]++;
     }
@@ -853,12 +839,12 @@ namespace Gadgetron{
   }
   
   GadgetContainerMessage< hoNDArray< std::complex<float> > >*
-  gpuRadialPrepGadget::duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile )
+  gpuRadialPrepGadget::duplicate_profile( const hoNDArray< std::complex<float> >& profile )
   {
     GadgetContainerMessage< hoNDArray< std::complex<float> > > *copy = 
       new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     
-    *copy->getObjectPtr() = *profile->getObjectPtr();
+    *copy->getObjectPtr() = profile;
     
     return copy;
   }

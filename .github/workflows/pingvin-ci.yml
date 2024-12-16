@@ -1,0 +1,149 @@
+name: Pingvin CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  imageBaseName: ghcr.io/gadgetron/pingvin/ubuntu22.04
+
+defaults:
+  run:
+    # See https://github.com/marketplace/actions/setup-miniconda#important
+    shell: bash -el {0}
+
+jobs:
+  build-and-test:
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-pingvin-NC6s_v3"]
+    strategy:
+      matrix:
+        flavor: [cuda, nocuda]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Check GPU availability
+        run: docker run --rm --gpus=all ghcr.io/gadgetron/gadgetron/cuda:12.3.0-base-ubuntu22.04 nvidia-smi
+
+      - name: Build Docker images
+        run: ./docker/build-images.sh --type dev --type build --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}"
+
+      - name: Unit Test
+        run: |-
+          image_name="${{env.imageBaseName}}_build_${{matrix.flavor}}"
+          test_command=". /opt/conda/etc/profile.d/conda.sh \
+              && conda activate pingvin \
+              && /opt/code/pingvin/build/test/test_all"
+          docker run --rm --gpus=all "${image_name}" /bin/bash -c "$test_command"
+
+      - name: End-to-End Test
+        run: |-
+          image_name="${{env.imageBaseName}}_rt_${{matrix.flavor}}"
+          # Check Pingvin entrypoint
+          docker run --rm -i --gpus=all "${image_name}" --info
+          # Test Pingvin end-to-end
+          test_command=". /opt/conda/etc/profile.d/conda.sh \
+              && conda activate pingvin \
+              && cd /opt/e2e-test/ \
+              && pytest --echo-log-on-failure"
+          docker run --rm --gpus=all --entrypoint /bin/bash "${image_name}" -c "$test_command"
+
+  publish-docker-images:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-and-test]
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-pingvin-NC6s_v3"]
+    strategy:
+      matrix:
+        flavor: [cuda, nocuda]
+    permissions:
+      packages: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Log into ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Docker images
+        run: |-
+          PINGVIN_VERSION_MAJOR=$(grep -Po '(?<=set\(PINGVIN_VERSION_MAJOR )([^\)]+)' CMakeLists.txt)
+          PINGVIN_VERSION_MINOR=$(grep -Po '(?<=set\(PINGVIN_VERSION_MINOR )([^\)]+)' CMakeLists.txt)
+          PINGVIN_VERSION_PATCH=$(grep -Po '(?<=set\(PINGVIN_VERSION_PATCH )([^\)]+)' CMakeLists.txt)
+          PINGVIN_VERSION="${PINGVIN_VERSION_MAJOR}.${PINGVIN_VERSION_MINOR}.${PINGVIN_VERSION_PATCH}"
+
+          ./docker/build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag "${PINGVIN_VERSION}" --push
+          ./docker/build-images.sh --type dev --type rt --flavor ${{matrix.flavor}} --base-name "${{env.imageBaseName}}" --tag latest --push
+
+
+  build-conda-package:
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-pingvin-NC6s_v3"]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Install Yardl
+        run: |-
+          YARDL_VERSION=$(grep -Po '(?<=YARDL_VERSION=)(.+)' Dockerfile)
+          mkdir -p "/tmp/yardl_${YARDL_VERSION}_linux_x86_64"
+          cd "/tmp/yardl_${YARDL_VERSION}_linux_x86_64"
+          wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+          tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+          pwd >> $GITHUB_PATH
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          environment-file: conda/environment.yml
+          activate-environment: pingvin-build
+
+      - name: Build conda package
+        run: ./conda/package.sh
+
+      - name: Upload Conda package
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages
+          path: conda/build_pkg/**/pingvin*.tar.bz2
+
+  publish-conda-package:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build-conda-package]
+    runs-on: ["self-hosted", "1ES.Pool=biomedsigproc-pingvin-NC6s_v3"]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          environment-file: conda/environment.yml
+          activate-environment: pingvin-build
+
+      - name: Download Conda package
+        uses: actions/download-artifact@v4
+        with:
+          name: conda-packages
+          path: conda/build_pkg/
+
+      - name: Publish conda package
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          for p in $(find conda/build_pkg -name pingvin*.tar.bz2)
+          do
+            ./conda/publish_package.sh -u gadgetron -t "$ANACONDA_TOKEN" -p "$p"
+          done

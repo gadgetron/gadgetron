@@ -3,6 +3,7 @@
 #include "GadgetronTimer.h"
 #include "non_local_bayes.h"
 #include "non_local_means.h"
+#include "mri_core_utility.h"
 
 namespace Gadgetron {
     template <class T>
@@ -18,21 +19,19 @@ namespace Gadgetron {
     }
 
     DenoiseSupportedTypes DenoiseGadget::process_function(DenoiseSupportedTypes input) const {
-        return Core::visit(
+        return std::visit(
             [&,this](auto& image) { return DenoiseSupportedTypes(this->denoise(std::move(image))); }, input);
     }
 
-    template <class T> DenoiseImage<T> DenoiseGadget::denoise(DenoiseImage<T> image) const {
-        return DenoiseImage<T>{ std::move(std::get<ISMRMRD::ImageHeader>(image)),
-            denoise_function(std::get<hoNDArray<T>>(image)) };
+    template <class T> mrd::Image<T> DenoiseGadget::denoise(mrd::Image<T> image) const {
+        image.data = denoise_function(image.data);
+        return std::move(image);
     }
 
-    IsmrmrdImageArray DenoiseGadget::denoise(IsmrmrdImageArray image_array) const {
-        auto& input = image_array.data_;
-        input       = denoise_function(input);
+    mrd::ImageArray DenoiseGadget::denoise(mrd::ImageArray image_array) const {
+        image_array.data = denoise_function(image_array.data);
         return std::move(image_array);
     }
-
 
     GADGETRON_GADGET_EXPORT(DenoiseGadget)
 }

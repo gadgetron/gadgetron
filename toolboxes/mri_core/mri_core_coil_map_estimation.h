@@ -2,7 +2,7 @@
 /** \file   mri_core_coil_map_estimation.h
     \brief  Implementation MRI coil sensitivity map estimation functions.
 
-    ISMRMRD_SOUHEIL coil map estimation is based on:
+    Inati coil map estimation is based on:
 
         Inati SJ, Hansen MS, Kellman P.
         A solution to the phase problem in adaptive coil combination.
@@ -12,7 +12,7 @@
         Image reconstruction in SNR units: A general method for SNR measurement.
         Magnetic Resonance in Medicine 2005;54(6):1439-1447.
 
-    ISMRMRD_SOUHEIL_ITER coil map estimation is based on:
+    Inati_Iter coil map estimation is based on:
 
         Inati SJ, Hansen MS, Kellman P. 
         A Fast Optimal Method for Coil Sensitivity Estimation and Adaptive Coil Combination for Complex Images.
@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include "mri_core_export.h"
 #include "hoNDArray.h"
 
 namespace Gadgetron

@@ -82,10 +82,10 @@
     },
     "cmake.configureOnOpen": true,
     "cmake.preferredGenerators": ["Ninja", "Unix Makefiles"],
-    "cmake.cmakePath": "/opt/conda/envs/gadgetron/bin/cmake",
+    "cmake.cmakePath": "/opt/conda/envs/pingvin/bin/cmake",
     "cmake.configureSettings": {
         "USE_CUDA": "ON",
         "USE_MKL": "ON",
-        "CMAKE_INSTALL_PREFIX": "/opt/conda/envs/gadgetron"
+        "CMAKE_INSTALL_PREFIX": "/opt/conda/envs/pingvin"
     }
 }

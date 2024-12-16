@@ -19,7 +19,7 @@ namespace Gadgetron{
     Gadgetron::clear(matrix_size_os_);
     W_ = REAL(0);
   }
-  
+
   template<class REAL, unsigned int D>
   void cuBuffer<REAL,D>::clear()
   {
@@ -31,9 +31,9 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D>
   void cuBuffer<REAL,D>
-  ::setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
+  ::setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W,
            unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
-  {      
+  {
     bool matrix_size_changed = (matrix_size_ == matrix_size);
     bool matrix_size_os_changed = (matrix_size_os_ == matrix_size_os);
     bool kernel_changed = (W_ == W);
@@ -50,8 +50,8 @@ namespace Gadgetron{
     if( !nfft_plan_ || matrix_size_changed || matrix_size_os_changed || kernel_changed ){
       nfft_plan_ = NFFT<cuNDArray,REAL,D>::make_plan( matrix_size_, matrix_size_os_, W );
     }
-    
-    std::vector<size_t> dims = to_std_vector(matrix_size_os_);    
+
+    std::vector<size_t> dims = to_std_vector(matrix_size_os_);
     dims.push_back(num_coils_);
 
     if( acc_buffer_->get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
@@ -61,7 +61,7 @@ namespace Gadgetron{
 
     dims.push_back(cycle_length_);
     if( cyc_buffer_->get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
-      cyc_buffer_->create(dims);      
+      cyc_buffer_->create(dims);
       Gadgetron::clear( cyc_buffer_.get() );
     }
     else if( num_cycles_changed ){
@@ -69,7 +69,7 @@ namespace Gadgetron{
       // This happens automatically (in all cases?) with the current design?
     }
   }
-  
+
   template<class REAL, unsigned int D>
   bool cuBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
   {
@@ -84,7 +84,7 @@ namespace Gadgetron{
     //if( dcw_.get() == 0x0 ){
     //throw std::runtime_error("cuBuffer::density compensation weights not set");
     //}
-    
+
     // Make array containing the "current" buffer from the cyclic buffer
     //
 
@@ -95,7 +95,7 @@ namespace Gadgetron{
     //
 
     nfft_plan_->preprocess( *trajectory, NFFT_prep_mode::NC2C );
-    
+
     // Convolve to form k-space frame (accumulation mode)
     //
 
@@ -117,7 +117,7 @@ namespace Gadgetron{
     if( cur_sub_idx_ == sub_cycle_length_-1 ){
 
       cycle_completed = true;
-      
+
       // Buffer complete, add to accumulation buffer
       //
 
@@ -127,7 +127,7 @@ namespace Gadgetron{
       // Start filling the next buffer in the cycle ...
       //
 
-      cur_idx_++; 
+      cur_idx_++;
       if( cur_idx_ == cycle_length_ ) cur_idx_ = 0;
 
       // ... but first subtract this next buffer from the accumulation buffer
@@ -155,7 +155,7 @@ namespace Gadgetron{
     dims.push_back(num_coils_);
 
     acc_image_ = boost::shared_ptr< cuNDArray<_complext> >( new cuNDArray<_complext>(dims) );
-				    
+
     // Check if we are ready to reconstruct. If not return an image of ones...
     if( acc_buffer_empty_ ){
       fill(acc_image_.get(),_complext(1));
@@ -170,30 +170,30 @@ namespace Gadgetron{
 
     // FFT
     nfft_plan_->fft( acc_copy, NFFT_fft_mode::BACKWARDS );
-    
+
     // Deapodize
     nfft_plan_->deapodize( acc_copy );
-    
+
     // Remove oversampling
     crop<_complext,D>( (matrix_size_os_-matrix_size_)>>1, matrix_size_, acc_copy, *acc_image_ );
-    
+
     //if( normalize ){
     //REAL scale = REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
     //*acc_image_ *= scale;
     //}
-    
+
     return acc_image_;
   }
 
   //
   // Instantiations
   //
-  
-  template class EXPORTGPUPMRI cuBuffer<float,2>;
-  template class EXPORTGPUPMRI cuBuffer<float,3>;
-  template class EXPORTGPUPMRI cuBuffer<float,4>;
 
-  template class EXPORTGPUPMRI cuBuffer<double,2>;
-  template class EXPORTGPUPMRI cuBuffer<double,3>;
-  template class EXPORTGPUPMRI cuBuffer<double,4>;
+  template class cuBuffer<float,2>;
+  template class cuBuffer<float,3>;
+  template class cuBuffer<float,4>;
+
+  template class cuBuffer<double,2>;
+  template class cuBuffer<double,3>;
+  template class cuBuffer<double,4>;
 }

@@ -1,8 +1,3 @@
-if (WIN32)
-    add_definitions(-DTIXML_USE_STL)
-endif ()
-
-
 add_subdirectory(log)
 
 add_subdirectory(operators)
@@ -17,7 +12,6 @@ add_subdirectory(cmr)
 add_subdirectory(mri_image)
 
 add_subdirectory(klt)
-add_subdirectory(fatwater)
 add_subdirectory(deblur)
 add_subdirectory(nfft)
 add_subdirectory(dwt)
@@ -29,35 +23,17 @@ add_subdirectory(pattern_recognition)
 add_subdirectory(denoise)
 
 add_subdirectory(image_io)
-add_subdirectory(T1)
-# Should we compile the python toolbox
+
 if (BUILD_PYTHON_SUPPORT)
-    message("Find python; build gadgetron toolbox python")
     add_subdirectory(python)
-else ()
-    message("Cannot find python; do not build gadgetron toolbox python")
 endif ()
-
-if (ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
-    add_subdirectory(plplot)
-endif ()
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
 
 if(CUDA_FOUND)
     # We compile all GPU code into one library to workaround Thrust and Cub using statics in templates
     # (e.g. https://github.com/NVIDIA/cub/blob/48768e86a40c25d231a6ff1e04107a60016314a7/cub/util_device.cuh#L208)
     # that when used from multiple libraries can cause crashes.
     # See https://github.com/NVIDIA/thrust/issues/1401 for more information.
-    if (WIN32)
-        add_definitions(-D__BUILD_GADGETRON_GPU__)
-        add_definitions(-D_USE_MATH_DEFINES)
-        add_definitions(-DWIN32_LEAN_AND_MEAN)
-
-        link_directories(${Boost_LIBRARY_DIRS})
-    endif ()
-
-    cuda_add_library(gadgetron_toolbox_gpu SHARED 
+    cuda_add_library(pingvin_toolbox_gpu SHARED
         core/gpu/check_CUDA.h
         core/gpu/CUBLASContextProvider.cpp
         core/gpu/CUBLASContextProvider.h
@@ -95,11 +71,6 @@ if(CUDA_FOUND)
         fft/gpu/cuNDFFT.cpp
         fft/gpu/cuNDFFT.cu
         fft/gpu/cuNDFFT.h
-        mri/hyper/CSI_utils.cu
-        mri/hyper/CSI_utils.h
-        mri/hyper/CSIOperator.cpp
-        mri/hyper/CSIOperator.h
-        mri/hyper/gadgetron_toolbox_hyper_export.h
         mri/pmri/gpu/b1_map_NIH_Souheil.cu
         mri/pmri/gpu/b1_map.cu
         mri/pmri/gpu/b1_map.h
@@ -119,7 +90,6 @@ if(CUDA_FOUND)
         mri/pmri/gpu/cuSenseOperator.h
         mri/pmri/gpu/cuSpiritBuffer.cpp
         mri/pmri/gpu/cuSpiritOperator.h
-        mri/pmri/gpu/gpupmri_export.h
         mri/pmri/gpu/htgrappa.cpp
         mri/pmri/gpu/htgrappa.cu
         mri/pmri/gpu/htgrappa.h
@@ -155,16 +125,14 @@ if(CUDA_FOUND)
         registration/optical_flow/gpu/cuOpticalFlowSolver.cu
         registration/optical_flow/gpu/cuResampleOperator.cu
         solvers/gpu/cuSolverUtils.cu
-        solvers/gpu/gpusolvers_export.h
     )
 
-    target_include_directories(gadgetron_toolbox_gpu
+    target_include_directories(pingvin_toolbox_gpu
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/core/gpu
         ${CMAKE_CURRENT_SOURCE_DIR}/dwt/gpu/
         ${CMAKE_CURRENT_SOURCE_DIR}/fft/gpu
-        ${CMAKE_CURRENT_SOURCE_DIR}/mri/hyper
         ${CMAKE_CURRENT_SOURCE_DIR}/mri/pmri/gpu
         ${CMAKE_CURRENT_SOURCE_DIR}/nfft/gpu
         ${CMAKE_CURRENT_SOURCE_DIR}/operators/gpu
@@ -175,24 +143,24 @@ if(CUDA_FOUND)
         ${CMAKE_CURRENT_SOURCE_DIR}/solvers/gpu
     )
 
-    set_target_properties(gadgetron_toolbox_gpu PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+    set_target_properties(pingvin_toolbox_gpu PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-    target_link_libraries(gadgetron_toolbox_gpu 
-        gadgetron_toolbox_cpucore
-        gadgetron_toolbox_cpucore_math
-        gadgetron_toolbox_log
-        gadgetron_toolbox_nfft
-        gadgetron_toolbox_operator
-        gadgetron_toolbox_sdc
+    target_link_libraries(pingvin_toolbox_gpu
+        pingvin_toolbox_cpucore
+        pingvin_toolbox_cpucore_math
+        pingvin_toolbox_log
+        pingvin_toolbox_nfft
+        pingvin_toolbox_operator
+        pingvin_toolbox_sdc
         ${CUDA_LIBRARIES}
-        ${CUDA_CUFFT_LIBRARIES} 
-        ${CUDA_CUBLAS_LIBRARIES} 
+        ${CUDA_CUFFT_LIBRARIES}
+        ${CUDA_CUBLAS_LIBRARIES}
         ${CUDA_CUSPARSE_LIBRARIES}
         ${MKL_LIBRARIES}
     )
 
 
-    install(TARGETS gadgetron_toolbox_gpu
+    install(TARGETS pingvin_toolbox_gpu
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
@@ -214,7 +182,7 @@ if(CUDA_FOUND)
         core/gpu/cuNDArray.h
         core/gpu/cuSparseMatrix.h
         core/gpu/GadgetronCuException.h
-        core/gpu/GPUTimer.h				
+        core/gpu/GPUTimer.h
         core/gpu/hoCuNDArray_blas.h
         core/gpu/hoCuNDArray_elemwise.h
         core/gpu/hoCuNDArray_math.h
@@ -228,9 +196,6 @@ if(CUDA_FOUND)
         fft/gpu/cuFFTPlan.h
         fft/gpu/cuFFTPlan.hpp
         fft/gpu/cuNDFFT.h
-        fft/gpu/gpufft_export.h
-        mri/hyper/CSI_utils.h
-        mri/hyper/CSIOperator.h
         mri/pmri/gpu/b1_map.h
         mri/pmri/gpu/cuBuffer.h
         mri/pmri/gpu/cuCartesianSenseOperator.h
@@ -241,12 +206,11 @@ if(CUDA_FOUND)
         mri/pmri/gpu/cuSenseOperator.h
         mri/pmri/gpu/cuSpiritBuffer.h
         mri/pmri/gpu/cuSpiritOperator.h
-        mri/pmri/gpu/gpupmri_export.h
         mri/pmri/gpu/htgrappa.h
         mri/pmri/gpu/sense_utilities.h
         mri/pmri/gpu/senseOperator.h
         mri/sdc/gpu/cuSDC.h
-        nfft/gpu/cuGriddingConvolution.h 
+        nfft/gpu/cuGriddingConvolution.h
         nfft/gpu/cuNFFT.h
         operators/gpu/cuConvolutionOperator.h
         operators/gpu/cuDiagonalOperator.h
@@ -261,7 +225,6 @@ if(CUDA_FOUND)
         operators/gpu/cuTvOperator.h
         operators/gpu/cuTvPicsOperator.h
         operators/gpu/cuUpsampleOperator.h
-        operators/gpu/gpuoperators_export.h
         operators/gpu/hoCuEncodingOperatorContainer.h
         operators/gpu/hoCuIdentityOperator.h
         operators/gpu/hoCuOperator.h
@@ -274,7 +237,6 @@ if(CUDA_FOUND)
         registration/optical_flow/gpu/cuLinearResampleOperator.h
         registration/optical_flow/gpu/cuOpticalFlowSolver.h
         registration/optical_flow/gpu/cuResampleOperator.h
-        registration/optical_flow/gpu/gpureg_export.h
         solvers/gpu/cuCgPreconditioner.h
         solvers/gpu/cuCgSolver.h
         solvers/gpu/cuGpBbSolver.h
@@ -286,13 +248,12 @@ if(CUDA_FOUND)
         solvers/gpu/cuSbcLwSolver.h
         solvers/gpu/cuSbLwSolver.h
         solvers/gpu/cuSolverUtils.h
-        solvers/gpu/gpusolvers_export.h
         solvers/gpu/hoCuCgSolver.h
         solvers/gpu/hoCuGpBbSolver.h
         solvers/gpu/hoCuNlcgSolver.h
         solvers/gpu/hoCuSbcCgSolver.h
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+        DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 else()
-    message("CUDA not found, not compiling gpu toolbox")
+    message(STATUS "CUDA not found, not compiling gpu toolbox")
 endif()

@@ -1,0 +1,19 @@
+reconstruction:
+  data: rtgrappa/acc_data_with_device_2_meas1.mrd
+  checksum: 7fa1d38320b2a544148096ce09041b2a
+  run:
+  - args: --config grappa_float.xml
+validation:
+  reference: rtgrappa/grappa_rate2_cpu_out_grappa_float_cpu.xml.mrd
+  checksum: f24f9b93670cfa0c1723493ce52c07c5
+  tests:
+  - image_series: 0
+    value_comparison_threshold: 0.1
+    scale_comparison_threshold: 0.01
+requirements:
+  system_memory: 2048
+  gpu_support: 1
+  gpu_memory: 1024
+tags:
+- fast
+- realtime

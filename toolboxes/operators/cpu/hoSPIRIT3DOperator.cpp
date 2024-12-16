@@ -2,15 +2,15 @@
 #include "hoSPIRIT3DOperator.h"
 #include "hoNDFFT.h"
 
-namespace Gadgetron 
+namespace Gadgetron
 {
 
-template <typename T> 
+template <typename T>
 hoSPIRIT3DOperator<T>::hoSPIRIT3DOperator(const std::vector<size_t>& dims) : BaseClass(dims)
 {
 }
 
-template <typename T> 
+template <typename T>
 hoSPIRIT3DOperator<T>::~hoSPIRIT3DOperator()
 {
 }
@@ -69,7 +69,7 @@ void hoSPIRIT3DOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& 
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoSPIRIT3DOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoSPIRIT3DOperator< std::complex<double> >;
+template class hoSPIRIT3DOperator< std::complex<float> >;
+template class hoSPIRIT3DOperator< std::complex<double> >;
 
 }

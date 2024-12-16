@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# add the user 'gadgetron'
-sudo adduser --no-create-home --disabled-password --gecos "" gadgetron
-
-# start the gadgetron service
-sudo service gadgetron_web start

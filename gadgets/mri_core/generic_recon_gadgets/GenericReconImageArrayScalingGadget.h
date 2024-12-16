@@ -1,5 +1,5 @@
 /** \file   GenericReconGenericReconImageArrayScalingGadget.h
-    \brief  This is the class gadget to scale the incoming IsmrmrdReconRes.
+    \brief  This is the class gadget to scale the incoming mrd::ImageArray.
 
     \author Hui Xue
 */
@@ -13,11 +13,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconImageArrayScalingGadget : public GenericReconImageBase
+    class GenericReconImageArrayScalingGadget : public GenericReconImageBase
     {
     public:
-        GADGET_DECLARE(GenericReconImageArrayScalingGadget);
-
         typedef float real_value_type;
         typedef std::complex<real_value_type> ValueType;
         typedef ValueType T;
@@ -61,11 +59,11 @@ namespace Gadgetron {
         // --------------------------------------------------
 
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ImageArray >* m1);
 
         // scale the recon images
-        virtual int compute_and_apply_scaling_factor(IsmrmrdImageArray& res, size_t encoding);
+        virtual int compute_and_apply_scaling_factor(mrd::ImageArray& res, size_t encoding);
 
     };
 }

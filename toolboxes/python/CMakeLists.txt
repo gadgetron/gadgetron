@@ -1,46 +1,33 @@
-
-
-set(gadgetron_toolbox_python_header_files python_converters.h
-        python_export.h
+set(pingvin_toolbox_python_header_files python_converters.h
         python_hoNDArray_converter.h
-        python_IsmrmrdReconData_converter.h
-        python_IsmrmrdImageArray_converter.h
-        python_ismrmrd_converter.h
+        python_mrd_converters.h
         python_numpy_wrappers.h
         python_toolbox.h
         python_tuple_converter.h
+        python_optional_converter.h
         python_vector_converter.h)
 
-add_library(gadgetron_toolbox_python SHARED
+add_library(pingvin_toolbox_python SHARED
         python_toolbox.cpp
-        ${gadgetron_toolbox_python_header_files})
+        ${pingvin_toolbox_python_header_files})
 
-message("PYTHON_INCLUDE_PATH is ${PYTHON_INCLUDE_PATH}")
-message("PYTHON_LIBRARIES is ${PYTHON_LIBRARIES}")
-message("NUMPY_INCLUDE_DIRS is ${NUMPY_INCLUDE_DIRS}")
-message("Boost_LIBRARIES is ${Boost_LIBRARIES}")
-
-target_link_libraries(gadgetron_toolbox_python
-        gadgetron_core
-        gadgetron_toolbox_mri_core
-        gadgetron_toolbox_cpucore
+target_link_libraries(pingvin_toolbox_python
+        pingvin_core
+        pingvin_toolbox_mri_core
+        pingvin_toolbox_cpucore
         Boost::system
         python
-        gadgetron_toolbox_log)
+        pingvin_toolbox_log)
 
-target_include_directories(gadgetron_toolbox_python
+target_include_directories(pingvin_toolbox_python
         PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		)
-set_target_properties(gadgetron_toolbox_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-if (WIN32)
-    # only add this definition to the library, not the example binaries
-    set_target_properties(gadgetron_toolbox_python PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_TOOLBOX_PYTHON__")
-endif ()
+)
+set_target_properties(pingvin_toolbox_python PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-install(TARGETS gadgetron_toolbox_python
-	EXPORT gadgetron-export
+install(TARGETS pingvin_toolbox_python
+	EXPORT pingvin-export
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
@@ -49,9 +36,5 @@ install(TARGETS gadgetron_toolbox_python
 
 
 install(FILES
-        ${gadgetron_toolbox_python_header_files}
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-
-add_subdirectory(example)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+        ${pingvin_toolbox_python_header_files}
+        DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)

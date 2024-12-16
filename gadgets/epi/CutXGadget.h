@@ -3,24 +3,21 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_epi_export.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{
 
-  class   EXPORTGADGETS_EPI CutXGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class   CutXGadget :
+  public Gadget1<mrd::Acquisition>
   {
     public:
       CutXGadget();
       virtual ~CutXGadget();
 
     protected:
-      virtual int process_config(ACE_Message_Block* mb);
-      virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1,
-                       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+      virtual int process_config(const mrd::Header& header);
+      virtual int process( GadgetContainerMessage< mrd::Acquisition>* m1);
 
       size_t encodeNx_;
       float encodeFOV_;

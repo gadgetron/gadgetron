@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-#include "TypeTraits.h"
+#include <type_traits>
 
 namespace Gadgetron{
 
@@ -19,7 +19,7 @@ namespace Gadgetron{
         constexpr auto slice = Slice{};
     }
    template<class... ARGS>
-   struct ValidIndex : std::integral_constant<bool, Core::all_of_v<Core::is_convertible_v<ARGS,size_t>...>> {};
+   struct ValidIndex : std::integral_constant<bool, std::conjunction_v<std::is_convertible<ARGS,size_t>...>> {};
 
    template<> struct ValidIndex<> : std::true_type {};
 
@@ -43,7 +43,7 @@ namespace Gadgetron{
            };
            template<class T, class... ARGS> struct is_contiguous_index<T,ARGS...>{
 
-               static constexpr bool value = !Core::any_of_v<Core::is_same_v<Indexing::Slice,ARGS>...>;
+               static constexpr bool value = !std::disjunction_v<std::is_same<Indexing::Slice,ARGS>...>;
            };
 
            template<class... ARGS> struct is_contiguous_index<Indexing::Slice,ARGS...> {
@@ -72,11 +72,11 @@ namespace Gadgetron{
        hoNDArrayView<T,D,contigous>& operator=(const hoNDArray<T>&);
 
         template<class... INDICES>
-       std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
+       std::enable_if_t<std::conjunction_v<std::is_convertible<INDICES,size_t>...> && (sizeof...(INDICES) == D),T&>
        operator()(INDICES... indices);
 
        template<class... INDICES>
-       std::enable_if_t<Core::all_of_v<Core::is_convertible_v<INDICES,size_t>...> && (sizeof...(INDICES) == D),const T&>
+       std::enable_if_t<std::conjunction_v<std::is_convertible<INDICES,size_t>...> && (sizeof...(INDICES) == D),const T&>
        operator()(INDICES... indices) const;
 
 
@@ -211,10 +211,10 @@ namespace Gadgetron{
     T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u );
     const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
 
-    template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
+    template<class... INDICES, class = std::enable_if_t<std::disjunction_v<std::is_same<INDICES,Indexing::Slice>...>> >
     auto operator()(const INDICES&... );
 
-    template<class... INDICES, class = std::enable_if_t<Core::any_of_v<Core::is_same_v<INDICES,Indexing::Slice>...>> >
+    template<class... INDICES, class = std::enable_if_t<std::disjunction_v<std::is_same<INDICES,Indexing::Slice>...>> >
     auto operator()(const INDICES&... ) const -> const hoNDArrayView<T,gadgetron_detail::count_slices<0, INDICES...>::value, gadgetron_detail::is_contiguous_index<INDICES...>::value>;
 
     void fill(T value);
@@ -236,7 +236,7 @@ namespace Gadgetron{
     //T& operator()( const std::vector<size_t>& ind );
     //const T& operator()( const std::vector<size_t>& ind ) const;
 
-    template<typename T2> 
+    template<typename T2>
     bool copyFrom(const hoNDArray<T2>& aArray)
     {
         try
@@ -265,11 +265,6 @@ namespace Gadgetron{
 
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;
-
-    [[deprecated("Use IO::write instead")]]
-    virtual bool serialize(char*& buf, size_t& len) const;
-    [[deprecated("Use IO::read instead")]]
-    virtual bool deserialize(char* buf, size_t& len);
 
   protected:
 

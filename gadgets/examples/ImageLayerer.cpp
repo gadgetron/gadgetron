@@ -5,19 +5,16 @@
 #include "hoNDArray_math.h"
 #include "hoNDArray_utils.h"
 
-using namespace Gadgetron;
-using namespace Gadgetron::Core;
+#include "mri_core_utility.h"
 
+using namespace Gadgetron;
 namespace {
 
     template<class T>
-    Image<T> merge(const Image<T> &a, const Image<T> &b) {
-
-        auto header = std::get<ISMRMRD::ImageHeader>(a);
-        const auto &data_a = std::get<hoNDArray<T>>(a);
-        const auto &data_b = std::get<hoNDArray<T>>(b);
-
-        header.channels *= 2;
+    mrd::Image<T> merge(const mrd::Image<T> &a, const mrd::Image<T> &b)
+    {
+        const auto& data_a = a.data;
+        const auto& data_b = b.data;
 
         if (data_a.dimensions() != data_b.dimensions()) {
             throw std::runtime_error("Images missized. Can't merge mismatched images.");
@@ -27,37 +24,35 @@ namespace {
                 data_a.get_size(0),
                 data_a.get_size(1),
                 data_a.get_size(2),
-                header.channels
+                data_a.get_size(4) * 2
         };
 
         auto data = concat(std::vector<hoNDArray<T>>{data_a, data_b});
         data.reshape(size);
 
-//        auto data = hoNDArray<T>(size);
-//        data(slice, slice, 0) = data_a;
-//        data(slice, slice, 1) = data_b;
+        mrd::Image<T> out{.head=a.head, .data=data, .meta=a.meta};
 
-        return Image<T>(header, data, Core::none);
+        return out;
     }
 
     template<class A, class B>
-    Image<A> merge(const Image<A> &, const Image<B> &) {
+    mrd::Image<A> merge(const mrd::Image<A> &, const mrd::Image<B> &) {
         throw std::runtime_error("Images have different types; merging will be a hassle.");
     }
 }
 
 namespace Gadgetron::Examples {
 
-    ImageLayerer::ImageLayerer(const Context &, const GadgetProperties &properties) : Merge(properties) {}
+    ImageLayerer::ImageLayerer(const Core::Context &, const Core::GadgetProperties &properties) : Merge(properties) {}
 
-    void ImageLayerer::process(std::map<std::string, GenericInputChannel> input, OutputChannel output) {
+    void ImageLayerer::process(std::map<std::string, Core::GenericInputChannel> input, Core::OutputChannel output) {
 
-        auto unchanged = InputChannel<AnyImage>(input.at("unchanged"), output);
-        auto inverted = InputChannel<AnyImage>(input.at("inverted"), output);
+        auto unchanged = Core::InputChannel<mrd::AnyImage>(input.at("unchanged"), output);
+        auto inverted = Core::InputChannel<mrd::AnyImage>(input.at("inverted"), output);
 
         for (auto image : unchanged) {
-            auto merged = Core::visit(
-                    [](const auto &a, const auto &b) -> AnyImage { return merge(a, b); },
+            auto merged = std::visit(
+                    [](const auto &a, const auto &b) -> mrd::AnyImage { return merge(a, b); },
                     image,
                     inverted.pop()
             );

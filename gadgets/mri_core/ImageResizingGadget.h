@@ -8,18 +8,14 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd/meta.h"
-#include "gadgetron_mricore_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 
 namespace Gadgetron
 {
-    class EXPORTGADGETSMRICORE ImageResizingGadget :public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
+    class ImageResizingGadget :public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
     public:
-
-        GADGET_DECLARE(ImageResizingGadget);
-
         typedef std::complex<float> ValueType;
         typedef hoNDArray< ValueType > ArrayType;
 

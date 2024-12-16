@@ -15,13 +15,13 @@ class PackageDependency:
     version: Union[str, None]
 
 def parse_package_dependency(package_dependency: str) -> PackageDependency:
-    pattern = '([A-Za-z0-9\-\_\:]+)(=|>=|<=|>|<)(.*)'
+    pattern = '([A-Za-z0-9-_:]+)(=|>=|<=|>|<)(.*)'
     result = re.match(pattern, package_dependency)
 
     if result:
         return PackageDependency(result.group(1), result.group(2), result.group(3))
     else:
-        pattern = '([A-Za-z0-9\-\_\:]+)'
+        pattern = '([A-Za-z0-9-_:]+)'
         result = re.match(pattern, package_dependency)
 
         if result:

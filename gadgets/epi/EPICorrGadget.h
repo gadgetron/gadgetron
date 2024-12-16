@@ -4,10 +4,7 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "hoArmadillo.h"
-#include "gadgetron_epi_export.h"
 
-#include <ismrmrd/ismrmrd.h>
-#include "ismrmrd/xml.h"
 #include <complex>
 
 #define _USE_MATH_DEFINES
@@ -16,8 +13,8 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETS_EPI EPICorrGadget :
-            public Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray<std::complex<float> > > {
+    class EPICorrGadget :
+            public Gadget1<mrd::Acquisition> {
     public:
         EPICorrGadget();
 
@@ -46,15 +43,14 @@ namespace Gadgetron {
                         "Number of volumes/repetitions to exclude from the beginning of the run when filtering the navigator parameters (e.g., to take into account dummy acquisitions. Default: 0)",
                         0);
 
-        virtual int process_config(ACE_Message_Block *mb);
+        virtual int process_config(const mrd::Header& header);
 
-        virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-                            GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2);
+        virtual int process(GadgetContainerMessage<mrd::Acquisition> *m1);
 
         // in verbose mode, more info is printed out
         bool verboseMode_;
 
-        void init_arrays_for_nav_parameter_filtering(ISMRMRD::EncodingLimits e_limits);
+        void init_arrays_for_nav_parameter_filtering(mrd::EncodingLimitsType e_limits);
 
         float filter_nav_correction_parameter(hoNDArray<float> &nav_corr_param_array,
                                               hoNDArray<float> &weights_array,
@@ -88,7 +84,7 @@ namespace Gadgetron {
         bool startNegative_;
 
 
-        std::vector<std::pair<GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *, GadgetContainerMessage<hoNDArray<std::complex<float> > > *>> unprocessed_data;
+        std::vector<GadgetContainerMessage<mrd::Acquisition> *> unprocessed_messages_;
 
         // --------------------------------------------------
         // variables for navigator parameter filtering
@@ -108,14 +104,14 @@ namespace Gadgetron {
         hoNDArray<float> OE_phi_intercept_; // array to store the Odd-Even phase-correction constant term (for filtering)
         std::vector<hoNDArray<float> > OE_phi_poly_coef_;   // vector of arrays to store the polynomial coefficients for Odd-Even phase correction
 
-        void process_phase_correction_data(ISMRMRD::AcquisitionHeader &hdr, arma::cx_fmat &adata);
+        void process_phase_correction_data(mrd::AcquisitionHeader &hdr, arma::cx_fmat &adata);
 
         arma::fvec
         polynomial_correction(int Nx_, const arma::fvec &x, const arma::cx_fvec &ctemp, size_t set, size_t slc,
                               size_t exc,
                               float intercept);
 
-        void apply_epi_correction(ISMRMRD::AcquisitionHeader &hdr, arma::cx_fmat &adata);
+        void apply_epi_correction(mrd::AcquisitionHeader &hdr, arma::cx_fmat &adata);
     };
 }
 #endif //EPICORRGADGET_H

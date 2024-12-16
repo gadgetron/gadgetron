@@ -7,18 +7,18 @@
 #include "cuSenseOperator.h"
 
 namespace Gadgetron{
-  
-  template<class REAL, unsigned int D> class EXPORTGPUPMRI cuCartesianSenseOperator : public cuSenseOperator<REAL,D>
+
+  template<class REAL, unsigned int D> class cuCartesianSenseOperator : public cuSenseOperator<REAL,D>
   {
   public:
-    
+
     cuCartesianSenseOperator() : cuSenseOperator<REAL,D>() {}
     virtual ~cuCartesianSenseOperator() {}
-    
+
     virtual void mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false);
     virtual void mult_MH( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false);
-    
-    virtual void set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> > idx) 
+
+    virtual void set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> > idx)
     {
       if (idx.get()) {
         idx_ = idx;
@@ -28,7 +28,7 @@ namespace Gadgetron{
         this->set_codomain_dimensions(tmp_dims);
       }
     }
-    
+
   protected:
     boost::shared_ptr< cuNDArray<unsigned int> > idx_;
   };

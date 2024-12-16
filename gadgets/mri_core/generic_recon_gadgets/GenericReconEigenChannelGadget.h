@@ -1,5 +1,5 @@
 /** \file   GenericReconEigenChannelGadget.h
-    \brief  This is the class gadget for both 2DT and 3DT cartesian reconstruction to convert the data into eigen channel, working on the IsmrmrdReconData.
+    \brief  This is the class gadget for both 2DT and 3DT cartesian reconstruction to convert the data into eigen channel, working on the mrd::ReconData.
             If incoming data has the ref, ref data will be used to compute KLT coefficients
     \author Hui Xue
 */
@@ -14,11 +14,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconEigenChannelGadget : public GenericReconDataBase
+    class GenericReconEigenChannelGadget : public GenericReconDataBase
     {
     public:
-        GADGET_DECLARE(GenericReconEigenChannelGadget);
-
         typedef GenericReconDataBase BaseClass;
         typedef hoNDKLT< std::complex<float> > KLTType;
 
@@ -36,14 +34,14 @@ namespace Gadgetron {
         /// whether to average all S for coefficient computation
         GADGET_PROPERTY(average_all_ref_S, bool, "Whether to average all S for ref generation", false);
 
-        /// if update_eigen_channel_coefficients==true, every incoming IsmrmrdReconData will be used to compute KLT coefficients
+        /// if update_eigen_channel_coefficients==true, every incoming ReconData will be used to compute KLT coefficients
         /// and the older one will be replaced
-        /// if update_eigen_channel_coefficients==false, the KLT coefficients will be computed only once for the first incoming IsmrmrdReconData
+        /// if update_eigen_channel_coefficients==false, the KLT coefficients will be computed only once for the first incoming ReconData
         GADGET_PROPERTY(update_eigen_channel_coefficients, bool, "Whether to update KLT coefficients for eigen channel computation", false);
 
         /// optionally, upstream coil compression can be applied
         /// if upstream_coil_compression==true, only kept channels will be sent out to next gadgets and other channels will be removed
-        /// no matter whether upstream_coil_compression is true or false, all channels will be converted into eigen channel 
+        /// no matter whether upstream_coil_compression is true or false, all channels will be converted into eigen channel
         GADGET_PROPERTY(upstream_coil_compression, bool, "Whether to perform upstream coil compression", true);
         /// the logic here is that if upstream_coil_compression_num_modesKept>0, only upstream_coil_compression_num_modesKept channels will be kept
         /// if upstream_coil_compression_num_modesKept<=0 and upstream_coil_compression_thres>0, this threshold will be used to determine how many channels to keep
@@ -59,7 +57,7 @@ namespace Gadgetron {
 
         // for every encoding space
         // calibration mode
-        std::vector<Gadgetron::ismrmrdCALIBMODE> calib_mode_;
+        std::vector<mrd::CalibrationMode> calib_mode_;
 
         // --------------------------------------------------
         // variable for recon
@@ -72,7 +70,7 @@ namespace Gadgetron {
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1);
     };
 }

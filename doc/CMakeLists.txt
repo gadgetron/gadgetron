@@ -8,7 +8,7 @@ if(DOXYGEN_FOUND)
     add_custom_target(Sphinx ALL
             COMMAND ${SPHINX_EXECUTABLE} -b html
             # Tell Breathe where to find the Doxygen output
-            -Dbreathe_projects.Gadgetron=${CMAKE_CURRENT_BINARY_DIR}/doxygen/doc/xml/
+            -Dbreathe_projects.Pingvin=${CMAKE_CURRENT_BINARY_DIR}/doxygen/doc/xml/
             ${SPHINX_SOURCE} ${SPHINX_BUILD}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             COMMENT "Generating documentation with Sphinx")

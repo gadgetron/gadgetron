@@ -7,7 +7,6 @@
 
 #include "MPMCChannel.h"
 #include "Message.h"
-#include "Types.h"
 
 #include "ChannelIterator.h"
 
@@ -27,7 +26,7 @@ namespace Gadgetron { namespace Core {
     protected:
         virtual Message pop() = 0;
 
-        virtual optional<Message> try_pop() = 0;
+        virtual std::optional<Message> try_pop() = 0;
 
         virtual void push_message(Message) = 0;
 
@@ -87,7 +86,7 @@ namespace Gadgetron { namespace Core {
         Message pop();
 
         /// Nonblocking method returning a message if one is available, or None otherwise
-        optional<Message> try_pop();
+        std::optional<Message> try_pop();
 
     private:
         GenericInputChannel(const GenericInputChannel&) = default;
@@ -113,7 +112,7 @@ namespace Gadgetron { namespace Core {
     protected:
         Message pop() override;
 
-        optional<Message> try_pop() override;
+        std::optional<Message> try_pop() override;
 
         void close() override;
 
@@ -155,9 +154,9 @@ namespace Gadgetron { namespace Core {
             return force_unpack<TYPELIST...>(std::move(message));
         }
 
-        optional<decltype(force_unpack<TYPELIST...>(Message{}))> try_pop() {
+        std::optional<decltype(force_unpack<TYPELIST...>(Message{}))> try_pop() {
 
-            optional<Message> message = in.try_pop();
+            std::optional<Message> message = in.try_pop();
 
             while (message && !convertible_to<TYPELIST...>(*message)) {
                 bypass.push_message(std::move(*message));
@@ -165,7 +164,7 @@ namespace Gadgetron { namespace Core {
             }
 
             if (!message)
-                return none;
+                return std::nullopt;
 
             return force_unpack<TYPELIST...>(std::move(*message));
         }

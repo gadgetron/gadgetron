@@ -1,8 +1,6 @@
 #ifndef GADGETRON_LOG_H
 #define GADGETRON_LOG_H
 
-#include "log_export.h"
-
 #include <vector> //For mask fields
 
 #include <sstream>
@@ -22,7 +20,7 @@ namespace Gadgetron
     GADGETRON_LOG_LEVEL_INFO,          //!< Regular application information
     GADGETRON_LOG_LEVEL_WARNING,       //!< Warnings about events that could lead to failues
     GADGETRON_LOG_LEVEL_ERROR,         //!< Errors after which application will be unable to continue
-    GADGETRON_LOG_LEVEL_VERBOSE,       //!< Verbose information about algorithm parameters, etc. 
+    GADGETRON_LOG_LEVEL_VERBOSE,       //!< Verbose information about algorithm parameters, etc.
     GADGETRON_LOG_LEVEL_MAX            //!< All log levels must have values lower than this
   };
 
@@ -40,9 +38,9 @@ namespace Gadgetron
   };
 
   /**
-     Main logging utility class for the Gadgetron and associated toolboxes. 
+     Main logging utility class for the Gadgetron and associated toolboxes.
 
-     This is a process wide singleton. 
+     This is a process wide singleton.
 
      Logging/Debug messages should be done with the convenience macros:
 
@@ -59,7 +57,7 @@ namespace Gadgetron
      The c++ std::cout is not recommended for logging as it does not add
      filename, log level, timing or other context information to the logging
      statements. Use of std::cout can also cause log lines from different threads
-     to be interleaved. For people more comfortable with the std::cout style 
+     to be interleaved. For people more comfortable with the std::cout style
      syntax, we provide the macros:
 
      GDEBUG_STREAM
@@ -69,25 +67,25 @@ namespace Gadgetron
      GVERBOSE_STREAM
 
      To use them:
-     
+
      GDEBUG("Here we are logging some values " << myFloat << ", " << myInt << std::endl);
 
-     It is possible to control which log levels are output using the @enableLogLevel, @disableLogLevel, 
-     @enableOutputOption, and @disableOutputOption functions. 
+     It is possible to control which log levels are output using the @enableLogLevel, @disableLogLevel,
+     @enableOutputOption, and @disableOutputOption functions.
 
      Log levels are defined in @GadgetronLogLevel
      Ouput options are defined in @GadgetronLogOutput
- 
+
      The logger checks the environment variable GADGETRON_LOG_MASK. If it is set,
-     it disables all log levels and outputs and only enables the ones in the mask. 
+     it disables all log levels and outputs and only enables the ones in the mask.
      It can be specified with (on unix system):
 
      export GADGETRON_LOG_MASK="LEVEL_INFO,LEVEL_DEBUG,PRINT_FILELOC,PRINT_DATETIME"
-     
+
      Any (or no) seperator is allowed between the levels and ourput options.
 
    */
-  class EXPORTGADGETRONLOG GadgetronLogger
+  class GadgetronLogger
   {
   public:
     ///Function for accessing the process wide singleton
@@ -184,14 +182,14 @@ namespace Gadgetron
         #define GWARN_STREAM(message) { std::ostringstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str().c_str()); }
     #endif // _DEBUG
 
-    #define GERROR_STREAM(message) GDEBUG_STREAM(message) 
+    #define GERROR_STREAM(message) GDEBUG_STREAM(message)
 #endif // MATLAB_MEX_COMPILE
 
 //Older debugging macros
 //TODO: Review and check that they are up to date
 #define GDEBUG_CONDITION_STREAM(con, message) { if ( con ) GDEBUG_STREAM(message) }
 #define GWARN_CONDITION_STREAM(con, message) { if ( con ) GWARN_STREAM(message) }
-     
+
 #define GADGET_THROW(msg) { GERROR_STREAM(msg); throw std::runtime_error(msg); }
 #define GADGET_CHECK_THROW(con) { if ( !(con) ) { GERROR_STREAM(#con); throw std::runtime_error(#con); } }
 
@@ -208,9 +206,9 @@ namespace Gadgetron
 #define GADGET_DEBUG_CHECK_RETURN(con, value) GADGET_CHECK_RETURN(con, value)
 #define GADGET_DEBUG_CHECK_RETURN_FALSE(con) GADGET_CHECK_RETURN_FALSE(con)
 #else
-#define GADGET_DEBUG_CHECK_THROW(con) 
-#define GADGET_DEBUG_CHECK_RETURN(con, value) 
-#define GADGET_DEBUG_CHECK_RETURN_FALSE(con) 
+#define GADGET_DEBUG_CHECK_THROW(con)
+#define GADGET_DEBUG_CHECK_RETURN(con, value)
+#define GADGET_DEBUG_CHECK_RETURN_FALSE(con)
 #endif // GADGET_DEBUG_MODE
 
 

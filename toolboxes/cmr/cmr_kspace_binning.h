@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include "cmr_export.h"
-
 #include "GadgetronTimer.h"
 
 #ifdef min
@@ -18,21 +16,16 @@
 #include <algorithm>
 #include "hoMatrix.h"
 
-#include "ismrmrd/ismrmrd.h"
-#include "ismrmrd/xml.h"
-#include "ismrmrd/meta.h"
-
 #include "mri_core_def.h"
-#include "mri_core_data.h"
 #include "mri_core_utility.h"
 
 #include "ImageIOAnalyze.h"
 #include "hoImageRegContainer2DRegistration.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
     template <typename T>
-    class EXPORTCMR KSpaceBinningObj
+    class KSpaceBinningObj
     {
     public:
 
@@ -76,10 +69,10 @@ namespace Gadgetron {
         /// S is the motion sharing dimension, e.g. contrast or set
         /// incoming image should already be in eigeh channel, with the high energy channel first
         hoNDArray< std::complex<T> > data_;
-        SamplingDescription sampling_;
+        mrd::SamplingDescription sampling_;
 
         /// [E1 N S]
-        hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
+        hoNDArray< mrd::AcquisitionHeader > headers_;
 
         // ------------------------------------
         /// buffer for recon
@@ -124,7 +117,7 @@ namespace Gadgetron {
         hoNDArray< float > kspace_binning_hit_count_;
     };
 
-    template<typename T> 
+    template<typename T>
     class CmrKSpaceBinning
     {
     public:
@@ -223,7 +216,7 @@ namespace Gadgetron {
 
         // down stream coil compression
         // if downstream_coil_compression_num_modesKept > 0, this number of channels will be used as the dst channels
-        // if downstream_coil_compression_num_modesKept==0 and downstream_coil_compression_thres>0, 
+        // if downstream_coil_compression_num_modesKept==0 and downstream_coil_compression_thres>0,
         // the number of dst channels will be determined  by this threshold
         size_t downstream_coil_compression_num_modesKept_;
         double downstream_coil_compression_thres_;
@@ -345,10 +338,10 @@ namespace Gadgetron {
         /// from the input time_stamp and cpt_time_stamp, compute times for missing lines, find completed heart beat and compute times for every phase (n)
         /// time_stamp : [E1 N]
         /// cpt_time_stamp : [E1 N]
-        void process_time_stamps(hoNDArray<float>& time_stamp, hoNDArray<float>& cpt_time_stamp, 
-                                hoNDArray<float>& cpt_time_ratio, hoNDArray<float>& phs_time_stamp, 
-                                hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio, 
-                                hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB, 
+        void process_time_stamps(hoNDArray<float>& time_stamp, hoNDArray<float>& cpt_time_stamp,
+                                hoNDArray<float>& cpt_time_ratio, hoNDArray<float>& phs_time_stamp,
+                                hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio,
+                                hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB,
                                 HeartBeatIndexType& endingHB, float& meanRRInterval);
 
         /// compute RR interval for a heart beat

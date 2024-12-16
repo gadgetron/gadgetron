@@ -5,7 +5,7 @@
 
 #pragma once
 
-#define GENERIC_RECON_ISMRMRD_HEADER "recon_header"
+#define GENERIC_RECON_MRD_HEADER "recon_header"
 #define GENERIC_RECON_UNDERSAMPLED_KSPACE "undersampled_kspace"
 #define GENERIC_RECON_REF_KSPACE "ref_kspace"
 #define GENERIC_RECON_REF_KSPACE_FOR_COILMAP "ref_kspace_for_coil_map"

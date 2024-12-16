@@ -9,8 +9,7 @@
 
 #include "ChannelAlgorithms.h"
 #include "io/from_string.h"
-#include "mri_core_acquisition_bucket.h"
-#include "mri_core_data.h"
+#include "mri_core_utility.h"
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -51,6 +50,8 @@ static const std::unordered_map<std::string, Gadgetron::FlagTriggerGadget::Trigg
     {"is_dummyscan_data", FlagTriggerGadget::TriggerFlags::is_dummyscan_data},
     {"is_rtfeedback_data", FlagTriggerGadget::TriggerFlags::is_rtfeedback_data},
     {"is_surfacecoilcorrectionscan_data", FlagTriggerGadget::TriggerFlags::is_surfacecoilcorrectionscan_data},
+    {"is_phase_stabilization_reference", FlagTriggerGadget::TriggerFlags::is_phase_stabilization_reference},
+    {"is_phase_stabilization", FlagTriggerGadget::TriggerFlags::is_phase_stabilization},
 
     {"compression1", FlagTriggerGadget::TriggerFlags::compression1},
     {"compression2", FlagTriggerGadget::TriggerFlags::compression2},
@@ -168,7 +169,7 @@ auto const expression_def = andop | orop | negateop | term | x3::lit('(') >> exp
 BOOST_SPIRIT_DEFINE(expression, andop, orop, negateop, term);
 
 } // namespace boolean_grammer
-std::function<bool(const Core::Acquisition& acq)>
+std::function<bool(const mrd::Acquisition& acq)>
 FlagTriggerGadget::create_trigger_filter(const std::string& trigger_string) {
     namespace x3 = boost::spirit::x3;
 
@@ -181,19 +182,18 @@ FlagTriggerGadget::create_trigger_filter(const std::string& trigger_string) {
     if (!r || iter != last) {
         throw std::runtime_error("Not passing");
     }
-    return [expression](const Core::Acquisition& acq) {
-        auto& [head, data, traj] = acq;
+    return [expression](const mrd::Acquisition& acq) {
         ast::eval eval;
-        return eval(expression, head.flags);
+        return eval(expression, acq.head.flags.Value());
     };
 }
 
-void Gadgetron::FlagTriggerGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
+void Gadgetron::FlagTriggerGadget::process(Core::InputChannel<mrd::Acquisition>& in, Core::OutputChannel& out) {
 
     for (const auto& group : Core::Algorithm::buffer(in, this->predicate)) {
-        auto bucket = AcquisitionBucket();
+        auto bucket = mrd::AcquisitionBucket();
         for (auto acq : group) {
-            bucket.add_acquisition(std::move(acq));
+            Gadgetron::add_acquisition_to_bucket(bucket, acq);
         }
         out.push(std::move(bucket));
     }

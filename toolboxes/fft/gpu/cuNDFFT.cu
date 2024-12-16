@@ -109,14 +109,14 @@ template<class T> void Gadgetron::timeswitch(cuNDArray<complext<T> >* inout, int
 
 
 
-template EXPORTGPUFFT void Gadgetron::timeswitch<float>(cuNDArray<float_complext>*, int);
-template EXPORTGPUFFT void Gadgetron::timeswitch<double>(cuNDArray<double_complext>*, int);
+template void Gadgetron::timeswitch<float>(cuNDArray<float_complext>*, int);
+template void Gadgetron::timeswitch<double>(cuNDArray<double_complext>*, int);
 
-template EXPORTGPUFFT void Gadgetron::timeswitch1D<float>(cuNDArray<float_complext>*);
-template EXPORTGPUFFT void Gadgetron::timeswitch1D<double>(cuNDArray<double_complext>*);
+template void Gadgetron::timeswitch1D<float>(cuNDArray<float_complext>*);
+template void Gadgetron::timeswitch1D<double>(cuNDArray<double_complext>*);
 
-template EXPORTGPUFFT void Gadgetron::timeswitch2D<float>(cuNDArray<float_complext>*);
-template EXPORTGPUFFT void Gadgetron::timeswitch2D<double>(cuNDArray<double_complext>*);
+template void Gadgetron::timeswitch2D<float>(cuNDArray<float_complext>*);
+template void Gadgetron::timeswitch2D<double>(cuNDArray<double_complext>*);
 
-template EXPORTGPUFFT void Gadgetron::timeswitch3D<float>(cuNDArray<float_complext>*);
-template EXPORTGPUFFT void Gadgetron::timeswitch3D<double>(cuNDArray<double_complext>*);
+template void Gadgetron::timeswitch3D<float>(cuNDArray<float_complext>*);
+template void Gadgetron::timeswitch3D<double>(cuNDArray<double_complext>*);
