@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "GadgetronException.h"
 #include "log.h"
 #include <cmath>
 

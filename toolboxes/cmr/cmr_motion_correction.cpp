@@ -5,9 +5,6 @@
 
 #include "cmr_motion_correction.h"
 
-#include "ismrmrd/ismrmrd.h"
-#include "ismrmrd/meta.h"
-
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_comparison.hpp"
 #include "boost/tuple/tuple_io.hpp"
@@ -29,9 +26,9 @@
 #include "hoNDArray_linalg.h"
 #include "hoNDFFT.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
+template <typename T>
 void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t& key_frame)
 {
     try
@@ -91,8 +88,8 @@ void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t& key_fr
     }
 }
 
-template EXPORTCMR void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<float>& input, size_t& key_frame);
-template EXPORTCMR void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t& key_frame);
+template void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<float>& input, size_t& key_frame);
+template void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t& key_frame);
 
 // ------------------------------------------------------------------------
 
@@ -179,8 +176,8 @@ void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t& key_fr
     }
 }
 
-template EXPORTCMR void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<float>& input, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
-template EXPORTCMR void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
+template void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<float>& input, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
+template void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
 
 // ------------------------------------------------------------------------
 
@@ -225,8 +222,8 @@ void compute_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, std
     }
 }
 
-template EXPORTCMR void compute_SSD_2DT(const Gadgetron::hoNDArray<float>& input, size_t key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
-template EXPORTCMR void compute_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
+template void compute_SSD_2DT(const Gadgetron::hoNDArray<float>& input, size_t key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
+template void compute_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
 
 // ------------------------------------------------------------------------
 
@@ -286,7 +283,7 @@ void compute_deformation_jacobian(const Gadgetron::hoNDArray<T>& dx, const Gadge
     }
 }
 
-template EXPORTCMR void compute_deformation_jacobian(const Gadgetron::hoNDArray<float>& dx, const Gadgetron::hoNDArray<float>& dy, std::vector<float>& mean_deform, std::vector<float>& max_deform, std::vector<float>& mean_log_jac, std::vector<float>& max_log_jac);
+template void compute_deformation_jacobian(const Gadgetron::hoNDArray<float>& dx, const Gadgetron::hoNDArray<float>& dy, std::vector<float>& mean_deform, std::vector<float>& max_deform, std::vector<float>& mean_log_jac, std::vector<float>& max_log_jac);
 
 // ------------------------------------------------------------------------
 
@@ -315,7 +312,7 @@ void find_key_frame_deformation_2DT(const Gadgetron::hoNDArray<T>& dx, const Gad
     }
 }
 
-template EXPORTCMR void find_key_frame_deformation_2DT(const Gadgetron::hoNDArray<float>& dx, const Gadgetron::hoNDArray<float>& dy, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
+template void find_key_frame_deformation_2DT(const Gadgetron::hoNDArray<float>& dx, const Gadgetron::hoNDArray<float>& dy, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality);
 
 // ------------------------------------------------------------------------
 
@@ -355,13 +352,13 @@ void perform_averaging(const Gadgetron::hoNDArray<T>& input, size_t& key_frame, 
     }
 }
 
-template EXPORTCMR void perform_averaging(const Gadgetron::hoNDArray<float>& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray<float>& ave);
+template void perform_averaging(const Gadgetron::hoNDArray<float>& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray<float>& ave);
 
-template EXPORTCMR void perform_averaging(const Gadgetron::hoNDArray<double>& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray<double>& ave);
+template void perform_averaging(const Gadgetron::hoNDArray<double>& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray<double>& ave);
 
-template EXPORTCMR void perform_averaging(const Gadgetron::hoNDArray< std::complex<float> >& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray< std::complex<float> >& ave);
+template void perform_averaging(const Gadgetron::hoNDArray< std::complex<float> >& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray< std::complex<float> >& ave);
 
-template EXPORTCMR void perform_averaging(const Gadgetron::hoNDArray< std::complex<double> >& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray< std::complex<double> >& ave);
+template void perform_averaging(const Gadgetron::hoNDArray< std::complex<double> >& input, size_t& key_frame, const std::vector< std::pair<double, size_t> >& moco_quality, double percentage_kept_for_averaging, Gadgetron::hoNDArray< std::complex<double> >& ave);
 
 // ------------------------------------------------------------------------
 
@@ -419,9 +416,9 @@ void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage
     }
 }
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<float, 2> >& input, const std::vector<unsigned int>& key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
+template void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<float, 2> >& input, const std::vector<unsigned int>& key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<double, 2> > & input, const std::vector<unsigned int>& key_frame, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
+template void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<double, 2> > & input, const std::vector<unsigned int>& key_frame, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
 
 // ------------------------------------------------------------------------
 
@@ -449,9 +446,9 @@ void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size
     reg.registerOverContainer2DFixedReference(im, referenceFrame, warp_input, false);
 }
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<float>& input, size_t key_frame, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
+template void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<float>& input, size_t key_frame, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<double>& input, size_t key_frame, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
+template void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<double>& input, size_t key_frame, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
 
 // ------------------------------------------------------------------------
 
@@ -486,9 +483,9 @@ void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size
     }
 }
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<float>& input, size_t key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
+template void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<float>& input, size_t key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
 
-template EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<double>& input, size_t key_frame, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
+template void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<double>& input, size_t key_frame, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
 
 // ------------------------------------------------------------------------
 
@@ -524,9 +521,9 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
     }
 }
 
-template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
+template void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
 
-template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<double>& target, const Gadgetron::hoNDArray<double>& source, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
+template void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<double>& target, const Gadgetron::hoNDArray<double>& source, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
 
 // ------------------------------------------------------------------------
 
@@ -593,9 +590,9 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
     }
 }
 
-template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
+template void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg);
 
-template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<double>& target, const Gadgetron::hoNDArray<double>& source, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
+template void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<double>& target, const Gadgetron::hoNDArray<double>& source, double reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg);
 
 // ------------------------------------------------------------------------
 
@@ -644,8 +641,8 @@ void apply_deformation_field(const Gadgetron::hoNDArray<T>& target, const Gadget
     }
 }
 
-template EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<float>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<float>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
-template EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<double>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<double>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
+template void apply_deformation_field(const Gadgetron::hoNDArray<float>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<float>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
+template void apply_deformation_field(const Gadgetron::hoNDArray<double>& input, const Gadgetron::hoNDArray<double>& dx, const Gadgetron::hoNDArray<double>& dy, Gadgetron::hoNDArray<double>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
 // ------------------------------------------------------------------------
 
 template <typename T>
@@ -741,8 +738,8 @@ void concatenate_deform_fields_2DT(const hoNDArray<T>& dx, const hoNDArray<T>& d
     }
 }
 
-template EXPORTCMR void concatenate_deform_fields_2DT(const hoNDArray<float>& dx, const hoNDArray<float>& dy, size_t key_frame, hoNDArray<float>& dx_out, hoNDArray<float>& dy_out);
-template EXPORTCMR void concatenate_deform_fields_2DT(const hoNDArray<double>& dx, const hoNDArray<double>& dy, size_t key_frame, hoNDArray<double>& dx_out, hoNDArray<double>& dy_out);
+template void concatenate_deform_fields_2DT(const hoNDArray<float>& dx, const hoNDArray<float>& dy, size_t key_frame, hoNDArray<float>& dx_out, hoNDArray<float>& dy_out);
+template void concatenate_deform_fields_2DT(const hoNDArray<double>& dx, const hoNDArray<double>& dy, size_t key_frame, hoNDArray<double>& dx_out, hoNDArray<double>& dy_out);
 
 // ------------------------------------------------------------------------
 
@@ -833,9 +830,9 @@ void find_key_frame_use_deformation_cross_series(const Gadgetron::hoNDArray<T>& 
     }
 }
 
-template EXPORTCMR void find_key_frame_use_deformation_cross_series(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality, hoNDArray<double>& dx, hoNDArray<double>& dy);
+template void find_key_frame_use_deformation_cross_series(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<float, 2>, Gadgetron::hoNDImage<float, 2>, double>& reg, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality, hoNDArray<double>& dx, hoNDArray<double>& dy);
 
-template EXPORTCMR void find_key_frame_use_deformation_cross_series(const Gadgetron::hoNDArray<double>& target, const Gadgetron::hoNDArray<double>& source, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality, hoNDArray<double>& dx, hoNDArray<double>& dy);
+template void find_key_frame_use_deformation_cross_series(const Gadgetron::hoNDArray<double>& target, const Gadgetron::hoNDArray<double>& source, Gadgetron::hoImageRegContainer2DRegistration<Gadgetron::hoNDImage<double, 2>, Gadgetron::hoNDImage<double, 2>, double>& reg, size_t& key_frame, std::vector< std::pair<double, size_t> >& moco_quality, hoNDArray<double>& dx, hoNDArray<double>& dy);
 
 // ------------------------------------------------------------------------
 }

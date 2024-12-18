@@ -8,10 +8,10 @@
 
 #include "ImageIOAnalyze.h"
 
-// to suppor the ISMRMRD format
+// to support the MRD format
 // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 ImageIOAnalyze::ImageIOAnalyze() : BaseClass()
 {

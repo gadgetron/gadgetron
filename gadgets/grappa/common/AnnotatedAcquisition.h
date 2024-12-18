@@ -1,7 +1,8 @@
 #pragma once
 
 #include "hoNDArray.h"
-#include "Types.h"
+
+#include "mrd/types.h"
 
 namespace Gadgetron::Grappa {
 
@@ -10,8 +11,8 @@ namespace Gadgetron::Grappa {
         std::vector<uint64_t> reordering;
     };
 
-    using AnnotatedAcquisition = Core::tuple<ISMRMRD::AcquisitionHeader,
-                                             Core::optional<hoNDArray<float>>,
-                                             hoNDArray<std::complex<float>>,
-                                             Core::optional<ChannelAnnotation>>;
+    /** TODO: The ChannelReorderer is no longer used, so all Gadgets using this
+     *      AnnotatedAcquisition can be updated to just use mrd::Acquisition.
+     */
+    using AnnotatedAcquisition = std::tuple<mrd::Acquisition, std::optional<ChannelAnnotation>>;
 }

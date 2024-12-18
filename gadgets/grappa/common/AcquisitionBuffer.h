@@ -8,7 +8,6 @@
 
 #include "Context.h"
 #include "Channel.h"
-#include "Types.h"
 
 #include "hoNDArray.h"
 

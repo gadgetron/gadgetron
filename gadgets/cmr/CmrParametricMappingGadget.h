@@ -1,20 +1,17 @@
 /** \file   CmrParametricMappingGadget.h
-    \brief  This is the class gadget for cardiac parametric mapping, working on the IsmrmrdImageArray.
+    \brief  This is the class gadget for cardiac parametric mapping, working on the mrd::ImageArray.
     \author Hui Xue
 */
 
 #pragma once
 
-#include "gadgetron_cmr_export.h"
 #include "generic_recon_gadgets/GenericReconBase.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSCMR CmrParametricMappingGadget : public GenericReconImageBase
+    class CmrParametricMappingGadget : public GenericReconImageBase
     {
     public:
-        GADGET_DECLARE(CmrParametricMappingGadget);
-
         typedef GenericReconImageBase BaseClass;
 
         CmrParametricMappingGadget();
@@ -71,15 +68,15 @@ namespace Gadgetron {
         std::vector<float> prep_times_;
 
         // encoding space size
-        ISMRMRD::EncodingCounters meas_max_idx_;
+        mrd::EncodingCounters meas_max_idx_;
 
         // --------------------------------------------------
         // functional functions
         // --------------------------------------------------
 
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ImageArray >* m1);
 
         // close call
         int close(unsigned long flags);
@@ -88,11 +85,11 @@ namespace Gadgetron {
         // data: input image array [RO E1 E2 CHA N S SLC]
         // map and map_sd: mapping result and its sd
         // para and para_sd: other parameters of mapping and its sd
-        virtual int perform_mapping(IsmrmrdImageArray& data, IsmrmrdImageArray& map, IsmrmrdImageArray& para, IsmrmrdImageArray& map_sd, IsmrmrdImageArray& para_sd) = 0;
+        virtual int perform_mapping(mrd::ImageArray& data, mrd::ImageArray& map, mrd::ImageArray& para, mrd::ImageArray& map_sd, mrd::ImageArray& para_sd) = 0;
 
         // fill image header and meta for maps
-        virtual int fill_map_header(IsmrmrdImageArray& map);
-        virtual int fill_sd_header(IsmrmrdImageArray& map_sd);
+        virtual int fill_map_header(mrd::ImageArray& map);
+        virtual int fill_sd_header(mrd::ImageArray& map_sd);
 
         // compute image mask
         virtual void compute_mask_for_mapping(const hoNDArray<float> &mag, hoNDArray<float> &mask,

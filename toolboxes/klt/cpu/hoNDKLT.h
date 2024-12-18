@@ -7,7 +7,6 @@
 #define hoNDKLT_H
 
 #include "hoNDArray.h"
-#include "cpuklt_export.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -22,7 +21,7 @@ namespace Gadgetron{
         and the last eigen channel has the SMALLEST eigen value
     */
 
-    template <typename T> class EXPORTCPUKLT hoNDKLT
+    template <typename T> class hoNDKLT
     {
     public:
 

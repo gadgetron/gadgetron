@@ -141,12 +141,6 @@ namespace Gadgetron {
         //vv2.create(image_dim_); p_vv2 = vv2.begin();
         //vv12.create(image_dim_); p_vv12 = vv12.begin();
 
-        #ifdef WIN32
-            size_t v=0;
-            for ( size_t ii=0; ii<image_dim_.size(); ii++ ) v+=image_dim_[ii];
-            mem_.create(2*v);
-        #endif // WIN32
-
         eps_ = std::numeric_limits<computing_value_type>::epsilon();
     }
 
@@ -232,19 +226,11 @@ namespace Gadgetron {
                 p_v12[n] = v1*v2;
             }
 
-                //#ifdef WIN32
-                    Gadgetron::filterGaussian(mu1, sigmaArg_, mem_.begin());
-                    Gadgetron::filterGaussian(mu2, sigmaArg_, mem_.begin());
-                    Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
-                    Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
-                    Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
-                //#else
-                //    Gadgetron::filterGaussian(mu1, sigmaArg_);
-                //    Gadgetron::filterGaussian(mu2, sigmaArg_);
-                //    Gadgetron::filterGaussian(v1, sigmaArg_);
-                //    Gadgetron::filterGaussian(v2, sigmaArg_);
-                //    Gadgetron::filterGaussian(v12, sigmaArg_);
-                //#endif // WIN32
+            Gadgetron::filterGaussian(mu1, sigmaArg_, mem_.begin());
+            Gadgetron::filterGaussian(mu2, sigmaArg_, mem_.begin());
+            Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
+            Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
+            Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
 
             //if ( 0 )
             //{
@@ -344,26 +330,20 @@ namespace Gadgetron {
 
             //#pragma omp parallel sections if ( D==2 )
             {
-                //#ifdef WIN32
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
-                    }
+                //#pragma omp section
+                {
+                    Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
+                }
 
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
-                    }
+                //#pragma omp section
+                {
+                    Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
+                }
 
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
-                    }
-                //#else
-                //    Gadgetron::filterGaussian(v1, sigmaArg_);
-                //    Gadgetron::filterGaussian(v2, sigmaArg_);
-                //    Gadgetron::filterGaussian(v12, sigmaArg_);
-                //#endif // WIN32
+                //#pragma omp section
+                {
+                    Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
+                }
             }
 
             // deriv = f1*i1 + f2*i2 + f3, we don't need to multiply this by 2.0

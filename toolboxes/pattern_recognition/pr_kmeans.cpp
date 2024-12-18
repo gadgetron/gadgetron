@@ -15,9 +15,9 @@
 
 #include <random>
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
+template <typename T>
 kmeans<T>::kmeans()
 {
     max_iter_ = 100;
@@ -966,7 +966,7 @@ void kmeans<T>::perform_online_update(const ArrayType& X, ClusterType& IDX, Arra
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTPR kmeans< float >;
-template class EXPORTPR kmeans< double >;
+template class kmeans< float >;
+template class kmeans< double >;
 
 }

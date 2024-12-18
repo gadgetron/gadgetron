@@ -2,7 +2,6 @@
 #include "hoNDArray_elemwise.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd/xml.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -10,10 +9,10 @@
 
 #ifdef USE_OMP
 #include <omp.h>
-#endif 
+#endif
 
 namespace Gadgetron{
-  
+
   RadialPhaseCorrectionGadget::RadialPhaseCorrectionGadget()
     : slices_(-1)
     , sets_(-1)
@@ -21,29 +20,25 @@ namespace Gadgetron{
     , profiles_counter_(0)
   {
   }
-  
+
   int RadialPhaseCorrectionGadget::
-  process_config( ACE_Message_Block *mb )
+  process_config(const mrd::Header& header)
   {
-    ISMRMRD::IsmrmrdHeader h;
-    ISMRMRD::deserialize(mb->rd_ptr(),h);
-    
-    
-    if (h.encoding.size() != 1) {
+    if (header.encoding.size() != 1) {
       GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
-    
+
     // Get the encoding space and trajectory description
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+    mrd::EncodingSpaceType e_space = header.encoding[0].encoded_space;
+    mrd::EncodingSpaceType r_space = header.encoding[0].recon_space;
+    mrd::EncodingLimitsType e_limits = header.encoding[0].encoding_limits;
 
     slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
     sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
 
-    if (h.acquisitionSystemInformation) {
-      channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 128;
+    if (header.acquisition_system_information) {
+      channels_ = header.acquisition_system_information->receiver_channels.value_or(128);
     }
 
     mode_ = mode.value();
@@ -61,17 +56,16 @@ namespace Gadgetron{
 
     return GADGET_OK;
   }
-  
+
   int RadialPhaseCorrectionGadget
-  ::process( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-             GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2 )
+  ::process( GadgetContainerMessage<mrd::Acquisition> *m1)
   {
 
     // Pass any noise measurements down the chain
     //
-    
-    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
-    if (is_noise) { 
+
+    bool is_noise = m1->getObjectPtr()->head.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
+    if (is_noise) {
       if (this->next()->putq(m1) < 0) {
         GDEBUG("Failed to pass on noise samples.\n");
         return GADGET_FAIL;
@@ -82,13 +76,13 @@ namespace Gadgetron{
     // For now we require that this gadget is inserted before any coil reduction gadgets
     //
 
-    if( channels_ != m1->getObjectPtr()->active_channels ){
+    if( channels_ != m1->getObjectPtr()->Coils() ){
       GDEBUG("Unexpected number of coils encountered. Did you insert the phase correction gadget after a coil reduction gadget? In that case invert the order of these gadgets\n");
       return GADGET_FAIL;
     }
 
-    unsigned int slice = m1->getObjectPtr()->idx.slice;
-    unsigned int set = m1->getObjectPtr()->idx.set;
+    unsigned int slice = m1->getObjectPtr()->head.idx.slice.value_or(0);
+    unsigned int set = m1->getObjectPtr()->head.idx.set.value_or(0);
     auto idx = set*slices_+slice;
 
     if( !fit_calculated[idx] ){
@@ -106,12 +100,12 @@ namespace Gadgetron{
         // Perform polynomial fit,
         // assemble system matrix A.
         //
-        
+
         arma::mat A( profiles_, order_+1 );
-        
+
         for( int m=0; m<profiles_; m++ ){
 
-          double angle = get_projection_angle(m);          
+          double angle = get_projection_angle(m);
 
           for( int n=0; n<order_+1; n++ ){
             A(m,n) = pow( angle, double(n) );
@@ -120,7 +114,7 @@ namespace Gadgetron{
 
         // Assemble right hand side
         //
-        
+
         arma::mat b( profiles_, channels_ );
         //double prev_phase[channels_];
         std::vector<double> prev_phase(channels_);
@@ -130,26 +124,18 @@ namespace Gadgetron{
           AcquisitionMessage *mbq = profiles_queue[idx].front().release();
           profiles_queue[idx].pop();
 
-          GadgetContainerMessage< hoNDArray< std::complex<float> > > *_profile = 
-            AsContainerMessage< hoNDArray< std::complex<float> > >(mbq->cont());
-        
-          if(!_profile) {
-            GDEBUG("Unable to interpret data on message queue (2)\n");
-            return GADGET_FAIL;
-          }
-          
-          hoNDArray< std::complex<float> > *profile = _profile->getObjectPtr();
+          auto profile = mbq->getObjectPtr()->data;
 
           // A unique fit for each coil
           //
 
           for( unsigned int coil=0; coil<channels_; coil++ ){
-            
+
             // 'arg' returns angles in the interval (-pi;pi)
             // Make sure that no discontinouities arise on the graph as they cannot be fitted
             //
-            
-            std::complex<float> sample = profile->get_data_ptr()[coil*profile->get_size(0)+(profile->get_size(0)>>1)];
+
+            std::complex<float> sample = profile.get_data_ptr()[coil*profile.get_size(0)+(profile.get_size(0)>>1)];
             double phase = double(std::arg(sample));
 
             if( m>0 && std::abs(phase-prev_phase[coil])>M_PI ){
@@ -160,17 +146,17 @@ namespace Gadgetron{
               if( phase<prev_phase[coil] )
                 phase += 2.0*M_PI;
               else
-                phase -= 2.0*M_PI;                
+                phase -= 2.0*M_PI;
             }
 
             b(m,coil) = phase;
             prev_phase[coil] = phase;
           }
         }
-        
+
         // Linear least squares fit, i.e. solve "A^T A x = b"
         //
-        
+
         std::vector<size_t> dims; dims.push_back(order_+1); dims.push_back(channels_);
         hoNDArray<double> vec( dims, &polyfit[set*(order_+1)*channels_*slices_+slice*(order_+1)*channels_] );
 
@@ -182,40 +168,40 @@ namespace Gadgetron{
 
         for( int m=0; m<profiles_; m++ ){
 
-          AcquisitionMessage *header = profiles_queue[idx].front().release();
+          AcquisitionMessage *acq = profiles_queue[idx].front().release();
           profiles_queue[idx].pop();
 
-          if(!header) {
+          if(!acq) {
             GDEBUG("Unable to interpret data on message queue (3)\n");
             return GADGET_FAIL;
           }
 
-          phase_correct(header);
+          phase_correct(acq);
 
-          if (this->next()->putq(header) < 0) {
+          if (this->next()->putq(acq) < 0) {
             GDEBUG("Failed to put data on queue\n");
             return GADGET_FAIL;
-          }          
+          }
         }
         fit_calculated[idx] = true;
       }
     }
     else{
-      
+
       // Phase correct profile
       //
-      
+
       phase_correct(m1);
-      
+
       if (this->next()->putq(m1) < 0) {
         GDEBUG("Failed to put data on queue\n");
         return GADGET_FAIL;
-      }          
+      }
     }
 
     return GADGET_OK;
-  }  
-  
+  }
+
 
   double RadialPhaseCorrectionGadget
   ::get_projection_angle( unsigned int idx )
@@ -234,10 +220,10 @@ namespace Gadgetron{
   }
 
   void RadialPhaseCorrectionGadget
-  ::phase_correct( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1 )
+  ::phase_correct( GadgetContainerMessage<mrd::Acquisition> *m1 )
   {
-    unsigned int slice = m1->getObjectPtr()->idx.slice;
-    unsigned int set = m1->getObjectPtr()->idx.set;
+    unsigned int slice = m1->getObjectPtr()->head.idx.slice.value_or(0);
+    unsigned int set = m1->getObjectPtr()->head.idx.set.value_or(0);
     double angle = get_projection_angle(profiles_counter_);
 
     for( unsigned int coil=0; coil<channels_; coil++ ){
@@ -255,24 +241,16 @@ namespace Gadgetron{
 
         estimated_phase += (weight*power);
       }
-      
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *_profile = 
-        AsContainerMessage<hoNDArray< std::complex<float> > >(m1->cont());
-      
-      if(!_profile) {
-        GDEBUG("Unable to phase correct profile\n");
-        return;
-      }
 
-      hoNDArray< std::complex<float> > *profile = _profile->getObjectPtr();      
+      auto profile = m1->getObjectPtr()->data;
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-      for( int i=0; i<profile->get_size(0); i++ ){
-        std::complex<float> sample = profile->get_data_ptr()[coil*profile->get_size(0)+i];
+      for( int i=0; i<profile.get_size(0); i++ ){
+        std::complex<float> sample = profile.get_data_ptr()[coil*profile.get_size(0)+i];
         float phase = std::arg(sample);
         float mag = std::abs(sample);
-        profile->get_data_ptr()[coil*profile->get_size(0)+i] = std::polar( mag, phase-float(estimated_phase) );
+        profile.get_data_ptr()[coil*profile.get_size(0)+i] = std::polar( mag, phase-float(estimated_phase) );
       }
     }
     profiles_counter_++;

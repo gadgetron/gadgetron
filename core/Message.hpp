@@ -1,12 +1,9 @@
 #include "Message.h"
 
-#include "GadgetContainerMessage.h"
-#include <boost/optional.hpp>
 #include <boost/hana.hpp>
-
-#include <iostream>
 #include <boost/core/demangle.hpp>
-#include "Types.h"
+#include <iostream>
+
 
 namespace Gadgetron::Core {
 
@@ -33,25 +30,24 @@ namespace Gadgetron::Core {
             struct MessageMaker {
                 template<class... VARGS, class ...REST>
                 static void
-                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, variant<VARGS...> var,
+                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, std::variant<VARGS...> var,
                             REST &&... args) {
-                    Core::visit([&](auto val) { add_messages(messages, val, std::forward<REST>(args)...); },
+                    std::visit([&](auto val) { add_messages(messages, val, std::forward<REST>(args)...); },
                                          var);
                 }
 
                 template<class... TARGS, class ...REST>
                 static void
-                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, tuple<TARGS...> opt,
+                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, std::tuple<TARGS...> opt,
                              REST &&... args) {
-                    Core::apply([&](auto... targs) {
-                                    add_messages(messages, std::move(targs)..., std::forward<REST...>(args)...);
-                                },
-                                opt);
+                    std::apply([&](auto... targs) {
+                            (..., add_messages(messages, std::move(targs), std::forward<REST...>(args)...));
+                        }, opt);
                 }
 
                 template<class T, class ...REST>
                 static void
-                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, optional <T> opt, REST &&... args) {
+                add_messages(std::vector<std::unique_ptr<MessageChunk>> &messages, std::optional <T> opt, REST &&... args) {
                     if (opt) messages.emplace_back(make_message(*opt));
                     add_messages(messages, std::forward<REST>(args)...);
                 }
@@ -115,7 +111,7 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class T, class ...TYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<optional < T>>&,
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<std::optional < T>>&,
                 const hana::basic_type<TYPES> &... xs
                 ) {
                     if (convertible(it, it_end, hana::type_c<T>, xs...)) return true;
@@ -124,14 +120,14 @@ namespace Gadgetron::Core {
 
                 template<class Iterator, class... TTYPES>
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<tuple < TTYPES...>>&) {
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<std::tuple < TTYPES...>>&) {
                     return convertible(it, it_end, hana::type_c<TTYPES>...);
                 }
 
 
                 template<class Iterator, class ...VTYPES >
                 static bool
-                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>&) {
+                convertible(Iterator it, const Iterator &it_end, const hana::basic_type<std::variant < VTYPES...>>&) {
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;
                     return hana::fold(vtypes, false, [&](bool result, auto type) {
                         return result || convertible(it, it_end, type);
@@ -150,11 +146,11 @@ namespace Gadgetron::Core {
                 }
 
                 template<class Iterator, class T>
-                static optional <T> convert(Iterator &it, const Iterator &it_end, const hana::basic_type<optional < T>>
+                static std::optional <T> convert(Iterator &it, const Iterator &it_end, const hana::basic_type<std::optional < T>>
 
                 ) {
                     if (convertible(it, it_end, hana::type_c<T>)) return reinterpret_message<T>(**it).data;
-                    return optional<T>();
+                    return std::optional<T>();
                 }
 
                 template<class Iterator, class T, class... TYPES>
@@ -166,32 +162,32 @@ namespace Gadgetron::Core {
 
 
                 template<class Iterator, class T, class... TYPES>
-                static hana::tuple<optional < T>, TYPES...>
-                convert(Iterator & it,  const Iterator &it_end, const hana::basic_type<Core::optional<T>> &,
+                static hana::tuple<std::optional < T>, TYPES...>
+                convert(Iterator & it,  const Iterator &it_end, const hana::basic_type<std::optional<T>> &,
                     const hana::basic_type<TYPES> &... xs
                 ) {
 
                     if (convertible(it, it_end, hana::basic_type<T>(), xs...)) {
                         auto &val = reinterpret_message<T>(**it).data;
-                        return combine(optional<T>(std::move(val)), convert(++it, it_end, xs...));
+                        return combine(std::optional<T>(std::move(val)), convert(++it, it_end, xs...));
                     }
-                    return combine(optional<T>(), convert(it, it_end, xs...));
+                    return combine(std::optional<T>(), convert(it, it_end, xs...));
                 }
 
                 template<class Iterator, class... TTYPES>
-                static tuple<TTYPES...>
-                convert(Iterator it, const Iterator &it_end, const hana::basic_type<tuple < TTYPES...>>&) {
+                static std::tuple<TTYPES...>
+                convert(Iterator it, const Iterator &it_end, const hana::basic_type<std::tuple < TTYPES...>>&) {
                     return hana::unpack(convert(it, it_end, hana::type_c<TTYPES>...), [](auto ...xs) {
                         return std::make_tuple(std::move(xs)...);
                     });
                 }
 
                 template<class Iterator, class... VTYPES>
-                static variant<VTYPES...>
-                convert(Iterator it, const Iterator &it_end, const hana::basic_type<variant < VTYPES...>>&) {
+                static std::variant<VTYPES...>
+                convert(Iterator it, const Iterator &it_end, const hana::basic_type<std::variant < VTYPES...>>&) {
 
                     constexpr auto vtypes = hana::tuple_t<VTYPES...>;
-                    variant < VTYPES...> variation;
+                    std::variant < VTYPES...> variation;
                     bool variant_found = hana::fold(vtypes, false, [&](bool result, auto type) {
                         if (result) return true;
                         if (convertible(it, it_end, type)) {
@@ -258,20 +254,20 @@ namespace Gadgetron::Core {
     }
 
     template<class ...ARGS>
-    std::enable_if_t<(sizeof...(ARGS) > 1), optional < std::tuple<ARGS...>>>
+    std::enable_if_t<(sizeof...(ARGS) > 1), std::optional < std::tuple<ARGS...>>>
     unpack(Message &&message) {
     if (convertible_to<ARGS...>(message)) {
         return force_unpack<ARGS...>(std::move(message));
     }
-    return none;
+    return std::nullopt;
 }
 
 template<class T>
-optional <T> unpack(Message &&message) {
+std::optional <T> unpack(Message &&message) {
     if (convertible_to<T>(message)) {
         return force_unpack<T>(std::move(message));
     }
-    return none;
+    return std::nullopt;
 
 }
 

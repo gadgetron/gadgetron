@@ -201,6 +201,6 @@ namespace Gadgetron {
 		}
 	}
 
-	template EXPORTCMR void compute_thickening(const hoNDArray<float>& endo_mask, const hoNDArray<float>& epi_mask, const size_t ref_phase, hoNDArray<float>& edge_endo, hoNDArray<float>& edge_epi, hoNDArray<float>& rad_strains);
-	template EXPORTCMR void compute_thickening(const hoNDArray<double>& endo_mask, const hoNDArray<double>& epi_mask, const size_t ref_phase, hoNDArray<double>& edge_endo, hoNDArray<double>& edge_epi, hoNDArray<double>& rad_strain);
+	template void compute_thickening(const hoNDArray<float>& endo_mask, const hoNDArray<float>& epi_mask, const size_t ref_phase, hoNDArray<float>& edge_endo, hoNDArray<float>& edge_epi, hoNDArray<float>& rad_strains);
+	template void compute_thickening(const hoNDArray<double>& endo_mask, const hoNDArray<double>& epi_mask, const size_t ref_phase, hoNDArray<double>& edge_endo, hoNDArray<double>& edge_epi, hoNDArray<double>& rad_strain);
 }

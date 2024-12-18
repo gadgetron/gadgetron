@@ -1,18 +1,18 @@
 /** \file   CmrCartesianKSpaceBinningCineGadget.h
-    \brief  This is the class gadget for 2DT cartesian KSpace binning reconstruction, working on the IsmrmrdReconData.
+    \brief  This is the class gadget for 2DT cartesian KSpace binning reconstruction, working on the mrd::ReconData.
             The temporal dimension is dimension N and motion sharing dimension is S.
 
-            Ref: 
-            [1] Hui Xue, Peter Kellman, Gina LaRocca, Andrew E Arai and Michael S Hansen. 
+            Ref:
+            [1] Hui Xue, Peter Kellman, Gina LaRocca, Andrew E Arai and Michael S Hansen.
                 High spatial and temporal resolution retrospective cine cardiovascular magnetic resonance from shortened free breathing real-time acquisitions.
                 Journal of Cardiovascular Magnetic Resonance 2013; 15:102.
 
-            [2] Peter Kellman, Christophe Chefd’hotel, Christine H. Lorenz, Christine Mancini, Andrew E. Arai, Elliot R. McVeigh. 
-                High spatial and temporal resolution cardiac cine MRI from retrospective reconstruction of data acquired in real time using motion correction and resorting. 
+            [2] Peter Kellman, Christophe Chefd’hotel, Christine H. Lorenz, Christine Mancini, Andrew E. Arai, Elliot R. McVeigh.
+                High spatial and temporal resolution cardiac cine MRI from retrospective reconstruction of data acquired in real time using motion correction and resorting.
                 Magn Reson Med. 2009; 62:1557–64.
 
-            [3] Michael S. Hansen, Thomas S. Sørensen, Andrew E. Arai, and Peter Kellman. 
-                Retrospective reconstruction of high temporal resolution cine images from real-time MRI using iterative motion correction. 
+            [3] Michael S. Hansen, Thomas S. Sørensen, Andrew E. Arai, and Peter Kellman.
+                Retrospective reconstruction of high temporal resolution cine images from real-time MRI using iterative motion correction.
                 Magn Reson Med. 2012; 68:741–50.
 
     \author Hui Xue
@@ -20,17 +20,14 @@
 
 #pragma once
 
-#include "gadgetron_cmr_export.h"
 #include "generic_recon_gadgets/GenericReconGadget.h"
 #include "cmr_kspace_binning.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSCMR CmrCartesianKSpaceBinningCineGadget : public GenericReconGadget
+    class CmrCartesianKSpaceBinningCineGadget : public GenericReconGadget
     {
     public:
-        GADGET_DECLARE(CmrCartesianKSpaceBinningCineGadget);
-
         typedef GenericReconGadget BaseClass;
 
         CmrCartesianKSpaceBinningCineGadget();
@@ -56,11 +53,11 @@ namespace Gadgetron {
 
         /// parameters for kspace binning
         GADGET_PROPERTY(respiratory_navigator_moco_reg_strength, double, "Regularization strength of respiratory moco", 6.0);
-        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > respiratory_navigator_moco_iters{"respiratory_navigator_moco_iters", 
-                                                                                                            "unsigned int", 
-                                                                                                            "Number of iterations for respiratory moco", 
-                                                                                                            this, 
-                                                                                                            {1, 32, 100, 100}, 
+        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > respiratory_navigator_moco_iters{"respiratory_navigator_moco_iters",
+                                                                                                            "unsigned int",
+                                                                                                            "Number of iterations for respiratory moco",
+                                                                                                            this,
+                                                                                                            {1, 32, 100, 100},
                                                                                                             GadgetPropertyLimitsNoLimits<std::vector<unsigned int> >()};
 
         GADGET_PROPERTY(kspace_binning_interpolate_heart_beat_images, bool, "Whether to interpolate best heart beat images", true);
@@ -69,11 +66,11 @@ namespace Gadgetron {
         GADGET_PROPERTY(kspace_binning_minimal_cardiac_phase_width, double, "Allowed  minimal temporal window for binned kspace, in ms", 25.0);
 
         GADGET_PROPERTY(kspace_binning_moco_reg_strength, double, "Regularization strength of binning moco", 12.0);
-        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > kspace_binning_moco_iters{"kspace_binning_moco_iters", 
-                                                                                                            "unsigned int", 
-                                                                                                            "Number of iterations for binning moco", 
-                                                                                                            this, 
-                                                                                                            {24, 64, 100, 100, 100}, 
+        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > kspace_binning_moco_iters{"kspace_binning_moco_iters",
+                                                                                                            "unsigned int",
+                                                                                                            "Number of iterations for binning moco",
+                                                                                                            this,
+                                                                                                            {24, 64, 100, 100, 100},
                                                                                                             GadgetPropertyLimitsNoLimits<std::vector<unsigned int> >()};
 
         /// parameters for recon on binned kspace
@@ -91,15 +88,15 @@ namespace Gadgetron {
         GADGET_PROPERTY(kspace_binning_nonlinear_reg_N_weighting_ratio, double, "Binned kspace recon, regularization weighting ratio along the N dimension, non-linear recon", 10.0);
         GADGET_PROPERTY(kspace_binning_nonlinear_reg_use_coil_sen_map, bool, "Binned kspace recon, whether to use coil map, non-linear recon", false);
         GADGET_PROPERTY(kspace_binning_nonlinear_reg_with_approx_coeff, bool, "Binned kspace recon, whether to keep approximal coefficients, non-linear recon", true);
-        GADGET_PROPERTY_LIMITS(kspace_binning_nonlinear_reg_wav_name, std::string, "Binned kspace recon, wavelet name, non-linear recon", "db1", 
+        GADGET_PROPERTY_LIMITS(kspace_binning_nonlinear_reg_wav_name, std::string, "Binned kspace recon, wavelet name, non-linear recon", "db1",
             GadgetPropertyLimitsEnumeration, "db1", "db2", "db3", "db4", "db5");
 
         // for debug
-        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > kspace_binning_processed_slices{"kspace_binning_processed_slices", 
-                                                                                                            "unsigned int", 
-                                                                                                            "If set, these slices will be processed", 
-                                                                                                            this, 
-                                                                                                            {}, 
+        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > kspace_binning_processed_slices{"kspace_binning_processed_slices",
+                                                                                                            "unsigned int",
+                                                                                                            "If set, these slices will be processed",
+                                                                                                            this,
+                                                                                                            {},
                                                                                                             GadgetPropertyLimitsNoLimits<std::vector<unsigned int> >()};
 
     protected:
@@ -113,7 +110,7 @@ namespace Gadgetron {
 
         // the raw recon results
         // [RO E1 E2 1 N S SLC]
-        IsmrmrdImageArray res_raw_;
+        mrd::ImageArray res_raw_;
         // acqusition time  and trigger time in ms
         // [N S SLC]
         hoNDArray< float > acq_time_raw_;
@@ -121,7 +118,7 @@ namespace Gadgetron {
 
         // the binning recon results
         // [RO E1 E2 1 binned_N S SLC]
-        IsmrmrdImageArray res_binning_;
+        mrd::ImageArray res_binning_;
         // acqusition time  and trigger time in ms for binned images
         // [binned_N S SLC]
         hoNDArray< float > acq_time_binning_;
@@ -134,24 +131,24 @@ namespace Gadgetron {
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+        virtual int process_config(const mrd::Header& header);
+        virtual int process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1);
 
         // --------------------------------------------------
         // recon step functions
         // --------------------------------------------------
-        virtual void perform_binning(IsmrmrdReconBit& recon_bit, size_t encoding);
+        virtual void perform_binning(mrd::ReconAssembly& recon_bit, size_t encoding);
 
         // create binning image header
         void create_binning_image_headers_from_raw();
 
         // set the time stamps
-        void set_time_stamps(IsmrmrdImageArray& res, hoNDArray< float >& acq_time, hoNDArray< float >& cpt_time);
+        void set_time_stamps(mrd::ImageArray& res, hoNDArray< float >& acq_time, hoNDArray< float >& cpt_time);
 
         // --------------------------------------------------
         // overload functions
         // --------------------------------------------------
         // send out the recon results
-        virtual int prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role);
+        virtual int prep_image_header_send_out(mrd::ImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role);
     };
 }

@@ -10,7 +10,6 @@
 #include "check_CUDA.h"
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd/xml.h"
 
 #include <algorithm>
 #include <vector>
@@ -29,7 +28,7 @@ namespace Gadgetron{
   
   gpuRetroGatedSensePrepGadget::~gpuRetroGatedSensePrepGadget() {}
   
-  int gpuRetroGatedSensePrepGadget::process_config(ACE_Message_Block* mb)
+  int gpuRetroGatedSensePrepGadget::process_config(const mrd::Header& header)
   {
     // Get configuration values from config file
     //
@@ -88,35 +87,28 @@ namespace Gadgetron{
 
     kernel_width_ = buffer_convolution_kernel_width.value();
     oversampling_factor_ = buffer_convolution_oversampling_factor.value();
-
-    // Get the Ismrmrd header
-    //
-
-    ISMRMRD::IsmrmrdHeader h;
-    ISMRMRD::deserialize(mb->rd_ptr(),h);
     
-    
+    auto& h = header; 
     if (h.encoding.size() != 1) {
       GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
     // Get the encoding space and trajectory description
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-
+    mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+    mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+    mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
 
     // Matrix sizes (as a multiple of the GPU's warp size)
     //
     
     unsigned int warp_size = deviceProp.warpSize;
 
-    image_dimensions_.push_back(((e_space.matrixSize.x+warp_size-1)/warp_size)*warp_size);
-    image_dimensions_.push_back(((e_space.matrixSize.y+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_.push_back(((e_space.matrix_size.x+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_.push_back(((e_space.matrix_size.y+warp_size-1)/warp_size)*warp_size);
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrix_size.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrix_size.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -131,9 +123,9 @@ namespace Gadgetron{
     GDEBUG("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
-    fov_.push_back(r_space.fieldOfView_mm.x);
-    fov_.push_back(r_space.fieldOfView_mm.y);
-    fov_.push_back(r_space.fieldOfView_mm.z);
+    fov_.push_back(r_space.field_of_view_mm.x);
+    fov_.push_back(r_space.field_of_view_mm.y);
+    fov_.push_back(r_space.field_of_view_mm.z);
 
     slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
     sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
@@ -224,24 +216,23 @@ namespace Gadgetron{
   }
 
   int gpuRetroGatedSensePrepGadget::
-  process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-          GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
+  process(GadgetContainerMessage<mrd::Acquisition> *m1)
   {
     // Noise should have been consumed by the noise adjust (if in the gadget chain)
     //
     
-    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+    bool is_noise = m1->getObjectPtr()->head.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
     if (is_noise) { 
       m1->release();
       return GADGET_OK;
     }
 
-    unsigned int slice = m1->getObjectPtr()->idx.slice;
-    unsigned int set = m1->getObjectPtr()->idx.set;
+    unsigned int slice = m1->getObjectPtr()->head.idx.slice.value_or(0);
+    unsigned int set = m1->getObjectPtr()->head.idx.set.value_or(0);
 
-    unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
+    unsigned int profile = m1->getObjectPtr()->head.idx.kspace_encode_step_1.value_or(0);
 
-    unsigned int current_timestamp = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
+    unsigned int current_timestamp = m1->getObjectPtr()->head.physiology_time_stamp[phys_time_index_];
     unsigned int previous_timestamp = previous_timestamp_[set*slices_+slice];
     
     bool new_cardiac_cycle_detected = (current_timestamp < previous_timestamp);
@@ -272,28 +263,28 @@ namespace Gadgetron{
     // Have the imaging plane changed?
     //
 
-    if( !vec_equal(position_[set*slices_+slice], m1->getObjectPtr()->position) ||
-        !vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->read_dir) || 
-        !vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->phase_dir) ||
-        !vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->slice_dir) ){
+    if( !vec_equal(position_[set*slices_+slice], m1->getObjectPtr()->head.position.data()) ||
+        !vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->head.read_dir.data()) ||
+        !vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->head.phase_dir.data()) ||
+        !vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->head.slice_dir.data()) ){
       
       // Yes indeed, clear the accumulation buffer
       acc_buffer->clear();
       buffer_update_needed_[set*slices_+slice] = true;
       
-      memcpy(position_[set*slices_+slice],m1->getObjectPtr()->position,3*sizeof(float));
-      memcpy(read_dir_[set*slices_+slice],m1->getObjectPtr()->read_dir,3*sizeof(float));
-      memcpy(phase_dir_[set*slices_+slice],m1->getObjectPtr()->phase_dir,3*sizeof(float));
-      memcpy(slice_dir_[set*slices_+slice],m1->getObjectPtr()->slice_dir,3*sizeof(float));
+      memcpy(position_[set*slices_+slice],m1->getObjectPtr()->head.position.data(),3*sizeof(float));
+      memcpy(read_dir_[set*slices_+slice],m1->getObjectPtr()->head.read_dir.data(),3*sizeof(float));
+      memcpy(phase_dir_[set*slices_+slice],m1->getObjectPtr()->head.phase_dir.data(),3*sizeof(float));
+      memcpy(slice_dir_[set*slices_+slice],m1->getObjectPtr()->head.slice_dir.data(),3*sizeof(float));
     }
     
     // Only when the first profile arrives, do we know the #samples/profile
     //
 
     if( samples_per_profile_ == -1 )      
-      samples_per_profile_ = m1->getObjectPtr()->number_of_samples;
+      samples_per_profile_ = m1->getObjectPtr()->Samples();
     
-    if( samples_per_profile_ != m1->getObjectPtr()->number_of_samples ){
+    if( samples_per_profile_ != m1->getObjectPtr()->Samples() ){
       GDEBUG("Unexpected change in the incoming profiles' lengths\n");
       return GADGET_FAIL;
     }
@@ -302,9 +293,9 @@ namespace Gadgetron{
     // - or if the number of coil changes
     // - or if the reconfigure_ flag is set
 
-    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->active_channels ){
+    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->Coils() ){
       GDEBUG("Reconfiguring due to change in the number of coils\n");
-      num_coils_[set*slices_+slice] = m1->getObjectPtr()->active_channels;
+      num_coils_[set*slices_+slice] = m1->getObjectPtr()->Coils();
       reconfigure(set, slice);
     }
 
@@ -318,14 +309,14 @@ namespace Gadgetron{
     //   belong to the current cardiac cycle and we delay enqueuing
     //
 
-    buffer_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+    buffer_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
     
     if( !new_cardiac_cycle_detected ) {
       if( recon_profiles_queue_[set*slices_+slice].empty()){
-        first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->acquisition_time_stamp;
-        first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
+        first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->head.acquisition_time_stamp.value_or(0);
+        first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->head.physiology_time_stamp[phys_time_index_];
       }
-      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
     }
     
     // If the profile is the last of a "buffer frame" 
@@ -364,48 +355,40 @@ namespace Gadgetron{
       // Prepare the image headers for the reconstruction
       //
       
-      boost::shared_array<ISMRMRD::ImageHeader> headers( new ISMRMRD::ImageHeader[frames_per_cardiac_cycle_] );
+      boost::shared_array<mrd::ImageHeader> headers( new mrd::ImageHeader[frames_per_cardiac_cycle_] );
       
       for( unsigned int i=0; i<frames_per_cardiac_cycle_; i++ ){
         
-        ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
-        ISMRMRD::ImageHeader *header = &headers[i];
+        const mrd::AcquisitionHeader& base_head = m1->getObjectPtr()->head;
+        mrd::ImageHeader *header = &headers[i];
         
         {
           // Initialize header to all zeroes (there is a few fields we do not set yet)
-          ISMRMRD::ImageHeader tmp;
+          mrd::ImageHeader tmp{};
           *header = tmp;
         }
-        
-        header->version = base_head->version;
-        
-        header->matrix_size[0] = image_dimensions_recon_[0];
-        header->matrix_size[1] = image_dimensions_recon_[1];
-        header->matrix_size[2] = 1;
         
         header->field_of_view[0] = fov_[0];
         header->field_of_view[1] = fov_[1];
         header->field_of_view[2] = fov_[2];
         
-        header->channels = num_coils_[set*slices_+slice];
-        header->slice = base_head->idx.slice;
-        header->set = base_head->idx.set;
+        header->slice = base_head.idx.slice;
+        header->set = base_head.idx.set;
         
         header->acquisition_time_stamp = 
           first_profile_acq_time_[set*slices_+slice] + 
-          i*(base_head->acquisition_time_stamp-first_profile_acq_time_[set*slices_+slice])/frames_per_cardiac_cycle_;
+          i*(base_head.acquisition_time_stamp.value_or(0)-first_profile_acq_time_[set*slices_+slice])/frames_per_cardiac_cycle_;
 
         header->physiology_time_stamp[phys_time_index_] = 
           first_profile_phys_time_[set*slices_+slice] + 
-          i*(base_head->physiology_time_stamp[phys_time_index_]-first_profile_phys_time_[set*slices_+slice])/frames_per_cardiac_cycle_;
+          i*(base_head.physiology_time_stamp[phys_time_index_]-first_profile_phys_time_[set*slices_+slice])/frames_per_cardiac_cycle_;
 
-        memcpy(header->position, base_head->position, sizeof(float)*3);
-        memcpy(header->read_dir, base_head->read_dir, sizeof(float)*3);
-        memcpy(header->phase_dir, base_head->phase_dir, sizeof(float)*3);
-        memcpy(header->slice_dir, base_head->slice_dir, sizeof(float)*3);
-        memcpy(header->patient_table_position, base_head->patient_table_position, sizeof(float)*3);
+        header->position = base_head.position;
+        header->col_dir = base_head.read_dir;
+        header->line_dir = base_head.phase_dir;
+        header->slice_dir = base_head.slice_dir;
+        header->patient_table_position = base_head.patient_table_position;
         
-        header->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
         header->image_index = image_counter_[set*slices_+slice]++; 
         header->image_series_index = set*slices_+slice;        
       }
@@ -484,7 +467,7 @@ namespace Gadgetron{
       // Let us just copy the initial one...
       //
 
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+      GadgetContainerMessage<mrd::ImageHeader> *m3 = new GadgetContainerMessage<mrd::ImageHeader>;
       *m3->getObjectPtr() = m4->getObjectPtr()->image_headers_[0];
       m3->cont(m4);
       
@@ -500,10 +483,10 @@ namespace Gadgetron{
 
     if( new_cardiac_cycle_detected ){      
       if( recon_profiles_queue_[set*slices_+slice].empty()){
-        first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->acquisition_time_stamp;
-        first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->physiology_time_stamp[phys_time_index_];
+        first_profile_acq_time_[set*slices_+slice] = m1->getObjectPtr()->head.acquisition_time_stamp.value_or(0);
+        first_profile_phys_time_[set*slices_+slice] = m1->getObjectPtr()->head.physiology_time_stamp[phys_time_index_];
       }
-      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m2)));
+      recon_profiles_queue_[set*slices_+slice].push(std::unique_ptr<ProfileMessage>(duplicate_profile(m1->getObjectPtr()->data)));
     }
     
     profiles_counter_global_[set*slices_+slice]++;
@@ -802,12 +785,12 @@ namespace Gadgetron{
   }
   
   GadgetContainerMessage< hoNDArray< std::complex<float> > >*
-  gpuRetroGatedSensePrepGadget::duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile )
+  gpuRetroGatedSensePrepGadget::duplicate_profile( const hoNDArray< std::complex<float> > & profile )
   {
     GadgetContainerMessage< hoNDArray< std::complex<float> > > *copy = 
       new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     
-    *copy->getObjectPtr() = *profile->getObjectPtr();
+    *copy->getObjectPtr() = profile;
     
     return copy;
   }

@@ -5,14 +5,13 @@
 
 #pragma once
 
-#include "cpuOperatorExport.h"
 #include "hoNDArray_linalg.h"
 #include "hoImageRegContainer2DRegistration.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T, typename CoordType> 
-class EXPORTCPUOPERATOR hoMotionCompensation2DTOperator
+template <typename T, typename CoordType>
+class hoMotionCompensation2DTOperator
 {
 public:
 
@@ -44,7 +43,7 @@ public:
     hoNDArray<CoordType> adj_dx_;
     hoNDArray<CoordType> adj_dy_;
 
-protected: 
+protected:
 
     // warp the 2D+T image arrays
     // im : complex image [RO E1 CHA N]

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "python_export.h"
 #include "log.h"
+
 #include <boost/python.hpp>
 namespace bp = boost::python;
 
@@ -9,43 +9,41 @@ namespace Gadgetron
 {
 
 /// Initialize Python and NumPy. Called by each PythonFunction constructor
-EXPORTPYTHON void initialize_python(void);
+void initialize_python(void);
 /// Initialize NumPy
-EXPORTPYTHON void initialize_numpy(void);
+void initialize_numpy(void);
 /// Finalize Python, Called by user expclictly
-EXPORTPYTHON void finalize_python(void);
+void finalize_python(void);
 /// Add a path to the PYTHONPATH
-EXPORTPYTHON void add_python_path(const std::string& path);
+void add_python_path(const std::string& path);
 
 /// Extracts the exception/traceback to build and return a std::string
-EXPORTPYTHON std::string pyerr_to_string(void);
+std::string pyerr_to_string(void);
 
-}
-
-// Include converters after declaring above functions
-namespace Gadgetron {
 /// Utility class for RAII handling of the Python GIL. Usage:
 ///
 ///    GILLock lg;  // at the top of a block
 ///
-    class GILLock {
-    public:
-        GILLock() { gstate_ = PyGILState_Ensure(); }
+class GILLock {
+public:
+    GILLock() { gstate_ = PyGILState_Ensure(); }
 
-        ~GILLock() { PyGILState_Release(gstate_); }
+    ~GILLock() { PyGILState_Release(gstate_); }
 
-    private:
-        // noncopyable
-        GILLock(const GILLock &);
+private:
+    // noncopyable
+    GILLock(const GILLock &);
 
-        GILLock &operator=(const GILLock &);
+    GILLock &operator=(const GILLock &);
 
-        PyGILState_STATE gstate_;
+    PyGILState_STATE gstate_;
 
-    };
+};
 
-}
+} // namespace Gadgetron
 
+
+// Include all Gadgetron converter definitions
 #include "python_converters.h"
 
 
@@ -185,9 +183,4 @@ public:
     }
 };
 
-}
-
-namespace boost { namespace python {
-    EXPORTPYTHON bool hasattr(object o, const char* name);
-} }
-
+} // namespace Gadgetron

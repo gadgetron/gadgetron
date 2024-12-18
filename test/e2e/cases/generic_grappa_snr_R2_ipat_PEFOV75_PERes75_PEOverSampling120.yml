@@ -1,0 +1,19 @@
+dependency:
+  data: generic/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120_meas1.mrd
+  checksum: 4ed9f2d7be765d00437ab13729bcfff6
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: generic/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120_meas2.mrd
+  checksum: aeb6b8d24f0626db2a99c2f62ff29c49
+  run:
+  - args: --config Generic_Cartesian_Grappa_SNR.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: generic/meas_MID00077_FID115844_R2_ipat_PEFOV75_PERes75_PEOverSampling120/ref_20220817_klk_Generic_Cartesian_Grappa_SNR.xml.mrd
+  checksum: de28a78d7c751df6f676ebf4408bbc61
+  tests:
+  - image_series: 300
+requirements:
+  system_memory: 4096
+tags:
+- fast
+- generic

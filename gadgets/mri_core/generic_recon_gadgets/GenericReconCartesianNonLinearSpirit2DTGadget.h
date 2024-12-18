@@ -1,9 +1,9 @@
 /** \file   GenericReconCartesianNonLinearSpirit2DTGadget.h
-    \brief  This is the class gadget for 2DT cartesian non-linear Spirit reconstruction, working on the IsmrmrdReconData.
+    \brief  This is the class gadget for 2DT cartesian non-linear Spirit reconstruction, working on the ReconData.
             The redundant dimension is dimension N.
 
-            Ref: 
-            Equation 3 and 4. [1] Hui Xue, Souheil Inati, Thomas Sangild Sorensen, Peter Kellman, Michael S. Hansen. 
+            Ref:
+            Equation 3 and 4. [1] Hui Xue, Souheil Inati, Thomas Sangild Sorensen, Peter Kellman, Michael S. Hansen.
             Distributed MRI Reconstruction using Gadgetron based Cloud Computing. Magenetic Resonance in Medicine, 73(3):1015-25, 2015.
 
     \author Hui Xue
@@ -15,11 +15,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconCartesianNonLinearSpirit2DTGadget : public GenericReconCartesianSpiritGadget
+    class GenericReconCartesianNonLinearSpirit2DTGadget : public GenericReconCartesianSpiritGadget
     {
     public:
-        GADGET_DECLARE(GenericReconCartesianNonLinearSpirit2DTGadget);
-
         typedef GenericReconCartesianSpiritGadget BaseClass;
         typedef Gadgetron::GenericReconCartesianSpiritObj< std::complex<float> > ReconObjType;
 
@@ -59,14 +57,14 @@ namespace Gadgetron {
         // gadget functions
         // --------------------------------------------------
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
+        virtual int process_config(const mrd::Header& header);
 
         // --------------------------------------------------
         // recon step functions
         // --------------------------------------------------
 
         // unwrapping
-        virtual void perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        virtual void perform_unwrapping(mrd::ReconAssembly& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         // perform non-linear spirit unwrapping
         // kspace, kerIm, full_kspace: [RO E1 CHA N S SLC]

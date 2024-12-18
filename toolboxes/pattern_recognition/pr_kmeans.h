@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include "pr_export.h"
 #include "GadgetronTimer.h"
 #include "ImageIOAnalyze.h"
 #include "hoNDArray.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 // ======================================================================================
 // kmeans class
@@ -19,7 +18,7 @@ namespace Gadgetron {
 // max_iter: number of maximal k-means iterations
 // replicates : number of times to reinitialize kmenas and reperform the clustering
 //
-// initial_method : Initialization method, 
+// initial_method : Initialization method,
 // 'sample' : Select K samples from N data points as the initial cluster centroid
 // 'uniform' : First detect the range of N data points and select K centroids from the range of X
 // 'cluster' : First randomly selected 20% of all N samples and perform kmeans using 'sample' method
@@ -39,7 +38,7 @@ namespace Gadgetron {
 // 2) Call the run function which performs kmeans iterations and generate three outputs
 
 template <typename T>
-class EXPORTPR kmeans
+class kmeans
 {
 public:
 

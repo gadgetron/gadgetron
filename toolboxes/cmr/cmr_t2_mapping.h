@@ -9,14 +9,14 @@
 
 #include "cmr_parametric_mapping.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 // ======================================================================================
 // T2 decay
 // y = A * exp(-te/T2)
 
 template <typename T>
-class EXPORTCMR CmrT2Mapping : public CmrParametricMapping<T>
+class CmrT2Mapping : public CmrParametricMapping<T>
 {
 public:
 

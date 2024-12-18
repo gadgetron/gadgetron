@@ -2,37 +2,26 @@
 
 #include "log.h"
 
-Gadgetron::AugmentImageMetadataGadget::AugmentImageMetadataGadget(const Core::Context& context, const Core::GadgetProperties& props)
-    : PureGadget(context,props)
-{}
+namespace Gadgetron{
 
-Gadgetron::Core::Image<std::complex<float>> Gadgetron::AugmentImageMetadataGadget::process_function(
-    Gadgetron::Core::Image<std::complex<float>> input_image) const {
-
-    auto& header     = std::get<ISMRMRD::ImageHeader>(input_image);
-    auto& meta       = std::get<2>(input_image);
-    auto& input_data = std::get<hoNDArray<std::complex<float>>>(input_image);
-
-    if (!meta.has_value()) {
-        meta = ISMRMRD::MetaContainer();
-    }
-
-    if (meta->length("ImageRowDir") != 3) {
-        meta->append("ImageRowDir", header.read_dir[0]);
-        meta->append("ImageRowDir", header.read_dir[1]);
-        meta->append("ImageRowDir", header.read_dir[2]);
+mrd::Image<std::complex<float>> AugmentImageMetadataGadget::process_function(
+    mrd::Image<std::complex<float>> input_image) const
+{
+    if (input_image.meta["ImageRowDir"].size() != 3) {
+        input_image.meta["ImageRowDir"].push_back(input_image.head.col_dir[0]);
+        input_image.meta["ImageRowDir"].push_back(input_image.head.col_dir[1]);
+        input_image.meta["ImageRowDir"].push_back(input_image.head.col_dir[2]);
     }
 
 
-    if (meta->length("ImageColumnDir") != 3) {
-        meta->append("ImageColumnDir", header.phase_dir[0]);
-        meta->append("ImageColumnDir", header.phase_dir[1]);
-        meta->append("ImageColumnDir", header.phase_dir[2]);
+    if (input_image.meta["ImageColumnDir"].size() != 3) {
+        input_image.meta["ImageColumnDir"].push_back(input_image.head.line_dir[0]);
+        input_image.meta["ImageColumnDir"].push_back(input_image.head.line_dir[1]);
+        input_image.meta["ImageColumnDir"].push_back(input_image.head.line_dir[2]);
     }
-    
-    return { header, input_data, meta };
+
+    return input_image;
 }
 
-namespace Gadgetron{
-    GADGETRON_GADGET_EXPORT(AugmentImageMetadataGadget)
+GADGETRON_GADGET_EXPORT(AugmentImageMetadataGadget)
 }

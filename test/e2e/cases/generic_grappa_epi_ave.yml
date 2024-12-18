@@ -1,0 +1,14 @@
+reconstruction:
+  data: epi_ave/meas_MID01349_FID12150_amri_ep2d_bold_96x72x5_R2_16avg_gadgetron/meas_MID01349_FID12150_amri_ep2d_bold_96x72x5_R2_16avg_gadgetron_meas1.mrd
+  checksum: d40c03ad7baf11c3632ff98fd76990a2
+  run:
+  - args: --config Generic_Cartesian_Grappa_EPI_AVE.xml
+validation:
+  reference: epi_ave/meas_MID01349_FID12150_amri_ep2d_bold_96x72x5_R2_16avg_gadgetron/ref_20161020_Generic_Cartesian_Grappa_EPI_AVE.xml.mrd
+  checksum: 205130be2eda57c17b72b38cd06143c4
+  tests:
+  - image_series: 1
+requirements:
+  system_memory: 4096
+tags:
+- generic

@@ -1,21 +1,21 @@
 if (CUDA_FOUND)
-add_library(gadgetron_toolbox_deblur SHARED
+add_library(pingvin_toolbox_deblur SHARED
         MFIOperator.h
         MFIOperator.cpp)
 
-set_target_properties(gadgetron_toolbox_deblur PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(pingvin_toolbox_deblur PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_deblur
-        gadgetron_toolbox_cpucore
-        gadgetron_toolbox_cpucore_math
-        gadgetron_toolbox_gpu
+target_link_libraries(pingvin_toolbox_deblur
+        pingvin_toolbox_cpucore
+        pingvin_toolbox_cpucore_math
+        pingvin_toolbox_gpu
         )
-target_include_directories(gadgetron_toolbox_deblur
+target_include_directories(pingvin_toolbox_deblur
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         )
 
-install(TARGETS gadgetron_toolbox_deblur
+install(TARGETS pingvin_toolbox_deblur
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
@@ -25,7 +25,5 @@ install(TARGETS gadgetron_toolbox_deblur
 
 install(FILES
         MFIOperator.h
-        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+        DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)
 endif()
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)

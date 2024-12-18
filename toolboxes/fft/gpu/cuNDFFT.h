@@ -7,7 +7,6 @@
 #pragma once
 
 #include "cuNDArray.h"
-#include "gpufft_export.h"
 
 namespace Gadgetron{
 
@@ -18,7 +17,7 @@ namespace Gadgetron{
       The class' template type is a REAL, ie. float or double.
       The FFTs are performed in-place.
   */
-  template<class T> class EXPORTGPUFFT cuNDFFT
+  template<class T> class cuNDFFT
   {
   public:
 
@@ -42,7 +41,7 @@ namespace Gadgetron{
     void ifft3(cuNDArray<complext<T> > *image, bool do_scale = true);
 
 
-  protected:   
+  protected:
     cuNDFFT() {}
     virtual ~cuNDFFT() {}
     void fft_int( cuNDArray<complext<T> > *image, std::vector<size_t> *dims_to_transform, int direction, bool do_scale = true );

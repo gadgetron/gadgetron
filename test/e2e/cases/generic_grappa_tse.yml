@@ -1,0 +1,19 @@
+dependency:
+  data: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE_meas1.mrd
+  checksum: c22ac7f599bd09a5947081567c39d945
+  args: --config default_measurement_dependencies.xml --parameter noisecovarianceout=./noisecovariance.bin
+reconstruction:
+  data: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE_meas2.mrd
+  checksum: 58d3a0bb4dec00d5315f8ddb22679189
+  run:
+  - args: --config Generic_Cartesian_Grappa.xml --parameter noisecovariancein=./noisecovariance.bin
+validation:
+  reference: tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/ref_20220817_klk_Generic_Cartesian_Grappa.xml.mrd
+  checksum: ce76e05ce86d65b501663c19f7b252e3
+  tests:
+  - image_series: 1
+requirements:
+  system_memory: 4096
+tags:
+- fast
+- generic

@@ -1,0 +1,64 @@
+name: pingvin
+channels:
+  - ismrmrd
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - anaconda-client=1.12.3                  # dev
+  - armadillo=12.8.4                        # dev
+  - boost=1.80.0
+  - ccache=4.10.1                           # dev
+  - breathe=4.34.0                          # dev
+  - cmake=3.25.1                            # dev
+  - conda-build=24.5.1                      # dev
+  - conda-verify=3.1.1                      # dev
+  - clang=17.0                              # dev
+  - clangxx=17.0                            # dev
+  - deepdiff=7.0.1
+  - doxygen=1.10.0                          # dev
+  - eigen=3.4.0
+  - fftw=3.3.9
+  - fmt=8.1.1
+  - gmock=1.14.0                            # dev
+  - gtest=1.14.0                            # dev
+  - h5py=3.7.0
+  - hdf5=1.10.6
+  - howardhinnant_date=3.0.1                # dev
+  - imagemagick=7.0.11_13                   # dev
+  - ismrmrd=1.14.2
+  - ismrmrd-python=1.14.0
+  - junitparser=3.1.2
+  - jupyter=1.0.0                           # dev
+  - just=1.32.0                             # dev
+  - jq=1.7.1
+  - libblas=*=*mkl
+  - libcurl=7.86.0                          # dev
+  - libxml2=2.9.14                          # dev
+  - make=4.3                                # dev
+  - matplotlib=3.8.4                        # dev
+  - mkl>=2023.2.0
+  - mkl-include>=2023.2.0                   # dev
+  - mrd=2.1.1
+  - mrd-python=2.1.1
+  - ninja=1.12.1                            # dev
+  - nlohmann_json=3.11.3                    # dev
+  - numpy=1.26.4
+  - onnxruntime=1.18.1
+  - packaging=24.0
+  - pip=24.0                                # dev
+  - pugixml=1.12.1
+  - pyfftw=0.13.1
+  - pytest=8.3.3
+  - python=3.10
+  - pyyaml=6.0.1
+  - range-v3=0.12.0
+  - recommonmark=0.7.1                      # dev
+  - scipy=1.13.1
+  - shellcheck=0.10.0                       # dev
+  - siemens_to_ismrmrd=1.2.13
+  - sphinx=4.4.0                            # dev
+  - sphinx_rtd_theme=1.3.0                  # dev
+  - xsdata=24.5
+  - xtensor=0.24.2
+  - yq=3.4.3                                # dev

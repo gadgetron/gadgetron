@@ -3,22 +3,17 @@
 #define GADGETRON_DENOISEGADGET_H
 
 #include "Gadget.h"
-#include "gadgetron_mricore_export.h"
 #include "hoNDArray.h"
 
 #include "PureGadget.h"
-#include <ismrmrd/ismrmrd.h>
-#include <mri_core_data.h>
 #include <string>
 
 namespace Gadgetron {
 
-    template <class T> using DenoiseImage = Core::tuple<ISMRMRD::ImageHeader, hoNDArray<T>>;
-
     using DenoiseSupportedTypes =
-        Core::variant<DenoiseImage<float>, DenoiseImage<std::complex<float>>, IsmrmrdImageArray>;
+        std::variant<mrd::Image<float>, mrd::Image<std::complex<float>>, mrd::ImageArray>;
 
-    class EXPORTGADGETSMRICORE DenoiseGadget
+    class DenoiseGadget
         : public Core::PureGadget<DenoiseSupportedTypes, DenoiseSupportedTypes> {
 
     public:
@@ -31,8 +26,8 @@ namespace Gadgetron {
 
     protected:
         template <class T>
-        DenoiseImage<T> denoise(DenoiseImage<T> image) const;
-        IsmrmrdImageArray denoise(IsmrmrdImageArray image_array) const;
+        mrd::Image<T> denoise(mrd::Image<T> image) const;
+        mrd::ImageArray denoise(mrd::ImageArray image_array) const;
 
         template <class T> hoNDArray<T> denoise_function(const hoNDArray<T>&) const;
     };

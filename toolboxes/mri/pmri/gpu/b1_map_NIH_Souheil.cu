@@ -34,9 +34,9 @@ namespace Gadgetron{
     // Main method
     //
 
-    template<class REAL> EXPORTGPUPMRI bool
-    estimate_b1_map_2D_NIH_Souheil( cuNDArray<complext<REAL> >* data, cuNDArray<complext<REAL> >* csm, size_t ks, size_t power, 
-                                    cuNDArray<complext<REAL> >& D, cuNDArray<complext<REAL> >& DH_D, 
+    template<class REAL> bool
+    estimate_b1_map_2D_NIH_Souheil( cuNDArray<complext<REAL> >* data, cuNDArray<complext<REAL> >* csm, size_t ks, size_t power,
+                                    cuNDArray<complext<REAL> >& D, cuNDArray<complext<REAL> >& DH_D,
                                     cuNDArray<complext<REAL> >& V1, cuNDArray<complext<REAL> >& U1)
     {
         if( data->get_number_of_dimensions() < 2 )
@@ -641,7 +641,7 @@ namespace Gadgetron{
     //
     // Template instantiation
     //
-    template EXPORTGPUPMRI bool estimate_b1_map_2D_NIH_Souheil<float>( cuNDArray<complext<float> >* data, cuNDArray<complext<float> >* csm, size_t ks, size_t power,
-                                    cuNDArray<complext<float> >& D, cuNDArray<complext<float> >& DH_D, 
+    template bool estimate_b1_map_2D_NIH_Souheil<float>( cuNDArray<complext<float> >* data, cuNDArray<complext<float> >* csm, size_t ks, size_t power,
+                                    cuNDArray<complext<float> >& D, cuNDArray<complext<float> >& DH_D,
                                     cuNDArray<complext<float> >& V1, cuNDArray<complext<float> >& U1 );
 }

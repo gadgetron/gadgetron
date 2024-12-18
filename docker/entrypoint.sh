@@ -7,6 +7,6 @@ set -eo pipefail
 . /opt/conda/etc/profile.d/conda.sh
 
 # activate the environment
-conda activate gadgetron
+conda activate pingvin
 
-exec gadgetron "$@"
+exec pingvin "$@"

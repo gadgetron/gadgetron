@@ -16,9 +16,9 @@
 
 #include <boost/math/special_functions/sign.hpp>
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
+template <typename T>
 CmrT1SRMapping<T>::CmrT1SRMapping() : BaseClass()
 {
     max_iter_ = 150;
@@ -29,7 +29,7 @@ CmrT1SRMapping<T>::CmrT1SRMapping() : BaseClass()
     max_map_value_ = 2500;
 }
 
-template <typename T> 
+template <typename T>
 CmrT1SRMapping<T>::~CmrT1SRMapping()
 {
 }
@@ -159,6 +159,6 @@ size_t CmrT1SRMapping<T>::get_num_of_paras() const
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCMR CmrT1SRMapping< float >;
+template class CmrT1SRMapping< float >;
 
 }

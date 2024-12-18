@@ -2,10 +2,8 @@
 #define gpuCgSpiritGadget_H
 #pragma once
 
-#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
-#include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
 #include "cuNFFT.h"
 #include "../../toolboxes/nfft/NFFTOperator.h"
@@ -14,27 +12,23 @@
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include "gpuSenseGadget.h"
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUPMRI gpuCgSpiritGadget : public gpuSenseGadget
+  class gpuCgSpiritGadget : public gpuSenseGadget
    {
 
   public:
-
-    GADGET_DECLARE(gpuCgSpiritGadget);
-
     gpuCgSpiritGadget();
     virtual ~gpuCgSpiritGadget();
   protected:
     GADGET_PROPERTY(number_of_iterations, int, "Number of iterations", 5);
     GADGET_PROPERTY(kappa, float, "Kappa regularization factor", 0.3);
     GADGET_PROPERTY(cg_limit, float, "Residual limit for CG convergence", 1e-6);
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
-    virtual int process_config( ACE_Message_Block* mb );
+    virtual int process( GadgetContainerMessage< mrd::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
+    virtual int process_config(const mrd::Header& header);
 
 
     unsigned int number_of_iterations_;
@@ -58,7 +52,7 @@ namespace Gadgetron{
 
     // Define regularization image operator
     //boost::shared_ptr< cuImageOperator<float_complext> > R_;
-    
+
   };
 }
 #endif //gpuCgSpiritGadget

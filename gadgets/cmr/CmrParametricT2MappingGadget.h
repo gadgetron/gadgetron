@@ -1,6 +1,6 @@
 /**
 \file   CmrParametricT2MappingGadget.h
-\brief  This is the class gadget for cardiac T2 mapping, working on the IsmrmrdImageArray.
+\brief  This is the class gadget for cardiac T2 mapping, working on the mrd::ImageArray.
 \author Hui Xue
 */
 
@@ -10,11 +10,9 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSCMR CmrParametricT2MappingGadget : public CmrParametricMappingGadget
+    class CmrParametricT2MappingGadget : public CmrParametricMappingGadget
     {
     public:
-        GADGET_DECLARE(CmrParametricT2MappingGadget);
-
         typedef CmrParametricMappingGadget BaseClass;
 
         CmrParametricT2MappingGadget();
@@ -39,7 +37,7 @@ namespace Gadgetron {
         // --------------------------------------------------
 
         // default interface function
-        virtual int process_config(ACE_Message_Block* mb);
+        virtual int process_config(const mrd::Header& header);
 
         virtual int close(unsigned long flags);
 
@@ -47,6 +45,6 @@ namespace Gadgetron {
         // data: input image array [RO E1 E2 CHA N S SLC]
         // map and map_sd: mapping result and its sd
         // para and para_sd: other parameters of mapping and its sd
-        virtual int perform_mapping(IsmrmrdImageArray& data, IsmrmrdImageArray& map, IsmrmrdImageArray& para, IsmrmrdImageArray& map_sd, IsmrmrdImageArray& para_sd);
+        virtual int perform_mapping(mrd::ImageArray& data, mrd::ImageArray& map, mrd::ImageArray& para, mrd::ImageArray& map_sd, mrd::ImageArray& para_sd);
     };
 }

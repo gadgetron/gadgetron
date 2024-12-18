@@ -2,27 +2,22 @@
 #define gpuCgKtSenseGadget_H
 #pragma once
 
-#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
-#include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
 #include "cuNonCartesianKtSenseOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUPMRI gpuCgKtSenseGadget : public Gadget2<ISMRMRD::ImageHeader, GenericReconJob>
+  class gpuCgKtSenseGadget : public Gadget2<mrd::ImageHeader, GenericReconJob>
   {
 
   public:
-    GADGET_DECLARE(gpuCgKtSenseGadget);
-
     gpuCgKtSenseGadget();
     virtual ~gpuCgKtSenseGadget();
 
@@ -39,8 +34,8 @@ namespace Gadgetron{
     GADGET_PROPERTY(rotations_to_discard, int, "Number of rotations to dump", 0);
     GADGET_PROPERTY(output_convergence, bool, "Print convergence information", false);
 
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
-    virtual int process_config( ACE_Message_Block* mb );
+    virtual int process( GadgetContainerMessage< mrd::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
+    virtual int process_config(const mrd::Header& header);
 
     boost::shared_ptr< cuNDArray<float_complext> > compute_regularization_image( GenericReconJob *job );
 

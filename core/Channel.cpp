@@ -16,7 +16,7 @@ namespace Gadgetron::Core {
         return channel.pop();
     }
 
-    optional<Message> MessageChannel::try_pop() {
+    std::optional<Message> MessageChannel::try_pop() {
        return channel.try_pop();
     }
 
@@ -32,7 +32,7 @@ namespace Gadgetron::Core {
         return channel->pop();
     }
 
-    optional<Message> GenericInputChannel::try_pop() {
+    std::optional<Message> GenericInputChannel::try_pop() {
         return channel->try_pop();
     }
 

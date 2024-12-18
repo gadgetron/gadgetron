@@ -3,15 +3,9 @@
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/keys.hpp>
 #include <boost/hana/at_key.hpp>
-#include "sfndam_serializable.h"
 
 template<class T>
-std::enable_if_t<std::is_base_of_v<Gadgetron::Core::IO::SfndamSerializable<T>, T>> Gadgetron::Core::IO::write(std::ostream &stream, const T &t) {
-    t.SerializeToSfndam(stream);
-}
-
-template<class T>
-void Gadgetron::Core::IO::write(std::ostream &ostream, const Core::optional<T> &val) {
+void Gadgetron::Core::IO::write(std::ostream &ostream, const std::optional<T> &val) {
     IO::write(ostream, bool(val));
     if (val) write(ostream, *val);
 }
@@ -42,13 +36,13 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const T &value) {
 }
 
 template<class T>
-std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>>
+std::enable_if_t<std::is_trivially_copyable_v<T>>
 Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of_elements) {
     stream.write(reinterpret_cast<const char *>(data), number_of_elements * sizeof(T));
 }
 
 template<class T>
-std::enable_if_t<!Gadgetron::Core::is_trivially_copyable_v<T>>
+std::enable_if_t<!std::is_trivially_copyable_v<T>>
 Gadgetron::Core::IO::write(std::ostream &stream, const T *data, size_t number_of_elements) {
     for (size_t i = 0; i < number_of_elements; i++) {
         write(stream, data[i]);
@@ -62,8 +56,8 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const hoNDArray <T> &array
 }
 
 template<class... ARGS>
-void Gadgetron::Core::IO::write(std::ostream &stream, const Core::tuple<ARGS...>& tup) {
-    Core::apply([&](const auto&... elements){(write(stream,elements),...);},tup);
+void Gadgetron::Core::IO::write(std::ostream &stream, const std::tuple<ARGS...>& tup) {
+    std::apply([&](const auto&... elements){(write(stream,elements),...);},tup);
 }
 
 template<class TObjectType>
@@ -92,7 +86,7 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDImage
 
     typedef typename Gadgetron::hoNDImage<T, D>::coord_type coord_type;
     typedef typename Gadgetron::hoNDImage<T, D>::axis_type axis_type;
-    
+
     std::vector<size_t> dimensions;
     std::vector<coord_type> pixelSize;
     std::vector<coord_type> origin;
@@ -124,12 +118,12 @@ void Gadgetron::Core::IO::write(std::ostream &stream, const Gadgetron::hoNDArray
 }
 
 template<class T>
-std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
+std::enable_if_t<std::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
     stream.read(reinterpret_cast<char *>(data), elements*sizeof(T));
 }
 
 template<class T>
-std::enable_if_t<!Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
+std::enable_if_t<!std::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T *data, size_t elements) {
     for (size_t i = 0; i < elements; i++) read(stream,data[i]);
 }
 
@@ -143,15 +137,15 @@ std::string Gadgetron::Core::IO::read_string_from_stream(std::istream &stream) {
 }
 
 template<class T>
-std::enable_if_t<Gadgetron::Core::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T &value) {
+std::enable_if_t<std::is_trivially_copyable_v<T>> Gadgetron::Core::IO::read(std::istream &stream, T &value) {
     stream.read(reinterpret_cast<char *>(&value), sizeof(value));
 }
 
 template<class T>
-void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::Core::optional<T> &opt) {
+void Gadgetron::Core::IO::read(std::istream &stream, std::optional<T> &opt) {
     auto is_set = IO::read<bool>(stream);
     if (!is_set) {
-        opt = Core::none;
+        opt = std::nullopt;
         return;
     }
     opt = IO::read<T>(stream);
@@ -199,7 +193,7 @@ void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDImage<T, D> 
     axis_type axis(D);
     for (auto d=0; d<D; d++) {
         for (auto a=0; a<D; a++) {
-            axis[d][a] = axis_values[a + d*D]; 
+            axis[d][a] = axis_values[a + d*D];
         }
     }
 
@@ -220,15 +214,15 @@ void Gadgetron::Core::IO::read_many(std::istream &stream, Gadgetron::hoNDArray<T
         Gadgetron::Core::IO::read(stream, array[i]);
     }
 }
-    
+
 template<class T, unsigned int D>
 void Gadgetron::Core::IO::read(std::istream &stream, Gadgetron::hoNDArray< Gadgetron::hoNDImage<T, D> > &array) {
     Gadgetron::Core::IO::read_many(stream, array);
 }
 
 template<class... ARGS>
-void Gadgetron::Core::IO::read(std::istream &stream,  Core::tuple<ARGS...>& tup) {
-    Core::apply([&](auto&&... elements){(read(stream,elements),...);},tup);
+void Gadgetron::Core::IO::read(std::istream &stream, std::tuple<ARGS...>& tup) {
+    std::apply([&](auto&&... elements){(read(stream, elements), ...);}, tup);
 }
 template<class T>
 std::enable_if_t<boost::hana::Struct<T>::value> Gadgetron::Core::IO::read(std::istream &istream, T &x) {

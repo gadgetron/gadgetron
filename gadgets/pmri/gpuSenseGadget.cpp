@@ -25,7 +25,7 @@ gpuSenseGadget::~gpuSenseGadget() {
 	// TODO Auto-generated destructor stub
 }
 
-int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
+int gpuSenseGadget::process_config(const mrd::Header& header) {
   device_number_ = deviceno.value();
 
   int number_of_devices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
@@ -78,23 +78,20 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
 				continue;
 
-			GadgetContainerMessage<ISMRMRD::ImageHeader> *m =
-					new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+			GadgetContainerMessage<mrd::Image<std::complex<float>>> *m =
+					new GadgetContainerMessage<mrd::Image<std::complex<float>>>();
 
-			GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm =
-					new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
+			mrd::Image<std::complex<float>> img;
+			img.head = j->image_headers_[frame];
+			img.head.image_index = frame_counter_ + frame;
 
-			*m->getObjectPtr() = j->image_headers_[frame];
-			m->cont(cm);
+			std::vector<size_t> img_dims {cgresult->get_size(0),cgresult->get_size(1), 1, 1};
+			img.data.create(img_dims);
 
-			std::vector<size_t> img_dims {cgresult->get_size(0),cgresult->get_size(1)};
+			size_t data_length = img.data.get_number_of_bytes();
 
-			cm->getObjectPtr()->create(img_dims);
-
-			size_t data_length = cm->getObjectPtr()->get_number_of_bytes();
-
-			cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-					cgresult->get_data_ptr()+frame*cm->getObjectPtr()->get_number_of_elements(),
+			cudaMemcpy(img.data.get_data_ptr(),
+					cgresult->get_data_ptr() + frame * img.data.get_number_of_elements(),
 					data_length,
 					cudaMemcpyDeviceToHost);
 
@@ -105,11 +102,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 				return GADGET_FAIL;
 			}
 
-			m->getObjectPtr()->matrix_size[0] = img_dims[0];
-			m->getObjectPtr()->matrix_size[1] = img_dims[1];
-			m->getObjectPtr()->matrix_size[2] = 1;
-			m->getObjectPtr()->channels       = 1;
-			m->getObjectPtr()->image_index    = frame_counter_ + frame;
+			*m->getObjectPtr() = img;
 
 			if (this->next()->putq(m) < 0) {
 				GDEBUG("Failed to put result image on to queue\n");
@@ -118,22 +111,11 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			}
 		}
 	} else{
-		std::vector<size_t> img_dims { cgresult->get_size(0),cgresult->get_size(1),(size_t)frames};
-
-		auto cm =
-				new GadgetContainerMessage< hoNDArray< std::complex<float> > >(img_dims);
-		cgresult->to_host(reinterpret_cast<hoNDArray<float_complext>*>(cm->getObjectPtr()));
-		auto m =
-				new GadgetContainerMessage<ISMRMRD::ImageHeader>();
-
-		*m->getObjectPtr() = j->image_headers_[0]; //Just use the first header
-		m->cont(cm);
-
-		m->getObjectPtr()->matrix_size[0] = img_dims[0];
-		m->getObjectPtr()->matrix_size[1] = img_dims[1];
-		m->getObjectPtr()->matrix_size[2] = img_dims[2];
-		m->getObjectPtr()->channels       = channels;
-		m->getObjectPtr()->image_index    = frame_counter_;
+		auto m = new GadgetContainerMessage<mrd::ImageComplexFloat>();
+		m->getObjectPtr()->head = j->image_headers_[0]; // Just use the first header
+		std::vector<size_t> img_dims{cgresult->get_size(0), cgresult->get_size(1), (size_t)frames, 1};
+		m->getObjectPtr()->data.create(img_dims);
+		cgresult->to_host(reinterpret_cast<hoNDArray<float_complext>*>(&m->getObjectPtr()->data));
 
 		if (this->next()->putq(m) < 0) {
 			GDEBUG("Failed to put result image on to queue\n");

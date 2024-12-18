@@ -37,16 +37,16 @@ if read_the_docs_build:
     output_dir = 'doc'
     configureDoxyfile(input_dir, output_dir)
     subprocess.call('doxygen', shell=True)
-    breathe_projects['Gadgetron'] = output_dir + '/xml'
+    breathe_projects['Pingvin'] = output_dir + '/xml'
 
 # -- Project information -----------------------------------------------------
 
-project = 'Gadgetron'
-copyright = '2019, Gradient Software'
-author = 'David Hansen, Gradient Software'
+project = 'Pingvin'
+copyright = '2024 Gadgetron'
+author = 'Pingvin Developers'
 
 # The full version, including alpha/beta/rc tags
-release = '4.0'
+release = '0.1.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -54,9 +54,8 @@ release = '4.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ 'breathe', 'recommonmark'
-]
-breathe_default_project = 'Gadgetron'
+extensions = [ 'breathe', 'recommonmark']
+breathe_default_project = 'Pingvin'
 
 
 # Add any paths that contain templates here, relative to this directory.

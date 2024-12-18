@@ -1,4 +1,4 @@
-/** 
+/**
 \file          morphology.cpp
 \brief      Implement morphological image processing related functions.
 \author     Hui Xue
@@ -12,7 +12,7 @@
 namespace Gadgetron
 {
 
-template <typename T> 
+template <typename T>
 void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected)
 {
     try
@@ -109,13 +109,13 @@ void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsi
     }
 }
 
-template EXPORTIMAGE void region_growing_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
-template EXPORTIMAGE void region_growing_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
-template EXPORTIMAGE void region_growing_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
+template void region_growing_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
+template void region_growing_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
+template void region_growing_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
 
 // --------------------------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 void bwlabel_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned int>& label, bool is_8_connected)
 {
     try
@@ -151,13 +151,13 @@ void bwlabel_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned in
     }
 }
 
-template EXPORTIMAGE void bwlabel_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
-template EXPORTIMAGE void bwlabel_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
-template EXPORTIMAGE void bwlabel_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
+template void bwlabel_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
+template void bwlabel_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
+template void bwlabel_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
 
 // --------------------------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value, T bg_value, size_t obj_thres, size_t bg_thres, bool is_8_connected, hoNDArray<T>& output)
 {
     try
@@ -224,9 +224,9 @@ void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value
     }
 }
 
-template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<int>& input, int object_value, int bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<int>& output);
-template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<float>& input, float object_value, float bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<float>& output);
-template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<double>& input, double object_value, double bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<double>& output);
+template void bwlabel_clean_fore_and_background(const hoNDArray<int>& input, int object_value, int bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<int>& output);
+template void bwlabel_clean_fore_and_background(const hoNDArray<float>& input, float object_value, float bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<float>& output);
+template void bwlabel_clean_fore_and_background(const hoNDArray<double>& input, double object_value, double bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<double>& output);
 
 // --------------------------------------------------------------------------------------------
 

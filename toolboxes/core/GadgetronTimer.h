@@ -7,11 +7,7 @@
 
 #pragma once
 
-#ifdef WIN32 
-#include <windows.h>
-#else 
 #include <sys/time.h>
-#endif
 
 #include <string>
 #include "log.h"
@@ -60,12 +56,7 @@ namespace Gadgetron{
 
     virtual void start()
     {
-#ifdef WIN32
-        QueryPerformanceFrequency(&frequency_);
-        QueryPerformanceCounter(&start_);
-#else
         gettimeofday(&start_, NULL);
-#endif
     }
 
     void start(const char* name)
@@ -77,14 +68,9 @@ namespace Gadgetron{
     virtual double stop()
     {
         double time_in_us = 0.0;
-#ifdef WIN32
-        QueryPerformanceCounter(&end_);
-        time_in_us = (end_.QuadPart * (1.0e6/ frequency_.QuadPart)) - start_.QuadPart * (1.0e6 / frequency_.QuadPart);
-#else
         gettimeofday(&end_, NULL);
         time_in_us = ((end_.tv_sec * 1e6) + end_.tv_usec) - ((start_.tv_sec * 1e6) + start_.tv_usec);
-#endif
-	GDEBUG("%s:%f ms\n", name_.c_str(), time_in_us/1000.0);
+        GDEBUG("%s:%f ms\n", name_.c_str(), time_in_us/1000.0);
         return time_in_us;
     }
 
@@ -92,14 +78,8 @@ namespace Gadgetron{
 
   protected:
 
-#ifdef WIN32
-    LARGE_INTEGER frequency_;
-    LARGE_INTEGER start_;
-    LARGE_INTEGER end_;
-#else
     timeval start_;
     timeval end_;
-#endif
 
     std::string name_;
 

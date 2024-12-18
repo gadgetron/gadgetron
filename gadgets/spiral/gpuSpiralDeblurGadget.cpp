@@ -23,7 +23,6 @@ Input: Image data and B0 field map attached as reference
 #include "hoArmadillo.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDArray_utils.h"
-#include "ismrmrd/xml.h"
 #include "sense_utilities.h"
 #include "vector_td.h"
 #include "vector_td_operators.h"
@@ -64,7 +63,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 
   gpuSpiralDeblurGadget::~gpuSpiralDeblurGadget() {}
 
-  int gpuSpiralDeblurGadget::process_config(ACE_Message_Block* mb)
+  int gpuSpiralDeblurGadget::process_config(const mrd::Header& header)
   {
 
     int number_of_devices = 0;
@@ -98,20 +97,15 @@ typedef cuNFFT_impl<_real,2> plan_type;
 
 	unsigned int warp_size = deviceProp.warpSize;
 
-    // Start parsing the ISMRMRD XML header
-    //
-
-    ISMRMRD::IsmrmrdHeader h;
-    ISMRMRD::deserialize(mb->rd_ptr(),h);
-
+	auto& h = header;
 	// Get the encoding space and trajectory description
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-    ISMRMRD::TrajectoryDescription traj_desc;
+    mrd::EncodingSpaceType e_space = h.encoding[0].encoded_space;
+    mrd::EncodingSpaceType r_space = h.encoding[0].recon_space;
+    mrd::EncodingLimitsType e_limits = h.encoding[0].encoding_limits;
+    mrd::TrajectoryDescriptionType traj_desc;
 
-    if (h.encoding[0].trajectoryDescription) {
-      traj_desc = *h.encoding[0].trajectoryDescription;
+    if (h.encoding[0].trajectory_description) {
+      traj_desc = *h.encoding[0].trajectory_description;
     } else {
       GDEBUG("Trajectory description missing");
       return GADGET_FAIL;
@@ -131,7 +125,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
     double kr_max = -1.0;
 
 
-    for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
+    for (std::vector<mrd::UserParameterLongType>::iterator i (traj_desc.user_parameter_long.begin()); i != traj_desc.user_parameter_long.end(); ++i) {
       if (i->name == "interleaves") {
         interleaves = i->value;
       } else if (i->name == "fov_coefficients") {
@@ -143,7 +137,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
       }
     }
 
-    for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
+    for (std::vector<mrd::UserParameterDoubleType>::iterator i (traj_desc.user_parameter_double.begin()); i != traj_desc.user_parameter_double.end(); ++i) {
       if (i->name == "MaxGradient_G_per_cm") {
 	max_grad = i->value;
       } else if (i->name == "MaxSlewRate_G_per_cm_per_s") {
@@ -166,15 +160,15 @@ typedef cuNFFT_impl<_real,2> plan_type;
 
     // Determine reconstruction matrix sizes
     //
-	fov_vec_.push_back(r_space.fieldOfView_mm.x);
-    fov_vec_.push_back(r_space.fieldOfView_mm.y);
-    fov_vec_.push_back(r_space.fieldOfView_mm.z);
+	fov_vec_.push_back(r_space.field_of_view_mm.x);
+    fov_vec_.push_back(r_space.field_of_view_mm.y);
+    fov_vec_.push_back(r_space.field_of_view_mm.z);
 
 	kernel_width_ = buffer_convolution_kernel_width.value();
     oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrix_size.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrix_size.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
 
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -187,13 +181,12 @@ typedef cuNFFT_impl<_real,2> plan_type;
 
 
 
-    int gpuSpiralDeblurGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
+    int gpuSpiralDeblurGadget::process(Gadgetron::GadgetContainerMessage< mrd::ReconData >* m1)
     {
+		//Image data in rbit_[0].data_.data_
+		//Map data in rbit_[0].ref_->data_ (N dimension should be "set", 0th N-dim is TE0, 1st N-dim is TE1)
 
-			//Image data in rbit_[0].data_.data_
-			//Map data in rbit_[0].ref_->data_ (N dimension should be "set", 0th N-dim is TE0, 1st N-dim is TE1)
-
-		IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
+		mrd::ReconData* recon_bit_ = m1->getObjectPtr();
 
 		// Allocate various counters if they are NULL
 		if( !image_counter_.get() ){
@@ -202,25 +195,25 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		}
 
 		//Get data from ReconDataBuffer if exists
-		hoNDArray<std::complex<float>> host_data = recon_bit_->rbit_[0].data_.data_;
+		hoNDArray<std::complex<float>> host_data = recon_bit_->buffers[0].data.data;
 		hoNDArray<std::complex<float>> B0_data;
-    if(recon_bit_->rbit_[0].ref_){
-				B0_data = recon_bit_->rbit_[0].ref_->data_;
-    }
+		if(recon_bit_->buffers[0].ref){
+					B0_data = recon_bit_->buffers[0].ref->data;
+		}
 
 		//Set up image containers, trajectory, and NFFT_plan - if not already prepared
-		ISMRMRD::AcquisitionHeader& curr_header = recon_bit_->rbit_[0].data_.headers_(0,0,0,0,0);
+		mrd::AcquisitionHeader& curr_header = recon_bit_->buffers[0].data.headers(0,0,0,0,0);
 		if(!prepared_ && host_data.get_size(0) > 0){ //TODO: move to process_config?
-		    Prepare_Plan(recon_bit_->rbit_[0].data_);
+		    Prepare_Plan(recon_bit_->buffers[0].data);
 		}
 
 		//Set up B0 map containers, trajectory, and NFFT_plan - if not already prepared
-		if(!prepared_B0_ && recon_bit_->rbit_[0].ref_){
-				Prepare_B0_Plan(*recon_bit_->rbit_[0].ref_);
+		if(!prepared_B0_ && recon_bit_->buffers[0].ref){
+				Prepare_B0_Plan(*recon_bit_->buffers[0].ref);
 		}
 
 		//If there is reference data then we need to re-compute the B0 map
-		if(recon_bit_->rbit_[0].ref_){
+		if(recon_bit_->buffers[0].ref){
 				Calc_B0Map(B0_data, &B0_map);
 		}
 
@@ -239,44 +232,52 @@ typedef cuNFFT_impl<_real,2> plan_type;
 				output_image = MFI.MFI_apply(host_image, B0_map);
 			}
 			host_image = *(reg_image.to_host()); //calling MFI_apply corrupts host_image, Recall it from GPU;
-			//queue deblurred im
-			GadgetContainerMessage<ISMRMRD::ImageHeader> *header = get_image_header(curr_header,1);
-			GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
-			cm2->getObjectPtr()->create(host_image.dimensions());
-			memcpy(cm2->getObjectPtr()->get_data_ptr(), output_image.get_data_ptr(), output_image.get_number_of_elements()*sizeof(std::complex<float>));
-			header->cont(cm2);
-			if (this->next()->putq(header) < 0) {
+
+			// Make sure the output images have the correct dimensions [X Y Z CHA]
+			auto host_image_dimensions = host_image.dimensions();
+			host_image_dimensions.push_back(1);
+			host_image_dimensions.push_back(1);
+
+			// Queue deblurred im
+			GadgetContainerMessage<mrd::ImageComplexFloat> *deblurred = new GadgetContainerMessage<mrd::ImageComplexFloat>();
+			deblurred->getObjectPtr()->head = get_image_header(curr_header, 1);
+			deblurred->getObjectPtr()->data.create(host_image_dimensions);
+			memcpy(deblurred->getObjectPtr()->data.get_data_ptr(), output_image.get_data_ptr(), output_image.get_number_of_elements()*sizeof(std::complex<float>));
+			if (this->next()->putq(deblurred) < 0) {
 			  GDEBUG("Failed to put job on queue.\n");
-			  header->release();
+			  deblurred->release();
 			  return GADGET_FAIL;
 			}
 
-			//queue original im
-			GadgetContainerMessage<ISMRMRD::ImageHeader> *header2 = get_image_header(curr_header,10);
-			GadgetContainerMessage<hoNDArray< std::complex<float> > >* cm3 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
-			cm3->getObjectPtr()->create(host_image.dimensions());
-			memcpy(cm3->getObjectPtr()->get_data_ptr(), host_image.get_data_ptr(), host_image.get_number_of_elements()*sizeof(std::complex<float>));
-			header2->cont(cm3);
-			if (this->next()->putq(header2) < 0) {
-				GDEBUG("Failed to put job on queue.\n");
-				header->release();
-				return GADGET_FAIL;
+			// Queue original im
+			GadgetContainerMessage<mrd::ImageComplexFloat> *orig = new GadgetContainerMessage<mrd::ImageComplexFloat>();
+			orig->getObjectPtr()->head = get_image_header(curr_header, 10);
+			orig->getObjectPtr()->data.create(host_image_dimensions);
+			memcpy(orig->getObjectPtr()->data.get_data_ptr(), host_image.get_data_ptr(), host_image.get_number_of_elements()*sizeof(std::complex<float>));
+			if (this->next()->putq(orig) < 0) {
+			  GDEBUG("Failed to put job on queue.\n");
+			  orig->release();
+			  return GADGET_FAIL;
 			}
 
-			//queue B0 map
-			GadgetContainerMessage<ISMRMRD::ImageHeader> *header3 = get_image_header(curr_header,20);
-			GadgetContainerMessage<hoNDArray< std::complex<float> > >* cm4 = new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
+			// Queue B0 map
 			hoNDArray< std::complex<float> >B0_image;
 			B0_image.create(B0_map.dimensions());
 			for(int i = 0; i<B0_map.get_number_of_elements(); i++){
 				B0_image[i] = std::complex<float>(B0_map[i],0.0);
 			}
-			cm4->getObjectPtr()->create(B0_image.dimensions());
-			memcpy(cm4->getObjectPtr()->get_data_ptr(), B0_image.get_data_ptr(), B0_image.get_number_of_elements()*sizeof(std::complex<float>));header3->cont(cm4);
-			if (this->next()->putq(header3) < 0) {
-				GDEBUG("Failed to put job on queue.\n");
-				header->release();
-				return GADGET_FAIL;
+			GadgetContainerMessage<mrd::ImageComplexFloat> *b0map = new GadgetContainerMessage<mrd::ImageComplexFloat>();
+			b0map->getObjectPtr()->head = get_image_header(curr_header, 20);
+
+			auto B0_dimensions = B0_image.dimensions();
+			B0_dimensions.push_back(1);
+			B0_dimensions.push_back(1);
+			b0map->getObjectPtr()->data.create(B0_dimensions);
+			memcpy(b0map->getObjectPtr()->data.get_data_ptr(), B0_image.get_data_ptr(), B0_image.get_number_of_elements()*sizeof(std::complex<float>));
+			if (this->next()->putq(b0map) < 0) {
+			  GDEBUG("Failed to put job on queue.\n");
+			  b0map->release();
+			  return GADGET_FAIL;
 			}
 
 			image_counter_[0]++; //increment image counter
@@ -286,42 +287,29 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		return GADGET_OK;
 	}
 
-	GadgetContainerMessage<ISMRMRD::ImageHeader>* gpuSpiralDeblurGadget::get_image_header(ISMRMRD::AcquisitionHeader& curr_header, int series_index){
+	mrd::ImageHeader gpuSpiralDeblurGadget::get_image_header(mrd::AcquisitionHeader& curr_header, int series_index)
+	{
 		// Prepare an image header for this frame
-		GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+		mrd::ImageHeader header{};
 
-			{
-		// Initialize header to all zeroes (there are a few fields we do not set yet)
-		ISMRMRD::ImageHeader tmp;
-		*(header->getObjectPtr()) = tmp;
-			}
+		header.field_of_view[0] = fov_vec_[0];
+		header.field_of_view[1] = fov_vec_[1];
+		header.field_of_view[2] = fov_vec_[2];
 
-		header->getObjectPtr()->version = curr_header.version;
+		header.slice = curr_header.idx.slice;
+		header.set = curr_header.idx.set;
 
-		header->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
-		header->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
-		header->getObjectPtr()->matrix_size[2] = 1;
+		header.acquisition_time_stamp = curr_header.acquisition_time_stamp;
+		header.physiology_time_stamp = curr_header.physiology_time_stamp;
 
-		header->getObjectPtr()->field_of_view[0] = fov_vec_[0];
-		header->getObjectPtr()->field_of_view[1] = fov_vec_[1];
-		header->getObjectPtr()->field_of_view[2] = fov_vec_[2];
-		header->getObjectPtr()->channels = 1;
+		header.position = curr_header.position;
+		header.col_dir = curr_header.read_dir;
+		header.line_dir = curr_header.phase_dir;
+		header.slice_dir = curr_header.slice_dir;
+		header.patient_table_position = curr_header.patient_table_position;
 
-		header->getObjectPtr()->slice = curr_header.idx.slice;
-		header->getObjectPtr()->set = curr_header.idx.set;
-
-		header->getObjectPtr()->acquisition_time_stamp = curr_header.acquisition_time_stamp;
-		memcpy(header->getObjectPtr()->physiology_time_stamp, curr_header.physiology_time_stamp, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
-
-		memcpy(header->getObjectPtr()->position, curr_header.position, sizeof(float)*3);
-		memcpy(header->getObjectPtr()->read_dir, curr_header.read_dir, sizeof(float)*3);
-		memcpy(header->getObjectPtr()->phase_dir, curr_header.phase_dir, sizeof(float)*3);
-		memcpy(header->getObjectPtr()->slice_dir, curr_header.slice_dir, sizeof(float)*3);
-		memcpy(header->getObjectPtr()->patient_table_position, curr_header.patient_table_position, sizeof(float)*3);
-
-		header->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-		header->getObjectPtr()->image_index = image_counter_[0];
-		header->getObjectPtr()->image_series_index = series_index;
+		header.image_index = image_counter_[0];
+		header.image_series_index = series_index;
 
 		return header;
 	}
@@ -362,11 +350,11 @@ typedef cuNFFT_impl<_real,2> plan_type;
 
 	}
 
-	void gpuSpiralDeblurGadget::Prepare_Plan(IsmrmrdDataBuffered& data){
-			size_t R0 = data.data_.get_size(0);
-			size_t E1 = data.data_.get_size(1);
-			size_t E2 = data.data_.get_size(2);
-			size_t CHA = data.data_.get_size(3);
+	void gpuSpiralDeblurGadget::Prepare_Plan(mrd::ReconBuffer& data){
+			size_t R0 = data.data.get_size(0);
+			size_t E1 = data.data.get_size(1);
+			size_t E2 = data.data.get_size(2);
+			size_t CHA = data.data.get_size(3);
 
 			//Setup image arrays
 			image_dimensions_recon_.push_back(CHA);
@@ -378,8 +366,9 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			host_weights.create(R0*E1);
 
 			//Trajectory should be attached, but if it isn't we call calc_vds
-			ISMRMRD::AcquisitionHeader& curr_header = data.headers_(0,0,0,0,0);
-			if (curr_header.trajectory_dimensions != 3) {
+			mrd::AcquisitionHeader& curr_header = data.headers(0,0,0,0,0);
+			size_t trajectory_dimensions = data.trajectory.get_size(1);
+			if (trajectory_dimensions != 3) {
 				//Setup calc_vds parameters
 				int     nfov   = 1;
 				int     ngmax  = 1e7;       /*  maximum number of gradient samples      */
@@ -407,7 +396,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 			//If traj attached:
 			else{
 				for (int i = 0; i < (R0*E1); i++) {
-					auto trajectory = data.trajectory_->get_data_ptr();
+					auto trajectory = data.trajectory.get_data_ptr();
 					host_traj[i]   = floatd2(trajectory[i*3],trajectory[i*3+1]);
 					host_weights[i] = trajectory[i*3+2];
 				}
@@ -423,16 +412,17 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		prepared_ = true;
 	}
 
-	void gpuSpiralDeblurGadget::Prepare_B0_Plan(IsmrmrdDataBuffered& data){
-		ISMRMRD::AcquisitionHeader& B0_header = data.headers_(0,0,0,0,0);
-		size_t R0 = data.data_.get_size(0);
-		size_t E1 = data.data_.get_size(1);
+	void gpuSpiralDeblurGadget::Prepare_B0_Plan(mrd::ReconBuffer& data){
+		mrd::AcquisitionHeader& B0_header = data.headers(0,0,0,0,0);
+		size_t R0 = data.data.get_size(0);
+		size_t E1 = data.data.get_size(1);
 
 		B0_traj.create(R0*E1);
 		B0_weights.create(R0*E1);
 
 		float krmaxB0_ = 2.*(B0_header.user_float[4])/10000.; //TODO: B0 acquisition info currently embedded into user parameters. In the future this should be in Encoding[1]. Requires amending XSL.
-		if (B0_header.trajectory_dimensions != 3) {
+		size_t trajectory_dimensions = data.trajectory.get_size(1);
+		if (trajectory_dimensions != 3) {
 			//Setup calc_vds parameters
 			const int     nfov   = 2;
 			int     ngmax  =1e7;       /*  maximum number of gradient samples      */
@@ -465,7 +455,7 @@ typedef cuNFFT_impl<_real,2> plan_type;
 		}
 		else{
 			for (int i = 0; i < (R0*E1); i++) {
-				auto B0_trajectory = data.trajectory_->get_data_ptr();
+				auto B0_trajectory = data.trajectory.get_data_ptr();
 				B0_traj[i]   = floatd2(B0_trajectory[i*3],B0_trajectory[i*3+1]);
 				B0_weights[i] = B0_trajectory[i*3+2];
 			}

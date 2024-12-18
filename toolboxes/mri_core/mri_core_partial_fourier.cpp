@@ -120,7 +120,7 @@ namespace Gadgetron
                 transBandE2--;
             }
 
-            ISMRMRDKSPACEFILTER filterType = ISMRMRD_FILTER_TAPERED_HANNING;
+            MRDKSPACEFILTER filterType = MRD_FILTER_TAPERED_HANNING;
             bool densityComp = false;
 
             hoNDArray<T> filter_src_RO, filter_src_E1, filter_src_E2;
@@ -129,11 +129,11 @@ namespace Gadgetron
 
             if (startRO == 0 && endRO == RO - 1)
             {
-                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp);
+                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, MRD_FILTER_NONE, transBandRO, densityComp);
             }
             else
             {
-                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_TAPERED_HANNING, transBandRO, densityComp);
+                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, MRD_FILTER_TAPERED_HANNING, transBandRO, densityComp);
             }
 
             T midValue = filter_src_RO(RO / 2);
@@ -147,11 +147,11 @@ namespace Gadgetron
 
             if (startE1 == 0 && endE1 == E1 - 1)
             {
-                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp);
+                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, MRD_FILTER_NONE, transBandE1, densityComp);
             }
             else
             {
-                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_TAPERED_HANNING, transBandE1, densityComp);
+                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, MRD_FILTER_TAPERED_HANNING, transBandE1, densityComp);
             }
 
             midValue = filter_src_E1(E1 / 2);
@@ -167,11 +167,11 @@ namespace Gadgetron
             {
                 if (startE2 == 0 && endE2 == E2 - 1)
                 {
-                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp);
+                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, MRD_FILTER_NONE, transBandE2, densityComp);
                 }
                 else
                 {
-                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_TAPERED_HANNING, transBandE2, densityComp);
+                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, MRD_FILTER_TAPERED_HANNING, transBandE2, densityComp);
                 }
 
                 midValue = filter_src_E2(E2 / 2);
@@ -421,12 +421,12 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE void partial_fourier_POCS(const hoNDArray< std::complex<float> >& kspace,
+    template void partial_fourier_POCS(const hoNDArray< std::complex<float> >& kspace,
         size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2,
         size_t transit_band_RO, size_t transit_band_E1, size_t transit_band_E2,
         size_t iter, double thres, hoNDArray< std::complex<float> >& res);
 
-    template EXPORTMRICORE void partial_fourier_POCS(const hoNDArray< std::complex<double> >& kspace,
+    template void partial_fourier_POCS(const hoNDArray< std::complex<double> >& kspace,
         size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2,
         size_t transit_band_RO, size_t transit_band_E1, size_t transit_band_E2,
         size_t iter, double thres, hoNDArray< std::complex<double> >& res);
@@ -440,7 +440,7 @@ namespace Gadgetron
         {
             if (start == 0 || end == len - 1)
             {
-                Gadgetron::generate_asymmetric_filter(len, start, end, filter_pf, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len*filter_pf_width), filter_pf_density_comp);
+                Gadgetron::generate_asymmetric_filter(len, start, end, filter_pf, MRD_FILTER_TAPERED_HANNING, (size_t)(len*filter_pf_width), filter_pf_density_comp);
             }
             else
             {
@@ -451,13 +451,13 @@ namespace Gadgetron
                 if (len_end > len_start)
                 {
                     hoNDArray<T> fil(len_end);
-                    Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_end*filter_pf_width), filter_pf_density_comp);
+                    Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, MRD_FILTER_TAPERED_HANNING, (size_t)(len_end*filter_pf_width), filter_pf_density_comp);
                     Gadgetron::pad(len, fil, filter_pf);
                 }
                 else
                 {
                     hoNDArray<T> fil(len_start);
-                    Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_start*filter_pf_width), filter_pf_density_comp);
+                    Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, MRD_FILTER_TAPERED_HANNING, (size_t)(len_start*filter_pf_width), filter_pf_density_comp);
                     Gadgetron::pad(len, fil, filter_pf);
                 }
             }
@@ -575,13 +575,13 @@ namespace Gadgetron
 
     }
 
-    template EXPORTMRICORE void partial_fourier_filter(const hoNDArray< std::complex<float> >& kspace,
+    template void partial_fourier_filter(const hoNDArray< std::complex<float> >& kspace,
         size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2,
         double filter_pf_width_RO, double filter_pf_width_E1, double filter_pf_width_E2, bool filter_pf_density_comp,
         hoNDArray< std::complex<float> >& filter_pf_RO, hoNDArray< std::complex<float> >& filter_pf_E1, hoNDArray< std::complex<float> >& filter_pf_E2,
         hoNDArray< std::complex<float> >& res);
 
-    template EXPORTMRICORE void partial_fourier_filter(const hoNDArray< std::complex<double> >& kspace,
+    template void partial_fourier_filter(const hoNDArray< std::complex<double> >& kspace,
         size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2,
         double filter_pf_width_RO, double filter_pf_width_E1, double filter_pf_width_E2, bool filter_pf_density_comp,
         hoNDArray< std::complex<double> >& filter_pf_RO, hoNDArray< std::complex<double> >& filter_pf_E1, hoNDArray< std::complex<double> >& filter_pf_E2,

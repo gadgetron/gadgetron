@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns="http://gadgetron.sf.net/gadgetron" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://gadgetron.sf.net/gadgetron">
+
+    <xs:element name="configuration">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="version" type="xs:string"/>
+                <xs:element name="stream" type="Stream" />
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="gadgetronStreamConfiguration">
+        <xs:complexType>
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="gadget">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element maxOccurs="1" minOccurs="1"  name="name" type="xs:string"/>
+                        <xs:element maxOccurs="1" minOccurs="1"  name="dll" type="xs:string"/>
+                        <xs:element maxOccurs="1" minOccurs="1"  name="classname" type="xs:string"/>
+                        <xs:element maxOccurs="unbounded" minOccurs="0" name="property">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element maxOccurs="1" minOccurs="1" name="name" type="xs:string"/>
+                                    <xs:element maxOccurs="1" minOccurs="1" name="value" type="xs:string"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+            </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

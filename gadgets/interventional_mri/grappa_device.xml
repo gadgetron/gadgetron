@@ -2,35 +2,18 @@
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-         
-    <reader>
-      <slot>1008</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
-    </reader>
-    <reader>
-        <slot>1026</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
-    </reader>
-
-     <writer>
-      <slot>1022</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriter</classname>
-    </writer>
 
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
       <property><name>scale_only_channels_by_name</name><value>uncombined_channels_by_name@PCA</value></property>
-    </gadget>    
+    </gadget>
 
 
     <gadget>
       <name>PCA</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>PCACoilGadget</classname>
       <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
 
@@ -40,7 +23,7 @@
 
     <gadget>
       <name>CoilReduction</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
@@ -48,19 +31,19 @@
     <!-- RO asymmetric echo handling -->
     <gadget>
         <name>AsymmetricEcho</name>
-        <dll>gadgetron_mricore</dll>
+        <dll>pingvin_mricore</dll>
         <classname>AsymmetricEchoAdjustROGadget</classname>
     </gadget>
 
     <gadget>
       <name>RemoveROOversampling</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>RemoveROOversamplingGadget</classname>
     </gadget>
 
     <gadget>
       <name>Grappa</name>
-      <dll>gadgetron_grappa</dll>
+      <dll>pingvin_grappa</dll>
       <classname>GrappaGadget</classname>
       <!-- After PCA gadget, the device channel with be the first channel -->
       <!--
@@ -72,45 +55,32 @@
 
     <gadget>
       <name>GrappaUnmixing</name>
-      <dll>gadgetron_grappa</dll>
+      <dll>pingvin_grappa</dll>
       <classname>GrappaUnmixingGadget</classname>
     </gadget>
 
      <gadget>
       <name>Extract</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>
 
-    <!--
-    <gadget>
-      <name>ImageWrite</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageWriterGadgetFLOAT</classname>
-    </gadget>
-    -->
-
     <gadget>
       <name>AutoScale</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>AutoScaleGadget</classname>
     </gadget>
-    
+
     <gadget>
       <name>FloatToShort</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>pingvin_mricore</dll>
       <classname>FloatToUShortGadget</classname>
     </gadget>
 
     <gadget>
       <name>DeviceChannelSplitter</name>
-      <dll>gadgetron_interventional_mri</dll>
+      <dll>pingvin_interventional_mri</dll>
       <classname>DeviceChannelSplitterGadgetUSHORT</classname>
     </gadget>
 
-     <gadget>
-      <name>ImageFinish</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadget</classname>
-    </gadget>
 </gadgetronStreamConfiguration>

@@ -1,70 +1,61 @@
-if (WIN32)
-  add_definitions(-D__BUILD_GADGETRON_CMR__)
-endif ()
-
-set(cmr_header_fiels cmr_export.h
+set(cmr_header_files
                     cmr_kspace_binning.h
-                    cmr_time_stamp.h 
-                    cmr_motion_correction.h 
-                    cmr_parametric_mapping.h 
-                    cmr_t1_mapping.h 
-                    cmr_t2_mapping.h 
-                    cmr_spirit_recon.h 
-                    cmr_strain_analysis.h 
-                    cmr_radial_thickening.h 
-                    cmr_analytical_strain.h 
-                    cmr_image_container_util.h 
-                    cmr_ismrmrd_util.h 
+                    cmr_time_stamp.h
+                    cmr_motion_correction.h
+                    cmr_parametric_mapping.h
+                    cmr_t1_mapping.h
+                    cmr_t2_mapping.h
+                    cmr_spirit_recon.h
+                    cmr_strain_analysis.h
+                    cmr_radial_thickening.h
+                    cmr_analytical_strain.h
+                    cmr_image_container_util.h
                     )
 
-set(cmr_src_fiels cmr_kspace_binning.cpp 
-                cmr_time_stamp.cpp 
-                cmr_motion_correction.cpp 
-                cmr_parametric_mapping.cpp 
-                cmr_t1_mapping.cpp 
-                cmr_t2_mapping.cpp 
-                cmr_spirit_recon.cpp 
-                cmr_strain_analysis.cpp 
-                cmr_radial_thickening.cpp 
-                cmr_analytical_strain.cpp 
-                cmr_image_container_util.cpp 
-                cmr_ismrmrd_util.cpp 
+set(cmr_src_files cmr_kspace_binning.cpp
+                cmr_time_stamp.cpp
+                cmr_motion_correction.cpp
+                cmr_parametric_mapping.cpp
+                cmr_t1_mapping.cpp
+                cmr_t2_mapping.cpp
+                cmr_spirit_recon.cpp
+                cmr_strain_analysis.cpp
+                cmr_radial_thickening.cpp
+                cmr_analytical_strain.cpp
+                cmr_image_container_util.cpp
                 )
 
-add_library(gadgetron_toolbox_cmr SHARED 
-            ${cmr_header_fiels} 
-            ${cmr_src_fiels} )
+add_library(pingvin_toolbox_cmr SHARED
+            ${cmr_header_files}
+            ${cmr_src_files} )
 
-set_target_properties(gadgetron_toolbox_cmr PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(pingvin_toolbox_cmr PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_cmr
-                    gadgetron_toolbox_cpucore
-                    gadgetron_toolbox_log
-                    gadgetron_toolbox_cpucore_math
-                    gadgetron_toolbox_cpufft 
-                    gadgetron_toolbox_cpuklt 
-                    gadgetron_toolbox_image_analyze_io 
-                    gadgetron_toolbox_mri_core 
-                    gadgetron_toolbox_cpudwt 
-                    gadgetron_toolbox_cpuoperator
-                    gadgetron_toolbox_cpu_image )
+target_link_libraries(pingvin_toolbox_cmr
+                    pingvin_toolbox_cpucore
+                    pingvin_toolbox_log
+                    pingvin_toolbox_cpucore_math
+                    pingvin_toolbox_cpufft
+                    pingvin_toolbox_cpuklt
+                    pingvin_toolbox_image_analyze_io
+                    pingvin_toolbox_mri_core
+                    pingvin_toolbox_cpudwt
+                    pingvin_toolbox_cpuoperator
+                    pingvin_toolbox_cpu_image )
 
-target_include_directories(gadgetron_toolbox_cmr
+target_include_directories(pingvin_toolbox_cmr
         PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/toolboxes/ffd>)
 
-install(TARGETS gadgetron_toolbox_cmr
-		EXPORT gadgetron-export
+install(TARGETS pingvin_toolbox_cmr
+		EXPORT pingvin-export
 		LIBRARY DESTINATION lib
 		ARCHIVE DESTINATION lib
 		RUNTIME DESTINATION bin
 		COMPONENT main
 )
 
-
-install(FILES ${cmr_header_fiels} 
-      DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+install(FILES ${cmr_header_files}
+      DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)

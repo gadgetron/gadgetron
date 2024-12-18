@@ -1,0 +1,16 @@
+reconstruction:
+  data: generic/meas_MID00062_FID114726_SAX_SASHA/meas_MID00062_FID114726_SAX_SASHA_meas1.mrd
+  checksum: cf48dfa0563cb30a7517d39b75866eda
+  run:
+  - args: --config Generic_Cartesian_Spirit_SASHA.xml
+validation:
+  reference: generic/meas_MID00062_FID114726_SAX_SASHA/ref_20220817_klk_Generic_Cartesian_Spirit_SASHA.xml.mrd
+  checksum: 6233d3fc7aa000c33712af1dfb27f9a3
+  tests:
+  - image_series: 1
+    value_comparison_threshold: 0.001
+    scale_comparison_threshold: 0.001
+requirements:
+  system_memory: 4096
+tags:
+- slow

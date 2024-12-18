@@ -13,16 +13,15 @@ namespace Gadgetron {
     {
     }
 
-    int GenericReconCartesianGrappaAIGadget::process_config(ACE_Message_Block *mb)
+    int GenericReconCartesianGrappaAIGadget::process_config(const mrd::Header& header)
     {
-        boost::filesystem::path gadgetron_python_path
-            = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
+        boost::filesystem::path gadgetron_python_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
         GDEBUG_STREAM("PYTHON_PATH " << gadgetron_python_path.string());
         Gadgetron::initialize_python();
         Gadgetron::add_python_path(gadgetron_python_path.generic_string());
         this->gt_home_ = gadgetron_python_path.generic_string();
 
-        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+        GADGET_CHECK_RETURN(BaseClass::process_config(header) == GADGET_OK, GADGET_FAIL);
 
         // -------------------------------------------------
 
@@ -33,21 +32,21 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericReconCartesianGrappaAIGadget::process(Gadgetron::GadgetContainerMessage<IsmrmrdReconData> *m1)
+    int GenericReconCartesianGrappaAIGadget::process(Gadgetron::GadgetContainerMessage<mrd::ReconData> *m1)
     {
         if (perform_timing.value()) { gt_timer_local_.start("GenericReconCartesianGrappaAIGadget::process"); }
 
         process_called_times_++;
 
-        IsmrmrdReconData *recon_bit_ = m1->getObjectPtr();
-        if (recon_bit_->rbit_.size() > num_encoding_spaces_)
+        mrd::ReconData *recon_data = m1->getObjectPtr();
+        if (recon_data->buffers.size() > num_encoding_spaces_)
         {
-            GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size()
+            GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_data->buffers.size()
                 << " instead of "
                 << num_encoding_spaces_);
         }
 
-        GadgetContainerMessage<std::vector<Core::Waveform>>* wav = AsContainerMessage<std::vector<Core::Waveform>>(m1->cont());
+        GadgetContainerMessage<std::vector<mrd::WaveformUint32>>* wav = AsContainerMessage<std::vector<mrd::WaveformUint32>>(m1->cont());
         if (wav)
         {
             if (verbose.value())
@@ -57,7 +56,7 @@ namespace Gadgetron {
         }
 
         // for every encoding space
-        for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
+        for (size_t e = 0; e < recon_data->buffers.size(); e++)
         {
             std::stringstream os;
             os << "_encoding_" << e << "_" << process_called_times_;
@@ -68,21 +67,19 @@ namespace Gadgetron {
             // ---------------------------------------------------------------
             // export incoming data
 
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str()); }
-            if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
-            {
-                if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0) { gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str()); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_data->buffers[e].data.data, debug_folder_full_path_ + "data" + os.str()); }
+            if (!debug_folder_full_path_.empty() && recon_data->buffers[e].data.trajectory.get_number_of_elements() > 0) {
+                gt_exporter_.export_array(recon_data->buffers[e].data.trajectory, debug_folder_full_path_ + "data_traj" + os.str());
             }
 
             // ---------------------------------------------------------------
 
-            if (recon_bit_->rbit_[e].ref_)
+            if (recon_data->buffers[e].ref)
             {
-                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str()); }
+                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_data->buffers[e].ref->data, debug_folder_full_path_ + "ref" + os.str()); }
 
-                if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].ref_->trajectory_)
-                {
-                    if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0) { gt_exporter_.export_array(*(recon_bit_->rbit_[e].ref_->trajectory_), debug_folder_full_path_ + "ref_traj" + os.str()); }
+                if (!debug_folder_full_path_.empty() && recon_data->buffers[e].ref->trajectory.get_number_of_elements() > 0) {
+                    gt_exporter_.export_array(recon_data->buffers[e].ref->trajectory, debug_folder_full_path_ + "ref_traj" + os.str());
                 }
 
                 // ---------------------------------------------------------------
@@ -90,7 +87,7 @@ namespace Gadgetron {
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaAIGadget::make_ref_coil_map"); }
-                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_, recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
+                this->make_ref_coil_map(*recon_data->buffers[e].ref, recon_data->buffers[e].data.data.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ----------------------------------------------------------
@@ -119,72 +116,68 @@ namespace Gadgetron {
                 // after this step, recon_obj_[e].kernel_, recon_obj_[e].kernelIm_, recon_obj_[e].unmixing_coeff_ are filled
                 // gfactor is computed too
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaAIGadget::perform_calib"); }
-                this->perform_calib(recon_bit_->rbit_[e], recon_obj_[e], e);
+                this->perform_calib(recon_data->buffers[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
                 // ---------------------------------------------------------------
 
-                recon_bit_->rbit_[e].ref_ = Core::none;
+                recon_data->buffers[e].ref = std::nullopt;
             }
 
-            if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
+            if (recon_data->buffers[e].data.data.get_number_of_elements() > 0)
             {
-                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str()); }
-                if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
-                {
-                    if (recon_bit_->rbit_[e].data_.trajectory_->get_number_of_elements() > 0) { gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str()); }
+                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_data->buffers[e].data.data, debug_folder_full_path_ + "data_before_unwrapping" + os.str()); }
+                if (!debug_folder_full_path_.empty() && recon_data->buffers[e].data.trajectory.get_number_of_elements() > 0) {
+                    gt_exporter_.export_array(recon_data->buffers[e].data.trajectory, debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str());
                 }
 
                 // ---------------------------------------------------------------
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaAIGadget::perform_unwrapping"); }
-                this->perform_unwrapping(recon_bit_->rbit_[e], recon_obj_[e], e);
+                this->perform_unwrapping(recon_data->buffers[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaAIGadget::compute_image_header"); }
-                this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
+                this->compute_image_header(recon_data->buffers[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // set up recon_res_grappa_ai_
-                this->recon_res_grappa_ai_[e].headers_ = recon_obj_[e].recon_res_.headers_;
-                this->recon_res_grappa_ai_[e].meta_ = recon_obj_[e].recon_res_.meta_;
+                this->recon_res_grappa_ai_[e].headers = recon_obj_[e].recon_res_.headers;
+                this->recon_res_grappa_ai_[e].meta = recon_obj_[e].recon_res_.meta;
 
-                for (size_t m = 0; m < this->recon_res_grappa_ai_[e].meta_.size(); m++)
+                for (size_t m = 0; m < this->recon_res_grappa_ai_[e].meta.size(); m++)
                 {
-                    this->recon_res_grappa_ai_[e].meta_[m].append(GADGETRON_IMAGECOMMENT, GADGETRON_AI);
-                    this->recon_res_grappa_ai_[e].meta_[m].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_AI);
+                    this->recon_res_grappa_ai_[e].meta[m][GADGETRON_IMAGECOMMENT].push_back(GADGETRON_AI);
+                    this->recon_res_grappa_ai_[e].meta[m][GADGETRON_SEQUENCEDESCRIPTION].push_back(GADGETRON_AI);
                 }
 
                 // ---------------------------------------------------------------
                 // pass down waveform
                 if (wav)
                 {
-                    this->set_wave_form_to_image_array(*wav->getObjectPtr(), recon_obj_[e].recon_res_);
-                    this->set_wave_form_to_image_array(*wav->getObjectPtr(), this->recon_res_grappa_ai_[e]);
+                    recon_obj_[e].recon_res_.waveforms = *wav->getObjectPtr();
+                    this->recon_res_grappa_ai_[e].waveforms = *wav->getObjectPtr();
                 }
-
-                recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
-                this->recon_res_grappa_ai_[e].acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
                 // ---------------------------------------------------------------
 
-                if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str()); }
-                if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(this->recon_res_grappa_ai_[e].data_, debug_folder_full_path_ + "recon_res_grappa_ai" + os.str()); }
+                if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data, debug_folder_full_path_ + "recon_res" + os.str()); }
+                if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(this->recon_res_grappa_ai_[e].data, debug_folder_full_path_ + "recon_res_grappa_ai" + os.str()); }
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaAIGadget::send_out_image_array"); }
                 this->send_out_image_array(this->recon_res_grappa_ai_[e], e, image_series.value() + ((int)e + 2), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
 
-            recon_obj_[e].recon_res_.data_.clear();
+            recon_obj_[e].recon_res_.data.clear();
             recon_obj_[e].gfactor_.clear();
-            recon_obj_[e].recon_res_.headers_.clear();
-            recon_obj_[e].recon_res_.meta_.clear();
+            recon_obj_[e].recon_res_.headers.clear();
+            recon_obj_[e].recon_res_.meta.clear();
 
-            recon_res_grappa_ai_[e].data_.clear();
-            recon_res_grappa_ai_[e].headers_.clear();
-            recon_res_grappa_ai_[e].meta_.clear();
+            recon_res_grappa_ai_[e].data.clear();
+            recon_res_grappa_ai_[e].headers.clear();
+            recon_res_grappa_ai_[e].meta.clear();
         }
 
         m1->release();
@@ -194,11 +187,11 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void GenericReconCartesianGrappaAIGadget::perform_calib(IsmrmrdReconBit &recon_bit, ReconObjType &recon_obj, size_t e)
+    void GenericReconCartesianGrappaAIGadget::perform_calib(mrd::ReconAssembly &recon_bit, ReconObjType &recon_obj, size_t e)
     {
-        size_t RO = recon_bit.data_.data_.get_size(0);
-        size_t E1 = recon_bit.data_.data_.get_size(1);
-        size_t E2 = recon_bit.data_.data_.get_size(2);
+        size_t RO = recon_bit.data.data.get_size(0);
+        size_t E1 = recon_bit.data.data.get_size(1);
+        size_t E2 = recon_bit.data.data.get_size(2);
 
         hoNDArray<T> &src = recon_obj.ref_calib_;
         hoNDArray<T> &dst = recon_obj.ref_calib_dst_;
@@ -415,15 +408,15 @@ namespace Gadgetron {
         }
     }
 
-    void GenericReconCartesianGrappaAIGadget::perform_unwrapping(IsmrmrdReconBit &recon_bit, ReconObjType &recon_obj, size_t e)
+    void GenericReconCartesianGrappaAIGadget::perform_unwrapping(mrd::ReconAssembly &recon_bit, ReconObjType &recon_obj, size_t e)
     {
-        size_t RO = recon_bit.data_.data_.get_size(0);
-        size_t E1 = recon_bit.data_.data_.get_size(1);
-        size_t E2 = recon_bit.data_.data_.get_size(2);
-        size_t CHA = recon_bit.data_.data_.get_size(3);
-        size_t N = recon_bit.data_.data_.get_size(4);
-        size_t S = recon_bit.data_.data_.get_size(5);
-        size_t SLC = recon_bit.data_.data_.get_size(6);
+        size_t RO = recon_bit.data.data.get_size(0);
+        size_t E1 = recon_bit.data.data.get_size(1);
+        size_t E2 = recon_bit.data.data.get_size(2);
+        size_t CHA = recon_bit.data.data.get_size(3);
+        size_t N = recon_bit.data.data.get_size(4);
+        size_t S = recon_bit.data.data.get_size(5);
+        size_t SLC = recon_bit.data.data.get_size(6);
 
         hoNDArray<T> &src = recon_obj.ref_calib_;
         hoNDArray<T> &dst = recon_obj.ref_calib_dst_;
@@ -444,8 +437,8 @@ namespace Gadgetron {
         size_t convkE1 = recon_obj.kernel_.get_size(1);
         size_t convkE2 = recon_obj.kernel_.get_size(2);
 
-        recon_obj.recon_res_.data_.create(RO, E1, E2, 1, N, S, SLC);
-        recon_res_grappa_ai_[e].data_.create(RO, E1, E2, 1, N, S, SLC);
+        recon_obj.recon_res_.data.create(RO, E1, E2, 1, N, S, SLC);
+        recon_res_grappa_ai_[e].data.create(RO, E1, E2, 1, N, S, SLC);
 
         /*if (!debug_folder_full_path_.empty())
         {
@@ -460,12 +453,12 @@ namespace Gadgetron {
 
         if (E2 > 1)
         {
-            Gadgetron::hoNDFFT<float>::instance()->ifft3c(recon_bit.data_.data_, complex_im_recon_buf_,
+            Gadgetron::hoNDFFT<float>::instance()->ifft3c(recon_bit.data.data, complex_im_recon_buf_,
                 data_recon_buf_);
         }
         else
         {
-            Gadgetron::hoNDFFT<float>::instance()->ifft2c(recon_bit.data_.data_, complex_im_recon_buf_,
+            Gadgetron::hoNDFFT<float>::instance()->ifft2c(recon_bit.data.data, complex_im_recon_buf_,
                 data_recon_buf_);
         }
 
@@ -501,7 +494,7 @@ namespace Gadgetron {
         if (E2 > 1)
         {
             // to be implemented, 3D grappa ai
-            recon_res_grappa_ai_[e].data_ = recon_obj.recon_res_.data_;
+            recon_res_grappa_ai_[e].data = recon_obj.recon_res_.data;
         }
         else
         {
@@ -537,7 +530,7 @@ namespace Gadgetron {
 
                     // prepare recon
                     hoNDArray<T> data;
-                    T *pData = &(recon_bit.data_.data_(0, 0, 0, 0, n, s, slc));
+                    T *pData = &(recon_bit.data.data(0, 0, 0, 0, n, s, slc));
                     data.create(RO, E1, srcCHA, pData);
 
                     size_t usedN = n;
@@ -559,7 +552,7 @@ namespace Gadgetron {
                     Gadgetron::hoNDFFT<float>::instance()->ifft2c(res_grappa, im_grappa);
                     Gadgetron::coil_combine(im_grappa, coilMap, 2, im_combined_grappa);
 
-                    memcpy(&(recon_obj.recon_res_.data_(0, 0, 0, 0, n, s, slc)), im_combined_grappa.begin(), im_combined_grappa.get_number_of_bytes());
+                    memcpy(&(recon_obj.recon_res_.data(0, 0, 0, 0, n, s, slc)), im_combined_grappa.begin(), im_combined_grappa.get_number_of_bytes());
 
                     // grappa ai recon
                     im_ai = im_grappa;
@@ -569,7 +562,7 @@ namespace Gadgetron {
                     Gadgetron::hoNDFFT<float>::instance()->ifft2c(res_ai, im_ai);
                     Gadgetron::coil_combine(im_ai, coilMap, 2, im_combined_ai);
 
-                    memcpy(&(recon_res_grappa_ai_[e].data_(0, 0, 0, 0, n, s, slc)), im_combined_ai.begin(), im_combined_ai.get_number_of_bytes());
+                    memcpy(&(recon_res_grappa_ai_[e].data(0, 0, 0, 0, n, s, slc)), im_combined_ai.begin(), im_combined_ai.get_number_of_bytes());
                 }
             }
         }
@@ -579,7 +572,7 @@ namespace Gadgetron {
             std::stringstream os;
             os << "encoding_" << e;
             std::string suffix = os.str();
-            gt_exporter_.export_array_complex(recon_res_grappa_ai_[e].data_,
+            gt_exporter_.export_array_complex(recon_res_grappa_ai_[e].data,
                 debug_folder_full_path_ + "unwrappedIm_grappa_ai_" + suffix);
         }
     }

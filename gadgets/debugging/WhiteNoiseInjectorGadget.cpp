@@ -1,7 +1,7 @@
 #include "WhiteNoiseInjectorGadget.h"
 #include "hoNDArray_elemwise.h"
+
 #include <array>
-#include "ismrmrd/xml.h"
 
 namespace Gadgetron
 {
@@ -100,7 +100,7 @@ WhiteNoiseInjectorGadget::~WhiteNoiseInjectorGadget()
     delete randn_;
 }
 
-int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
+int WhiteNoiseInjectorGadget::process_config(const mrd::Header& header)
 {
     noise_mean_ = noise_mean.value();
     noise_std_ = noise_std.value();
@@ -140,75 +140,68 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     randn_->seed( (unsigned long)seed );
 
     // ---------------------------------------------------------------------------------------------------------
-    ISMRMRD::IsmrmrdHeader h;
-    try {
-      deserialize(mb->rd_ptr(),h);
-    } catch (...) {
-      GDEBUG("Error parsing ISMRMRD Header");
-      throw;
-      return GADGET_FAIL;
-    }
-
-    if( h.encoding.size() != 1)
+    if( header.encoding.size() != 1)
     {
-      GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+      GDEBUG("Number of encoding spaces: %d\n", header.encoding.size());
       GDEBUG("This simple WhiteNoiseInjectorGadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
-    if (!h.encoding[0].parallelImaging) {
+    if (!header.encoding[0].parallel_imaging) {
       GDEBUG("Parallel Imaging section not found in header");
       return GADGET_FAIL;
     }
 
-    ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+    mrd::ParallelImagingType p_imaging = *header.encoding[0].parallel_imaging;
 
-    acceFactorE1_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
-    acceFactorE2_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
+    acceFactorE1_ = (double)(p_imaging.acceleration_factor.kspace_encoding_step_1);
+    acceFactorE2_ = (double)(p_imaging.acceleration_factor.kspace_encoding_step_2);
 
     GDEBUG_STREAM("acceFactorE1_ is " << acceFactorE1_);
     GDEBUG_STREAM("acceFactorE2_ is " << acceFactorE2_);
 
-    if ( !p_imaging.calibrationMode.is_present() )
+    if ( !p_imaging.calibration_mode )
     {
         GDEBUG("Parallel Imaging calibrationMode not found in header");
         return GADGET_FAIL;
     }
 
-    std::string calib = *p_imaging.calibrationMode;
-    if ( calib.compare("interleaved") == 0 )
-    {
+    auto calib = *p_imaging.calibration_mode;
+    if ( calib == mrd::CalibrationMode::kInterleaved ) {
       is_interleaved_ = true;
       GDEBUG_STREAM("Calibration mode is interleaved");
-    } else if ( calib.compare("embedded") == 0 ) {
+    } else if ( calib == mrd::CalibrationMode::kEmbedded ) {
       is_embeded_ = true;
       GDEBUG_STREAM("Calibration mode is embedded");
-    } else if ( calib.compare("separate") == 0 ) {
+    } else if ( calib == mrd::CalibrationMode::kSeparate ) {
       is_seperate_ = true;
       GDEBUG_STREAM("Calibration mode is separate");
-    } else if ( calib.compare("external") == 0 ) {
+    } else if ( calib == mrd::CalibrationMode::kExternal ) {
       is_external_ = true;
       GDEBUG_STREAM("Calibration mode is external");
-    } else if ( (calib.compare("other") == 0)) {
+    } else if ( calib == mrd::CalibrationMode::kOther ) {
       is_other_ = true;
       GDEBUG_STREAM("Calibration mode is other");
     } else {
       GDEBUG("Failed to process parallel imaging calibration mode");
       return GADGET_FAIL;
     }
-    
+
     return GADGET_OK;
 }
 
-int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<mrd::Acquisition>* m1)
 {
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
-    bool is_scc_correction = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA).isSet(m1->getObjectPtr()->flags);
+    auto& head = m1->getObjectPtr()->head;
+    auto& data = m1->getObjectPtr()->data;
 
-    bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(m1->getObjectPtr()->flags);
-    bool is_ref_kspace = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(m1->getObjectPtr()->flags);
+    bool is_noise = head.flags.HasFlags(mrd::AcquisitionFlags::kIsNoiseMeasurement);
+    bool is_scc_correction = head.flags.HasFlags(mrd::AcquisitionFlags::kIsSurfacecoilcorrectionscanData);
 
-    size_t channels = m1->getObjectPtr()->active_channels;
-    size_t samples = m1->getObjectPtr()->number_of_samples;
+    bool is_ref = head.flags.HasFlags(mrd::AcquisitionFlags::kIsParallelCalibration);
+    bool is_ref_kspace = head.flags.HasFlags(mrd::AcquisitionFlags::kIsParallelCalibrationAndImaging);
+
+    size_t channels = m1->getObjectPtr()->Coils();
+    size_t samples = m1->getObjectPtr()->Samples();
 
     if (!is_noise && !is_scc_correction )
     {
@@ -225,10 +218,10 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
 
         if ( add_noise )
         {
-            if ( !noise_.dimensions_equal(*m2->getObjectPtr()) )
+            if ( !noise_.dimensions_equal(data) )
             {
-                noise_.create(m2->getObjectPtr()->dimensions());
-                noise_fl_.create(m2->getObjectPtr()->dimensions());
+                noise_.create(data.dimensions());
+                noise_fl_.create(data.dimensions());
             }
 
             try
@@ -249,7 +242,7 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
 
             try
             {
-                Gadgetron::add(*m2->getObjectPtr(), noise_fl_, *m2->getObjectPtr());
+                Gadgetron::add(data, noise_fl_, data);
             }
             catch(...)
             {
@@ -259,7 +252,7 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
         }
     }
 
-    if (this->next()->putq(m1) == -1) 
+    if (this->next()->putq(m1) == -1)
     {
       GERROR("WhiteNoiseInjectorGadget::process, passing data on to next gadget");
       return -1;

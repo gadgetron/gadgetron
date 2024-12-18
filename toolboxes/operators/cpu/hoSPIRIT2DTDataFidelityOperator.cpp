@@ -102,7 +102,7 @@ void hoSPIRIT2DTDataFidelityOperator<T>::adjoint(const ARRAY_TYPE& x, ARRAY_TYPE
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUOPERATOR hoSPIRIT2DTDataFidelityOperator< std::complex<float> >;
-template class EXPORTCPUOPERATOR hoSPIRIT2DTDataFidelityOperator< std::complex<double> >;
+template class hoSPIRIT2DTDataFidelityOperator< std::complex<float> >;
+template class hoSPIRIT2DTDataFidelityOperator< std::complex<double> >;
 
 }

@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "ismrmrd/ismrmrd.h"
-
 namespace Gadgetron
 {
     /// defination of image meta attributes
@@ -139,7 +137,7 @@ namespace Gadgetron
     #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
 
     /// data stream key
-    #define GENERIC_RECON_STREAM_ISMRMRD_HEADER             "recon_header"
+    #define GENERIC_RECON_STREAM_MRD_HEADER                 "recon_header"
     #define GENERIC_RECON_STREAM_UNDERSAMPLED_KSPACE        "undersampled_kspace"
     #define GENERIC_RECON_STREAM_REF_KSPACE                 "ref_kspace"
     #define GENERIC_RECON_STREAM_REF_KSPACE_FOR_COILMAP     "ref_kspace_for_coil_map"

@@ -23,9 +23,9 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> >* in, cu
 
   std::vector<size_t> full_dimensions = this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
-  cuNDArray< complext<REAL> > tmp(full_dimensions);  
+  cuNDArray< complext<REAL> > tmp(full_dimensions);
   this->mult_csm( in, &tmp );
-  
+
   // Forwards NFFT
 
   if( accumulate ){
@@ -55,9 +55,9 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, c
   plan_->compute( *in, tmp, dcw_.get(), NFFT_comp_mode::BACKWARDS_NC2C );
 
   if( !accumulate ){
-    clear(out);    
+    clear(out);
   }
-  
+
   this->mult_csm_conj_sum( &tmp, out );
 }
 
@@ -74,7 +74,7 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
   if( trajectory == 0x0 ){
     throw std::runtime_error( "cuNonCartesianSenseOperator: cannot preprocess 0x0 trajectory.");
   }
-  
+
   std::vector<size_t> domain_dims = this->get_domain_dimensions();
   if( domain_dims.empty() ){
     throw std::runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set");
@@ -86,19 +86,19 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
 template<class REAL, unsigned int D> void
 cuNonCartesianSenseOperator<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw )
 {
-  dcw_ = dcw;  
+  dcw_ = dcw;
 }
 
 //
 // Instantiations
 //
 
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,1>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,2>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,3>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4>;
+template class cuNonCartesianSenseOperator<float,1>;
+template class cuNonCartesianSenseOperator<float,2>;
+template class cuNonCartesianSenseOperator<float,3>;
+template class cuNonCartesianSenseOperator<float,4>;
 
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,1>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4>;
+template class cuNonCartesianSenseOperator<double,1>;
+template class cuNonCartesianSenseOperator<double,2>;
+template class cuNonCartesianSenseOperator<double,3>;
+template class cuNonCartesianSenseOperator<double,4>;

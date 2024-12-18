@@ -4,24 +4,23 @@
 
 #pragma once
 
-#include "gpuoperators_export.h"
 #include "cuNDArray_math.h"
 #include "generalOperator.h"
 #include "complext.h"
 
 namespace Gadgetron{
-  
-  template<class T, unsigned int D> class EXPORTGPUOPERATORS cuTv1DOperator : public generalOperator< cuNDArray<T> >
-  {    
 
-    
+  template<class T, unsigned int D> class cuTv1DOperator : public generalOperator< cuNDArray<T> >
+  {
+
+
   public:
-    
+
     typedef typename realType<T>::Type REAL;
     cuTv1DOperator() : generalOperator< cuNDArray<T> >(){
-      limit_ = REAL(1e-8);      
+      limit_ = REAL(1e-8);
     }
-    
+
     virtual ~cuTv1DOperator(){};
 
     void set_limit(REAL limit){
@@ -32,6 +31,6 @@ namespace Gadgetron{
     virtual REAL magnitude(cuNDArray<T>*);
 
   protected:
-    REAL limit_;    
-  };  
+    REAL limit_;
+  };
 }

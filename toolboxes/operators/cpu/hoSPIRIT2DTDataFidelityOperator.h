@@ -7,10 +7,10 @@
 
 #include "hoSPIRIT2DTOperator.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoSPIRIT2DTDataFidelityOperator : public hoSPIRIT2DTOperator<T>
+template <typename T>
+class hoSPIRIT2DTDataFidelityOperator : public hoSPIRIT2DTOperator<T>
 {
 public:
 

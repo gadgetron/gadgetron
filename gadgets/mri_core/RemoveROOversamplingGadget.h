@@ -6,23 +6,20 @@
 #pragma once
 
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
 #include "Node.h"
-#include "Types.h"
 #include "hoNDArray.h"
 #include "hoNDFFT.h"
-#include "ismrmrd/xml.h"
 #ifdef USE_OMP // TODO: Should this be removed? Its from the old version
 #include "omp.h"
 #endif // USE_OMP
 
 namespace Gadgetron {
-class RemoveROOversamplingGadget : public Core::ChannelGadget<Core::Acquisition> {
+class RemoveROOversamplingGadget : public Core::ChannelGadget<mrd::Acquisition> {
   public:
-    using Core::ChannelGadget<Core::Acquisition>::ChannelGadget;
+    using Core::ChannelGadget<mrd::Acquisition>::ChannelGadget;
     RemoveROOversamplingGadget(const Core::Context& context, const Core::GadgetProperties& props);
     ~RemoveROOversamplingGadget() override = default;
-    void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
+    void process(Core::InputChannel<mrd::Acquisition>& input, Core::OutputChannel& output) override;
 
   protected:
     hoNDArray<std::complex<float>> fft_res_;

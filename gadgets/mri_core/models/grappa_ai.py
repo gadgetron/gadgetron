@@ -39,14 +39,14 @@ def real_2_complex(a):
 
 class GrappaAI(nn.Module):
     def __init__(self, Din, Dout, params):
-        
+
         super(GrappaAI, self).__init__()
 
         self.verbose = params['verbose']
         self.with_bias = False
         self.grappa_weights_r = params['grappa_weights_r']
         self.grappa_weights_i = params['grappa_weights_i']
-        
+
         # for real and imag
         self.input_layer_r = torch.nn.Linear(int(Din/2), int(Dout/2), bias=self.with_bias)
         self.input_layer_i = torch.nn.Linear(int(Din/2), int(Dout/2), bias=self.with_bias)
@@ -57,7 +57,7 @@ class GrappaAI(nn.Module):
         print("---> Set grappa weights", file=sys.stderr)
         self.input_layer_r.weight.data = self.grappa_weights_r
         self.input_layer_i.weight.data = self.grappa_weights_i
-                
+
     def forward(self, x):
 
         # split x to real and img
@@ -138,7 +138,7 @@ def apply_grappa_ai_model(gt_dataA, model, device = torch.device('cpu')):
 
         ynew = torch.from_numpy(kspace)
         ynew = ynew.to(torch.float32)
-        ynew = ynew.to(device=device) 
+        ynew = ynew.to(device=device)
 
         model = model.to(device=device)
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     gt_py_home = os.path.join(GT_HOME, 'share/gadgetron/python')
     sys.path.insert(0, gt_py_home)
 
-    import gadgetron_toolbox_mri_core_python as gt
+    import pingvin_toolbox_mri_core_python as gt
 
     data_name = os.path.join(GT_CMR_ML_UT_HOME, 'data/AI_recon/meas_MID00348_FID09272_SNR_R2/Grappa_test_data.mat')
     print(data_name, file=sys.stderr)
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     except:
         fullkspace = grappa.recon(data, True)
         data2D = data
-    
+
     if(not fitItself):
         fullkspace = fullkspace + data2D
 

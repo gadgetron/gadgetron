@@ -103,6 +103,6 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCMR void compute_analytical_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<float>& mask, hoNDArray<float>& rad_strain, hoNDArray<float>& circ_strain);
-    template EXPORTCMR void compute_analytical_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<double>& mask, hoNDArray<double>& rad_strain, hoNDArray<double>& circ_strain);
+    template void compute_analytical_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<float>& mask, hoNDArray<float>& rad_strain, hoNDArray<float>& circ_strain);
+    template void compute_analytical_strain(const hoNDArray<double>& dx, const hoNDArray<double>& dy, const hoNDArray<double>& mask, hoNDArray<double>& rad_strain, hoNDArray<double>& circ_strain);
 }

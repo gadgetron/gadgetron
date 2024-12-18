@@ -3,9 +3,7 @@
 #include "Node.h"
 #include "hoNDArray.h"
 
-#include "mri_core_acquisition_bucket.h"
 #include <complex>
-#include <ismrmrd/ismrmrd.h>
 #include <map>
 
 namespace Gadgetron {
@@ -13,10 +11,10 @@ namespace Gadgetron {
 
 
     class AcquisitionAccumulateTriggerGadget
-        : public Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>> {
+        : public Core::ChannelGadget<std::variant<mrd::Acquisition, mrd::WaveformUint32>> {
     public:
-        using Core::ChannelGadget<Core::variant<Core::Acquisition, Core::Waveform>>::ChannelGadget;
-        void process(Core::InputChannel<Core::variant<Core::Acquisition, Core::Waveform>>& in,
+        using Core::ChannelGadget<std::variant<mrd::Acquisition, mrd::WaveformUint32>>::ChannelGadget;
+        void process(Core::InputChannel<std::variant<mrd::Acquisition, mrd::WaveformUint32>>& in,
             Core::OutputChannel& out) override;
         enum class TriggerDimension {
             kspace_encode_step_1,
@@ -47,8 +45,8 @@ namespace Gadgetron {
 
         size_t trigger_events = 0;
     private:
-        void send_data(Core::OutputChannel& out, std::map<unsigned short, AcquisitionBucket>& buckets,
-                       std::vector<Core::Waveform>& waveforms);
+        void send_data(Core::OutputChannel& out, std::map<unsigned int, mrd::AcquisitionBucket>& buckets,
+                       std::vector<mrd::WaveformUint32>& waveforms);
     };
 
     void from_string(const std::string& str, AcquisitionAccumulateTriggerGadget::TriggerDimension& val);

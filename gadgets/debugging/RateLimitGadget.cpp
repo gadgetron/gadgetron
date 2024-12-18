@@ -1,36 +1,23 @@
 #include "RateLimitGadget.h"
-#include "ismrmrd/xml.h"
+
 #include <thread>
 #include <chrono>
-namespace Gadgetron{
-RateLimitGadget::RateLimitGadget()
+
+namespace Gadgetron {
+
+RateLimitGadget::RateLimitGadget(const Core::Context& context, const Core::GadgetProperties& props)
+    : Core::ChannelGadget<mrd::StreamItem>(context, props)
 {
-
+  this->sleep_time_ = std::chrono::milliseconds(this->sleep_time_int);
 }
- 
-RateLimitGadget::~RateLimitGadget()
+
+void RateLimitGadget::process(Core::InputChannel<mrd::StreamItem>& in, Core::OutputChannel& out)
 {
+  for (auto item : in) {
+    std::this_thread::sleep_for(this->sleep_time_);
+    out.push(item);
+  }
 }
 
-/**
- *   Expects ISMRMRD XML configuration
- *
- */
-int RateLimitGadget::process_config(ACE_Message_Block* mb)
-{
-  this->sleep_time = std::chrono::milliseconds(this->sleep_time_.value());
-  return GADGET_OK;
-}
-
-int RateLimitGadget::process(ACE_Message_Block* mb)
-{
-
-  std::this_thread::sleep_for(this->sleep_time);
-  this->next()->putq(mb);
-
-  return GADGET_OK;
-
-}
-
-GADGET_FACTORY_DECLARE(RateLimitGadget)
-}
+GADGETRON_GADGET_EXPORT(RateLimitGadget)
+} // namespace Gadgetron

@@ -2,19 +2,16 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE NoiseAdjustGadget_unoptimized : 
+  class NoiseAdjustGadget_unoptimized :
   public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
-      GADGET_DECLARE(NoiseAdjustGadget_unoptimized);
-  
       NoiseAdjustGadget_unoptimized();
 
     protected:
@@ -30,6 +27,6 @@ namespace Gadgetron{
       virtual int process_config(ACE_Message_Block* mb);
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
-      
+
     };
 }

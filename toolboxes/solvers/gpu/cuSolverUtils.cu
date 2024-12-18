@@ -21,7 +21,7 @@ template <class REAL> __global__ static void filter_kernel(complext<REAL>* x, co
 	}
 }
 
-template <class T> void EXPORTGPUSOLVERS Gadgetron::solver_non_negativity_filter(cuNDArray<T>* x , cuNDArray<T>* g)
+template <class T> void Gadgetron::solver_non_negativity_filter(cuNDArray<T>* x , cuNDArray<T>* g)
 {
 	int elements = g->get_number_of_elements();
 
@@ -93,19 +93,19 @@ inline void Gadgetron::updateFgroup(std::vector<cuNDArray<T> >& datas,
 	}
 }
 
-template void EXPORTGPUSOLVERS Gadgetron::updateF<float>(cuNDArray<float>& data, float alpha, float sigma);
-template void EXPORTGPUSOLVERS Gadgetron::updateF<double>(cuNDArray<double>& data,double alpha, double sigma);
-template void EXPORTGPUSOLVERS Gadgetron::updateF<float_complext>(cuNDArray<float_complext>& data, float alpha, float sigma);
-template void EXPORTGPUSOLVERS Gadgetron::updateF<double_complext>(cuNDArray<double_complext>& data, double alpha, double sigma);
+template void Gadgetron::updateF<float>(cuNDArray<float>& data, float alpha, float sigma);
+template void Gadgetron::updateF<double>(cuNDArray<double>& data,double alpha, double sigma);
+template void Gadgetron::updateF<float_complext>(cuNDArray<float_complext>& data, float alpha, float sigma);
+template void Gadgetron::updateF<double_complext>(cuNDArray<double_complext>& data, double alpha, double sigma);
 
-template void EXPORTGPUSOLVERS Gadgetron::updateFgroup<float>(std::vector<cuNDArray<float> >& data, float alpha, float sigma);
-template void EXPORTGPUSOLVERS Gadgetron::updateFgroup<double>(std::vector<cuNDArray<double> >& data,double alpha, double sigma);
-template void EXPORTGPUSOLVERS Gadgetron::updateFgroup<float_complext>(std::vector<cuNDArray<float_complext> >& data, float alpha, float sigma);
-template void EXPORTGPUSOLVERS Gadgetron::updateFgroup<double_complext>(std::vector<cuNDArray<double_complext> >& data, double alpha, double sigma);
+template void Gadgetron::updateFgroup<float>(std::vector<cuNDArray<float> >& data, float alpha, float sigma);
+template void Gadgetron::updateFgroup<double>(std::vector<cuNDArray<double> >& data,double alpha, double sigma);
+template void Gadgetron::updateFgroup<float_complext>(std::vector<cuNDArray<float_complext> >& data, float alpha, float sigma);
+template void Gadgetron::updateFgroup<double_complext>(std::vector<cuNDArray<double_complext> >& data, double alpha, double sigma);
 
 
-template void EXPORTGPUSOLVERS Gadgetron::solver_non_negativity_filter<float>(cuNDArray<float>*, cuNDArray<float>*);
-template void EXPORTGPUSOLVERS Gadgetron::solver_non_negativity_filter<double>(cuNDArray<double>*, cuNDArray<double>*);
-template void EXPORTGPUSOLVERS Gadgetron::solver_non_negativity_filter<float_complext>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
-template void EXPORTGPUSOLVERS Gadgetron::solver_non_negativity_filter<double_complext>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+template void Gadgetron::solver_non_negativity_filter<float>(cuNDArray<float>*, cuNDArray<float>*);
+template void Gadgetron::solver_non_negativity_filter<double>(cuNDArray<double>*, cuNDArray<double>*);
+template void Gadgetron::solver_non_negativity_filter<float_complext>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+template void Gadgetron::solver_non_negativity_filter<double_complext>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
 

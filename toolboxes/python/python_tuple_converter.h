@@ -1,11 +1,14 @@
-// Source: https://gist.github.com/niwibe/3729459
-#ifndef GADGETRON_PYTHON_TUPLE_CONVERTER_H
-#define GADGETRON_PYTHON_TUPLE_CONVERTER_H
+#pragma once
 
-#include <boost/python.hpp>
-namespace bp = boost::python;
+// Source: https://gist.github.com/niwibe/3729459
+
+#include "python_converters.h"
 
 namespace Gadgetron {
+
+namespace Python {
+
+namespace detail {
 
 /// indices trick
 template<int ...> struct seq{};
@@ -59,21 +62,12 @@ template<typename ... Args> std::tuple<Args...> pytuple2cpptuple(PyObject* obj) 
     return bpt;
 }
 
-/// To-Python converter used by Boost
-template<typename ... Args>
-struct cpptuple_to_python_tuple {
-    static PyObject* convert(const std::tuple<Args...>& t) {
-        return cpptuple2pytuple<Args...>(t);
-    }
-};
+} // namespace detail
 
-/// From-Python converter used by Boost
+
+/// Tuple To/From Python converter
 template<typename ... Args>
-struct cpptuple_from_python_tuple {
-    cpptuple_from_python_tuple() {
-        // actually register this converter
-        bp::converter::registry::push_back(&convertible, &construct, bp::type_id<std::tuple<Args...> >());
-    }
+struct tuple_converter {
 
     /// Returns NULL if the bp::tuple is not convertible
     static void* convertible(PyObject* obj_ptr) {
@@ -87,34 +81,29 @@ struct cpptuple_from_python_tuple {
     static void construct(PyObject* obj_ptr, bp::converter::rvalue_from_python_stage1_data* data) {
         void* storage = ((bp::converter::rvalue_from_python_storage<std::tuple<Args...> >*)data)->storage.bytes;
         // Use placement-new to make std::tuple in memory provided by Boost
-        new (storage) std::tuple<Args...>(pytuple2cpptuple<Args...>(obj_ptr));
+        new (storage) std::tuple<Args...>(detail::pytuple2cpptuple<Args...>(obj_ptr));
         data->convertible = storage;
+    }
+
+    static PyObject* convert(const std::tuple<Args...>& t) {
+        return detail::cpptuple2pytuple<Args...>(t);
     }
 };
 
-/// Create and register tuple converter as necessary
-template <typename ...TS> void create_tuple_converter() {
-    bp::type_info info = bp::type_id<std::tuple<TS...> >();
-    const bp::converter::registration* reg = bp::converter::registry::query(info);
-    // only register if not already registered!
-    if (nullptr == reg || nullptr == (*reg).m_to_python) {
-        bp::to_python_converter<std::tuple<TS...>, cpptuple_to_python_tuple<TS...> >();
-        cpptuple_from_python_tuple<TS...>();
-    }
-}
+} // namespace Python
+
 
 /// Partial specialization of `python_converter` for std::tuple
 template <typename ...TS>
 struct python_converter<std::tuple<TS...> > {
     static void create()
     {
-        // register tuple converter
-        create_tuple_converter<TS...>();
-        // register converter for each type in the tuple
+        // Register converter for each inner type
         register_converter<TS...>();
+
+        // Register tuple_converter
+        register_with_boost<std::tuple<TS...>, Python::tuple_converter<TS...>>();
     }
 };
 
-}
-
-#endif // GADGETRON_PYTHON_TUPLE_CONVERTER_H
+} // namespace Gadgetron

@@ -9,14 +9,14 @@
 
 #include "cmr_parametric_mapping.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 // ======================================================================================
 // T1 Saturation recovery
 // y = A * ( 1-exp(-ti/T1) )
 
 template <typename T>
-class EXPORTCMR CmrT1SRMapping : public CmrParametricMapping<T>
+class CmrT1SRMapping : public CmrParametricMapping<T>
 {
 public:
 

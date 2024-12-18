@@ -5,19 +5,19 @@
 
 #pragma once
 #include "hoNDArray.h"
-#include "ismrmrd/meta.h"
 
-#include <ismrmrd/ismrmrd.h>
-
-#include <Types.h>
 #include "PureGadget.h"
+
 namespace Gadgetron
 {
-class AugmentImageMetadataGadget: public Core::PureGadget<Core::Image<std::complex<float>>,Core::Image<std::complex<float>>>
+class AugmentImageMetadataGadget: public Core::PureGadget<mrd::Image<std::complex<float>>,mrd::Image<std::complex<float>>>
     {
     public:
-        AugmentImageMetadataGadget(const Core::Context& context, const Core::GadgetProperties& props);
-        Core::Image<std::complex<float>> process_function(Core::Image<std::complex<float>> args) const override;
+        using BaseClass = Core::PureGadget<mrd::Image<std::complex<float>>,mrd::Image<std::complex<float>>>;
+
+        AugmentImageMetadataGadget(const Core::Context& context, const Core::GadgetProperties& props)
+            : BaseClass(context,props) {}
+
+        mrd::Image<std::complex<float>> process_function(mrd::Image<std::complex<float>> args) const override;
 };
 }
-

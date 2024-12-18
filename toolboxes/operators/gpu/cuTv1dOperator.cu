@@ -108,22 +108,22 @@ template<class T, unsigned int D> typename realType<T>::Type cuTv1DOperator<T,D>
 }
 
 
-template class EXPORTGPUOPERATORS cuTv1DOperator<float,1>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<float,2>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<float,3>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<float,4>;
+template class cuTv1DOperator<float,1>;
+template class cuTv1DOperator<float,2>;
+template class cuTv1DOperator<float,3>;
+template class cuTv1DOperator<float,4>;
 
-template class EXPORTGPUOPERATORS cuTv1DOperator<double,1>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<double,2>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<double,3>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<double,4>;
+template class cuTv1DOperator<double,1>;
+template class cuTv1DOperator<double,2>;
+template class cuTv1DOperator<double,3>;
+template class cuTv1DOperator<double,4>;
 
-template class EXPORTGPUOPERATORS cuTv1DOperator<float_complext,1>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<float_complext,2>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<float_complext,3>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<float_complext,4>;
+template class cuTv1DOperator<float_complext,1>;
+template class cuTv1DOperator<float_complext,2>;
+template class cuTv1DOperator<float_complext,3>;
+template class cuTv1DOperator<float_complext,4>;
 
-template class EXPORTGPUOPERATORS cuTv1DOperator<double_complext,1>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<double_complext,2>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<double_complext,3>;
-template class EXPORTGPUOPERATORS cuTv1DOperator<double_complext,4>;
+template class cuTv1DOperator<double_complext,1>;
+template class cuTv1DOperator<double_complext,2>;
+template class cuTv1DOperator<double_complext,3>;
+template class cuTv1DOperator<double_complext,4>;

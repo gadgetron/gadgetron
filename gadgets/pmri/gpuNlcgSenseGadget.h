@@ -2,17 +2,14 @@
 #define gpuSbSenseGadget_H
 #pragma once
 
-#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
-#include "GadgetMRIHeaders.h"
 #include "cuNlcgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
-#include "ismrmrd/ismrmrd.h"
 #include "cuTvOperator.h"
 #include "cuTvPicsOperator.h"
 
@@ -20,7 +17,7 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUPMRI gpuNlcgSenseGadget : public Gadget2< ISMRMRD::ImageHeader, GenericReconJob >
+  class gpuNlcgSenseGadget : public Gadget2< mrd::ImageHeader, GenericReconJob >
   {
 
   public:
@@ -42,8 +39,8 @@ namespace Gadgetron{
     GADGET_PROPERTY(rotations_to_discard, int, "Rotations to discard", 0);
     GADGET_PROPERTY(output_convergence, bool, "Output convergence information", false);
     
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
-    virtual int process_config( ACE_Message_Block* mb );
+    virtual int process( GadgetContainerMessage< mrd::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
+    virtual int process_config(const mrd::Header& header);
 
     int channels_;
     int device_number_;

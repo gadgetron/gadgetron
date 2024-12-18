@@ -1,40 +1,33 @@
-#ifndef PCACOILGADGET_H_
-#define PCACOILGADGET_H_
+#pragma once
 
-#include "gadgetron_mricore_export.h"
-#include "Gadget.h"
+#include "Node.h"
 #include "hoNDArray.h"
 #include "hoNDKLT.h"
-#include "ismrmrd/ismrmrd.h"
 
 #include <complex>
 #include <map>
 
 namespace Gadgetron {
 
-  class EXPORTGADGETSMRICORE PCACoilGadget :
-    public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  class PCACoilGadget : public Core::ChannelGadget<mrd::Acquisition>
   {
-    typedef Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > > inherited;
   public:
-    GADGET_DECLARE(PCACoilGadget);
+    PCACoilGadget(const Core::Context& context, const Core::GadgetProperties& props);
+    ~PCACoilGadget() override;
 
-    PCACoilGadget();
-    virtual ~PCACoilGadget();
+    void process(Core::InputChannel<mrd::Acquisition>& input, Core::OutputChannel& output) override;
 
   protected:
-    virtual int process_config(ACE_Message_Block* mb);
-    virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+    NODE_PROPERTY(uncombined_channels_by_name, std::string, "List of comma separated channels by name", "");
+    // GADGET_PROPERTY(present_uncombined_channels, int, "Number of uncombined channels found", 0);
 
-  private:
-    GADGET_PROPERTY(uncombined_channels_by_name, std::string, "List of comma separated channels by name", "");
-    GADGET_PROPERTY(present_uncombined_channels, int, "Number of uncombined channels found", 0);
+    void calculate_coefficients(int location);
+    void do_pca(mrd::Acquisition& acq);
 
     std::vector<unsigned int> uncombined_channels_;
-    
+
     //Map containing buffers, one for each location
-    std::map< int, std::vector< ACE_Message_Block* > > buffer_;
+    std::map< int, std::vector< mrd::Acquisition > > buffer_;
 
     //Keep track of whether we are buffering for a particular location
     std::map< int, bool> buffering_mode_;
@@ -42,9 +35,7 @@ namespace Gadgetron {
     //Map for storing PCA coefficients for each location
     std::map<int, hoNDKLT<std::complex<float> >* > pca_coefficients_;
 
-    int max_buffered_profiles_;
-    int samples_to_use_;
+    const size_t max_buffered_profiles_ = 100;
+    const size_t samples_to_use_ = 16;
   };
 }
-
-#endif /* PCACOILGADGET_H_ */

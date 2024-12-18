@@ -7,10 +7,10 @@
 
 #include "hoWavelet2DTOperator.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
-template <typename T> 
-class EXPORTCPUOPERATOR hoWavelet3DOperator : public hoWavelet2DTOperator<T>
+template <typename T>
+class hoWavelet3DOperator : public hoWavelet2DTOperator<T>
 {
 public:
 

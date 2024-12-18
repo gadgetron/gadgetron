@@ -10,7 +10,7 @@ namespace Gadgetron {
 
 hoNDArray<std::complex<float>> GenericReconPartialFourierHandlingPOCSGadget::perform_partial_fourier_handling(const hoNDArray<std::complex<float>> & kspace_buffer, size_t start_RO, size_t end_RO, size_t start_E1, size_t end_E1, size_t start_E2, size_t end_E2) const{
 
-        Core::optional<GadgetronTimer> gt_timer;
+        std::optional<GadgetronTimer> gt_timer;
         if (perform_timing) { gt_timer = GadgetronTimer("GenericReconPartialFourierHandlingFilterGadget, partial_fourier_filter"); }
 
         hoNDArray<std::complex<float>> pf_res;

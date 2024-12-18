@@ -29,7 +29,7 @@ template void gemm(hoNDArray<std::complex<double>>& C, const hoNDArray<std::comp
 template void gemm(hoNDArray<complext<float>>& C, const hoNDArray<complext<float>>& A, const hoNDArray<complext<float>>& B);
 template void gemm(hoNDArray<complext<double>>& C, const hoNDArray<complext<double>>& A, const hoNDArray<complext<double>>& B);
 
-template<class T> 
+template<class T>
 void gemm(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoNDArray<T>& B, bool transB)
 
 {
@@ -77,7 +77,7 @@ void syrk(hoNDArray<T>& C, const hoNDArray<T>& A, char uplo, bool isATA)
         size_t M = (size_t)A.get_size(0);
         size_t K = (size_t)A.get_size(1);
         if ( isATA )
-        { 
+        {
             M = (size_t)A.get_size(1);
             K = (size_t)A.get_size(0);
         }
@@ -173,7 +173,7 @@ template void potrf(hoNDArray< std::complex<double> >& A, char uplo);
 
 /// ------------------------------------------------------------------------------------
 
-template<typename T> 
+template<typename T>
 void heev(hoNDArray<std::complex<T>>& A, hoNDArray<T>& eigenValue)
 {
         size_t M = (size_t)A.get_size(0);
@@ -190,7 +190,7 @@ void heev(hoNDArray<std::complex<T>>& A, hoNDArray<T>& eigenValue)
 
 
 template<typename T>
-std::enable_if_t<Core::is_floating_point_v<T>> heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue)
+std::enable_if_t<std::is_floating_point_v<T>> heev(hoNDArray<T>& A, hoNDArray<T>& eigenValue)
 {
     size_t M = (size_t)A.get_size(0);
     GADGET_CHECK_THROW(A.get_size(1) == M);
@@ -209,7 +209,7 @@ template void heev(hoNDArray<double>& A, hoNDArray<double>& eigenValue);
 template void heev(hoNDArray< std::complex<float> >& A, hoNDArray<float>& eigenValue);
 template void heev(hoNDArray< std::complex<double> >& A, hoNDArray<double>& eigenValue);
 
-template<typename T> 
+template<typename T>
 void heev(hoNDArray< std::complex<T> >& A, hoNDArray< std::complex<T> >& eigenValue)
 {
      long long M = (long long)A.get_size(0);
@@ -230,7 +230,7 @@ template void heev(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex
 
 /// ------------------------------------------------------------------------------------
 
-template<typename T> 
+template<typename T>
 void potri(hoNDArray<T>& A)
 {
         if( A.get_number_of_elements()==0 ) return;
@@ -345,7 +345,7 @@ template void hesv(hoNDArray<complext<float>>& A, hoNDArray<complext<float>>& b)
 template void hesv(hoNDArray<complext<double>>& A, hoNDArray<complext<double>>& b);
 /// ------------------------------------------------------------------------------------
 
-template<class T> 
+template<class T>
 void gesv(hoNDArray<T>& A, hoNDArray<T>& b)
 {
 
@@ -379,7 +379,7 @@ template void gesv(hoNDArray<std::complex<double>>& A, hoNDArray<std::complex<do
 
 /// Computes the LU factorization of a general m-by-n matrix
 /// this function is called by general matrix inversion
-template<typename T> 
+template<typename T>
 void getrf(hoNDArray<T>& A, hoNDArray<Lapack::Int>& ipiv)
 {
         if( A.get_number_of_elements()==0 ) return;
@@ -405,7 +405,7 @@ template void getrf(hoNDArray< std::complex<double> >& A, hoNDArray<Lapack::Int>
 /// ------------------------------------------------------------------------------------
 
 /// Computes the inverse of an LU-factored general matrix
-template<typename T> 
+template<typename T>
 void invert(hoNDArray<T>& A)
 {
         if( A.get_number_of_elements()==0 ) return;

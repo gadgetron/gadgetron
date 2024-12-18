@@ -1,0 +1,16 @@
+reconstruction:
+  data: simple_gre/meas_MiniGadgetron_GRE_meas1.mrd
+  checksum: 382b7f32b77d3a078d8af75a365cec4c
+  run:
+  - args: --config default.xml
+validation:
+  reference: simple_gre/simple_gre_out_20210909_klk_default.xml.mrd
+  checksum: 5539627da4affccf396a39ffae0005e0
+  tests:
+  - image_series: 0
+    value_comparison_threshold: 1.0e-05
+    scale_comparison_threshold: 1.0e-05
+requirements:
+  system_memory: 1024
+tags:
+- fast

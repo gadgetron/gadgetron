@@ -1,21 +1,20 @@
 #pragma once
 
-
-#include <map>
-#include <string>
-#include <boost/shared_ptr.hpp>
-
-#include "GadgetContainerMessage.h"
-#include "log.h"
-#include <initializer_list>
-#include <mutex>
-#include "Channel.h"
-#include <stdexcept>
-#include <ismrmrd/xml.h>
-#include "LegacyACE.h"
-#include "Node.h"
-#include "Context.h"
 #include <boost/dll/alias.hpp>
+#include <boost/shared_ptr.hpp>
+#include <initializer_list>
+#include <map>
+#include <mutex>
+#include <stdexcept>
+#include <string>
+
+#include "mrd/types.h"
+
+#include "Channel.h"
+#include "Context.h"
+#include "GadgetContainerMessage.h"
+#include "Node.h"
+#include "log.h"
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
@@ -76,31 +75,14 @@ namespace Gadgetron {
 
     class ChannelAdaptor {
     public:
-
-        explicit ChannelAdaptor(Core::OutputChannel& out) : channel(out) {
-
-        }
-
-        int putq(ACE_Message_Block *msg) {
-            auto *msg_ptr = dynamic_cast<GadgetContainerMessageBase *>(msg);
-            if (msg_ptr) {
-                return this->putq(msg_ptr);
-            } else {
-                msg->release();
-                throw std::runtime_error(
-                        "Attempted to put ACE_Message_Block not of type GadgetContainerMessage into a queue");
-            }
-
-        }
+        explicit ChannelAdaptor(Core::OutputChannel& out) : channel(out) { }
 
         int putq(GadgetContainerMessageBase *msg) {
             if (msg) {
                 channel.push_message(to_message(msg));
             }
             msg->release();
-
             return 0;
-
         }
 
     private:
@@ -109,7 +91,7 @@ namespace Gadgetron {
             auto *current_message = message;
             while (current_message) {
                 messages.emplace_back(current_message->take_message());
-                current_message = dynamic_cast<GadgetContainerMessageBase *>(current_message->cont());
+                current_message = current_message->cont();
             }
             return Core::Message(std::move(messages));
         }
@@ -118,18 +100,12 @@ namespace Gadgetron {
     };
 
     class Gadget {
-
     public:
-
-        Gadget() {
-
-
-        }
+        Gadget() {}
 
         virtual ~Gadget() {
-            GDEBUG("Shutting down Gadget (%s)\n", this->name.c_str());
+            GDEBUG_STREAM("Shutting down Gadget (" << this->name_ << ")");
         }
-
 
         virtual int set_parameter(const char *name, const char *val, bool trigger = true) {
             std::string old_value = get_string_value(name);
@@ -149,10 +125,6 @@ namespace Gadgetron {
             }
 
             return 0;
-        }
-
-        int putq(ACE_Message_Block *msg) {
-            return this->next_channel->putq(msg);
         }
 
         int putq(GadgetContainerMessageBase *msg) {
@@ -206,10 +178,6 @@ namespace Gadgetron {
             properties_.push_back(p);
         }
 
-        const char *get_gadgetron_version() {
-            return gadgetron_version_.c_str();
-        }
-
         void next(std::shared_ptr<ChannelAdaptor> n) {
             next_channel = n;
         }
@@ -218,44 +186,26 @@ namespace Gadgetron {
             return next_channel;
         }
 
+        void set_name(const std::string& name) {
+            name_ = name;
+        }
 
         std::vector<GadgetPropertyBase *> properties_;
 
-        virtual int process(ACE_Message_Block *m) = 0;
+        virtual int process(GadgetContainerMessageBase *m) = 0;
 
-
-        virtual int process_config(const ISMRMRD::IsmrmrdHeader &header) {
-            std::stringstream stream;
-            try {
-                ISMRMRD::serialize(header, stream);
-            } catch (...){
-
-            }
-
-            ACE_Message_Block block(stream.str());
-            return this->process_config(&block);
-        }
-
-
-        virtual int process_config(ACE_Message_Block *m) {
+        virtual int process_config(const mrd::Header& header) {
             return 0;
         }
 
-
-
     protected:
-
-        std::string name;
+        std::string name_;
         std::mutex parameter_mutex_;
         Core::Context context;
 
-        static constexpr bool pass_on_undesired_data_ = true;
     private:
         std::map<std::string, std::string> parameters_;
-        std::string gadgetron_version_;
         std::shared_ptr<ChannelAdaptor> next_channel;
-
-
     };
 
 
@@ -419,8 +369,7 @@ namespace Gadgetron {
     };
 
     template<typename T, typename L>
-    class GadgetProperty<std::vector<T>, L>
-            : public GadgetPropertyBase {
+    class GadgetProperty<std::vector<T>, L> : public GadgetPropertyBase {
     public:
         GadgetProperty(const char *name, const char *type_string, const char *description,
                        Gadget *g, std::initializer_list<T> default_value, L limits)
@@ -489,31 +438,11 @@ namespace Gadgetron {
 #define GADGET_PROPERTY(varname, vartype, description, defaultvalue) GadgetProperty<vartype, GadgetPropertyLimitsNoLimits<vartype> > varname{#varname,#vartype, description, this, defaultvalue, GadgetPropertyLimitsNoLimits<vartype>()}
 #define GADGET_PROPERTY_LIMITS(varname, vartype, description, defaultvalue, limitstype, ...) GadgetProperty<vartype, limitstype<vartype> > varname{#varname,#vartype, description, this, defaultvalue, limitstype<vartype>{ __VA_ARGS__ }}
 
-    class BasicPropertyGadget : public Gadget {
-    public:
-        BasicPropertyGadget()
-                : Gadget() {
-        }
-
-        virtual ~BasicPropertyGadget() = default;
-
-    protected:
-        GADGET_PROPERTY(using_cloudbus, bool, "Indicates whether the cloudbus is in use and available (ignored)", false);
-        GADGET_PROPERTY(pass_on_undesired_data, bool,
-                        "If true, data not matching the process function will be passed to next Gadget (ignored)", true);
-        GADGET_PROPERTY(threads, int, "Number of threads to run in this Gadget (ignored)", 1);
-#ifdef _WIN32
-        GADGET_PROPERTY(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");
-#else
-        GADGET_PROPERTY(workingDirectory, std::string, "Where to store temporary files", "/tmp/gadgetron/");
-#endif // _WIN32
-    };
-
     template<class P1>
-    class Gadget1 : public BasicPropertyGadget {
+    class Gadget1 : public Gadget {
 
     protected:
-        int process(ACE_Message_Block *mb) final {
+        int process(GadgetContainerMessageBase *mb) final {
             GadgetContainerMessage<P1> *m = AsContainerMessage<P1>(mb);
 
             if (!m) {
@@ -524,14 +453,13 @@ namespace Gadgetron {
         }
 
         virtual int process(GadgetContainerMessage<P1> *m) = 0;
-
     };
 
     template<class P1, class P2>
-    class Gadget2 : public BasicPropertyGadget {
+    class Gadget2 : public Gadget {
 
     protected:
-        int process(ACE_Message_Block *mb) final {
+        int process(GadgetContainerMessageBase *mb) final {
             GadgetContainerMessage<P1> *m1 = AsContainerMessage<P1>(mb);
 
             GadgetContainerMessage<P2> *m2 = 0;
@@ -543,21 +471,18 @@ namespace Gadgetron {
                 return (this->next()->putq(mb));
             }
 
-
             return this->process(m1, m2);
-
         }
 
         virtual int process(GadgetContainerMessage<P1> *m1, GadgetContainerMessage<P2> *m2) = 0;
-
     };
 
 
     template<class P1, class P2, class P3>
-    class Gadget3 : public BasicPropertyGadget {
+    class Gadget3 : public Gadget {
 
     protected:
-        int process(ACE_Message_Block *mb) final {
+        int process(GadgetContainerMessageBase *mb) final {
 
             GadgetContainerMessage<P1> *m1 = AsContainerMessage<P1>(mb);
 
@@ -581,14 +506,12 @@ namespace Gadgetron {
 
         virtual int
         process(GadgetContainerMessage<P1> *m1, GadgetContainerMessage<P2> *m2, GadgetContainerMessage<P3> *m3) = 0;
-
     };
 
     template<class P1, class P2>
-    class Gadget1Of2 : public BasicPropertyGadget {
+    class Gadget1Of2 : public Gadget {
     protected:
-        int process(ACE_Message_Block *mb) final {
-
+        int process(GadgetContainerMessageBase *mb) final {
             GadgetContainerMessage<P1> *m1 = nullptr;
             GadgetContainerMessage<P2> *m2 = nullptr;
 
@@ -599,8 +522,6 @@ namespace Gadgetron {
             } else {
                 return (this->next()->putq(mb));
             }
-
-
         }
 
         virtual int process(GadgetContainerMessage<P1> *m1) = 0;
@@ -627,14 +548,14 @@ namespace Gadgetron {
 }
 
 
-#define GADGET_DECLARE(GADGET)
-
 #define GADGET_FACTORY_DECLARE(GadgetClass)                                         \
 std::unique_ptr<Gadgetron::Core::Node> legacy_gadget_factory_##GadgetClass(         \
         const Gadgetron::Core::Context &context,                                    \
+        const std::string &name,                                                    \
         const std::unordered_map<std::string, std::string> &props                   \
 ) {                                                                                 \
     auto gadget = std::make_unique<GadgetClass>();                                  \
+    gadget->set_name(name);                                                         \
     return std::make_unique<Gadgetron::LegacyGadgetNode>(                           \
             std::move(gadget),                                                      \
             context,                                                                \

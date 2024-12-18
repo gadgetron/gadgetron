@@ -47,6 +47,7 @@ namespace Gadgetron::Core::Parallel {
 std::unique_ptr<Gadgetron::Core::Parallel::Branch>                              \
 branch_factory_##BranchClass(                                                   \
         const Gadgetron::Core::Context &context,                                \
+        const std::string& name,                                                \
         const Gadgetron::Core::GadgetProperties &props                          \
 ) {                                                                             \
     return std::make_unique<BranchClass>(context, props);                       \

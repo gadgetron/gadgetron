@@ -237,7 +237,7 @@ template <class T> void ht_grappa_solve_spd_system(cuNDArray<T>& A, cuNDArray<T>
 }
 
 
-template EXPORTGPUPMRI int inverse_clib_matrix(cuNDArray<complext<float> >* A,
+template int inverse_clib_matrix(cuNDArray<complext<float> >* A,
                                                cuNDArray<complext<float> >* b,
                                                cuNDArray<complext<float> >* coeff,
                                                double lamda);

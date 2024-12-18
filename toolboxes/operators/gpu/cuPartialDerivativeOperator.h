@@ -4,32 +4,31 @@
 
 #pragma once
 
-#include "gpuoperators_export.h"
 #include "cuNDArray_math.h"
 #include "partialDerivativeOperator.h"
 
 namespace Gadgetron{
 
-  template <class T, unsigned int D> class EXPORTGPUOPERATORS cuPartialDerivativeOperator 
+  template <class T, unsigned int D> class cuPartialDerivativeOperator
     : public partialDerivativeOperator<D, cuNDArray<T> >
   {
   public:
-    
-    cuPartialDerivativeOperator() : 
+
+    cuPartialDerivativeOperator() :
       partialDerivativeOperator< D, cuNDArray<T> >(0) {}
-    
-    cuPartialDerivativeOperator( size_t dimension ) : 
+
+    cuPartialDerivativeOperator( size_t dimension ) :
       partialDerivativeOperator<D, cuNDArray<T> >( dimension ) {}
-    
+
     virtual ~cuPartialDerivativeOperator() {}
-    
+
     virtual void compute_partial_derivative( typename int64d<D>::Type stride, cuNDArray<T> *in,
-                                             cuNDArray<T> *out, bool accumulate );  
-    
+                                             cuNDArray<T> *out, bool accumulate );
+
     virtual void compute_second_order_partial_derivative( typename int64d<D>::Type forwards_stride,
-                                                          typename int64d<D>::Type adjoint_stride, 
-                                                          cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
-    
+                                                          typename int64d<D>::Type adjoint_stride,
+                                                          cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );
+
 
   };
 }

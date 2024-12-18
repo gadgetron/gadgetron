@@ -1,9 +1,4 @@
-if (WIN32)
-  add_definitions(-D__BUILD_GADGETRON_CPUNFFT__)
-  add_definitions(-D_USE_MATH_DEFINES)
-endif ()
-
-add_library(gadgetron_toolbox_cpunfft SHARED
+add_library(pingvin_toolbox_cpunfft SHARED
     hoNFFT.h
     hoNFFT.cpp
     ConvolutionMatrix.h
@@ -13,35 +8,31 @@ add_library(gadgetron_toolbox_cpunfft SHARED
 	  hoNFFTOperator.cpp
 )
 
-set_target_properties(gadgetron_toolbox_cpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+set_target_properties(pingvin_toolbox_cpunfft PROPERTIES VERSION ${PINGVIN_VERSION_STRING} SOVERSION ${PINGVIN_SOVERSION})
 
-target_include_directories(gadgetron_toolbox_cpunfft
+target_include_directories(pingvin_toolbox_cpunfft
         PUBLIC
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 
-target_link_libraries(gadgetron_toolbox_cpunfft
-    gadgetron_toolbox_cpufft
-    gadgetron_toolbox_cpucore
-    gadgetron_toolbox_log
-    gadgetron_toolbox_hostutils
-	gadgetron_toolbox_operator
+target_link_libraries(pingvin_toolbox_cpunfft
+    pingvin_toolbox_cpufft
+    pingvin_toolbox_cpucore
+    pingvin_toolbox_log
+	pingvin_toolbox_operator
   )
 
-install(TARGETS gadgetron_toolbox_cpunfft
-		EXPORT gadgetron-export
+install(TARGETS pingvin_toolbox_cpunfft
+		EXPORT pingvin-export
 		LIBRARY DESTINATION lib
 		ARCHIVE DESTINATION lib
 		RUNTIME DESTINATION bin
 		COMPONENT main
 		)
 
-
-install(FILES 
+install(FILES
     hoNFFT.h
     ConvolutionMatrix.h
     hoGriddingConvolution.h
-    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+    DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)

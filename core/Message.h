@@ -4,16 +4,12 @@
 #include <vector>
 #include <typeindex>
 #include <numeric>
-#include "Types.h"
+#include <optional>
+#include <variant>
+
+#include "GadgetContainerMessage.h"
 
 namespace Gadgetron {
-
-    class GadgetContainerMessageBase;
-
-    template<class T>
-    class GadgetContainerMessage;
-
-    class LegacyGadgetNode;
 
     namespace Core {
         class Message;
@@ -66,11 +62,11 @@ namespace Gadgetron {
 
 
         template<class ...ARGS>
-        std::enable_if_t<(sizeof...(ARGS) > 1), optional<std::tuple<ARGS...>>>
+        std::enable_if_t<(sizeof...(ARGS) > 1), std::optional<std::tuple<ARGS...>>>
         unpack(Message &&message);
 
         template<class T>
-        optional<T> unpack(Message &&message);
+        std::optional<T> unpack(Message &&message);
 
 
         template<class T>

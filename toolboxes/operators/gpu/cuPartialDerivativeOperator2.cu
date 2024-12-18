@@ -191,29 +191,29 @@ cuPartialDerivativeOperator2<T,D>::mult_M(cuNDArray<T> *in, cuNDArray<T> *out,
 
 
 
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float,1>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float,2>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float,3>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float,4>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float,5>;
+template class cuPartialDerivativeOperator2<float,1>;
+template class cuPartialDerivativeOperator2<float,2>;
+template class cuPartialDerivativeOperator2<float,3>;
+template class cuPartialDerivativeOperator2<float,4>;
+template class cuPartialDerivativeOperator2<float,5>;
 
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double,1>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double,2>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double,3>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double,4>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double,5>;
-
-
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float_complext,1>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float_complext,2>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float_complext,3>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float_complext,4>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<float_complext,5>;
+template class cuPartialDerivativeOperator2<double,1>;
+template class cuPartialDerivativeOperator2<double,2>;
+template class cuPartialDerivativeOperator2<double,3>;
+template class cuPartialDerivativeOperator2<double,4>;
+template class cuPartialDerivativeOperator2<double,5>;
 
 
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double_complext,1>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double_complext,2>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double_complext,3>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double_complext,4>;
-template class EXPORTGPUOPERATORS cuPartialDerivativeOperator2<double_complext,5>;
+template class cuPartialDerivativeOperator2<float_complext,1>;
+template class cuPartialDerivativeOperator2<float_complext,2>;
+template class cuPartialDerivativeOperator2<float_complext,3>;
+template class cuPartialDerivativeOperator2<float_complext,4>;
+template class cuPartialDerivativeOperator2<float_complext,5>;
+
+
+template class cuPartialDerivativeOperator2<double_complext,1>;
+template class cuPartialDerivativeOperator2<double_complext,2>;
+template class cuPartialDerivativeOperator2<double_complext,3>;
+template class cuPartialDerivativeOperator2<double_complext,4>;
+template class cuPartialDerivativeOperator2<double_complext,5>;
 

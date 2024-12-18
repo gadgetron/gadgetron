@@ -4,12 +4,12 @@
   -----------
 
   Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
+  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen.
   IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
 
   Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
   T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
-  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
+  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985.
 */
 
 #include "cuNFFT.h"
@@ -94,13 +94,13 @@ Gadgetron::cuNFFT_impl<REAL, D, CONV>::deapodize(cuNDArray <complext<REAL>>& ima
 
 template<class REAL, unsigned int D, ConvolutionType CONV>
 void Gadgetron::cuNFFT_impl<REAL, D, CONV>::initialize(int device)
-{       
+{
     // Device checks.
     if (cudaGetDevice(&this->device_) != cudaSuccess)
     {
         throw cuda_error("Error: cuNFFT_impl::barebones:: unable to get this->device_ no");
     }
-    
+
     if (device < 0)
     {
         if (cudaGetDevice(&this->device_) != cudaSuccess)

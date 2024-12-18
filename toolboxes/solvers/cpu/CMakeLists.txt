@@ -1,5 +1,4 @@
 set( cpu_solver_header_files
-        cpusolver_export.h
         hoGdSolver.h
         hoCgPreconditioner.h
         hoCgSolver.h
@@ -11,20 +10,18 @@ set( cpu_solver_header_files
         HybridLM.h
         simplexLagariaSolver.h )
 
-add_library(gadgetron_toolbox_cpu_solver INTERFACE)
-target_link_libraries(gadgetron_toolbox_cpu_solver INTERFACE
-                    gadgetron_toolbox_operator
-                    gadgetron_toolbox_solvers
-                    gadgetron_toolbox_cpucore
-                    gadgetron_toolbox_cpucore_math )
-target_include_directories(gadgetron_toolbox_cpu_solver
+add_library(pingvin_toolbox_cpu_solver INTERFACE)
+target_link_libraries(pingvin_toolbox_cpu_solver INTERFACE
+                    pingvin_toolbox_operator
+                    pingvin_toolbox_solvers
+                    pingvin_toolbox_cpucore
+                    pingvin_toolbox_cpucore_math )
+target_include_directories(pingvin_toolbox_cpu_solver
         INTERFACE
-        $<INSTALL_INTERFACE:include/gadgetron>
+        $<INSTALL_INTERFACE:${PINGVIN_INSTALL_INCLUDE_PATH}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-install(TARGETS gadgetron_toolbox_cpu_solver EXPORT gadgetron-export DESTINATION lib COMPONENT main)
+install(TARGETS pingvin_toolbox_cpu_solver EXPORT pingvin-export DESTINATION lib COMPONENT main)
 
-install(FILES ${cpu_solver_header_files} 
-    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-
-set(GADGETRON_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${GADGETRON_BUILD_RPATH}" PARENT_SCOPE)
+install(FILES ${cpu_solver_header_files}
+    DESTINATION ${PINGVIN_INSTALL_INCLUDE_PATH} COMPONENT main)

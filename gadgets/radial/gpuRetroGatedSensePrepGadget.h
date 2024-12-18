@@ -1,15 +1,12 @@
 #pragma once
 
-#include "gadgetron_radial_export.h"
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
 #include "cuCgPreconditioner.h"
 #include "cuSenseBufferCg.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <queue>
 #include <map>
@@ -18,17 +15,16 @@
 
 /*
   Prep gadget for retrospectively gated Sense based on golden ratio sampling.
-  Thus only radial modes 2-3 are supported.  
+  Thus only radial modes 2-3 are supported.
 */
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_RADIAL gpuRetroGatedSensePrepGadget :
-    public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class gpuRetroGatedSensePrepGadget :
+    public Gadget1< mrd::Acquisition >
   {
 
   public:
-    GADGET_DECLARE(gpuRetroGatedSensePrepGadget);
     gpuRetroGatedSensePrepGadget();
     virtual ~gpuRetroGatedSensePrepGadget();
 
@@ -49,10 +45,9 @@ namespace Gadgetron{
     GADGET_PROPERTY(reconstruction_os_factor_y, float, "Oversampling for reconstruction in y-direction", 1.0);
 
 
-    virtual int process_config(ACE_Message_Block *mb);
+    virtual int process_config(const mrd::Header& header);
 
-    virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,
-			GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2);
+    virtual int process(GadgetContainerMessage< mrd::Acquisition > *m1);
 
   private:
 
@@ -62,12 +57,12 @@ namespace Gadgetron{
       }
       return true;
     }
-    
+
     boost::shared_array<bool> reconfigure_;
     virtual void reconfigure(unsigned int set, unsigned int slice);
 
     GadgetContainerMessage< hoNDArray< std::complex<float> > >*
-      duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile );
+      duplicate_profile( const hoNDArray< std::complex<float> >& profile );
 
     boost::shared_ptr< hoNDArray<float_complext> > extract_samples_from_buffer_queue( unsigned int set, unsigned int slice );
 
@@ -76,16 +71,16 @@ namespace Gadgetron{
 
     int calculate_density_compensation_for_reconstruction(unsigned int set, unsigned int slice);
 
-    boost::shared_ptr< cuNDArray<floatd2> > 
+    boost::shared_ptr< cuNDArray<floatd2> >
       calculate_trajectory_for_buffer(long profile_offset, unsigned int set, unsigned int slice);
 
     boost::shared_ptr< cuNDArray<float> >
       calculate_density_compensation_for_buffer(unsigned int set, unsigned int slice);
 
-    boost::shared_ptr< cuNDArray<floatd2> > 
+    boost::shared_ptr< cuNDArray<floatd2> >
       calculate_trajectory_for_rhs(long profile_offset, unsigned int set, unsigned int slice);
 
-    boost::shared_ptr< cuNDArray<float> > 
+    boost::shared_ptr< cuNDArray<float> >
       calculate_density_compensation_for_rhs(unsigned int set, unsigned int slice);
 
     int slices_;
@@ -101,7 +96,7 @@ namespace Gadgetron{
 
     // The number of buffer cycles
     long profiles_per_buffer_frame_;
-    long num_buffer_frames_inner_; 
+    long num_buffer_frames_inner_;
     long num_buffer_frames_outer_;
 
     // Internal book-keeping
@@ -132,10 +127,10 @@ namespace Gadgetron{
     boost::shared_array<bool> buffer_update_needed_;
 
     boost::shared_array< hoNDArray<float> > host_weights_recon_;
-    
+
     boost::shared_array< hoNDArray<float_complext> > csm_host_;
     boost::shared_array< hoNDArray<float_complext> > reg_host_;
-    
+
     boost::shared_array< cuSenseBuffer<float,2> > acc_buffer_;
     boost::shared_array< cuSenseBufferCg<float,2> > acc_buffer_cg_;
 

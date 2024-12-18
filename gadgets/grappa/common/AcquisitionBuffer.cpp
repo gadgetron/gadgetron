@@ -5,7 +5,6 @@
 
 #include "Context.h"
 #include "Channel.h"
-#include "Types.h"
 
 #include "hoNDArray.h"
 
@@ -18,7 +17,6 @@
 
 namespace {
     using namespace Gadgetron;
-    using namespace Gadgetron::Core;
     using namespace Gadgetron::Grappa;
 
     template<class T>
@@ -31,7 +29,7 @@ namespace {
 
 namespace Gadgetron::Grappa {
 
-    AcquisitionBuffer::AcquisitionBuffer(Context ctx) : context(std::move(ctx)) {
+    AcquisitionBuffer::AcquisitionBuffer(Core::Context ctx) : context(std::move(ctx)) {
 
         if (context.header.encoding.size() != 1) {
             throw std::runtime_error(
@@ -40,18 +38,18 @@ namespace Gadgetron::Grappa {
             );
         }
 
-        auto r_space  = context.header.encoding[0].reconSpace;
-        auto e_space  = context.header.encoding[0].encodedSpace;
-        auto e_limits = context.header.encoding[0].encodingLimits;
+        auto r_space  = context.header.encoding[0].recon_space;
+        auto e_space  = context.header.encoding[0].encoded_space;
+        auto e_limits = context.header.encoding[0].encoding_limits;
 
-        if (r_space.matrixSize.z != 1) {
+        if (r_space.matrix_size.z != 1) {
             throw std::runtime_error("RT Grappa works only with 2D images. 3D output requested.");
         }
 
-        internals.number_of_samples = r_space.matrixSize.x;
-        internals.number_of_lines = r_space.matrixSize.y;
+        internals.number_of_samples = r_space.matrix_size.x;
+        internals.number_of_lines = r_space.matrix_size.y;
 
-        internals.line_offset = (e_space.matrixSize.y / 2) - e_limits.kspace_encoding_step_1->center;
+        internals.line_offset = (e_space.matrix_size.y / 2) - e_limits.kspace_encoding_step_1->center;
         internals.expected_lines = all_values_in_range<uint32_t>(
                 e_limits.kspace_encoding_step_1->minimum,
                 e_limits.kspace_encoding_step_1->maximum
@@ -64,29 +62,30 @@ namespace Gadgetron::Grappa {
 
         for (auto &fn : pre_update_callbacks) fn(acquisition);
 
-        auto &header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
-        const auto &data = std::get<hoNDArray<std::complex<float>>>(acquisition);
+        auto& acq = std::get<mrd::Acquisition>(acquisition);
+        auto &header = acq.head;
+        const auto &data = acq.data;
 
         if (header.idx.kspace_encode_step_2 != 0) {
             throw std::runtime_error("RT Grappa works only with 2D data. 3D data received.");
         }
 
-        auto current_slice = header.idx.slice;
-        auto current_line = header.idx.kspace_encode_step_1 + internals.line_offset;
+        auto current_slice = header.idx.slice.value_or(0);
+        auto current_line = header.idx.kspace_encode_step_1.value_or(0) + internals.line_offset;
 
         if (!buffers.count(current_slice)) {
             buffers[current_slice] = create_buffer({
                 internals.number_of_samples,
                 internals.number_of_lines,
-                header.active_channels
+                acq.Coils()
             });
         }
 
         auto &buffer = buffers[current_slice];
-        buffer.sampled_lines.insert(header.idx.kspace_encode_step_1);
+        buffer.sampled_lines.insert(header.idx.kspace_encode_step_1.value_or(0));
 
         // Copy the acquisition data to the buffer for each channel.
-        for (size_t channel = 0; channel < header.active_channels; channel++) {
+        for (size_t channel = 0; channel < acq.Coils(); channel++) {
 
             using namespace Gadgetron::Indexing;
             buffer.data(slice,current_line,channel) = data(slice,channel);
@@ -111,7 +110,7 @@ namespace Gadgetron::Grappa {
 
     std::pair<uint32_t,uint32_t> AcquisitionBuffer::fully_sampled_region(size_t slice) const {
 
-        const auto& e_limits = context.header.encoding[0].encodingLimits;
+        const auto& e_limits = context.header.encoding[0].encoding_limits;
         const auto& sampled_lines = buffers.at(slice).sampled_lines;
 
         uint32_t lower_limit;

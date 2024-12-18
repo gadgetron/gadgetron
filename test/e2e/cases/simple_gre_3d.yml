@@ -1,0 +1,16 @@
+reconstruction:
+  data: gre_3d/meas_MID248_gre_FID30644_meas1.mrd
+  checksum: f744396f98767c09df7b9a33c7fd263b
+  run:
+  - args: --config default_optimized.xml
+validation:
+  reference: gre_3d/simple_gre_out_3d_20210910_klk_default_optimized.xml.mrd
+  checksum: 745c71b36b03f78570f8296a9dbf5b71
+  tests:
+  - image_series: 0
+    value_comparison_threshold: 1.0e-05
+    scale_comparison_threshold: 1.0e-05
+requirements:
+  system_memory: 2048
+tags:
+- fast

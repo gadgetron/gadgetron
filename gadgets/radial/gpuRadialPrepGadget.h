@@ -1,8 +1,6 @@
 #pragma once
 
-#include "gadgetron_radial_export.h"
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
@@ -11,7 +9,6 @@
 #include "cuSenseBufferCg.h"
 #include "cuSpiritBuffer.h"
 
-#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <queue>
 #include <map>
@@ -29,7 +26,7 @@
   Let 
   'i' denote the number of profiles per (undersampled) frame
   'j' denote the number of frames per trajectory rotation (to obtain a fully sampled acquisition)
-  'h' denote a variable of type ISMRMRD::AcquisitionHeader
+  'h' denote a variable of type mrd::AcquisitionHeader
 
   It is possible to explicitly set 'i' and 'j' in the Gadgetron configuration file.
   For some modes this is (partly) required, 
@@ -71,13 +68,13 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_RADIAL gpuRadialPrepGadget :
-    public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class gpuRadialPrepGadget :
+    public Gadget1< mrd::Acquisition >
   {
 
   public:
     using ProfileMessage = GadgetContainerMessage<hoNDArray<std::complex<float>>>;
-    using ImageHeaderMessage = GadgetContainerMessage<ISMRMRD::ImageHeader>;
+    using ImageHeaderMessage = GadgetContainerMessage<mrd::ImageHeader>;
 
 
     gpuRadialPrepGadget();
@@ -100,10 +97,9 @@ namespace Gadgetron{
     GADGET_PROPERTY(frames_per_rotation, int, "Frames per rotation", 0);
     GADGET_PROPERTY(buffer_frames_per_rotation, int, "Frames per rotation in buffer", 0);
 
-    virtual int process_config(ACE_Message_Block *mb);
+    virtual int process_config(const mrd::Header& header);
 
-    virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,
-			GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2);
+    virtual int process(GadgetContainerMessage< mrd::Acquisition > *m1);
 
     virtual void reconfigure(unsigned int set, unsigned int slice, bool use_dcw = true);
 
@@ -117,7 +113,7 @@ namespace Gadgetron{
     boost::shared_array<bool> reconfigure_;
 
     GadgetContainerMessage< hoNDArray< std::complex<float> > >*
-      duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile );
+      duplicate_profile( const hoNDArray< std::complex<float> >& profile );
 
     boost::shared_ptr< hoNDArray<float_complext> > 
       extract_samples_from_queue( std::queue<std::unique_ptr<ProfileMessage>> &queue,

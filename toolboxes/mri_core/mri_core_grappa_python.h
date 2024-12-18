@@ -4,14 +4,13 @@
     \author Hui Xue
 */
 
-#include "mri_core_export.h"
 #include <complex>
 #include <vector>
 #include "hoNDArray.h"
 
 namespace Gadgetron
 {
-    class EXPORTMRICORE grappa2D
+    class grappa2D
     {
     public:
 

@@ -4,7 +4,7 @@
 #include "cuFFTPlan.h"
 namespace Gadgetron{
 
-  void cuFFTGadget::process(Core::InputChannel<Core::Image<std::complex<float>>>& in, Core::OutputChannel& out) {
+  void cuFFTGadget::process(Core::InputChannel<mrd::Image<std::complex<float>>>& in, Core::OutputChannel& out) {
 
       for (auto [header, data, meta] : in){
           auto * tmp = (hoNDArray<complext<float>>*) &data;

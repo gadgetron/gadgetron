@@ -324,6 +324,6 @@ cuNDFFT<T>::ifft3( cuNDArray< complext<T> > *input, bool do_scale )
 	fft3_int(input, CUFFT_INVERSE, do_scale);
 }
 // Instantiation
-template class EXPORTGPUFFT cuNDFFT<float>;
-template class EXPORTGPUFFT cuNDFFT<double>;
+template class cuNDFFT<float>;
+template class cuNDFFT<double>;
 }

@@ -14,12 +14,12 @@ template<typename T> struct cuNDA_abs : public thrust::unary_function<T,typename
   __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const {return abs(x);}
 };
 
-template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> > 
+template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> >
 Gadgetron::abs( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::abs(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
   result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
@@ -28,31 +28,31 @@ Gadgetron::abs( const cuNDArray<T> *x )
   return result;
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::abs_inplace( cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::abs_inplace(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_abs<T>());
-}  
-  
+}
+
 template<typename T> struct cuNDA_abs_square : public thrust::unary_function<T,typename realType<T>::Type>
 {
-  __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const 
-  { 
+  __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const
+  {
     typename realType<T>::Type tmp = abs(x);
     return tmp*tmp;
   }
 };
 
-template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> > 
+template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> >
 Gadgetron::abs_square( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::abs_square(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
   result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
@@ -66,12 +66,12 @@ template<typename T> struct cuNDA_sqrt : public thrust::unary_function<T,T>
   __device__ T operator()(const T &x) const {return sqrt(x);}
 };
 
-template<class T> boost::shared_ptr< cuNDArray<T> > 
+template<class T> boost::shared_ptr< cuNDArray<T> >
 Gadgetron::sqrt( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::sqrt(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -80,26 +80,26 @@ Gadgetron::sqrt( const cuNDArray<T> *x )
   return result;
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::sqrt_inplace( cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::sqrt_inplace(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_sqrt<T>());
 }
- 
+
 template<typename T> struct cuNDA_square : public thrust::unary_function<T,T>
 {
   __device__ T operator()(const T &x) const {return x*x;}
 };
 
 template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::square( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::square(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -108,15 +108,15 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::square( const cuN
   return result;
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::square_inplace( cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::square_inplace(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_square<T>());
-}  
+}
 
 template<typename T> struct cuNDA_reciprocal : public thrust::unary_function<T,T>
 {
@@ -124,10 +124,10 @@ template<typename T> struct cuNDA_reciprocal : public thrust::unary_function<T,T
 };
 
 template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::reciprocal( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::reciprocal(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -136,26 +136,26 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::reciprocal( const
   return result;
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::reciprocal_inplace( cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::reciprocal_inplace(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_reciprocal<T>());
-}  
- 
+}
+
 template<typename T> struct cuNDA_reciprocal_sqrt : public thrust::unary_function<T,T>
 {
   __device__ T operator()(const T &x) const {return T(1)/sqrt(x);}
 };
 
 template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::reciprocal_sqrt( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::reciprocal_sqrt(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -164,15 +164,15 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::reciprocal_sqrt( 
   return result;
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::reciprocal_sqrt_inplace( cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::reciprocal_sqrt_inplace(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_reciprocal_sqrt<T>());
-}  
+}
 
 template<typename T> struct cuNDA_sgn : public thrust::unary_function<T,T>
 {
@@ -180,10 +180,10 @@ template<typename T> struct cuNDA_sgn : public thrust::unary_function<T,T>
 };
 
 template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::sgn( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::sgn(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -192,27 +192,27 @@ template<class T> boost::shared_ptr< cuNDArray<T> > Gadgetron::sgn( const cuNDAr
   return result;
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::sgn_inplace( cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::sgn_inplace(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_sgn<T>());
-}  
- 
+}
+
 template<typename T> struct cuNDA_real : public thrust::unary_function<T,typename realType<T>::Type>
 {
   __device__ typename realType<T>::Type operator()(const T &x) const {return real(x);}
 };
 
-template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> > 
+template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> >
 Gadgetron::real( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::real(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
   result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
@@ -226,12 +226,12 @@ template <typename T> struct cuNDA_imag : public thrust::unary_function<T,typena
   __device__ typename realType<T>::Type operator()(const T &x) const {return imag(x);}
 };
 
-template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> > 
+template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> >
 Gadgetron::imag( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::imag(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
   result->create(x->get_dimensions());
   thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
@@ -245,12 +245,12 @@ template <typename T> struct cuNDA_conj : public thrust::unary_function<T,T>
   __device__ T operator()(const T &x) const {return conj(x);}
 };
 
-template<class T> boost::shared_ptr< cuNDArray<T> > 
+template<class T> boost::shared_ptr< cuNDArray<T> >
 Gadgetron::conj( const cuNDArray<T> *x )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::conj(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -264,12 +264,12 @@ template <typename T> struct cuNDA_real_to_complex : public thrust::unary_functi
   __device__ T operator()(const typename realType<T>::Type &x) const {return T(x);}
 };
 
-template<class T> boost::shared_ptr< cuNDArray<T> > 
+template<class T> boost::shared_ptr< cuNDArray<T> >
 Gadgetron::real_to_complex( const cuNDArray<typename realType<T>::Type> *x )
 {
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::real_to_complex(): Invalid input array");
-   
+
   boost::shared_ptr< cuNDArray<T> > result(new cuNDArray<T>());
   result->create(x->get_dimensions());
   thrust::device_ptr<T> resPtr = result->get_device_ptr();
@@ -323,20 +323,20 @@ template<class T> void Gadgetron::clear( cuNDArray<T> *x )
   }
 }
 
-template<class T> void 
+template<class T> void
 Gadgetron::fill( cuNDArray<T> *x, T val )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::fill(): Invalid input array");
-  
+
   thrust::device_ptr<T> devPtr = x->get_device_ptr();
   thrust::fill(devPtr,devPtr+x->get_number_of_elements(),val);
-}  
+}
 
 template<typename T> struct cuNDA_clamp : public thrust::unary_function<T,T>
 {
   cuNDA_clamp( T _min, T _max, T _min_val, T _max_val ) : min(_min), max(_max),min_val(_min_val), max_val(_max_val) {}
-  __device__ T operator()(const T &x) const 
+  __device__ T operator()(const T &x) const
   {
     if( x < min ) return min_val;
     else if ( x >= max) return max_val;
@@ -349,7 +349,7 @@ template<typename T> struct cuNDA_clamp : public thrust::unary_function<T,T>
 template<typename T> struct cuNDA_clamp< complext<T> > : public thrust::unary_function< complext<T>, complext<T> >
 {
 	cuNDA_clamp( T _min, T _max, complext<T> _min_val, complext<T> _max_val ) : min(_min), max(_max),min_val(_min_val), max_val(_max_val) {}
-  __device__ complext<T> operator()(const complext<T> &x) const 
+  __device__ complext<T> operator()(const complext<T> &x) const
   {
     if( real(x) < min ) return min_val;
     else if ( real(x) >= max) return max_val;
@@ -359,17 +359,17 @@ template<typename T> struct cuNDA_clamp< complext<T> > : public thrust::unary_fu
   complext<T> min_val, max_val;
 };
 
-template<class T> void 
+template<class T> void
 Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max, T min_val, T max_val)
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::clamp(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_clamp<T>(min, max,min_val, max_val));
-}  
+}
 
-template<class T> void 
+template<class T> void
 Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max)
 {
     clamp(x,min,max,T(min),T(max));
@@ -378,7 +378,7 @@ Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename real
 template<typename T> struct cuNDA_clamp_min : public thrust::unary_function<T,T>
 {
   cuNDA_clamp_min( T _min ) : min(_min) {}
-  __device__ T operator()(const T &x) const 
+  __device__ T operator()(const T &x) const
   {
     if( x < min ) return min;
     else return x;
@@ -389,7 +389,7 @@ template<typename T> struct cuNDA_clamp_min : public thrust::unary_function<T,T>
 template<typename T> struct cuNDA_clamp_min< complext<T> > : public thrust::unary_function< complext<T>, complext<T> >
 {
   cuNDA_clamp_min( T _min ) : min(_min) {}
-  __device__ complext<T> operator()(const complext<T> &x) const 
+  __device__ complext<T> operator()(const complext<T> &x) const
   {
     if( real(x) < min ) return complext<T>(min);
     else return complext<T>(real(x));
@@ -397,20 +397,20 @@ template<typename T> struct cuNDA_clamp_min< complext<T> > : public thrust::unar
   T min;
 };
 
-template<class T> void 
+template<class T> void
 Gadgetron::clamp_min( cuNDArray<T> *x, typename realType<T>::Type min )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::clamp_min(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_clamp_min<T>(min));
-}  
+}
 
 template<typename T> struct cuNDA_clamp_max : public thrust::unary_function<T,T>
 {
   cuNDA_clamp_max( T _max ) : max(_max) {}
-  __device__ T operator()(const T &x) const 
+  __device__ T operator()(const T &x) const
   {
     if( x > max ) return max;
     else return x;
@@ -421,7 +421,7 @@ template<typename T> struct cuNDA_clamp_max : public thrust::unary_function<T,T>
 template<typename T> struct cuNDA_clamp_max< complext<T> > : public thrust::unary_function< complext<T>, complext<T> >
 {
   cuNDA_clamp_max( T _max ) : max(_max) {}
-  __device__ complext<T> operator()(const complext<T> &x) const 
+  __device__ complext<T> operator()(const complext<T> &x) const
   {
     if( real(x) > max ) return complext<T>(max);
     else return complext<T>(real(x));
@@ -429,22 +429,22 @@ template<typename T> struct cuNDA_clamp_max< complext<T> > : public thrust::unar
   T max;
 };
 
-template<class T> void 
+template<class T> void
 Gadgetron::clamp_max( cuNDArray<T> *x, typename realType<T>::Type max )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::clamp_max(): Invalid input array");
-   
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_clamp_max<T>(max));
-}  
+}
 
-template<class T> void 
+template<class T> void
 Gadgetron::normalize( cuNDArray<T> *x, typename realType<T>::Type val )
 {
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::normalize(): Invalid input array");
-  
+
   size_t max_idx = amax(x);
   T max_val_before;
   CUDA_CALL(cudaMemcpy(&max_val_before, &x->get_data_ptr()[max_idx], sizeof(T), cudaMemcpyDeviceToHost));
@@ -464,12 +464,12 @@ template<typename T> struct cuNDA_shrink1 : public thrust::unary_function<T,T>
   typename realType<T>::Type gamma;
 };
 
-template<class T> void 
+template<class T> void
 Gadgetron::shrink1( cuNDArray<T> *x, typename realType<T>::Type gamma, cuNDArray<T> *out )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::shrink1(): Invalid input array");
-  
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::device_ptr<T> outPtr = (out == 0x0) ? x->get_device_ptr() : out->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),outPtr,cuNDA_shrink1<T>(gamma));
@@ -496,7 +496,7 @@ Gadgetron::pshrink( cuNDArray<T> *x, typename realType<T>::Type gamma,typename r
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::device_ptr<T> outPtr = (out == 0x0) ? x->get_device_ptr() : out->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),outPtr,cuNDA_pshrink<T>(gamma,p));
-}  
+}
 
 template<typename T> struct cuNDA_shrinkd : public thrust::binary_function<T,typename realType<T>::Type,T>
 {
@@ -508,17 +508,17 @@ template<typename T> struct cuNDA_shrinkd : public thrust::binary_function<T,typ
   typename realType<T>::Type gamma;
 };
 
-template<class T> void 
+template<class T> void
 Gadgetron::shrinkd( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma, cuNDArray<T> *out )
-{ 
+{
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::shrinkd(): Invalid input array");
-  
+
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
   thrust::device_ptr<T> outPtr = (out == 0x0) ? x->get_device_ptr() : out->get_device_ptr();
   thrust::device_ptr<typename realType<T>::Type> sPtr = s->get_device_ptr();
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),sPtr,outPtr,cuNDA_shrinkd<T>(gamma));
-}  
+}
 
 
 template<typename T> struct cuNDA_pshrinkd : public thrust::binary_function<T,typename realType<T>::Type,T>

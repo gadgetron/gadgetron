@@ -4,20 +4,20 @@
 
 namespace Gadgetron {
 
-    template <typename T> 
+    template <typename T>
     GenericReconBase<T>::GenericReconBase() : num_encoding_spaces_(1), process_called_times_(0)
     {
         gt_timer_.set_timing_in_destruction(false);
         gt_timer_local_.set_timing_in_destruction(false);
     }
 
-    template <typename T> 
+    template <typename T>
     GenericReconBase<T>::~GenericReconBase()
     {
     }
 
-    template <typename T> 
-    int GenericReconBase<T>::process_config(ACE_Message_Block* mb)
+    template <typename T>
+    int GenericReconBase<T>::process_config(const mrd::Header& header)
     {
         if (!debug_folder.value().empty())
         {
@@ -54,7 +54,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    template <typename T> 
+    template <typename T>
     int GenericReconBase<T>::close(unsigned long flags)
     {
         GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericReconBase<T> - close(flags) : " << flags);
@@ -62,9 +62,9 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    template class EXPORTGADGETSMRICORE GenericReconBase<IsmrmrdReconData>;
-    template class EXPORTGADGETSMRICORE GenericReconBase<IsmrmrdImageArray>;
-    template class EXPORTGADGETSMRICORE GenericReconBase<ISMRMRD::ImageHeader>;
+    template class GenericReconBase<mrd::ReconData>;
+    template class GenericReconBase<mrd::ImageArray>;
+    template class GenericReconBase<mrd::ImageHeader>;
 
     GenericReconKSpaceReadoutBase::GenericReconKSpaceReadoutBase() : BaseClass()
     {

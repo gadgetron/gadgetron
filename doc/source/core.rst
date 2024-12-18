@@ -1,7 +1,7 @@
 Core
 ====
 
-Nodes and Gadgets 
+Nodes and Gadgets
 ------------------
 
 .. doxygenclass:: Gadgetron::Core::Node
@@ -36,14 +36,3 @@ Channels
 
 .. doxygenclass:: Gadgetron::Core::InputChannel
    :undoc-members:
-
-Core Types
-----------
-.. doxygentypedef:: Gadgetron::Core::Acquisition
-
-.. doxygentypedef:: Gadgetron::Core::Image
-.. doxygentypedef:: Gadgetron::Core::Waveform
-
-.. doxygentypedef:: Gadgetron::Core::optional
-.. doxygentypedef:: Gadgetron::Core::variant
-.. doxygenfunction:: Gadgetron::Core::visit

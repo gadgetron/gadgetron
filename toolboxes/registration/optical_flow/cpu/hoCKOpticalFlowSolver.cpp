@@ -284,13 +284,13 @@ boost::shared_ptr<hoNDArray<T>> hoCKOpticalFlowSolver<T, D>::core_solver(hoNDArr
 // Template instantiation
 //
 
-template class EXPORTCPUREG hoCKOpticalFlowSolver<float, 1>;
-template class EXPORTCPUREG hoCKOpticalFlowSolver<float, 2>;
-template class EXPORTCPUREG hoCKOpticalFlowSolver<float, 3>;
-template class EXPORTCPUREG hoCKOpticalFlowSolver<float, 4>;
+template class hoCKOpticalFlowSolver<float, 1>;
+template class hoCKOpticalFlowSolver<float, 2>;
+template class hoCKOpticalFlowSolver<float, 3>;
+template class hoCKOpticalFlowSolver<float, 4>;
 
-template class EXPORTCPUREG hoCKOpticalFlowSolver<double, 1>;
-template class EXPORTCPUREG hoCKOpticalFlowSolver<double, 2>;
-template class EXPORTCPUREG hoCKOpticalFlowSolver<double, 3>;
-template class EXPORTCPUREG hoCKOpticalFlowSolver<double, 4>;
+template class hoCKOpticalFlowSolver<double, 1>;
+template class hoCKOpticalFlowSolver<double, 2>;
+template class hoCKOpticalFlowSolver<double, 3>;
+template class hoCKOpticalFlowSolver<double, 4>;
 } // namespace Gadgetron

@@ -377,7 +377,7 @@ namespace Gadgetron {
 
     template <class T> boost::shared_ptr<hoNDArray<T>> real_to_complex(const hoNDArray<typename realType<T>::Type>* x) {
         if (x == 0x0)
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_to_complex(): Invalid input array"));
+            BOOST_THROW_EXCEPTION(std::runtime_error("Gadgetron::real_to_complex(): Invalid input array"));
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
         result->create(x->dimensions());
@@ -391,10 +391,10 @@ namespace Gadgetron {
     boost::shared_ptr<hoNDArray<T>> real_imag_to_complex(
         hoNDArray<typename realType<T>::Type>* real, hoNDArray<typename realType<T>::Type>* imag) {
         if (real == 0x0 || imag == 0x0)
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_imag_to_complex(): Invalid input array"));
+            BOOST_THROW_EXCEPTION(std::runtime_error("Gadgetron::real_imag_to_complex(): Invalid input array"));
 
         if (real->get_number_of_elements() != imag->get_number_of_elements())
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_imag_to_complex(): Invalid input array"));
+            BOOST_THROW_EXCEPTION(std::runtime_error("Gadgetron::real_imag_to_complex(): Invalid input array"));
 
         boost::shared_ptr<hoNDArray<T>> result(new hoNDArray<T>());
         result->create(real->dimensions());

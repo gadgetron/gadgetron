@@ -2,8 +2,8 @@
     \brief  This is the image accmulation and triggering gadget for the generic recon chain
             This gadget receives the IsmrmrdImageArray [RO E1 E2 CHA N S SLC] and can be triggered by CHA/SLC/CON/PHS/REP/SET/AVE
 
-            For every dimension, user can define whether it is under the trigger. If the dimensional index of buffered images reache maximum for ALL 
-            dimensions which are under the trigger, the image buffer will be send to the next gadget; e.g., if the PHS dimension limit is 40 and 
+            For every dimension, user can define whether it is under the trigger. If the dimensional index of buffered images reache maximum for ALL
+            dimensions which are under the trigger, the image buffer will be send to the next gadget; e.g., if the PHS dimension limit is 40 and
             the dimension PHS is under the trigger, all 40 images will be sent to the next gadget as a data buffer. Every buffered images will only be sent once
             Certain images, such as GADGETRON_IMAGE_GFACTOR gfactor images will be sent to the next gadget immediately
 
@@ -13,7 +13,6 @@
 #pragma once
 
 #include <complex>
-#include "gadgetron_mricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 
@@ -24,7 +23,6 @@
 #include "ismrmrd/meta.h"
 
 #include "mri_core_def.h"
-#include "mri_core_data.h"
 #include "mri_core_utility.h"
 
 #include "hoNDArray_utils.h"
@@ -35,19 +33,17 @@
 
 #include "ImageIOAnalyze.h"
 
-namespace Gadgetron { 
+namespace Gadgetron {
 
 // the dimensionsal order of buffered images
 // [Cha Slice Con Phase Rep Set Ave]
 //   0    1    2   3    4   5    6
 #define GT_DIM_NUM_IMAGE 7
 
-template <typename T, int D> 
-class EXPORTGADGETSMRICORE GenericReconAccumulateImageTriggerGadget : public Gadgetron::GenericReconBase< IsmrmrdImageArray >
+template <typename T, int D>
+class GenericReconAccumulateImageTriggerGadget : public Gadgetron::GenericReconBase< IsmrmrdImageArray >
 {
 public:
-    GADGET_DECLARE(GenericReconAccumulateImageTriggerGadget);
-
     typedef std::complex<T> ValueType;
 
     typedef Gadgetron::GenericReconBase< IsmrmrdImageArray > BaseClass;
@@ -100,7 +96,7 @@ protected:
     virtual int trigger(ImageBufferType& buf, ImageSentFlagBufferType& sentFlagBuf, bool inClose);
 
     // store the incoming image
-    // if pass_image_immediate_==true, the image will be immediately passed to the next gadget with 
+    // if pass_image_immediate_==true, the image will be immediately passed to the next gadget with
     virtual int store_image(const IsmrmrdImageArray& img, const std::vector<size_t>& buf_dimension, ImageBufferType& buf);
 
     // set dimensions under trigger
@@ -155,22 +151,18 @@ protected:
     int image_counter_;
 };
 
-class EXPORTGADGETSMRICORE GenericReconAccumulateImage2DTriggerGadget : public GenericReconAccumulateImageTriggerGadget<float, 2>
+class GenericReconAccumulateImage2DTriggerGadget : public GenericReconAccumulateImageTriggerGadget<float, 2>
 {
 public:
-    GADGET_DECLARE(GenericReconAccumulateImage2DTriggerGadget);
-
     typedef GenericReconAccumulateImageTriggerGadget<float, 2> BaseClass;
 
     GenericReconAccumulateImage2DTriggerGadget();
     ~GenericReconAccumulateImage2DTriggerGadget();
 };
 
-class EXPORTGADGETSMRICORE GenericReconAccumulateImage3DTriggerGadget : public GenericReconAccumulateImageTriggerGadget<float, 3>
+class GenericReconAccumulateImage3DTriggerGadget : public GenericReconAccumulateImageTriggerGadget<float, 3>
 {
 public:
-    GADGET_DECLARE(GenericReconAccumulateImage3DTriggerGadget);
-
     typedef GenericReconAccumulateImageTriggerGadget<float, 3> BaseClass;
 
     GenericReconAccumulateImage3DTriggerGadget();

@@ -68,8 +68,8 @@ void spirit2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     return;
 }
 
-template EXPORTMRICORE void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer, bool minusI);
-template EXPORTMRICORE void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& convKer, bool minusI);
+template void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer, bool minusI);
+template void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& convKer, bool minusI);
 
 // ------------------------------------------------------------------------
 
@@ -94,8 +94,8 @@ void spirit2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     return;
 }
 
-template EXPORTMRICORE void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<float> >& convKer, bool minusI);
-template EXPORTMRICORE void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<double> >& convKer, bool minusI);
+template void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<float> >& convKer, bool minusI);
+template void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<double> >& convKer, bool minusI);
 
 // ------------------------------------------------------------------------
 
@@ -147,8 +147,8 @@ void spirit2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
     return;
 }
 
-template EXPORTMRICORE void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<float> >& convKer, bool minusI);
-template EXPORTMRICORE void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<double> >& convKer, bool minusI);
+template void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<float> >& convKer, bool minusI);
+template void spirit2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray< std::complex<double> >& convKer, bool minusI);
 
 // ------------------------------------------------------------------------
 
@@ -167,8 +167,8 @@ void spirit2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
     return;
 }
 
-template EXPORTMRICORE void spirit2d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<float> >& kIm);
-template EXPORTMRICORE void spirit2d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<double> >& kIm);
+template void spirit2d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<float> >& kIm);
+template void spirit2d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<double> >& kIm);
 
 // ------------------------------------------------------------------------
 
@@ -452,8 +452,8 @@ void spirit3d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst,
 }
 
 
-template EXPORTMRICORE void spirit3d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<float> >& ker);
-template EXPORTMRICORE void spirit3d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<double> >& ker);
+template void spirit3d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<float> >& ker);
+template void spirit3d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<double> >& ker);
 
 // ------------------------------------------------------------------------
 
@@ -622,8 +622,8 @@ void spirit3d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     return;
 }
 
-template EXPORTMRICORE void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<float> >& convKer, bool minusI);
-template EXPORTMRICORE void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<double> >& convKer, bool minusI);
+template void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<float> >& convKer, bool minusI);
+template void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, hoNDArray< std::complex<double> >& convKer, bool minusI);
 
 // ------------------------------------------------------------------------
 
@@ -653,8 +653,8 @@ void spirit3d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     return;
 }
 
-template EXPORTMRICORE void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<float> >& convKer, bool minusI);
-template EXPORTMRICORE void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<double> >& convKer, bool minusI);
+template void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<float> >& convKer, bool minusI);
+template void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<double> >& convKer, bool minusI);
 
 // ------------------------------------------------------------------------
 
@@ -716,8 +716,8 @@ void spirit3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
     return;
 }
 
-template EXPORTMRICORE void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, hoNDArray<unsigned short>& dataMask, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<float> >& convKer, bool minusI);
-template EXPORTMRICORE void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, hoNDArray<unsigned short>& dataMask, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<double> >& convKer, bool minusI);
+template void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, hoNDArray<unsigned short>& dataMask, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<float> >& convKer, bool minusI);
+template void spirit3d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, hoNDArray<unsigned short>& dataMask, double thres, double overDetermineRatio, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray< std::complex<double> >& convKer, bool minusI);
 
 // ------------------------------------------------------------------------
 
@@ -736,8 +736,8 @@ void spirit3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
     return;
 }
 
-template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm, bool preset_kIm_with_zeros);
-template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm, bool preset_kIm_with_zeros);
+template void spirit3d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm, bool preset_kIm_with_zeros);
+template void spirit3d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm, bool preset_kIm_with_zeros);
 
 // ------------------------------------------------------------------------
 
@@ -789,8 +789,8 @@ void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO,
     return;
 }
 
-template EXPORTMRICORE void spirit3d_kspace_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, hoNDArray< std::complex<float> >& kIm);
-template EXPORTMRICORE void spirit3d_kspace_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, hoNDArray< std::complex<double> >& kIm);
+template void spirit3d_kspace_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, hoNDArray< std::complex<float> >& kIm);
+template void spirit3d_kspace_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, hoNDArray< std::complex<double> >& kIm);
 
 // ------------------------------------------------------------------------
 
@@ -822,8 +822,8 @@ void spirit3d_image_domain_kernel(const hoNDArray<T>& kImRO, size_t E1, size_t E
     return;
 }
 
-template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::complex<float> >& kImRO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm);
-template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::complex<double> >& kImRO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm);
+template void spirit3d_image_domain_kernel(const hoNDArray< std::complex<float> >& kImRO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm);
+template void spirit3d_image_domain_kernel(const hoNDArray< std::complex<double> >& kImRO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm);
 
 // ------------------------------------------------------------------------
 
@@ -866,8 +866,8 @@ void spirit_image_domain_adjoint_kernel(const hoNDArray<T>& kIm, hoNDArray<T>& a
     return;
 }
 
-template EXPORTMRICORE void spirit_image_domain_adjoint_kernel(const hoNDArray< std::complex<float> >& kIm, hoNDArray< std::complex<float> >& adjkIm);
-template EXPORTMRICORE void spirit_image_domain_adjoint_kernel(const hoNDArray< std::complex<double> >& kIm, hoNDArray< std::complex<double> >& adjkIm);
+template void spirit_image_domain_adjoint_kernel(const hoNDArray< std::complex<float> >& kIm, hoNDArray< std::complex<float> >& adjkIm);
+template void spirit_image_domain_adjoint_kernel(const hoNDArray< std::complex<double> >& kIm, hoNDArray< std::complex<double> >& adjkIm);
 
 // ------------------------------------------------------------------------
 
@@ -929,8 +929,8 @@ void spirit_adjoint_forward_kernel(const hoNDArray<T>& kImS2D, const hoNDArray<T
     }
 }
 
-template EXPORTMRICORE void spirit_adjoint_forward_kernel(const hoNDArray< std::complex<float> >& kImS2D, const hoNDArray< std::complex<float> >& kImD2S, hoNDArray< std::complex<float> >& kIm);
-template EXPORTMRICORE void spirit_adjoint_forward_kernel(const hoNDArray< std::complex<double> >& kImS2D, const hoNDArray< std::complex<double> >& kImD2S, hoNDArray< std::complex<double> >& kIm);
+template void spirit_adjoint_forward_kernel(const hoNDArray< std::complex<float> >& kImS2D, const hoNDArray< std::complex<float> >& kImD2S, hoNDArray< std::complex<float> >& kIm);
+template void spirit_adjoint_forward_kernel(const hoNDArray< std::complex<double> >& kImS2D, const hoNDArray< std::complex<double> >& kImD2S, hoNDArray< std::complex<double> >& kIm);
 
 // ------------------------------------------------------------------------
 

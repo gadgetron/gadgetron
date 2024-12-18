@@ -18,7 +18,6 @@
 
 namespace {
     using namespace Gadgetron;
-    using namespace Gadgetron::Core;
     namespace Grappa = Gadgetron::Grappa;
 
     // A similar function should be available in the std library at some point.
@@ -30,7 +29,7 @@ namespace {
         return array;
     }
 
-    std::vector<Grappa::Slice> take_available_slices(InputChannel<Grappa::Slice> &input) {
+    std::vector<Grappa::Slice> take_available_slices(Core::InputChannel<Grappa::Slice> &input) {
 
         std::vector<Grappa::Slice> slices{};
 
@@ -50,15 +49,15 @@ namespace {
     class AccelerationMonitor {
     public:
         AccelerationMonitor(size_t max_slices) {
-            previous_line = std::vector<optional<size_t>>(max_slices, none);
-            acceleration = std::vector<optional<size_t>>(max_slices, none);
+            previous_line = std::vector<std::optional<size_t>>(max_slices, std::nullopt);
+            acceleration = std::vector<std::optional<size_t>>(max_slices, std::nullopt);
         }
 
         void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
 
             if(previous_line[slice_of(acquisition)]) {
                 if (line_of(acquisition) < previous_line[slice_of(acquisition)].value()) {
-                    acceleration[slice_of(acquisition)] = none;
+                    acceleration[slice_of(acquisition)] = std::nullopt;
                 }
                 else {
                     acceleration[slice_of(acquisition)] = line_of(acquisition) - previous_line[slice_of(acquisition)].value();
@@ -72,12 +71,12 @@ namespace {
         }
 
         void clear(size_t slice) {
-            previous_line[slice] = acceleration[slice] = none;
+            previous_line[slice] = acceleration[slice] = std::nullopt;
         }
 
     private:
-        std::vector<optional<size_t>> previous_line;
-        std::vector<optional<size_t>> acceleration;
+        std::vector<std::optional<size_t>> previous_line;
+        std::vector<std::optional<size_t>> acceleration;
     };
 
     class DirectionMonitor {
@@ -89,21 +88,30 @@ namespace {
 
         void operator()(const Grappa::AnnotatedAcquisition &acquisition) {
 
-            auto header = std::get<ISMRMRD::AcquisitionHeader>(acquisition);
+            auto header = std::get<mrd::Acquisition>(acquisition).head;
 
             auto& [position, read_dir, slice_dir,phase_dir] = orientations.at(slice_of(acquisition));
 
-            if (position == to_array(header.position) &&
-                read_dir == to_array(header.read_dir) &&
-                phase_dir == to_array(header.phase_dir) &&
-                slice_dir == to_array(header.slice_dir)) {
+            std::array<float, 3> header_position;
+            std::copy(std::begin(header.position), std::end(header.position), std::begin(header_position));
+            std::array<float, 3> header_read_dir;
+            std::copy(std::begin(header.read_dir), std::end(header.read_dir), std::begin(header_read_dir));
+            std::array<float, 3> header_phase_dir;
+            std::copy(std::begin(header.phase_dir), std::end(header.phase_dir), std::begin(header_phase_dir));
+            std::array<float, 3> header_slice_dir;
+            std::copy(std::begin(header.slice_dir), std::end(header.slice_dir), std::begin(header_slice_dir));
+
+            if (position == header_position &&
+                read_dir == header_read_dir &&
+                phase_dir == header_phase_dir &&
+                slice_dir == header_slice_dir) {
                 return;
             }
 
-            position = to_array(header.position);
-            read_dir = to_array(header.read_dir);
-            phase_dir = to_array(header.phase_dir);
-            slice_dir = to_array(header.slice_dir);
+            position = header_position;
+            read_dir = header_read_dir;
+            phase_dir = header_phase_dir;
+            slice_dir = header_slice_dir;
 
             clear(slice_of(acquisition));
         }
@@ -157,18 +165,18 @@ namespace Gadgetron::Grappa {
 
     template<class WeightsCore>
     WeightsCalculator<WeightsCore>::WeightsCalculator(
-            const Context &context,
+            const Core::Context &context,
             const std::unordered_map<std::string, std::string> &props
     ) : ChannelGadget<Grappa::Slice>(context,props), context(context) {}
 
     template<class WeightsCore>
-    void WeightsCalculator<WeightsCore>::process(InputChannel<Grappa::Slice> &in, OutputChannel &out) {
+    void WeightsCalculator<WeightsCore>::process(Core::InputChannel<Grappa::Slice> &in, Core::OutputChannel &out) {
 
         std::set<uint16_t> updated_slices{};
         uint16_t n_combined_channels = 0, n_uncombined_channels = 0;
 
-        const auto slice_limits = context.header.encoding[0].encodingLimits.slice;
-        const size_t max_slices = slice_limits ? context.header.encoding[0].encodingLimits.slice->maximum+1 : 1;
+        const auto slice_limits = context.header.encoding[0].encoding_limits.slice;
+        const size_t max_slices = slice_limits ? context.header.encoding[0].encoding_limits.slice->maximum+1 : 1;
 
         AcquisitionBuffer buffer{context};
         AccelerationMonitor acceleration_monitor{max_slices};
