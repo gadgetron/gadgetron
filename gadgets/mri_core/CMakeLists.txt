@@ -140,6 +140,7 @@ set(gadgetron_mricore_generic_recon_gadgets_header_files
         generic_recon_gadgets/GenericReconReferenceKSpaceDelayedBufferGadget.h
         generic_recon_gadgets/GenericReconImageToImageArrayGadget.h
         generic_recon_gadgets/GenericReconStreamDef.h
+        generic_recon_gadgets//GenericReconOpenReconDemoGadget.h
 )
 
 set(gadgetron_mricore_generic_recon_gadgets_src_files
@@ -163,6 +164,7 @@ set(gadgetron_mricore_generic_recon_gadgets_src_files
         generic_recon_gadgets/GenericReconAccumulateImageTriggerGadget.cpp
         generic_recon_gadgets/GenericImageReconArrayToImageGadget.cpp
         generic_recon_gadgets/GenericReconImageToImageArrayGadget.cpp
+        generic_recon_gadgets//GenericReconOpenReconDemoGadget.cpp
 )
 
 set(gadgetron_mricore_generic_recon_gadgets_config_files
@@ -185,6 +187,7 @@ set(gadgetron_mricore_generic_recon_gadgets_config_files
         generic_recon_gadgets/config/Generic_Cartesian_Spirit_RealTimeCine.xml
         generic_recon_gadgets/config/Generic_Cartesian_Spirit_SASHA.xml
         generic_recon_gadgets/config/Generic_Cartesian_Spirit.xml
+        generic_recon_gadgets/config/Generic_Cartesian_OpenRecon_Demo.xml
 )
 
 # if there is python, add gadgets using python
