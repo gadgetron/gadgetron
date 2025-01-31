@@ -10,9 +10,9 @@
 #include "ismrmrd/meta.h"
 
 // DCMTK includes
-#define INCLUDE_CSTDLIB
-#define INCLUDE_CSTDIO
-#define INCLUDE_CSTRING
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #define NOGDI
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/ofstd/ofstdinc.h"
