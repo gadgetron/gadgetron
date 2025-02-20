@@ -241,6 +241,72 @@ namespace Gadgetron {
                     if (perform_timing.value()) { gt_timer_.stop(); }
                 }
 
+                size_t num_gfactors_E1_for_augmentation = this->gfactors_E1_for_augmentation.value().size();
+                size_t num_gfactors_E2_for_augmentation = this->gfactors_E2_for_augmentation.value().size();
+
+                if (send_out_gfactor.value() && recon_obj_[e].gfactor_augmented_.get_number_of_elements() > 0 &&
+                    (!this->gfactors_E1_for_augmentation.value().empty() || !this->gfactors_E2_for_augmentation.value().empty()))
+                {
+                    size_t RO = recon_obj_[e].gfactor_augmented_.get_size(0);
+                    size_t E1 = recon_obj_[e].gfactor_augmented_.get_size(1);
+                    size_t E2 = recon_obj_[e].gfactor_augmented_.get_size(2);
+                    size_t CHA = 1;
+                    size_t ref_N = recon_obj_[e].gfactor_augmented_.get_size(4);
+                    size_t ref_S = recon_obj_[e].gfactor_augmented_.get_size(5);
+                    size_t ref_SLC = recon_obj_[e].gfactor_augmented_.get_size(6);
+                    size_t nE1 = recon_obj_[e].gfactor_augmented_.get_size(7);
+                    size_t nE2 = recon_obj_[e].gfactor_augmented_.get_size(8);
+
+                    IsmrmrdImageArray res;
+                    res.data_.create(RO, E1, E2, 1, ref_N*nE1*nE2, ref_S, ref_SLC);
+                    Gadgetron::clear(res.data_);
+                    res.headers_.create(ref_N*nE1*nE2, ref_S, ref_SLC);
+                    res.meta_.resize(ref_N*nE1*nE2*ref_S*ref_SLC);
+
+                    size_t ne1, ne2, slc, n, s, rn, rs;
+                    for (ne2=0; ne2<nE2; ne2++)
+                    {
+                        for (ne1=0; ne1<nE1; ne1++)
+                        {
+                            for (slc=0; slc<ref_SLC; slc++)
+                            {
+                                for (s=0; s<ref_S; s++)
+                                {
+                                    for (n=0; n<ref_N; n++)
+                                    {
+                                        size_t ind_n = n + ne1*ref_N + ne2*nE1*ref_N;
+
+                                        hoNDArray<float> a_gmaps;
+                                        a_gmaps.create(RO, E1, E2, CHA, &recon_obj_[e].gfactor_augmented_(0, 0, 0, 0, n, s, slc, ne1, ne2));
+
+                                        hoNDArray< std::complex<float> > a_res;
+                                        a_res.create(RO, E1, E2, CHA, &res.data_(0, 0, 0, 0, ind_n, s, slc));
+
+                                        Gadgetron::real_to_complex(a_gmaps, a_res);
+
+                                        res.headers_(ind_n, s, slc) = recon_obj_[e].recon_res_.headers_(n, s, slc);
+                                        res.headers_(ind_n, s, slc).phase = 0;
+                                        res.headers_(ind_n, s, slc).repetition = (ne1 + ne2*nE1);
+                                        res.headers_(ind_n, s, slc).image_index = 1 + (ne1 + ne2*nE1 + slc*nE1*nE2);
+                                        res.meta_[ind_n + s*ref_N*nE1*nE2 + slc*ref_S*ref_N*nE1*nE2] = recon_obj_[e].recon_res_.meta_[n+s*ref_N+slc*ref_N*ref_S];
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!debug_folder_full_path_.empty()) {
+                        gt_exporter_.export_array_complex(res.data_,
+                                                        debug_folder_full_path_ + "gfactor_augmented_" + os.str());
+                    }
+
+                    if (perform_timing.value()) {
+                        gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array, gfactor_augmented");
+                    }
+                    this->send_out_image_array(res, e, image_series.value() + 1 + 10 * ((int) e + 12), GADGETRON_IMAGE_GFACTOR);
+                    if (perform_timing.value()) { gt_timer_.stop(); }
+                }
+
                 // ---------------------------------------------------------------
                 if (send_out_snr_map.value()) {
                     hoNDArray<std::complex<float> > snr_map;
@@ -444,6 +510,8 @@ namespace Gadgetron {
         size_t kRO = grappa_kSize_RO.value();
         size_t kNE1 = grappa_kSize_E1.value();
 
+        GDEBUG_STREAM("compute_kernel_2d, grappa_reg_lamda = " << grappa_reg_lamda.value());
+
         Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, acceFactorE1, grappa_reg_lamda.value(), kRO, kNE1, ker);
         Gadgetron::grappa2d_image_domain_kernel(ker, RO, E1, kIm);
         Gadgetron::grappa2d_unmixing_coeff(kIm, coilMap, acceFactorE1, unmixC, gFactor);
@@ -613,6 +681,20 @@ namespace Gadgetron {
                             GDEBUG_STREAM("Compute gfactor augmentation, 2d, for R = " << E1s[e1]);
                             this->compute_kernel_2d(acsSrc, acsDst, ker, kIm, coilMap, E1s[e1], unmixC, gFactor);
                             memcpy(&recon_obj.gfactor_augmented_(0, 0, 0, 0, n, s, slc, e1, 0), gFactor.begin(), gFactor.get_number_of_bytes());
+
+                            if (!debug_folder_full_path_.empty())
+                            {
+                                std::stringstream os;
+                                os << suffix << "_R" << E1s[e1];
+                                std::string suffix_R = os.str();
+                                gt_exporter_.export_array_complex(acsSrc, debug_folder_full_path_ + "GFactor_aug_acsSrc_" + suffix_R);
+                                gt_exporter_.export_array_complex(acsDst, debug_folder_full_path_ + "GFactor_aug_acsDst_" + suffix_R);
+                                gt_exporter_.export_array_complex(ker, debug_folder_full_path_ + "GFactor_aug_ker_" + suffix_R);
+                                gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "GFactor_aug_kIm_" + suffix_R);
+                                gt_exporter_.export_array_complex(coilMap, debug_folder_full_path_ + "GFactor_aug_coilMap_" + suffix_R);
+                                gt_exporter_.export_array_complex(unmixC, debug_folder_full_path_ + "GFactor_aug_unmixC_" + suffix_R);
+                                gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "GFactor_aug_gFactor_" + suffix_R);
+                            }
                         }
                     }
                 }
