@@ -263,7 +263,7 @@ namespace Gadgetron {
                     res.headers_.create(ref_N*nE1*nE2, ref_S, ref_SLC);
                     res.meta_.resize(ref_N*nE1*nE2*ref_S*ref_SLC);
 
-                    size_t ne1, ne2, slc, n, s, rn, rs;
+                    size_t ne1, ne2, slc, n, s, rn, rs, im_ind(0);
                     for (ne2=0; ne2<nE2; ne2++)
                     {
                         for (ne1=0; ne1<nE1; ne1++)
@@ -285,10 +285,12 @@ namespace Gadgetron {
                                         Gadgetron::real_to_complex(a_gmaps, a_res);
 
                                         res.headers_(ind_n, s, slc) = recon_obj_[e].recon_res_.headers_(n, s, slc);
-                                        res.headers_(ind_n, s, slc).phase = 0;
-                                        res.headers_(ind_n, s, slc).repetition = (ne1 + ne2*nE1);
-                                        res.headers_(ind_n, s, slc).image_index = 1 + (ne1 + ne2*nE1 + slc*nE1*nE2);
+                                        res.headers_(ind_n, s, slc).phase = s;
+                                        res.headers_(ind_n, s, slc).repetition = ind_n;
+                                        res.headers_(ind_n, s, slc).slice = slc;
+                                        res.headers_(ind_n, s, slc).image_index = im_ind;
                                         res.meta_[ind_n + s*ref_N*nE1*nE2 + slc*ref_S*ref_N*nE1*nE2] = recon_obj_[e].recon_res_.meta_[n+s*ref_N+slc*ref_N*ref_S];
+                                        im_ind+=1;
                                     }
                                 }
                             }
