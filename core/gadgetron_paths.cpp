@@ -5,6 +5,7 @@
 #if defined _WIN32 || _WIN64
 #include <libloaderapi.h>
 #else
+#include <memory>
 extern "C" {
 #include <unistd.h>
 #include <sys/types.h>
