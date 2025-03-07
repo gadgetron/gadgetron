@@ -112,8 +112,6 @@ void spirit2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
         // find the fully sampled region
         size_t RO = dataMask.get_size(0);
         size_t E1 = dataMask.get_size(1);
-        size_t srcCHA = dataSrc.get_size(2);
-        size_t dstCHA = dataDst.get_size(2);
 
         size_t startRO(0), endRO(0), startE1(0), endE1(0);
 
@@ -674,8 +672,6 @@ void spirit3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
         size_t RO = dataMask.get_size(0);
         size_t E1 = dataMask.get_size(1);
         size_t E2 = dataMask.get_size(2);
-        size_t srcCHA = dataSrc.get_size(3);
-        size_t dstCHA = dataDst.get_size(3);
 
         size_t startRO(0), endRO(0), startE1(0), endE1(0), startE2(0), endE2(0);
 
@@ -746,7 +742,6 @@ void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO,
 {
     try
     {
-        size_t kRO = convKer.get_size(0);
         size_t kE1 = convKer.get_size(1);
         size_t kE2 = convKer.get_size(2);
 

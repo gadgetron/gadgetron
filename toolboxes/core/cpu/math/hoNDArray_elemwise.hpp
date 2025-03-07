@@ -31,7 +31,6 @@ namespace {
             if (sizeX == sizeY) {
                 // No Broadcasting
                 long long loopsize = sizeX;
-                long long n;
 
                 for ( long long n = 0; n < loopsize; n++) {
                     c[n] = op(a[n], b[n]);
