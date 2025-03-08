@@ -19,7 +19,7 @@ using namespace boost::filesystem;
 using namespace boost::program_options;
 using namespace Gadgetron::Server;
 
-using gadget_parameter = std::pair<std::string, std::string>;
+struct gadget_parameter : std::pair<std::string, std::string> {} ;
 
 std::istream& operator>>(std::istream& in, gadget_parameter& param) {
     std::string token;
