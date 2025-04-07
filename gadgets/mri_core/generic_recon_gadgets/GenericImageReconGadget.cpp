@@ -101,6 +101,20 @@ namespace Gadgetron {
     {
         try
         {
+            // Store modified (NormOriented) directions in the MetaAttributes ImageRowDir/ImageColumnDir/ImageSliceDir and
+            // the acquired directions in the ImageHeader read_dir/phase_dir/slice_dir
+            attrib.set(   "ImageRowDir",    (double)header.read_dir[0]);
+            attrib.append("ImageRowDir",    (double)header.read_dir[1]);
+            attrib.append("ImageRowDir",    (double)header.read_dir[2]);
+
+            attrib.set(   "ImageColumnDir", (double)header.phase_dir[0]);
+            attrib.append("ImageColumnDir", (double)header.phase_dir[1]);
+            attrib.append("ImageColumnDir", (double)header.phase_dir[2]);
+
+            attrib.set(   "ImageSliceDir",  (double)header.slice_dir[0]);
+            attrib.append("ImageSliceDir",  (double)header.slice_dir[1]);
+            attrib.append("ImageSliceDir",  (double)header.slice_dir[2]);
+
             if (!dataRole.empty() && (dataRole[0] != GADGETRON_IMAGE_REGULAR))
             {
                 std::string str;
