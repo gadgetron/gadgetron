@@ -105,6 +105,12 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
                 std::string new_id(id);
                 new_id.replace(0, std::string(GADGETRON_2D_ROI).length(), dict_gt_2_mrd_[GADGETRON_2D_ROI]);
 
+                auto it = v.begin() + 4; // line style
+                v.insert(it, 0);
+
+                auto it2 = v.begin() + 5; // visibility
+                v.insert(it2, 1);
+
                 Gadgetron::set_ismrmrd_meta_values(*meta, new_id, v);
             }
         }
