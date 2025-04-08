@@ -140,6 +140,7 @@ set(gadgetron_mricore_generic_recon_gadgets_header_files
         generic_recon_gadgets/GenericReconReferenceKSpaceDelayedBufferGadget.h
         generic_recon_gadgets/GenericReconImageToImageArrayGadget.h
         generic_recon_gadgets/GenericReconStreamDef.h
+        generic_recon_gadgets/GenericMRDCommentGadget.h
 )
 
 set(gadgetron_mricore_generic_recon_gadgets_src_files
@@ -163,6 +164,7 @@ set(gadgetron_mricore_generic_recon_gadgets_src_files
         generic_recon_gadgets/GenericReconAccumulateImageTriggerGadget.cpp
         generic_recon_gadgets/GenericImageReconArrayToImageGadget.cpp
         generic_recon_gadgets/GenericReconImageToImageArrayGadget.cpp
+        generic_recon_gadgets/GenericMRDCommentGadget.cpp
 )
 
 set(gadgetron_mricore_generic_recon_gadgets_config_files
