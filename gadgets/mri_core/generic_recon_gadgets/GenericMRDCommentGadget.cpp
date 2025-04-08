@@ -44,12 +44,8 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
     simple_double_fields.push_back(GADGETRON_IMAGE_INVERSIONTIME);
     simple_double_fields.push_back(GADGETRON_IMAGE_SATURATIONTIME);
 
-    for (auto image : in)
+    for (auto [header,data,meta] : in)
     {
-        auto& header = std::get<ISMRMRD::ImageHeader>(image);
-        auto& input_array = std::get<hoNDArray<T>>(image);
-        auto& meta = std::get<std::optional<ISMRMRD::MetaContainer>>(image);
-
         if (meta)
         {
             for (auto id : simple_str_fields)
@@ -115,7 +111,7 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
             }
         }
 
-        out.push(Core::Image<std::complex<float>>{std::move(header), std::move(input_array), std::move(meta)});
+        out.push(std::move(header), std::move(data), std::move(meta));
     }
 }
 
