@@ -59,6 +59,7 @@ set(gadgetron_mricore_header_files
         FlagTriggerGadget.h
         ImageIndexGadget.h
         IsmrmrdDumpGadget.h
+        ReadoutScalingGadget.h
         )
 
 set(gadgetron_mricore_src_files
@@ -106,6 +107,7 @@ set(gadgetron_mricore_src_files
         FlagTriggerGadget.cpp
         ImageIndexGadget.cpp
         IsmrmrdDumpGadget.cpp
+        ReadoutScalingGadget.cpp
         )
 
 set(gadgetron_mricore_config_files

@@ -18,6 +18,7 @@ namespace Gadgetron
             size_t centre_column = header.center_sample;
             if (!is_noise && noise_scaling_factor>0)
             {
+                GDEBUG_STREAM("Applying the scaling " << noise_scaling_factor << " to readout " << header.scan_counter);
                 Gadgetron::scal((float)this->noise_scaling_factor, acq);
             }
 
