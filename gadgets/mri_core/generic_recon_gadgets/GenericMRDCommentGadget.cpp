@@ -11,7 +11,7 @@ GenericMRDCommentGadget<T>::GenericMRDCommentGadget(const Core::Context& context
 {
     // initialize the dict
     dict_gt_2_mrd_[GADGETRON_DATA_ROLE] = "DataRole";
-    dict_gt_2_mrd_[GADGETRON_SEQUENCEDESCRIPTION] = "SeriesDescription";
+    dict_gt_2_mrd_[GADGETRON_SEQUENCEDESCRIPTION] = "SeriesDescriptionAdditional";
     dict_gt_2_mrd_[GADGETRON_IMAGECOMMENT] = "ImageComments";
     dict_gt_2_mrd_[GADGETRON_IMAGE_SCALE_OFFSET] = "RescaleIntercept";
     dict_gt_2_mrd_[GADGETRON_IMAGE_SCALE_RATIO] = "RescaleSlope";
@@ -22,16 +22,18 @@ GenericMRDCommentGadget<T>::GenericMRDCommentGadget(const Core::Context& context
     dict_gt_2_mrd_[GADGETRON_IMAGE_INVERSIONTIME] = "InversionTime";
     dict_gt_2_mrd_[GADGETRON_IMAGE_SATURATIONTIME] = "SaturationTime";
     dict_gt_2_mrd_[GADGETRON_2D_ROI] = "ROI";
+    dict_gt_2_mrd_[GADGETRON_IMAGEPROCESSINGHISTORY] = "ImageType";
 }
 
 template <typename T > 
 void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in, Core::OutputChannel& out)
 {
     std::vector<std::string> simple_str_fields;
-    simple_str_fields.push_back(GADGETRON_DATA_ROLE);
+    // simple_str_fields.push_back(GADGETRON_DATA_ROLE); // handle this seperately
     simple_str_fields.push_back(GADGETRON_SEQUENCEDESCRIPTION);
     simple_str_fields.push_back(GADGETRON_IMAGECOMMENT);
     simple_str_fields.push_back(GADGETRON_IMAGE_COLORMAP);
+    simple_str_fields.push_back(GADGETRON_IMAGEPROCESSINGHISTORY);
 
     std::vector<std::string> simple_long_fields;
     simple_long_fields.push_back(GADGETRON_IMAGE_WINDOWCENTER);
@@ -108,6 +110,37 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
                 v.insert(it2, 1);
 
                 Gadgetron::set_ismrmrd_meta_values(*meta, new_id, v);
+            }
+
+            // handle data role
+            std::vector<std::string> v;
+            Gadgetron::get_ismrmrd_meta_values(*meta, GADGETRON_DATA_ROLE, v);
+
+            bool set_data_role = true;
+            for (auto id : v)
+            {
+                if (id.compare(GADGETRON_IMAGE_REGULAR)==0)
+                {
+                    set_data_role = false;
+                    break;
+                }
+
+                if (id.compare(GADGETRON_IMAGE_RETRO)==0)
+                {
+                    set_data_role = false;
+                    break;
+                }
+
+                if (id.compare(GADGETRON_IMAGE_MOCORECON)==0)
+                {
+                    set_data_role = false;
+                    break;
+                }
+            }
+
+            if (set_data_role)
+            {
+                Gadgetron::set_ismrmrd_meta_values(*meta, dict_gt_2_mrd_[GADGETRON_DATA_ROLE], v);
             }
         }
 
