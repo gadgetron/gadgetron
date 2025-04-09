@@ -11,13 +11,12 @@ name: gadgetron
 channels:
   - ismrmrd
   - gadgetron
-  - nvidia/label/cuda-11.6.1
+  - nvidia/label/cuda-12.3.0
   - conda-forge
   - bioconda
   - defaults
-  - intel
 dependencies:
-  - gadgetron>=4.4.3
+  - gadgetron>=4.7.2
   - siemens_to_ismrmrd>=1.2.6
 ```
 
