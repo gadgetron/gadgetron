@@ -38,8 +38,8 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
     std::vector<std::string> simple_long_fields;
     simple_long_fields.push_back(GADGETRON_IMAGE_WINDOWCENTER);
     simple_long_fields.push_back(GADGETRON_IMAGE_WINDOWWIDTH);
-    simple_long_fields.push_back(GADGETRON_IMAGE_SCALE_OFFSET);
-    simple_long_fields.push_back(GADGETRON_IMAGE_SCALE_RATIO);
+    //simple_long_fields.push_back(GADGETRON_IMAGE_SCALE_OFFSET);
+    //simple_long_fields.push_back(GADGETRON_IMAGE_SCALE_RATIO);
 
     std::vector<std::string> simple_double_fields;
     simple_double_fields.push_back(GADGETRON_IMAGE_ECHOTIME);
