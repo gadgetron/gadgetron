@@ -21,7 +21,7 @@ RemoveROOversamplingGadget::RemoveROOversamplingGadget(const Core::Context& cont
     reconNx_ = r_space.matrixSize.x;
     reconFOV_ = r_space.fieldOfView_mm.x;
 
-#ifdef USE_OMP  // TODO: Should this be removed? Its from the old version
+#ifdef USE_OMP // TODO: Should this be removed? Its from the old version
     omp_set_num_threads(1);
     GDEBUG_STREAM("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
 #endif // USE_OMP
@@ -37,65 +37,67 @@ RemoveROOversamplingGadget::RemoveROOversamplingGadget(const Core::Context& cont
 }
 
 void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
-  for (auto [header, acq, traj] : in) {
-    if(dowork_){
-      hoNDArray<std::complex<float>>* temp = new hoNDArray<std::complex<float>>();
-      if (!temp)
-      {
-        GERROR("Error creating new temp  array");
-        return;
-      }
-      std::vector<size_t> data_out_dims = acq.get_dimensions();
-      if (!ifft_buf_.dimensions_equal(data_out_dims) )
-      {
-          ifft_buf_.create(data_out_dims);
-          ifft_res_.create(data_out_dims);
-      }
-      float ratioFOV = encodeFOV_/reconFOV_;
-      data_out_dims[0] = (size_t)(data_out_dims[0]/ratioFOV);
-      if ( !fft_buf_.dimensions_equal(data_out_dims) )
-      {
-          fft_buf_.create(data_out_dims);
-          fft_res_.create(data_out_dims);
-      }
-      try{ temp->create(data_out_dims);}
-      catch (std::runtime_error &err)
-      {
-          GEXCEPTION(err,"Unable to create new data array for downsampled data\n");
-          return;
-      }
-      size_t sRO = acq.get_size(0);
-      size_t start = (size_t)((acq.get_size(0)-data_out_dims[0]) / 2);
+    for (auto [header, acq, traj] : in) {
+        size_t RO = acq.get_size(0);
+        size_t num_samples = header.number_of_samples;
 
-      size_t dRO = temp->get_size(0);
-      size_t numOfBytes = data_out_dims[0]*sizeof(std::complex<float>);
+        // GDEBUG_STREAM("RemoveROOversamplingGadget, scan " << header.scan_counter << " - RO " << RO << " - num_samples "
+        //                                                   << num_samples << " - encodeNx_ " << encodeNx_);
 
-      int c;   
-      int CHA = (int)(data_out_dims[1]);
+        if (dowork_ || (RO / encodeNx_ > 1.5)) {
+            hoNDArray<std::complex<float>>* temp = new hoNDArray<std::complex<float>>();
+            if (!temp) {
+                GERROR("Error creating new temp  array");
+                return;
+            }
+            std::vector<size_t> data_out_dims = acq.get_dimensions();
+            if (!ifft_buf_.dimensions_equal(data_out_dims)) {
+                ifft_buf_.create(data_out_dims);
+                ifft_res_.create(data_out_dims);
+            }
+            float ratioFOV = std::max(encodeFOV_ / reconFOV_, (float)RO / (float)encodeNx_);
+            data_out_dims[0] = (size_t)(data_out_dims[0] / ratioFOV);
+            if (!fft_buf_.dimensions_equal(data_out_dims)) {
+                fft_buf_.create(data_out_dims);
+                fft_res_.create(data_out_dims);
+            }
+            try {
+                temp->create(data_out_dims);
+            } catch (std::runtime_error& err) {
+                GEXCEPTION(err, "Unable to create new data array for downsampled data\n");
+                return;
+            }
+            size_t sRO = acq.get_size(0);
+            size_t start = (size_t)((acq.get_size(0) - data_out_dims[0]) / 2);
 
-      std::complex<float>* data_in, *data_out;
-      hoNDFFT<float>::instance()->ifft1c(acq, ifft_res_, ifft_buf_);
-      data_in  = ifft_res_.get_data_ptr();
-      data_out = temp->get_data_ptr();
+            size_t dRO = temp->get_size(0);
+            size_t numOfBytes = data_out_dims[0] * sizeof(std::complex<float>);
 
-      for (c=0; c<CHA; c++)
-      {
-          memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
-      }
+            int c;
+            int CHA = (int)(data_out_dims[1]);
 
-      hoNDFFT<float>::instance()->fft1c(*temp, fft_res_, fft_buf_);
+            std::complex<float>*data_in, *data_out;
+            hoNDFFT<float>::instance()->ifft1c(acq, ifft_res_, ifft_buf_);
+            data_in = ifft_res_.get_data_ptr();
+            data_out = temp->get_data_ptr();
 
-      memcpy(temp->begin(), fft_res_.begin(), fft_res_.get_number_of_bytes());
+            for (c = 0; c < CHA; c++) {
+                memcpy(data_out + c * dRO, data_in + c * sRO + start, numOfBytes);
+            }
 
-      header.number_of_samples = data_out_dims[0];
-      header.center_sample = (uint16_t)(header.center_sample/ratioFOV);
-      header.discard_pre = (uint16_t)(header.discard_pre / ratioFOV);
-      header.discard_post = (uint16_t)(header.discard_post / ratioFOV);
+            hoNDFFT<float>::instance()->fft1c(*temp, fft_res_, fft_buf_);
 
-      acq = *temp;
+            memcpy(temp->begin(), fft_res_.begin(), fft_res_.get_number_of_bytes());
+
+            header.number_of_samples = data_out_dims[0];
+            header.center_sample = (uint16_t)(header.center_sample / ratioFOV);
+            header.discard_pre = (uint16_t)(header.discard_pre / ratioFOV);
+            header.discard_post = (uint16_t)(header.discard_post / ratioFOV);
+
+            acq = *temp;
+        }
+        out.push(Core::Acquisition{header, std::move(acq), std::move(traj)});
     }
-    out.push(Core::Acquisition{header, std::move(acq), std::move(traj)});
-  }
 }
 GADGETRON_GADGET_EXPORT(RemoveROOversamplingGadget)
 } // namespace Gadgetron
