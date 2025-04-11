@@ -15,10 +15,13 @@
 #include "MessageID.h"
 #include "Types.h"
 
+#include <nlohmann/json.hpp>
+
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Core::IO;
 using namespace Gadgetron::Server::Connection;
 using namespace Gadgetron::Server::Connection::Handlers;
+using json = nlohmann::json;
 
 #ifdef USE_GTBABYLON
 #include <GTBabylon.h>
@@ -78,6 +81,35 @@ namespace {
             boost::filesystem::path filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / recon_name;
 
             GDEBUG_STREAM("Reading config file: " << filename);
+
+            std::ifstream file(filename.string(), std::ios::in | std::ios::binary);
+            if (!file.is_open())
+            {
+                GDEBUG_STREAM("--> Failed to open file at path: " + filename.string());
+                GDEBUG_STREAM("--> Let's check the text input ...  ");
+
+                MessageID id = MessageID::ERROR;
+                stream.read(reinterpret_cast<char*>(&id), sizeof(MessageID));
+
+                if (id != MessageID::TEXT)
+                    throw std::runtime_error("The 2nd attempt to config the chain failed ... ");
+
+                std::string str = IO::read_string_from_stream<uint32_t>(stream);
+                GDEBUG_STREAM("2nd attempt, get the config string as : " << str);
+
+                json j = json::parse(str);
+                std::string Run_This_If_Set = j["parameters"]["Run_This_If_Set"];
+                std::string Select_One_To_Run = j["parameters"]["Select_One_To_Run"];
+
+                std::string config_xml_name_from_para = Run_This_If_Set;
+                if (Run_This_If_Set.empty())
+                    config_xml_name_from_para = Select_One_To_Run;
+
+                config_xml_name_from_para += ".xml";
+                filename = paths.gadgetron_home / GADGETRON_CONFIG_PATH / config_xml_name_from_para;
+
+                GDEBUG_STREAM("2nd attempt, Run_This_If_Set is " << Run_This_If_Set << " - Select_One_To_Run is " << Select_One_To_Run << " -- config file name is " << filename.string());
+            }
 
             auto config_stream = open_and_verify_config(filename.string());
             handle_callback(*config_stream);
