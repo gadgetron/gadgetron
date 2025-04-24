@@ -11,7 +11,7 @@ GenericMRDCommentGadget<T>::GenericMRDCommentGadget(const Core::Context& context
 {
     // initialize the dict
     dict_gt_2_mrd_[GADGETRON_DATA_ROLE] = "DataRole";
-    dict_gt_2_mrd_[GADGETRON_SEQUENCEDESCRIPTION] = "SeriesDescriptionAdditional";
+    dict_gt_2_mrd_[GADGETRON_SEQUENCEDESCRIPTION] = "SequenceDescriptionAdditional";
     dict_gt_2_mrd_[GADGETRON_IMAGECOMMENT] = "ImageComments";
     dict_gt_2_mrd_[GADGETRON_IMAGE_SCALE_OFFSET] = "RescaleIntercept";
     dict_gt_2_mrd_[GADGETRON_IMAGE_SCALE_RATIO] = "RescaleSlope";
@@ -22,7 +22,8 @@ GenericMRDCommentGadget<T>::GenericMRDCommentGadget(const Core::Context& context
     dict_gt_2_mrd_[GADGETRON_IMAGE_INVERSIONTIME] = "InversionTime";
     dict_gt_2_mrd_[GADGETRON_IMAGE_SATURATIONTIME] = "SaturationTime";
     dict_gt_2_mrd_[GADGETRON_2D_ROI] = "ROI";
-    dict_gt_2_mrd_[GADGETRON_IMAGEPROCESSINGHISTORY] = "ImageType";
+    dict_gt_2_mrd_[GADGETRON_IMAGEPROCESSINGHISTORY] = "ImageTypeValue4";
+    dict_gt_2_mrd_[GADGETRON_DIRECT_IMAGE_SEND] = "DirectSend";
 }
 
 template <typename T > 
@@ -38,6 +39,7 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
     std::vector<std::string> simple_long_fields;
     simple_long_fields.push_back(GADGETRON_IMAGE_WINDOWCENTER);
     simple_long_fields.push_back(GADGETRON_IMAGE_WINDOWWIDTH);
+    simple_long_fields.push_back(GADGETRON_DIRECT_IMAGE_SEND);
     //simple_long_fields.push_back(GADGETRON_IMAGE_SCALE_OFFSET);
     //simple_long_fields.push_back(GADGETRON_IMAGE_SCALE_RATIO);
 
