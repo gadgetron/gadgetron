@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <nlohmann/json.hpp>
 
 #include "Channel.h"
 #include "connection/Core.h"
@@ -25,8 +26,12 @@
 #include "writers/IsmrmrdImageArrayWriter.h"
 #include "writers/TextWriter.h"
 
+#include "ismrmrd/serialization.h"
+#include "ismrmrd/serialization_iostream.h"
+
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server;
+using json = nlohmann::json;
 
 namespace
 {
@@ -67,6 +72,17 @@ public:
             args_["home"].as<boost::filesystem::path>().string(),
             args_["dir"].as<boost::filesystem::path>().string()};
 
+        ISMRMRD::IStreamView rs(input_stream);
+        ISMRMRD::ProtocolDeserializer deserializer(rs);
+
+        if (deserializer.peek() == ISMRMRD::ISMRMRD_MESSAGE_CONFIG_FILE) {
+            ISMRMRD::ConfigFile cfg;
+            deserializer.deserialize(cfg);
+            std::string config_name(cfg.config);
+            std::cerr << "Reconstruction received config file: " << config_name << std::endl;
+            std::cerr << "Configuration file is ignored for the stream mode" << std::endl;
+        }
+
         ISMRMRD::IsmrmrdHeader hdr = consume_ismrmrd_header(input_stream, output_stream);
         auto storage_spaces = setup_storage_spaces(storage_address_, hdr);
 
@@ -74,13 +90,49 @@ public:
         auto loader = Connection::Loader(context);
         auto config_path = find_config_path(args_["home"].as<boost::filesystem::path>().string(), config_xml_name);
 
-        std::ifstream file(config_path, std::ios::in | std::ios::binary);
-        if (!file.is_open()) {
-            throw std::runtime_error("Failed to open file at path: " + config_path.string());
-        }
+        Connection::Config config;
 
-        auto config = Connection::parse_config(file);
-        file.close();
+        std::ifstream file(config_path, std::ios::in | std::ios::binary);
+        if (!file.is_open())
+        {
+            GDEBUG_STREAM("--> Failed to open file at path: " + config_path.string());
+            GDEBUG_STREAM("--> Let's check the text input ...  ");
+
+            MessageID id = MessageID::ERROR;
+            input_stream.read(reinterpret_cast<char*>(&id), sizeof(MessageID));
+
+            if (id != MessageID::TEXT)
+                throw std::runtime_error("The 2nd attempt to config the chain failed ... ");
+
+            std::string str = IO::read_string_from_stream<uint32_t>(input_stream);
+            GDEBUG_STREAM("2nd attempt, get the config string as : " << str);
+
+            json j = json::parse(str);
+            json Doc{j};
+            j.at("parameters").get<size_t>();
+
+            std::string Run_This_If_Set{Doc["parameters"]["Run_This_If_Set"]};
+            std::string Select_One_To_Run{Doc["parameters"]["Select_One_To_Run"]};
+
+            std::string config_xml_name_from_para = Run_This_If_Set;
+            if (Run_This_If_Set.empty())
+                config_xml_name_from_para = Select_One_To_Run;
+
+            GDEBUG_STREAM("2nd attempt, Run_This_If_Set is " << Run_This_If_Set << " - Select_One_To_Run is " << Select_One_To_Run << " -- config_xml_name_from_para is " << config_xml_name_from_para);
+
+            auto config_path_from_para = find_config_path(args_["home"].as<boost::filesystem::path>().string(), config_xml_name_from_para + ".xml");
+            std::ifstream file_from_para(config_path_from_para, std::ios::in | std::ios::binary);
+            if (!file_from_para.is_open())
+                throw std::runtime_error(std::string("The 2nd attempt to config the chain failed for ") + config_xml_name_from_para);
+
+            config = Connection::parse_config(file_from_para);
+            file_from_para.close();
+        }
+        else
+        {
+            config = Connection::parse_config(file);
+            file.close();
+        }
 
         auto stream = loader.load(config.stream);
         auto input_channel = make_channel<MessageChannel>();
