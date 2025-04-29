@@ -235,11 +235,11 @@ def validate_output(*, output_file, reference_file, output_group, reference_grou
     if value_threshold < norm_diff:
         return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
 
-    if value_threshold < abs(1 - scale):
+    if scale_threshold < abs(1 - scale):
         return Failure, "Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale),
                                                                                         scale_threshold)
 
-    return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale),
+    return None, "Norm: {:.5g} < {:.5g}, Scale: {:.5g} < {:.5g}".format(norm_diff, value_threshold, abs(1 - scale),
                                                                scale_threshold)
 
 
