@@ -24,6 +24,8 @@ class RemoveROOversamplingGadget : public Core::ChannelGadget<Core::Acquisition>
     ~RemoveROOversamplingGadget() override = default;
     void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
 
+    NODE_PROPERTY(always_perform, bool, "Whether to perfrom, ignore check", false);
+
   protected:
     hoNDArray<std::complex<float>> fft_res_;
     hoNDArray<std::complex<float>> ifft_res_;

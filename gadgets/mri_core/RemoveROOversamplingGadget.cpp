@@ -41,10 +41,9 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
         size_t RO = acq.get_size(0);
         size_t num_samples = header.number_of_samples;
 
-        // GDEBUG_STREAM("RemoveROOversamplingGadget, scan " << header.scan_counter << " - RO " << RO << " - num_samples "
-        //                                                   << num_samples << " - encodeNx_ " << encodeNx_);
+        //GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << this->always_perform << ", scan " << header.scan_counter << " - RO " << RO << " - num_samples " << num_samples << " - encodeNx_ " << encodeNx_);
 
-        if (dowork_ || (RO / encodeNx_ > 1.5)) {
+        if (dowork_ || (RO / encodeNx_ > 1.5) || this->always_perform) {
             hoNDArray<std::complex<float>>* temp = new hoNDArray<std::complex<float>>();
             if (!temp) {
                 GERROR("Error creating new temp  array");
@@ -56,6 +55,7 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
                 ifft_res_.create(data_out_dims);
             }
             float ratioFOV = std::max(encodeFOV_ / reconFOV_, (float)RO / (float)encodeNx_);
+            if (RO < encodeNx_) ratioFOV = 2.0;
             data_out_dims[0] = (size_t)(data_out_dims[0] / ratioFOV);
             if (!fft_buf_.dimensions_equal(data_out_dims)) {
                 fft_buf_.create(data_out_dims);
@@ -95,6 +95,8 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
             header.discard_post = (uint16_t)(header.discard_post / ratioFOV);
 
             acq = *temp;
+
+            //GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << this->always_perform << ", scan " << header.scan_counter << " - ratioFOV " << ratioFOV << " - header.number_of_samples " << header.number_of_samples);
         }
         out.push(Core::Acquisition{header, std::move(acq), std::move(traj)});
     }
