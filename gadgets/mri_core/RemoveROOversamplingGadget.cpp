@@ -35,9 +35,20 @@ RemoveROOversamplingGadget::RemoveROOversamplingGadget(const Core::Context& cont
         dowork_ = true;
     }
 
-    if (always_perform) dowork_ = true;
+    ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+    acceFactorE1_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
+    acceFactorE2_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
+    if ( p_imaging.calibrationMode.is_present() )
+    {
+        calib_ = *p_imaging.calibrationMode;
+    }
+    else
+    {
+        GDEBUG("Parallel Imaging calibrationMode not found in header");
+        calib_ = "none";
+    }
 
-    GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << always_perform << ", dowork_ " << dowork_);
+    GDEBUG_STREAM("RemoveROOversamplingGadget, dowork_ " << dowork_ << ", calib mode " << calib_);
 }
 
 void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
@@ -46,6 +57,8 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
         size_t num_samples = header.number_of_samples;
 
         //GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << this->always_perform << ", scan " << header.scan_counter << " - RO " << RO << " - num_samples " << num_samples << " - encodeNx_ " << encodeNx_);
+
+        bool is_external = (acceFactorE1_*acceFactorE2_ > 1) && (calib_.compare("external") == 0);
 
         if (dowork_)
         {
@@ -60,7 +73,7 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
                 ifft_res_.create(data_out_dims);
             }
             float ratioFOV = std::max(encodeFOV_ / reconFOV_, (float)RO / (float)encodeNx_);
-            if (RO < encodeNx_) ratioFOV = 2.0;
+            if (is_external && (RO < encodeNx_)) ratioFOV = 2.0;
             data_out_dims[0] = (size_t)(data_out_dims[0] / ratioFOV);
             if (!fft_buf_.dimensions_equal(data_out_dims)) {
                 fft_buf_.create(data_out_dims);

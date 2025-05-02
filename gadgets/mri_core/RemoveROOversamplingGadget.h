@@ -38,6 +38,8 @@ class RemoveROOversamplingGadget : public Core::ChannelGadget<Core::Acquisition>
 
     bool dowork_;    // if true the gadget performs the operation, otherwise, it just passes the data on
 
-    NODE_PROPERTY(always_perform, bool, "Whether to perfrom, ignore check", false);
+    size_t acceFactorE1_;
+    size_t acceFactorE2_;
+    std::string calib_;
 };
 } // namespace Gadgetron
