@@ -34,6 +34,10 @@ RemoveROOversamplingGadget::RemoveROOversamplingGadget(const Core::Context& cont
     } else {
         dowork_ = true;
     }
+
+    if (always_perform) dowork_ = true;
+
+    GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << always_perform << ", dowork_ " << dowork_);
 }
 
 void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& in, Core::OutputChannel& out) {
@@ -43,7 +47,8 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
 
         //GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << this->always_perform << ", scan " << header.scan_counter << " - RO " << RO << " - num_samples " << num_samples << " - encodeNx_ " << encodeNx_);
 
-        if (dowork_ || (RO / encodeNx_ > 1.5) || this->always_perform) {
+        if (dowork_)
+        {
             hoNDArray<std::complex<float>>* temp = new hoNDArray<std::complex<float>>();
             if (!temp) {
                 GERROR("Error creating new temp  array");
