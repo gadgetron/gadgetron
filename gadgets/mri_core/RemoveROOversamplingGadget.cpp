@@ -58,7 +58,13 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
 
         //GDEBUG_STREAM("RemoveROOversamplingGadget, always_perform " << this->always_perform << ", scan " << header.scan_counter << " - RO " << RO << " - num_samples " << num_samples << " - encodeNx_ " << encodeNx_);
 
-        bool is_external = (acceFactorE1_*acceFactorE2_ > 1) && (calib_.compare("external") == 0);
+        bool separate = (calib_.compare("separate") == 0);
+        bool embedded = (calib_.compare("embedded") == 0);
+        bool external = (calib_.compare("external") == 0);
+        bool interleaved = (calib_.compare("interleaved") == 0);
+        bool other = (calib_.compare("other") == 0);
+
+        bool is_acc = (acceFactorE1_*acceFactorE2_ > 1) && (separate);
 
         if (dowork_)
         {
@@ -73,7 +79,7 @@ void RemoveROOversamplingGadget::process(Core::InputChannel<Core::Acquisition>& 
                 ifft_res_.create(data_out_dims);
             }
             float ratioFOV = std::max(encodeFOV_ / reconFOV_, (float)RO / (float)encodeNx_);
-            if (is_external && (RO < encodeNx_)) ratioFOV = 2.0;
+            if (is_acc && (RO < encodeNx_)) ratioFOV = 2.0;
             data_out_dims[0] = (size_t)(data_out_dims[0] / ratioFOV);
             if (!fft_buf_.dimensions_equal(data_out_dims)) {
                 fft_buf_.create(data_out_dims);
