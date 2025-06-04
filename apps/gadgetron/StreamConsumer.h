@@ -25,6 +25,9 @@
 #include "writers/IsmrmrdImageArrayWriter.h"
 #include "writers/TextWriter.h"
 
+#include "ismrmrd/serialization.h"
+#include "ismrmrd/serialization_iostream.h"
+
 using namespace Gadgetron::Core;
 using namespace Gadgetron::Server;
 
@@ -66,6 +69,17 @@ public:
         Context::Paths paths{
             args_["home"].as<boost::filesystem::path>().string(),
             args_["dir"].as<boost::filesystem::path>().string()};
+
+        ISMRMRD::IStreamView rs(input_stream);
+        ISMRMRD::ProtocolDeserializer deserializer(rs);
+
+        if (deserializer.peek() == ISMRMRD::ISMRMRD_MESSAGE_CONFIG_FILE) {
+            ISMRMRD::ConfigFile cfg;
+            deserializer.deserialize(cfg);
+            std::string config_name(cfg.config);
+            std::cerr << "Reconstruction received config file: " << config_name << std::endl;
+            std::cerr << "Configuration file is ignored for the stream mode" << std::endl;
+        }
 
         ISMRMRD::IsmrmrdHeader hdr = consume_ismrmrd_header(input_stream, output_stream);
         auto storage_spaces = setup_storage_spaces(storage_address_, hdr);
