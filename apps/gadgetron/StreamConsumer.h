@@ -144,14 +144,14 @@ public:
             {
                 uint32_t hdr_size = 0;
                 input_stream.read(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
-                output_stream.write(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
+                //output_stream.write(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
 
                 if(hdr_size > 0)
                 {
                     std::vector<char> data(hdr_size);
 
                     input_stream.read(data.data(), hdr_size);
-                    output_stream.write(data.data(), hdr_size);
+                    //output_stream.write(data.data(), hdr_size);
                     ISMRMRD::deserialize(std::string(data.data(), data.size()).c_str(), hdr);
                 }
                 else
