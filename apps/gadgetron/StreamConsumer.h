@@ -150,7 +150,7 @@ public:
         ISMRMRD::IsmrmrdHeader hdr;
         MessageID id = MessageID::CLOSE;
         input_stream.read(reinterpret_cast<char*>(&id), sizeof(MessageID));
-        output_stream.write(reinterpret_cast<char*>(&id), sizeof(MessageID));
+        //output_stream.write(reinterpret_cast<char*>(&id), sizeof(MessageID));
 
         switch(id)
         {
