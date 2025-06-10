@@ -59,6 +59,8 @@ int main(int argc, char *argv[]) {
                 "Disable sending out ismrmrd header. By default, the ismrmrd header is sent out to client side.")
             ("from_stream,s",
                 "Perform reconstruction from a local data stream")
+            ("check_ignore_msg_config_file",
+                "Check and ignore the extra message for config file, e.g. under openrecon")
             ("input_path,i",
                 value<std::string>(),
                 "Input file for binary data to perform a local reconstruction with")
@@ -140,6 +142,9 @@ int main(int argc, char *argv[]) {
         }
         else
         {
+            bool check_ignore_msg_config_file = args.count("check_ignore_msg_config_file");
+            GINFO("Gadgetron check and ignore extra msg for config file : %d \n", check_ignore_msg_config_file);
+
             bool send_ismrmrd_header = !args.count("disable_sending_ismrmrd_header");
             GINFO("Gadgetron send out ismrmrd header : %d \n", send_ismrmrd_header);
 
@@ -150,24 +155,24 @@ int main(int argc, char *argv[]) {
             {
                 auto input_stream = std::ifstream(args["input_path"].as<std::string>());
                 auto output_stream = std::ofstream(args["output_path"].as<std::string>());
-                consumer.consume(input_stream, output_stream, cfg, send_ismrmrd_header);
+                consumer.consume(input_stream, output_stream, cfg, send_ismrmrd_header, check_ignore_msg_config_file);
                 output_stream.close();
             }
             else if(args.count("input_path"))
             {
                 auto input_stream = std::ifstream(args["input_path"].as<std::string>());
-                consumer.consume(input_stream, std::cout, cfg, send_ismrmrd_header);
+                consumer.consume(input_stream, std::cout, cfg, send_ismrmrd_header, check_ignore_msg_config_file);
                 std::flush(std::cout);
             }
             else if(args.count("output_path"))
             {
                 auto output_stream = std::ofstream(args["output_path"].as<std::string>());
-                consumer.consume(std::cin, output_stream, cfg, send_ismrmrd_header);
+                consumer.consume(std::cin, output_stream, cfg, send_ismrmrd_header, check_ignore_msg_config_file);
                 output_stream.close();
             }
             else
             {
-                consumer.consume(std::cin, std::cout, cfg, send_ismrmrd_header);
+                consumer.consume(std::cin, std::cout, cfg, send_ismrmrd_header, check_ignore_msg_config_file);
                 std::flush(std::cout);
             }
         }
