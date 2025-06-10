@@ -55,7 +55,9 @@ int main(int argc, char *argv[]) {
             ("port,p",
                 value<unsigned short>()->default_value(9002),
                 "Listen for incoming connections on this port.")
-            ("from_stream, s",
+            ("disable_sending_ismrmrd_header",
+                "Disable sending out ismrmrd header. By default, the ismrmrd header is sent out to client side.")
+            ("from_stream,s",
                 "Perform reconstruction from a local data stream")
             ("input_path,i",
                 value<std::string>(),
@@ -138,6 +140,9 @@ int main(int argc, char *argv[]) {
         }
         else
         {
+            bool send_ismrmrd_header = !args.count("disable_sending_ismrmrd_header");
+            GINFO("Gadgetron send out ismrmrd header : %d \n", send_ismrmrd_header);
+
             auto cfg = args["config_name"].as<std::string>();
             StreamConsumer consumer(args, storage_address);
 
@@ -145,24 +150,24 @@ int main(int argc, char *argv[]) {
             {
                 auto input_stream = std::ifstream(args["input_path"].as<std::string>());
                 auto output_stream = std::ofstream(args["output_path"].as<std::string>());
-                consumer.consume(input_stream, output_stream, cfg);
+                consumer.consume(input_stream, output_stream, cfg, send_ismrmrd_header);
                 output_stream.close();
             }
             else if(args.count("input_path"))
             {
                 auto input_stream = std::ifstream(args["input_path"].as<std::string>());
-                consumer.consume(input_stream, std::cout, cfg);
+                consumer.consume(input_stream, std::cout, cfg, send_ismrmrd_header);
                 std::flush(std::cout);
             }
             else if(args.count("output_path"))
             {
                 auto output_stream = std::ofstream(args["output_path"].as<std::string>());
-                consumer.consume(std::cin, output_stream, cfg);
+                consumer.consume(std::cin, output_stream, cfg, send_ismrmrd_header);
                 output_stream.close();
             }
             else
             {
-                consumer.consume(std::cin, std::cout, cfg);
+                consumer.consume(std::cin, std::cout, cfg, send_ismrmrd_header);
                 std::flush(std::cout);
             }
         }

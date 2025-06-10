@@ -64,24 +64,32 @@ public:
         : args_(args), storage_address_(storage_address) {}
     ~StreamConsumer() {}
 
-    void consume(std::istream& input_stream, std::ostream& output_stream, std::string config_xml_name)
+    void consume(std::istream& input_stream, std::ostream& output_stream, std::string config_xml_name, bool send_ismrmrd_header = true)
     {
         Context::Paths paths{
             args_["home"].as<boost::filesystem::path>().string(),
             args_["dir"].as<boost::filesystem::path>().string()};
 
-        ISMRMRD::IStreamView rs(input_stream);
-        ISMRMRD::ProtocolDeserializer deserializer(rs);
-
-        if (deserializer.peek() == ISMRMRD::ISMRMRD_MESSAGE_CONFIG_FILE) {
+        // to be compatible with OpenRecon
+        uint16_t peeked(0);
+        input_stream.read(reinterpret_cast<char *>(&peeked), sizeof(uint16_t));
+        if (peeked == ISMRMRD::ISMRMRD_MESSAGE_CONFIG_FILE) {
+            ISMRMRD::IStreamView rs(input_stream);
+            ISMRMRD::ProtocolDeserializer deserializer(rs);
             ISMRMRD::ConfigFile cfg;
             deserializer.deserialize(cfg);
             std::string config_name(cfg.config);
             std::cerr << "Reconstruction received config file: " << config_name << std::endl;
             std::cerr << "Configuration file is ignored for the stream mode" << std::endl;
         }
+        else
+        {
+            // reset the stream
+            input_stream.seekg(-std::streampos(sizeof(uint16_t)), std::ios::cur);
+            std::cerr << "Reconstruction does not receive config file; reset the stream pos" << std::endl;
+        }
 
-        ISMRMRD::IsmrmrdHeader hdr = consume_ismrmrd_header(input_stream, output_stream);
+        ISMRMRD::IsmrmrdHeader hdr = consume_ismrmrd_header(input_stream, output_stream, send_ismrmrd_header);
         auto storage_spaces = setup_storage_spaces(storage_address_, hdr);
 
         auto context = StreamContext(hdr, paths, args_, storage_address_, storage_spaces);
@@ -145,12 +153,12 @@ public:
 
   private:
 
-    ISMRMRD::IsmrmrdHeader consume_ismrmrd_header(std::istream& input_stream, std::ostream& output_stream)
+    ISMRMRD::IsmrmrdHeader consume_ismrmrd_header(std::istream& input_stream, std::ostream& output_stream, bool send_ismrmrd_header)
     {
         ISMRMRD::IsmrmrdHeader hdr;
         MessageID id = MessageID::CLOSE;
         input_stream.read(reinterpret_cast<char*>(&id), sizeof(MessageID));
-        //output_stream.write(reinterpret_cast<char*>(&id), sizeof(MessageID));
+        if (send_ismrmrd_header) output_stream.write(reinterpret_cast<char*>(&id), sizeof(MessageID));
 
         switch(id)
         {
@@ -158,14 +166,14 @@ public:
             {
                 uint32_t hdr_size = 0;
                 input_stream.read(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
-                //output_stream.write(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
+                if (send_ismrmrd_header) output_stream.write(reinterpret_cast<char*>(&hdr_size), sizeof(uint32_t));
 
                 if(hdr_size > 0)
                 {
                     std::vector<char> data(hdr_size);
 
                     input_stream.read(data.data(), hdr_size);
-                    //output_stream.write(data.data(), hdr_size);
+                    if (send_ismrmrd_header) output_stream.write(data.data(), hdr_size);
                     ISMRMRD::deserialize(std::string(data.data(), data.size()).c_str(), hdr);
                 }
                 else
