@@ -72,23 +72,17 @@ public:
 
         if (check_ignore_msg_config_file)
         {
-            // to be compatible with OpenRecon
-            uint16_t peeked(0);
-            input_stream.read(reinterpret_cast<char *>(&peeked), sizeof(uint16_t));
-            if (peeked == ISMRMRD::ISMRMRD_MESSAGE_CONFIG_FILE) {
-                ISMRMRD::IStreamView rs(input_stream);
-                ISMRMRD::ProtocolDeserializer deserializer(rs);
+            std::cerr << "StreamConsumer, consume, check and ignore msg of config file ... " << std::endl;
+
+            ISMRMRD::IStreamView rs(input_stream);
+            ISMRMRD::ProtocolDeserializer deserializer(rs);
+
+            if (deserializer.peek() == ISMRMRD::ISMRMRD_MESSAGE_CONFIG_FILE) {
                 ISMRMRD::ConfigFile cfg;
                 deserializer.deserialize(cfg);
                 std::string config_name(cfg.config);
                 std::cerr << "Reconstruction received config file: " << config_name << std::endl;
                 std::cerr << "Configuration file is ignored for the stream mode" << std::endl;
-            }
-            else
-            {
-                // reset the stream
-                input_stream.seekg(-std::streampos(sizeof(uint16_t)), std::ios::cur);
-                std::cerr << "Reconstruction does not receive config file; reset the stream pos" << std::endl;
             }
         }
 
