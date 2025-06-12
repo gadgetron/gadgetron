@@ -144,6 +144,19 @@ void GenericMRDCommentGadget<T>::process(Core::InputChannel<Core::Image<T>>& in,
             {
                 Gadgetron::set_ismrmrd_meta_values(*meta, dict_gt_2_mrd_[GADGETRON_DATA_ROLE], v);
             }
+
+            // also make sure user_int limits
+            // if (header.user_int[0]>0) meta->set("ida_count", (long)(header.user_int[0]+1));
+            // if (header.user_int[1]>0) meta->set("idb_count", (long)(header.user_int[1]+1));
+            // if (header.user_int[2]>0) meta->set("idc_count", (long)(header.user_int[2]+1));
+            // if (header.user_int[3]>0) meta->set("idd_count", (long)(header.user_int[3]+1));
+            // if (header.user_int[4]>0) meta->set("ide_count", (long)(header.user_int[4]+1));
+
+            header.user_int[0] = 0;
+            header.user_int[1] = 0;
+            header.user_int[2] = 0;
+            header.user_int[3] = 0;
+            header.user_int[4] = 0;
         }
 
         out.push(std::move(header), std::move(data), std::move(meta));
