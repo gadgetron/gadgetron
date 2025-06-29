@@ -287,7 +287,9 @@ TEST(NHLBICompression, ArgumentValidation)
     ASSERT_THROW(compressor->compress(v, -1, 32), std::runtime_error);
     ASSERT_THROW(compressor->compress(v, -1, 0), std::runtime_error);
     
-    v = { 1e10 };
+    v.resize(1);
+    v[0] = 1e10f;
+    
     ASSERT_THROW(compressor->compress(v, 1e-5), std::runtime_error);
 }
 
