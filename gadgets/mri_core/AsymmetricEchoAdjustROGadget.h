@@ -22,6 +22,7 @@ namespace Gadgetron{
         ~AsymmetricEchoAdjustROGadget() override = default;
         void process(Core::InputChannel<Core::Acquisition>& input, Core::OutputChannel& output) override;
       protected:
+        NODE_PROPERTY(check_readout_over_sampling, bool , "Check whether 2x readout oversampling is there", false);
         std::vector<unsigned int> maxRO_;
     };
 }

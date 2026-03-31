@@ -648,6 +648,18 @@ namespace Gadgetron {
                     meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[1]);
                     meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[2]);
 
+                    meta.set(   "ImageRowDir",    (double)res.headers_(n, s, slc).read_dir[0]);
+                    meta.append("ImageRowDir",    (double)res.headers_(n, s, slc).read_dir[1]);
+                    meta.append("ImageRowDir",    (double)res.headers_(n, s, slc).read_dir[2]);
+
+                    meta.set(   "ImageColumnDir", (double)res.headers_(n, s, slc).phase_dir[0]);
+                    meta.append("ImageColumnDir", (double)res.headers_(n, s, slc).phase_dir[1]);
+                    meta.append("ImageColumnDir", (double)res.headers_(n, s, slc).phase_dir[2]);
+
+                    meta.set(   "ImageSliceDir",  (double)res.headers_(n, s, slc).slice_dir[0]);
+                    meta.append("ImageSliceDir",  (double)res.headers_(n, s, slc).slice_dir[1]);
+                    meta.append("ImageSliceDir",  (double)res.headers_(n, s, slc).slice_dir[2]);
+
                     meta.set("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[0]);
                     meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[1]);
                     meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[2]);

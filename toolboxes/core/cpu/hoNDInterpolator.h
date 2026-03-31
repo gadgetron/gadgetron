@@ -82,6 +82,7 @@ namespace Gadgetron
         typedef typename ArrayType::value_type T;
         typedef hoNDBoundaryHandler<ArrayType> BoundHanlderType;
         typedef typename ArrayType::coord_type coord_type;
+        typedef typename realType<T>::Type T_value_type;
 
         hoNDInterpolator() : array_(NULL), data_(NULL), bh_(NULL), sx_(0), sy_(0), sz_(0), st_(0) {}
 
@@ -187,6 +188,7 @@ namespace Gadgetron
         typedef typename BaseClass::T T;
         typedef typename BaseClass::coord_type coord_type;
         typedef typename BaseClass::BoundHanlderType BoundHanlderType;
+        typedef typename BaseClass::T_value_type T_value_type;
 
         hoNDInterpolatorLinear() : BaseClass() {}
 

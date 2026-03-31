@@ -76,14 +76,14 @@ public:
 
     // allow user to input image boundary limit
     // if <=0, then the input values are ignored and protocol settings are used
-    GADGET_PROPERTY(meas_max_kspace_encode_step_1, int, "Maximal encoding limit for E1", 0);
-    GADGET_PROPERTY(meas_max_set, int, "Maximal encoding limit for SET", 0);
-    GADGET_PROPERTY(meas_max_phase, int, "Maximal encoding limit for PHS", 0);
-    GADGET_PROPERTY(meas_max_kspace_encode_step_2, int, "Maximal encoding limit for E2", 0);
-    GADGET_PROPERTY(meas_max_contrast, int, "Maximal encoding limit for CON", 0);
-    GADGET_PROPERTY(meas_max_slice, int, "Maximal encoding limit for SLC", 0);
-    GADGET_PROPERTY(meas_max_repetition, int, "Maximal encoding limit for REP", 0);
-    GADGET_PROPERTY(meas_max_average, int, "Maximal encoding limit for AVE", 0);
+    GADGET_PROPERTY(meas_max_kspace_encode_step_1, int, "Maximal encoding limit for E1", -1);
+    GADGET_PROPERTY(meas_max_set, int, "Maximal encoding limit for SET", -1);
+    GADGET_PROPERTY(meas_max_phase, int, "Maximal encoding limit for PHS", -1);
+    GADGET_PROPERTY(meas_max_kspace_encode_step_2, int, "Maximal encoding limit for E2", -1);
+    GADGET_PROPERTY(meas_max_contrast, int, "Maximal encoding limit for CON", -1);
+    GADGET_PROPERTY(meas_max_slice, int, "Maximal encoding limit for SLC", -1);
+    GADGET_PROPERTY(meas_max_repetition, int, "Maximal encoding limit for REP", -1);
+    GADGET_PROPERTY(meas_max_average, int, "Maximal encoding limit for AVE", -1);
 
     // whether to consider concatenation on repetition
     GADGET_PROPERTY(concatenation_on_repetition, bool, "If multiple concatenation is used, whether to enlarge the repetition limit", false);

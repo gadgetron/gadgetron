@@ -292,7 +292,7 @@ namespace Gadgetron{
 
     template<class X> void _deallocate_memory( X* data )
     {
-      delete [] data;
+      if (data) delete [] data;
     }
 
 

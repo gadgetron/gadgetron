@@ -22,9 +22,20 @@ namespace Gadgetron {
     AsymmetricEchoAdjustROGadget::AsymmetricEchoAdjustROGadget(const Core::Context& context, const Core::GadgetProperties& props): Core::ChannelGadget<Core::Acquisition>(context, props) {
         auto current_ismrmrd_header = (context.header);
         maxRO_.resize(current_ismrmrd_header.encoding.size());
-        for (size_t e = 0; e < current_ismrmrd_header.encoding.size(); e++) {
+        for (size_t e = 0; e < current_ismrmrd_header.encoding.size(); e++)
+        {
             ISMRMRD::EncodingSpace e_space = current_ismrmrd_header.encoding[e].encodedSpace;
             maxRO_[e] = e_space.matrixSize.x;
+
+            if (check_readout_over_sampling)
+            {
+                ISMRMRD::EncodingSpace r_space = current_ismrmrd_header.encoding[e].reconSpace;
+
+                if (std::abs(e_space.fieldOfView_mm.x - r_space.fieldOfView_mm.x) < 0.1)
+                {
+                    maxRO_[e] = e_space.matrixSize.x * 2;
+                }
+            }
             GDEBUG_STREAM("max RO for encoding space  " << e << " : " << maxRO_[e]);
         }
     }
@@ -54,6 +65,7 @@ namespace Gadgetron {
                     size_t numOfBytes = sizeof(std::complex<float>) * samples;
                     if (az == 1) // pre zeros
                     {
+                        //GDEBUG_STREAM("add pre zeros for scan " << header.scan_counter << " : " << az << " out of " << maxRO_[encoding_ref]);
                         //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
                         for (c = 0; c < channels; c++) {
                             memcpy(pM3 + c * maxRO_[encoding_ref] + maxRO_[encoding_ref] - samples, pM2 + c * samples,
@@ -64,6 +76,7 @@ namespace Gadgetron {
                     }
                     if (az == 2) // post zeros
                     {
+                        //GDEBUG_STREAM("add post zeros for scan " << header.scan_counter << " : " << az << " out of " << maxRO_[encoding_ref]);
                         //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
                         for (c = 0; c < channels; c++) {
                             memcpy(pM3 + c * maxRO_[encoding_ref], pM2 + c * samples, numOfBytes);

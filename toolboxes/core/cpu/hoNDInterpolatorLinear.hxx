@@ -35,7 +35,7 @@ namespace Gadgetron
 
         T res(0);
 
-        coord_type weightAll(1.0);
+        T_value_type weightAll(1.0);
 
         bool inRange = true;
         for ( ii=0; ii<D; ii++ )
@@ -55,7 +55,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<D; ii++ )
                 {
@@ -85,7 +85,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<D; ii++ )
                 {
@@ -121,7 +121,7 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x )
     {
         long long ix = static_cast<long long>(std::floor(x));
-        coord_type dx = x - ix;
+        T_value_type dx = x - ix;
 
         if ( ix>=0 && ix<(long long)sx_-1 )
         {
@@ -137,12 +137,12 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y )
     {
         long long ix = static_cast<long long>(std::floor(x));
-        coord_type dx = x - ix;
-        coord_type dx_prime = coord_type(1.0)-dx;
+        T_value_type dx = x - ix;
+        T_value_type dx_prime = coord_type(1.0)-dx;
 
         long long iy = static_cast<long long>(std::floor(y));
-        coord_type dy = y - iy;
-        coord_type dy_prime = coord_type(1.0)-dy;
+        T_value_type dy = y - iy;
+        T_value_type dy_prime = coord_type(1.0)-dy;
 
         if ( ix>=0 && ix<sx_-1 && iy>=0 && iy<sy_-1 )
         {
@@ -177,16 +177,16 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z )
     {
         long long ix = static_cast<long long>(std::floor(x));
-        coord_type dx = x - ix;
-        coord_type dx_prime = coord_type(1.0)-dx;
+        T_value_type dx = x - ix;
+        T_value_type dx_prime = coord_type(1.0)-dx;
 
         long long iy = static_cast<long long>(std::floor(y));
-        coord_type dy = y - iy;
-        coord_type dy_prime = coord_type(1.0)-dy;
+        T_value_type dy = y - iy;
+        T_value_type dy_prime = coord_type(1.0)-dy;
 
         long long iz = static_cast<long long>(std::floor(z));
-        coord_type dz = z - iz;
-        coord_type dz_prime = coord_type(1.0)-dz;
+        T_value_type dz = z - iz;
+        T_value_type dz_prime = coord_type(1.0)-dz;
 
         if ( ix>=0 && ix<sx_-1 
             && iy>=0 && iy<sy_-1 
@@ -229,20 +229,20 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z, coord_type s )
     {
         long long ix = static_cast<long long>(std::floor(x));
-        coord_type dx = x - ix;
-        coord_type dx_prime = coord_type(1.0)-dx;
+        T_value_type dx = x - ix;
+        T_value_type dx_prime = coord_type(1.0)-dx;
 
         long long iy = static_cast<long long>(std::floor(y));
-        coord_type dy = y - iy;
-        coord_type dy_prime = coord_type(1.0)-dy;
+        T_value_type dy = y - iy;
+        T_value_type dy_prime = coord_type(1.0)-dy;
 
         long long iz = static_cast<long long>(std::floor(z));
-        coord_type dz = z - iz;
-        coord_type dz_prime = coord_type(1.0)-dz;
+        T_value_type dz = z - iz;
+        T_value_type dz_prime = coord_type(1.0)-dz;
 
         long long is = static_cast<long long>(std::floor(s));
-        coord_type ds = s - is;
-        coord_type ds_prime = coord_type(1.0)-ds;
+        T_value_type ds = s - is;
+        T_value_type ds_prime = coord_type(1.0)-ds;
 
         if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
             && iy>=0 && iy<(long long)array_->get_size(1)-1 
@@ -291,24 +291,24 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p )
     {
         long long ix = static_cast<long long>(std::floor(x));
-        coord_type dx = x - ix;
-        coord_type dx_prime = coord_type(1.0)-dx;
+        T_value_type dx = x - ix;
+        T_value_type dx_prime = coord_type(1.0)-dx;
 
         long long iy = static_cast<long long>(std::floor(y));
-        coord_type dy = y - iy;
-        coord_type dy_prime = coord_type(1.0)-dy;
+        T_value_type dy = y - iy;
+        T_value_type dy_prime = coord_type(1.0)-dy;
 
         long long iz = static_cast<long long>(std::floor(z));
-        coord_type dz = z - iz;
-        coord_type dz_prime = coord_type(1.0)-dz;
+        T_value_type dz = z - iz;
+        T_value_type dz_prime = coord_type(1.0)-dz;
 
         long long is = static_cast<long long>(std::floor(s));
-        coord_type ds = s - is;
-        coord_type ds_prime = coord_type(1.0)-ds;
+        T_value_type ds = s - is;
+        T_value_type ds_prime = coord_type(1.0)-ds;
 
         long long ip = static_cast<long long>(std::floor(p));
-        coord_type dp = p - ip;
-        coord_type dp_prime = coord_type(1.0)-dp;
+        T_value_type dp = p - ip;
+        T_value_type dp_prime = coord_type(1.0)-dp;
 
         if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
             && iy>=0 && iy<(long long)array_->get_size(1)-1 
@@ -390,28 +390,28 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r )
     {
         long long ix = static_cast<long long>(std::floor(x));
-        coord_type dx = x - ix;
-        coord_type dx_prime = coord_type(1.0)-dx;
+        T_value_type dx = x - ix;
+        T_value_type dx_prime = coord_type(1.0)-dx;
 
         long long iy = static_cast<long long>(std::floor(y));
-        coord_type dy = y - iy;
-        coord_type dy_prime = coord_type(1.0)-dy;
+        T_value_type dy = y - iy;
+        T_value_type dy_prime = coord_type(1.0)-dy;
 
         long long iz = static_cast<long long>(std::floor(z));
-        coord_type dz = z - iz;
-        coord_type dz_prime = coord_type(1.0)-dz;
+        T_value_type dz = z - iz;
+        T_value_type dz_prime = coord_type(1.0)-dz;
 
         long long is = static_cast<long long>(std::floor(s));
-        coord_type ds = s - is;
-        coord_type ds_prime = coord_type(1.0)-ds;
+        T_value_type ds = s - is;
+        T_value_type ds_prime = coord_type(1.0)-ds;
 
         long long ip = static_cast<long long>(std::floor(p));
-        coord_type dp = p - ip;
-        coord_type dp_prime = coord_type(1.0)-dp;
+        T_value_type dp = p - ip;
+        T_value_type dp_prime = coord_type(1.0)-dp;
 
         long long ir = static_cast<long long>(std::floor(r));
-        coord_type dr = r - ir;
-        coord_type dr_prime = coord_type(1.0)-dr;
+        T_value_type dr = r - ir;
+        T_value_type dr_prime = coord_type(1.0)-dr;
 
         if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
             && iy>=0 && iy<(long long)array_->get_size(1)-1 
@@ -558,8 +558,8 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a )
     {
         long long anchor[7];
-        coord_type d[7];
-        coord_type d_prime[7];
+        T_value_type d[7];
+        T_value_type d_prime[7];
 
         anchor[0] = static_cast<long long>(std::floor(x));
         anchor[1] = static_cast<long long>(std::floor(y));
@@ -580,12 +580,12 @@ namespace Gadgetron
         unsigned int ii;
         for ( ii=0; ii<7; ii++ )
         {
-            d_prime[ii] = coord_type(1.0)-d[ii];
+            d_prime[ii] = T_value_type(1.0)-d[ii];
         }
 
         T res(0);
 
-        coord_type weightAll(1.0);
+        T_value_type weightAll(1.0);
 
         unsigned int n;
 
@@ -602,7 +602,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<7; ii++ )
                 {
@@ -631,7 +631,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<7; ii++ )
                 {
@@ -661,8 +661,8 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q )
     {
         long long anchor[8];
-        coord_type d[8];
-        coord_type d_prime[8];
+        T_value_type d[8];
+        T_value_type d_prime[8];
 
         anchor[0] = static_cast<long long>(std::floor(x));
         anchor[1] = static_cast<long long>(std::floor(y));
@@ -685,12 +685,12 @@ namespace Gadgetron
         unsigned int ii;
         for ( ii=0; ii<8; ii++ )
         {
-            d_prime[ii] = coord_type(1.0)-d[ii];
+            d_prime[ii] = T_value_type(1.0)-d[ii];
         }
 
         T res(0);
 
-        coord_type weightAll(1.0);
+        T_value_type weightAll(1.0);
 
         unsigned int n;
 
@@ -708,7 +708,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<8; ii++ )
                 {
@@ -737,7 +737,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<8; ii++ )
                 {
@@ -767,8 +767,8 @@ namespace Gadgetron
     inline typename hoNDInterpolatorLinear<ArrayType>::T hoNDInterpolatorLinear<ArrayType>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q, coord_type u )
     {
         long long anchor[9];
-        coord_type d[9];
-        coord_type d_prime[9];
+        T_value_type d[9];
+        T_value_type d_prime[9];
 
         anchor[0] = static_cast<long long>(std::floor(x));
         anchor[1] = static_cast<long long>(std::floor(y));
@@ -793,12 +793,12 @@ namespace Gadgetron
         unsigned int ii;
         for ( ii=0; ii<9; ii++ )
         {
-            d_prime[ii] = coord_type(1.0)-d[ii];
+            d_prime[ii] = T_value_type(1.0)-d[ii];
         }
 
         T res(0);
 
-        coord_type weightAll(1.0);
+        T_value_type weightAll(1.0);
 
         unsigned int n;
 
@@ -817,7 +817,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<9; ii++ )
                 {
@@ -846,7 +846,7 @@ namespace Gadgetron
             for ( n=0; n<number_of_points_; n++ )
             {
                 unsigned int lastDigit = n;
-                weightAll = coord_type(1.0);
+                weightAll = T_value_type(1.0);
 
                 for ( ii=0; ii<9; ii++ )
                 {

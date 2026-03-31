@@ -37,5 +37,9 @@ class RemoveROOversamplingGadget : public Core::ChannelGadget<Core::Acquisition>
     float reconFOV_;
 
     bool dowork_;    // if true the gadget performs the operation, otherwise, it just passes the data on
+
+    size_t acceFactorE1_;
+    size_t acceFactorE2_;
+    std::string calib_;
 };
 } // namespace Gadgetron
