@@ -97,9 +97,29 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
     {
         Am = as_arma_matrix(data2D);
     }
+    
+    hoNDArray<T> ATA;
+    Gadgetron::gemm(ATA, data2D, true, data2D, false);
+
+    hoNDArray<value_type> E;
+    Gadgetron::heev(ATA, E);
+
+    for (n = 0; n < N; n++)
+    {
+        E_(n) = E(N-1-n);
+        //GDEBUG_STREAM("EIGEN VALUE E[" << n << "] = " << E_(n));        
+    }
+
+    for (m = 0; m < N; m++)
+    {
+        for (n = 0; n < N; n++)
+        {
+            V_(m, n) = ATA(m, N-1-n);
+        }
+    }
 
     // call eigen
-    arma::Mat<T> Vm = as_arma_matrix(V_);
+    //arma::Mat<T> Vm = as_arma_matrix(V_);
 
     // arma::Mat<T> B = Am.t()*Am;
     // arma::Col<T> Sv;
@@ -110,21 +130,21 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
     //     E_(n) = Sv(n);
     // }
 
-    arma::Mat<T> Um;
-    arma::Col<value_type> Sv;
-    if ((M>128) || (N>128))
-        arma::svd_econ(Um, Sv, Vm, Am, 'r');
-    else
-    {
-        GDEBUG_STREAM("Run standard SVD");
-        arma::svd(Um, Sv, Vm, Am, "std");
-    }
+    // arma::Mat<T> Um;
+    // arma::Col<value_type> Sv;
+    // if ((M>128) || (N>128))
+    //     arma::svd_econ(Um, Sv, Vm, Am, 'r');
+    // else
+    // {
+    //     GDEBUG_STREAM("Run standard SVD");
+    //     arma::svd(Um, Sv, Vm, Am, "std");
+    // }
 
-    for (n = 0; n < N; n++)
-    {
-        value_type v = Sv(n);
-        E_(n) = v * v; // the E is eigen value, the square of singular value
-    }
+    // for (n = 0; n < N; n++)
+    // {
+    //     value_type v = Sv(n);
+    //     E_(n) = v * v; // the E is eigen value, the square of singular value
+    // }
 }
 
 template<typename T>
