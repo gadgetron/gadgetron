@@ -134,8 +134,7 @@ namespace Gadgetron {
 
         typedef typename realType<T>::Type realT;
         arma::Col<realT> xM = arma::abs(as_arma_col(*x));
-        arma::uword idx;
-        realT min = xM.min(idx);
+        arma::uword idx = xM.index_min();
         return idx;
     }
 
