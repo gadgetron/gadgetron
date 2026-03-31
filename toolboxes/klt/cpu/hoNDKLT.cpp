@@ -4,7 +4,6 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_utils.h"
-#include "hoArmadillo.h"
 
 namespace Gadgetron{
 
@@ -72,8 +71,6 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
 
     // compute and subtract mean from data
     hoNDArray<T> data2DNoMean;
-
-    arma::Mat<T> Am;
     if (remove_mean)
     {
         hoNDArray<T> dataMean(1, N);
@@ -90,16 +87,13 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
                 data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
             }
         }
-
-        Am = as_arma_matrix(data2DNoMean);
-    }
-    else
-    {
-        Am = as_arma_matrix(data2D);
     }
     
     hoNDArray<T> ATA;
-    Gadgetron::gemm(ATA, data2D, true, data2D, false);
+    if (remove_mean)
+        Gadgetron::gemm(ATA, data2DNoMean, true, data2DNoMean, false);
+    else
+        Gadgetron::gemm(ATA, data2D, true, data2D, false);
 
     hoNDArray<value_type> E;
     Gadgetron::heev(ATA, E);
@@ -117,34 +111,6 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
             V_(m, n) = ATA(m, N-1-n);
         }
     }
-
-    // call eigen
-    //arma::Mat<T> Vm = as_arma_matrix(V_);
-
-    // arma::Mat<T> B = Am.t()*Am;
-    // arma::Col<T> Sv;
-    // arma::eig_gen(Sv, Vm, B);
-
-    // for (n = 0; n < N; n++)
-    // {
-    //     E_(n) = Sv(n);
-    // }
-
-    // arma::Mat<T> Um;
-    // arma::Col<value_type> Sv;
-    // if ((M>128) || (N>128))
-    //     arma::svd_econ(Um, Sv, Vm, Am, 'r');
-    // else
-    // {
-    //     GDEBUG_STREAM("Run standard SVD");
-    //     arma::svd(Um, Sv, Vm, Am, "std");
-    // }
-
-    // for (n = 0; n < N; n++)
-    // {
-    //     value_type v = Sv(n);
-    //     E_(n) = v * v; // the E is eigen value, the square of singular value
-    // }
 }
 
 template<typename T>
