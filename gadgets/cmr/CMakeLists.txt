@@ -16,6 +16,7 @@ endif ()
 set( gadgetron_cmr_header_files 
     gadgetron_cmr_export.h 
     CmrCartesianKSpaceBinningCineGadget.h 
+    CmrPSIRNetGadget.h 
     CmrParametricMappingGadget.h 
     CmrParametricT1SRMappingGadget.h 
     CmrParametricT2MappingGadget.h
@@ -23,6 +24,7 @@ set( gadgetron_cmr_header_files
 
 set( gadgetron_cmr_src_files 
     CmrCartesianKSpaceBinningCineGadget.cpp 
+    CmrPSIRNetGadget.cpp 
     CmrParametricMappingGadget.cpp 
     CmrParametricT1SRMappingGadget.cpp 
     CmrParametricT2MappingGadget.cpp
@@ -73,7 +75,9 @@ if (BUILD_PYTHON_SUPPORT)
     set( config_cmr_files 
         ${config_cmr_files} 
         ${config_LandmarkDetection_files} 
-        ${python_LandmarkDetection_files} )
+        ${python_LandmarkDetection_files} 
+        config/LGE/PSIRNet.xml
+        )
 
     install(FILES ${python_LandmarkDetection_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH}/cmr_lax_landmark_detection COMPONENT main)
 endif ()

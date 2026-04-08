@@ -3,7 +3,7 @@
 
             It is to process the PSIR LGE (Late Gadolinium Enhancement) imaging data. IR and PD are on dimension SET.
 
-            S will be SET. [RO, E1, E2, CHA, N, S, SLC]
+            S will be SET. N is average. 
 
             E2 is 1 for only supporing 2D imaging.
 
@@ -14,6 +14,7 @@
 
 #include "gadgetron_cmr_export.h"
 #include "generic_recon_gadgets/GenericReconGadget.h"
+#include "python_toolbox.h"
 
 namespace Gadgetron {
 
@@ -28,8 +29,10 @@ namespace Gadgetron {
         ~CmrPSIRNetGadget();
 
         /// parameters for workflow
-        GADGET_PROPERTY(send_out_mag_IR, bool, "Whether to set out magIR images", true);
         GADGET_PROPERTY(model, std::string, "model file", "psirnet_model.pts");
+
+        GADGET_PROPERTY(send_out_mag_IR, bool, "Whether to set out magIR images", true);
+        GADGET_PROPERTY(scale_factor_after_SCC, double, "Scaling factor after psir", 1000);
 
     protected:
 
@@ -39,12 +42,19 @@ namespace Gadgetron {
         // variable for recon
         // --------------------------------------------------
 
+        std::vector<float> TI_;
+
         boost::python::object model_;
         bool model_loaded_;
 
         // gadgetron home
         std::string gt_home_;
         std::string model_dir_;
+
+        // the raw recon results
+        // [RO E1 E2 1 N S SLC]
+        IsmrmrdImageArray res_psir_;
+        IsmrmrdImageArray res_magir_;
 
         // --------------------------------------------------
         // gadget functions
@@ -56,12 +66,16 @@ namespace Gadgetron {
         // --------------------------------------------------
         // recon step functions
         // --------------------------------------------------
-        virtual void perform_recon(IsmrmrdReconBit& recon_bit, size_t encoding);
+        virtual void perform_psir(IsmrmrdReconBit& recon_bit, size_t encoding);
+
+        // compute window level for psir
+        bool calculate_window_level(hoNDArray<std::complex<float>>& magPDFiltered, hoNDArray<std::complex<float>>& PSIRImage, float& window_center, float& window_width);
+
+        // compute image header for PSIR and mag IR images
+        int compute_image_header_psir_magir(IsmrmrdImageArray& res_psir, IsmrmrdImageArray& res_magir, size_t encoding);
 
         // --------------------------------------------------
         // overload functions
         // --------------------------------------------------
-        // send out the recon results
-        virtual int prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role);
     };
 }

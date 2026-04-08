@@ -469,8 +469,8 @@ namespace Gadgetron {
         size_t S   = res.data_.get_size(5);
         size_t SLC = res.data_.get_size(6);
 
-        GADGET_CHECK_THROW(N == recon_bit.data_.headers_.get_size(2));
-        GADGET_CHECK_THROW(S == recon_bit.data_.headers_.get_size(3));
+        GADGET_CHECK_THROW(N <= recon_bit.data_.headers_.get_size(2));
+        GADGET_CHECK_THROW(S <= recon_bit.data_.headers_.get_size(3));
 
         res.headers_.create(N, S, SLC);
         res.meta_.resize(N * S * SLC);

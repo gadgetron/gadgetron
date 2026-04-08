@@ -1,11 +1,13 @@
 
 #include "CmrPSIRNetGadget.h"
+#include "hoNDImage_util.h"
+#include <boost/algorithm/string.hpp>
+#include <sstream>
 
 namespace Gadgetron {
 
     CmrPSIRNetGadget::CmrPSIRNetGadget() : BaseClass()
     {
-        send_out_multiple_series_by_slice_ = false;
     }
 
     CmrPSIRNetGadget::~CmrPSIRNetGadget()
@@ -15,6 +17,31 @@ namespace Gadgetron {
     int CmrPSIRNetGadget::process_config(ACE_Message_Block* mb)
     {
         GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
+        try
+        {
+            std::string gadgetron_home = this->context.paths.gadgetron_home.generic_string();
+            boost::filesystem::path gadgetron_python_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python";
+
+            Gadgetron::initialize_python();
+            Gadgetron::add_python_path(gadgetron_python_path.generic_string());
+            this->gt_home_ = gadgetron_python_path.generic_string();
+
+            boost::filesystem::path cmr_python_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python" / "cmr_ml";
+            Gadgetron::add_python_path(cmr_python_path.generic_string());
+
+            boost::filesystem::path model_path = this->context.paths.gadgetron_home / "share" / "gadgetron" / "python" / "cmr_ml" / "models";
+            Gadgetron::add_python_path(model_path.generic_string());
+            this->model_dir_ = model_path.generic_string();
+
+            GDEBUG_STREAM("Set up python path using context : " << this->gt_home_);
+            GDEBUG_STREAM("Set up model path using context : " << this->model_dir_);
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Exception happened when adding  path to python ... ");
+            return GADGET_FAIL;
+        }
 
         // -------------------------------------------------
 
@@ -28,18 +55,21 @@ namespace Gadgetron {
             GDEBUG("Error parsing ISMRMRD Header");
         }
 
-        if (h.userParameters)
+        if (h.sequenceParameters.is_present())
         {
-            for (std::vector<ISMRMRD::UserParameterLong>::const_iterator i = h.userParameters->userParameterLong.begin(); i != h.userParameters->userParameterLong.end(); ++i)
+            if (h.sequenceParameters.get().TI.is_present())
             {
-                if (std::strcmp(i->name.c_str(), "MultiSeriesForSlices") == 0)
-                {
-                    GDEBUG_STREAM("Found from protocol, MultiSeriesForSlices is defined ... ");
-                    this->send_out_multiple_series_by_slice_ = true;
-                    GDEBUG_STREAM("Reset, send_out_multiple_series_by_slice_ is " << send_out_multiple_series_by_slice_);
-                }
+                TI_ = h.sequenceParameters.get().TI.get();
             }
         }
+        else
+        {
+            GWARN_STREAM("Inversion time does not exist in the seq protocols ... ");
+        }
+
+        if (!this->prepare_AI()) { return GADGET_FAIL; }
+
+        // -------------------------------------------------
 
         return GADGET_OK;
     }
@@ -66,8 +96,6 @@ namespace Gadgetron {
 
         Gadgetron::initialize_python();
 
-        std::string model_dir = this->gt_home_ + "/cmr_ml/models/";
-
         GDEBUG_STREAM("PSIRNet model file : " << this->model.value());
 
         try
@@ -86,7 +114,7 @@ namespace Gadgetron {
                 {
                     GILLock lg;
                     PythonFunction<boost::python::object> load_model("psirnet", "load_model_for_inference");
-                    model_ = load_model(model_dir, model_name);
+                    model_ = load_model(this->model_dir_, model_name);
                     bp::incref(model_.ptr());
                 }
                 if (this->perform_timing.value()) { gt_timer_.stop(); }
@@ -115,37 +143,6 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
-        std::vector<unsigned int> processed_slices = kspace_binning_processed_slices.value();
-        if(processed_slices.size()>0)
-        {
-            size_t ii;
-            for (ii=0; ii<recon_bit_->rbit_[0].data_.headers_.get_number_of_elements(); ii++)
-            {
-                if( recon_bit_->rbit_[0].data_.headers_(ii).acquisition_time_stamp>0 ) break;
-            }
-
-            size_t curr_slc = recon_bit_->rbit_[0].data_.headers_(ii).idx.slice;
-
-            GDEBUG_STREAM("Incoming slice : " << curr_slc);
-
-            bool do_processing = false;
-            for (size_t k=0; k<processed_slices.size(); k++)
-            {
-                if(curr_slc==processed_slices[k])
-                {
-                    do_processing = true;
-                    break;
-                }
-            }
-
-            if(!do_processing)
-            {
-                GDEBUG_STREAM("Ignore incoming slice : " << curr_slc);
-                m1->release();
-                return GADGET_OK;
-            }
-        }
-
         // for every encoding space
         for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
         {
@@ -157,76 +154,49 @@ namespace Gadgetron {
 
             // ---------------------------------------------------------------
             // export incoming data
-
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
             }
 
-            if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
+            if (!debug_folder_full_path_.empty())
             {
-                if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0)
-                {
-                    gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
-                }
-            }*/
+                gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str());
+            }
 
             // ---------------------------------------------------------------
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {
-                /*if (!debug_folder_full_path_.empty())
-                {
-                    gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str());
-                }
-
-                if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
-                {
-                    if (recon_bit_->rbit_[e].data_.trajectory_->get_number_of_elements() > 0)
-                    {
-                        gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str());
-                    }
-                }*/
-
                 // ---------------------------------------------------------------
 
-                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::perform_binning"); }
-                this->perform_binning(recon_bit_->rbit_[e], e);
+                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::perform_psir"); }
+                this->perform_psir(recon_bit_->rbit_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
-                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::compute_image_header, raw images"); }
-                this->compute_image_header(recon_bit_->rbit_[e], res_raw_, e);
+                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::compute_image_header, psir images"); }
+                this->compute_image_header(recon_bit_->rbit_[e], res_psir_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                this->set_time_stamps(res_raw_, acq_time_raw_, cpt_time_raw_);
-
+                // ---------------------------------------------------------------
+                // adjust headers for psir and mag IR
+                this->compute_image_header_psir_magir(res_psir_, res_magir_, e);
                 // ---------------------------------------------------------------
 
                 if (!debug_folder_full_path_.empty())
                 {
-                    this->gt_exporter_.export_array_complex(res_raw_.data_, debug_folder_full_path_ + "recon_res_raw" + os.str());
+                    this->gt_exporter_.export_array_complex(res_psir_.data_, debug_folder_full_path_ + "recon_res" + os.str());
+                    this->gt_exporter_.export_array_complex(res_magir_.data_, debug_folder_full_path_ + "recon_res_magir" + os.str());
                 }
 
-                if(this->send_out_raw.value())
-                {
-                    if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, raw"); }
-                    this->send_out_image_array(res_raw_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
-                    if (perform_timing.value()) { gt_timer_.stop(); }
-                }
+                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, psir"); }
+                this->send_out_image_array(res_psir_, e, image_series.value() + ((int)e + 111), GADGETRON_IMAGE_PSIR);
+                if (perform_timing.value()) { gt_timer_.stop(); }
 
-                // ---------------------------------------------------------------
-                this->create_binning_image_headers_from_raw();
-                this->set_time_stamps(res_binning_, acq_time_binning_, cpt_time_binning_);
-
-                if (!debug_folder_full_path_.empty())
-                {
-                    this->gt_exporter_.export_array_complex(res_binning_.data_, debug_folder_full_path_ + "recon_res_binning" + os.str());
-                }
-
-                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, binning"); }
-                this->send_out_image_array(res_binning_, e, image_series.value() + (int)e + 2, GADGETRON_IMAGE_RETRO);
+                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, magir"); }
+                this->send_out_image_array(res_magir_, e, image_series.value() + ((int)e + 109), GADGETRON_IMAGE_MAGIR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
         }
@@ -238,7 +208,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void CmrPSIRNetGadget::perform_binning(IsmrmrdReconBit& recon_bit, size_t encoding)
+    void CmrPSIRNetGadget::perform_psir(IsmrmrdReconBit& recon_bit, size_t encoding)
     {
         try
         {
@@ -250,202 +220,322 @@ namespace Gadgetron {
             size_t S   = recon_bit.data_.data_.get_size(5);
             size_t SLC = recon_bit.data_.data_.get_size(6);
 
-            size_t binned_N = this->number_of_output_phases.value();
-
             GADGET_CHECK_THROW(E2==1);
-            GADGET_CHECK_THROW(N>binned_N);
+            GADGET_CHECK_THROW(S==2);
+
+            GDEBUG_STREAM("PSIRNet recon for encoding space " << encoding << " with matrix size : [" << RO << "," << E1 << "," << E2 << "] , #coils : " << CHA << " , #ave : " << N << " , #sets : " << S << " , #slices : " << SLC);
+            GDEBUG_STREAM("data is " << Gadgetron::nrm2(recon_bit.data_.data_) << " , ref is " << Gadgetron::nrm2(recon_bit.ref_->data_));
 
             Gadgetron::GadgetronTimer timer(false);
 
-            res_raw_.data_.create(RO, E1, E2, 1, N, S, SLC);
-            acq_time_raw_.create(N, S, SLC);
-            cpt_time_raw_.create(N, S, SLC);
+            // set up outputs
+            res_psir_.data_.create(RO, E1, E2, 1, N, 1, SLC);
+            res_magir_.data_.create(RO, E1, E2, 1, N, 1, SLC);
 
-            res_binning_.data_.create(RO, E1, E2, 1, binned_N, S, SLC);
-            acq_time_binning_.create(binned_N, S, SLC);
-            cpt_time_binning_.create(binned_N, S, SLC);
+            // get IR and PD k-space data
+            hoNDArray< std::complex<float> > kspace_ir;
+            kspace_ir.create(RO, E1, CHA, N*SLC);
+            Gadgetron::clear(kspace_ir);
 
-            size_t n, s, slc;
+            hoNDArray< std::complex<float> > kspace_pd;
+            kspace_pd.create(RO, E1, CHA, N*SLC);
+            Gadgetron::clear(kspace_pd);
+
+            size_t ro, e1, cha, n, s, slc;
             for (slc=0; slc<SLC; slc++)
             {
-                std::stringstream os;
-
-                size_t ind = 0;
-                while (recon_bit.data_.headers_[ind].measurement_uid==0 && ind< recon_bit.data_.headers_.get_number_of_elements())
+                for (n=0; n<N; n++)
                 {
-                    ind++;
-                }
+                    //memcpy(&kspace_ir(0, 0, 0, n + slc*N), &recon_bit.data_.data_(0, 0, 0, 0, n, 0, slc), RO*E1*CHA*sizeof(std::complex<float>));
+                    //memcpy(&kspace_pd(0, 0, 0, n + slc*N), &recon_bit.data_.data_(0, 0, 0, 0, n, 1, slc), RO*E1*CHA*sizeof(std::complex<float>));
 
-                size_t curr_slc = recon_bit.data_.headers_[ind].idx.slice;
-
-                os << "_encoding_" << encoding << "_SLC_" << slc << "_SLCOrder_" << curr_slc;
-
-                std::string suffix = os.str();
-
-                GDEBUG_STREAM("Processing binning on SLC : " << slc << " - " << curr_slc << " , encoding space : " << encoding << " " << suffix);
-
-                // set up the binning object
-                binning_reconer_.binning_obj_.data_.create(RO, E1, CHA, N, S, recon_bit.data_.data_.begin()+slc*RO*E1*CHA*N*S);
-                binning_reconer_.binning_obj_.sampling_ = recon_bit.data_.sampling_;
-                binning_reconer_.binning_obj_.headers_.create(E1, N, S, recon_bit.data_.headers_.begin()+slc*E1*N*S);
-
-                binning_reconer_.binning_obj_.output_N_ = binned_N;
-                binning_reconer_.binning_obj_.accel_factor_E1_ = acceFactorE1_[encoding];
-                binning_reconer_.binning_obj_.random_sampling_ = (calib_mode_[encoding]!=ISMRMRD_embedded 
-                                                                && calib_mode_[encoding]!=ISMRMRD_interleaved 
-                                                                && calib_mode_[encoding]!=ISMRMRD_separate 
-                                                                && calib_mode_[encoding]!=ISMRMRD_noacceleration);
-
-                binning_reconer_.suffix_ = suffix;
-
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.data_, debug_folder_full_path_ + "binning_obj_data" + os.str()); }
-
-                // compute the binning
-                if (perform_timing.value()) { timer.start("compute binning ... "); }
-                try
-                {
-                    binning_reconer_.process_binning_recon();
-                }
-                catch(...)
-                {
-                    GERROR_STREAM("Exceptions happened in binning_reconer_.process_binning_recon() for slice " << slc);
-                    continue;
-                }
-                if (perform_timing.value()) { timer.stop(); }
-
-                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.complex_image_raw_, debug_folder_full_path_ + "binning_obj_complex_image_raw" + os.str()); }
-                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.complex_image_binning_, debug_folder_full_path_ + "binning_obj_complex_image_binning" + os.str()); }
-
-                // get the binnig results
-                memcpy(this->res_raw_.data_.begin()+slc*RO*E1*N*S*SLC, 
-                        binning_reconer_.binning_obj_.complex_image_raw_.begin(), 
-                        binning_reconer_.binning_obj_.complex_image_raw_.get_number_of_bytes());
-
-                memcpy(this->res_binning_.data_.begin()+slc*RO*E1*binned_N*S*SLC, 
-                        binning_reconer_.binning_obj_.complex_image_binning_.begin(), 
-                        binning_reconer_.binning_obj_.complex_image_binning_.get_number_of_bytes());
-
-                for (s=0; s<S; s++)
-                {
-                    for (n=0; n<N; n++)
+                    for (cha=0; cha<CHA; cha++)
                     {
-                        acq_time_raw_(n, s, slc) = binning_reconer_.binning_obj_.phs_time_stamp_(n, s);
-                        cpt_time_raw_(n, s, slc) = binning_reconer_.binning_obj_.phs_cpt_time_stamp_(n, s);
-                    }
-
-                    for (n=0; n<binned_N; n++)
-                    {
-                        acq_time_binning_(n, s, slc) = binning_reconer_.binning_obj_.phs_time_stamp_(n, s);
-                        cpt_time_binning_(n, s, slc) = binning_reconer_.binning_obj_.mean_RR_ * binning_reconer_.binning_obj_.desired_cpt_[n];
+                        for (e1=0; e1<E1; e1++)
+                        {
+                            for (ro=0; ro<RO; ro++)
+                            {             
+                                kspace_ir(ro, e1, cha, n + slc*N) = recon_bit.data_.data_(ro, e1, 0, cha, n, 0, slc);
+                                kspace_pd(ro, e1, cha, n + slc*N) = recon_bit.data_.data_(ro, e1, 0, cha, n, 1, slc);
+                            }
+                        }
                     }
                 }
             }
+
+            GDEBUG_STREAM("kspace_ir is " << Gadgetron::nrm2(kspace_ir) << " , kspace_pd is " << Gadgetron::nrm2(kspace_pd));
 
             std::stringstream os;
             os << "_encoding_" << encoding;
 
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_raw_.data_, debug_folder_full_path_ + "binning_complex_image_raw" + os.str()); }
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_binning_.data_, debug_folder_full_path_ + "binning_complex_image_binning_" + os.str()); }
+            if (!debug_folder_full_path_.empty()) 
+            { 
+                gt_exporter_.export_array_complex(kspace_ir, debug_folder_full_path_ + "kspace_ir" + os.str()); 
+            }
 
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array(acq_time_raw_, debug_folder_full_path_ + "binning_acq_time_raw" + os.str()); }
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array(cpt_time_raw_, debug_folder_full_path_ + "binning_cpt_time_raw" + os.str()); }
+            if (!debug_folder_full_path_.empty()) 
+            { 
+                gt_exporter_.export_array_complex(kspace_pd, debug_folder_full_path_ + "kspace_pd" + os.str()); 
+            }
 
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array(acq_time_binning_, debug_folder_full_path_ + "binning_acq_time_binning" + os.str()); }
-            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array(cpt_time_binning_, debug_folder_full_path_ + "binning_cpt_time_binning" + os.str()); }
+            // compute coil map
+            if (perform_timing.value()) { timer.start("compute coil map ... "); }
+
+            hoNDArray< std::complex<float> > ref_calib, ref_coil_map;
+            this->make_ref_coil_map(*recon_bit.ref_, recon_bit.data_.data_.get_dimensions(), ref_calib, ref_coil_map, encoding);
+
+            if (!debug_folder_full_path_.empty()) 
+            { 
+                gt_exporter_.export_array_complex(ref_calib, debug_folder_full_path_ + "ref_calib" + os.str()); 
+                gt_exporter_.export_array_complex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map" + os.str()); 
+            }
+
+            hoNDArray< std::complex<float> > coil_map;
+            this->perform_coil_map_estimation(ref_coil_map, coil_map, encoding);
+
+            if (!debug_folder_full_path_.empty()) 
+            { 
+                gt_exporter_.export_array_complex(coil_map, debug_folder_full_path_ + "coil_map" + os.str()); 
+            }
+            if (perform_timing.value()) { timer.stop(); }
+
+            // call the model
+            hoNDArray< std::complex<float> > coil_map_model;
+            coil_map_model.create(RO, E1, CHA, SLC);
+            Gadgetron::clear(coil_map_model);
+            for (slc=0; slc<SLC; slc++)
+            {
+                // memcpy(&coil_map_model(0, 0, 0, slc), &coil_map(0, 0, 0, slc), RO*E1*CHA*sizeof(std::complex<float>));
+                for (cha=0; cha<CHA; cha++)
+                {
+                    for (e1=0; e1<E1; e1++)
+                    {
+                        for (ro=0; ro<RO; ro++)
+                        {             
+                            coil_map_model(ro, e1, cha, slc) = coil_map(ro, e1, 0, cha, slc);
+                        }
+                    }
+                }
+            }
+
+            GDEBUG_STREAM("coil_map_model is " << Gadgetron::nrm2(coil_map_model));
+
+            if (!debug_folder_full_path_.empty()) 
+            { 
+                gt_exporter_.export_array_complex(coil_map_model, debug_folder_full_path_ + "coil_map_model" + os.str()); 
+            }
+
+            if (perform_timing.value()) { timer.start("compute psir ... "); }
+            hoNDArray< std::complex<float> > psir;
+            {
+                GILLock lg;
+                PythonFunction< hoNDArray< std::complex<float> > > apply_psirnet("psirnet", "apply_psirnet");
+                psir = apply_psirnet(kspace_ir, kspace_pd, coil_map_model, this->model_);
+            }
+            if (perform_timing.value()) { timer.stop(); }
+
+            if (!debug_folder_full_path_.empty()) 
+            { 
+                gt_exporter_.export_array_complex(psir, debug_folder_full_path_ + "psir" + os.str()); 
+            }
+
+            // set the results
+            res_psir_.headers_.create(N, 1, SLC);
+            res_psir_.meta_.resize(N*SLC);
+
+            res_magir_.headers_.create(N, 1, SLC);
+            res_magir_.meta_.resize(N*SLC);
+
+            for (slc=0; slc<SLC; slc++)
+            {
+                for (n=0; n<N; n++)
+                {             
+                    memcpy(&res_psir_.data_(0, 0, 0, 0, n, 0, slc), &psir(0, 0, 0, n + slc*N), RO*E1*sizeof(std::complex<float>));
+                }
+            }
+
+            // compute magnitude image
+            Gadgetron::abs(res_psir_.data_, res_magir_.data_);
+
+            // apply scale factor
+            float scale_factor = this->scale_factor_after_SCC.value();
+            Gadgetron::scal(scale_factor, res_psir_.data_);
+            Gadgetron::scal(scale_factor, res_magir_.data_);
+
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_psir_.data_, debug_folder_full_path_ + "psir_" + os.str()); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_magir_.data_, debug_folder_full_path_ + "magir_" + os.str()); }
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in CmrPSIRNetGadget::perform_binning(...) ... ");
+            GADGET_THROW("Errors happened in CmrPSIRNetGadget::perform_psir(...) ... ");
         }
     }
 
-    void CmrPSIRNetGadget::create_binning_image_headers_from_raw()
+    bool CmrPSIRNetGadget::calculate_window_level(hoNDArray<std::complex<float>>& magIRImage, hoNDArray<std::complex<float>>& PSIRImage, float& window_center, float& window_width)
     {
         try
         {
-            size_t N = res_raw_.headers_.get_size(0);
-            size_t S = res_raw_.headers_.get_size(1);
-            size_t SLC = res_raw_.headers_.get_size(2);
+            // since gfactor is not taken into account here, we need higher thresholding ratio
+            float thres =  2;
 
-            size_t binned_N = this->number_of_output_phases.value();
+            size_t N = PSIRImage.get_number_of_elements();
 
-            res_binning_.headers_.create(binned_N, S, SLC);
-            res_binning_.meta_.resize(binned_N*S*SLC);
+            std::vector<size_t> dim;
+            PSIRImage.get_dimensions(dim);
+            hoNDArray<float> mask(dim);
+            Gadgetron::clear(mask);
 
+            // get the foreground
+            long long n;
+            size_t numOfPixelInMask = 0;
+            for ( n=0; n<N; n++ )
+            {
+                if ( magIRImage(n).real() > thres )
+                {
+                    mask(n) = 1;
+                    numOfPixelInMask++;
+                }
+            }
+
+            if ( numOfPixelInMask == 0 ) return true;
+
+            // get the median of foreground
+            std::vector<float> valueInMask(numOfPixelInMask, 0);
+            size_t ind(0);
+            for ( n=0; n<N; n++ )
+            {
+                if ( mask(n) == 1 )
+                {
+                    valueInMask[ind++] = PSIRImage(n).real();
+                }
+            }
+
+            std::sort(valueInMask.begin(), valueInMask.end());
+            float medianValueInMask = valueInMask[numOfPixelInMask/2];
+            float windowing_high_end_percentile = 0.95;
+            float w_high = valueInMask[ (size_t)(numOfPixelInMask *windowing_high_end_percentile) ];
+
+            // get the second median and normal level, should be the center of myocardium
+            hoNDArray<float> thresdhold(dim);
+            Gadgetron::clear(thresdhold);
+
+            for ( n=0; n<N; n++ )
+            {
+                if ( (PSIRImage(n).real()<medianValueInMask) && (mask(n) == 1) )
+                {
+                    thresdhold(n) = 1;
+                }
+            }            
+
+            float normal_level = 0;
+
+            numOfPixelInMask = 0;
+            for ( n=0; n<N; n++ )
+            {
+                if ( thresdhold(n) == 1 )
+                {
+                    normal_level += PSIRImage(n).real();
+                    numOfPixelInMask++;
+                }
+            }
+            normal_level /= numOfPixelInMask;
+
+            std::vector<float> valueInMaskMyo;
+            valueInMaskMyo.resize(numOfPixelInMask, 0);
+
+            ind = 0;
+            for ( n=0; n<N; n++ )
+            {
+                if ( thresdhold(n) == 1 )
+                {
+                    valueInMaskMyo[ind++] = PSIRImage(n).real();
+                }
+            }
+            std::nth_element(valueInMaskMyo.begin(), valueInMaskMyo.begin() + valueInMaskMyo.size() / 2, valueInMaskMyo.end());
+            medianValueInMask = valueInMaskMyo[numOfPixelInMask / 2];
+
+            // get the windowing setting
+
+            float range = 1.1 * w_high - normal_level;
+            float min_level = w_high - range;
+
+            window_center = min_level + range / 2;
+            window_width = range;
+        }
+        catch(...)
+        {
+            GERROR_STREAM("Error happened in calculate_window_level(hoNDArray<std::complex<float>>& magPDFiltered, hoNDArray<std::complex<float>>& PSIRImage, float& window_center, float& window_width) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    int CmrPSIRNetGadget::compute_image_header_psir_magir(IsmrmrdImageArray& res_psir, IsmrmrdImageArray& res_magir, size_t encoding)
+    {
+        try
+        {
+            size_t RO = res_psir.data_.get_size(0);
+            size_t E1 = res_psir.data_.get_size(1);
+            size_t E2 = res_psir.data_.get_size(2);
+            size_t CHA = res_psir.data_.get_size(3);
+            size_t N = res_psir.data_.get_size(4);
+            size_t S = res_psir.data_.get_size(5);
+            size_t SLC = res_psir.data_.get_size(6);
+
+            res_magir.headers_ = res_psir.headers_;
+            res_magir.meta_ = res_psir.meta_;
+
+            hoNDArray<std::complex<float>> magIRImage;
+            magIRImage.create(RO, E1);
+
+            hoNDArray<std::complex<float>> PSIRImage;
+            PSIRImage.create(RO, E1);
+
+            // loop through the headers and meta and set fields
             size_t n, s, slc;
             for (slc=0; slc<SLC; slc++)
             {
-                for (s=0; s<S; s++)
+                for (n=0; n<N; n++)
                 {
-                    for (n=0; n<binned_N; n++)
+                    // copy the header and meta information from the PSIR result to the MAGIR result
+                    res_magir.headers_(n, 0, slc) = res_psir.headers_(n, 0, slc);
+                    res_magir.meta_[n + slc*N] = res_psir.meta_[n + slc*N];
+
+                    res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
+                    res_psir.meta_[n + slc*N].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_PSIR);
+                    res_psir.meta_[n + slc*N].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_PSIR);
+                    res_psir.meta_[n + slc*N].append(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_PSIR);
+                    if(!TI_.empty()) res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
+
+                    res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
+                    res_magir.meta_[n + slc*N].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_MAGIR);
+                    res_magir.meta_[n + slc*N].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_MAGIR);
+                    res_magir.meta_[n + slc*N].append(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_MAGIR);
+                    if(!TI_.empty()) res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
+
+                    // compute window level for the PSIR image
+                    memcpy(PSIRImage.begin(), &res_psir.data_(0,0,0,0,n,0,slc), sizeof(std::complex<float>)*RO*E1);
+                    memcpy(magIRImage.begin(), &res_magir.data_(0,0,0,0,n,0,slc), sizeof(std::complex<float>)*RO*E1);
+
+                    float window_center = 2048;
+                    float window_width = 1200;
+                    if (!calculate_window_level(magIRImage, PSIRImage, window_center, window_width))
                     {
-                        res_binning_.headers_(n, s, slc) = res_raw_.headers_(n, s, slc);
-                        res_binning_.meta_[n + s*binned_N + slc*binned_N*S] = res_raw_.meta_[n + s*N + slc*N*S];
+                        GERROR_STREAM("Failed to calculate window level for PSIR image");
+                    }
+                    else
+                    {
+                        GDEBUG_STREAM("Calculated window level for PSIR image " << n << " in slice " << slc << " : window center = " << window_center << " , window width = " << window_width);
+                        res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWCENTER, window_center);
+                        res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWWIDTH, window_width);
                     }
                 }
             }
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in CmrPSIRNetGadget::create_binning_image_headers_from_raw(...) ... ");
-        }
-    }
-
-    void CmrPSIRNetGadget::set_time_stamps(IsmrmrdImageArray& res, hoNDArray< float >& acq_time, hoNDArray< float >& cpt_time)
-    {
-        try
-        {
-            size_t N = res.headers_.get_size(0);
-            size_t S = res.headers_.get_size(1);
-            size_t SLC = res.headers_.get_size(2);
-
-            size_t n, s, slc;
-            for (slc=0; slc<SLC; slc++)
-            {
-                for (s=0; s<S; s++)
-                {
-                    for (n=0; n<N; n++)
-                    {
-                        res.headers_(n, s, slc).acquisition_time_stamp = (uint32_t)(acq_time(n, s, slc)/ this->time_tick.value() + 0.5);
-                        res.headers_(n, s, slc).physiology_time_stamp[0] = (uint32_t)(cpt_time(n, s, slc)/ this->time_tick.value() + 0.5);
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors happened in CmrPSIRNetGadget::set_time_stamps(...) ... ");
-        }
-    }
-
-    int CmrPSIRNetGadget::prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role)
-    {
-        try
-        {
-            ImageArraySendMixin::prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role);
-
-            size_t RO = res.data_.get_size(0);
-            size_t E1 = res.data_.get_size(1);
-            size_t E2 = res.data_.get_size(2);
-            size_t CHA = res.data_.get_size(3);
-            size_t N = res.data_.get_size(4);
-            size_t S = res.data_.get_size(5);
-            size_t SLC = res.data_.get_size(6);
-
-            if(this->send_out_multiple_series_by_slice_)
-            {
-                res.headers_(n, s, slc).image_series_index += 100 * res.headers_(n, s, slc).slice;
-
-                size_t offset = n + s*N + slc*N*S;
-
-                std::ostringstream ostr;
-                ostr << "_SLC" << res.headers_(n, s, slc).slice+1;
-                res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, ostr.str().c_str());
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors in GenericReconGadget::prep_image_header_send_out(...) ... ");
+            GERROR_STREAM("Errors in GenericReconGadget::compute_image_header_psir_magir(...) ... ");
             return GADGET_FAIL;
         }
 
