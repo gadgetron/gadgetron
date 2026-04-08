@@ -21,12 +21,12 @@
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
 
     <!-- store the incoming data -->
-	<!-- <gadget>
+	<gadget>
         <name>IsmrmrdDump</name>
         <dll>gadgetron_mricore</dll>
         <classname>IsmrmrdDumpGadget</classname>
         <property><name>file_prefix</name><value>LGE_PSIRNet</value></property>
-    </gadget> -->
+    </gadget>
 	
     <!-- Noise prewhitening -->
     <gadget>
