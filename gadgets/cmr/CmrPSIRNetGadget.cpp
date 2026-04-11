@@ -191,12 +191,12 @@ namespace Gadgetron {
                     this->gt_exporter_.export_array_complex(res_magir_.data_, debug_folder_full_path_ + "recon_res_magir" + os.str());
                 }
 
-                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, psir"); }
-                this->send_out_image_array(res_psir_, e, image_series.value() + ((int)e + 111), GADGETRON_IMAGE_PSIR);
-                if (perform_timing.value()) { gt_timer_.stop(); }
-
                 if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, magir"); }
                 this->send_out_image_array(res_magir_, e, image_series.value() + ((int)e + 109), GADGETRON_IMAGE_MAGIR);
+                if (perform_timing.value()) { gt_timer_.stop(); }
+
+                if (perform_timing.value()) { gt_timer_.start("CmrPSIRNetGadget::send_out_image_array, psir"); }
+                this->send_out_image_array(res_psir_, e, image_series.value() + ((int)e + 111), GADGETRON_IMAGE_PSIR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
         }
@@ -503,15 +503,15 @@ namespace Gadgetron {
                     res_magir.meta_[n + slc*N] = res_psir.meta_[n + slc*N];
 
                     res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
-                    res_psir.meta_[n + slc*N].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_PSIR);
-                    res_psir.meta_[n + slc*N].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_PSIR);
-                    res_psir.meta_[n + slc*N].append(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_PSIR);
+                    res_psir.meta_[n + slc*N].set(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_PSIR);
+                    res_psir.meta_[n + slc*N].set(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_PSIR);
+                    res_psir.meta_[n + slc*N].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_PSIR);
                     if(!TI_.empty()) res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
 
                     res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
-                    res_magir.meta_[n + slc*N].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_MAGIR);
-                    res_magir.meta_[n + slc*N].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_MAGIR);
-                    res_magir.meta_[n + slc*N].append(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_MAGIR);
+                    res_magir.meta_[n + slc*N].set(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_MAGIR);
+                    res_magir.meta_[n + slc*N].set(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_MAGIR);
+                    res_magir.meta_[n + slc*N].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_MAGIR);
                     if(!TI_.empty()) res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
 
                     // compute window level for the PSIR image
