@@ -326,17 +326,17 @@ namespace Gadgetron {
             }
 
             if (perform_timing.value()) { timer.start("compute psir ... "); }
-            hoNDArray< std::complex<float> > psir;
+            hoNDArray< float > psir; // RO, E1, 1, N*SLC
             {
                 GILLock lg;
-                PythonFunction< hoNDArray< std::complex<float> > > apply_psirnet("psirnet", "apply_psirnet");
+                PythonFunction< hoNDArray< float > > apply_psirnet("psirnet", "apply_psirnet");
                 psir = apply_psirnet(kspace_ir, kspace_pd, coil_map_model, this->model_);
             }
             if (perform_timing.value()) { timer.stop(); }
 
             if (!debug_folder_full_path_.empty()) 
             { 
-                gt_exporter_.export_array_complex(psir, debug_folder_full_path_ + "psir" + os.str()); 
+                gt_exporter_.export_array(psir, debug_folder_full_path_ + "psir" + os.str()); 
             }
 
             // set the results
@@ -350,7 +350,13 @@ namespace Gadgetron {
             {
                 for (n=0; n<N; n++)
                 {             
-                    memcpy(&res_psir_.data_(0, 0, 0, 0, n, 0, slc), &psir(0, 0, 0, n + slc*N), RO*E1*sizeof(std::complex<float>));
+                    for (e1=0; e1<E1; e1++)
+                    {
+                        for (ro=0; ro<RO; ro++)
+                        { 
+                            res_psir_.data_(ro, e1, 0, 0, n, 0, slc) = psir(ro, e1, 0, n + slc*N) + this->offset_factor_after_SCC.value();
+                        }
+                    }
                 }
             }
 
@@ -518,7 +524,7 @@ namespace Gadgetron {
                     memcpy(PSIRImage.begin(), &res_psir.data_(0,0,0,0,n,0,slc), sizeof(std::complex<float>)*RO*E1);
                     memcpy(magIRImage.begin(), &res_magir.data_(0,0,0,0,n,0,slc), sizeof(std::complex<float>)*RO*E1);
 
-                    float window_center = 2048;
+                    float window_center = this->offset_factor_after_SCC.value();
                     float window_width = 1200;
                     if (!calculate_window_level(magIRImage, PSIRImage, window_center, window_width))
                     {
