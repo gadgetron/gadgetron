@@ -114,7 +114,7 @@
         <property><name>model</name><value>PSIRNet.pts</value></property>
         <property><name>send_out_mag_IR</name><value>true</value></property>
         <property><name>scale_factor_after_SCC</name><value>1000.0</value></property>
-        <property><name>offset_factor_after_SCC</name><value>2048.0</value></property>
+        <property><name>psir_offset</name><value>16384.0</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>
