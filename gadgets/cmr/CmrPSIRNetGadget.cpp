@@ -357,13 +357,11 @@ namespace Gadgetron {
                         for (ro=0; ro<RO; ro++)
                         { 
                             res_psir_.data_(ro, e1, 0, 0, n, 0, slc) = psir(ro, e1, 0, n + slc*N) * scale_factor + this->offset_factor_after_SCC.value();
+                            res_magir_.data_(ro, e1, 0, 0, n, 0, slc) = std::complex<float>(std::abs(psir(ro, e1, 0, n + slc*N)) * scale_factor + this->offset_factor_after_SCC.value(), 0.0f);
                         }
                     }
                 }
             }
-
-            // compute magnitude image
-            Gadgetron::abs(res_psir_.data_, res_magir_.data_);
 
             if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_psir_.data_, debug_folder_full_path_ + "psir_" + os.str()); }
             if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_magir_.data_, debug_folder_full_path_ + "magir_" + os.str()); }
