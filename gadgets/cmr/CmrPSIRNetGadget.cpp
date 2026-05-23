@@ -103,9 +103,9 @@ namespace Gadgetron {
             if (!this->gt_home_.empty())
             {
                 std::string model_name = this->model.value();
-                if (!boost::algorithm::ends_with(this->model.value(), "pts"))
+                if (!boost::algorithm::ends_with(model_name, ".pts"))
                 {
-                    std::string model_name = this->model.value() + ".pts";
+                    model_name += ".pts";
                 }
 
                 GDEBUG_STREAM("Load PSIRNet model : " << model_name);
@@ -228,35 +228,43 @@ namespace Gadgetron {
 
             Gadgetron::GadgetronTimer timer(false);
 
-            // set up outputs
+            // PSIRNet is a single-shot model: each call takes one IR + one PD k-space
+            // (see psirnet/src/models.py:PSIRNet). We invoke it independently for every
+            // (average, slice) pair so that downstream tools / cardiologists can pick
+            // any single-shot reconstruction retrospectively (e.g. compare against a
+            // MOCO multi-average reference). The N dimension is preserved end-to-end.
+            //
+            // To keep the Python wrapper agnostic to the meaning of the batch dim, we
+            // pack (n, slc) into a flat batch index `b = n + slc*N` for the model inputs
+            // and unpack the same way on the outputs.
             res_psir_.data_.create(RO, E1, E2, 1, N, 1, SLC);
             res_magir_.data_.create(RO, E1, E2, 1, N, 1, SLC);
 
-            // get IR and PD k-space data
+            const size_t B = N * SLC;
+
+            // get IR and PD k-space data, flattened along batch = n + slc*N
             hoNDArray< std::complex<float> > kspace_ir;
-            kspace_ir.create(RO, E1, CHA, N*SLC);
+            kspace_ir.create(RO, E1, CHA, B);
             Gadgetron::clear(kspace_ir);
 
             hoNDArray< std::complex<float> > kspace_pd;
-            kspace_pd.create(RO, E1, CHA, N*SLC);
+            kspace_pd.create(RO, E1, CHA, B);
             Gadgetron::clear(kspace_pd);
 
-            size_t ro, e1, cha, n, s, slc;
+            size_t ro, e1, cha, slc, n;
             for (slc=0; slc<SLC; slc++)
             {
                 for (n=0; n<N; n++)
                 {
-                    //memcpy(&kspace_ir(0, 0, 0, n + slc*N), &recon_bit.data_.data_(0, 0, 0, 0, n, 0, slc), RO*E1*CHA*sizeof(std::complex<float>));
-                    //memcpy(&kspace_pd(0, 0, 0, n + slc*N), &recon_bit.data_.data_(0, 0, 0, 0, n, 1, slc), RO*E1*CHA*sizeof(std::complex<float>));
-
+                    const size_t b = n + slc*N;
                     for (cha=0; cha<CHA; cha++)
                     {
                         for (e1=0; e1<E1; e1++)
                         {
                             for (ro=0; ro<RO; ro++)
-                            {             
-                                kspace_ir(ro, e1, cha, n + slc*N) = recon_bit.data_.data_(ro, e1, 0, cha, n, 0, slc);
-                                kspace_pd(ro, e1, cha, n + slc*N) = recon_bit.data_.data_(ro, e1, 0, cha, n, 1, slc);
+                            {
+                                kspace_ir(ro, e1, cha, b) = recon_bit.data_.data_(ro, e1, 0, cha, n, 0, slc);
+                                kspace_pd(ro, e1, cha, b) = recon_bit.data_.data_(ro, e1, 0, cha, n, 1, slc);
                             }
                         }
                     }
@@ -300,19 +308,24 @@ namespace Gadgetron {
             if (perform_timing.value()) { timer.stop(); }
 
             // call the model
+            // The coil map is one per slice (independent of average), so we tile it
+            // along the same flat batch dim used for the k-space inputs.
             hoNDArray< std::complex<float> > coil_map_model;
-            coil_map_model.create(RO, E1, CHA, SLC);
+            coil_map_model.create(RO, E1, CHA, B);
             Gadgetron::clear(coil_map_model);
             for (slc=0; slc<SLC; slc++)
             {
-                // memcpy(&coil_map_model(0, 0, 0, slc), &coil_map(0, 0, 0, slc), RO*E1*CHA*sizeof(std::complex<float>));
-                for (cha=0; cha<CHA; cha++)
+                for (n=0; n<N; n++)
                 {
-                    for (e1=0; e1<E1; e1++)
+                    const size_t b = n + slc*N;
+                    for (cha=0; cha<CHA; cha++)
                     {
-                        for (ro=0; ro<RO; ro++)
-                        {             
-                            coil_map_model(ro, e1, cha, slc) = coil_map(ro, e1, 0, cha, slc);
+                        for (e1=0; e1<E1; e1++)
+                        {
+                            for (ro=0; ro<RO; ro++)
+                            {
+                                coil_map_model(ro, e1, cha, b) = coil_map(ro, e1, 0, cha, slc);
+                            }
                         }
                     }
                 }
@@ -326,38 +339,44 @@ namespace Gadgetron {
             }
 
             if (perform_timing.value()) { timer.start("compute psir ... "); }
-            hoNDArray< float > psir; // RO, E1, 1, N*SLC
+            hoNDArray< float > psir; // (RO, E1, 1, B) real-valued PSIR
             {
                 GILLock lg;
-                PythonFunction< hoNDArray< float > > apply_psirnet("psirnet", "apply_psirnet");
+                PythonFunction< hoNDArray<float> > apply_psirnet("psirnet", "apply_psirnet");
                 psir = apply_psirnet(kspace_ir, kspace_pd, coil_map_model, this->model_);
             }
             if (perform_timing.value()) { timer.stop(); }
 
-            if (!debug_folder_full_path_.empty()) 
-            { 
-                gt_exporter_.export_array(psir, debug_folder_full_path_ + "psir" + os.str()); 
+            if (!debug_folder_full_path_.empty())
+            {
+                gt_exporter_.export_array(psir, debug_folder_full_path_ + "psir" + os.str());
             }
 
-            // set the results
+            // set the results: one PSIR + one MagIR image per (slice, average)
             res_psir_.headers_.create(N, 1, SLC);
-            res_psir_.meta_.resize(N*SLC);
+            res_psir_.meta_.resize(N * SLC);
 
             res_magir_.headers_.create(N, 1, SLC);
-            res_magir_.meta_.resize(N*SLC);
+            res_magir_.meta_.resize(N * SLC);
 
-            float scale_factor = this->scale_factor_after_SCC.value();
-
+            // Unpack the flat-batch real-valued psir into the (RO,E1,E2,CHA,N,S,SLC)
+            // complex IsmrmrdImageArrays, applying the scale factor inline.
+            // PSIR stays signed (sign carried by image_type=REAL downstream);
+            // MagIR is |PSIR|. The additive psir_offset is applied later in
+            // compute_image_header_psir_magir, on res_psir_ only.
+            const float scale_factor = this->scale_factor_after_SCC.value();
             for (slc=0; slc<SLC; slc++)
             {
                 for (n=0; n<N; n++)
-                {             
+                {
+                    const size_t b = n + slc*N;
                     for (e1=0; e1<E1; e1++)
                     {
                         for (ro=0; ro<RO; ro++)
-                        { 
-                            res_psir_.data_(ro, e1, 0, 0, n, 0, slc) = psir(ro, e1, 0, n + slc*N) * scale_factor + this->offset_factor_after_SCC.value();
-                            res_magir_.data_(ro, e1, 0, 0, n, 0, slc) = std::complex<float>(std::abs(psir(ro, e1, 0, n + slc*N)) * scale_factor + this->offset_factor_after_SCC.value(), 0.0f);
+                        {
+                            const float v = psir(ro, e1, 0, b) * scale_factor;
+                            res_psir_.data_(ro, e1, 0, 0, n, 0, slc)  = std::complex<float>(v, 0.0f);
+                            res_magir_.data_(ro, e1, 0, 0, n, 0, slc) = std::complex<float>(std::abs(v), 0.0f);
                         }
                     }
                 }
@@ -493,6 +512,21 @@ namespace Gadgetron {
             hoNDArray<std::complex<float>> PSIRImage;
             PSIRImage.create(RO, E1);
 
+            // PSIR is a real-valued, signed image. The scanner only consumes unsigned shorts,
+            // so we shift the PSIR pixel values into a strictly non-negative range at the very
+            // end of this function. Until then, everything downstream of `perform_psir` must
+            // see the signed values. Two things are required to make the rest of the chain do
+            // the right thing with PSIR:
+            //   1. `ComplexToFloatGadget` branches on `header.image_type`: MAGNITUDE -> abs(),
+            //      REAL -> real(). The base-class `compute_image_header(...)` hard-codes
+            //      MAGNITUDE, which would strip the sign. We tag PSIR as REAL here.
+            //   2. We record the additive offset in `GADGETRON_IMAGE_SCALE_OFFSET` meta so the
+            //      receiving viewer/DICOM stage can recover the signed value.
+            // MagIR is left as MAGNITUDE (it is |IR|, non-negative) and is not shifted.
+            // Sourced from the `psir_offset` gadget property so the actual additive shift, the
+            // SCALE_OFFSET meta, and the window-centre adjustment all stay in lock-step.
+            const double psir_offset = this->psir_offset.value();
+
             // loop through the headers and meta and set fields
             size_t n, s, slc;
             for (slc=0; slc<SLC; slc++)
@@ -503,10 +537,15 @@ namespace Gadgetron {
                     res_magir.headers_(n, 0, slc) = res_psir.headers_(n, 0, slc);
                     res_magir.meta_[n + slc*N] = res_psir.meta_[n + slc*N];
 
+                    // Override the MAGNITUDE default planted by GenericReconGadget::compute_image_header.
+                    res_psir.headers_(n, 0, slc).image_type  = ISMRMRD::ISMRMRD_IMTYPE_REAL;
+                    res_magir.headers_(n, 0, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
                     res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
                     res_psir.meta_[n + slc*N].set(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_PSIR);
                     res_psir.meta_[n + slc*N].set(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_PSIR);
                     res_psir.meta_[n + slc*N].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_PSIR);
+                    res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_OFFSET, (double)psir_offset);
                     if(!TI_.empty()) res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
 
                     res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
@@ -515,11 +554,11 @@ namespace Gadgetron {
                     res_magir.meta_[n + slc*N].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_MAGIR);
                     if(!TI_.empty()) res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
 
-                    // compute window level for the PSIR image
+                    // compute window level for the PSIR image on the signed (un-shifted) values.
                     memcpy(PSIRImage.begin(), &res_psir.data_(0,0,0,0,n,0,slc), sizeof(std::complex<float>)*RO*E1);
                     memcpy(magIRImage.begin(), &res_magir.data_(0,0,0,0,n,0,slc), sizeof(std::complex<float>)*RO*E1);
 
-                    float window_center = this->offset_factor_after_SCC.value();
+                    float window_center = 2048;
                     float window_width = 1200;
                     if (!calculate_window_level(magIRImage, PSIRImage, window_center, window_width))
                     {
@@ -528,11 +567,17 @@ namespace Gadgetron {
                     else
                     {
                         GDEBUG_STREAM("Calculated window level for PSIR image " << n << " in slice " << slc << " : window center = " << window_center << " , window width = " << window_width);
-                        res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWCENTER, window_center);
-                        res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWWIDTH, window_width);
+                        // The pixel data is shifted by `psir_offset` below, so the window centre
+                        // must shift by the same amount to remain valid for the displayed pixels.
+                        res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWCENTER, (double)(window_center + psir_offset));
+                        res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWWIDTH, (double)window_width);
                     }
                 }
             }
+
+            // Final positive-shift so the unsigned-short conversion downstream preserves the sign.
+            // Only the PSIR image is shifted; MagIR is already non-negative.
+            res_psir.data_ += static_cast<double>(psir_offset);
         }
         catch (...)
         {

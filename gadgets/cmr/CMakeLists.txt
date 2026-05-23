@@ -80,6 +80,15 @@ if (BUILD_PYTHON_SUPPORT)
         )
 
     install(FILES ${python_LandmarkDetection_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH}/cmr_lax_landmark_detection COMPONENT main)
+
+    # PSIRNet Python inference wrapper.
+    # CmrPSIRNetGadget expects this module to be importable as `psirnet` from
+    #   $GADGETRON_HOME/share/gadgetron/python/cmr_ml/
+    # The TorchScript model (PSIRNet.pts) is bind-mounted at runtime into
+    #   $GADGETRON_HOME/share/gadgetron/python/cmr_ml/models/PSIRNet.pts
+    set( python_PSIRNet_files python/psirnet.py )
+    source_group(python FILES ${python_PSIRNet_files})
+    install(FILES ${python_PSIRNet_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH}/cmr_ml COMPONENT main)
 endif ()
 
 add_library(gadgetron_cmr SHARED 
