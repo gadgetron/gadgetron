@@ -163,9 +163,9 @@ def apply_psirnet(IR, PD, coil_map, model,
     RO, E1, CHA, B = IR.shape
     if PD.shape != IR.shape:
         raise ValueError(f"apply_psirnet: PD shape {PD.shape} != IR shape {IR.shape}")
-    if coil_map.shape != IR.shape:
-        raise ValueError(
-            f"apply_psirnet: coil_map shape {coil_map.shape} != IR shape {IR.shape}")
+    # if coil_map.shape != IR.shape:
+    #     raise ValueError(
+    #         f"apply_psirnet: coil_map shape {coil_map.shape} != IR shape {IR.shape}")
 
     if verbose:
         logger.info(f"---> apply_psirnet IR  {IR.shape} {IR.dtype}")
@@ -189,7 +189,7 @@ def apply_psirnet(IR, PD, coil_map, model,
             for b in range(B):
                 ir_k = IR[:, :, :, b]            # (RO, E1, CHA) one batch element
                 pd_k = PD[:, :, :, b]
-                sm_k = coil_map[:, :, :, b]
+                sm_k = coil_map[:, :, :, b if b < coil_map.shape[3] else coil_map.shape[3]-1]
 
                 a = _to_model_input(ir_k, device, torch.cfloat)
                 a_pd = _to_model_input(pd_k, device, torch.cfloat)
