@@ -356,8 +356,8 @@ namespace Gadgetron {
                     {
                         for (ro=0; ro<RO; ro++)
                         { 
-                            res_psir_.data_(ro, e1, 0, 0, n, 0, slc) = psir(ro, e1, 0, n + slc*N) * scale_factor + this->offset_factor_after_SCC.value();
-                            res_magir_.data_(ro, e1, 0, 0, n, 0, slc) = std::complex<float>(std::abs(psir(ro, e1, 0, n + slc*N)) * scale_factor + this->offset_factor_after_SCC.value(), 0.0f);
+                            res_psir_.data_(ro, e1, 0, 0, n, 0, slc) = std::complex<float>(psir(ro, e1, 0, n + slc*N) * scale_factor + this->offset_factor_after_SCC.value(), 0.0f);
+                            res_magir_.data_(ro, e1, 0, 0, n, 0, slc) = std::complex<float>(std::abs(psir(ro, e1, 0, n + slc*N)) * scale_factor, 0.0f);
                         }
                     }
                 }
@@ -377,7 +377,7 @@ namespace Gadgetron {
         try
         {
             // since gfactor is not taken into account here, we need higher thresholding ratio
-            float thres =  2;
+            float thres =  2 * this->scale_factor_after_SCC.value();
 
             size_t N = PSIRImage.get_number_of_elements();
 

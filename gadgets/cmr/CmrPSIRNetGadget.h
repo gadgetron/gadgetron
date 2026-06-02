@@ -32,7 +32,7 @@ namespace Gadgetron {
         GADGET_PROPERTY(model, std::string, "model file", "psirnet_model.pts");
 
         GADGET_PROPERTY(send_out_mag_IR, bool, "Whether to set out magIR images", true);
-        GADGET_PROPERTY(offset_factor_after_SCC, double, "Offset factor after psir", 2048);
+        GADGET_PROPERTY(offset_factor_after_SCC, double, "Offset factor after psir", 16384.0);
         GADGET_PROPERTY(scale_factor_after_SCC, double, "Scaling factor after psir", 1000);
 
     protected:
