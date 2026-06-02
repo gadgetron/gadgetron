@@ -1,6 +1,7 @@
 
 #include "CmrPSIRNetGadget.h"
 #include "hoNDImage_util.h"
+#include "hoNDArray_reductions.h"
 #include <boost/algorithm/string.hpp>
 #include <sstream>
 
@@ -509,6 +510,9 @@ namespace Gadgetron {
             hoNDArray<std::complex<float>> magIRImage;
             magIRImage.create(RO, E1);
 
+            hoNDArray<float> magIRImage_float;
+            magIRImage_float.create(RO, E1);
+
             hoNDArray<std::complex<float>> PSIRImage;
             PSIRImage.create(RO, E1);
 
@@ -572,6 +576,15 @@ namespace Gadgetron {
                         res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWCENTER, (double)(window_center + psir_offset));
                         res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWWIDTH, (double)window_width);
                     }
+
+                    // compute magIR windowing
+                    Gadgetron::abs(magIRImage, magIRImage_float);
+                    float fraction = 0.95;
+                    float high_end = Gadgetron::percentile(magIRImage_float, fraction);
+                    window_center = (high_end - 0.02 * this->scale_factor_after_SCC.value()) / 2;
+                    res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWCENTER, (double)window_center);
+                    res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_WINDOWWIDTH, (double)window_width);
+                    GDEBUG_STREAM("Calculated window level for MagIR image " << n << " in slice " << slc << " : window center = " << window_center << " , window width = " << window_width);
                 }
             }
 
