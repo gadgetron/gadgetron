@@ -37,7 +37,7 @@ namespace Gadgetron {
             "Additive shift applied to PSIR so the scanner sees unsigned values; "
             "also written as GADGETRON_IMAGE_SCALE_OFFSET meta so downstream stages "
             "can recover the signed value.",
-            16384.0);
+            4096.0);
 
     protected:
 

@@ -549,7 +549,7 @@ namespace Gadgetron {
                     res_psir.meta_[n + slc*N].set(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_PSIR);
                     res_psir.meta_[n + slc*N].set(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_PSIR);
                     res_psir.meta_[n + slc*N].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_PSIR);
-                    res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_OFFSET, (double)psir_offset);
+                    // res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_OFFSET, (double)psir_offset);
                     if(!TI_.empty()) res_psir.meta_[n + slc*N].set(GADGETRON_IMAGE_INVERSIONTIME, TI_[0]);
 
                     res_magir.meta_[n + slc*N].set(GADGETRON_IMAGE_SCALE_RATIO, 1.0);
