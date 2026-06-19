@@ -2170,7 +2170,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::sendOutRGBImages(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool resetImageCommentsParametricMaps, Gadget* anchor)
+    bool GenericImageReconGadget::sendOutRGBImages(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool rgb_on_cha, bool resetImageCommentsParametricMaps, Gadget* anchor)
     {
         try
         {
@@ -2194,7 +2194,7 @@ namespace Gadgetron {
                 dataRoleString = ostr.str();
             }
 
-            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out RBG " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+            GDEBUG_STREAM("--> GenericImageReconGadget, sending out RBG " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
                 << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
 
             size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
@@ -2256,41 +2256,61 @@ namespace Gadgetron {
 
                                                 cm1->getObjectPtr()->image_type = 6; // ISMRMRD_IMTYPE_RGB;
                                                 cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
-                                                if (add_original_series_num.value())
+                                                if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
+
+                                                if (rgb_on_cha)
                                                 {
-                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index += seriesNum;
+                                                    // set the image data
+                                                    size_t RO = pImage->get_size(0);
+                                                    size_t E1 = pImage->get_size(1);
+                                                    size_t E2 = pImage->get_size(2);
+
+                                                    dim3D[0] = RO;
+                                                    dim3D[1] = E1;
+                                                    dim3D[2] = E2;
+
+                                                    cm1->getObjectPtr()->matrix_size[0] = RO;
+                                                    cm1->getObjectPtr()->matrix_size[1] = E1;
+                                                    cm1->getObjectPtr()->matrix_size[2] = 1;
+
+                                                    cm1->getObjectPtr()->channels = E2;
+
+                                                    cm2->getObjectPtr()->create(dim3D);
+                                                    uint16_t* p_img = cm2->getObjectPtr()->get_data_ptr();
+
+                                                    for (size_t k = 0; k < RO * E1 * E2; k++)
+                                                    {
+                                                        p_img[k] = uint16_t((*pImage)(k));
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
-                                                }
+                                                    // set the image data
+                                                    size_t RO = pImage->get_size(0);
+                                                    size_t E1 = pImage->get_size(1);
+                                                    size_t E2 = pImage->get_size(2);
 
-                                                // set the image data
-                                                size_t RO = pImage->get_size(0);
-                                                size_t E1 = pImage->get_size(1);
-                                                size_t E2 = pImage->get_size(2);
+                                                    dim3D[0] = RO;
+                                                    dim3D[1] = E1;
+                                                    dim3D[2] = E2;
 
-                                                dim3D[0] = RO;
-                                                dim3D[1] = E1;
-                                                dim3D[2] = E2;
+                                                    cm1->getObjectPtr()->matrix_size[0] = RO;
+                                                    cm1->getObjectPtr()->matrix_size[1] = E1;
+                                                    cm1->getObjectPtr()->matrix_size[2] = E2;
 
-                                                cm1->getObjectPtr()->matrix_size[0] = RO;
-                                                cm1->getObjectPtr()->matrix_size[1] = E1;
-                                                cm1->getObjectPtr()->matrix_size[2] = E2;
+                                                    cm2->getObjectPtr()->create(dim3D);
+                                                    uint16_t* p_img = cm2->getObjectPtr()->get_data_ptr();
 
-                                                cm2->getObjectPtr()->create(dim3D);
-                                                uint16_t* p_img = cm2->getObjectPtr()->get_data_ptr();
-
-                                                for (size_t k = 0; k < RO * E1 * E2; k++)
-                                                {
-                                                    p_img[k] = uint16_t((*pImage)(k));
+                                                    for (size_t k = 0; k < RO * E1 * E2; k++)
+                                                    {
+                                                        p_img[k] = uint16_t((*pImage)(k));
+                                                    }
                                                 }
 
                                                 // set the attributes
+                                                pImage->attrib_.set("SiemensControl_ForceTemporalMF", "bool");
+                                                pImage->attrib_.append("SiemensControl_ForceTemporalMF", "true");
                                                 *cm3->getObjectPtr() = pImage->attrib_;
-
-                                                std::vector<float> windowCenter, windowWidth;
-                                                this->decorateImageHeader(*cm1->getObjectPtr(), *cm3->getObjectPtr(), seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
 
                                                 if (anchor != NULL)
                                                 {
@@ -2333,7 +2353,7 @@ namespace Gadgetron {
     }
 
 
-    bool GenericImageReconGadget::sendOutRGBImageBuffer(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool resetImageCommentsParametricMaps, Gadget* anchor)
+    bool GenericImageReconGadget::sendOutRGBImageBuffer(Image3DMagBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, bool rgb_on_cha, bool resetImageCommentsParametricMaps, Gadget* anchor)
     {
         try
         {
@@ -2357,7 +2377,7 @@ namespace Gadgetron {
                 dataRoleString = ostr.str();
             }
 
-            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out RGB image array " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+            GDEBUG_STREAM("--> GenericImageReconGadget, sending out RGB image array " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
                 << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
 
             size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
@@ -2403,14 +2423,7 @@ namespace Gadgetron {
 
                                                 pImage->header_.image_type = 6; // ISMRMRD_IMTYPE_RGB;
                                                 pImage->header_.data_type = ISMRMRD::ISMRMRD_USHORT;
-                                                if (add_original_series_num.value())
-                                                {
-                                                    if (seriesNum >= 0) pImage->header_.image_series_index += seriesNum;
-                                                }
-                                                else
-                                                {
-                                                    if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
-                                                }
+                                                if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
@@ -2424,9 +2437,6 @@ namespace Gadgetron {
                                                 pImage->header_.matrix_size[0] = RO;
                                                 pImage->header_.matrix_size[1] = E1;
                                                 pImage->header_.matrix_size[2] = E2;
-
-                                                std::vector<float> wc, ww;
-                                                this->decorateImageHeader(pImage->header_, pImage->attrib_, seriesNum, processStr, dataRole, wc, ww, resetImageCommentsParametricMaps, slc, SLC);
                                             }
                                             catch (...)
                                             {
