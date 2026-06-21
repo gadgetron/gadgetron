@@ -2221,7 +2221,7 @@ namespace Gadgetron {
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                             Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
-                                            Gadgetron::GadgetContainerMessage<ImgRGBType>* cm2 = new Gadgetron::GadgetContainerMessage<ImgRGBType>();
+                                            Gadgetron::GadgetContainerMessage< hoNDArray<unsigned short> >* cm2 = new Gadgetron::GadgetContainerMessage< hoNDArray<unsigned short> >();
                                             Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
 
                                             try
@@ -2255,11 +2255,12 @@ namespace Gadgetron {
                                                 }
 
                                                 cm1->getObjectPtr()->image_type = 6; // ISMRMRD_IMTYPE_RGB;
-                                                cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
                                                 if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
 
                                                 if (rgb_on_cha)
                                                 {
+                                                    cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
+
                                                     // set the image data
                                                     size_t RO = pImage->get_size(0);
                                                     size_t E1 = pImage->get_size(1);
@@ -2276,15 +2277,19 @@ namespace Gadgetron {
                                                     cm1->getObjectPtr()->channels = E2;
 
                                                     cm2->getObjectPtr()->create(dim3D);
-                                                    uint16_t* p_img = cm2->getObjectPtr()->get_data_ptr();
+                                                    unsigned short* p_img = cm2->getObjectPtr()->get_data_ptr();
 
                                                     for (size_t k = 0; k < RO * E1 * E2; k++)
                                                     {
-                                                        p_img[k] = uint16_t((*pImage)(k));
+                                                        float v = (*pImage)(k);
+                                                        if (v < 1.0f) v *= 255.0f;
+                                                        p_img[k] = static_cast<unsigned short>(v);
                                                     }
                                                 }
                                                 else
                                                 {
+                                                    cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
+
                                                     // set the image data
                                                     size_t RO = pImage->get_size(0);
                                                     size_t E1 = pImage->get_size(1);
@@ -2299,11 +2304,13 @@ namespace Gadgetron {
                                                     cm1->getObjectPtr()->matrix_size[2] = E2;
 
                                                     cm2->getObjectPtr()->create(dim3D);
-                                                    uint16_t* p_img = cm2->getObjectPtr()->get_data_ptr();
+                                                    unsigned short* p_img = cm2->getObjectPtr()->get_data_ptr();
 
                                                     for (size_t k = 0; k < RO * E1 * E2; k++)
                                                     {
-                                                        p_img[k] = uint16_t((*pImage)(k));
+                                                        float v = (*pImage)(k);
+                                                        if (v < 1.0f) v *= 255.0f;
+                                                        p_img[k] = static_cast<unsigned short>(v);
                                                     }
                                                 }
 
