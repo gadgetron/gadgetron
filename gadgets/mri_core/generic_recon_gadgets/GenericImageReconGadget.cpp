@@ -2194,7 +2194,7 @@ namespace Gadgetron {
                 dataRoleString = ostr.str();
             }
 
-            GDEBUG_STREAM("--> GenericImageReconGadget, sending out RBG " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+            GDEBUG_STREAM("--> GenericImageReconGadget, sending out RBG " << dataRoleString << " images for series " << seriesNum << ", rgb_on_cha " << rgb_on_cha << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
                 << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
 
             size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
@@ -2311,6 +2311,8 @@ namespace Gadgetron {
                                                 pImage->attrib_.set("SiemensControl_ForceTemporalMF", "bool");
                                                 pImage->attrib_.append("SiemensControl_ForceTemporalMF", "true");
                                                 *cm3->getObjectPtr() = pImage->attrib_;
+
+                                                GDEBUG_STREAM("--> GenericImageReconGadget, sending out RBG image " << cm1->getObjectPtr()->image_index << ", [RO, E1, E2, CHA] : " << cm1->getObjectPtr()->matrix_size[0] << " " << cm1->getObjectPtr()->matrix_size[1] << " " << cm1->getObjectPtr()->matrix_size[2] << " " << cm1->getObjectPtr()->channels << " for series " << cm1->getObjectPtr()->image_series_index);
 
                                                 if (anchor != NULL)
                                                 {
