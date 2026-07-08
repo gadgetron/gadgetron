@@ -119,6 +119,8 @@ namespace Gadgetron {
 
         const std::string measurement_id;
         std::vector<size_t> scale_only_channels;
+        mutable std::vector<std::string> loaded_noise_labels;
+        mutable size_t loaded_noise_sample_count = 0;
 
         // We will store/load a copy of the noise scans XML header to enable us to check which coil layout, etc.
         const ISMRMRD::IsmrmrdHeader current_ismrmrd_header;
