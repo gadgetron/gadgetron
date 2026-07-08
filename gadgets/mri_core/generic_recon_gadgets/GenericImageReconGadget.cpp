@@ -1696,7 +1696,7 @@ namespace Gadgetron {
 
                                                 this->decorateImageHeader(*cm1->getObjectPtr(), *cm3->getObjectPtr(), seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
 
-                                                GDEBUG_CONDITION_STREAM(verbose.value(), "--> sending out image series " << cm1->getObjectPtr()->image_series_index);
+                                                // GDEBUG_CONDITION_STREAM(verbose.value(), "--> sending out image series " << cm1->getObjectPtr()->image_series_index);
 
                                                 if (anchor != NULL)
                                                 {

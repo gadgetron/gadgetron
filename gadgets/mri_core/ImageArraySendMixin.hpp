@@ -109,7 +109,7 @@ template<class Derived> void Gadgetron::ImageArraySendMixin<Derived>::prepare_im
                     {
                         for (size_t cha = 0; cha < CHA; cha++)
                         {
-                            GDEBUG_STREAM("sending out " << data_role << " image [CHA SLC CON PHS REP SET AVE] = [" << cha << " "<< res.headers_(n, s, slc).slice << " " << res.headers_(n, s, slc).contrast << " "<< res.headers_(n, s, slc).phase << " " << res.headers_(n, s, slc).repetition << " " << res.headers_(n, s, slc).set << " " << res.headers_(n, s, slc).average << " " << "] " << " -- Image series -- " << res.headers_(n, s, slc).image_series_index << " -- Image number -- " << res.headers_(n, s, slc).image_index);
+                            // GDEBUG_STREAM("sending out " << data_role << " image [CHA SLC CON PHS REP SET AVE] = [" << cha << " "<< res.headers_(n, s, slc).slice << " " << res.headers_(n, s, slc).contrast << " "<< res.headers_(n, s, slc).phase << " " << res.headers_(n, s, slc).repetition << " " << res.headers_(n, s, slc).set << " " << res.headers_(n, s, slc).average << " " << "] " << " -- Image series -- " << res.headers_(n, s, slc).image_series_index << " -- Image number -- " << res.headers_(n, s, slc).image_index);
                         }
                     }
                 }
