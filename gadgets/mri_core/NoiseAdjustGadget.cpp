@@ -14,6 +14,9 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <cmath>
+#include <iomanip>
+#include <limits>
 #include <typeinfo>
 
 using namespace std::string_literals;
@@ -164,6 +167,67 @@ namespace Gadgetron {
             return std::move(noise_covariance);
         }
 
+        void print_covariance_matrix(const hoNDArray<std::complex<float>>& covariance, const std::vector<std::string>& labels = {}, size_t num_samples = 0) {
+            const char* shades = " \xE2\x96\x91\xE2\x96\x92\xE2\x96\x93\xE2\x96\x88";
+            const int shade_widths[] = {1, 3, 3, 3, 3}; // byte widths: ' '=1, UTF-8 block chars=3
+            size_t n = covariance.get_size(0);
+
+            // Compute absolute values and find maximum
+            float max_val = 0.0f;
+            for (size_t i = 0; i < n * n; i++) {
+                float a = std::abs(covariance.data()[i]);
+                if (a > max_val) max_val = a;
+            }
+
+            if (max_val == 0.0f) max_val = 1.0f;
+
+            std::string output;
+            output += "\033[32mNoise covariance matrix:\033[0m\n";
+            std::ostringstream max_val_stream;
+            max_val_stream << std::scientific << std::setprecision(3) << max_val;
+            output += "Noise covariance matrix (" + std::to_string(n) + " x " + std::to_string(n) + " channels), max = " + max_val_stream.str() + (num_samples ? ", samples = " + std::to_string(num_samples) : "") + ":\n";
+            size_t max_label_width = 0;
+            for (const auto& label : labels) {
+                max_label_width = std::max(max_label_width, label.size());
+            }
+
+            float min_nonzero_diag = std::numeric_limits<float>::infinity();
+            for (size_t i = 0; i < n; i++) {
+                float diag_abs = std::abs(covariance(i, i));
+                if (diag_abs > 0.0f) {
+                    min_nonzero_diag = std::min(min_nonzero_diag, diag_abs);
+                }
+            }
+
+            int scale_power = 0;
+            if (std::isfinite(min_nonzero_diag) && min_nonzero_diag < 1.0f) {
+                scale_power = static_cast<int>(std::ceil(-std::log10(min_nonzero_diag)));
+            }
+            float scale_factor = std::pow(10.0f, static_cast<float>(scale_power));
+            output += "diag scale factor = 10^" + std::to_string(scale_power) + "\n";
+
+            for (size_t i = 0; i < n; i++) {
+                if (i < labels.size()) {
+                    output += labels[i];
+                    output.append(max_label_width - labels[i].size(), ' ');
+                    output += " | ";
+                }
+                for (size_t j = 0; j < n; j++) {
+                    float normalized = std::abs(covariance(i, j)) / max_val;
+                    int idx = std::min((int)(normalized * 5.0f), 4);
+                    const char* p = shades;
+                    for (int k = 0; k < idx; k++) p += shade_widths[k];
+                    output.append(p, shade_widths[idx]);
+                }
+                std::ostringstream diagonal_stream;
+                diagonal_stream << std::fixed << std::setprecision(2) << std::setw(5)
+                                << std::abs(covariance(i, i)) * scale_factor;
+                output += " | diag = " + diagonal_stream.str();
+                output += '\n';
+            }
+            GDEBUG("%s", output.c_str());
+        }
+
         float calculate_scale_factor(
             float acquisition_dwell_time_us, float noise_dwell_time_us, float receiver_noise_bandwidth) {
             float noise_bw_scale_factor;
@@ -242,14 +306,20 @@ namespace Gadgetron {
                         }
                     }
                 }
-                return LoadedNoise{noise_covariance->matrix_,noise_covariance->noise_dwell_time_us_};
+                loaded_noise_labels = noise_covariance->labels_;
+                loaded_noise_sample_count = noise_covariance->sample_count_;
+                GDEBUG("\033[32mSuccessfully loaded stored noise data with %zu channels and %zu samples\033[0m\n", CHA, noise_covariance->sample_count_);
+                // print_covariance_matrix(noise_covariance->matrix_, loaded_noise_labels, loaded_noise_sample_count);
+
+                return LoadedNoise{noise_covariance->matrix_, noise_covariance->noise_dwell_time_us_};
 
             } else if (current_ismrmrd_header.acquisitionSystemInformation) {
-                GERROR("Noise covariance matrix is malformed. Number of labels does not match number of channels.");
+                GERROR("\033[31mNoise covariance matrix is malformed. Number of labels does not match number of channels.\033[0m\n");
             }
         }
 
         // No noise data found, gather it
+        GDEBUG("\033[31mNo noise covariance data found, will gather from noise scans.\033[0m\n");
         return NoiseGatherer{};
     }
 
@@ -288,10 +358,7 @@ namespace Gadgetron {
 
     template <> void NoiseAdjustGadget::save_noisedata(NoiseGatherer& ng) {
         if (ng.tmp_covariance.empty())
-        {
-            GDEBUG_STREAM("ng.tmp_covariance.empty()");
             return;
-        }
 
         normalize_covariance(ng);
 
@@ -308,11 +375,10 @@ namespace Gadgetron {
             ng.noise_dwell_time_us,
             receiver_noise_bandwidth);
 
-        GDEBUG_STREAM("noise_covariance_out is " << noise_covariance_out);
         if (!noise_covariance_out.empty()) {
             std::ofstream os(noise_covariance_out, std::ios::out | std::ios::binary);
             if (os.is_open()) {
-                GDEBUG("Writing noise covariance to %s\n", noise_covariance_out.c_str());
+                GDEBUG("\033[32mWriting noise covariance from %zu samples to %s\033[0m\n", ng.total_number_of_samples, noise_covariance_out.c_str());
                 noise_covariance.SerializeToSfndam(os);
                 os.flush();
                 os.close();
@@ -320,7 +386,7 @@ namespace Gadgetron {
                 GERROR("Unable to open file %s for writing noise covariance\n", noise_covariance_out.c_str());
             }
         } else {
-            GDEBUG_STREAM("STORE noise_covariance_out into the measurement_storage ... ");
+            GDEBUG("\033[32mSaving noise covariance from %zu samples to storage server\033[0m\n", ng.total_number_of_samples);
             this->measurement_storage->store("noise_covariance", noise_covariance);
         }
     }
@@ -392,21 +458,38 @@ namespace Gadgetron {
                                   : std::vector<size_t>{};
 
 
+        bool first_non_noise = true;
         for (auto acq : input) {
             if (is_noise(acq)) {
                 add_noise(noisehandler, acq);
                 continue;
             }
+            if (first_non_noise) {
+                first_non_noise = false;
+                Core::visit([this](const auto& h) {
+                    if constexpr (std::is_same_v<std::decay_t<decltype(h)>, NoiseGatherer>) {
+                        GDEBUG("Processing first non-noise scan.  Using noise scans gathered during this scan\n");
+                        std::vector<std::string> coil_labels;
+                        if (current_ismrmrd_header.acquisitionSystemInformation)
+                            for (auto& l : current_ismrmrd_header.acquisitionSystemInformation->coilLabel)
+                                coil_labels.push_back(l.coilName);
+                        print_covariance_matrix(h.tmp_covariance, coil_labels, h.total_number_of_samples);
+                    } else if constexpr (std::is_same_v<std::decay_t<decltype(h)>, LoadedNoise>) {
+                        GDEBUG("Processing first non-noise scan.  Using loaded covariance matrix from noise scans gathered in a dependent measurement\n");
+                        print_covariance_matrix(h.covariance, loaded_noise_labels, loaded_noise_sample_count);
+                    }
+                }, noisehandler);
+            }
             noisehandler = handle_acquisition(std::move(noisehandler), acq);
             output.push(std::move(acq));
         }
 
-        GDEBUG_STREAM("Save noise matrix ... ");
         this->save_noisedata(noisehandler);
     }
 
     Core::optional<NoiseCovariance> NoiseAdjustGadget::load_noisedata() const {
         if (!noise_covariance_in.empty()) {
+            GDEBUG("\033[33mAttempting to load noise covariance file %s\033[0m\n", noise_covariance_in.c_str());
             std::ifstream file(noise_covariance_in, std::ios::binary);
             if (!file) {
                 GERROR("Could not open noise covariance file %s\n", noise_covariance_in.c_str());
@@ -428,8 +511,7 @@ namespace Gadgetron {
                 return Core::none;
 
             auto noise_dependency = *val;
-            GDEBUG("Measurement ID of noise dependency is %s\n", noise_dependency.measurementID.c_str());
-            GDEBUG_STREAM("LOAD noise_covariance_out from the measurement_storage ... ");
+            GDEBUG("\033[33mAttempting to retrieve noise_covariance from storage server, measurementID %s\033[0m\n", noise_dependency.measurementID.c_str());
             return measurement_storage->get_latest<NoiseCovariance>(noise_dependency.measurementID, "noise_covariance");
         }
     }
