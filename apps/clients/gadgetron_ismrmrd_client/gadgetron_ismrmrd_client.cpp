@@ -1609,57 +1609,58 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
     con.set_timeout(timeout_ms);
     std::string result;
     NoiseStatistics stat;
+    stat.status = false;
 
     con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, std::make_shared<GadgetronClientQueryToStringReader>(result));
     
-    std::string xml_config;
+    // std::string xml_config;
     
-    xml_config += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    xml_config += "      <gadgetronStreamConfiguration xsi:schemaLocation=\"http://gadgetron.sf.net/gadgetron gadgetron.xsd\"\n";
-    xml_config += "        xmlns=\"http://gadgetron.sf.net/gadgetron\"\n";
-    xml_config += "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n";
-    xml_config += "\n";
-    xml_config += "    <writer>\n";
-    xml_config += "      <slot>1019</slot>\n";
-    xml_config += "      <dll>gadgetron_mricore</dll>\n";
-    xml_config += "      <classname>DependencyQueryWriter</classname>\n";
-    xml_config += "    </writer>\n";
-    xml_config += "\n";
-    xml_config += "    <gadget>\n";
-    xml_config += "      <name>NoiseSummary</name>\n";
-    xml_config += "      <dll>gadgetron_mricore</dll>\n";
-    xml_config += "      <classname>NoiseSummaryGadget</classname>\n";
-    xml_config += "\n";
-    xml_config += "      <property>\n";
-    xml_config += "         <name>noise_file</name>\n";
-    xml_config += "         <value>" + dependency_name + "</value>\n";
-    xml_config += "      </property>\n";
-    xml_config += "    </gadget>\n";
-    xml_config += "\n";
-    xml_config += "</gadgetronStreamConfiguration>\n";
+    // xml_config += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    // xml_config += "      <gadgetronStreamConfiguration xsi:schemaLocation=\"http://gadgetron.sf.net/gadgetron gadgetron.xsd\"\n";
+    // xml_config += "        xmlns=\"http://gadgetron.sf.net/gadgetron\"\n";
+    // xml_config += "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n";
+    // xml_config += "\n";
+    // xml_config += "    <writer>\n";
+    // xml_config += "      <slot>1019</slot>\n";
+    // xml_config += "      <dll>gadgetron_mricore</dll>\n";
+    // xml_config += "      <classname>DependencyQueryWriter</classname>\n";
+    // xml_config += "    </writer>\n";
+    // xml_config += "\n";
+    // xml_config += "    <gadget>\n";
+    // xml_config += "      <name>NoiseSummary</name>\n";
+    // xml_config += "      <dll>gadgetron_mricore</dll>\n";
+    // xml_config += "      <classname>NoiseSummaryGadget</classname>\n";
+    // xml_config += "\n";
+    // xml_config += "      <property>\n";
+    // xml_config += "         <name>noise_file</name>\n";
+    // xml_config += "         <value>" + dependency_name + "</value>\n";
+    // xml_config += "      </property>\n";
+    // xml_config += "    </gadget>\n";
+    // xml_config += "\n";
+    // xml_config += "</gadgetronStreamConfiguration>\n";
 
-    try {
-        con.connect(host_name,port);
-        con.send_gadgetron_configuration_script(xml_config);
-        con.send_gadgetron_close();
-        con.wait();
-    } catch (...) {
-        std::cerr << "Unable to retrieve noise statistics from server" << std::endl;
-        stat.status = false;
-    }
+    // try {
+    //     con.connect(host_name,port);
+    //     con.send_gadgetron_configuration_script(xml_config);
+    //     con.send_gadgetron_close();
+    //     con.wait();
+    // } catch (...) {
+    //     std::cerr << "Unable to retrieve noise statistics from server" << std::endl;
+    //     stat.status = false;
+    // }
 
-    try {
-        ISMRMRD::MetaContainer meta;
-        ISMRMRD::deserialize(result.c_str(), meta);
-        stat.status = meta.as_str("status") == std::string("success");
-        stat.channels = meta.as_long("channels");
-        stat.sigma_min = meta.as_double("min_sigma");
-        stat.sigma_max = meta.as_double("max_sigma");
-        stat.sigma_mean = meta.as_double("mean_sigma");
-        stat.noise_dwell_time_us = meta.as_double("noise_dwell_time_us");
-    } catch (...) {
-        stat.status = false;
-    }
+    // try {
+    //     ISMRMRD::MetaContainer meta;
+    //     ISMRMRD::deserialize(result.c_str(), meta);
+    //     stat.status = meta.as_str("status") == std::string("success");
+    //     stat.channels = meta.as_long("channels");
+    //     stat.sigma_min = meta.as_double("min_sigma");
+    //     stat.sigma_max = meta.as_double("max_sigma");
+    //     stat.sigma_mean = meta.as_double("mean_sigma");
+    //     stat.noise_dwell_time_us = meta.as_double("noise_dwell_time_us");
+    // } catch (...) {
+    //     stat.status = false;
+    // }
 
     return stat;
 }

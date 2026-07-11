@@ -45,32 +45,34 @@ namespace Gadgetron
                 legacy_id = legacy_id.substr(legacy_prefix.size());
             }
 
-            auto noise_covariance = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
+            //auto noise_covariance = this->context.storage.measurement->get_latest<NoiseCovariance>(legacy_id, "noise_covariance");
 
-            if (!noise_covariance) {
+            if (false) {
                 dependencies.append("status", "failed");
             } else {
-                const auto& noise_covariance_matrix = noise_covariance->matrix_;
+                // const auto& noise_covariance_matrix = noise_covariance->matrix_;
 
-                size_t coils = noise_covariance_matrix.get_size(0);
+                // size_t coils = noise_covariance_matrix.get_size(0);
                 
                 //Collect stats
                 float mean_sigma = 0.0;
                 float max_sigma = 0.0;
                 float min_sigma = std::numeric_limits<float>::max();
-                
-                for (size_t c = 0; c < coils; c++) {
-                    float sigma = std::sqrt(std::real(noise_covariance_matrix[c*coils+c]));
-                    mean_sigma += sigma;
-                    max_sigma = std::max(sigma,max_sigma);
-                    min_sigma = std::min(sigma,min_sigma);
-                }
+                float noise_dwell_time_us = 5.0;
+                size_t coils = 1;
+
+                // for (size_t c = 0; c < coils; c++) {
+                //     float sigma = std::sqrt(std::real(noise_covariance_matrix[c*coils+c]));
+                //     mean_sigma += sigma;
+                //     max_sigma = std::max(sigma,max_sigma);
+                //     min_sigma = std::min(sigma,min_sigma);
+                // }
 
                 GDEBUG("Min Sigma: %e\n", min_sigma);
                 GDEBUG("Max Sigma: %e\n", max_sigma);
                 GDEBUG("Mean Sigma: %e\n", mean_sigma);
 
-                dependencies.append("noise_dwell_time_us",noise_covariance->noise_dwell_time_us_);
+                dependencies.append("noise_dwell_time_us",noise_dwell_time_us);
                 dependencies.append("min_sigma",min_sigma);
                 dependencies.append("max_sigma",max_sigma);
                 dependencies.append("mean_sigma",mean_sigma);
