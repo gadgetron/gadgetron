@@ -17,6 +17,7 @@ set( gadgetron_cmr_header_files
     gadgetron_cmr_export.h 
     CmrCartesianKSpaceBinningCineGadget.h 
     CmrPSIRNetGadget.h 
+    CmrOmniGadget.h 
     CmrParametricMappingGadget.h 
     CmrParametricT1SRMappingGadget.h 
     CmrParametricT2MappingGadget.h
@@ -25,6 +26,7 @@ set( gadgetron_cmr_header_files
 set( gadgetron_cmr_src_files 
     CmrCartesianKSpaceBinningCineGadget.cpp 
     CmrPSIRNetGadget.cpp 
+    CmrOmniGadget.cpp 
     CmrParametricMappingGadget.cpp 
     CmrParametricT1SRMappingGadget.cpp 
     CmrParametricT2MappingGadget.cpp
@@ -89,6 +91,9 @@ if (BUILD_PYTHON_SUPPORT)
     set( python_PSIRNet_files python/psirnet.py )
     source_group(python FILES ${python_PSIRNet_files})
     install(FILES ${python_PSIRNet_files} DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH}/cmr_ml COMPONENT main)
+
+    # OmniNet model
+    install(FILES python/omninet.py DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH}/cmr_ml COMPONENT main)
 endif ()
 
 add_library(gadgetron_cmr SHARED 
