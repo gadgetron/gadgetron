@@ -300,7 +300,7 @@ namespace Gadgetron {
                     gt_exporter_.export_array_complex(coil_map_model, debug_folder_full_path_ + "coil_map_model" + os.str()); 
                 }
 
-                if (perform_timing.value()) { timer.start("compute omni net model ... "); }
+                if (perform_timing.value()) { timer.start("compute python omni net model ... "); }
 
                 hoNDArray< std::complex<float> > res_kspace;
                 {
@@ -319,14 +319,11 @@ namespace Gadgetron {
                 {
                     for (n=0; n<N; n++)
                     {
-                        for (cha=0; cha<CHA; cha++)
+                        for (e1=0; e1<E1; e1++)
                         {
-                            for (e1=0; e1<E1; e1++)
+                            for (ro=0; ro<RO; ro++)
                             {
-                                for (ro=0; ro<RO; ro++)
-                                {
-                                    res_.data_(ro, e1, 0, cha, n, 0, slc) = res_kspace(ro, e1, cha, n, slc);
-                                }
+                                res_.data_(ro, e1, 0, 0, n, 0, slc) = res_kspace(ro, e1, 0, n, slc);
                             }
                         }
                     }
@@ -401,17 +398,14 @@ namespace Gadgetron {
                 {
                     for (s=0; s<S; s++)
                     {
-                        for (cha=0; cha<CHA; cha++)
+                        for (e1=0; e1<E1; e1++)
                         {
-                            for (e1=0; e1<E1; e1++)
+                            for (ro=0; ro<RO; ro++)
                             {
-                                for (ro=0; ro<RO; ro++)
-                                {
-                                    res_.data_(ro, e1, 0, cha, 0, s, slc) = res_kspace(ro, e1, cha, s, slc);
-                                }
+                                res_.data_(ro, e1, 0, 0, 0, s, slc) = res_kspace(ro, e1, 0, s, slc);
                             }
                         }
-                    }
+                     }
                 }
             }
 
